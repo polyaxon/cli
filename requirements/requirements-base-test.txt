@@ -2,7 +2,7 @@ coverage==4.5.2
 flaky==3.5.3
 isort==4.3.4
 mock==2.0.0
-prospector==0.12.7
+prospector==1.1.6.2
 pyflakes==1.6.0
 pytest==3.7.0
 pylint==1.8.4
