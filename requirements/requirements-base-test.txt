@@ -1,6 +1,6 @@
 coverage==4.5.3
 flaky==3.5.3
-isort==4.3.4
+isort==4.3.16
 mock==2.0.0
 prospector==0.12.7
 pyflakes==1.6.0
