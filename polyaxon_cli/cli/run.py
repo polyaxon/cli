@@ -19,7 +19,7 @@ from polyaxon_cli.managers.experiment import ExperimentManager
 from polyaxon_cli.managers.experiment_group import GroupManager
 from polyaxon_cli.managers.job import JobManager
 from polyaxon_cli.schemas.experiment import ExperimentConfig
-from polyaxon_cli.schemas.group import ExperimentGroupConfig
+from polyaxon_cli.schemas.group import GroupConfig
 from polyaxon_cli.schemas.job import JobConfig
 from polyaxon_cli.schemas.polyaxonfile import PolyaxonFile
 from polyaxon_cli.utils import cache
@@ -138,7 +138,7 @@ def run(ctx, project, file, name, tags, description, ttl, u, l):  # pylint:disab
         click.echo('Creating an experiment group with the following definition:')
         experiments_def = specification.experiments_def
         get_group_experiments_info(**experiments_def)
-        experiment_group = ExperimentGroupConfig(
+        experiment_group = GroupConfig(
             name=name,
             description=description,
             tags=tags,
