@@ -56,7 +56,7 @@ setup(name='polyaxon-cli',
           "polyaxon-deploy==0.5.6",
           "polyaxon-dockerizer==0.0.9",
           "raven==6.7.0",
-          "tabulate==0.8.2",
+          "tabulate==0.8.3",
       ],
       entry_points={
           "console_scripts": [
