@@ -2,4 +2,4 @@
 
 polyaxon-client==0.5.6
 polyaxon-deploy==0.5.6
-polyaxon-dockerizer==0.0.9
+polyaxon-dockerizer==0.1.0
