@@ -122,14 +122,36 @@ class DeployManager(object):
             raise PolyaxonDeploymentConfigError(
                 'Deployment `{}` is not valid'.format(self.deployment_type))
 
+    @property
+    def deployment_namespace(self):
+        if self.config and self.config.namespace:
+            return self.config.namespace
+        return "polyaxon"
+
+    def _get_or_create_namespace(self):
+        click.echo("Checking {} namespace ...".format(self.deployment_namespace))
+        stdout = self.kubectl.execute(
+            args=["get", "namespace", self.deployment_namespace], is_json=True,
+        )
+        if stdout:
+            return
+        # Create a namespace
+        click.echo("Creating {} namespace ...".format(self.deployment_namespace))
+        stdout = self.kubectl.execute(
+            args=["create", "namespace", self.deployment_namespace], is_json=False,
+        )
+        click.echo(stdout)
+
     def install_on_kubernetes(self):
-        args = ['install']
+        self._get_or_create_namespace()
+
+        args = ['install', 'polyaxon']
         if self.manager_path:
             args += [self.manager_path]
         else:
             args += ['polyaxon/polyaxon']
 
-        args += ['--name=polyaxon', '--namespace=polyaxon']
+        args += ['--namespace={}'.format(self.deployment_namespace)]
         if self.filepath:
             args += ['-f', self.filepath]
         if self.deployment_version:
@@ -140,7 +162,7 @@ class DeployManager(object):
         click.echo('Running install command ...')
         stdout = self.helm.execute(args=args)
         click.echo(stdout)
-        Printer.print_success('Deployment finished.')
+        Printer.print_success("Deployment finished.")
 
     def install_on_docker_compose(self):
         path = ComposeConfigManager.get_config_file_path()
@@ -204,6 +226,7 @@ class DeployManager(object):
             args += ['-f', self.filepath]
         if self.deployment_version:
             args += ['--version', self.deployment_version]
+        args += ["--namespace={}".format(self.deployment_namespace)]
         if self.dry_run:
             args += ['--debug', '--dry-run']
         click.echo('Running upgrade command ...')
@@ -236,9 +259,10 @@ class DeployManager(object):
             self.upgrade_on_heroku()
 
     def teardown_on_kubernetes(self, hooks):
-        args = ['delete', '--purge', 'polyaxon']
+        args = ['delete', 'polyaxon']
         if not hooks:
             args += ['--no-hooks']
+        args += ['--namespace={}'.format(self.deployment_namespace)]
         click.echo('Running teardown command ...')
         self.helm.execute(args=args)
         Printer.print_success('Deployment successfully deleted.')
