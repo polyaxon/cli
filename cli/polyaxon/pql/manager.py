@@ -24,6 +24,7 @@ from polyaxon.pql.parser import parse_field, tokenize_query
 class PQLManager:
     NAME = None
     FIELDS_USE_UUID = None
+    FIELDS_USE_STATE = None
     FIELDS_USE_NAME = None
     FIELDS_PROXY = {}
     FIELDS_TRANS = {}
@@ -35,6 +36,7 @@ class PQLManager:
     CONDITIONS_BY_FIELD = {}
     QUERY_BACKEND = None
     TIMEZONE = None
+    DISTINCT = True
 
     @classmethod
     def proxy_field(cls, field: str) -> str:
@@ -45,6 +47,10 @@ class PQLManager:
             suffix = "uuid"
         if cls.FIELDS_USE_UUID and field in cls.FIELDS_USE_UUID and suffix == "id":
             suffix = "uuid"
+        if cls.FIELDS_USE_STATE and not suffix and field in cls.FIELDS_USE_STATE:
+            suffix = "state"
+        if cls.FIELDS_USE_STATE and field in cls.FIELDS_USE_STATE and suffix == "id":
+            suffix = "state"
         if cls.FIELDS_USE_NAME and not suffix and field in cls.FIELDS_USE_NAME:
             suffix = "name"
         if cls.FIELDS_USE_NAME and field in cls.FIELDS_USE_NAME and suffix == "id":
@@ -144,4 +150,7 @@ class PQLManager:
                     )
                 operators.append(operator)
 
-        return queryset.filter(*operators)
+        queryset = queryset.filter(*operators)
+        if cls.DISTINCT:
+            queryset = queryset.distinct()
+        return queryset
