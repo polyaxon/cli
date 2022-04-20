@@ -16,7 +16,8 @@
 
 import asyncio
 
-from functools import wraps
+from functools import partial, wraps
+from typing import Callable
 
 
 def coroutine(f):
@@ -27,3 +28,12 @@ def coroutine(f):
         return asyncio.run(f(*args, **kwargs))
 
     return wrapper
+
+
+async def run_sync(func: Callable, *args, **kwargs):
+    import anyio
+
+    if kwargs:  # pragma: no cover
+        # run_sync doesn't accept 'kwargs', so bind them in here
+        func = partial(func, **kwargs)
+    return await anyio.to_thread.run_sync(func, *args)
