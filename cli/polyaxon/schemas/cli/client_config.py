@@ -283,10 +283,3 @@ class ClientConfig(BaseConfig):
         config = self.sdk_config
         config.connection_pool_maxsize = 100
         return config
-
-    @staticmethod
-    def _get_bool(value, default_value):
-        if isinstance(value, bool):
-            return value
-
-        return default_value

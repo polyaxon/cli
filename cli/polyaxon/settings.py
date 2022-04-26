@@ -34,6 +34,7 @@ CLIENT_CONFIG = None
 CLI_CONFIG = None
 PROXIES_CONFIG = None
 AGENT_CONFIG = None
+SANDBOX_CONFIG = None
 
 
 def set_proxies_config():
@@ -52,6 +53,18 @@ def set_agent_config():
     AGENT_CONFIG = AgentConfigManager.get_config_from_env()
 
 
+def set_sandbox_config():
+    from polyaxon.managers.agent import SandboxConfigManager
+
+    global SANDBOX_CONFIG
+
+    try:
+        SANDBOX_CONFIG = SandboxConfigManager.get_config_or_default()
+    except (TypeError, ValidationError):
+        SandboxConfigManager.purge()
+        Printer.print_warning("Your sandbox configuration was purged!")
+
+
 def set_cli_config():
     from polyaxon.managers.cli import CliConfigManager
 
@@ -61,7 +74,7 @@ def set_cli_config():
         CLI_CONFIG = CliConfigManager.get_config_or_default()
     except (TypeError, ValidationError):
         CliConfigManager.purge()
-        Printer.print_warning("Your CLI Configuration was purged!")
+        Printer.print_warning("Your CLI configuration was purged!")
 
 
 def set_client_config():
@@ -71,7 +84,7 @@ def set_client_config():
         CLIENT_CONFIG = ClientConfigManager.get_config_from_env()
     except (TypeError, ValidationError):
         ClientConfigManager.purge()
-        Printer.print_warning("Your client Configuration was purged!")
+        Printer.print_warning("Your client configuration was purged!")
         CLIENT_CONFIG = ClientConfigManager.get_config_from_env()
 
 
@@ -83,13 +96,13 @@ def set_auth_config():
         AUTH_CONFIG = AuthConfigManager.get_config_from_env()
     except (TypeError, ValidationError):
         AuthConfigManager.purge()
-        Printer.print_warning("Your auth Configuration was purged!")
+        Printer.print_warning("Your auth configuration was purged!")
 
     try:
         UserConfigManager.get_config_or_default()
     except (TypeError, ValidationError):
         UserConfigManager.purge()
-        Printer.print_warning("Your user Configuration was purged!")
+        Printer.print_warning("Your user configuration was purged!")
 
 
 if not to_bool(os.environ.get(POLYAXON_KEYS_NO_CONFIG, False)):

@@ -184,8 +184,15 @@ cli.add_command(admin)
 cli.add_command(port_forward)
 cli.add_command(completion)
 
-if settings.CLIENT_CONFIG.is_ops:
+# Sandbox
+try:
+    from polyaxon_deploy.cli.sandbox import sandbox
 
+    cli.add_command(sandbox)
+except ImportError:
+    pass
+
+if settings.CLIENT_CONFIG.is_ops:
     from polyaxon.cli.services.agent import agent
     from polyaxon.cli.services.clean_artifacts import clean_artifacts
     from polyaxon.cli.services.clean_ops import clean_ops
@@ -207,6 +214,14 @@ if settings.CLIENT_CONFIG.is_ops:
     cli.add_command(sidecar)
     cli.add_command(tuner)
     cli.add_command(wait)
+
+    # Streams
+    try:
+        from polyaxon_deploy.cli.streams import streams
+
+        cli.add_command(streams)
+    except ImportError:
+        pass
 
 
 def main():

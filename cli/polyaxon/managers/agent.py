@@ -23,7 +23,28 @@ from polyaxon.containers.contexts import (
 )
 from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon.managers.base import BaseConfigManager
-from polyaxon.schemas.cli.agent_config import AgentConfig
+from polyaxon.schemas.cli.agent_config import AgentConfig, SandboxConfig
+
+
+class SandboxConfigManager(BaseConfigManager):
+    """Manages sandbox configuration .sandbox file."""
+
+    VISIBILITY = BaseConfigManager.VISIBILITY_ALL
+    CONFIG_FILE_NAME = ".sandbox"
+    CONFIG = SandboxConfig
+
+    @classmethod
+    def get_config_from_env(cls):
+        pass
+
+    @classmethod
+    def get_config_or_default(cls) -> SandboxConfig:
+        if not cls.is_initialized():
+            return cls.CONFIG(
+                connections=[], secret_resources=[]
+            )  # pylint:disable=not-callable
+
+        return cls.get_config()
 
 
 class AgentConfigManager(BaseConfigManager):
@@ -34,7 +55,7 @@ class AgentConfigManager(BaseConfigManager):
     CONFIG = AgentConfig
 
     @classmethod
-    def get_config_or_default(cls):
+    def get_config_or_default(cls) -> AgentConfig:
         if not cls.is_initialized():
             return cls.CONFIG(
                 namespace=DEFAULT_NAMESPACE, connections=[], secret_resources=[]

@@ -43,11 +43,18 @@ from polyaxon.env_vars.keys import (
     POLYAXON_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS,
     POLYAXON_KEYS_K8S_APP_SECRET_NAME,
     POLYAXON_KEYS_K8S_NAMESPACE,
+    POLYAXON_KEYS_SANDBOX_DEBUG,
+    POLYAXON_KEYS_SANDBOX_HOST,
+    POLYAXON_KEYS_SANDBOX_PER_CORE,
+    POLYAXON_KEYS_SANDBOX_PORT,
+    POLYAXON_KEYS_SANDBOX_SSL_ENABLED,
+    POLYAXON_KEYS_SANDBOX_WORKERS,
 )
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.parser import parser
 from polyaxon.schemas.base import BaseConfig, BaseSchema
 from polyaxon.schemas.types import ConnectionTypeSchema, V1K8sResourceType
+from polyaxon.utils.http_utils import clean_host
 from polyaxon.utils.signal_decorators import check_partial
 
 
@@ -71,39 +78,7 @@ def validate_agent_config(artifacts_store, connections):
         connection_names.add(c.name)
 
 
-class AgentSchema(BaseSchema):
-    namespace = fields.Str(allow_none=True, data_key=POLYAXON_KEYS_K8S_NAMESPACE)
-    is_replica = fields.Bool(allow_none=True, data_key=POLYAXON_KEYS_AGENT_IS_REPLICA)
-    compressed_logs = fields.Bool(
-        allow_none=True, data_key=POLYAXON_KEYS_AGENT_COMPRESSED_LOGS
-    )
-    sidecar = fields.Nested(
-        PolyaxonSidecarContainerSchema,
-        allow_none=True,
-        data_key=POLYAXON_KEYS_AGENT_SIDECAR,
-    )
-    init = fields.Nested(
-        PolyaxonInitContainerSchema, allow_none=True, data_key=POLYAXON_KEYS_AGENT_INIT
-    )
-    notifier = fields.Nested(
-        PolyaxonNotifierSchema, allow_none=True, data_key=POLYAXON_KEYS_AGENT_NOTIFIER
-    )
-    cleaner = fields.Nested(
-        PolyaxonCleanerSchema, allow_none=True, data_key=POLYAXON_KEYS_AGENT_CLEANER
-    )
-    use_proxy_env_vars_use_in_ops = fields.Bool(
-        allow_none=True, data_key=POLYAXON_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
-    )
-    default_scheduling = fields.Nested(
-        DefaultSchedulingSchema,
-        allow_none=True,
-        data_key=POLYAXON_KEYS_AGENT_DEFAULT_SCHEDULING,
-    )
-    default_image_pull_secrets = fields.List(
-        fields.Str(),
-        allow_none=True,
-        data_key=POLYAXON_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
-    )
+class BaseAgentSchema(BaseSchema):
     artifacts_store = fields.Nested(
         ConnectionTypeSchema,
         allow_none=True,
@@ -114,27 +89,6 @@ class AgentSchema(BaseSchema):
         allow_none=True,
         data_key=POLYAXON_KEYS_AGENT_CONNECTIONS,
     )
-    app_secret_name = fields.Str(
-        allow_none=True,
-        data_key=POLYAXON_KEYS_K8S_APP_SECRET_NAME,
-    )
-    agent_secret_name = fields.Str(
-        allow_none=True,
-        data_key=POLYAXON_KEYS_AGENT_SECRET_NAME,
-    )
-    runs_sa = fields.Str(
-        allow_none=True,
-        data_key=POLYAXON_KEYS_AGENT_RUNS_SA,
-    )
-    # This refresh logic will mitigate several issues with AKS's numerous networking problems
-    spawner_refresh_interval = fields.Integer(
-        allow_none=True,
-        data_key=POLYAXON_KEYS_AGENT_SPAWNER_REFRESH_INTERVAL,
-    )
-
-    @staticmethod
-    def schema_config():
-        return AgentConfig
 
     @validates_schema
     @check_partial
@@ -169,6 +123,196 @@ class AgentSchema(BaseSchema):
             ) from e
         if artifacts_store:
             data[POLYAXON_KEYS_AGENT_ARTIFACTS_STORE] = artifacts_store
+
+        return data
+
+
+class BaseAgentConfig(BaseConfig):
+    UNKNOWN_BEHAVIOUR = EXCLUDE
+    REDUCED_ATTRIBUTES = [
+        POLYAXON_KEYS_AGENT_ARTIFACTS_STORE,
+        POLYAXON_KEYS_AGENT_CONNECTIONS,
+    ]
+
+    def __init__(
+        self, artifacts_store=None, connections=None, namespace: str = None, **kwargs
+    ):
+        self.namespace = namespace
+        self.artifacts_store = artifacts_store
+        self.connections = connections or []
+        self._all_connections = []
+        self.set_all_connections()
+        self._secrets = None
+        self._config_maps = None
+        self._connections_by_names = {}
+
+    def set_all_connections(self):
+        self._all_connections = self.connections[:]
+        if self.artifacts_store:
+            self._all_connections.append(self.artifacts_store)
+            validate_agent_config(self.artifacts_store, self.connections)
+
+    @property
+    def all_connections(self):
+        return self._all_connections
+
+    @property
+    def secrets(self) -> List[V1K8sResourceType]:
+        if self._secrets or not self._all_connections:
+            return self._secrets
+        secret_names = set()
+        secrets = []
+        for c in self._all_connections:
+            if c.secret and c.secret.name not in secret_names:
+                secret_names.add(c.secret.name)
+                secrets.append(c.get_secret())
+        self._secrets = secrets
+        return self._secrets
+
+    @property
+    def config_maps(self) -> List[V1K8sResourceType]:
+        if self._config_maps or not self._all_connections:
+            return self._config_maps
+        config_map_names = set()
+        config_maps = []
+        for c in self._all_connections:
+            if c.config_map and c.config_map.name not in config_map_names:
+                config_map_names.add(c.config_map.name)
+                config_maps.append(c.get_config_map())
+        self._config_maps = config_maps
+        return self._config_maps
+
+    @property
+    def connections_by_names(self):
+        if self._connections_by_names or not self._all_connections:
+            return self._connections_by_names
+
+        self._connections_by_names = {c.name: c for c in self._all_connections}
+        return self._connections_by_names
+
+    @property
+    def artifacts_root(self):
+        artifacts_root = CONTEXT_ARTIFACTS_ROOT
+        if not self.artifacts_store:
+            return artifacts_root
+
+        if self.artifacts_store.is_mount:
+            return self.artifacts_store.store_path
+
+        return artifacts_root
+
+
+class SandboxSchema(BaseAgentSchema):
+    port = fields.Int(allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_PORT)
+    host = fields.Str(allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_HOST)
+    ssl_enabled = fields.Bool(
+        allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_SSL_ENABLED
+    )
+    debug = fields.Bool(allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_DEBUG)
+    workers = fields.Int(allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_WORKERS)
+    per_core = fields.Bool(allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_PER_CORE)
+
+    @staticmethod
+    def schema_config():
+        return SandboxConfig
+
+
+class SandboxConfig(BaseAgentConfig):
+    SCHEMA = SandboxSchema
+    IDENTIFIER = "sandbox"
+    REDUCED_ATTRIBUTES = BaseAgentConfig.REDUCED_ATTRIBUTES + [
+        POLYAXON_KEYS_SANDBOX_PORT,
+        POLYAXON_KEYS_SANDBOX_HOST,
+        POLYAXON_KEYS_SANDBOX_SSL_ENABLED,
+        POLYAXON_KEYS_SANDBOX_DEBUG,
+        POLYAXON_KEYS_SANDBOX_WORKERS,
+        POLYAXON_KEYS_SANDBOX_PER_CORE,
+    ]
+
+    def __init__(
+        self,
+        artifacts_store=None,
+        connections=None,
+        port: int = None,
+        host: str = None,
+        ssl_enabled: bool = None,
+        debug: bool = None,
+        workers: int = None,
+        per_core: bool = None,
+        **kwargs
+    ):
+        super().__init__(
+            artifacts_store=artifacts_store,
+            connections=connections,
+            namespace="sandbox",
+            **kwargs
+        )
+        self.host = clean_host(host) if host else host
+        self.port = port
+        self.ssl_enabled = ssl_enabled
+        self.debug = debug
+        self.workers = workers
+        self.per_core = per_core
+
+
+class AgentSchema(BaseAgentSchema):
+    namespace = fields.Str(allow_none=True, data_key=POLYAXON_KEYS_K8S_NAMESPACE)
+    is_replica = fields.Bool(allow_none=True, data_key=POLYAXON_KEYS_AGENT_IS_REPLICA)
+    compressed_logs = fields.Bool(
+        allow_none=True, data_key=POLYAXON_KEYS_AGENT_COMPRESSED_LOGS
+    )
+    sidecar = fields.Nested(
+        PolyaxonSidecarContainerSchema,
+        allow_none=True,
+        data_key=POLYAXON_KEYS_AGENT_SIDECAR,
+    )
+    init = fields.Nested(
+        PolyaxonInitContainerSchema, allow_none=True, data_key=POLYAXON_KEYS_AGENT_INIT
+    )
+    notifier = fields.Nested(
+        PolyaxonNotifierSchema, allow_none=True, data_key=POLYAXON_KEYS_AGENT_NOTIFIER
+    )
+    cleaner = fields.Nested(
+        PolyaxonCleanerSchema, allow_none=True, data_key=POLYAXON_KEYS_AGENT_CLEANER
+    )
+    use_proxy_env_vars_use_in_ops = fields.Bool(
+        allow_none=True, data_key=POLYAXON_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
+    )
+    default_scheduling = fields.Nested(
+        DefaultSchedulingSchema,
+        allow_none=True,
+        data_key=POLYAXON_KEYS_AGENT_DEFAULT_SCHEDULING,
+    )
+    default_image_pull_secrets = fields.List(
+        fields.Str(),
+        allow_none=True,
+        data_key=POLYAXON_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
+    )
+    app_secret_name = fields.Str(
+        allow_none=True,
+        data_key=POLYAXON_KEYS_K8S_APP_SECRET_NAME,
+    )
+    agent_secret_name = fields.Str(
+        allow_none=True,
+        data_key=POLYAXON_KEYS_AGENT_SECRET_NAME,
+    )
+    runs_sa = fields.Str(
+        allow_none=True,
+        data_key=POLYAXON_KEYS_AGENT_RUNS_SA,
+    )
+    # This refresh logic will mitigate several issues with AKS's numerous networking problems
+    spawner_refresh_interval = fields.Integer(
+        allow_none=True,
+        data_key=POLYAXON_KEYS_AGENT_SPAWNER_REFRESH_INTERVAL,
+    )
+
+    @staticmethod
+    def schema_config():
+        return AgentConfig
+
+    @pre_load
+    def pre_validate(self, data, **kwargs):
+        data = super().pre_validate(data, **kwargs)
 
         sidecar = data.get(POLYAXON_KEYS_AGENT_SIDECAR)
         try:
@@ -254,19 +398,16 @@ class AgentSchema(BaseSchema):
         return data
 
 
-class AgentConfig(BaseConfig):
+class AgentConfig(BaseAgentConfig):
     SCHEMA = AgentSchema
     IDENTIFIER = "agent"
-    UNKNOWN_BEHAVIOUR = EXCLUDE
-    REDUCED_ATTRIBUTES = [
+    REDUCED_ATTRIBUTES = BaseAgentConfig.REDUCED_ATTRIBUTES + [
         POLYAXON_KEYS_AGENT_SIDECAR,
         POLYAXON_KEYS_AGENT_INIT,
         POLYAXON_KEYS_AGENT_NOTIFIER,
         POLYAXON_KEYS_AGENT_CLEANER,
         POLYAXON_KEYS_AGENT_IS_REPLICA,
         POLYAXON_KEYS_AGENT_COMPRESSED_LOGS,
-        POLYAXON_KEYS_AGENT_ARTIFACTS_STORE,
-        POLYAXON_KEYS_AGENT_CONNECTIONS,
         POLYAXON_KEYS_K8S_APP_SECRET_NAME,
         POLYAXON_KEYS_AGENT_SECRET_NAME,
         POLYAXON_KEYS_AGENT_RUNS_SA,
@@ -296,15 +437,18 @@ class AgentConfig(BaseConfig):
         default_image_pull_secrets=None,
         **kwargs
     ):
-        self.namespace = namespace
+        super().__init__(
+            artifacts_store=artifacts_store,
+            connections=connections,
+            namespace=namespace,
+            **kwargs
+        )
         self.is_replica = is_replica
         self.compressed_logs = compressed_logs
         self.sidecar = sidecar
         self.init = init
         self.notifier = notifier
         self.cleaner = cleaner
-        self.artifacts_store = artifacts_store
-        self.connections = connections or []
         self.app_secret_name = app_secret_name
         self.agent_secret_name = agent_secret_name
         self.runs_sa = runs_sa
@@ -316,66 +460,6 @@ class AgentConfig(BaseConfig):
             self.default_scheduling = V1DefaultScheduling()
         if self.default_scheduling and not self.default_scheduling.image_pull_secrets:
             self.default_scheduling.image_pull_secrets = self.default_image_pull_secrets
-        self._all_connections = []
-        self.set_all_connections()
-        self._secrets = None
-        self._config_maps = None
-        self._connections_by_names = {}
 
     def get_spawner_refresh_interval(self):
         return self.spawner_refresh_interval or 60 * 5
-
-    def set_all_connections(self):
-        self._all_connections = self.connections[:]
-        if self.artifacts_store:
-            self._all_connections.append(self.artifacts_store)
-            validate_agent_config(self.artifacts_store, self.connections)
-
-    @property
-    def all_connections(self):
-        return self._all_connections
-
-    @property
-    def secrets(self) -> List[V1K8sResourceType]:
-        if self._secrets or not self._all_connections:
-            return self._secrets
-        secret_names = set()
-        secrets = []
-        for c in self._all_connections:
-            if c.secret and c.secret.name not in secret_names:
-                secret_names.add(c.secret.name)
-                secrets.append(c.get_secret())
-        self._secrets = secrets
-        return self._secrets
-
-    @property
-    def config_maps(self) -> List[V1K8sResourceType]:
-        if self._config_maps or not self._all_connections:
-            return self._config_maps
-        config_map_names = set()
-        config_maps = []
-        for c in self._all_connections:
-            if c.config_map and c.config_map.name not in config_map_names:
-                config_map_names.add(c.config_map.name)
-                config_maps.append(c.get_config_map())
-        self._config_maps = config_maps
-        return self._config_maps
-
-    @property
-    def connections_by_names(self):
-        if self._connections_by_names or not self._all_connections:
-            return self._connections_by_names
-
-        self._connections_by_names = {c.name: c for c in self._all_connections}
-        return self._connections_by_names
-
-    @property
-    def artifacts_root(self):
-        artifacts_root = CONTEXT_ARTIFACTS_ROOT
-        if not self.artifacts_store:
-            return artifacts_root
-
-        if self.artifacts_store.is_mount:
-            return self.artifacts_store.store_path
-
-        return artifacts_root
