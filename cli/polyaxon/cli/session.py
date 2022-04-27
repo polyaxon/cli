@@ -60,7 +60,9 @@ def get_server_installation(polyaxon_client=None):
 
 def get_installation_key(key: str) -> str:
     if not key:
-        installation = CliConfigManager.get_value("installation") or {"key": uuid.uuid4().hex}
+        installation = CliConfigManager.get_value("installation") or {
+            "key": uuid.uuid4().hex
+        }
         if not CliConfigManager.is_initialized():
             CliConfigManager.reset(installation=installation)
         key = installation.get("key")

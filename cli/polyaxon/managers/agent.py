@@ -35,14 +35,18 @@ class SandboxConfigManager(BaseConfigManager):
 
     @classmethod
     def get_config_from_env(cls):
-        pass
+        config_paths = [
+            os.environ,
+            {"dummy": "dummy"},
+        ]
+
+        config = ConfigManager.read_configs(config_paths)
+        return cls.CONFIG.from_dict(config.data)
 
     @classmethod
     def get_config_or_default(cls) -> SandboxConfig:
         if not cls.is_initialized():
-            return cls.CONFIG(
-                connections=[], secret_resources=[]
-            )  # pylint:disable=not-callable
+            return cls.get_config_from_env()
 
         return cls.get_config()
 
@@ -75,5 +79,5 @@ class AgentConfigManager(BaseConfigManager):
             {"dummy": "dummy"},
         ]
 
-        agent_config = ConfigManager.read_configs(config_paths)
-        return AgentConfig.from_dict(agent_config.data)
+        config = ConfigManager.read_configs(config_paths)
+        return cls.CONFIG.from_dict(config.data)

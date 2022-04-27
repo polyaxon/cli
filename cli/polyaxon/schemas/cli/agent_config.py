@@ -25,7 +25,7 @@ from polyaxon.auxiliaries import (
     PolyaxonSidecarContainerSchema,
     V1DefaultScheduling,
 )
-from polyaxon.containers.contexts import CONTEXT_ARTIFACTS_ROOT
+from polyaxon.containers import contexts
 from polyaxon.env_vars.keys import (
     POLYAXON_KEYS_AGENT_ARTIFACTS_STORE,
     POLYAXON_KEYS_AGENT_CLEANER,
@@ -58,8 +58,10 @@ from polyaxon.utils.http_utils import clean_host
 from polyaxon.utils.signal_decorators import check_partial
 
 
-def validate_agent_config(artifacts_store, connections):
-    if not artifacts_store:
+def validate_agent_config(
+    artifacts_store, connections, required_artifacts_store: bool = True
+):
+    if required_artifacts_store and not artifacts_store:
         raise ValidationError(
             "A connection definition is required to set a default artifacts store."
         )
@@ -68,7 +70,8 @@ def validate_agent_config(artifacts_store, connections):
 
     connection_names = set()
 
-    connection_names.add(artifacts_store.name)
+    if artifacts_store:
+        connection_names.add(artifacts_store.name)
 
     for c in connections:
         if c.name in connection_names:
@@ -79,6 +82,8 @@ def validate_agent_config(artifacts_store, connections):
 
 
 class BaseAgentSchema(BaseSchema):
+    REQUIRED_ARTIFACTS_STORE = True
+
     artifacts_store = fields.Nested(
         ConnectionTypeSchema,
         allow_none=True,
@@ -93,7 +98,11 @@ class BaseAgentSchema(BaseSchema):
     @validates_schema
     @check_partial
     def validate_connection(self, data, **kwargs):
-        validate_agent_config(data.get("artifacts_store"), data.get("connections"))
+        validate_agent_config(
+            data.get("artifacts_store"),
+            data.get("connections"),
+            self.REQUIRED_ARTIFACTS_STORE,
+        )
 
     @pre_load
     def pre_validate(self, data, **kwargs):
@@ -191,8 +200,8 @@ class BaseAgentConfig(BaseConfig):
         return self._connections_by_names
 
     @property
-    def artifacts_root(self):
-        artifacts_root = CONTEXT_ARTIFACTS_ROOT
+    def local_root(self):
+        artifacts_root = contexts.CONTEXT_ARTIFACTS_ROOT
         if not self.artifacts_store:
             return artifacts_root
 
@@ -201,8 +210,18 @@ class BaseAgentConfig(BaseConfig):
 
         return artifacts_root
 
+    @property
+    def store_root(self):
+        artifacts_root = contexts.CONTEXT_ARTIFACTS_ROOT
+        if not self.artifacts_store:
+            return artifacts_root
+
+        return self.artifacts_store.store_path
+
 
 class SandboxSchema(BaseAgentSchema):
+    REQUIRED_ARTIFACTS_STORE = False
+
     port = fields.Int(allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_PORT)
     host = fields.Str(allow_none=True, data_key=POLYAXON_KEYS_SANDBOX_HOST)
     ssl_enabled = fields.Bool(
@@ -256,6 +275,8 @@ class SandboxConfig(BaseAgentConfig):
 
 
 class AgentSchema(BaseAgentSchema):
+    REQUIRED_ARTIFACTS_STORE = True
+
     namespace = fields.Str(allow_none=True, data_key=POLYAXON_KEYS_K8S_NAMESPACE)
     is_replica = fields.Bool(allow_none=True, data_key=POLYAXON_KEYS_AGENT_IS_REPLICA)
     compressed_logs = fields.Bool(
