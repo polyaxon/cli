@@ -491,7 +491,7 @@ def pull_project_version(
     polyaxon_client = ProjectClient(owner=owner, project=project_name)
 
     try:
-        Printer.print_header(
+        Printer.console.print(
             "Pulling the {} version [white]`{}`[/white] to `{} ...".format(
                 kind, fqn_version, path
             )
