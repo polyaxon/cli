@@ -121,6 +121,18 @@ def get_run_details(run):  # pylint:disable=redefined-outer-name
         Printer.print_header("Run outputs:")
         dict_tabulate(run.outputs)
 
+    if run.settings:
+        Printer.print_header("Run settings:")
+        dict_tabulate(run.settings.to_dict())
+
+    if run.meta_info:
+        Printer.print_header("Run meta info:")
+        dict_tabulate(run.meta_info)
+
+    if run.readme:
+        Printer.print_header("Run readme:")
+        Printer.print_md(run.readme)
+
     response = Printer.add_status_color(run.to_dict())
     response = dict_to_tabulate(
         response,
@@ -143,14 +155,6 @@ def get_run_details(run):  # pylint:disable=redefined-outer-name
 
     Printer.print_header("Run info:")
     dict_tabulate(response)
-
-    if run.settings:
-        Printer.print_header("Run settings:")
-        dict_tabulate(run.settings.to_dict())
-
-    if run.meta_info:
-        Printer.print_header("Run meta info:")
-        dict_tabulate(run.meta_info)
 
 
 @click.group()
