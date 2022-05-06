@@ -28,7 +28,16 @@ from rich import box
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
-from rich.progress import Progress
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
 from rich.syntax import Syntax
 from rich.table import Column, Table
 from rich.theme import Theme
@@ -188,7 +197,17 @@ class Printer:
 
     @staticmethod
     def get_progress():
-        return Progress()
+        return Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TaskProgressColumn(),
+            TextColumn("eta"),
+            TimeRemainingColumn(),
+            TextColumn("elapsed"),
+            TimeElapsedColumn(),
+        )
 
     @classmethod
     def get_live(cls):
