@@ -171,12 +171,12 @@ def dict_tabulate(dict_value, is_list_dict=False):
         table = Printer.get_table(*headers)
         for d in dict_value:
             table.add_row(*d.values())
-        Printer.console.print(table)
+        Printer.print(table)
     else:
         table = Printer.get_table(show_header=False, padding=0, box=box.SIMPLE)
         for k, v in dict_value.items():
             table.add_row(k, humanize_attrs(k, v))
-        Printer.console.print(table)
+        Printer.print(table)
 
 
 class Printer:
@@ -227,6 +227,11 @@ class Printer:
         cls.console.print(Markdown(md))
 
     @classmethod
+    def print_text(cls, value: str):
+        syntax = Syntax(value, "txt", theme="dracula", line_numbers=False)
+        cls.console.print(syntax)
+
+    @classmethod
     def print_yaml(cls, value: any):
         if isinstance(value, str):
             value = yaml.safe_load(value)
@@ -253,8 +258,16 @@ class Printer:
             )
 
     @classmethod
-    def print_header(cls, text, pad: bool = True):
-        cls.console.print("\n{}\n".format(text) if pad else text, style="header")
+    def print(cls, text):
+        cls.console.print(text)
+
+    @classmethod
+    def print_heading(cls, text):
+        cls.print_header("\n{}\n".format(text))
+
+    @classmethod
+    def print_header(cls, text):
+        cls.console.print(text, style="header")
 
     @classmethod
     def print_warning(cls, text, command_help: str = None):
@@ -347,7 +360,7 @@ class Printer:
                 ),
             ]
             table.add_row(*line)
-        Printer.console.print(table)
+        Printer.print(table)
         sys.stdout.flush()
 
     @classmethod
@@ -389,7 +402,7 @@ class Printer:
                 "No GPU job was found, please run `resources` command without `-g | --gpu` option."
             )
             exit(1)
-        Printer.console.print(table)
+        Printer.print(table)
         sys.stdout.flush()
 
 
