@@ -2600,7 +2600,6 @@ class RunClient:
         self,
         path: str = None,
         download_artifacts: bool = True,
-        use_canonical_prefix: bool = True,
     ):
         """Download a run on Polyaxon's API and artifacts store to local path.
 
@@ -2608,12 +2607,9 @@ class RunClient:
             path: str, optional, defaults to the offline root path,
                  path where the run's metadata & artifacts will be stored.
             download_artifacts: bool, optional, flag to trigger artifacts download.
-            use_canonical_prefix: bool, optional, flag to use the canonical path prefix `project/runs`
         """
         path = path or ctx_paths.CONTEXT_OFFLINE_ROOT
-        if use_canonical_prefix:
-            path = "{}/{}/runs".format(path, self.project)
-        path = "{}/{}".format(path, self.run_uuid)
+        path = "{}/runs/{}".format(path, self.run_uuid)
         delete_path(path)
         self.refresh_data(load_artifacts_lineage=True, load_conditions=True)
         if download_artifacts:

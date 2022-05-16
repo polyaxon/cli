@@ -1491,7 +1491,6 @@ class ProjectClient:
         version: str,
         path: str,
         download_artifacts: bool = True,
-        use_canonical_prefix: bool = True,
     ):
         """Packages and downloads the version to a local path.
 
@@ -1506,12 +1505,9 @@ class ProjectClient:
             path: str, optional, defaults to the offline root path,
                  path where to persist the metadata and artifacts.
             download_artifacts: bool, optional, to download the artifacts based on linked lineage.
-            use_canonical_prefix: bool, optional, flag to use the canonical path prefix `project/versions`
         """
         path = path or ctx_paths.CONTEXT_OFFLINE_ROOT
-        if use_canonical_prefix:
-            path = "{}/{}/{}s".format(path, self.project, kind)
-        path = "{}/{}".format(path, version)
+        path = "{}/{}s/{}".format(path, kind, version)
         delete_path(path)
         config = self.get_version(kind=kind, version=version)
         self.persist_version(config=config, path=path)
@@ -1524,21 +1520,18 @@ class ProjectClient:
         self,
         version: str,
         path: str,
-        use_canonical_prefix: bool = True,
     ):
         """Packages and downloads the component version to a local path.
 
         Args:
             version: str, required, the version name/tag.
             path: str, local path where to persist the metadata and artifacts.
-            use_canonical_prefix: bool, optional, flag to use the canonical path prefix `project/components`
         """
         return self.pull_version(
             kind=V1ProjectVersionKind.COMPONENT,
             version=version,
             path=path,
             download_artifacts=False,
-            use_canonical_prefix=use_canonical_prefix,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1547,7 +1540,6 @@ class ProjectClient:
         version: str,
         path: str,
         download_artifacts: bool = True,
-        use_canonical_prefix: bool = True,
     ):
         """Packages and downloads the model version to a local path.
 
@@ -1555,14 +1547,12 @@ class ProjectClient:
             version: str, required, the version name/tag.
             path: str, local path where to persist the metadata and artifacts.
             download_artifacts: bool, optional, to download the artifacts based on linked lineage.
-            use_canonical_prefix: bool, optional, flag to use the canonical path prefix `project/models`
         """
         return self.pull_version(
             kind=V1ProjectVersionKind.MODEL,
             version=version,
             path=path,
             download_artifacts=download_artifacts,
-            use_canonical_prefix=use_canonical_prefix,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1571,7 +1561,6 @@ class ProjectClient:
         version: str,
         path: str,
         download_artifacts: bool = True,
-        use_canonical_prefix: bool = True,
     ):
         """Packages and downloads the artifact version to a local path.
 
@@ -1579,12 +1568,10 @@ class ProjectClient:
             version: str, required, the version name/tag.
             path: str, local path where to persist the metadata and artifacts.
             download_artifacts: bool, optional, to download the artifacts based on linked lineage.
-            use_canonical_prefix: bool, optional, flag to use the canonical path prefix `project/artifacts`
         """
         return self.pull_version(
             kind=V1ProjectVersionKind.ARTIFACT,
             version=version,
             path=path,
             download_artifacts=download_artifacts,
-            use_canonical_prefix=use_canonical_prefix,
         )
