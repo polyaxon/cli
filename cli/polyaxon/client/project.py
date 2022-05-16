@@ -26,7 +26,7 @@ from marshmallow import EXCLUDE
 import polyaxon_sdk
 
 from polyaxon.client.client import PolyaxonClient
-from polyaxon.client.decorators import client_handler
+from polyaxon.client.decorators import client_handler, get_global_or_inline_config
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonClientException
@@ -67,6 +67,10 @@ class ProjectClient:
         client: [PolyaxonClient](/docs/core/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
+        is_offline: bool, optional,
+             To trigger the offline mode manually instead of depending on `POLYAXON_IS_OFFLINE`.
+        no_op: bool, optional,
+             To set the NO_OP mode manually instead of depending on `POLYAXON_NO_OP`.
 
     Raises:
         PolyaxonClientException: If no owner is passed and Polyaxon cannot
@@ -79,7 +83,19 @@ class ProjectClient:
         owner: str = None,
         project: str = None,
         client: PolyaxonClient = None,
+        is_offline: bool = None,
+        no_op: bool = None,
     ):
+        self._is_offline = get_global_or_inline_config(
+            config_key="is_offline", config_value=is_offline, client=client
+        )
+        self._no_op = get_global_or_inline_config(
+            config_key="no_op", config_value=no_op, client=client
+        )
+
+        if self._no_op:
+            return
+
         if not owner and project:
             owner, project = get_entity_info(
                 get_entity_full_name(owner=owner, entity=project)
