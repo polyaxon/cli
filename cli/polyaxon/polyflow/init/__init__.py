@@ -306,6 +306,7 @@ class V1Init(BaseConfig, polyaxon_sdk.V1Init):
                 self.connection,
                 self.git,
                 self.dockerfile,
+                self.tensorboard,
                 self.file,
                 self.artifacts,
                 self.paths,

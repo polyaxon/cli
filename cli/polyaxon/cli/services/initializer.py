@@ -24,7 +24,6 @@ from marshmallow import ValidationError
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.parser import parser
 from polyaxon.schemas.types import V1FileType
 from polyaxon.utils.formatting import Printer
 from polyaxon.utils.path_utils import check_or_create_path, copy_file
@@ -98,6 +97,7 @@ def file(file_context, filepath, copy_path, track):
 def git(url, repo_path, revision, connection, flags):
     """Create auth context."""
     from polyaxon.init.git import create_code_repo
+    from polyaxon.parser import parser
 
     if flags:
         flags = parser.get_string("flags", flags, is_list=True)

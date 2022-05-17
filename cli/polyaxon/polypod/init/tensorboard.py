@@ -61,11 +61,16 @@ def get_tensorboard_init_container(
     tb_args: V1TensorboardType,
     contexts: PluginsContextsSpec,
     run_instance: str,
+    container: Optional[k8s_schemas.V1Container] = None,
     env: List[k8s_schemas.V1EnvVar] = None,
     mount_path: Optional[str] = None,
 ) -> k8s_schemas.V1Container:
     env = to_list(env, check_none=True)
     env = env + [get_run_instance_env_var(run_instance)]
+
+    container_name = generate_container_name(INIT_TENSORBOARD_CONTAINER_PREFIX)
+    if not container:
+        container = k8s_schemas.V1Container(name=container_name)
 
     volume_name = (
         get_volume_name(mount_path) if mount_path else constants.VOLUME_MOUNT_ARTIFACTS
@@ -83,14 +88,14 @@ def get_tensorboard_init_container(
     ]
     args += _get_args(tb_args)
 
-    container = k8s_schemas.V1Container(
-        name=generate_container_name(INIT_TENSORBOARD_CONTAINER_PREFIX),
+    return patch_container(
+        container=container,
+        name=container_name,
         image=polyaxon_init.get_image(),
         image_pull_policy=polyaxon_init.image_pull_policy,
         command=["polyaxon", "initializer", "tensorboard"],
         args=args,
         env=env,
-        resources=polyaxon_init.get_resources(),
         volume_mounts=volume_mounts,
+        resources=polyaxon_init.get_resources(),
     )
-    return patch_container(container)

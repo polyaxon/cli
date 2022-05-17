@@ -20,6 +20,7 @@ from typing import List
 
 from polyaxon.client import RunClient
 from polyaxon.init.artifacts import download_artifact
+from polyaxon.utils.formatting import Printer
 
 
 def _download(
@@ -61,6 +62,9 @@ def _command(
     with open(script_path, "w") as script:
         script.write(" && ".join(cmd))
         subprocess.check_call(["chmod", "+x", script_path])
+    Printer.print_success(
+        "Tensorboard script is initialized, path: `{}`".format(script_path)
+    )
 
 
 def initialize_tensorboard(

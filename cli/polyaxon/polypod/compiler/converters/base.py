@@ -441,6 +441,7 @@ class BaseConverter(ConverterAbstract):
                                 external_host=external_host
                             ),
                             mount_path=init_connection.path,
+                            container=init_connection.container,
                             contexts=contexts,
                             run_path=self.run_path,
                             run_instance=self.run_instance,
@@ -456,6 +457,7 @@ class BaseConverter(ConverterAbstract):
                                 external_host=external_host
                             ),
                             mount_path=init_connection.path,
+                            container=init_connection.container,
                             contexts=contexts,
                             run_path=self.run_path,
                             run_instance=self.run_instance,
@@ -472,6 +474,7 @@ class BaseConverter(ConverterAbstract):
                                 external_host=external_host
                             ),
                             mount_path=init_connection.path,
+                            container=init_connection.container,
                             contexts=contexts,
                             run_instance=self.run_instance,
                         )
