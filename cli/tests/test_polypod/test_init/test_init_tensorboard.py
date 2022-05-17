@@ -17,7 +17,9 @@
 import pytest
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
-from polyaxon.containers.names import INIT_FILE_CONTAINER_PREFIX
+from polyaxon.connections.kinds import V1ConnectionKind
+from polyaxon.connections.schemas import V1BucketConnection, V1ClaimConnection
+from polyaxon.containers.names import INIT_TENSORBOARD_CONTAINER_PREFIX
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.common import constants
@@ -25,27 +27,40 @@ from polyaxon.polypod.common.mounts import (
     get_auth_context_mount,
     get_connections_context_mount,
 )
-from polyaxon.polypod.init.file import get_file_init_container
+from polyaxon.polypod.init.tensorboard import get_tensorboard_init_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1FileType
+from polyaxon.schemas.types import V1ConnectionType, V1TensorboardType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polypod_mark
-class TestInitFile(BaseTestCase):
-    def test_get_file_init_container(self):
-        file_args = V1FileType(content="test")
-        container = get_file_init_container(
-            polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
-            file_args=file_args,
-            run_path="test",
-            run_instance="foo.bar.runs.uuid",
+class TestInitTensorboard(BaseTestCase):
+    def test_get_tensorboard_init_container(self):
+        store = V1ConnectionType(
+            name="test",
+            kind=V1ConnectionKind.S3,
+            tags=["test", "foo"],
+            schema=V1BucketConnection(bucket="s3//:foo"),
         )
-        assert INIT_FILE_CONTAINER_PREFIX in container.name
+        tb_args = V1TensorboardType(
+            port=6006,
+            uuids="uuid1,  uuid2",
+            use_names=True,
+            path_prefix="/path/prefix",
+            plugins="plug1, plug2",
+        )
+        container = get_tensorboard_init_container(
+            polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
+            tb_args=tb_args,
+            artifacts_store=store,
+            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            run_instance="foo.bar.runs.uuid",
+            env=None,
+        )
+        assert INIT_TENSORBOARD_CONTAINER_PREFIX in container.name
         assert container.image == "foo"
         assert container.image_pull_policy is None
-        assert container.command == ["polyaxon", "initializer", "file"]
+        assert container.command == ["polyaxon", "initializer", "tensorboard"]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
             get_connections_context_mount(
@@ -54,37 +69,47 @@ class TestInitFile(BaseTestCase):
             ),
             get_auth_context_mount(read_only=True),
         ]
-        assert file_args.to_dict(dump=True) == '{"content":"test","filename":"file"}'
         assert container.args == [
-            "--file-context={}".format('{"content":"test","filename":"file"}'),
-            "--filepath={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
-            "--copy-path={}".format(
-                ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format("test")
-            ),
-            "--track",
+            "--context-from=s3//:foo",
+            "--connection-kind=s3",
+            "--port=6006",
+            "--uuids=uuid1,uuid2",
+            "--use-names",
+            "--path-prefix=/path/prefix",
+            "--plugins=plug1,plug2",
         ]
 
-        file_args = V1FileType(filename="test", content="test")
-        container = get_file_init_container(
+        store = V1ConnectionType(
+            name="test",
+            kind=V1ConnectionKind.VOLUME_CLAIM,
+            tags=["test", "foo"],
+            schema=V1ClaimConnection(
+                mount_path="/claim/path", volume_claim="claim", read_only=True
+            ),
+        )
+        tb_args = V1TensorboardType(
+            port=2222, uuids="uuid1", use_names=False, plugins="plug1"
+        )
+        container = get_tensorboard_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="init/init", image_tag="", image_pull_policy="IfNotPresent"
             ),
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
-            file_args=file_args,
-            run_path="test",
+            tb_args=tb_args,
+            artifacts_store=store,
+            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=False)),
             run_instance="foo.bar.runs.uuid",
+            env=None,
         )
-        assert INIT_FILE_CONTAINER_PREFIX in container.name
+        assert INIT_TENSORBOARD_CONTAINER_PREFIX in container.name
         assert container.image == "init/init"
         assert container.image_pull_policy == "IfNotPresent"
-        assert container.command == ["polyaxon", "initializer", "file"]
+        assert container.command == ["polyaxon", "initializer", "tensorboard"]
         assert container.args == [
-            "--file-context={}".format(file_args.to_dict(dump=True)),
-            "--filepath={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
-            "--copy-path={}".format(
-                ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format("test")
-            ),
-            "--track",
+            "--context-from=/claim/path",
+            "--connection-kind=volume_claim",
+            "--port=2222",
+            "--uuids=uuid1",
+            "--plugins=plug1",
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
@@ -92,5 +117,4 @@ class TestInitFile(BaseTestCase):
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
-            get_auth_context_mount(read_only=True),
         ]
