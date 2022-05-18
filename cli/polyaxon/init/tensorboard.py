@@ -53,7 +53,7 @@ def _command(
     cmd = []
 
     if plugins:
-        cmd.append("pip install {}".format(' '.join(plugins)))
+        cmd.append("pip install {}".format(" ".join(plugins)))
 
     cmd.append(
         f"tensorboard  --logdir={logdir} --port={port} --path_prefix={path_prefix} --host=0.0.0.0"
