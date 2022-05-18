@@ -25,10 +25,10 @@ from polyaxon.schemas.types.base import BaseTypeConfig
 
 class TensorboardTypeSchema(BaseCamelSchema):
     port = RefOrObject(fields.Int(allow_none=True))
-    uuids = RefOrObject(fields.Str(allow_none=True))
+    uuids = RefOrObject(fields.List(fields.Str(allow_none=True)))
     use_names = RefOrObject(fields.Bool(allow_none=True))
     path_prefix = RefOrObject(fields.Str(allow_none=True))
-    plugins = RefOrObject(fields.Str(allow_none=True))
+    plugins = RefOrObject(fields.List(fields.Str(allow_none=True)))
 
     @staticmethod
     def schema_config():
@@ -42,10 +42,10 @@ class V1TensorboardType(BaseTypeConfig, polyaxon_sdk.V1TensorboardType):
 
     Args:
         port: int
-        uuids: str
+        uuids: List[str]
         use_names: bool, optional
         path_prefix: str, optional
-        plugins: str
+        plugins: List[str]
 
     ### YAML usage
 

@@ -1468,14 +1468,14 @@ class TestParser(BaseTestCase):
         self.assertEqual(value, V1TensorboardType(port=8000))
 
         value = parser.get_tensorboard_init(
-            key="dict_key_1", value={"port": 8000, "uuids": "uuid1,uuid2"}
+            key="dict_key_1", value={"port": 8000, "uuids": ["uuid1", "uuid2"]}
         )
-        self.assertEqual(value, V1TensorboardType(port=8000, uuids="uuid1,uuid2"))
+        self.assertEqual(value, V1TensorboardType(port=8000, uuids=["uuid1", "uuid2"]))
 
         value = parser.get_tensorboard_init(
-            key="dict_key_1", value='{"port": 8000, "uuids": "uuid1,uuid2"}'
+            key="dict_key_1", value='{"port": 8000, "uuids": ["uuid1","uuid2"]}'
         )
-        self.assertEqual(value, V1TensorboardType(port=8000, uuids="uuid1,uuid2"))
+        self.assertEqual(value, V1TensorboardType(port=8000, uuids=["uuid1", "uuid2"]))
 
         value = parser.get_tensorboard_init(
             key="dict_key_1", value='{"useNames": false}'
@@ -1486,8 +1486,12 @@ class TestParser(BaseTestCase):
             key="dict_list_key_1",
             value=[
                 {"useNames": False},
-                {"uuids": "uuid1,uuid2"},
-                {"port": 8000, "uuids": "uuid1,uuid2", "plugins": "plug1,plug2"},
+                {"uuids": ["uuid1", "uuid2"]},
+                {
+                    "port": 8000,
+                    "uuids": ["uuid1", "uuid2"],
+                    "plugins": ["plug1", "plug2"],
+                },
             ],
             is_list=True,
         )
@@ -1495,9 +1499,9 @@ class TestParser(BaseTestCase):
             value,
             [
                 V1TensorboardType(use_names=False),
-                V1TensorboardType(uuids="uuid1,uuid2"),
+                V1TensorboardType(uuids=["uuid1", "uuid2"]),
                 V1TensorboardType(
-                    port=8000, uuids="uuid1,uuid2", plugins="plug1,plug2"
+                    port=8000, uuids=["uuid1", "uuid2"], plugins=["plug1", "plug2"]
                 ),
             ],
         )

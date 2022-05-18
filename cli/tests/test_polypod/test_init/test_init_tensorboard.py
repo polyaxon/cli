@@ -26,6 +26,7 @@ from polyaxon.polypod.common import constants
 from polyaxon.polypod.common.mounts import (
     get_auth_context_mount,
     get_connections_context_mount,
+    get_mount_from_store,
 )
 from polyaxon.polypod.init.tensorboard import get_tensorboard_init_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
@@ -71,6 +72,7 @@ class TestInitTensorboard(BaseTestCase):
         ]
         assert container.args == [
             "--context-from=s3//:foo",
+            "--context-to={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
             "--connection-kind=s3",
             "--port=6006",
             "--uuids=uuid1,uuid2",
@@ -106,6 +108,7 @@ class TestInitTensorboard(BaseTestCase):
         assert container.command == ["polyaxon", "initializer", "tensorboard"]
         assert container.args == [
             "--context-from=/claim/path",
+            "--context-to={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
             "--connection-kind=volume_claim",
             "--port=2222",
             "--uuids=uuid1",
@@ -117,4 +120,5 @@ class TestInitTensorboard(BaseTestCase):
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
+            get_mount_from_store(store=store),
         ]
