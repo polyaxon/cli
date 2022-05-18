@@ -48,12 +48,12 @@ def _command(
     port: int,
     logdir: str,
     path_prefix: str,
-    plugins: str = None,
+    plugins: List[str] = None,
 ):
     cmd = []
 
     if plugins:
-        cmd.append("pip install {}".format(plugins))
+        cmd.append("pip install {}".format(' '.join(plugins)))
 
     cmd.append(
         f"tensorboard  --logdir={logdir} --port={port} --path_prefix={path_prefix} --host=0.0.0.0"
@@ -76,12 +76,12 @@ def initialize_tensorboard(
     uuids: List[str],
     use_names: bool,
     path_prefix: str,
-    plugins: str,
+    plugins: List[str],
 ):
     tensorboard_context = os.path.join(context_to, "tensorboard")
     if use_names:
         used_names = set([])
-        for op in RunClient().list(query="uuid:{}".format(",".join(uuids))).results:
+        for op in RunClient().list(query="uuid:{}".format("|".join(uuids))).results:
             op_name = op.name
             if op_name in used_names:
                 op_name = f"{op.name}-{op.uuid[:10]}"

@@ -338,6 +338,7 @@ def tensorboard(
     from polyaxon.utils.validation import validate_tags
 
     uuids = validate_tags(uuids)
+    plugins = validate_tags(plugins)
     initialize_tensorboard(
         port=port,
         connection_name=connection_name,
