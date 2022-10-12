@@ -48,12 +48,12 @@ def set_proxies_config():
     PROXIES_CONFIG = ProxiesManager.get_config_from_env()
 
 
-def set_agent_config():
+def set_agent_config(config: "AgentConfig"):
     from polyaxon.managers.agent import AgentConfigManager
 
     global AGENT_CONFIG
 
-    AGENT_CONFIG = AgentConfigManager.get_config_from_env()
+    AGENT_CONFIG = config or AgentConfigManager.get_config_from_env()
 
 
 def set_sandbox_config():

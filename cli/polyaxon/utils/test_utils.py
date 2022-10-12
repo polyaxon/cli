@@ -99,6 +99,7 @@ def patch_settings(
     settings.CLIENT_CONFIG = None
     if set_client:
         settings.CLIENT_CONFIG = ClientConfig(host="1.2.3.4")
+        settings.CLIENT_CONFIG.tracking_timeout = 0
 
     settings.CLI_CONFIG = None
     if set_cli:
@@ -112,7 +113,6 @@ def patch_settings(
     if set_proxies:
         settings.PROXIES_CONFIG = ProxiesConfig()
 
-    settings.CLIENT_CONFIG.tracking_timeout = 0
 
 
 class BaseTestCase(TestCase):
