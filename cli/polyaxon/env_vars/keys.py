@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Platform
+EV_KEYS_PLATFORM_CONFIG = "POLYAXON_PLATFORM_CONFIG"
+
 # General
 EV_KEYS_NO_CONFIG = "POLYAXON_NO_CONFIG"
 EV_KEYS_SERVICE = "POLYAXON_SERVICE"
