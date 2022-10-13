@@ -33,7 +33,6 @@ from polyaxon.cli.operations import ops
 from polyaxon.cli.port_forward import port_forward
 from polyaxon.cli.projects import project
 from polyaxon.cli.run import run
-from polyaxon.cli.services.sandbox import sandbox
 from polyaxon.cli.session import set_versions_config
 from polyaxon.cli.version import check_cli_version, upgrade, version
 from polyaxon.logger import clean_outputs, configure_logger
@@ -183,7 +182,6 @@ cli.add_command(dashboard)
 cli.add_command(admin)
 cli.add_command(port_forward)
 cli.add_command(completion)
-cli.add_command(sandbox)
 
 # INIT
 if PolyaxonServices.is_init():
@@ -220,22 +218,6 @@ if PolyaxonServices.is_agent():
     from polyaxon.cli.services.agent import agent
 
     cli.add_command(agent)
-
-# Proxies
-if (
-    PolyaxonServices.is_streams()
-    or PolyaxonServices.is_api()
-    or PolyaxonServices.is_gateway()
-):
-    from polyaxon.cli.services.proxies import proxy
-
-    cli.add_command(proxy)
-
-# Streams
-if PolyaxonServices.is_streams():
-    from polyaxon.cli.services.streams import streams
-
-    cli.add_command(streams)
 
 
 def main():

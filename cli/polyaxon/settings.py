@@ -33,45 +33,17 @@ HEALTH_CHECK_INTERVAL = 60
 AUTH_CONFIG = None
 CLIENT_CONFIG = None
 CLI_CONFIG = None
-PROXIES_CONFIG = None
 AGENT_CONFIG = None
-SANDBOX_CONFIG = None
 
 PolyaxonServices.set_service_name()
 
 
-def set_proxies_config():
-    from polyaxon.managers.proxies import ProxiesManager
-
-    global PROXIES_CONFIG
-
-    PROXIES_CONFIG = ProxiesManager.get_config_from_env()
-
-
-def set_agent_config(config: "AgentConfig"):
+def set_agent_config(config: "AgentConfig" = None):
     from polyaxon.managers.agent import AgentConfigManager
 
     global AGENT_CONFIG
 
     AGENT_CONFIG = config or AgentConfigManager.get_config_from_env()
-
-
-def set_sandbox_config():
-    from polyaxon.contexts.paths import mount_sandbox
-    from polyaxon.managers.agent import SandboxConfigManager
-
-    mount_sandbox()
-    PolyaxonServices.set_service_name(PolyaxonServices.SANDBOX)
-
-    global SANDBOX_CONFIG
-    global AGENT_CONFIG
-
-    try:
-        SANDBOX_CONFIG = SandboxConfigManager.get_config_or_default()
-        AGENT_CONFIG = SANDBOX_CONFIG
-    except (TypeError, ValidationError):
-        SandboxConfigManager.purge()
-        Printer.print_warning("Your sandbox configuration was purged!")
 
 
 def set_cli_config():
@@ -119,7 +91,5 @@ if not to_bool(os.environ.get(EV_KEYS_NO_CONFIG, False)):
     set_client_config()
     if PolyaxonServices.is_agent() or to_bool(os.environ.get(EV_KEYS_SET_AGENT, False)):
         set_agent_config()
-    if PolyaxonServices.is_sandbox():
-        set_sandbox_config()
 else:
     CLIENT_CONFIG = ClientConfigManager.CONFIG(host=LOCALHOST)

@@ -29,7 +29,6 @@ from polyaxon.schemas.api.authentication import AccessTokenConfig
 from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.schemas.cli.cli_config import CliConfig
 from polyaxon.schemas.cli.client_config import ClientConfig
-from polyaxon.schemas.cli.proxies_config import ProxiesConfig
 from polyaxon.schemas.types import V1ConnectionType
 
 
@@ -90,7 +89,6 @@ def patch_settings(
     set_client: bool = True,
     set_cli: bool = True,
     set_agent: bool = True,
-    set_proxies: bool = True,
 ):
     settings.AUTH_CONFIG = None
     if set_auth:
@@ -109,18 +107,12 @@ def patch_settings(
     if set_agent:
         settings.AGENT_CONFIG = AgentConfig()
 
-    settings.PROXIES_CONFIG = None
-    if set_proxies:
-        settings.PROXIES_CONFIG = ProxiesConfig()
-
-
 
 class BaseTestCase(TestCase):
     SET_AUTH_SETTINGS = True
     SET_CLIENT_SETTINGS = True
     SET_CLI_SETTINGS = True
     SET_AGENT_SETTINGS = False
-    SET_PROXIES_SETTINGS = False
 
     def setUp(self):
         super().setUp()
@@ -129,7 +121,6 @@ class BaseTestCase(TestCase):
             set_client=self.SET_CLIENT_SETTINGS,
             set_cli=self.SET_CLI_SETTINGS,
             set_agent=self.SET_AGENT_SETTINGS,
-            set_proxies=self.SET_PROXIES_SETTINGS,
         )
 
 

@@ -16,8 +16,8 @@
 
 import pytest
 
-from polyaxon.managers.agent import AgentConfigManager, SandboxConfigManager
-from polyaxon.schemas.cli.agent_config import AgentConfig, SandboxConfig
+from polyaxon.managers.agent import AgentConfigManager
+from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -29,14 +29,3 @@ class TestAgentConfigManager(BaseTestCase):
         assert AgentConfigManager.IS_POLYAXON_DIR is False
         assert AgentConfigManager.CONFIG_FILE_NAME == ".agent"
         assert AgentConfigManager.CONFIG == AgentConfig
-
-
-@pytest.mark.managers_mark
-class TestSandboxConfigManager(BaseTestCase):
-    def test_default_props(self):
-        assert SandboxConfigManager.is_global() is False
-        assert SandboxConfigManager.is_all_visibility() is True
-        assert SandboxConfigManager.CONFIG_PATH is None
-        assert SandboxConfigManager.IS_POLYAXON_DIR is False
-        assert SandboxConfigManager.CONFIG_FILE_NAME == ".sandbox"
-        assert SandboxConfigManager.CONFIG == SandboxConfig

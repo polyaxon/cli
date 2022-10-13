@@ -64,7 +64,7 @@ extra = {
     "docker": ["docker"],
     "git": ["gitpython"],
     "numpy": ["numpy"],
-    "sandbox": ["polyaxon-deploy"],
+    "sandbox": ["haupt"],
 }
 
 setup(
