@@ -23,7 +23,7 @@ from polyaxon.api import LOCALHOST, POLYAXON_CLOUD_HOST
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import (
     EV_KEYS_API_VERSION,
-    EV_KEYS_ARCHIVE_ROOT,
+    EV_KEYS_ARCHIVES_ROOT,
     EV_KEYS_ASSERT_HOSTNAME,
     EV_KEYS_AUTHENTICATION_TYPE,
     EV_KEYS_CERT_FILE,
@@ -84,7 +84,7 @@ class ClientSchema(BaseSchema):
     connection_pool_maxsize = fields.Int(
         allow_none=True, data_key=EV_KEYS_CONNECTION_POOL_MAXSIZE
     )
-    archive_root = fields.Str(allow_none=True, data_key=EV_KEYS_ARCHIVE_ROOT)
+    archives_root = fields.Str(allow_none=True, data_key=EV_KEYS_ARCHIVES_ROOT)
 
     header = fields.Str(allow_none=True, data_key=EV_KEYS_HEADER)
     header_service = fields.Str(allow_none=True, data_key=EV_KEYS_HEADER_SERVICE)
@@ -119,7 +119,7 @@ class ClientConfig(BaseConfig):
         EV_KEYS_AUTHENTICATION_TYPE,
         EV_KEYS_CERT_FILE,
         EV_KEYS_CONNECTION_POOL_MAXSIZE,
-        EV_KEYS_ARCHIVE_ROOT,
+        EV_KEYS_ARCHIVES_ROOT,
         EV_KEYS_DEBUG,
         EV_KEYS_HEADER,
         EV_KEYS_HEADER_SERVICE,
@@ -164,7 +164,7 @@ class ClientConfig(BaseConfig):
         key_file=None,
         assert_hostname=None,
         connection_pool_maxsize=None,
-        archive_root=None,
+        archives_root=None,
         header=None,
         header_service=None,
         namespace=None,
@@ -193,7 +193,7 @@ class ClientConfig(BaseConfig):
         self.key_file = key_file
         self.assert_hostname = self._get_bool(assert_hostname, None)
         self.connection_pool_maxsize = connection_pool_maxsize
-        self.archive_root = archive_root or ctx_paths.CONTEXT_ARCHIVE_ROOT
+        self.archives_root = archives_root or ctx_paths.CONTEXT_ARCHIVES_ROOT
         self.header = header
         self.header_service = header_service
         self.timeout = timeout or 20

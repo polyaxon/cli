@@ -17,7 +17,7 @@
 import os
 
 from polyaxon.env_vars.keys import (
-    EV_KEYS_ARCHIVE_ROOT,
+    EV_KEYS_ARCHIVES_ROOT,
     EV_KEYS_ARTIFACTS_ROOT,
     EV_KEYS_CONTEXT_ROOT,
     EV_KEYS_OFFLINE_ROOT,
@@ -68,7 +68,7 @@ CONTEXT_MOUNT_DOCKER = "/var/run/docker.sock"
 
 CONTEXT_TMP_POLYAXON_PATH = "/tmp/.polyaxon/"
 CONTEXT_USER_POLYAXON_PATH = polyaxon_user_path()
-CONTEXT_ARCHIVE_ROOT = os.environ.get(EV_KEYS_ARCHIVE_ROOT, "/tmp/plx/archives")
+CONTEXT_ARCHIVES_ROOT = os.environ.get(EV_KEYS_ARCHIVES_ROOT, "/tmp/plx/archives")
 CONTEXT_ARTIFACTS_ROOT = os.environ.get(EV_KEYS_ARTIFACTS_ROOT, "/tmp/plx/artifacts")
 CONTEXT_SANDBOX_ROOT = None
 CONTEXT_OFFLINE_ROOT = os.environ.get(EV_KEYS_OFFLINE_ROOT, "/tmp/plx/offline")

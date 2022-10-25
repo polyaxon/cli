@@ -172,7 +172,7 @@ def set_store():
         ),
         connections=[],
     )
-    settings.CLIENT_CONFIG.archive_root = tempfile.mkdtemp()
+    settings.CLIENT_CONFIG.archives_root = tempfile.mkdtemp()
     return store_root
 
 

@@ -124,7 +124,7 @@ async def download_file(
     path_from = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
-    path_to = os.path.join(settings.CLIENT_CONFIG.archive_root, subpath)
+    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root, subpath)
 
     if os.path.exists(path_to):
         if check_cache:
@@ -180,7 +180,7 @@ async def open_file(
     path_from = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
-    path_to = os.path.join(settings.CLIENT_CONFIG.archive_root, subpath)
+    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root, subpath)
 
     if os.path.exists(path_to):
         if check_cache:
@@ -221,7 +221,7 @@ async def download_dir(
     path_from = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
-    path_to = os.path.join(settings.CLIENT_CONFIG.archive_root, subpath)
+    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root, subpath)
     check_or_create_path(path_to, is_dir=True)
     try:
         await ensure_async_execution(
@@ -321,7 +321,7 @@ async def delete_file_or_dir(
 
 async def tar_files(filename: str, pkg_files: List[str], subpath: str = None) -> str:
     relative_to = (
-        os.path.join(settings.CLIENT_CONFIG.archive_root, subpath) if subpath else None
+        os.path.join(settings.CLIENT_CONFIG.archives_root, subpath) if subpath else None
     )
     return await run_sync(
         sync_tar_files,

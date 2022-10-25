@@ -38,7 +38,7 @@ async def test_download_dir_archive():
     assert os.path.exists(path_to)
     assert os.path.exists(path_to + "/file0.txt")
     assert os.path.exists(path_to + "/file1.txt")
-    tar_path = os.path.join(settings.CLIENT_CONFIG.archive_root, "foo.tar.gz")
+    tar_path = os.path.join(settings.CLIENT_CONFIG.archives_root, "foo.tar.gz")
     assert os.path.exists(tar_path)
 
 

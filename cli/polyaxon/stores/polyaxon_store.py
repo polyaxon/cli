@@ -276,7 +276,7 @@ class PolyaxonStore:
         """
         local_path = kwargs.pop("path_to", None)
         local_path = local_path or os.path.join(
-            settings.CLIENT_CONFIG.archive_root, self._client.run_uuid
+            settings.CLIENT_CONFIG.archives_root, self._client.run_uuid
         )
         if path:
             local_path = os.path.join(local_path, path)
