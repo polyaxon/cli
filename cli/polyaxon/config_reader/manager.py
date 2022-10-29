@@ -397,6 +397,9 @@ class ConfigManager:
             options=options,
         )
 
+    def get_value(self, key):
+        return self._data.get(key, NO_VALUE_FOUND)
+
     def _get(
         self,
         key,
@@ -421,7 +424,7 @@ class ConfigManager:
         Raises:
             KeyError
         """
-        value = self._data.get(key, NO_VALUE_FOUND)
+        value = self.get_value(key)
         parsed_value = parser_fct(
             key=key,
             value=value,
