@@ -24,7 +24,7 @@ from urllib3.exceptions import ReadTimeoutError
 
 from polyaxon.exceptions import PolyaxonBuildException
 from polyaxon.schemas.types import V1UriType
-from polyaxon.utils.log_levels import LogLevels
+from polyaxon.utils.log_utils import LogLevels
 
 _logger = logging.getLogger("polyaxon.dockerizer")
 
