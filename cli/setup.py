@@ -64,7 +64,7 @@ extra = {
     "docker": ["docker"],
     "git": ["gitpython"],
     "numpy": ["numpy"],
-    "sandbox": ["haupt"],
+    "sandbox": ["haupt[platform,streams,fs]"],
 }
 
 setup(
