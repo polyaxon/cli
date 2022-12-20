@@ -19,6 +19,7 @@ from polyaxon import pkg
 VERSION_V1 = "v1"
 API_V1 = "api/{}".format(VERSION_V1)
 STREAMS_V1 = "streams/{}".format(VERSION_V1)
+INTERNAL_V1 = "internal/{}".format(VERSION_V1)
 SERVICES_V1 = "services/{}".format(VERSION_V1)
 REWRITE_SERVICES_V1 = "rewrite-services/{}".format(VERSION_V1)
 EXTERNAL_V1 = "external/{}".format(VERSION_V1)
