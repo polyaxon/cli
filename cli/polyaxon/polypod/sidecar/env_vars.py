@@ -16,11 +16,7 @@
 
 from typing import List
 
-from polyaxon.env_vars.keys import (
-    EV_KEYS_ARTIFACTS_STORE_NAME,
-    EV_KEYS_CONTAINER_ID,
-    EV_KEYS_LOG_LEVEL,
-)
+from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.env_vars import get_env_var
 from polyaxon.utils.list_utils import to_list

@@ -17,6 +17,7 @@
 import uuid
 
 from polyaxon.deploy.operators.cmd_operator import CmdOperator
+from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_SECRET_KEY
 
 
 class ComposeOperator(CmdOperator):
@@ -183,7 +184,7 @@ class ComposeOperator(CmdOperator):
             env.append(template.format("POLYAXON_K8S_NAMESPACE", config.namespace))
         env.append(
             template.format(
-                "POLYAXON_SECRET_KEY", config.polyaxon_secret or uuid.uuid4().hex
+                EV_KEYS_SECRET_KEY, config.polyaxon_secret or uuid.uuid4().hex
             )
         )
         env.append(
@@ -213,7 +214,7 @@ class ComposeOperator(CmdOperator):
         env += cls._generate_intervals(config)
 
         if config.log_level:
-            env.append(template.format("POLYAXON_LOG_LEVEL", config.log_level))
+            env.append(template.format(EV_KEYS_LOG_LEVEL, config.log_level))
         env += cls._generate_postgres(config)
 
         return "\n".join(env)
