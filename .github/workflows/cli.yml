@@ -36,8 +36,8 @@ jobs:
       run: pip install -r cli/requirements/test.txt
     - name: Install master dependencies
       run: pip install -r cli/requirements/master.txt
-    - name: Install dev librarie
-      run: export USE_LOCAL_PACKAGES="true" && pip install --upgrade --editable "cli[dev]"
+    - name: Install dev libraries
+      run: export USE_LOCAL_PACKAGES="true" && pip install --upgrade --editable "cli[dev,fsspec,init,sidecar]"
     - name: Test with pytest
       run: |
         cd cli

@@ -52,6 +52,15 @@ if os.environ.get("USE_PROD_PACKAGES"):
     with open("requirements/prod.txt") as requirements_file:
         requirements += requirements_file.read().splitlines()
 
+with open("requirements/fs.txt") as requirements_file:
+    fs_requirements = requirements_file.read().splitlines()
+
+with open("requirements/sidecar.txt") as requirements_file:
+    sidecar_requirements = requirements_file.read().splitlines()
+
+with open("requirements/init.txt") as requirements_file:
+    init_requirements = requirements_file.read().splitlines()
+
 with open("requirements/dev.txt") as requirements_file:
     dev_requirements = requirements_file.read().splitlines()
 
@@ -61,9 +70,13 @@ extra = {
     "gcs": ["gcsfs"],
     "s3": ["s3fs"],
     "azure": ["adlfs"],
+    "fsspec": ["fsspec"],
     "docker": ["docker"],
     "git": ["gitpython"],
     "numpy": ["numpy"],
+    "fs": fs_requirements,
+    "init": init_requirements,
+    "sidecar": sidecar_requirements,
     "sandbox": ["haupt[platform,streams,fs]"],
 }
 
