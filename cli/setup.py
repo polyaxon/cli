@@ -61,12 +61,15 @@ with open("requirements/sidecar.txt") as requirements_file:
 with open("requirements/init.txt") as requirements_file:
     init_requirements = requirements_file.read().splitlines()
 
+with open("requirements/k8s_async.txt") as requirements_file:
+    k8s_async_requirements = requirements_file.read().splitlines()
+
 with open("requirements/dev.txt") as requirements_file:
     dev_requirements = requirements_file.read().splitlines()
 
+
 extra = {
     "dev": dev_requirements,
-    "async": ["aiohttp >= 3.0.0"],
     "gcs": ["gcsfs"],
     "s3": ["s3fs"],
     "azure": ["adlfs"],
@@ -74,6 +77,7 @@ extra = {
     "docker": ["docker"],
     "git": ["gitpython"],
     "numpy": ["numpy"],
+    "k8s_async": k8s_async_requirements,
     "fs": fs_requirements,
     "init": init_requirements,
     "sidecar": sidecar_requirements,

@@ -1,0 +1,2 @@
+kubernetes_asyncio==24.2.2
+aiohttp>=3.0.0
