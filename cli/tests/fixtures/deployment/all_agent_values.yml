@@ -315,3 +315,6 @@ proxy:
   host: 12.12.12.12
   port: 8080
   kind: transparent
+
+polyaxonSecret: foo
+internalToken: bar

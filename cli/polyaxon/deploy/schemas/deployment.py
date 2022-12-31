@@ -313,8 +313,6 @@ class DeploymentSchema(BaseCamelSchema):
         validate_gateway(data.get("gateway"))
         if data.get("deployment_chart") == DeploymentCharts.AGENT:
             wrong_agent_deployment_keys(
-                polyaxon_secret=data.get("polyaxon_secret"),
-                internal_token=data.get("internal_token"),
                 password_length=data.get("password_length"),
                 user=data.get("user"),
                 global_replicas=data.get("global_replicas"),
@@ -509,8 +507,6 @@ class DeploymentConfig(BaseConfig):
         self.include_chart_revision = include_chart_revision
         if self.deployment_chart == DeploymentCharts.AGENT:
             wrong_agent_deployment_keys(
-                polyaxon_secret=polyaxon_secret,
-                internal_token=internal_token,
                 password_length=password_length,
                 platform_secret=platform_secret,
                 encryption_secret=encryption_secret,

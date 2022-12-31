@@ -21,7 +21,7 @@ class AuthenticationError(Exception):
 
 class AuthenticationTypes:
     TOKEN = "Token"
-    INTERNAL_TOKEN = "Internaltoken"
+    INTERNAL_TOKEN = "InternalToken"
     EPHEMERAL_TOKEN = "EphemeralToken"
 
     VALUES = {TOKEN, INTERNAL_TOKEN, EPHEMERAL_TOKEN}
