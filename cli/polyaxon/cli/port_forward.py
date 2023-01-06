@@ -49,8 +49,15 @@ from polyaxon.utils.formatting import Printer
     type=str,
     help="The release name used for deploying Polyaxon, default polyaxon.",
 )
+@click.option(
+    "-s",
+    "--service",
+    type=str,
+    help="The service to forward, default 'streams', "
+    "possible values are 'api', 'streams', 'gateway'.",
+)
 @clean_outputs
-def port_forward(port, namespace, deployment_type, release_name):
+def port_forward(port, namespace, deployment_type, release_name, service):
     """If you deploy Polyaxon using ClusterIP, you can use this command
     to access the gateway through `localhost:port`.
     """
@@ -64,13 +71,14 @@ def port_forward(port, namespace, deployment_type, release_name):
     port = port or 8000
     namespace = namespace or "polyaxon"
     release_name = release_name or "polyaxon"
+    service = service or "streams"
 
     kubectl = KubectlOperator()
     args = [
         "port-forward",
         "-n",
         namespace,
-        "svc/{}-polyaxon-gateway".format(release_name),
+        "svc/{}-polyaxon-{}".format(release_name, service),
         "{}:80".format(port),
     ]
 
