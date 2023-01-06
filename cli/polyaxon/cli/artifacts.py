@@ -43,7 +43,7 @@ from polyaxon.utils.formatting import Printer
 @not_in_ce
 @clean_outputs
 def artifacts(ctx, project, version):
-    """Commands for managing artifacts."""
+    """Commands for managing artifact versions."""
     ctx.obj = ctx.obj or {}
     if project or version:
         Printer.print_warning(
@@ -579,7 +579,7 @@ def pull(
 @click.pass_context
 @clean_outputs
 def dashboard(ctx, project, version, yes, url):
-    """Open this operation's dashboard details in browser."""
+    """Open this artifact version's dashboard details in browser."""
     version = version or ctx.obj.get("version") or "latest"
     owner, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True

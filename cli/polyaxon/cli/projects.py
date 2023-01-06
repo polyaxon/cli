@@ -372,7 +372,7 @@ def update(ctx, _project, name, description, tags, private):
 @click.pass_context
 @clean_outputs
 def dashboard(ctx, _project, yes, url):
-    """Open this operation's dashboard details in browser."""
+    """Open this project's dashboard details in browser."""
     owner, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )

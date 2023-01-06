@@ -616,7 +616,7 @@ def pull(
 @click.pass_context
 @clean_outputs
 def dashboard(ctx, project, version, yes, url):
-    """Open this operation's dashboard details in browser."""
+    """Open this component version's dashboard details in browser."""
     version = version or ctx.obj.get("version") or "latest"
     owner, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
