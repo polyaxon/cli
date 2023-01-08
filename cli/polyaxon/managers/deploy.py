@@ -26,6 +26,7 @@ from polyaxon.deploy.operators.kubectl import KubectlOperator
 from polyaxon.deploy.schemas.deployment import DeploymentConfig
 from polyaxon.deploy.schemas.deployment_types import DeploymentCharts, DeploymentTypes
 from polyaxon.exceptions import PolyaxonException, PolyaxonOperatorException
+from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon.managers.compose import ComposeConfigManager
 from polyaxon.utils.formatting import Printer
 
@@ -67,7 +68,7 @@ class DeployConfigManager:
     def deployment_namespace(self):
         if self.config and self.config.namespace:
             return self.config.namespace
-        return "polyaxon"
+        return DEFAULT_NAMESPACE
 
     @property
     def k8s_chart(self):

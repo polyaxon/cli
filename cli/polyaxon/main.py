@@ -148,6 +148,7 @@ def cli(context, verbose, offline):
         "notify",
         "upgrade",
         "port-forward",
+        "sandbox",
     ]
     if (
         not (
