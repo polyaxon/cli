@@ -29,6 +29,7 @@ from polyaxon.client.client import PolyaxonClient
 from polyaxon.client.decorators import client_handler, get_global_or_inline_config
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.contexts import paths as ctx_paths
+from polyaxon.env_vars.getters.user import get_local_owner
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.lifecycle import V1ProjectVersionKind, V1StageCondition
 from polyaxon.logger import logger
@@ -102,6 +103,8 @@ class ProjectClient:
             )
 
         if not owner:
+            owner = get_local_owner()
+        if not owner:
             raise PolyaxonClientException("Please provide a valid owner.")
 
         self._client = client
@@ -159,6 +162,14 @@ class ProjectClient:
         self._project_data.owner = self.owner
         self._project = self._project_data.name
         return self._project_data
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def get_or_create(self):
+        try:
+            self.refresh_data()
+        except ApiException:
+            self.project_data.name = self.project
+            self.create(self.project_data)
 
     @client_handler(check_no_op=True, check_offline=True)
     def list(
