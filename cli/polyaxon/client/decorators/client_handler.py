@@ -19,6 +19,7 @@ from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
 from polyaxon.client import PolyaxonClient
+from polyaxon.client.decorators.errors import handle_client_error
 from polyaxon.logger import logger
 from polyaxon_sdk.rest import ApiException
 
@@ -97,8 +98,18 @@ def client_handler(
             try:
                 return f(*args, **kwargs)
             except (ApiException, HTTPError) as e:
-                logger.debug("Client config:\n%s\n", settings.CLIENT_CONFIG.to_dict())
-                raise e
+                message = (
+                    "\nAPI Client failed at the function `%(name)s` in file "
+                    "`%(filename)s` line number `%(line)s`."
+                    "\nClient config:\n%(config)s\n"
+                    % {
+                        "name": f.__name__,
+                        "filename": f.__code__.co_filename,
+                        "line": f.__code__.co_firstlineno + 1,
+                        "config": settings.CLIENT_CONFIG.to_dict(),
+                    }
+                )
+                handle_client_error(e=e, message=message)
 
         return wrapper
 

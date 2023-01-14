@@ -13,6 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
+from typing import Any, Dict
 
 from click import ClickException
 
@@ -135,6 +138,8 @@ HTTP_ERROR_MESSAGES_MAPPING = {
     403: "Status: 403. You are not authorized to access this resource on Polyaxon.",
     404: "Status: 404. "
     "The resource you are looking for was not found. Check if the name or uuid is correct.",
+    405: "Status: 405. Endpoint does not exist or not configured on this API, "
+    "make sure you are connecting to the correct host.",
     429: "Status: 429. You are over the allowed limits for this operation.",
     500: "Status: 502. Internal polyaxon server error, please try again later.",
     502: "Status: 502. Invalid response from Polyaxon server.",
@@ -142,3 +147,36 @@ HTTP_ERROR_MESSAGES_MAPPING = {
     504: "Status: 504. Polyaxon server took too long to respond.",
     525: "Status: 525. SSL error.",
 }
+
+
+def handle_api_error(
+    e,
+    logger: Any,
+    message: str = None,
+    http_messages_mapping: Dict = None,
+    sys_exit: bool = False,
+):
+    http_messages_mapping = http_messages_mapping or HTTP_ERROR_MESSAGES_MAPPING
+    if message:
+        logger.error(message)
+    if hasattr(e, "status"):
+        if e.status not in [404, 401, 403, 405]:
+            logger.error("Exception:")
+            logger.error(e, stack_info=True, exc_info=True)
+        message = http_messages_mapping.get(e.status)
+        logger.error(message)
+    elif hasattr(e, "message"):  # Handling of HTML errors
+        if "404" in e.message:
+            logger.error(http_messages_mapping.get(404))
+        elif "401" in e.message:
+            logger.error(http_messages_mapping.get(401))
+        elif "403" in e.message:
+            logger.error(http_messages_mapping.get(403))
+        else:
+            logger.error("Exception:")
+            logger.error(e, stack_info=True, exc_info=True)
+    else:
+        logger.error("Exception:")
+        logger.error(e, stack_info=True, exc_info=True)
+    if sys_exit:
+        sys.exit(1)
