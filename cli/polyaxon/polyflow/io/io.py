@@ -23,6 +23,7 @@ from polyaxon import types
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.parser import parser
 from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.utils.deprecated_decorators import warn_deprecation
 from polyaxon.utils.signal_decorators import check_partial
 
 IO_NAME_BLACK_LIST = ["globals", "params", "connections"]
@@ -564,9 +565,12 @@ class V1IO(BaseConfig, polyaxon_sdk.V1IO):
     ):
         # Backward compatibility
         if iotype:
-            print(
-                "`iotype` was deprecated in favor of `type`, "
-                "and will be removed in future releases."
+            warn_deprecation(
+                deprecation_version="1.0.0",
+                details="Please note that passing `iotype` to `V1IO` "
+                "will be removed in future releases.",
+                current_logic="iotype",
+                new_logic="type",
             )
         type = type or iotype
         super().__init__(
