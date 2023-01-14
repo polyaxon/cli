@@ -42,7 +42,7 @@ def get_project_or_local(project=None, is_cli: bool = False):
     if not project and not ProjectConfigManager.is_initialized():
         error_message = "Please provide a valid project or initialize a project in the current path."
         if is_cli:
-            Printer.print_error(error_message)
+            Printer.error(error_message)
             sys.exit(1)
         else:
             raise PolyaxonClientException(error_message)
@@ -52,7 +52,7 @@ def get_project_or_local(project=None, is_cli: bool = False):
             owner, project_name = get_entity_info(project)
         except Exception as e:
             if is_cli:
-                Printer.print_error("Please provide a valid project name.\n%s" % e)
+                Printer.error("Please provide a valid project name.\n%s" % e)
                 sys.exit(1)
             else:
                 raise e
@@ -70,7 +70,7 @@ def get_project_or_local(project=None, is_cli: bool = False):
     if not all([owner, project_name]):
         error_message = get_project_error_message(owner, project_name)
         if is_cli:
-            Printer.print_error(error_message)
+            Printer.error(error_message)
             sys.exit(1)
         else:
             raise PolyaxonClientException(error_message)
@@ -80,7 +80,7 @@ def get_project_or_local(project=None, is_cli: bool = False):
             owner
         )
         if is_cli:
-            Printer.print_error(error_message)
+            Printer.error(error_message)
             sys.exit(1)
         else:
             raise PolyaxonSchemaError(error_message)
@@ -90,7 +90,7 @@ def get_project_or_local(project=None, is_cli: bool = False):
             project_name
         )
         if is_cli:
-            Printer.print_error(error_message)
+            Printer.error(error_message)
             sys.exit(1)
         else:
             raise PolyaxonSchemaError(error_message)

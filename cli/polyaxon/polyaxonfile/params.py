@@ -34,7 +34,7 @@ def parse_params(params: Union[List[str], Dict], is_cli: bool = True):
                 "Invalid format for -P parameter: '%s'. Use -P name=value." % param
             )
             if is_cli:
-                Printer.print_error(message, sys_exit=True)
+                Printer.error(message, sys_exit=True)
             else:
                 raise PolyaxonfileError(message)
         name = param[:index]
@@ -42,7 +42,7 @@ def parse_params(params: Union[List[str], Dict], is_cli: bool = True):
         if name in parsed_params:
             message = "Repeated parameter: '%s'" % name
             if is_cli:
-                Printer.print_error(message, sys_exit=True)
+                Printer.error(message, sys_exit=True)
             else:
                 raise PolyaxonfileError(message)
         parsed_params[name] = {"value": value}
@@ -62,7 +62,7 @@ def parse_hparams(hparams: Union[List[str], Dict], is_cli: bool = True):
                 param
             )
             if is_cli:
-                Printer.print_error(message, sys_exit=True)
+                Printer.error(message, sys_exit=True)
             else:
                 raise PolyaxonfileError(message)
         name = param[:index]
@@ -70,7 +70,7 @@ def parse_hparams(hparams: Union[List[str], Dict], is_cli: bool = True):
         if name in parsed_params:
             message = "Repeated parameter: `{}`".format(name)
             if is_cli:
-                Printer.print_error(message, sys_exit=True)
+                Printer.error(message, sys_exit=True)
             else:
                 raise PolyaxonfileError(message)
         values = value.split(":")
@@ -81,7 +81,7 @@ def parse_hparams(hparams: Union[List[str], Dict], is_cli: bool = True):
                 )
             )
             if is_cli:
-                Printer.print_error(message, sys_exit=True)
+                Printer.error(message, sys_exit=True)
             else:
                 raise PolyaxonfileError(message)
         kind = values[0]
@@ -95,7 +95,7 @@ def parse_hparams(hparams: Union[List[str], Dict], is_cli: bool = True):
                 "Parsing error: {}".format(name, kind, value, e)
             )
             if is_cli:
-                Printer.print_error(message, sys_exit=True)
+                Printer.error(message, sys_exit=True)
             else:
                 raise PolyaxonfileError(message)
         parsed_params[name] = {"kind": kind, "value": value}

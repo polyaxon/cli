@@ -42,9 +42,7 @@ def create_polyaxonfile():
     if os.path.isfile(cli_constants.INIT_FILE_PATH):
         try:
             _ = check_polyaxonfile(cli_constants.INIT_FILE_PATH)  # noqa
-            Printer.print_success(
-                "A valid polyaxonfile.yaml was found in this project."
-            )
+            Printer.success("A valid polyaxonfile.yaml was found in this project.")
         except Exception as e:
             handle_cli_error(e, message="A Polyaxonfile was found but it is not valid.")
             sys.exit(1)
@@ -52,13 +50,13 @@ def create_polyaxonfile():
         create_init_file()
         # if we are here the file was not created
         if not os.path.isfile(cli_constants.INIT_FILE_PATH):
-            Printer.print_error(
+            Printer.error(
                 "Something went wrong, init command did not create a file.\n"
                 "Possible reasons: you don't have enough rights to create the file."
             )
             sys.exit(1)
 
-        Printer.print_success(
+        Printer.success(
             "{} was created successfully.".format(cli_constants.INIT_FILE_PATH)
         )
 
@@ -115,7 +113,7 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
     to your `.gitignore` and `.dockerignore` files.
     """
     if not any([project, git_connection, git_url, polyaxonfile, polyaxonignore]):
-        Printer.print_warning(
+        Printer.warning(
             "`polyaxon init` did not receive any valid option.",
             command_help="polyaxon init",
         )
@@ -125,7 +123,7 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
             polyaxon_client = ProjectClient(owner=owner, project=project_name)
             polyaxon_client.refresh_data()
         except (ApiException, HTTPError) as e:
-            Printer.print_error(
+            Printer.error(
                 "Make sure you have a project with this name `{}`".format(project)
             )
             handle_cli_error(
@@ -138,7 +136,7 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
         init_project = False
         if ProjectConfigManager.is_initialized():
             local_project = get_local_project(is_cli=True)
-            Printer.print_warning(
+            Printer.warning(
                 "Warning! This project is already initialized with the following project:"
             )
             with indentation.indent(4):
@@ -159,18 +157,18 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
             ProjectConfigManager.set_config(
                 config, init=True, visibility=ProjectConfigManager.VISIBILITY_LOCAL
             )
-            Printer.print_success("Project was initialized")
-            Printer.print_heading(
+            Printer.success("Project was initialized")
+            Printer.heading(
                 "Make sure to add the local cache `.polyaxon` "
                 "to your `.gitignore` and `.dockerignore` files."
             )
         else:
-            Printer.print_heading("Project config was not changed.")
+            Printer.heading("Project config was not changed.")
 
     if git_connection or git_url:
         init_git = False
         if GitConfigManager.is_initialized():
-            Printer.print_warning(
+            Printer.warning(
                 "Warning! A {} file was found.".format(
                     GitConfigManager.CONFIG_FILE_NAME
                 )
@@ -187,11 +185,11 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
                 git=V1GitType(url=git_url) if git_url else None,
             )
             GitConfigManager.set_config(config=config, init=True)
-            Printer.print_success(
+            Printer.success(
                 "New {} file was created.".format(GitConfigManager.CONFIG_FILE_NAME)
             )
         else:
-            Printer.print_heading(
+            Printer.heading(
                 "{} file was not changed.".format(GitConfigManager.CONFIG_FILE_NAME)
             )
 
@@ -201,7 +199,7 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
     if polyaxonignore:
         init_ignore = False
         if IgnoreConfigManager.is_initialized():
-            Printer.print_warning(
+            Printer.warning(
                 "Warning! A {} file was found.".format(
                     IgnoreConfigManager.CONFIG_FILE_NAME
                 )
@@ -213,10 +211,10 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
 
         if init_ignore:
             IgnoreConfigManager.init_config()
-            Printer.print_success(
+            Printer.success(
                 "New {} file was created.".format(IgnoreConfigManager.CONFIG_FILE_NAME)
             )
         else:
-            Printer.print_heading(
+            Printer.heading(
                 "{} file was not changed.".format(IgnoreConfigManager.CONFIG_FILE_NAME)
             )

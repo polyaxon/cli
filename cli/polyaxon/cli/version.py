@@ -47,7 +47,7 @@ def get_version(package: str, show_error: bool = True):
 def check_old_packages():
     pkg = "polyaxon-cli"
     if get_version(package=pkg, show_error=False):
-        Printer.print_error(
+        Printer.error(
             "Legacy package `{pkg}` is installed. Please run `pip uninstall {pkg}`".format(
                 pkg=pkg
             ),
@@ -67,7 +67,7 @@ def check_cli_version(config, is_cli: bool = True):
     current_version = clean_version_for_check(config.current_version)
     if not min_version or not latest_version or not current_version:
         if is_cli:
-            Printer.print_error(
+            Printer.error(
                 "Could not get the min/latest versions from compatibility API.",
                 sys_exit=True,
             )
@@ -123,10 +123,10 @@ def check_cli_version(config, is_cli: bool = True):
 def version(check):
     """Print the current version of the cli and platform."""
     check_old_packages()
-    Printer.print_heading("Current cli version: {}".format(pkg.VERSION))
+    Printer.heading("Current cli version: {}".format(pkg.VERSION))
     if check:
         config = set_versions_config()
-        Printer.print_heading("Platform version:")
+        Printer.heading("Platform version:")
         config_installation = (
             dict_to_tabulate(
                 config.installation,
@@ -137,7 +137,7 @@ def version(check):
             else {"Server": "not found or not deployed"}
         )
         dict_tabulate(config_installation)
-        Printer.print_heading("Compatibility versions:")
+        Printer.heading("Compatibility versions:")
         dict_tabulate(config.compatibility)
         check_cli_version(config)
 

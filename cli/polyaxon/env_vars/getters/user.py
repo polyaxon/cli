@@ -31,7 +31,7 @@ def get_local_owner(is_cli: bool = False):
             user_config = UserConfigManager.get_config()
             owner = user_config.organization
         except TypeError:
-            Printer.print_error(
+            Printer.error(
                 "Found an invalid user config or user config cache, "
                 "if you are using Polyaxon CLI please run: "
                 "`polyaxon config purge --cache-only`",
@@ -44,7 +44,7 @@ def get_local_owner(is_cli: bool = False):
     if not owner:
         error = "An context owner (user or organization) is required."
         if is_cli:
-            Printer.print_error(error)
+            Printer.error(error)
             sys.exit(1)
         else:
             raise PolyaxonClientException(error)

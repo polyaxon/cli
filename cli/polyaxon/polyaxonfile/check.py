@@ -116,7 +116,7 @@ def check_polyaxonfile(
             "hub, url, or a python module.".format(hub)
         )
         if is_cli:
-            Printer.print_error(message, sys_exit=True)
+            Printer.error(message, sys_exit=True)
         else:
             raise PolyaxonfileError(message)
     if not any([polyaxonfile, python_module, url, hub]):
@@ -127,7 +127,7 @@ def check_polyaxonfile(
             "a hub component reference, a url or a python module."
         )
         if is_cli:
-            Printer.print_error(message, sys_exit=True)
+            Printer.error(message, sys_exit=True)
         else:
             raise PolyaxonfileError(message)
     if hub and not to_op:
@@ -135,7 +135,7 @@ def check_polyaxonfile(
             hub
         )
         if is_cli:
-            Printer.print_error(message, sys_exit=True)
+            Printer.error(message, sys_exit=True)
         else:
             raise PolyaxonfileError(message)
 
@@ -153,7 +153,7 @@ def check_polyaxonfile(
     ):
         message = "Please pass a valid polyaxonfile, a python module, a url, or a component name"
         if is_cli:
-            Printer.print_error(message, sys_exit=True)
+            Printer.error(message, sys_exit=True)
         else:
             raise PolyaxonfileError(message)
 
@@ -205,7 +205,7 @@ def check_polyaxonfile(
                 git_init=git_init,
             )
         if verbose and is_cli:
-            Printer.print_success("Polyaxonfile valid")
+            Printer.success("Polyaxonfile valid")
         if ignore_template:
             plx_file.disable_template()
         if plx_file.is_template():
@@ -218,7 +218,7 @@ def check_polyaxonfile(
                 template_message += "\ntemplate fields that need changes: {}".format(
                     plx_file.template.fields
                 )
-            Printer.print_warning(template_message)
+            Printer.warning(template_message)
         if eager:
             is_supported_in_eager_mode(spec=plx_file)
         return plx_file
@@ -232,7 +232,7 @@ def check_polyaxonfile(
 
 def check_polyaxonfile_kind(specification, kind):
     if specification.kind != kind:
-        Printer.print_error(
+        Printer.error(
             "Your polyaxonfile must be of kind: `{}`, "
             "received: `{}`.".format(kind, specification.kind),
             sys_exit=True,

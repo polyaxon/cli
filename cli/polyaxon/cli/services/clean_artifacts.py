@@ -46,7 +46,7 @@ def _delete(
             subpath=sp,
             is_file=is_file,
         )
-    Printer.print_success(
+    Printer.success(
         "{} subpath was cleaned, subpath: `{}`".format(connection_kind, subpath)
     )
 

@@ -38,7 +38,7 @@ def get_run_or_local(run_uuid=None, is_cli: bool = False):
     try:
         run = RunConfigManager.get_config()
     except TypeError:
-        Printer.print_error(
+        Printer.error(
             "Found an invalid run config or run config cache, "
             "if you are using Polyaxon CLI please run: "
             "`polyaxon config purge --cache-only`",

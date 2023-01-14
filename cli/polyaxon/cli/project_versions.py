@@ -48,27 +48,27 @@ def get_version_details(response, content_callback: Callable = None):
         exclude_attrs=["content", "meta_info", "stage_conditions", "readme"],
     )
 
-    Printer.print_heading("Version info:")
+    Printer.heading("Version info:")
     dict_tabulate(response)
 
     if meta_info:
         artifacts = meta_info.pop("artifacts", None)
         lineage = meta_info.pop("lineage", artifacts)
         if meta_info:
-            Printer.print_heading("Version meta info:")
+            Printer.heading("Version meta info:")
             dict_tabulate(meta_info)
 
         if lineage:
-            Printer.print_heading("Version artifacts lineage:")
+            Printer.heading("Version artifacts lineage:")
             Printer.print_json(lineage)
 
     if readme:
-        Printer.print_heading("Version readme:")
+        Printer.heading("Version readme:")
         Printer.print_md(readme)
 
     def get_content(_content: str):
         if _content:
-            Printer.print_heading("Content:")
+            Printer.heading("Content:")
             Printer.print_yaml(_content)
 
     content_callback = content_callback or get_content
@@ -151,11 +151,11 @@ def list_project_versions(
     )
     meta = get_meta_response(response)
     if meta:
-        Printer.print_heading("Versions for {}".format(version_info))
-        Printer.print_heading("Navigation:")
+        Printer.heading("Versions for {}".format(version_info))
+        Printer.heading("Navigation:")
         dict_tabulate(meta)
     else:
-        Printer.print_header("No version found for {}".format(version_info))
+        Printer.header("No version found for {}".format(version_info))
 
     objects = list_dicts_to_tabulate(
         [o.to_dict() for o in response.results],
@@ -176,7 +176,7 @@ def list_project_versions(
         ],
     )
     if objects:
-        Printer.print_heading("Versions:")
+        Printer.heading("Versions:")
         dict_tabulate(objects, is_list_dict=True)
 
 
@@ -215,7 +215,7 @@ def register_project_version(
         )
         sys.exit(1)
 
-    Printer.print_success("Version `{}` was created successfully.".format(fqn_version))
+    Printer.success("Version `{}` was created successfully.".format(fqn_version))
     Printer.print(
         "You can view this version on Polyaxon UI: {}".format(
             get_dashboard_url(
@@ -261,7 +261,7 @@ def copy_project_version(
         to_project or project_name,
         _version.name,
     )
-    Printer.print_success(
+    Printer.success(
         "Version `{}` was copied successfully to `{}`.".format(
             fqn_version, fqn_copied_version
         )
@@ -344,7 +344,7 @@ def delete_project_version(
 
     try:
         polyaxon_client.delete_version(kind, version)
-        Printer.print_success(
+        Printer.success(
             "The {} version `{}` was delete successfully".format(kind, fqn_version)
         )
     except (ApiException, HTTPError) as e:
@@ -380,7 +380,7 @@ def update_project_version(
         update_dict["tags"] = tags
 
     if not update_dict:
-        Printer.print_warning(
+        Printer.warning(
             "No argument was provided to update the {} version {}.".format(
                 kind, fqn_version
             )
@@ -389,7 +389,7 @@ def update_project_version(
 
     try:
         response = polyaxon_client.patch_version(kind, version, update_dict)
-        Printer.print_success("The {} version updated.".format(kind))
+        Printer.success("The {} version updated.".format(kind))
         get_version_details(response, content_callback)
     except (ApiException, HTTPError) as e:
         handle_cli_error(
@@ -411,7 +411,7 @@ def transfer_project_version(
 
     try:
         polyaxon_client.transfer_version(kind, version, to_project)
-        Printer.print_success(
+        Printer.success(
             "The `{}` version was transferred to `{}`.".format(kind, to_project)
         )
     except (ApiException, HTTPError) as e:
@@ -437,7 +437,7 @@ def stage_project_version(
     polyaxon_client = ProjectClient(owner=owner, project=project_name)
 
     if not to:
-        Printer.print_warning(
+        Printer.warning(
             "No argument was provided to update the version stage, "
             "please provide a correct `--to` value."
         )
@@ -447,7 +447,7 @@ def stage_project_version(
         polyaxon_client.stage_version(
             kind, version, stage=to, reason=reason or "CliStageUpdate", message=message
         )
-        Printer.print_success("The {} version's stage was updated.".format(kind))
+        Printer.success("The {} version's stage was updated.".format(kind))
     except (ApiException, HTTPError) as e:
         handle_cli_error(
             e,
@@ -470,7 +470,7 @@ def open_project_version_dashboard(
 
     artifact_url = get_dashboard_url(subpath=subpath)
     if url:
-        Printer.print_header("The dashboard is available at: {}".format(artifact_url))
+        Printer.header("The dashboard is available at: {}".format(artifact_url))
         sys.exit(0)
     if yes or click.confirm(
         "Dashboard page will now open in your browser. Continue?",
@@ -491,7 +491,7 @@ def pull_project_version(
     polyaxon_client = ProjectClient(owner=owner, project=project_name)
 
     try:
-        Printer.print_header(
+        Printer.header(
             "Pulling {} version [white]`{}`[/white] ...".format(kind, fqn_version),
         )
         path = polyaxon_client.pull_version(
@@ -500,7 +500,7 @@ def pull_project_version(
             path=path,
             download_artifacts=download_artifacts,
         )
-        Printer.print_success(
+        Printer.success(
             "Finished pulling the {} version `{}` to `{}`".format(
                 kind, fqn_version, path
             )
@@ -544,14 +544,14 @@ def pull_one_or_many_project_versions(
             offset=offset,
             query=query,
         ).results
-        Printer.print_header(f"Pulling {kind} versions (total: {len(versions)}) ...")
+        Printer.header(f"Pulling {kind} versions (total: {len(versions)}) ...")
         for idx, version in enumerate(versions):
-            Printer.print_heading(f"Pulling version {idx + 1}/{len(versions)} ...")
+            Printer.heading(f"Pulling version {idx + 1}/{len(versions)} ...")
             _pull(version.name)
     elif version:
         _pull(version)
     else:
-        Printer.print_error(
+        Printer.error(
             "Please provide a version name, provide a query to filter versions to pull, "
             "or pass the flag `-a/--all` to pull versions.",
             sys_exit=True,

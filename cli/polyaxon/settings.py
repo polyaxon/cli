@@ -55,7 +55,7 @@ def set_cli_config():
         CLI_CONFIG = CliConfigManager.get_config_or_default()
     except (TypeError, ValidationError):
         CliConfigManager.purge()
-        Printer.print_warning("Your CLI configuration was purged!")
+        Printer.warning("Your CLI configuration was purged!")
 
 
 def set_client_config():
@@ -65,7 +65,7 @@ def set_client_config():
         CLIENT_CONFIG = ClientConfigManager.get_config_from_env()
     except (TypeError, ValidationError):
         ClientConfigManager.purge()
-        Printer.print_warning("Your client configuration was purged!")
+        Printer.warning("Your client configuration was purged!")
         CLIENT_CONFIG = ClientConfigManager.get_config_from_env()
 
 
@@ -77,13 +77,13 @@ def set_auth_config():
         AUTH_CONFIG = AuthConfigManager.get_config_from_env()
     except (TypeError, ValidationError):
         AuthConfigManager.purge()
-        Printer.print_warning("Your auth configuration was purged!")
+        Printer.warning("Your auth configuration was purged!")
 
     try:
         UserConfigManager.get_config_or_default()
     except (TypeError, ValidationError):
         UserConfigManager.purge()
-        Printer.print_warning("Your user configuration was purged!")
+        Printer.warning("Your user configuration was purged!")
 
 
 if not to_bool(os.environ.get(EV_KEYS_NO_CONFIG, False)):

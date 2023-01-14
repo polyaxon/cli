@@ -58,7 +58,7 @@ def download_artifact(
         )
         if sync_fw:
             sync_file_watcher(path_to)
-        Printer.print_success(
+        Printer.success(
             "{} path is initialized, path: `{}`".format(connection_kind, path_to)
         )
     except Exception as e:

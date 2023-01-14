@@ -248,7 +248,11 @@ class Printer:
         cls.console.print(syntax)
 
     @classmethod
-    def print_help(cls, command_help: str = None):
+    def print(cls, text):
+        cls.console.print(text)
+
+    @classmethod
+    def help(cls, command_help: str = None):
         if command_help:
             cls.console.print(
                 "Please run [white]`polyaxon {} --help`[/white] for more details".format(
@@ -258,41 +262,37 @@ class Printer:
             )
 
     @classmethod
-    def print(cls, text):
-        cls.console.print(text)
+    def heading(cls, text):
+        cls.header("\n{}\n".format(text))
 
     @classmethod
-    def print_heading(cls, text):
-        cls.print_header("\n{}\n".format(text))
-
-    @classmethod
-    def print_header(cls, text):
+    def header(cls, text):
         cls.console.print(text, style="header")
 
     @classmethod
-    def print_warning(cls, text, command_help: str = None):
+    def warning(cls, text, command_help: str = None):
         cls.console.print(text, style="warning")
         if command_help:
-            cls.print_help(command_help)
+            cls.help(command_help)
 
     @classmethod
-    def print_success(cls, text):
+    def success(cls, text):
         cls.console.print(text, style="success")
 
     @classmethod
-    def print_error(cls, text, sys_exit: bool = False, command_help: str = None):
+    def error(cls, text, sys_exit: bool = False, command_help: str = None):
         cls.console.print(text, style="error")
         if command_help:
-            cls.print_help(command_help)
+            cls.help(command_help)
         if sys_exit:
             sys.exit(1)
 
     @classmethod
-    def print_tip(cls, text):
+    def tip(cls, text):
         cls.console.print(text, style="white")
 
     @classmethod
-    def print_info(cls, text):
+    def info(cls, text):
         cls.console.print(text, style="info")
 
     @staticmethod
@@ -398,7 +398,7 @@ class Printer:
                 ]
             table.add_row(*line)
         if non_gpu_jobs == len(jobs_resources):
-            Printer.print_error(
+            Printer.error(
                 "No GPU job was found, please run `resources` command without `-g | --gpu` option."
             )
             exit(1)

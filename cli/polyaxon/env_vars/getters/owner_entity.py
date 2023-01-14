@@ -30,7 +30,7 @@ def resolve_entity_info(entity: str, entity_name: str, is_cli: bool = False):
     if not entity:
         message = "Please provide a valid {}!".format(entity_name)
         if is_cli:
-            Printer.print_error(message)
+            Printer.error(message)
             sys.exit(1)
         else:
             raise PolyaxonClientException(message)
@@ -47,7 +47,7 @@ def resolve_entity_info(entity: str, entity_name: str, is_cli: bool = False):
     if not all([owner, entity_value]):
         message = "Please provide a valid {}.".format(entity_name)
         if is_cli:
-            Printer.print_error(message)
+            Printer.error(message)
             sys.exit(1)
         else:
             raise PolyaxonClientException(message)

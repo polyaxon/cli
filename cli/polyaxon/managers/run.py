@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.utils.formatting import Printer
 from polyaxon_sdk import V1Run
@@ -33,7 +31,6 @@ class RunConfigManager(BaseConfigManager):
     def get_config_or_raise(cls):
         run = cls.get_config()
         if not run:
-            Printer.print_error("No run was provided.")
-            sys.exit(1)
+            Printer.error("No run was provided.", sys_exit=True)
 
         return run

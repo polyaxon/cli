@@ -34,7 +34,7 @@ class ProjectConfigManager(BaseConfigManager):
     def get_config_or_raise(cls):
         project = cls.get_config()
         if not project:
-            Printer.print_error(
+            Printer.error(
                 "No project was found, please initialize a project."
                 " {}".format(cli_constants.INIT_COMMAND)
             )

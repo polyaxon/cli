@@ -48,7 +48,7 @@ def _run(
     env_names = [os.path.basename(env) for env in envs["envs"]]
     project_env_name = _get_conda_env_name(conda_env)
     if project_env_name not in env_names:
-        Printer.print_info("Creating conda environment {}".format(project_env_name))
+        Printer.info("Creating conda environment {}".format(project_env_name))
         conda.execute(
             ["env", "create", "-n", project_env_name, "--file", conda_env], stream=True
         )
@@ -77,6 +77,6 @@ def run(
         handle_cli_error(e, message="Could start local run.")
         sys.exit(1)
     except Exception as e:
-        Printer.print_error("Could not start local run.")
-        Printer.print_error("Unexpected Error: `{}`.".format(e))
+        Printer.error("Could not start local run.")
+        Printer.error("Unexpected Error: `{}`.".format(e))
         sys.exit(1)

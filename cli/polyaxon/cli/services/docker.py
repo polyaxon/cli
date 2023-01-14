@@ -81,9 +81,7 @@ def generate(
     from polyaxon.utils.hashing import hash_value
 
     if all([polyaxonfile, build_context]):
-        Printer.print_error(
-            "Only a polyaxonfile or a build context option is required."
-        )
+        Printer.error("Only a polyaxonfile or a build context option is required.")
         sys.exit(1)
 
     if build_context:
@@ -92,8 +90,8 @@ def generate(
                 V1DockerfileType.from_dict(ConfigSpec.read_from(build_context))
             ]
         except (PolyaxonSchemaError, ValidationError) as e:
-            Printer.print_error("received a non valid build context.")
-            Printer.print_error("Error message: {}.".format(e))
+            Printer.error("received a non valid build context.")
+            Printer.error("Error message: {}.".format(e))
             sys.exit(1)
     else:
         specification = check_polyaxonfile(
@@ -112,7 +110,7 @@ def generate(
                 )
             )
         except PolyaxonSchemaError:
-            Printer.print_error(
+            Printer.error(
                 "Could not run this polyaxonfile locally, "
                 "a context is required to resolve it dependencies."
             )
@@ -125,7 +123,7 @@ def generate(
             build_context=init_dockerfile, destination=destination or "."
         )
         generator.create()
-        Printer.print_success(
+        Printer.success(
             "Dockerfile was generated, path: `{}`".format(generator.dockerfile_path)
         )
 

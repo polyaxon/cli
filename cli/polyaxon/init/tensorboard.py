@@ -62,9 +62,7 @@ def _command(
     with open(script_path, "w") as script:
         script.write(" && ".join(cmd))
         subprocess.check_call(["chmod", "+x", script_path])
-    Printer.print_success(
-        "Tensorboard script is initialized, path: `{}`".format(script_path)
-    )
+    Printer.success("Tensorboard script is initialized, path: `{}`".format(script_path))
 
 
 def initialize_tensorboard(

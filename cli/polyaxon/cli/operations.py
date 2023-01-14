@@ -113,29 +113,29 @@ def handle_run_statuses(status, conditions, table):
 
 def get_run_details(run):  # pylint:disable=redefined-outer-name
     if run.description:
-        Printer.print_heading("Run description:")
+        Printer.heading("Run description:")
         Printer.print_text("{}\n".format(run.description))
 
     if run.inputs:
-        Printer.print_heading("Run inputs:")
+        Printer.heading("Run inputs:")
         dict_tabulate(run.inputs)
 
     if run.outputs:
-        Printer.print_heading("Run outputs:")
+        Printer.heading("Run outputs:")
         dict_tabulate(run.outputs)
 
     if run.settings:
-        Printer.print_heading("Run settings:")
+        Printer.heading("Run settings:")
         dict_tabulate(
             run.settings.to_dict() if hasattr(run.settings, "to_dict") else run.settings
         )
 
     if run.meta_info:
-        Printer.print_heading("Run meta info:")
+        Printer.heading("Run meta info:")
         dict_tabulate(run.meta_info)
 
     if run.readme:
-        Printer.print_heading("Run readme:")
+        Printer.heading("Run readme:")
         Printer.print_md(run.readme)
 
     response = Printer.add_status_color(run.to_dict())
@@ -158,7 +158,7 @@ def get_run_details(run):  # pylint:disable=redefined-outer-name
         ],
     )
 
-    Printer.print_heading("Run info:")
+    Printer.heading("Run info:")
     dict_tabulate(response)
 
 
@@ -171,7 +171,7 @@ def ops(ctx, project, uid):
     """Commands for ops/runs."""
     ctx.obj = ctx.obj or {}
     if project or uid:
-        Printer.print_warning(
+        Printer.warning(
             "Passing arguments to command groups is deprecated and will be removed in v2! "
             "Please use arguments on the sub-command directly: `polyaxon ops SUB_COMMAND --help`"
         )
@@ -277,7 +277,7 @@ def ls(
             entity_kind=V1ProjectFeature.RUNTIME, path=offline_path
         )
         if not os.path.exists(offline_path) or not os.path.isdir(offline_path):
-            Printer.print_error(
+            Printer.error(
                 f"Could not list offline runs, the path `{offline_path}` "
                 f"does not exist or is not a directory."
             )
@@ -288,7 +288,7 @@ def ls(
             if os.path.exists(run_path):
                 results.append(RunConfigManager.read_from_path(run_path))
             else:
-                Printer.print_warning(f"Skipping run {uid}, offline data not found.")
+                Printer.warning(f"Skipping run {uid}, offline data not found.")
     else:
         owner, project_name = get_project_or_local(
             project or ctx.obj.get("project"), is_cli=True
@@ -311,13 +311,11 @@ def ls(
             return
         meta = get_meta_response(response)
         if meta:
-            Printer.print_heading(
-                "Runs for project `{}/{}`.".format(owner, project_name)
-            )
-            Printer.print_heading("Navigation:")
+            Printer.heading("Runs for project `{}/{}`.".format(owner, project_name))
+            Printer.heading("Navigation:")
             dict_tabulate(meta)
         else:
-            Printer.print_heading(
+            Printer.heading(
                 "No runs found for project `{}/{}`.".format(owner, project_name)
             )
 
@@ -368,21 +366,19 @@ def ls(
         if to_csv:
             filename = "./results.csv"
             write_csv(objects, filename=filename)
-            Printer.print_success("CSV file generated: `{}`".format(filename))
+            Printer.success("CSV file generated: `{}`".format(filename))
         else:
             for o in objects:
                 o.pop("project_name", None)
             all_columns = objects[0].keys()
-            Printer.print_heading("Displayed columns ({}):".format(len(all_columns)))
+            Printer.heading("Displayed columns ({}):".format(len(all_columns)))
             Printer.print(" | ".join(all_columns))
-            Printer.print_info("\nTips:")
-            Printer.print_tip(
-                "  1. You can enable the inputs/outputs columns using `-io`"
-            )
-            Printer.print_tip(
+            Printer.info("\nTips:")
+            Printer.tip("  1. You can enable the inputs/outputs columns using `-io`")
+            Printer.tip(
                 "  2. You can select the columns to show using `-c col1,cl2,col3,...`"
             )
-            Printer.print_heading("Runs:")
+            Printer.heading("Runs:")
             dict_tabulate(objects, is_list_dict=True)
 
 
@@ -438,7 +434,7 @@ def get(ctx, project, uid, offline, offline_path, output):
         )
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
-            Printer.print_error(
+            Printer.error(
                 f"Could not get offline run, the path `{offline_path}` "
                 f"does not exist."
             )
@@ -536,7 +532,7 @@ def delete(ctx, project, uid, yes):
         handle_cli_error(e, message="Could not delete run `{}`.".format(run_uuid))
         sys.exit(1)
 
-    Printer.print_success("Run `{}` was delete successfully".format(run_uuid))
+    Printer.success("Run `{}` was delete successfully".format(run_uuid))
 
 
 @ops.command()
@@ -579,7 +575,7 @@ def update(ctx, project, uid, name, description, tags):
         update_dict["tags"] = tags
 
     if not update_dict:
-        Printer.print_warning("No argument was provided to update the run.")
+        Printer.warning("No argument was provided to update the run.")
         sys.exit(0)
 
     try:
@@ -591,7 +587,7 @@ def update(ctx, project, uid, name, description, tags):
         handle_cli_error(e, message="Could not update run `{}`.".format(run_uuid))
         sys.exit(1)
 
-    Printer.print_success("Run `{}` was updated.".format(run_uuid))
+    Printer.success("Run `{}` was updated.".format(run_uuid))
     get_run_details(response)
 
 
@@ -628,7 +624,7 @@ def approve(ctx, project, uid):
         handle_cli_error(e, message="Could not approve run `{}`.".format(run_uuid))
         sys.exit(1)
 
-    Printer.print_success("Run `{}` was approved".format(run_uuid))
+    Printer.success("Run `{}` was approved".format(run_uuid))
 
 
 @ops.command()
@@ -677,7 +673,7 @@ def stop(ctx, project, uid, yes):
         handle_cli_error(e, message="Could not stop run `{}`.".format(run_uuid))
         sys.exit(1)
 
-    Printer.print_success("Run `{}` is being stopped ...".format(run_uuid))
+    Printer.success("Run `{}` is being stopped ...".format(run_uuid))
 
 
 @ops.command()
@@ -769,7 +765,7 @@ def restart(
             copy_dirs=copy_dirs,
             copy_files=copy_files,
         )
-        Printer.print_success(
+        Printer.success(
             "Run was {} with uid {}".format(
                 "copied" if copy else "restarted", response.uuid
             )
@@ -821,7 +817,7 @@ def resume(ctx, project, uid, polyaxonfile):
             owner=owner, project=project_name, run_uuid=run_uuid
         )
         response = polyaxon_client.resume(override_config=content)
-        Printer.print_success("Run was resumed with uid {}".format(response.uuid))
+        Printer.success("Run was resumed with uid {}".format(response.uuid))
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not resume run `{}`.".format(run_uuid))
         sys.exit(1)
@@ -856,7 +852,7 @@ def invalidate(ctx, project, uid):
             owner=owner, project=project_name, run_uuid=run_uuid
         )
         response = polyaxon_client.invalidate()
-        Printer.print_success("Run `{}` was invalidated".format(response.uuid))
+        Printer.success("Run `{}` was invalidated".format(response.uuid))
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not invalidate run `{}`.".format(run_uuid))
         sys.exit(1)
@@ -1102,7 +1098,7 @@ def shell(ctx, project, uid, command, pod, container):
 
     wait_for_running_condition(client)
 
-    Printer.print_success("Starting a new shell session...")
+    Printer.success("Starting a new shell session...")
     try:
         pty = PseudoTerminal(
             client_shell=client.shell(command=command, pod=pod, container=container)
@@ -1111,7 +1107,7 @@ def shell(ctx, project, uid, command, pod, container):
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not inspect the run `{}`.".format(run_uuid))
         sys.exit(1)
-    Printer.print_header("Disconnecting...")
+    Printer.header("Disconnecting...")
 
 
 @ops.command()
@@ -1206,12 +1202,12 @@ def artifacts(
     lineage_kinds = to_list(lineage_kinds, check_none=True)
 
     def _download_all():
-        Printer.print_header("Downloading all run's artifacts")
+        Printer.header("Downloading all run's artifacts")
         try:
             download_path = client.download_artifacts(
                 path="", path_to=path_to, untar=not no_untar
             )
-            Printer.print_success(
+            Printer.success(
                 "All run's artifacts downloaded. Path: {}".format(download_path)
             )
         except (ApiException, HTTPError) as e:
@@ -1224,15 +1220,13 @@ def artifacts(
         _download_all()
 
     def _download_file():
-        Printer.print_header(f"Downloading file path {f} ...")
+        Printer.header(f"Downloading file path {f} ...")
         try:
             download_path = client.download_artifact(
                 path=f,
                 path_to=path_to,
             )
-            Printer.print_success(
-                "File path {} downloaded to {}".format(f, download_path)
-            )
+            Printer.success("File path {} downloaded to {}".format(f, download_path))
         except (ApiException, HTTPError) as e:
             handle_cli_error(
                 e,
@@ -1245,14 +1239,12 @@ def artifacts(
         _download_file()
 
     def _download_dir():
-        Printer.print_header(f"Downloading dir path {f} ...")
+        Printer.header(f"Downloading dir path {f} ...")
         try:
             download_path = client.download_artifacts(
                 path=f, path_to=path_to, untar=not no_untar
             )
-            Printer.print_success(
-                "Dir path {} downloaded to {}".format(f, download_path)
-            )
+            Printer.success("Dir path {} downloaded to {}".format(f, download_path))
         except (ApiException, HTTPError) as e:
             handle_cli_error(
                 e,
@@ -1301,14 +1293,14 @@ def artifacts(
         lineage_def = "artifact lineage {} (kind: {})".format(
             lineage.name, lineage.kind
         )
-        Printer.print_header(
+        Printer.header(
             f"Downloading assets for {lineage_def} ...",
         )
         try:
             download_path = client.download_artifact_for_lineage(
                 lineage=lineage, path_to=path_to
             )
-            Printer.print_success(
+            Printer.success(
                 "Assets for {} downloaded to {}".format(lineage_def, download_path)
             )
         except (ApiException, HTTPError) as e:
@@ -1402,13 +1394,13 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure):
         sys.exit(1)
 
     if response.status_code == 200:
-        Printer.print_success("Artifacts uploaded")
+        Printer.success("Artifacts uploaded")
     else:
         if sync_failure:
             client.log_failed(
                 reason="OperationCli", message="Operation failed uploading artifacts"
             )
-        Printer.print_error(
+        Printer.error(
             "Error uploading artifacts. "
             "Status: {}. Error: {}.".format(response.status_code, response.content),
             sys_exit=True,
@@ -1454,7 +1446,7 @@ def transfer(ctx, project, uid, to_project):
         handle_cli_error(e, message="Could not transfer run `{}`.".format(run_uuid))
         sys.exit(1)
 
-    Printer.print_success("Run `{}` was transferred.".format(run_uuid))
+    Printer.success("Run `{}` was transferred.".format(run_uuid))
 
 
 @ops.command()
@@ -1542,7 +1534,7 @@ def service(ctx, project, uid, yes, external, url):
         )
 
     if client.run_data.kind != V1RunKind.SERVICE:
-        Printer.print_warning(
+        Printer.warning(
             "Command expected an operation of "
             "kind `service` received kind: `{}`!".format(client.run_data.kind)
         )
@@ -1566,8 +1558,8 @@ def service(ctx, project, uid, yes, external, url):
     )
 
     if url:
-        Printer.print_header("The service will be available at: {}".format(run_url))
-        Printer.print_header(
+        Printer.header("The service will be available at: {}".format(run_url))
+        Printer.header(
             "You can also view it in an external link at: {}".format(external_run_url)
         )
         sys.exit(0)
@@ -1655,12 +1647,12 @@ def pull(
         client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
 
         try:
-            Printer.print_header(f"Pulling remote run {run_uuid}")
+            Printer.header(f"Pulling remote run {run_uuid}")
             run_path = client.pull_remote_run(
                 path=path,
                 download_artifacts=not no_artifacts,
             )
-            Printer.print_success(f"Finished pulling run {run_uuid} to {run_path}")
+            Printer.success(f"Finished pulling run {run_uuid} to {run_path}")
         except (
             ApiException,
             HTTPError,
@@ -1684,14 +1676,14 @@ def pull(
                 e, message="Could not get runs for project `{}`.".format(project_name)
             )
             sys.exit(1)
-        Printer.print_header(f"Pulling remote runs (total: {len(runs)})...")
+        Printer.header(f"Pulling remote runs (total: {len(runs)})...")
         for idx, run in enumerate(runs):
-            Printer.print_heading(f"Pulling run {idx + 1}/{len(runs)} ...")
+            Printer.heading(f"Pulling run {idx + 1}/{len(runs)} ...")
             _pull(run.uuid)
     elif uid:
         _pull(uid)
     else:
-        Printer.print_error(
+        Printer.error(
             "Please provide a run uuid, provide a query to filter runs, "
             "or pass the flag `-a/--all` to pull runs."
         )
@@ -1773,7 +1765,7 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
     )
 
     def _push(run_uuid: str):
-        Printer.print_header(f"Pushing offline run {run_uuid}")
+        Printer.header(f"Pushing offline run {run_uuid}")
         client = RunClient(
             owner=owner, project=project_name, run_uuid=run_uuid, is_offline=True
         )
@@ -1791,7 +1783,7 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
             )
             return
 
-        Printer.print_success(
+        Printer.success(
             f"Offline run {uid} loaded, start pushing to {client.owner}/{client.project} ..."
         )
         try:
@@ -1800,7 +1792,7 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
                 upload_artifacts=not no_artifacts,
                 clean=clean,
             )
-            Printer.print_success(
+            Printer.success(
                 f"Finished pushing offline run {uid} to {client.owner}/{client.project}"
             )
         except (
@@ -1821,20 +1813,20 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
             or not os.path.isdir(offline_path)
             or not os.listdir(offline_path)
         ):
-            Printer.print_error(
+            Printer.error(
                 f"Could not push offline runs, the path `{offline_path}` "
                 f"does not exist, is not a directory, or is empty."
             )
             sys.exit(1)
         run_paths = os.listdir(offline_path)
-        Printer.print_header(f"Pushing local runs (total: {len(run_paths)}) ...")
+        Printer.header(f"Pushing local runs (total: {len(run_paths)}) ...")
         for idx, uid in enumerate(run_paths):
-            Printer.print_heading(f"Pushing run {idx + 1}/{len(run_paths)} ...")
+            Printer.heading(f"Pushing run {idx + 1}/{len(run_paths)} ...")
             _push(uid)
     elif uid:
         _push(uid)
     else:
-        Printer.print_error(
+        Printer.error(
             "Please provide a run uuid or pass the flag `-a/--all` to push all available runs."
         )
         sys.exit(1)

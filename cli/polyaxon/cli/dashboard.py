@@ -37,7 +37,7 @@ def get_dashboard_url(
 
 def get_dashboard(dashboard_url: str, url_only: bool, yes: bool):
     if url_only:
-        Printer.print_header("The dashboard is available at: {}".format(dashboard_url))
+        Printer.header("The dashboard is available at: {}".format(dashboard_url))
         sys.exit(0)
     if yes or click.confirm(
         "Dashboard page will now open in your browser. Continue?",

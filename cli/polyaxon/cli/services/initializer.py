@@ -60,8 +60,8 @@ def file(file_context, filepath, copy_path, track):
     try:
         file_context = V1FileType.from_dict(ConfigSpec.read_from(file_context))
     except (PolyaxonSchemaError, ValidationError) as e:
-        Printer.print_error("received a non valid file context.")
-        Printer.print_error("Error message: {}.".format(e))
+        Printer.error("received a non valid file context.")
+        Printer.error("Error message: {}.".format(e))
         sys.exit(1)
 
     filepath = os.path.join(filepath, file_context.filename)
@@ -85,7 +85,7 @@ def file(file_context, filepath, copy_path, track):
             kind=file_context.kind,
         )
 
-    Printer.print_success("File is initialized, path: `{}`".format(filepath))
+    Printer.success("File is initialized, path: `{}`".format(filepath))
 
 
 @initializer.command()
@@ -110,7 +110,7 @@ def git(url, repo_path, revision, connection, flags):
         flags=flags,
     )
 
-    Printer.print_success("Git Repo is initialized, path: `{}`".format(repo_path))
+    Printer.success("Git Repo is initialized, path: `{}`".format(repo_path))
 
 
 @initializer.command()

@@ -32,41 +32,41 @@ def completion(shell):
     """
 
     if shell == "bash":
-        Printer.print_heading(
+        Printer.heading(
             "Please save the following scripts:",
         )
         Printer.print(
             "_POLYAXON_COMPLETE=bash_source polyaxon > ~/.polyaxon-complete.bash"
         )
         Printer.print("_PLX_COMPLETE=bash_source plx > ~/.plx-complete.bash")
-        Printer.print_heading(
+        Printer.heading(
             "Add the following lines to your: `~/.bashrc`",
         )
         Printer.print_text(
             "# Polyaxon completion\n. ~/.polyaxon-complete.bash\n. ~/.plx-complete.bash"
         )
-        Printer.print_heading(
+        Printer.heading(
             "Reload your shell.",
         )
     elif shell == "zsh":
-        Printer.print_heading(
+        Printer.heading(
             "Please save the following scripts:",
         )
         Printer.print(
             "_POLYAXON_COMPLETE=zsh_source polyaxon > ~/.polyaxon-complete.zsh"
         )
         Printer.print("_PLX_COMPLETE=zsh_source plx > ~/.plx-complete.zsh")
-        Printer.print_heading(
+        Printer.heading(
             "Add the following lines to your: `~/.zshrc`",
         )
         Printer.print_text(
             "# Polyaxon completion\n. ~/.polyaxon-complete.zsh\n. ~/.plx-complete.zsh"
         )
-        Printer.print_heading(
+        Printer.heading(
             "Reload your shell.",
         )
     elif shell == "fish":
-        Printer.print_heading(
+        Printer.heading(
             "Please save the following scripts under `~/.config/fish/completions`:",
         )
         Printer.print(

@@ -46,7 +46,7 @@ def models(ctx, project, version):
     """Commands for managing model versions."""
     ctx.obj = ctx.obj or {}
     if project or version:
-        Printer.print_warning(
+        Printer.warning(
             "Passing arguments to command groups is deprecated and will be removed in v2! "
             "Please use arguments on the sub-command directly: `polyaxon ops SUB_COMMAND --help`"
         )

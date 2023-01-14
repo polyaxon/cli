@@ -51,7 +51,7 @@ def get_server_installation(polyaxon_client=None):
             session_expired()
         handle_cli_error(e, message="Could not get server version.")
     except HTTPError:
-        Printer.print_error(
+        Printer.error(
             "Could not connect to remote server to fetch installation version.",
         )
 
@@ -112,14 +112,14 @@ def get_compatibility(
         if set_config:
             CliConfigManager.reset(last_check=now())
         if is_cli:
-            Printer.print_error(
+            Printer.error(
                 "Could not connect to remote server to fetch compatibility versions.",
             )
     except Exception as e:
         if set_config:
             CliConfigManager.reset(last_check=now())
         if is_cli:
-            Printer.print_error(
+            Printer.error(
                 "Unexpected error %s, "
                 "could not connect to remote server to fetch compatibility versions."
                 % e,
@@ -137,7 +137,7 @@ def get_log_handler(polyaxon_client=None):
         handle_cli_error(e, message="Could not get cli version.")
     except HTTPError:
         CliConfigManager.reset(last_check=now())
-        Printer.print_error("Could not connect to remote server to fetch log handler.")
+        Printer.error("Could not connect to remote server to fetch log handler.")
 
 
 def set_versions_config(

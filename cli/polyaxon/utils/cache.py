@@ -29,7 +29,7 @@ def get_local_project(is_cli: bool = False):
         return ProjectConfigManager.get_config()
     except Exception:  # noqa
         if is_cli:
-            Printer.print_error(CACHE_ERROR, sys_exit=True)
+            Printer.error(CACHE_ERROR, sys_exit=True)
         else:
             raise PolyaxonSchemaError(CACHE_ERROR)
 

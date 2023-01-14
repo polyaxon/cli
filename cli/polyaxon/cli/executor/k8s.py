@@ -45,7 +45,7 @@ def run(
     log: bool,
 ):
     if not settings.CLIENT_CONFIG.set_polypod:
-        Printer.print_warning("Polypod not configured!")
+        Printer.warning("Polypod not configured!")
         return
 
     def create_run():
@@ -71,7 +71,7 @@ def run(
             )
             # cache.cache(config_manager=RunConfigManager, response=response)
             run_job_uid = get_resource_name(run_name)
-            Printer.print_success("A new run `{}` was created".format(run_job_uid))
+            Printer.success("A new run `{}` was created".format(run_job_uid))
         except (PolyaxonCompilerError, PolyaxonK8SError, PolypodException) as e:
             handle_cli_error(e, message="Could not create a run.")
             sys.exit(1)

@@ -86,9 +86,7 @@ def port_forward(port, namespace, deployment_type, release_name, service):
         _config = ClientConfigManager.get_config_or_default()
     except Exception as e:
         handle_cli_error(e, message="Polyaxon load configuration.")
-        Printer.print_heading(
-            "You can reset your config by running: `polyaxon config purge`"
-        )
+        Printer.heading("You can reset your config by running: `polyaxon config purge`")
         sys.exit(1)
 
     _config.host = "http://localhost:{}".format(port)
@@ -96,8 +94,8 @@ def port_forward(port, namespace, deployment_type, release_name, service):
     CliConfigManager.purge()
     AuthConfigManager.purge()
     UserConfigManager.purge()
-    Printer.print_header("Client configuration is updated!")
-    Printer.print_success("Polyaxon will be available at: {}".format(_config.host))
+    Printer.header("Client configuration is updated!")
+    Printer.success("Polyaxon will be available at: {}".format(_config.host))
     stdout = kubectl.execute(
         args=args, is_json=False, stream=settings.CLIENT_CONFIG.debug
     )

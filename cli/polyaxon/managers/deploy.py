@@ -120,11 +120,11 @@ class DeployConfigManager:
         # Deployment on k8s requires helm & kubectl to be installed
         if not self.kubectl.check():
             raise PolyaxonException("kubectl is required to run this command.")
-        Printer.print_success("kubectl is installed")
+        Printer.success("kubectl is installed")
 
         if not self.helm.check():
             raise PolyaxonException("helm is required to run this command.")
-        Printer.print_success("helm is installed")
+        Printer.success("helm is installed")
 
         # Check that polyaxon/polyaxon is set and up-to date
         self.helm.execute(
@@ -137,15 +137,15 @@ class DeployConfigManager:
         # Deployment on docker compose requires Docker & Docker Compose to be installed
         if not self.docker.check():
             raise PolyaxonException("Docker is required to run this command.")
-        Printer.print_success("Docker is installed")
+        Printer.success("Docker is installed")
 
         if not self.compose.check():
             raise PolyaxonException("Docker Compose is required to run this command.")
-        Printer.print_success("Docker Compose is installed")
+        Printer.success("Docker Compose is installed")
 
         # Check that .polyaxon/.compose is set and up-to date
         if ComposeConfigManager.is_initialized():
-            Printer.print_success("Docker Compose deployment is initialised.")
+            Printer.success("Docker Compose deployment is initialised.")
         return True
 
     def check_for_docker(self):
@@ -194,9 +194,7 @@ class DeployConfigManager:
                     stream=settings.CLIENT_CONFIG.debug,
                 )
                 click.echo(stdout)
-                Printer.print_success(
-                    f"Namespace `{self.deployment_namespace}` is ready"
-                )
+                Printer.success(f"Namespace `{self.deployment_namespace}` is ready")
         except PolyaxonOperatorException:
             return
 
@@ -210,9 +208,7 @@ class DeployConfigManager:
                     is_json=True,
                     stream=settings.CLIENT_CONFIG.debug,
                 )
-                Printer.print_success(
-                    f"Namespace `{self.deployment_namespace}` is ready"
-                )
+                Printer.success(f"Namespace `{self.deployment_namespace}` is ready")
                 return stdout
             except PolyaxonOperatorException:
                 return None
@@ -241,9 +237,9 @@ class DeployConfigManager:
 
         with Printer.console.status("Running install command ..."):
             stdout = self.helm.execute(args=args, stream=settings.CLIENT_CONFIG.debug)
-            Printer.print_success("Install command finished")
+            Printer.success("Install command finished")
         click.echo(stdout)
-        Printer.print_success("Deployment finished.")
+        Printer.success("Deployment finished.")
 
     def install_on_docker_compose(self):
         from polyaxon.client.transport import Transport
@@ -270,15 +266,15 @@ class DeployConfigManager:
         shutil.rmtree(path + "/polyaxon-compose-master/")
         # Generate env from config
         ComposeConfigManager.set_config(self.compose.generate_env(self.config))
-        Printer.print_success("Docker Compose deployment is initialised.")
+        Printer.success("Docker Compose deployment is initialised.")
         if self.dry_run:
-            Printer.print_success("Polyaxon generated deployment env.")
+            Printer.success("Polyaxon generated deployment env.")
             return
         self.docker.execute(["volume", "create", "--name=polyaxon-postgres"])
-        Printer.print_success("Docker volume created.")
+        Printer.success("Docker volume created.")
         self.compose.execute(["-f", path + "/docker-compose.yml", "up", "-d"])
-        Printer.print_success("Deployment is running in the background.")
-        Printer.print_success(
+        Printer.success("Deployment is running in the background.")
+        Printer.success(
             "You can configure your CLI by running: "
             "polyaxon config set --host=localhost."
         )
@@ -308,13 +304,9 @@ class DeployConfigManager:
     def upgrade_on_kubernetes(self):
         Printer.print("Running checks for upgrade command ...")
         if self.release_name:
-            Printer.print_info(
-                "Deployment release name: `{}`".format(self.release_name)
-            )
+            Printer.info("Deployment release name: `{}`".format(self.release_name))
         if self.deployment_namespace:
-            Printer.print_info(
-                "Deployment namespace: `{}`".format(self.deployment_namespace)
-            )
+            Printer.info("Deployment namespace: `{}`".format(self.deployment_namespace))
         self._check_namespace()
         args = ["upgrade", self.release_name]
         if self.manager_path:
@@ -332,18 +324,16 @@ class DeployConfigManager:
                 "gateway.service.type=NodePort,deploymentType={}".format(self.type),
             ]
         if self.deployment_version:
-            Printer.print_info(
-                "Deployment version: `{}`".format(self.deployment_version)
-            )
+            Printer.info("Deployment version: `{}`".format(self.deployment_version))
             args += ["--version", self.deployment_version]
         args += ["--namespace={}".format(self.deployment_namespace)]
         if self.dry_run:
             args += ["--debug", "--dry-run"]
         with Printer.console.status("Running upgrade command ..."):
             stdout = self.helm.execute(args=args, stream=settings.CLIENT_CONFIG.debug)
-            Printer.print_success("Upgrade command finished")
+            Printer.success("Upgrade command finished")
         click.echo(stdout)
-        Printer.print_success("Deployment upgraded.")
+        Printer.success("Deployment upgraded.")
 
     def upgrade_on_docker_compose(self):
         self.install_on_docker_compose()
@@ -377,7 +367,7 @@ class DeployConfigManager:
         args += ["--namespace={}".format(self.deployment_namespace)]
         with Printer.console.status("Running teardown command ..."):
             self.helm.execute(args=args)
-        Printer.print_success("Deployment successfully deleted.")
+        Printer.success("Deployment successfully deleted.")
 
     def teardown_on_docker_compose(self):
         path = ComposeConfigManager.get_config_filepath()

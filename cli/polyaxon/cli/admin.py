@@ -38,7 +38,7 @@ def read_deployment_config(filepaths, command: str):
     filepaths = to_list(filepaths)
     for filepath in filepaths:
         if not os.path.isfile(filepath):
-            Printer.print_error(
+            Printer.error(
                 "`{}` must be a valid file".format(filepath),
                 sys_exit=True,
                 command_help="admin {}".format(command),
@@ -101,7 +101,7 @@ def deploy(config_file, deployment_type, manager_path, check, dry_run):
     )
     exception = None
     if config:
-        Printer.print_success(
+        Printer.success(
             "Polyaxon `{}` deployment file is valid".format(config.deployment_chart)
         )
     if check:
@@ -116,11 +116,11 @@ def deploy(config_file, deployment_type, manager_path, check, dry_run):
         try:
             manager.install()
         except Exception as e:
-            Printer.print_error("Polyaxon could not be installed")
+            Printer.error("Polyaxon could not be installed")
             exception = e
 
     if exception:
-        Printer.print_error("Error message: {}".format(exception), sys_exit=True)
+        Printer.error("Error message: {}".format(exception), sys_exit=True)
 
 
 @admin.command()
@@ -166,7 +166,7 @@ def upgrade(config_file, deployment_type, manager_path, check, dry_run):
     )
     exception = None
     if config:
-        Printer.print_success(
+        Printer.success(
             "Polyaxon `{}` deployment file is valid".format(config.deployment_chart)
         )
     if check:
@@ -180,11 +180,11 @@ def upgrade(config_file, deployment_type, manager_path, check, dry_run):
         try:
             manager.upgrade()
         except Exception as e:
-            Printer.print_error("Polyaxon could not upgrade the deployment")
+            Printer.error("Polyaxon could not upgrade the deployment")
             exception = e
 
     if exception:
-        Printer.print_error("Error message: {}".format(exception))
+        Printer.error("Error message: {}".format(exception))
 
 
 @admin.command()
@@ -224,11 +224,11 @@ def teardown(config_file, manager_path, yes):
         else:
             manager.teardown(hooks=False)
     except Exception as e:
-        Printer.print_error("Polyaxon could not teardown the deployment")
+        Printer.error("Polyaxon could not teardown the deployment")
         exception = e
 
     if exception:
-        Printer.print_error("Error message: {}".format(exception))
+        Printer.error("Error message: {}".format(exception))
 
 
 @admin.command()
@@ -265,9 +265,7 @@ def clean_ops(namespace, in_cluster, delete, uuids):
     from polyaxon.k8s.manager import K8SManager
 
     if not namespace:
-        raise Printer.print_error(
-            "The argument `--namespace` is required!", sys_exit=True
-        )
+        raise Printer.error("The argument `--namespace` is required!", sys_exit=True)
 
     manager = K8SManager(namespace=namespace, in_cluster=in_cluster)
 
@@ -323,10 +321,10 @@ def clean_ops(namespace, in_cluster, delete, uuids):
     if not ops:
         return
 
-    Printer.print_header(f"Cleaning {len(ops)} ops ...")
+    Printer.header(f"Cleaning {len(ops)} ops ...")
     for idx, op in enumerate(ops):
         with Printer.console.status(f"Cleaning operation {idx + 1}/{len(ops)} ..."):
             _patch_op()
             if delete:
                 _delete_op()
-        Printer.print_success(f"Operation {op} was cleaned")
+        Printer.success(f"Operation {op} was cleaned")

@@ -74,7 +74,7 @@ def login(token, username, password):
             sys.exit(1)
 
         if not access_auth.token:
-            Printer.print_error("Failed to login")
+            Printer.error("Failed to login")
             return
     else:
         if not token:
@@ -118,7 +118,7 @@ def login(token, username, password):
     AuthConfigManager.set_config(access_token)
     UserConfigManager.set_config(user)
     polyaxon_client.config.token = access_auth.token
-    Printer.print_success("Login successful")
+    Printer.success("Login successful")
 
     set_versions_config(polyaxon_client=polyaxon_client, set_handler=True)
 
@@ -130,7 +130,7 @@ def logout():
     AuthConfigManager.purge()
     UserConfigManager.purge()
     CliConfigManager.purge()
-    Printer.print_success("You are logged out")
+    Printer.success("You are logged out")
 
 
 @click.command()
@@ -149,5 +149,5 @@ def whoami():
         handle_cli_error(e, message="Could not load user info.", sys_exit=True)
 
     response = dict_to_tabulate(user.to_dict(), exclude_attrs=["role", "theme"])
-    Printer.print_heading("User info:")
+    Printer.heading("User info:")
     dict_tabulate(response)

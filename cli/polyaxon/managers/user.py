@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.utils.formatting import Printer
 from polyaxon_sdk import V1User
@@ -33,8 +31,7 @@ class UserConfigManager(BaseConfigManager):
     def get_config_or_raise(cls):
         user = cls.get_config()
         if not user:
-            Printer.print_error("User configuration was not found.")
-            sys.exit(1)
+            Printer.error("User configuration was not found.", sys_exit=True)
 
         return user
 

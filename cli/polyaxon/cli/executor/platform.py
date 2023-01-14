@@ -111,7 +111,7 @@ def run(
                 response_data["url"] = run_url
                 handle_output(response_data, output)
                 return
-            Printer.print_success(
+            Printer.success(
                 "A new run was created: {}".format(get_instance_info(response))
             )
             if not eager:
@@ -228,19 +228,15 @@ def run(
     if not eager:
         if watch:
             for instance in runs_to_watch:
-                Printer.print_header(
-                    f"Starting watch for run: {get_instance_info(instance)}"
-                )
+                Printer.header(f"Starting watch for run: {get_instance_info(instance)}")
                 watch_run_statuses(instance.uuid)
         if log:
             for instance in runs_to_watch:
-                Printer.print_header(
-                    f"Starting logs for run: {get_instance_info(instance)}"
-                )
+                Printer.header(f"Starting logs for run: {get_instance_info(instance)}")
                 watch_run_logs(instance.uuid)
         if shell:
             for instance in runs_to_watch:
-                Printer.print_header(
+                Printer.header(
                     f"Starting shell session for run: {get_instance_info(instance)}",
                 )
                 start_run_shell(instance.uuid)

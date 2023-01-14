@@ -54,7 +54,7 @@ def validate_options(ctx, param, value):
 def config(_list):  # pylint:disable=redefined-builtin
     """Set and get the global configurations."""
     if _list:
-        Printer.print_warning(
+        Printer.warning(
             "`polyaxon config -l` is deprecated, please use `polyaxon config show`!"
         )
 
@@ -64,28 +64,28 @@ def config(_list):  # pylint:disable=redefined-builtin
 def show():
     """Show the current cli, client, and user configs."""
     _config = ClientConfigManager.get_config_or_default()
-    Printer.print_heading("Client config:")
+    Printer.heading("Client config:")
     dict_tabulate(_config.to_dict())
     _config = CliConfigManager.get_config_or_default()
     if _config:
-        Printer.print_heading("CLI config:")
+        Printer.heading("CLI config:")
         if _config.current_version:
             Printer.print("Version {}".format(_config.current_version))
         else:
-            Printer.print_warning("This cli is not configured.")
+            Printer.warning("This cli is not configured.")
         if _config.installation:
             config_installation = dict_to_tabulate(
                 _config.installation,
                 humanize_values=True,
                 exclude_attrs=["hmac", "auth", "host"],
             )
-            Printer.print_heading("Platform config:")
+            Printer.heading("Platform config:")
             dict_tabulate(config_installation)
         else:
-            Printer.print_warning("This cli is not connected to a Polyaxon Host.")
+            Printer.warning("This cli is not connected to a Polyaxon Host.")
     _config = UserConfigManager.get_config_or_default()
     if _config:
-        Printer.print_heading("User config:")
+        Printer.heading("User config:")
         config_user = dict_to_tabulate(
             _config.to_dict(),
             humanize_values=True,
@@ -158,9 +158,7 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
         _config = ClientConfigManager.get_config_or_default()
     except Exception as e:
         handle_cli_error(e, message="Polyaxon load configuration.")
-        Printer.print_heading(
-            "You can reset your config by running: `polyaxon config purge`"
-        )
+        Printer.heading("You can reset your config by running: `polyaxon config purge`")
         sys.exit(1)
 
     should_purge = False
@@ -171,7 +169,7 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
             setattr(_config, key, value)
 
     ClientConfigManager.set_config(_config)
-    Printer.print_success("Config was updated.")
+    Printer.success("Config was updated.")
     # Reset cli config
     CliConfigManager.purge()
     if should_purge and not kwargs.get("no_purge"):
@@ -197,4 +195,4 @@ def purge(cache_only):
         UserConfigManager.purge()
     ProjectConfigManager.purge()
     RunConfigManager.purge()
-    Printer.print_success("Configs was removed.")
+    Printer.success("Configs was removed.")

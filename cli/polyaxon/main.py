@@ -122,7 +122,7 @@ def cli(context, verbose, offline):
     settings.set_cli_config()
     configure_logger(verbose)
     if settings.CLIENT_CONFIG.no_op:
-        Printer.print_warning(
+        Printer.warning(
             "POLYAXON_NO_OP is set to `true`, some commands will not function correctly."
         )
     context.obj = context.obj or {}

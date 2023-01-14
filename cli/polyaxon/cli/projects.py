@@ -51,7 +51,7 @@ from polyaxon_sdk.rest import ApiException
 def project(ctx, _project):  # pylint:disable=redefined-outer-name
     """Commands for projects."""
     if _project:
-        Printer.print_warning(
+        Printer.warning(
             "Passing arguments to command groups is deprecated and will be removed in v2! "
             "Please use arguments on the sub-command directly: "
             "`polyaxon project SUB_COMMAND --help`"
@@ -89,7 +89,7 @@ def create(ctx, name, description, tags, public, init):
     $ polyaxon project create --name=owner/name --description="Project Description"
     """
     if not name:
-        Printer.print_error(
+        Printer.error(
             "Please provide a valid name to create a project.",
             command_help="project create",
             sys_exit=True,
@@ -101,7 +101,7 @@ def create(ctx, name, description, tags, public, init):
     tags = validate_tags(tags, validate_yaml=True)
 
     if not owner:
-        Printer.print_error(
+        Printer.error(
             "Please provide a valid name with an owner namespace: --name=owner/project."
         )
         sys.exit(1)
@@ -120,9 +120,7 @@ def create(ctx, name, description, tags, public, init):
         )
         sys.exit(1)
 
-    Printer.print_success(
-        "Project `{}` was created successfully.".format(_project.name)
-    )
+    Printer.success("Project `{}` was created successfully.".format(_project.name))
     Printer.print(
         "You can view this project on Polyaxon UI: {}".format(
             get_dashboard_url(subpath="{}/{}".format(owner, _project.name))
@@ -156,7 +154,7 @@ def ls(owner, query, sort, limit, offset):
     """
     owner = owner or get_local_owner(is_cli=True)
     if not owner:
-        Printer.print_error("Please provide a valid owner: --owner/-o.")
+        Printer.error("Please provide a valid owner: --owner/-o.")
         sys.exit(1)
 
     try:
@@ -170,11 +168,11 @@ def ls(owner, query, sort, limit, offset):
 
     meta = get_meta_response(response)
     if meta:
-        Printer.print_heading("Projects for owner {}".format(owner))
-        Printer.print_heading("Navigation:")
+        Printer.heading("Projects for owner {}".format(owner))
+        Printer.heading("Navigation:")
         dict_tabulate(meta)
     else:
-        Printer.print_heading("No projects found for owner {}".format(owner))
+        Printer.heading("No projects found for owner {}".format(owner))
 
     objects = list_dicts_to_tabulate(
         [o.to_dict() for o in response.results],
@@ -192,7 +190,7 @@ def ls(owner, query, sort, limit, offset):
         ],
     )
     if objects:
-        Printer.print_heading("Projects:")
+        Printer.heading("Projects:")
         dict_tabulate(objects, is_list_dict=True)
 
 
@@ -283,7 +281,7 @@ def delete(ctx, _project, yes):
         )
         sys.exit(1)
 
-    Printer.print_success(
+    Printer.success(
         "Project `{}/{}` was delete successfully".format(owner, project_name)
     )
 
@@ -337,7 +335,7 @@ def update(ctx, _project, name, description, tags, private):
         update_dict["is_public"] = not private
 
     if not update_dict:
-        Printer.print_warning("No argument was provided to update the project.")
+        Printer.warning("No argument was provided to update the project.")
         sys.exit(1)
 
     try:
@@ -349,7 +347,7 @@ def update(ctx, _project, name, description, tags, private):
         )
         sys.exit(1)
 
-    Printer.print_success("Project updated.")
+    Printer.success("Project updated.")
     get_entity_details(response, "Project")
 
 
@@ -378,7 +376,7 @@ def dashboard(ctx, _project, yes, url):
     )
     project_url = get_dashboard_url(subpath="{}/{}".format(owner, project_name))
     if url:
-        Printer.print_header("The dashboard is available at: {}".format(project_url))
+        Printer.header("The dashboard is available at: {}".format(project_url))
         sys.exit(0)
     if yes or click.confirm(
         "Dashboard page will now open in your browser. Continue?",

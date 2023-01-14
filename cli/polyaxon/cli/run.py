@@ -314,16 +314,16 @@ def run(
     $ polyaxon run ... -u-from ./code -u-to new-code
     """
     if log and shell:
-        Printer.print_error(
+        Printer.error(
             "You can't use `--logs` and `--shell` at the same, please keep one option.",
             sys_exit=True,
         )
     if cache and nocache:
-        Printer.print_error(
+        Printer.error(
             "You can't use `--cache` and `--nocache` at the same.", sys_exit=True
         )
     if nocache:
-        Printer.print_error(
+        Printer.error(
             "'--nocache' is DEPRECATED and will be removed in the future, "
             "please use '--cache=f' instead.",
         )
@@ -334,7 +334,7 @@ def run(
     if git_preset or git_revision:
         # Check that the current path was initialized
         if not GitConfigManager.is_initialized():
-            Printer.print_error(
+            Printer.error(
                 "You can't use `--git-preset [--git-revision]`, "
                 "the current path is not initialized with a valid git connection or a git url, "
                 "please run `polyaxon init [--git-connection] [--git-url]` "
@@ -346,13 +346,13 @@ def run(
             git_init.git.revision = git_revision
         elif code_reference.is_git_initialized(path="."):
             if code_reference.is_dirty(path="."):
-                Printer.print_warning(
+                Printer.warning(
                     "Polyaxon detected uncommitted changes in the current git repo!"
                 )
             commit_hash = code_reference.get_commit()
             git_init.git.revision = commit_hash
         else:
-            Printer.print_warning(
+            Printer.warning(
                 "Polyaxon could not find a valid git repo, "
                 "and will not add the current commit to the git initializer."
             )
@@ -398,7 +398,7 @@ def run(
                 )
             )
         except (PolyaxonSchemaError, ValidationError):
-            Printer.print_error(
+            Printer.error(
                 "Could not run this polyaxonfile locally, "
                 "a context is required to resolve it dependencies."
             )

@@ -60,22 +60,22 @@ def get_current_or_public_client():
 
 def get_specification_details(content):
     if not content:
-        Printer.print_warning(
+        Printer.warning(
             "This component version does not have any polyaxonfile content!"
         )
         return
     specification = get_specification(data=content)
     if specification.inputs:
-        Printer.print_heading("Component inputs:")
+        Printer.heading("Component inputs:")
         objects = list_dicts_to_tabulate([i.to_dict() for i in specification.inputs])
         dict_tabulate(objects, is_list_dict=True)
 
     if specification.outputs:
-        Printer.print_heading("Component outputs:")
+        Printer.heading("Component outputs:")
         objects = list_dicts_to_tabulate([o.to_dict() for o in specification.outputs])
         dict_tabulate(objects, is_list_dict=True)
 
-    Printer.print_heading("Content:")
+    Printer.heading("Content:")
     Printer.print_yaml(content)
 
 
@@ -88,7 +88,7 @@ def components(ctx, project, version):
     """Commands for managing components."""
     ctx.obj = ctx.obj or {}
     if project or version:
-        Printer.print_warning(
+        Printer.warning(
             "Passing arguments to command groups is deprecated and will be removed in v2! "
             "Please use arguments on the sub-command directly: `polyaxon ops SUB_COMMAND --help`"
         )
@@ -188,7 +188,7 @@ def register(ctx, polyaxonfile, project, version, description, tags, force):
     )
 
     if not polyaxonfile or not os.path.isfile(polyaxonfile):
-        Printer.print_error(
+        Printer.error(
             "Please provide a path to a polyaxonfile to create a component version.",
             command_help="components register",
             sys_exit=True,
