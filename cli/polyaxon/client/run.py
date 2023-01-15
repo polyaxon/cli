@@ -1697,6 +1697,9 @@ class RunClient:
         """
         self.log_status(V1Statuses.RUNNING, message="Operation is running")
 
+    def end(self):
+        pass
+
     def _log_end_status(
         self,
         status: str,
@@ -1718,6 +1721,7 @@ class RunClient:
         if self.status in LifeCycle.DONE_VALUES:
             return
         self.log_status(status=status, reason=reason, message=message)
+        self.end()
         time.sleep(
             0.1
         )  # Just to give the opportunity to the worker to pick the message
