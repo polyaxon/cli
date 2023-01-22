@@ -53,8 +53,7 @@ from polyaxon.utils.formatting import Printer
     "-s",
     "--service",
     type=str,
-    help="The service to forward, default 'streams', "
-    "possible values are 'api', 'streams', 'gateway'.",
+    help="The service to forward, default 'gateway'."
 )
 @clean_outputs
 def port_forward(port, namespace, deployment_type, release_name, service):
@@ -71,7 +70,7 @@ def port_forward(port, namespace, deployment_type, release_name, service):
     port = port or 8000
     namespace = namespace or "polyaxon"
     release_name = release_name or "polyaxon"
-    service = service or "streams"
+    service = service or "gateway"
 
     kubectl = KubectlOperator()
     args = [
