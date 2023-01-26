@@ -59,9 +59,10 @@ class V1PolyaxonNotifier(BaseServiceConfig):
     >>>   image: polyaxon/polyaxon-events-handlers
     >>>   imageTag: v1.x
     >>>   imagePullPolicy: IfNotPresent
-    >>>   resources: requests:
-    >>>     memory: "64Mi"
-    >>>     cpu: "50m"
+    >>>   resources:
+    >>>     requests:
+    >>>       memory: "64Mi"
+    >>>       cpu: "50m"
     >>>   nodeSelector:
     >>>     foo: bar
     ```

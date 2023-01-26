@@ -63,9 +63,10 @@ class V1PolyaxonInitContainer(BaseConfig, polyaxon_sdk.V1PolyaxonInitContainer):
     >>>   image: polyaxon/polyaxon-sidecar
     >>>   imageTag: v1.x
     >>>   imagePullPolicy: IfNotPresent
-    >>>   resources: requests:
-    >>>     memory: "64Mi"
-    >>>     cpu: "50m"
+    >>>   resources:
+    >>>     requests:
+    >>>       memory: "64Mi"
+    >>>       cpu: "50m"
     ```
 
     ## Fields

@@ -69,9 +69,10 @@ class V1PolyaxonSidecarContainer(BaseConfig, polyaxon_sdk.V1PolyaxonSidecarConta
     >>>   image: polyaxon/polyaxon-sidecar
     >>>   imageTag: v1.x
     >>>   imagePullPolicy: IfNotPresent
-    >>>   resources: requests:
-    >>>     memory: "64Mi"
-    >>>     cpu: "50m"
+    >>>   resources:
+    >>>     requests:
+    >>>       memory: "64Mi"
+    >>>       cpu: "50m"
     >>>   sleepInterval: 5
     >>>   syncInterval: 60
     ```
