@@ -29,5 +29,6 @@ class DeploymentTypes:
 class DeploymentCharts:
     PLATFORM = "platform"
     AGENT = "agent"
+    GATEWAY = "gateway"
 
-    VALUES = [PLATFORM, AGENT]
+    VALUES = [PLATFORM, AGENT, GATEWAY]

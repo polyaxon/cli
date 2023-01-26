@@ -7,6 +7,9 @@ ingress:
   enabled: true
 
 gateway:
+  replicas: 1
+  imageTag: latest
+  imagePullPolicy: Always
   service:
     type: ClusterIP
 
@@ -33,11 +36,6 @@ connections:
 
 nodeSelector:
   polyaxon: core
-
-api:
-  replicas: 1
-  imageTag: latest
-  imagePullPolicy: Always
 
 scheduler:
   concurrency: 10

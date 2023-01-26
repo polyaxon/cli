@@ -5,9 +5,12 @@ ingress:
   enabled: true
 
 gateway:
+  replicas: 3
   service:
     type: ClusterIP
+
 environment: staging
+
 user:
   password: root
 
@@ -20,9 +23,6 @@ postgresql:
 
 nodeSelector:
   polyaxon: core
-
-api:
-  replicas: 3
 
 scheduler:
   replicas: 3

@@ -42,7 +42,7 @@ dns: {}
 #    * ClusterIP or NodePort (on GKE you cannot use ClusterIP)
 # Otherwise you should set it to ClusterIP (default)
 gateway:
-  image: polyaxon/polyaxon-gateway
+  image: polyaxon/polyaxon-api
   imageTag: 1.0.9
   imagePullPolicy: Always
   replicas: 1
@@ -61,6 +61,13 @@ gateway:
     targetPort: 80
     nodePort: 31833
     annotations: {}
+
+  hpa:
+    enabled: false
+    cputhreshold: 70
+    minpods: 1
+    maxpods: 4
+
   nodeSelector:
     foo: bar
   tolerations: []
@@ -75,92 +82,6 @@ gateway:
               operator: In
               values:
               - "polyaxon-api"
-          topologyKey: "kubernetes.io/hostname"
-
-api:
-  enabled: true
-  image: polyaxon/polyaxon-api
-  imageTag: 1.0.9
-  imagePullPolicy: Always
-  replicas: 1
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2000Mi
-    requests:
-      cpu: 128m
-      memory: 300Mi
-
-  service:
-    name: api
-    type: ClusterIP
-    port: 80
-    targetPort: 80
-    nodePort: 31811
-    annotations: {}
-
-  hpa:
-    enabled: false
-    cputhreshold: 70
-    minpods: 1
-    maxpods: 4
-  nodeSelector:
-    foo: bar
-  tolerations: []
-  affinity:
-    podAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: type
-              operator: In
-              values:
-              - "polyaxon-api"
-          topologyKey: "kubernetes.io/hostname"
-
-streams:
-  enabled: true
-  image: polyaxon/polyaxon-streams
-  imageTag: 1.0.9
-  imagePullPolicy: Always
-  replicas: 1
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2000Mi
-    requests:
-      cpu: 128m
-      memory: 300Mi
-
-  service:
-    name: streams
-    type: ClusterIP
-    port: 80
-    targetPort: 80
-    nodePort: 31822
-    annotations: {}
-
-  hpa:
-    enabled: false
-    cputhreshold: 70
-    minpods: 1
-    maxpods: 4
-  nodeSelector:
-    foo: bar
-  tolerations: []
-  affinity:
-    podAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: type
-              operator: In
-              values:
-              - "polyaxon-agent"
           topologyKey: "kubernetes.io/hostname"
 
 init:

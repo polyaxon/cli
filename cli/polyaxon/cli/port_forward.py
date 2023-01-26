@@ -50,10 +50,7 @@ from polyaxon.utils.formatting import Printer
     help="The release name used for deploying Polyaxon, default polyaxon.",
 )
 @click.option(
-    "-s",
-    "--service",
-    type=str,
-    help="The service to forward, default 'gateway'."
+    "-s", "--service", type=str, help="The service to forward, default 'gateway'."
 )
 @clean_outputs
 def port_forward(port, namespace, deployment_type, release_name, service):

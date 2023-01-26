@@ -1,0 +1,4 @@
+deploymentChart: "agent"
+streams:
+  service:
+    type: ClusterIP

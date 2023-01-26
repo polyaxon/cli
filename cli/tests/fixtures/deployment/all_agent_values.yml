@@ -47,7 +47,7 @@ externalServices:
     port: 443
 
 gateway:
-  image: polyaxon/polyaxon-gateway
+  image: polyaxon/polyaxon-streams
   imageTag: 1.0.9
   imagePullPolicy: Always
   replicas: 1
@@ -82,51 +82,6 @@ gateway:
               operator: In
               values:
               - "polyaxon-gateway"
-          topologyKey: "kubernetes.io/hostname"
-
-
-streams:
-  image: polyaxon/polyaxon-streams
-  imageTag: 1.0.9
-  imagePullPolicy: Always
-  replicas: 1
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2000Mi
-    requests:
-      cpu: 128m
-      memory: 300Mi
-
-  service:
-    name: streams
-    type: ClusterIP
-    port: 80
-    targetPort: 80
-    nodePort: 31822
-    annotations: {}
-
-  hpa:
-    enabled: false
-    cputhreshold: 70
-    minpods: 1
-    maxpods: 4
-
-  imagePullSecrets: ["foo", "bar"]
-  nodeSelector:
-    foo: bar
-  tolerations: []
-  affinity:
-    podAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: type
-              operator: In
-              values:
-              - "polyaxon-streams"
           topologyKey: "kubernetes.io/hostname"
 
 init:

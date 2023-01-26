@@ -235,8 +235,6 @@ class DeploymentSchema(BaseCamelSchema):
     global_replicas = fields.Int(allow_none=True)
     global_concurrency = fields.Int(allow_none=True)
     gateway = fields.Nested(ApiServiceSchema, allow_none=True)
-    api = fields.Nested(ApiServiceSchema, allow_none=True)
-    streams = fields.Nested(ApiServiceSchema, allow_none=True)
     scheduler = fields.Nested(WorkerServiceSchema, allow_none=True)
     compiler = fields.Nested(WorkerServiceSchema, allow_none=True)
     worker = fields.Nested(WorkerServiceSchema, allow_none=True)
@@ -317,7 +315,6 @@ class DeploymentSchema(BaseCamelSchema):
                 user=data.get("user"),
                 global_replicas=data.get("global_replicas"),
                 global_concurrency=data.get("global_concurrency"),
-                api=data.get("api"),
                 scheduler=data.get("scheduler"),
                 worker=data.get("worker"),
                 beat=data.get("beat"),
@@ -370,8 +367,6 @@ class DeploymentConfig(BaseConfig):
         global_replicas=None,
         global_concurrency=None,
         gateway=None,
-        api=None,
-        streams=None,
         scheduler=None,
         compiler=None,
         worker=None,
@@ -461,8 +456,6 @@ class DeploymentConfig(BaseConfig):
         self.global_replicas = global_replicas
         self.global_concurrency = global_concurrency
         self.gateway = gateway
-        self.api = api
-        self.streams = streams
         self.scheduler = scheduler
         self.compiler = compiler
         self.worker = worker
@@ -513,7 +506,6 @@ class DeploymentConfig(BaseConfig):
                 user=user,
                 global_replicas=global_replicas,
                 global_concurrency=global_concurrency,
-                api=api,
                 scheduler=scheduler,
                 compiler=compiler,
                 worker=worker,

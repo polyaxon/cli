@@ -8,8 +8,16 @@ ingress:
   enabled: true
 
 gateway:
+  replicas: 1
+  imageTag: latest
+  imagePullPolicy: Always
   service:
+    name: api
     type: ClusterIP
+    externalPort: 80
+    internalPort: 80
+    nodePort: 31811
+    annotations: { foo: "bar" }
 
 user:
   password: test
@@ -23,17 +31,6 @@ artifactsStore:
 
 nodeSelector:
   polyaxon: core
-
-api:
-  replicas: 1
-  imageTag: latest
-  imagePullPolicy: Always
-  service:
-    name: api
-    externalPort: 80
-    internalPort: 80
-    nodePort: 31811
-    annotations: {foo: "bar"}
 
 scheduler:
   concurrency: 10

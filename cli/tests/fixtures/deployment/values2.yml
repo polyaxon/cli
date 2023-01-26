@@ -5,6 +5,7 @@ ingress:
   enabled: false
 
 gateway:
+  replicas: 3
   service:
     type: NodePort
 
@@ -25,10 +26,6 @@ postgresql:
 
 nodeSelector:
   polyaxon: core
-
-
-api:
-  replicas: 3
 
 scheduler:
   replicas: 3

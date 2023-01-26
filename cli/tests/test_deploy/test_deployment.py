@@ -39,7 +39,6 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api is None
         assert config.scheduler is None
         assert config.beat is None
         assert config.hooks is None
@@ -73,7 +72,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api.replicas == 3
+        assert config.gateway.replicas == 3
         assert config.organization_key is None
         assert config.scheduler.replicas == 3
         assert config.beat is None
@@ -108,7 +107,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api.replicas == 3
+        assert config.gateway.replicas == 3
         assert config.scheduler.replicas == 3
         assert config.worker.replicas == 3
         assert config.beat is None
@@ -145,7 +144,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api.replicas == 1
+        assert config.gateway.replicas == 1
         assert config.scheduler.replicas == 1
         assert config.worker.replicas == 1
         assert config.beat.image_tag == "latest"
@@ -205,7 +204,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api.replicas == 1
+        assert config.gateway.replicas == 1
         assert config.organization_key == "some-key"
         assert config.scheduler.replicas == 1
         assert config.scheduler.celery.to_dict() == {
@@ -255,8 +254,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.external_services.gateway.port == 443
         assert config.external_services.api.host == "foo-bar-ex"
         assert config.external_services.api.port == 443
-        assert config.gateway.enabled is False
-        assert config.streams.image == "polyaxon/polyaxon-streams"
+        assert config.gateway.enabled is None
+        assert config.gateway.image == "polyaxon/polyaxon-streams"
         assert config.auth.enabled is True
         assert config.auth.external == "test"
         assert config.auth.use_resolver is True
@@ -285,7 +284,6 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api is None
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
@@ -333,7 +331,6 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api is None
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
@@ -375,7 +372,6 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api is None
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
@@ -419,7 +415,6 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api is None
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
@@ -454,7 +449,6 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.limit_resources is None
         assert config.global_replicas is None
         assert config.global_concurrency is None
-        assert config.api is None
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
@@ -514,6 +508,14 @@ class TestDeploymentConfig(BaseTestCase):
     def test_read_deploy_config_wrong_values9(self):
         with self.assertRaises(ValidationError):
             reader.read("tests/fixtures/deployment/wrong_values9.yml")
+
+    def test_read_deploy_config_wrong_values10(self):
+        with self.assertRaises(ValidationError):
+            reader.read("tests/fixtures/deployment/wrong_values10.yml")
+
+    def test_read_deploy_config_wrong_values11(self):
+        with self.assertRaises(ValidationError):
+            reader.read("tests/fixtures/deployment/wrong_values11.yml")
 
     def test_read_deploy_config_all_platform_values(self):
         config = reader.read("tests/fixtures/deployment/all_platform_values.yml")

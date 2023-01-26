@@ -28,9 +28,6 @@ externalServices:
     port: 443
 
 gateway:
-  enabled: false
-
-streams:
   image: polyaxon/polyaxon-streams
   imageTag: 1.0.9
   imagePullPolicy: Always
