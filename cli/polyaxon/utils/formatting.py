@@ -280,7 +280,7 @@ class Printer:
         cls.console.print(text, style="success")
 
     @classmethod
-    def error(cls, text, sys_exit: bool = False, command_help: str = None):
+    def error(cls, text, sys_exit: bool = False, command_help: str = None, **kwargs):
         cls.console.print(text, style="error")
         if command_help:
             cls.help(command_help)
