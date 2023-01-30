@@ -504,6 +504,7 @@ class ExternalServiceSchema(BaseCamelSchema):
     conn_max_age = fields.Int(allow_none=True)
     pgbouncer = fields.Dict(allow_none=True)
     options = fields.Dict(allow_none=True)
+    use_resolver = fields.Bool(allow_none=True)
 
     @staticmethod
     def schema_config():
@@ -522,6 +523,7 @@ class ExternalService(BaseConfig):
         "connMaxAge",
         "pgbouncer",
         "options",
+        "useResolver"
     ]
 
     def __init__(
@@ -535,6 +537,7 @@ class ExternalService(BaseConfig):
         conn_max_age=None,
         pgbouncer=None,
         options=None,
+        use_resolver=None,
     ):
         self.user = user
         self.password = password
@@ -545,6 +548,7 @@ class ExternalService(BaseConfig):
         self.conn_max_age = conn_max_age
         self.pgbouncer = pgbouncer
         self.options = options
+        self.use_resolver = use_resolver
 
 
 class ExternalBackendSchema(BaseCamelSchema):
