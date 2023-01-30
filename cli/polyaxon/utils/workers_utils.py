@@ -28,9 +28,9 @@ def get_pool_workers():
     return min(32, (os.cpu_count() or 1) + 4)
 
 
-def get_core_workers(per_core: int, max_value: int = 8):
+def get_core_workers(per_core: int, max_workers: int = None):
     count = per_core * (os.cpu_count() or 1) + 1
-    return max(count, max_value) if max_value else count
+    return max(count, max_workers) if max_workers else count
 
 
 @contextmanager
