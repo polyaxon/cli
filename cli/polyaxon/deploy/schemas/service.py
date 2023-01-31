@@ -523,7 +523,7 @@ class ExternalService(BaseConfig):
         "connMaxAge",
         "pgbouncer",
         "options",
-        "useResolver"
+        "useResolver",
     ]
 
     def __init__(
