@@ -41,7 +41,9 @@ def sanitize_np_types(value):
 
 
 def to_np(value):
-    if hasattr(value, "numpy"):  # Torch handling
+    if hasattr(value, "detach"):  # Torch detach handling
+        value = value.detach()
+    if hasattr(value, "numpy"):  # Torch numpy handling
         value = value.numpy()
     if isinstance(value, np.ndarray):
         return value
