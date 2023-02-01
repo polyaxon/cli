@@ -1393,18 +1393,17 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure):
         )
         sys.exit(1)
 
-    if response.status_code == 200:
+    if response and response.status_code == 200:
         Printer.success("Artifacts uploaded")
     else:
         if sync_failure:
             client.log_failed(
                 reason="OperationCli", message="Operation failed uploading artifacts"
             )
-        Printer.error(
-            "Error uploading artifacts. "
-            "Status: {}. Error: {}.".format(response.status_code, response.content),
-            sys_exit=True,
-        )
+        message = "Error uploading artifacts. "
+        if response:
+            message += "Status: {}. Error: {}.".format(response.status_code, response.content)
+        Printer.error(message, sys_exit=True)
 
 
 @ops.command()

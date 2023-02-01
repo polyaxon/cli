@@ -175,8 +175,9 @@ def run(
     if eager:
         run_meta_info = {META_EAGER_MODE: True}
     if upload:
+        upload_to = upload_to or DEFAULT_UPLOADS_PATH
         run_meta_info = run_meta_info or {}
-        run_meta_info[META_UPLOAD_ARTIFACTS] = upload_to or DEFAULT_UPLOADS_PATH
+        run_meta_info[META_UPLOAD_ARTIFACTS] = upload_to
     run_instance = create_run(
         not eager, run_meta_info, pending=V1RunPending.UPLOAD if upload else None
     )
@@ -202,7 +203,7 @@ def run(
         run_meta_info = {}
         if upload:
             run_meta_info = {
-                META_UPLOAD_ARTIFACTS: upload_to or DEFAULT_UPLOADS_PATH,
+                META_UPLOAD_ARTIFACTS: upload_to,
                 META_COPY_ARTIFACTS: V1ArtifactsType(
                     dirs=[run_instance.uuid]
                 ).to_dict(),
