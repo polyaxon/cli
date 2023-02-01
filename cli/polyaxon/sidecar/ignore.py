@@ -14,4 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IGNORE_FOLDERS = ["plxlogs", ".git"]
+IGNORE_FOLDERS = [".git"]
+CONTAINER_IGNORE_FOLDERS = IGNORE_FOLDERS + ["plxlogs"]

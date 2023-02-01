@@ -34,7 +34,7 @@ from polyaxon.logger import logger
 from polyaxon.settings import CLIENT_CONFIG
 from polyaxon.sidecar.container.intervals import get_sync_interval
 from polyaxon.sidecar.container.monitors import sync_artifacts, sync_logs
-from polyaxon.sidecar.ignore import IGNORE_FOLDERS
+from polyaxon.sidecar.ignore import CONTAINER_IGNORE_FOLDERS
 from polyaxon.utils.tz_utils import now
 
 
@@ -94,7 +94,7 @@ async def start_sidecar(
                 fw=fw,
                 store_path=connection_type.store_path,
                 run_uuid=run_uuid,
-                exclude=IGNORE_FOLDERS,
+                exclude=CONTAINER_IGNORE_FOLDERS,
             )
             try:
                 client.sync_events_summaries(

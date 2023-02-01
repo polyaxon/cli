@@ -1402,7 +1402,9 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure):
             )
         message = "Error uploading artifacts. "
         if response:
-            message += "Status: {}. Error: {}.".format(response.status_code, response.content)
+            message += "Status: {}. Error: {}.".format(
+                response.status_code, response.content
+            )
         Printer.error(message, sys_exit=True)
 
 

@@ -104,7 +104,7 @@ async def upload_dir(fs: FSSystem, subpath: str) -> Optional[str]:
     path_to = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
-    if await ensure_async_execution(fs, 'isdir', is_async=fs.async_impl, path=path_to):
+    if await ensure_async_execution(fs, "isdir", is_async=fs.async_impl, path=path_to):
         # Do not include last part to avoid nesting directories on re-uploads
         path_to = "/".join(path_to.split("/")[:-1])
         path_to = path_to.rstrip("/") + "/"  # This would avoid the unnecessary check
