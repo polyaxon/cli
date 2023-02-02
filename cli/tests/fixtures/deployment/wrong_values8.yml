@@ -18,7 +18,7 @@ postgresql:
 redis:
   enabled: true
 
-rabbitmq-ha:
+rabbitmq:
   enabled: true
 
 scheduler:

@@ -370,9 +370,17 @@ postgresql:
   #  * configure external postgresql required attributes in services.postgresql
   enabled: true
   connMaxAge: 60
-  postgresqlUsername: polyaxon
-  postgresqlPassword: polyaxon
-  postgresqlDatabase: polyaxon
+  auth:
+    enablePostgresUser: true
+    username: polyaxon
+    password: polyaxon
+    database: polyaxon
+    postgresPassword: polyaxon
+    existingSecret: ""
+  architecture: standalone
+  service:
+    ports:
+      postgresql: 5432
   persistence:
     enabled: false
     size: 2Gi
@@ -380,24 +388,23 @@ postgresql:
     affinity:
       podAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: type
-                operator: In
-                values:
-                - "polyaxon-core"
-            topologyKey: "kubernetes.io/hostname"
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: type
+                    operator: In
+                    values:
+                      - "polyaxon-core"
+              topologyKey: "kubernetes.io/hostname"
+
 
 redis:
-  # Whether to deploy a redis server in-cluster.
-  # To use an external redis instance:
-  #  * set enabled to False, to disable the in-cluster deployment
-  #  * configure external redis required attributes in services.redis
   enabled: false
   usePassword: false
-  password:
+  auth:
+    enabled: false
+    password: polyaxon
   image:
 #    repository: redis
     tag: 5.0.4
@@ -419,11 +426,7 @@ redis:
                 - "polyaxon-core"
             topologyKey: "kubernetes.io/hostname"
 
-rabbitmq-ha:
-  # Whether to deploy a rabbitmq server in-cluster.
-  # To use an external rabbitmq instance:
-  #  * set enabled to False, to disable the in-cluster deployment
-  #  * configure external rabbitmq required attributes in services.rabbitmq
+rabbitmq:
   enabled: false
   replicaCount: 1
   rabbitmqUsername: polyaxon
@@ -439,10 +442,10 @@ rabbitmq-ha:
           podAffinityTerm:
             labelSelector:
               matchExpressions:
-              - key: type
-                operator: In
-                values:
-                - "polyaxon-core"
+                - key: type
+                  operator: In
+                  values:
+                    - "polyaxon-core"
             topologyKey: "kubernetes.io/hostname"
 
 
@@ -481,7 +484,7 @@ metrics:
   tolerations: []
   affinity: {}
   # schedulerName:
-  # Optional extra labels for pod, i.e. redis-client: "true"
+  # Optional extra labels for pod, i.e. metrics: "true"
   # podLabels: []
   service:
     type: ClusterIP
@@ -499,9 +502,9 @@ metrics:
     # namespace: monitoring
     # fallback to the prometheus default unless specified
     # interval: 10s
-    ## Defaults to what's used if you follow CoreOS [Prometheus Install Instructions](https://github.com/helm/charts/tree/master/stable/prometheus-operator#tldr)
-    ## [Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#prometheus-operator-1)
-    ## [Kube Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#exporters)
+    ## Defaults to what's used if you follow CoreOS [Prometheus Install Instructions](https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#tldr)
+    ## [Prometheus Selector Label](https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#prometheus-operator-1)
+    ## [Kube Prometheus Selector Label](https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#exporters)
     selector:
       prometheus: kube-prometheus
 

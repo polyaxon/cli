@@ -106,6 +106,11 @@ class TestService(BaseTestCase):
             "postgresUser": "dsf",
             "postgresPassword": "sdf",
             "postgresDatabase": "sdf",
+        }
+        with self.assertRaises(ValidationError):
+            PostgresqlConfig.from_dict(config_dict)
+
+        config_dict = {
             "postgresHost": "sdf",
         }
         with self.assertRaises(ValidationError):
@@ -113,9 +118,11 @@ class TestService(BaseTestCase):
 
         config_dict = {
             "enabled": True,
-            "postgresUser": "dsf",
-            "postgresPassword": "sdf",
-            "postgresDatabase": "sdf",
+            "auth": {
+                "username": "dsf",
+                "password": "sdf",
+                "database": "sdf",
+            },
             "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
             "tolerations": [
                 {
@@ -131,7 +138,7 @@ class TestService(BaseTestCase):
         assert config.to_light_dict() == config_dict
 
         config_dict = {
-            "postgresUser": "dsf",
+            "auth": {"username": "dsf"},
             "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
             "tolerations": [
                 {
@@ -148,8 +155,14 @@ class TestService(BaseTestCase):
 
     def test_redis_config(self):
         config_dict = {
-            "usePassword": "dsf",
             "password": "sdf",
+        }
+        with self.assertRaises(ValidationError):
+            RedisConfig.from_dict(config_dict)
+
+        config_dict = {
+            "usePassword": "dsf",
+            "auth": {"password": "sdf"},
             "externalRedisHost": 123,
         }
         with self.assertRaises(ValidationError):
@@ -158,7 +171,7 @@ class TestService(BaseTestCase):
         config_dict = {
             "enabled": True,
             "usePassword": True,
-            "password": "sdf",
+            "auth": {"password": "sdf"},
             "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
             "tolerations": [
                 {
@@ -174,7 +187,7 @@ class TestService(BaseTestCase):
         assert config.to_light_dict() == config_dict
 
         config_dict = {
-            "password": "sdf",
+            "auth": {"password": "sdf"},
             "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
             "tolerations": [
                 {

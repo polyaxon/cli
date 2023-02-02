@@ -10,7 +10,7 @@ environment: staging
 user:
   password: root
 
-rabbitmq-ha:
+rabbitmq:
   enabled: false
 
 externalServices:

@@ -15,5 +15,5 @@ user:
 scheduler:
   enabled: true
 
-rabbitmq-ha:
+rabbitmq:
   enabled: false  # Requires external service

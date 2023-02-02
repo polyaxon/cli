@@ -341,9 +341,7 @@ class ThirdPartyService(DeploymentService):
 
 
 class PostgresqlSchema(ThirdPartyServiceSchema):
-    postgres_user = fields.Str(allow_none=True)
-    postgres_password = fields.Str(allow_none=True)
-    postgres_database = fields.Str(allow_none=True)
+    auth = fields.Dict(allow_none=True)
     conn_max_age = fields.Int(allow_none=True)
 
     @staticmethod
@@ -354,18 +352,14 @@ class PostgresqlSchema(ThirdPartyServiceSchema):
 class PostgresqlConfig(ThirdPartyService):
     SCHEMA = PostgresqlSchema
     REDUCED_ATTRIBUTES = ThirdPartyService.REDUCED_ATTRIBUTES + [
-        "postgresUser",
-        "postgresPassword",
-        "postgresDatabase",
+        "auth",
         "connMaxAge",
     ]
 
     def __init__(
         self,
         enabled=None,
-        postgres_user=None,
-        postgres_password=None,
-        postgres_database=None,
+        auth=None,
         conn_max_age=None,
         image=None,
         image_tag=None,
@@ -389,9 +383,7 @@ class PostgresqlConfig(ThirdPartyService):
             affinity=affinity,
             tolerations=tolerations,
         )
-        self.postgres_user = postgres_user
-        self.postgres_password = postgres_password
-        self.postgres_database = postgres_database
+        self.auth = auth
         self.conn_max_age = conn_max_age
 
 
@@ -399,7 +391,7 @@ class RedisSchema(ThirdPartyServiceSchema):
     image = fields.Raw(allow_none=True)
     non_broker = fields.Bool(allow_none=True)
     use_password = fields.Bool(allow_none=True)
-    password = fields.Str(allow_none=True)
+    auth = fields.Dict(allow_none=True)
 
     @staticmethod
     def schema_config():
@@ -411,7 +403,7 @@ class RedisConfig(ThirdPartyService):
     REDUCED_ATTRIBUTES = ThirdPartyService.REDUCED_ATTRIBUTES + [
         "nonBroker",
         "usePassword",
-        "password",
+        "auth",
     ]
 
     def __init__(
@@ -419,7 +411,7 @@ class RedisConfig(ThirdPartyService):
         enabled=None,
         non_broker=None,
         use_password=None,
-        password=None,
+        auth=None,
         image=None,
         image_tag=None,
         image_pull_policy=None,
@@ -444,7 +436,7 @@ class RedisConfig(ThirdPartyService):
         )
         self.non_broker = non_broker
         self.use_password = use_password
-        self.password = password
+        self.auth = auth
 
 
 class RabbitmqSchema(ThirdPartyServiceSchema):

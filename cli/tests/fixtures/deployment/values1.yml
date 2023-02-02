@@ -20,9 +20,13 @@ user:
 
 postgresql:
   enabled: false
-  postgresUser: polyaxon
-  postgresPassword: polyaxon
-  postgresDatabase: postgres
+  auth:
+    enablePostgresUser: true
+    username: polyaxon
+    password: polyaxon
+    database: polyaxon
+    postgresPassword: polyaxon
+    existingSecret: ""
 
 externalServices:
   postgresql:

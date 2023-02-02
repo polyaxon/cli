@@ -254,7 +254,7 @@ class DeploymentSchema(BaseCamelSchema):
     flower = fields.Nested(DeploymentServiceSchema, allow_none=True)
     postgresql = fields.Nested(PostgresqlSchema, allow_none=True)
     redis = fields.Nested(RedisSchema, allow_none=True)
-    rabbitmq = fields.Nested(RabbitmqSchema, data_key="rabbitmq-ha", allow_none=True)
+    rabbitmq = fields.Nested(RabbitmqSchema, data_key="rabbitmq", allow_none=True)
     broker = fields.Str(allow_none=True, validate=validate.OneOf(["redis", "rabbitmq"]))
     email = fields.Nested(EmailSchema, allow_none=True)
     ldap = fields.Raw(allow_none=True)

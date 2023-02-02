@@ -78,7 +78,7 @@ allowedHosts:
   - 123.123.12.3
 logLevel: INFO
 
-rabbitmq-ha:
+rabbitmq:
   enabled: false
 
 broker: redis

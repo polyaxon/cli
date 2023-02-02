@@ -17,9 +17,13 @@ user:
 
 postgresql:
   enabled: true
-  postgresUser: polyaxon
-  postgresPassword: polyaxon
-  postgresDatabase: postgres
+  auth:
+    enablePostgresUser: true
+    username: polyaxon
+    password: polyaxon
+    database: postgres
+    postgresPassword: polyaxon
+    existingSecret: ""
 
 nodeSelector:
   polyaxon: core
@@ -61,7 +65,7 @@ allowedHosts:
   - foo.bar.com
   - 123.123.12.3
 
-rabbitmq-ha:
+rabbitmq:
   enabled: false
 
 broker: redis
