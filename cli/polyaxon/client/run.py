@@ -1556,6 +1556,19 @@ class RunClient:
         )
 
     @client_handler(check_no_op=True)
+    def set_readme(self, readme: str, async_req: bool = True):
+        """Sets a new readme for the current run.
+
+        > Available from v2.0
+
+        Args:
+            readme: str, the readme (in markdown) to set.
+            async_req: bool, optional, default: False, execute request asynchronously.
+        """
+        self._run_data.readme = readme
+        self._update({"readme": readme}, async_req=async_req)
+
+    @client_handler(check_no_op=True)
     def set_description(self, description: str, async_req: bool = True):
         """Sets a new description for the current run.
 
