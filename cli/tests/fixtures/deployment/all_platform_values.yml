@@ -429,8 +429,9 @@ redis:
 rabbitmq:
   enabled: false
   replicaCount: 1
-  rabbitmqUsername: polyaxon
-  rabbitmqPassword: polyaxon
+  auth:
+    username: polyaxon
+    password: polyaxon
   resources:
     requests:
       memory: 256Mi

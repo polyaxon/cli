@@ -440,8 +440,7 @@ class RedisConfig(ThirdPartyService):
 
 
 class RabbitmqSchema(ThirdPartyServiceSchema):
-    rabbitmq_username = fields.Str(allow_none=True)
-    rabbitmq_password = fields.Str(allow_none=True)
+    auth = fields.Dict(allow_none=True)
 
     @staticmethod
     def schema_config():
@@ -451,15 +450,13 @@ class RabbitmqSchema(ThirdPartyServiceSchema):
 class RabbitmqConfig(ThirdPartyService):
     SCHEMA = RabbitmqSchema
     REDUCED_ATTRIBUTES = ThirdPartyService.REDUCED_ATTRIBUTES + [
-        "rabbitmqUsername",
-        "rabbitmqPassword",
+        "auth",
     ]
 
     def __init__(
         self,
         enabled=None,
-        rabbitmq_username=None,
-        rabbitmq_password=None,
+        auth=None,
         image=None,
         image_tag=None,
         image_pull_policy=None,
@@ -482,8 +479,7 @@ class RabbitmqConfig(ThirdPartyService):
             affinity=affinity,
             tolerations=tolerations,
         )
-        self.rabbitmq_username = rabbitmq_username
-        self.rabbitmq_password = rabbitmq_password
+        self.auth = auth
 
 
 class ExternalServiceSchema(BaseCamelSchema):

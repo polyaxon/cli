@@ -206,6 +206,11 @@ class TestService(BaseTestCase):
         config_dict = {
             "rabbitmqUsername": "dsf",
             "rabbitmqPassword": "sdf",
+        }
+        with self.assertRaises(ValidationError):
+            RabbitmqConfig.from_dict(config_dict)
+
+        config_dict = {
             "externalRabbitmqHost": 123,
         }
         with self.assertRaises(ValidationError):
@@ -213,8 +218,7 @@ class TestService(BaseTestCase):
 
         config_dict = {
             "enabled": True,
-            "rabbitmqUsername": "dsf",
-            "rabbitmqPassword": "sdf",
+            "auth": {"username": "dsf", "password": "sdf"},
             "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
             "tolerations": [
                 {
@@ -230,8 +234,7 @@ class TestService(BaseTestCase):
         assert config.to_light_dict() == config_dict
 
         config_dict = {
-            "rabbitmqUsername": "dsf",
-            "rabbitmqPassword": "sdf",
+            "auth": {"username": "dsf", "password": "sdf"},
             "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
             "tolerations": [
                 {
