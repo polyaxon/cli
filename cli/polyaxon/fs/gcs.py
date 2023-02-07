@@ -31,7 +31,6 @@ def get_fs(
     use_listings_cache: bool = False,
     **kwargs
 ):
-
     return GCSFileSystem(
         project=get_project_id(context_path=context_path, **kwargs),
         token=get_gc_credentials(context_path=context_path, **kwargs),

@@ -45,7 +45,6 @@ class TestImpersonate(BaseTestCase):
     @patch("polyaxon_sdk.UsersV1Api.get_user")
     @patch("polyaxon.client.impersonate.create_context_auth")
     def test_login_impersonate(self, create_context, get_user, impersonate_token):
-
         impersonate(owner="owner", project="project", run_uuid=uuid.uuid4().hex)
         assert impersonate_token.call_count == 1
         assert get_user.call_count == 1

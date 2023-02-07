@@ -45,7 +45,6 @@ def query_logs(
 
 
 def process_log_line(log_line: str):
-
     if not isinstance(log_line, str):
         log_line = log_line.decode("utf-8")
 

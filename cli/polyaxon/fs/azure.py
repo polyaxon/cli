@@ -56,7 +56,6 @@ def get_fs(
     use_listings_cache: bool = False,
     **kwargs,
 ):
-
     return AzureBlobFileSystem(
         account_name=get_account_name(context_path=context_path, **kwargs),
         account_key=get_account_key(context_path=context_path, **kwargs),

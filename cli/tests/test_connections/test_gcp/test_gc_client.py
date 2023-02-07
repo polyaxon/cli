@@ -33,7 +33,6 @@ class TestGCClient(BaseTestCase):
 
     @mock.patch(GCS_MODULE.format("Credentials.from_service_account_file"))
     def test_get_key_path_gc_credentials(self, service_account):
-
         with self.assertRaises(PolyaxonStoresException):
             get_gc_credentials(key_path="key_path")
 

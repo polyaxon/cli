@@ -73,7 +73,6 @@ def resolve_globals_contexts(
     original_uuid: str = None,
     is_independent: bool = True,
 ) -> Dict:
-
     resolved_contexts = {
         ctx_sections.GLOBALS: {
             ctx_keys.OWNER_NAME: owner_name,

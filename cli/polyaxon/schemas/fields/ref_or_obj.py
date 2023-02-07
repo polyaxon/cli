@@ -45,7 +45,6 @@ def get_ref_or_obj(container, value):
 
 class RefOrObject(fields.Field):
     def __init__(self, cls_or_instance, **kwargs):
-
         super().__init__(allow_none=True, **kwargs)
         if isinstance(cls_or_instance, type):
             if not issubclass(cls_or_instance, FieldABC):

@@ -61,21 +61,21 @@ class SidecarThread(threading.Thread):
 
         rm_files = self._fw.get_files_to_rm()
         logger.debug("rm_files {}".format(rm_files))
-        for (_, subpath) in rm_files:
+        for _, subpath in rm_files:
             self._client.delete_artifact(
                 path=get_path(subpath, False),
             )
 
         rm_dirs = self._fw.get_dirs_to_rm()
         logger.debug("rm_dirs {}".format(rm_dirs))
-        for (_, subpath) in rm_dirs:
+        for _, subpath in rm_dirs:
             self._client.delete_artifacts(
                 path=get_path(subpath, False),
             )
 
         put_files = self._fw.get_files_to_put()
         logger.debug("put_files {}".format(put_files))
-        for (r_base_path, subpath) in put_files:
+        for r_base_path, subpath in put_files:
             try:
                 self._client.upload_artifact(
                     filepath=os.path.join(r_base_path, subpath),

@@ -26,7 +26,6 @@ from polyaxon.utils.test_utils import BaseTestCase
 @pytest.mark.agent_mark
 class TestSpawner(BaseTestCase):
     def setUp(self):
-
         self.spawner = Spawner()
         super().setUp()
 
@@ -48,7 +47,6 @@ class TestSpawner(BaseTestCase):
         assert k8s_manager.get_custom_object.call_count == 1
 
     def test_start_apply_stop_get_raises_for_non_recognized_kinds(self):
-
         with self.assertRaises(PolyaxonAgentError):
             self.spawner.create(run_uuid="", run_kind="foo", resource={})
 

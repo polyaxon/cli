@@ -61,7 +61,6 @@ def get_sidecar_container(
     contexts: PluginsContextsSpec,
     run_path: Optional[str],
 ) -> Optional[k8s_schemas.V1Container]:
-
     if artifacts_store and not contexts:
         raise PolypodException(
             "Logs/artifacts store was passed and contexts was not passed."

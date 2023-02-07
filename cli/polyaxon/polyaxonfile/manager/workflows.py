@@ -49,7 +49,6 @@ def get_ops_from_suggestions(
     compiled_operation: V1CompiledOperation,
     suggestions: List[Dict],
 ) -> List[V1Operation]:
-
     io_keys = compiled_operation.get_io_names()
 
     def has_param(k: str):

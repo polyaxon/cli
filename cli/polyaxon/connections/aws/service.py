@@ -23,7 +23,6 @@ from polyaxon.exceptions import PolyaxonConnectionError
 
 
 class AWSService(BaseService):
-
     ENCRYPTION = "AES256"
     RESOURCE_TYPE = ""
 

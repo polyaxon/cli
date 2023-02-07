@@ -77,7 +77,6 @@ async def query_k8s_operation_logs(
     last_time: Optional[AwareDT],
     stream: bool = False,
 ) -> Tuple[List[V1Log], Optional[AwareDT]]:
-
     new_time = now()
     params = {}
     if last_time:

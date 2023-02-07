@@ -108,7 +108,6 @@ class PolyaxonClient:
     """
 
     def __init__(self, config=None, token=None):
-
         self._config = config or settings.CLIENT_CONFIG
         token = token or self._config.token
         if not token:

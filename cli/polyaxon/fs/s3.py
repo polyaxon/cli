@@ -39,7 +39,6 @@ def get_fs(
     use_listings_cache: bool = False,
     **kwargs
 ):
-
     config_kwargs = {}
     region_name = get_region(context_path=context_path, **kwargs)
     if region_name:

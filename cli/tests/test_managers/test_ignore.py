@@ -53,7 +53,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             ("foo/bar/", "foo/bar/*"),
             ("foo/bar", "foo?bar"),
         ]
-        for (path, pattern) in configs:
+        for path, pattern in configs:
             mock_file.return_value.__enter__.return_value = [pattern]
             patterns = IgnoreConfigManager.get_config()
             self.assertEqual(
@@ -84,7 +84,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             ("foo/bar/", "bar"),
             ("foo/bar/something", "foo/bar/*"),
         ]
-        for (path, pattern) in configs:
+        for path, pattern in configs:
             mock_file.return_value.__enter__.return_value = [pattern]
             patterns = IgnoreConfigManager.get_config()
             self.assertEqual(

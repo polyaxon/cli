@@ -68,7 +68,6 @@ def run(
     eager: bool,
     output: str = None,
 ):
-
     polyaxon_client = RunClient(owner=owner, project=project_name)
 
     def get_instance_info(r):

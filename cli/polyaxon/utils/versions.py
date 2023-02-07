@@ -34,7 +34,6 @@ def clean_version_for_check(version: str):
 
 
 def compare_versions(current: str, reference: str, comparator: str) -> bool:
-
     current = get_loose_version(current)
     reference = get_loose_version(reference)
 
