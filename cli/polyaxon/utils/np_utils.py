@@ -24,10 +24,14 @@ except ImportError:
     np = None
 
 
+def is_np_numerical_value_unsupported(value):
+    return value is None or math.isnan(value) or math.isinf(value)
+
+
 def sanitize_np_types(value):
     if isinstance(value, str):
         return value
-    if value is None or math.isnan(value) or math.isinf(value):
+    if is_np_numerical_value_unsupported(value):
         return None
     if isinstance(value, (int, float, complex, type(None))):
         return value

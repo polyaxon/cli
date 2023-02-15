@@ -742,10 +742,14 @@ class HpLogSpaceSchema(BaseCamelSchema):
 
 class V1HpLogSpace(BaseHpParamConfig, polyaxon_sdk.V1HpLogSpace):
     """`LogSpace` picks a value from a generated list of steps from start to stop spaced evenly
-    on a log scale `[start, stop, step]`, you can pass values in these forms:
+    on a log scale `[start, stop, step]` or `[start, stop, step, base]`,
+    where `base` is optional with 10 as default value,
+    you can pass values in these forms:
       * [1, 10, 20]
+      * [1, 10, 20, 2]
       * {start: 1, stop: 10, num: 20}
-      * '1:10:20'
+      * {start: 1, stop: 10, num: 20, base: 2}
+      * '1:10:20:2'
 
     ```yaml
     >>> params:
