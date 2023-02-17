@@ -17,6 +17,7 @@
 from polyaxon.containers.names import (
     MAIN_JOB_CONTAINER,
     MXJOBS_CONTAINER,
+    PADDLEJOBS_CONTAINER,
     PYTORCHJOBS_CONTAINER,
     TFJOBS_CONTAINER,
     XGBJOBS_CONTAINER,
@@ -73,6 +74,12 @@ class PytorchJobMixin(BaseMixin):
     K8S_ANNOTATIONS_KIND = V1RunKind.PYTORCHJOB
     K8S_LABELS_COMPONENT = "polyaxon-pytorch-jobs"
     MAIN_CONTAINER_ID = PYTORCHJOBS_CONTAINER
+
+
+class PaddleJobMixin(BaseMixin):
+    K8S_ANNOTATIONS_KIND = V1RunKind.PADDLEJOB
+    K8S_LABELS_COMPONENT = "polyaxon-paddle-jobs"
+    MAIN_CONTAINER_ID = PADDLEJOBS_CONTAINER
 
 
 class MXJobMixin(BaseMixin):

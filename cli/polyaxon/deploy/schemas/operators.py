@@ -22,6 +22,7 @@ from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
 class OperatorsSchema(BaseCamelSchema):
     tfjob = fields.Bool(allow_none=True)
     pytorchjob = fields.Bool(allow_none=True)
+    paddlejob = fields.Bool(allow_none=True)
     mpijob = fields.Bool(allow_none=True)
     mxjob = fields.Bool(allow_none=True)
     xgbjob = fields.Bool(allow_none=True)
@@ -37,6 +38,7 @@ class OperatorsConfig(BaseConfig):
     REDUCED_ATTRIBUTES = [
         "tfjob",
         "pytorchjob",
+        "paddlejob",
         "mpijob",
         "mxjob",
         "xgbjob",
@@ -47,6 +49,7 @@ class OperatorsConfig(BaseConfig):
         self,
         tfjob=None,
         pytorchjob=None,
+        paddlejob=None,
         mpijob=None,
         mxjob=None,
         xgbjob=None,
@@ -54,6 +57,7 @@ class OperatorsConfig(BaseConfig):
     ):
         self.tfjob = tfjob
         self.pytorchjob = pytorchjob
+        self.paddlejob = paddlejob
         self.mpijob = mpijob
         self.mxjob = mxjob
         self.xgbjob = xgbjob

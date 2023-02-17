@@ -180,7 +180,7 @@ class CompiledOperationSpecification(BaseSpecification):
             config.run.worker = _resolve_replica(config.run.worker)
             config.run.ps = _resolve_replica(config.run.ps)
             config.run.evaluator = _resolve_replica(config.run.evaluator)
-        elif config.is_pytorch_job_run:
+        elif config.is_pytorch_job_run or config.is_paddle_job_run:
             config.run.master = _resolve_replica(config.run.master)
             config.run.worker = _resolve_replica(config.run.worker)
         elif config.is_mx_job_run:
@@ -388,7 +388,10 @@ class CompiledOperationSpecification(BaseSpecification):
             init_connection_names = _get_resolve_connections(
                 compiled_operation.run.evaluator
             )
-        elif compiled_operation.is_pytorch_job_run:
+        elif (
+            compiled_operation.is_pytorch_job_run
+            or compiled_operation.is_paddle_job_run
+        ):
             init_connection_names = _get_resolve_connections(
                 compiled_operation.run.master
             )
@@ -475,7 +478,10 @@ class CompiledOperationSpecification(BaseSpecification):
             connections_names = _get_resolve_connections(
                 compiled_operation.run.evaluator
             )
-        elif compiled_operation.is_pytorch_job_run:
+        elif (
+            compiled_operation.is_pytorch_job_run
+            or compiled_operation.is_paddle_job_run
+        ):
             connections_names = _get_resolve_connections(compiled_operation.run.master)
             connections_names = _get_resolve_connections(compiled_operation.run.worker)
         elif compiled_operation.is_mx_job_run:
@@ -551,7 +557,10 @@ class CompiledOperationSpecification(BaseSpecification):
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.evaluator
             )
-        elif compiled_operation.is_pytorch_job_run:
+        elif (
+            compiled_operation.is_pytorch_job_run
+            or compiled_operation.is_paddle_job_run
+        ):
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.master
             )
@@ -646,7 +655,10 @@ class CompiledOperationSpecification(BaseSpecification):
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.evaluator
             )
-        elif compiled_operation.is_pytorch_job_run:
+        elif (
+            compiled_operation.is_pytorch_job_run
+            or compiled_operation.is_paddle_job_run
+        ):
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.master
             )
@@ -741,7 +753,10 @@ class CompiledOperationSpecification(BaseSpecification):
             init_artifact_version_names = _get_resolve_artifacts(
                 compiled_operation.run.evaluator
             )
-        elif compiled_operation.is_pytorch_job_run:
+        elif (
+            compiled_operation.is_pytorch_job_run
+            or compiled_operation.is_paddle_job_run
+        ):
             init_artifact_version_names = _get_resolve_artifacts(
                 compiled_operation.run.master
             )
@@ -845,7 +860,10 @@ class CompiledOperationSpecification(BaseSpecification):
             compiled_operation.run.evaluator = _clean_resolve_refs(
                 compiled_operation.run.evaluator
             )
-        elif compiled_operation.is_pytorch_job_run:
+        elif (
+            compiled_operation.is_pytorch_job_run
+            or compiled_operation.is_paddle_job_run
+        ):
             compiled_operation.run.master = _clean_resolve_refs(
                 compiled_operation.run.master
             )

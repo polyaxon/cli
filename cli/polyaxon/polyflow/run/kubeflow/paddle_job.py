@@ -29,52 +29,50 @@ from polyaxon.polyflow.run.utils import DestinationImageMixin
 from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
 
 
-class MPIJobSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.MPIJOB))
+class PaddleJobSchema(BaseCamelSchema):
+    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.PADDLEJOB))
     clean_pod_policy = fields.Str(
         allow_none=True, validate=validate.OneOf(V1CleanPodPolicy.allowable_values)
     )
     scheduling_policy = fields.Nested(SchedulingPolicySchema, allow_none=True)
-    slots_per_worker = fields.Int(allow_none=True)
-    launcher = fields.Nested(KFReplicaSchema, allow_none=True)
+    master = fields.Nested(KFReplicaSchema, allow_none=True)
     worker = fields.Nested(KFReplicaSchema, allow_none=True)
 
     @staticmethod
     def schema_config():
-        return V1MPIJob
+        return V1PaddleJob
 
 
-class V1MPIJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1MPIJob):
-    """Kubeflow MPI-Job provides an interface to train distributed experiments with MPI.
+class V1PaddleJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1PaddleJob):
+    """Kubeflow PaddlePaddle-Job provides an interface to train distributed
+    experiments with PaddlePaddle.
 
     Args:
-        kind: str, should be equal `mpijob`
+        kind: str, should be equal `paddlejob`
         clean_pod_policy: str, one of [`All`, `Running`, `None`]
         scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/scheduling-policy/), optional  # noqa
-        slots_per_worker: int, optional
-        launcher: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
+        master: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
         worker: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
 
     ## YAML usage
 
     ```yaml
     >>> run:
-    >>>   kind: mpijob
+    >>>   kind: paddlejob
     >>>   cleanPodPolicy:
     >>>   schedulingPolicy:
-    >>>   slotsPerWorker:
-    >>>   launcher:
+    >>>   master:
     >>>   worker:
     ```
 
     ## Python usage
 
     ```python
-    >>> from polyaxon.polyflow import V1KFReplica, V1MPIJob
+    >>> from polyaxon.polyflow import V1KFReplica, V1PaddleJob
     >>> from polyaxon.k8s import k8s_schemas
-    >>> mpi_job = V1MPIJob(
+    >>> paddle_job = V1PaddleJob(
     >>>     clean_pod_policy='All',
-    >>>     launcher=V1KFReplica(...),
+    >>>     masterf=V1KFReplica(...),
     >>>     worker=V1KFReplica(...),
     >>> )
     ```
@@ -83,15 +81,14 @@ class V1MPIJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1MPIJob
 
     ### kind
 
-    The kind signals to the CLI, client, and other tools that this
-    component's runtime is a mpijob.
+    The kind signals to the CLI, client, and other tools that this component's runtime is a paddlejob.
 
     If you are using the python client to create the runtime,
     this field is not required and is set by default.
 
     ```yaml
     >>> run:
-    >>>   kind: mpijob
+    >>>   kind: paddlejob
     ```
 
     ### cleanPodPolicy
@@ -102,7 +99,7 @@ class V1MPIJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1MPIJob
 
     ```yaml
     >>> run:
-    >>>   kind: mpijob
+    >>>   kind: paddlejob
     >>>   cleanPodPolicy: 'All'
     >>>  ...
     ```
@@ -115,32 +112,20 @@ class V1MPIJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1MPIJob
 
     ```yaml
     >>> run:
-    >>>   kind: mpijob
+    >>>   kind: paddlejob
     >>>   schedulingPolicy:
     >>>     ...
     >>>  ...
     ```
 
-     ### slotsPerWorker
+    ### master
 
-    Specifies the number of slots per worker used in hostfile.
-    Defaults to `1`.
-
-
-    ```yaml
-    >>> run:
-    >>>   kind: mpijob
-    >>>   slotsPerWorker: 2
-    >>>  ...
-    ```
-
-    ### launcher
-
-    The launcher replica in the distributed mpijob, automatica
+    The ,aster is responsible for orchestrating training and performing
+    tasks like checkpointing the model.
 
     ```yaml
     >>> run:
-    >>>   kind: mpijob
+    >>>   kind: paddlejob
     >>>   master:
     >>>     replicas: 1
     >>>     container:
@@ -150,65 +135,65 @@ class V1MPIJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1MPIJob
 
     ### worker
 
-    The workers do the actual work of training the model.
+    The workers do the actual work of training the model. In some cases,
+    worker 0 might also act as the chief.
 
     ```yaml
     >>> run:
-    >>>   kind: mpijob
+    >>>   kind: paddlejob
     >>>   worker:
-    >>>     replicas: 3
+    >>>     replicas: 2
     >>>     container:
     >>>       ...
     >>>  ...
     ```
     """
 
-    SCHEMA = MPIJobSchema
-    IDENTIFIER = V1RunKind.MPIJOB
+    SCHEMA = PaddleJobSchema
+    IDENTIFIER = V1RunKind.PADDLEJOB
     REDUCED_ATTRIBUTES = [
-        "slotsPerWorker",
         "cleanPodPolicy",
         "schedulingPolicy",
-        "launcher",
+        "master",
         "worker",
     ]
 
     def apply_image_destination(self, image: str):
-        if self.launcher:
-            self.launcher.container = self.launcher.container or V1Container()
-            self.launcher.container.image = image
+        if self.master:
+            self.master.container = self.master.container or V1Container()
+            self.master.container.image = image
         if self.worker:
             self.worker.container = self.worker.container or V1Container()
             self.worker.container.image = image
 
     def get_resources(self):
         resources = V1RunResources()
-        if self.launcher:
-            resources += self.launcher.get_resources()
+        if self.master:
+            resources += self.master.get_resources()
         if self.worker:
             resources += self.worker.get_resources()
         return resources
 
     def get_all_containers(self):
         containers = []
-        if self.launcher:
-            containers += self.launcher.get_all_containers()
+        if self.master:
+            containers += self.master.get_all_containers()
         if self.worker:
             containers += self.worker.get_all_containers()
         return containers
 
     def get_all_connections(self):
         connections = []
-        if self.launcher:
-            connections += self.launcher.get_all_connections()
+        if self.master:
+            connections += self.master.get_all_connections()
         if self.worker:
             connections += self.worker.get_all_connections()
         return connections
 
     def get_all_init(self):
         init = []
-        if self.launcher:
-            init += self.launcher.get_all_init()
+        if self.master:
+            init += self.master.get_all_init()
         if self.worker:
             init += self.worker.get_all_init()
         return init

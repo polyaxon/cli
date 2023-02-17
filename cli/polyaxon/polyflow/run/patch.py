@@ -26,6 +26,7 @@ from polyaxon.polyflow.run.job import V1Job
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.kubeflow.mpi_job import V1MPIJob
 from polyaxon.polyflow.run.kubeflow.mx_job import V1MXJob
+from polyaxon.polyflow.run.kubeflow.paddle_job import V1PaddleJob
 from polyaxon.polyflow.run.kubeflow.pytorch_job import V1PytorchJob
 from polyaxon.polyflow.run.kubeflow.replica import V1KFReplica
 from polyaxon.polyflow.run.kubeflow.tf_job import V1TFJob
@@ -52,6 +53,11 @@ def validate_run_patch(run_patch: Dict, kind: V1RunKind.allowable_values):
     elif kind == V1RunKind.PYTORCHJOB:
         try:
             patch = V1PytorchJob.from_dict(run_patch)
+        except ValidationError:
+            patch = V1KFReplica.from_dict(run_patch)
+    elif kind == V1RunKind.PADDLEJOB:
+        try:
+            patch = V1PaddleJob.from_dict(run_patch)
         except ValidationError:
             patch = V1KFReplica.from_dict(run_patch)
     elif kind == V1RunKind.TFJOB:

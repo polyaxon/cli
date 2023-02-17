@@ -34,6 +34,7 @@ class TFJobSchema(BaseCamelSchema):
     clean_pod_policy = fields.Str(
         allow_none=True, validate=validate.OneOf(V1CleanPodPolicy.allowable_values)
     )
+    enable_dynamic_worker = fields.Bool(allow_none=True)
     scheduling_policy = fields.Nested(SchedulingPolicySchema, allow_none=True)
     chief = fields.Nested(KFReplicaSchema, allow_none=True)
     ps = fields.Nested(KFReplicaSchema, allow_none=True)
@@ -52,6 +53,7 @@ class V1TFJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1TFJob):
         kind: str, should be equal `tfjob`
         clean_pod_policy: str, one of [`All`, `Running`, `None`]
         scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/scheduling-policy/), optional  # noqa
+        enable_dynamic_worker: boolean
         chief: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
         ps: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
         worker: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
@@ -64,6 +66,7 @@ class V1TFJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1TFJob):
     >>>   kind: tfjob
     >>>   cleanPodPolicy:
     >>>   schedulingPolicy:
+    >>>   enableDynamicWorker:
     >>>   chief:
     >>>   ps:
     >>>   worker:
@@ -121,6 +124,19 @@ class V1TFJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1TFJob):
     >>> run:
     >>>   kind: tfjob
     >>>   schedulingPolicy:
+    >>>     ...
+    >>>  ...
+    ```
+
+    ### enableDynamicWorker
+
+    Flag to enable dynamic worker.
+
+
+    ```yaml
+    >>> run:
+    >>>   kind: tfjob
+    >>>   enableDynamicWorker: true
     >>>     ...
     >>>  ...
     ```

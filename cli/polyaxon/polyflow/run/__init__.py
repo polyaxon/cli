@@ -25,12 +25,9 @@ from polyaxon.polyflow.run.kinds import (
     V1RunKind,
 )
 from polyaxon.polyflow.run.kubeflow.clean_pod_policy import V1CleanPodPolicy
-from polyaxon.polyflow.run.kubeflow.mpi_job import (
-    MPIJobImplementation,
-    MPIJobSchema,
-    V1MPIJob,
-)
+from polyaxon.polyflow.run.kubeflow.mpi_job import MPIJobSchema, V1MPIJob
 from polyaxon.polyflow.run.kubeflow.mx_job import MXJobMode, MXJobSchema, V1MXJob
+from polyaxon.polyflow.run.kubeflow.paddle_job import PaddleJobSchema, V1PaddleJob
 from polyaxon.polyflow.run.kubeflow.pytorch_job import PytorchJobSchema, V1PytorchJob
 from polyaxon.polyflow.run.kubeflow.replica import KFReplicaSchema, V1KFReplica
 from polyaxon.polyflow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
@@ -63,6 +60,7 @@ class RunSchema(BaseOneOfSchema):
         V1RunKind.PYTORCHJOB: PytorchJobSchema,
         V1RunKind.TFJOB: TFJobSchema,
         V1RunKind.MXJOB: MXJobSchema,
+        V1RunKind.PADDLEJOB: PaddleJobSchema,
         V1RunKind.XGBJOB: XGBoostJobSchema,
         V1RunKind.SPARK: SparkSchema,
         V1RunKind.FLINK: FlinkSchema,
@@ -89,6 +87,10 @@ class RunMixin:
     @property
     def is_mpi_job_run(self):
         return self.get_run_kind() == V1RunKind.MPIJOB
+
+    @property
+    def is_paddle_job_run(self):
+        return self.get_run_kind() == V1RunKind.PADDLEJOB
 
     @property
     def is_pytorch_job_run(self):

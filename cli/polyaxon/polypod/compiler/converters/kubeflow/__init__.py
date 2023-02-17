@@ -16,6 +16,7 @@
 
 from polyaxon.polypod.compiler.converters.kubeflow.mpi_job import MPIJobConverter
 from polyaxon.polypod.compiler.converters.kubeflow.mx_job import MXJobConverter
+from polyaxon.polypod.compiler.converters.kubeflow.paddle_job import PaddleJobConverter
 from polyaxon.polypod.compiler.converters.kubeflow.pytroch_job import (
     PytorchJobConverter,
 )

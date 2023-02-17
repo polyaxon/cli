@@ -17,19 +17,19 @@
 from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
-from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1MPIJob, V1Plugins
+from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1PaddleJob, V1Plugins
 from polyaxon.polypod.compiler.converters.base import (
     BaseConverter,
     PlatformConverterMixin,
 )
-from polyaxon.polypod.custom_resources import get_mpi_job_custom_resource
-from polyaxon.polypod.mixins import MPIJobMixin
+from polyaxon.polypod.custom_resources import get_paddle_job_custom_resource
+from polyaxon.polypod.mixins import PaddleJobMixin
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
-class MPIJobConverter(MPIJobMixin, BaseConverter):
+class PaddleJobConverter(PaddleJobMixin, BaseConverter):
     def get_resource(
         self,
         compiled_operation: V1CompiledOperation,
@@ -40,7 +40,7 @@ class MPIJobConverter(MPIJobMixin, BaseConverter):
         default_sa: str = None,
         default_auth: bool = False,
     ) -> Dict:
-        job = compiled_operation.run  # type: V1MPIJob
+        job = compiled_operation.run  # type: V1PaddleJob
 
         def _get_replica(replica: Optional[V1KFReplica]) -> Optional[ReplicaSpec]:
             if not replica:
@@ -66,19 +66,18 @@ class MPIJobConverter(MPIJobMixin, BaseConverter):
         kv_env_vars = compiled_operation.get_env_io()
         plugins = compiled_operation.plugins or V1Plugins()
         contexts = PluginsContextsSpec.from_config(plugins, default_auth=default_auth)
-        launcher = _get_replica(job.launcher)
+        master = _get_replica(job.master)
         worker = _get_replica(job.worker)
         labels = self.get_labels(version=pkg.VERSION, labels={})
 
-        return get_mpi_job_custom_resource(
+        return get_paddle_job_custom_resource(
             namespace=self.namespace,
             resource_name=self.resource_name,
-            launcher=launcher,
+            master=master,
             worker=worker,
+            termination=compiled_operation.termination,
             clean_pod_policy=job.clean_pod_policy,
             scheduling_policy=job.scheduling_policy,
-            slots_per_worker=job.slots_per_worker,
-            termination=compiled_operation.termination,
             collect_logs=contexts.collect_logs,
             sync_statuses=contexts.sync_statuses,
             notifications=plugins.notifications,
@@ -87,5 +86,5 @@ class MPIJobConverter(MPIJobMixin, BaseConverter):
         )
 
 
-class PlatformMPIJobConverter(PlatformConverterMixin, MPIJobConverter):
+class PlatformPaddleJobConverter(PlatformConverterMixin, PaddleJobConverter):
     pass

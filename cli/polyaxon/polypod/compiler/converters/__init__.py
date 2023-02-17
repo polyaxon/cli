@@ -28,6 +28,7 @@ from polyaxon.polypod.compiler.converters.job import JobConverter, PlatformJobCo
 from polyaxon.polypod.compiler.converters.kubeflow import (
     MPIJobConverter,
     MXJobConverter,
+    PaddleJobConverter,
     PytorchJobConverter,
     TfJobConverter,
     XGBoostJobConverter,
@@ -36,6 +37,9 @@ from polyaxon.polypod.compiler.converters.kubeflow.mpi_job import (
     PlatformMPIJobConverter,
 )
 from polyaxon.polypod.compiler.converters.kubeflow.mx_job import PlatformMXJobConverter
+from polyaxon.polypod.compiler.converters.kubeflow.paddle_job import (
+    PlatformPaddleJobConverter,
+)
 from polyaxon.polypod.compiler.converters.kubeflow.pytroch_job import (
     PlatformPytorchJobConverter,
 )
@@ -69,6 +73,7 @@ PLATFORM_CONVERTERS = {
     V1RunKind.SERVICE: PlatformServiceConverter,
     V1RunKind.MPIJOB: PlatformMPIJobConverter,
     V1RunKind.TFJOB: PlatformTfJobConverter,
+    V1RunKind.PADDLEJOB: PlatformPaddleJobConverter,
     V1RunKind.PYTORCHJOB: PlatformPytorchJobConverter,
     V1RunKind.MXJOB: PlatformMXJobConverter,
     V1RunKind.XGBJOB: PlatformXGBoostJobConverter,

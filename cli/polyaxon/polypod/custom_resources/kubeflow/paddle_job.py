@@ -30,10 +30,10 @@ from polyaxon.polypod.custom_resources.kubeflow.common import get_kf_replicas_te
 from polyaxon.polypod.specs.replica import ReplicaSpec
 
 
-def get_mpi_job_custom_resource(
+def get_paddle_job_custom_resource(
     resource_name: str,
     namespace: str,
-    launcher: Optional[ReplicaSpec],
+    master: Optional[ReplicaSpec],
     worker: Optional[ReplicaSpec],
     termination: V1Termination,
     collect_logs: bool,
@@ -41,15 +41,14 @@ def get_mpi_job_custom_resource(
     notifications: List[V1Notification],
     clean_pod_policy: Optional[str],
     scheduling_policy: Optional[V1SchedulingPolicy],
-    slots_per_worker: Optional[int],
     labels: Dict[str, str],
     annotations: Dict[str, str],
 ) -> Dict:
     template_spec = {}
 
     get_kf_replicas_template(
-        replica_name="Launcher",
-        replica=launcher,
+        replica_name="Master",
+        replica=master,
         namespace=namespace,
         resource_name=resource_name,
         labels=labels,
@@ -75,10 +74,7 @@ def get_mpi_job_custom_resource(
         template_spec=template_spec, scheduling_policy=scheduling_policy
     )
 
-    if slots_per_worker:
-        template_spec["slotsPerWorker"] = slots_per_worker
-
-    custom_object = {"mpiJobSpec": template_spec}
+    custom_object = {"paddleJobSpec": template_spec}
     custom_object = set_termination(
         custom_object=custom_object, termination=termination
     )

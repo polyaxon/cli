@@ -28,6 +28,7 @@ from polyaxon.polypod.compiler.contexts.job import JobContextsManager
 from polyaxon.polypod.compiler.contexts.kubeflow import (
     MPIJobContextsManager,
     MXJobContextsManager,
+    PaddleJobContextsManager,
     PytorchJobContextsManager,
     TfJobContextsManager,
     XGBoostJobContextsManager,
@@ -49,6 +50,7 @@ CONTEXTS_MANAGERS = {
     V1RunKind.MXJOB: MXJobContextsManager,
     V1RunKind.XGBJOB: XGBoostJobContextsManager,
     V1RunKind.PYTORCHJOB: PytorchJobContextsManager,
+    V1RunKind.PADDLEJOB: PaddleJobContextsManager,
 }
 
 
