@@ -94,7 +94,9 @@ def handle_run_statuses(status, conditions, table):
         )
     )
     objects = [
-        dict_to_tabulate(Printer.add_status_color(o.to_dict(), status_key="type"))
+        dict_to_tabulate(
+            Printer.add_status_color(o.to_dict(), status_key="type"), timesince=False
+        )
         for o in conditions
     ]
 

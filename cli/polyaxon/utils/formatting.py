@@ -43,7 +43,7 @@ from rich.table import Column, Table
 from rich.theme import Theme
 
 from polyaxon.schemas.api.resources import ContainerResourcesConfig
-from polyaxon.utils.humanize import humanize_timesince
+from polyaxon.utils.humanize import humanize_timesince, humanize_timestamp
 from polyaxon.utils.list_utils import to_list
 from traceml.processors.units_processors import to_percentage, to_unit_memory
 
@@ -77,7 +77,7 @@ def get_meta_response(response):
     return results
 
 
-def humanize_attrs(key, value, rounding=2):
+def humanize_attrs(key, value, rounding: int = 2, timesince: bool = True):
     if key in [
         "created_at",
         "updated_at",
@@ -87,7 +87,9 @@ def humanize_attrs(key, value, rounding=2):
         "last_update_time",
         "last_transition_time",
     ]:
-        return humanize_timesince(value)
+        if timesince:
+            return humanize_timesince(value)
+        return humanize_timestamp(value)
     if key in ["cpu_percentage"]:
         return to_percentage(value, rounding)
     if key in ["memory_free", "memory_used", "memory_total"]:
@@ -150,7 +152,13 @@ def list_dicts_to_csv(
     return results
 
 
-def dict_to_tabulate(d_value, exclude_attrs=None, humanize_values=True):
+def dict_to_tabulate(
+    d_value,
+    exclude_attrs=None,
+    humanize_values=True,
+    rounding: int = 2,
+    timesince: bool = True,
+):
     exclude_attrs = exclude_attrs or {}
     results = {}
     for k, v in d_value.items():
@@ -158,7 +166,7 @@ def dict_to_tabulate(d_value, exclude_attrs=None, humanize_values=True):
             continue
 
         if humanize_values:
-            v = humanize_attrs(k, v)
+            v = humanize_attrs(k, v, rounding=rounding, timesince=timesince)
 
         results[k.upper()] = v
 

@@ -14,16 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.utils.date_utils import parse_datetime
+from polyaxon.utils.date_utils import DateTimeFormatter, parse_datetime
 from polyaxon.utils.tz_utils import now
 
 
-def humanize_timesince(start_time):  # pylint:disable=too-many-return-statements
-    """Creates a string representation of time since the given `start_time`."""
-    if not start_time:
-        return start_time
+def humanize_timestamp(
+    timestamp: str,
+) -> str:  # pylint:disable=too-many-return-statements
+    if not timestamp:
+        return timestamp
 
-    start_time = parse_datetime(start_time)
+    return DateTimeFormatter.format_datetime(timestamp)
+
+
+def humanize_timesince(
+    timesince: str,
+) -> str:  # pylint:disable=too-many-return-statements
+    """Creates a string representation of time since the given `start_time`."""
+    if not timesince:
+        return timesince
+
+    start_time = parse_datetime(timesince)
 
     delta = now() - start_time
 
@@ -65,7 +76,7 @@ def humanize_timesince(start_time):  # pylint:disable=too-many-return-statements
     return "a few seconds ago"
 
 
-def humanize_timedelta(seconds):
+def humanize_timedelta(seconds: int) -> str:
     """Creates a string representation of timedelta."""
     hours, remainder = divmod(seconds, 3600)
     days, hours = divmod(hours, 24)
