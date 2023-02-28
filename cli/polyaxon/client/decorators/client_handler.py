@@ -72,8 +72,13 @@ def client_handler(
             if check_offline and _check_global_or_inline_config(args, "is_offline"):
                 logger.debug("Using IS_OFFLINE mode")
                 return None
+            manual_exceptions_handling = False
             if args:
                 self_arg = args[0]
+
+                manual_exceptions_handling = getattr(
+                    self_arg, "_manual_exceptions_handling", False
+                )
 
                 if can_log_events and (
                     not hasattr(self_arg, "_event_logger")
@@ -109,7 +114,11 @@ def client_handler(
                         "config": settings.CLIENT_CONFIG.to_dict(),
                     }
                 )
-                handle_client_error(e=e, message=message)
+                handle_client_error(
+                    e=None if manual_exceptions_handling else e, message=message
+                )
+                if manual_exceptions_handling:
+                    raise e
 
         return wrapper
 

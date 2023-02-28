@@ -110,7 +110,7 @@ def create(ctx, name, description, tags, public, init):
         project_config = V1Project(
             name=project_name, description=description, tags=tags, is_public=public
         )
-        polyaxon_client = ProjectClient(owner=owner)
+        polyaxon_client = ProjectClient(owner=owner, manual_exceptions_handling=True)
         _project = polyaxon_client.create(project_config)
         config = polyaxon_client.client.sanitize_for_serialization(_project)
         cache.cache(config_manager=ProjectConfigManager, config=config)
@@ -158,7 +158,7 @@ def ls(owner, query, sort, limit, offset):
         sys.exit(1)
 
     try:
-        polyaxon_client = ProjectClient(owner=owner)
+        polyaxon_client = ProjectClient(owner=owner, manual_exceptions_handling=True)
         response = polyaxon_client.list(
             limit=limit, offset=offset, query=query, sort=sort
         )
@@ -220,7 +220,9 @@ def get(ctx, _project):
     )
 
     try:
-        polyaxon_client = ProjectClient(owner=owner, project=project_name)
+        polyaxon_client = ProjectClient(
+            owner=owner, project=project_name, manual_exceptions_handling=True
+        )
         polyaxon_client.refresh_data()
         config = polyaxon_client.client.sanitize_for_serialization(
             polyaxon_client.project_data
@@ -266,7 +268,9 @@ def delete(ctx, _project, yes):
         sys.exit(1)
 
     try:
-        polyaxon_client = ProjectClient(owner=owner, project=project_name)
+        polyaxon_client = ProjectClient(
+            owner=owner, project=project_name, manual_exceptions_handling=True
+        )
         polyaxon_client.delete()
         local_project = get_local_project(is_cli=True)
         if local_project and (owner, project_name) == (
@@ -339,7 +343,9 @@ def update(ctx, _project, name, description, tags, private):
         sys.exit(1)
 
     try:
-        polyaxon_client = ProjectClient(owner=owner, project=project_name)
+        polyaxon_client = ProjectClient(
+            owner=owner, project=project_name, manual_exceptions_handling=True
+        )
         response = polyaxon_client.update(update_dict)
     except (ApiException, HTTPError) as e:
         handle_cli_error(

@@ -135,7 +135,9 @@ class RunClient:
         client: PolyaxonClient = None,
         is_offline: bool = None,
         no_op: bool = None,
+        manual_exceptions_handling: bool = False,
     ):
+        self._manual_exceptions_handling = manual_exceptions_handling
         self._is_offline = get_global_or_inline_config(
             config_key="is_offline", config_value=is_offline, client=client
         )

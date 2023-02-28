@@ -19,8 +19,6 @@ import sys
 from collections import namedtuple
 from typing import Dict, List
 
-import click
-
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.dashboard import get_dashboard_url
@@ -68,7 +66,9 @@ def run(
     eager: bool,
     output: str = None,
 ):
-    polyaxon_client = RunClient(owner=owner, project=project_name)
+    polyaxon_client = RunClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     def get_instance_info(r):
         rn = (

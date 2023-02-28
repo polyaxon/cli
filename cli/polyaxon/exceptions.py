@@ -159,13 +159,17 @@ def handle_api_error(
     http_messages_mapping = http_messages_mapping or HTTP_ERROR_MESSAGES_MAPPING
     if message:
         logger.error(message)
-    if hasattr(e, "status"):
-        if e.status not in [404, 401, 403, 405]:
+    if e and hasattr(e, "status"):
+        if e.status not in [400, 404, 401, 403, 405]:
             logger.error("Exception:")
             logger.error(e, stack_info=True, exc_info=True)
+        elif getattr(e, "body"):
+            logger.error("Error:")
+            logger.error(e.body)
         message = http_messages_mapping.get(e.status)
-        logger.error(message)
-    elif hasattr(e, "message"):  # Handling of HTML errors
+        if message:
+            logger.error(message)
+    elif e and hasattr(e, "message"):  # Handling of HTML errors
         if "404" in e.message:
             logger.error(http_messages_mapping.get(404))
         elif "401" in e.message:
@@ -173,9 +177,9 @@ def handle_api_error(
         elif "403" in e.message:
             logger.error(http_messages_mapping.get(403))
         else:
-            logger.error("Exception:")
-            logger.error(e, stack_info=True, exc_info=True)
-    else:
+            logger.error("Error:")
+            logger.error(e.message)
+    elif e:
         logger.error("Exception:")
         logger.error(e, stack_info=True, exc_info=True)
     if sys_exit:

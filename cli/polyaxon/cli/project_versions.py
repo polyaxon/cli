@@ -116,7 +116,12 @@ def list_project_versions_response(
     sort: str = None,
     client: PolyaxonClient = None,
 ):
-    polyaxon_client = ProjectClient(owner=owner, project=project_name, client=client)
+    polyaxon_client = ProjectClient(
+        owner=owner,
+        project=project_name,
+        client=client,
+        manual_exceptions_handling=True,
+    )
     params = get_query_params(limit=limit, offset=offset, query=query, sort=sort)
     try:
         return polyaxon_client.list_versions(kind=kind, **params)
@@ -195,7 +200,9 @@ def register_project_version(
 ):
     version = version or "latest"
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     try:
         _version = polyaxon_client.register_version(
@@ -239,7 +246,9 @@ def copy_project_version(
 ):
     version = version or "latest"
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     try:
         _version = polyaxon_client.copy_version(
@@ -286,7 +295,12 @@ def get_project_version(
     client: PolyaxonClient = None,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name, client=client)
+    polyaxon_client = ProjectClient(
+        owner=owner,
+        project=project_name,
+        client=client,
+        manual_exceptions_handling=True,
+    )
 
     try:
         response = polyaxon_client.get_version(kind, version)
@@ -310,7 +324,12 @@ def get_project_version_stages(
     client: PolyaxonClient = None,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name, client=client)
+    polyaxon_client = ProjectClient(
+        owner=owner,
+        project=project_name,
+        client=client,
+        manual_exceptions_handling=True,
+    )
 
     try:
         stage, stage_conditions = polyaxon_client.get_version_stages(kind, version)
@@ -334,7 +353,9 @@ def delete_project_version(
     yes: bool = False,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     if not yes and not click.confirm(
         "Are sure you want to delete {} version `{}`".format(kind, fqn_version)
@@ -366,7 +387,9 @@ def update_project_version(
     content_callback: Callable = None,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     update_dict = {}
     if name:
@@ -407,7 +430,9 @@ def transfer_project_version(
     to_project: str,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     try:
         polyaxon_client.transfer_version(kind, version, to_project)
@@ -434,7 +459,9 @@ def stage_project_version(
     message: str = None,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     if not to:
         Printer.warning(
@@ -488,7 +515,9 @@ def pull_project_version(
     download_artifacts: bool = True,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
-    polyaxon_client = ProjectClient(owner=owner, project=project_name)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
 
     try:
         Printer.header(

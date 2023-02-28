@@ -120,7 +120,9 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
     if project:
         owner, project_name = get_project_or_local(project, is_cli=True)
         try:
-            polyaxon_client = ProjectClient(owner=owner, project=project_name)
+            polyaxon_client = ProjectClient(
+                owner=owner, project=project_name, manual_exceptions_handling=True
+            )
             polyaxon_client.refresh_data()
         except (ApiException, HTTPError) as e:
             Printer.error(

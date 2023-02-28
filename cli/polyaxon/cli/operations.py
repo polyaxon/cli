@@ -297,7 +297,9 @@ def ls(
         )
 
         try:
-            polyaxon_client = RunClient(owner=owner, project=project_name)
+            polyaxon_client = RunClient(
+                owner=owner, project=project_name, manual_exceptions_handling=True
+            )
             response = polyaxon_client.list(
                 limit=limit, offset=offset, query=query, sort=sort
             )
@@ -451,7 +453,10 @@ def get(ctx, project, uid, offline, offline_path, output):
 
         try:
             polyaxon_client = RunClient(
-                owner=owner, project=project_name, run_uuid=run_uuid
+                owner=owner,
+                project=project_name,
+                run_uuid=run_uuid,
+                manual_exceptions_handling=True,
             )
             polyaxon_client.refresh_data()
             config = polyaxon_client.client.sanitize_for_serialization(
@@ -525,7 +530,10 @@ def delete(ctx, project, uid, yes):
 
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         polyaxon_client.delete()
         # Purge caching
@@ -582,7 +590,10 @@ def update(ctx, project, uid, name, description, tags):
 
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         response = polyaxon_client.update(update_dict)
     except (ApiException, HTTPError) as e:
@@ -619,7 +630,10 @@ def approve(ctx, project, uid):
 
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         polyaxon_client.approve()
     except (ApiException, HTTPError) as e:
@@ -668,7 +682,10 @@ def stop(ctx, project, uid, yes):
 
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         polyaxon_client.stop()
     except (ApiException, HTTPError) as e:
@@ -756,7 +773,10 @@ def restart(
     )
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         response = polyaxon_client.restart(
             name=name,
@@ -816,7 +836,10 @@ def resume(ctx, project, uid, polyaxonfile):
     )
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         response = polyaxon_client.resume(override_config=content)
         Printer.success("Run was resumed with uid {}".format(response.uuid))
@@ -851,7 +874,10 @@ def invalidate(ctx, project, uid):
     )
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         response = polyaxon_client.invalidate()
         Printer.success("Run `{}` was invalidated".format(response.uuid))
@@ -886,7 +912,12 @@ def statuses(ctx, project, uid, watch):
         is_cli=True,
     )
 
-    client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+    client = RunClient(
+        owner=owner,
+        project=project_name,
+        run_uuid=run_uuid,
+        manual_exceptions_handling=True,
+    )
     table = Printer.get_table()
     if watch:
         with Printer.get_live() as live:
@@ -1001,7 +1032,12 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info):
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
     )
-    client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+    client = RunClient(
+        owner=owner,
+        project=project_name,
+        run_uuid=run_uuid,
+        manual_exceptions_handling=True,
+    )
 
     try:
         get_run_logs(
@@ -1043,7 +1079,12 @@ def inspect(ctx, project, uid):
         is_cli=True,
     )
     try:
-        client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+        client = RunClient(
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
+        )
         handle_output(client.inspect(), output="json")
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not inspect the run `{}`.".format(run_uuid))
@@ -1096,7 +1137,12 @@ def shell(ctx, project, uid, command, pod, container):
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
     )
-    client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+    client = RunClient(
+        owner=owner,
+        project=project_name,
+        run_uuid=run_uuid,
+        manual_exceptions_handling=True,
+    )
 
     wait_for_running_condition(client)
 
@@ -1196,7 +1242,12 @@ def artifacts(
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
     )
-    client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+    client = RunClient(
+        owner=owner,
+        project=project_name,
+        run_uuid=run_uuid,
+        manual_exceptions_handling=True,
+    )
 
     files = to_list(files, check_none=True)
     dirs = to_list(dirs, check_none=True)
@@ -1371,7 +1422,12 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure):
     )
     is_file = os.path.isfile(path_from) if path_from else False
     try:
-        client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+        client = RunClient(
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
+        )
         if is_file:
             response = client.upload_artifact(
                 filepath=path_from, path=path_to, overwrite=True
@@ -1442,7 +1498,10 @@ def transfer(ctx, project, uid, to_project):
 
     try:
         polyaxon_client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
         )
         polyaxon_client.transfer(to_project=to_project)
     except (ApiException, HTTPError) as e:
@@ -1522,7 +1581,12 @@ def service(ctx, project, uid, yes, external, url):
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
     )
-    client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+    client = RunClient(
+        owner=owner,
+        project=project_name,
+        run_uuid=run_uuid,
+        manual_exceptions_handling=True,
+    )
     try:
         client.refresh_data()
     except (
@@ -1647,7 +1711,12 @@ def pull(
     )
 
     def _pull(run_uuid: str):
-        client = RunClient(owner=owner, project=project_name, run_uuid=run_uuid)
+        client = RunClient(
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
+        )
 
         try:
             Printer.header(f"Pulling remote run {run_uuid}")
@@ -1668,7 +1737,9 @@ def pull(
     if all_runs or any([query, limit, offset]):
         limit = 1000 if all_runs else limit
         try:
-            polyaxon_client = RunClient(owner=owner, project=project_name)
+            polyaxon_client = RunClient(
+                owner=owner, project=project_name, manual_exceptions_handling=True
+            )
             runs = polyaxon_client.list(
                 limit=limit,
                 offset=offset,
@@ -1770,7 +1841,11 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
     def _push(run_uuid: str):
         Printer.header(f"Pushing offline run {run_uuid}")
         client = RunClient(
-            owner=owner, project=project_name, run_uuid=run_uuid, is_offline=True
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            is_offline=True,
+            manual_exceptions_handling=True,
         )
         artifacts_path = "{}/{}".format(offline_path, run_uuid)
         try:
