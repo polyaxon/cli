@@ -208,7 +208,7 @@ def ops(ctx, project, uid):
     "--offline",
     is_flag=True,
     default=False,
-    help="To list offline runs if they exists.",
+    help="To list offline runs if they exist.",
 )
 @click.option(
     "--offline-path",
@@ -393,12 +393,12 @@ def ls(
     "--offline",
     is_flag=True,
     default=False,
-    help="To list offline runs if they exists.",
+    help="To get an offline run if it exists.",
 )
 @click.option(
     "--offline-path",
     type=click.Path(exists=False),
-    help="Optional path to use to where offline runs are persisted, "
+    help="Optional path to use to where the offline run is persisted, "
     "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
 )
 @click.option(
