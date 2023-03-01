@@ -85,7 +85,7 @@ def get_offline_base_path(entity_kind: str, path: str = None):
 
     path = path or CONTEXT_OFFLINE_ROOT
     entity_kind = "run" if entity_kind == V1ProjectFeature.RUNTIME else entity_kind
-    return "{}/{}s".format(path, entity_kind)
+    return "{}/{}s".format(path.rstrip("/"), entity_kind)
 
 
 def get_offline_path(entity_value: str, entity_kind: str, path: str = None):
@@ -93,7 +93,7 @@ def get_offline_path(entity_value: str, entity_kind: str, path: str = None):
 
     path = path or CONTEXT_OFFLINE_ROOT
     entity_kind = "run" if entity_kind == V1ProjectFeature.RUNTIME else entity_kind
-    return "{}/{}s/{}".format(path, entity_kind, entity_value)
+    return "{}/{}s/{}".format(path.rstrip("/"), entity_kind, entity_value)
 
 
 def mount_sandbox():
