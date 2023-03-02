@@ -25,6 +25,6 @@ from polyaxon_sdk import V1Run
 class TestRunConfigManager(BaseTestCase):
     def test_default_props(self):
         assert RunConfigManager.is_all_visibility() is True
-        assert RunConfigManager.IS_POLYAXON_DIR is True
+        assert RunConfigManager.IN_POLYAXON_DIR is True
         assert RunConfigManager.CONFIG_FILE_NAME == ".run"
         assert RunConfigManager.CONFIG == V1Run

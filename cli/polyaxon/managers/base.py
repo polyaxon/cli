@@ -24,6 +24,7 @@ import ujson
 from polyaxon.contexts.paths import polyaxon_user_path
 from polyaxon.logger import logger
 from polyaxon.schemas.base import BaseConfig
+from polyaxon.utils.path_utils import check_or_create_path
 
 
 class BaseConfigManager:
@@ -35,7 +36,7 @@ class BaseConfigManager:
     VISIBILITY_PATH = "path"
 
     VISIBILITY = None
-    IS_POLYAXON_DIR = False
+    IN_POLYAXON_DIR = False
     CONFIG_PATH = None
     CONFIG_FILE_NAME = None
     CONFIG = None
@@ -62,20 +63,19 @@ class BaseConfigManager:
 
     @staticmethod
     def _create_dir(dir_path):
-        if not os.path.exists(dir_path):
-            try:
-                os.makedirs(dir_path)
-            except OSError:
-                # Except permission denied and potential race conditions
-                # in multi-threaded environments.
-                logger.error("Could not create config directory `%s`", dir_path)
+        try:
+            check_or_create_path(dir_path, is_dir=True)
+        except OSError:
+            # Except permission denied and potential race conditions
+            # in multi-threaded environments.
+            logger.error("Could not create config directory `%s`", dir_path)
 
     @classmethod
     def create_config_filepath(cls, visibility=None):
         if cls.is_local(visibility):
             # Local to this directory
             base_path = os.path.join(".")
-            if cls.IS_POLYAXON_DIR:
+            if cls.IN_POLYAXON_DIR:
                 # Add it to the current "./.polyaxon"
                 base_path = os.path.join(base_path, ".polyaxon")
                 cls._create_dir(base_path)
@@ -89,7 +89,7 @@ class BaseConfigManager:
     def get_local_config_path(cls) -> str:
         # local to this directory
         base_path = os.path.join(".")
-        if cls.IS_POLYAXON_DIR:
+        if cls.IN_POLYAXON_DIR:
             # Add it to the current "./.polyaxon"
             base_path = os.path.join(base_path, ".polyaxon")
         config_path = os.path.join(base_path, cls.CONFIG_FILE_NAME)

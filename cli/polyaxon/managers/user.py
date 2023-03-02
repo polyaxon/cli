@@ -23,7 +23,7 @@ class UserConfigManager(BaseConfigManager):
     """Manages user configuration .user file."""
 
     VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
-    IS_POLYAXON_DIR = True
+    IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".user"
     CONFIG = V1User
 

@@ -25,6 +25,6 @@ from polyaxon_sdk import V1User
 class TestUserConfigManager(BaseTestCase):
     def test_default_props(self):
         assert UserConfigManager.is_global() is True
-        assert UserConfigManager.IS_POLYAXON_DIR is True
+        assert UserConfigManager.IN_POLYAXON_DIR is True
         assert UserConfigManager.CONFIG_FILE_NAME == ".user"
         assert UserConfigManager.CONFIG == V1User

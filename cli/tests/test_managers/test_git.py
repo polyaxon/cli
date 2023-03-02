@@ -26,6 +26,6 @@ class TestGitConfigManager(BaseTestCase):
     def test_default_props(self):
         assert GitConfigManager.is_global() is False
         assert GitConfigManager.is_local() is True
-        assert GitConfigManager.IS_POLYAXON_DIR is False
+        assert GitConfigManager.IN_POLYAXON_DIR is False
         assert GitConfigManager.CONFIG_FILE_NAME == "polyaxongit.yaml"
         assert GitConfigManager.CONFIG == V1Init

@@ -26,6 +26,6 @@ class TestAuthConfigManager(BaseTestCase):
     def test_default_props(self):
         assert AuthConfigManager.is_global() is True
         assert AuthConfigManager.is_local() is False
-        assert AuthConfigManager.IS_POLYAXON_DIR is False
+        assert AuthConfigManager.IN_POLYAXON_DIR is False
         assert AuthConfigManager.CONFIG_FILE_NAME == ".auth"
         assert AuthConfigManager.CONFIG == AccessTokenConfig

@@ -23,7 +23,7 @@ class RunConfigManager(BaseConfigManager):
     """Manages run configuration .run file."""
 
     VISIBILITY = BaseConfigManager.VISIBILITY_ALL
-    IS_POLYAXON_DIR = True
+    IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".run"
     CONFIG = V1Run
 

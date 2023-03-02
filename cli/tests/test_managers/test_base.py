@@ -33,7 +33,7 @@ class TestBaseConfigManger(BaseTestCase):
         assert self.DummyConfigManger.is_local() is False
         assert self.DummyConfigManger.is_all_visibility() is False
         assert self.DummyConfigManger.is_path_visibility() is False
-        assert self.DummyConfigManger.IS_POLYAXON_DIR is False
+        assert self.DummyConfigManger.IN_POLYAXON_DIR is False
         assert self.DummyConfigManger.CONFIG_FILE_NAME is None
         assert self.DummyConfigManger.CONFIG is None
 
@@ -45,8 +45,8 @@ class TestBaseConfigManger(BaseTestCase):
         # Test configuration
         # Set IS_GLOBAL = False
         self.DummyConfigManger.VISIBILITY = BaseConfigManager.VISIBILITY_LOCAL
-        # Set IS_POLYAXON_DIR = True
-        self.DummyConfigManger.IS_POLYAXON_DIR = True
+        # Set IN_POLYAXON_DIR = True
+        self.DummyConfigManger.IN_POLYAXON_DIR = True
         with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
             config_file1 = self.DummyConfigManger.get_config_filepath(create=True)
         assert path_fct.call_count == 1
@@ -58,8 +58,8 @@ class TestBaseConfigManger(BaseTestCase):
         assert config_file1 == os.path.join(".", ".polyaxon", "testing")
 
         # Test configuration
-        # Set IS_POLYAXON_DIR = True
-        self.DummyConfigManger.IS_POLYAXON_DIR = False
+        # Set IN_POLYAXON_DIR = True
+        self.DummyConfigManger.IN_POLYAXON_DIR = False
         with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
             config_file1 = self.DummyConfigManger.get_config_filepath(create=True)
         assert path_fct.call_count == 0

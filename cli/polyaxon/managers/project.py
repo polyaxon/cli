@@ -26,7 +26,7 @@ class ProjectConfigManager(BaseConfigManager):
     """Manages project configuration .project file."""
 
     VISIBILITY = BaseConfigManager.VISIBILITY_ALL
-    IS_POLYAXON_DIR = True
+    IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".project"
     CONFIG = V1Project
 
