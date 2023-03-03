@@ -21,12 +21,10 @@ import click
 from polyaxon import settings
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.session import set_versions_config
-from polyaxon.logger import clean_outputs
-from polyaxon.managers.auth import AuthConfigManager
+from polyaxon.logger import clean_outputs, logger
 from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.client import ClientConfigManager
-from polyaxon.managers.project import ProjectConfigManager
-from polyaxon.managers.run import RunConfigManager
+from polyaxon.managers.home import HomeConfigManager
 from polyaxon.managers.user import UserConfigManager
 from polyaxon.utils.formatting import Printer, dict_tabulate, dict_to_tabulate
 
@@ -63,6 +61,11 @@ def config(_list):  # pylint:disable=redefined-builtin
 @clean_outputs
 def show():
     """Show the current cli, client, and user configs."""
+    _config = HomeConfigManager.get_config_or_default()
+    Printer.heading(
+        "In addition to environment variables, global configs will be loaded from:"
+    )
+    dict_tabulate(_config.to_dict())
     _config = ClientConfigManager.get_config_or_default()
     Printer.heading("Client config:")
     dict_tabulate(_config.to_dict())
@@ -135,6 +138,11 @@ def get(keys):
     help="To set whether or not to verify the SSL certificate.",
 )
 @click.option(
+    "--home",
+    type=click.Path(exists=True),
+    help="To set POLYAXON_HOME to specify the context where the CLI/Client reads/writes global configuration.",
+)
+@click.option(
     "--disable-errors-reporting",
     type=bool,
     help="To set the disable errors reporting.",
@@ -154,6 +162,24 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
     \b
     $ polyaxon config set --host=localhost
     """
+    if kwargs.get("home") is not None:
+        try:
+            _config = HomeConfigManager.get_config_or_default()
+        except Exception as e:
+            logger.debug(
+                "Home configuration could not be loaded.\n"
+                "Error: %s\n"
+                "Purging home configuration and resetting values.",
+                e,
+            )
+            logger.debug()
+            HomeConfigManager.purge()
+            _config = HomeConfigManager.get_config_or_default()
+        setattr(_config, "path", kwargs.get("home"))
+        HomeConfigManager.set_config(_config)
+
+    from polyaxon.managers.auth import AuthConfigManager
+
     try:
         _config = ClientConfigManager.get_config_or_default()
     except Exception as e:
@@ -188,6 +214,10 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
 @clean_outputs
 def purge(cache_only):
     """Purge the global config values."""
+    from polyaxon.managers.auth import AuthConfigManager
+    from polyaxon.managers.project import ProjectConfigManager
+    from polyaxon.managers.run import RunConfigManager
+
     if not cache_only:
         ClientConfigManager.purge()
         CliConfigManager.purge()

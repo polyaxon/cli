@@ -195,9 +195,15 @@ class BaseConfigManager:
         return cls.CONFIG(**ujson.loads(config_str))
 
     @classmethod
+    def get_config_defaults(cls):
+        return {}
+
+    @classmethod
     def get_config_or_default(cls):
         if not cls.is_initialized():
-            return cls.CONFIG()  # pylint:disable=not-callable
+            return cls.CONFIG(
+                **cls.get_config_defaults()
+            )  # pylint:disable=not-callable
 
         return cls.get_config(check=False)
 

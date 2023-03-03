@@ -29,6 +29,10 @@ class HomeConfigManager(BaseConfigManager):
     CONFIG = HomeConfig
 
     @classmethod
+    def get_config_defaults(cls):
+        return {"path": cls.get_global_config_path()}
+
+    @classmethod
     def get_config_from_env(cls) -> HomeConfig:
         glob_path = cls.get_global_config_path()
         home_config = ConfigManager.read_configs(
