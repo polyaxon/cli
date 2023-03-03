@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from marshmallow import EXCLUDE, fields
 
 from polyaxon.env_vars.keys import EV_KEYS_HOME
 from polyaxon.schemas.base import BaseConfig, BaseSchema
@@ -40,5 +40,7 @@ class HomeConfig(BaseConfig):
     SCHEMA = HomeSchema
     IDENTIFIER = "home"
 
-    def __init__(self, path=None):
+    UNKNOWN_BEHAVIOUR = EXCLUDE
+
+    def __init__(self, path=None, **kwargs):
         self.path = path

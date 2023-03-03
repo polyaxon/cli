@@ -66,7 +66,7 @@ class BaseConfigManager:
         return cls.VISIBILITY
 
     @classmethod
-    def set_config_path(cls, config_path):
+    def set_config_path(cls, config_path: Optional[str]):
         cls.CONFIG_PATH = config_path
 
     @staticmethod
