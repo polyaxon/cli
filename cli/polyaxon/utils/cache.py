@@ -65,9 +65,5 @@ def cache(config_manager, config, owner=None, project=None):
     if not _is_same_project(owner, project):
         return
 
-    visibility = (
-        ProjectConfigManager.VISIBILITY_LOCAL
-        if ProjectConfigManager.is_locally_initialized()
-        else ProjectConfigManager.VISIBILITY_GLOBAL
-    )
+    visibility = ProjectConfigManager.get_visibility()
     config_manager.set_config(config, visibility=visibility)

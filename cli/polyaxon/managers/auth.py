@@ -31,17 +31,14 @@ class AuthConfigManager(BaseConfigManager):
 
     @classmethod
     def get_config_from_env(cls) -> AccessTokenConfig:
-        tmp_path = os.path.join(
-            ctx_paths.CONTEXT_TMP_POLYAXON_PATH, cls.CONFIG_FILE_NAME
-        )
-        user_path = os.path.join(
-            ctx_paths.CONTEXT_USER_POLYAXON_PATH, cls.CONFIG_FILE_NAME
-        )
+        tmp_path = cls.get_tmp_config_path()
+        user_path = cls.get_global_config_path()
+
         auth_config = ConfigManager.read_configs(
             [
-                os.environ,
                 ConfigSpec(tmp_path, config_type=".json", check_if_exists=False),
                 ConfigSpec(user_path, config_type=".json", check_if_exists=False),
+                os.environ,
                 ConfigSpec(
                     ctx_paths.CONTEXT_MOUNT_AUTH,
                     config_type=".json",

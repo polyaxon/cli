@@ -19,6 +19,7 @@ import pytest
 
 from mock import patch
 
+from polyaxon.contexts import paths as ctx_paths
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -32,19 +33,18 @@ class TestBaseConfigManger(BaseTestCase):
         assert self.DummyConfigManger.is_global() is False
         assert self.DummyConfigManger.is_local() is False
         assert self.DummyConfigManger.is_all_visibility() is False
-        assert self.DummyConfigManger.is_path_visibility() is False
         assert self.DummyConfigManger.IN_POLYAXON_DIR is False
         assert self.DummyConfigManger.CONFIG_FILE_NAME is None
         assert self.DummyConfigManger.CONFIG is None
 
     @patch("polyaxon.managers.base.os.path.expanduser")
     def test_get_config_filepath(self, expanduser):
-        expanduser.return_value = "/tmp/"
         self.DummyConfigManger.CONFIG_FILE_NAME = "testing"
 
         # Test configuration
         # Set IS_GLOBAL = False
         self.DummyConfigManger.VISIBILITY = BaseConfigManager.VISIBILITY_LOCAL
+
         # Set IN_POLYAXON_DIR = True
         self.DummyConfigManger.IN_POLYAXON_DIR = True
         with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
@@ -58,11 +58,11 @@ class TestBaseConfigManger(BaseTestCase):
         assert config_file1 == os.path.join(".", ".polyaxon", "testing")
 
         # Test configuration
-        # Set IN_POLYAXON_DIR = True
+        # Set IN_POLYAXON_DIR = False
         self.DummyConfigManger.IN_POLYAXON_DIR = False
         with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
             config_file1 = self.DummyConfigManger.get_config_filepath(create=True)
-        assert path_fct.call_count == 0
+        assert path_fct.call_count == 1
 
         with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
             config_file2 = self.DummyConfigManger.get_config_filepath(create=False)
@@ -82,7 +82,23 @@ class TestBaseConfigManger(BaseTestCase):
             config_file2 = self.DummyConfigManger.get_config_filepath(create=False)
         assert path_fct.call_count == 0
         assert config_file1 == config_file2
-        assert config_file1 == os.path.join("/tmp/", ".polyaxon", "testing")
+        assert config_file1 == os.path.join(
+            ctx_paths.CONTEXT_USER_POLYAXON_PATH, "testing"
+        )
+
+        # Test configuration
+        # Set CONFIG_PATH = /tmp
+        self.DummyConfigManger.CONFIG_PATH = "/tmp"
+
+        with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
+            config_file3 = self.DummyConfigManger.get_config_filepath(create=True)
+        assert path_fct.call_count == 1
+
+        with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
+            config_file4 = self.DummyConfigManger.get_config_filepath(create=False)
+        assert path_fct.call_count == 0
+        assert config_file3 == config_file4
+        assert config_file3 == os.path.join("/tmp/", ".polyaxon", "testing")
 
     def test_is_initialized(self):
         with patch.object(self.DummyConfigManger, "get_config_filepath") as path_fct1:

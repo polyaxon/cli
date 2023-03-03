@@ -17,7 +17,6 @@ import os
 
 from polyaxon.config_reader.manager import ConfigManager
 from polyaxon.config_reader.spec import ConfigSpec
-from polyaxon.contexts import paths as ctx_paths
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.schemas.api.home import HomeConfig
 
@@ -31,13 +30,11 @@ class HomeConfigManager(BaseConfigManager):
 
     @classmethod
     def get_config_from_env(cls) -> HomeConfig:
-        user_path = os.path.join(
-            ctx_paths.CONTEXT_USER_POLYAXON_PATH, cls.CONFIG_FILE_NAME
-        )
+        glob_path = cls.get_global_config_path()
         home_config = ConfigManager.read_configs(
             [
+                ConfigSpec(glob_path, config_type=".json", check_if_exists=False),
                 os.environ,
-                ConfigSpec(user_path, config_type=".json", check_if_exists=False),
                 {"dummy": "dummy"},
             ]
         )

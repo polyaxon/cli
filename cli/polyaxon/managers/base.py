@@ -17,11 +17,11 @@
 import os
 
 from collections.abc import Mapping
-from typing import Callable, Optional
+from typing import Optional
 
 import ujson
 
-from polyaxon.contexts.paths import polyaxon_user_path
+from polyaxon.contexts import paths as ctx_paths
 from polyaxon.logger import logger
 from polyaxon.schemas.base import BaseConfig
 from polyaxon.utils.path_utils import check_or_create_path
@@ -33,7 +33,6 @@ class BaseConfigManager:
     VISIBILITY_GLOBAL = "global"
     VISIBILITY_LOCAL = "local"
     VISIBILITY_ALL = "all"
-    VISIBILITY_PATH = "path"
 
     VISIBILITY = None
     IN_POLYAXON_DIR = False
@@ -57,33 +56,36 @@ class BaseConfigManager:
         return visibility == cls.VISIBILITY_ALL
 
     @classmethod
-    def is_path_visibility(cls, visibility=None):
-        visibility = visibility or cls.VISIBILITY
-        return visibility == cls.VISIBILITY_PATH
+    def get_visibility(cls):
+        if cls.is_all_visibility():
+            return (
+                cls.VISIBILITY_LOCAL
+                if cls.is_locally_initialized()
+                else cls.VISIBILITY_GLOBAL
+            )
+        return cls.VISIBILITY
+
+    @classmethod
+    def set_config_path(cls, config_path):
+        cls.CONFIG_PATH = config_path
 
     @staticmethod
-    def _create_dir(dir_path):
+    def _create_dir(config_file_path):
         try:
-            check_or_create_path(dir_path, is_dir=True)
+            check_or_create_path(config_file_path, is_dir=False)
         except OSError:
             # Except permission denied and potential race conditions
             # in multi-threaded environments.
-            logger.error("Could not create config directory `%s`", dir_path)
+            logger.error(
+                "Could not create config context directory for file `%s`",
+                config_file_path,
+            )
 
-    @classmethod
-    def create_config_filepath(cls, visibility=None):
-        if cls.is_local(visibility):
-            # Local to this directory
-            base_path = os.path.join(".")
-            if cls.IN_POLYAXON_DIR:
-                # Add it to the current "./.polyaxon"
-                base_path = os.path.join(base_path, ".polyaxon")
-                cls._create_dir(base_path)
-        elif cls.CONFIG_PATH:  # Custom path
-            pass
-        else:  # Handle both global and all cases
-            base_path = polyaxon_user_path()
-            cls._create_dir(base_path)
+    @staticmethod
+    def _get_and_check_path(config_path: str) -> Optional[str]:
+        if config_path and os.path.isfile(config_path):
+            return config_path
+        return None
 
     @classmethod
     def get_local_config_path(cls) -> str:
@@ -95,54 +97,44 @@ class BaseConfigManager:
         config_path = os.path.join(base_path, cls.CONFIG_FILE_NAME)
         return config_path
 
-    @staticmethod
-    def _get_and_check_path(fct: Callable) -> Optional[str]:
-        config_path = fct()
-        if config_path and os.path.exists(config_path):
-            return config_path
-        return None
-
     @classmethod
     def check_local_config_path(cls) -> Optional[str]:
-        return cls._get_and_check_path(cls.get_local_config_path)
+        return cls._get_and_check_path(cls.get_local_config_path())
 
     @classmethod
     def get_global_config_path(cls) -> str:
-        base_path = polyaxon_user_path()
+        if cls.CONFIG_PATH:
+            base_path = os.path.join(cls.CONFIG_PATH, ".polyaxon")
+        else:
+            base_path = ctx_paths.CONTEXT_USER_POLYAXON_PATH
         config_path = os.path.join(base_path, cls.CONFIG_FILE_NAME)
         return config_path
 
     @classmethod
     def check_global_config_path(cls) -> Optional[str]:
-        return cls._get_and_check_path(cls.get_global_config_path)
+        return cls._get_and_check_path(cls.get_global_config_path())
 
     @classmethod
-    def get_custom_config_path(cls) -> str:
-        config_path = os.path.join(cls.CONFIG_PATH, cls.CONFIG_FILE_NAME)
+    def get_tmp_config_path(cls) -> str:
+        base_path = ctx_paths.CONTEXT_TMP_POLYAXON_PATH
+        config_path = os.path.join(base_path, cls.CONFIG_FILE_NAME)
         return config_path
 
     @classmethod
-    def check_custom_config_path(cls) -> Optional[str]:
-        return cls._get_and_check_path(cls.get_custom_config_path)
-
-    @classmethod
     def get_config_filepath(cls, create=True, visibility=None):
-        if create:
-            cls.create_config_filepath(visibility=visibility)
-
+        config_path = None
         if cls.is_local(visibility):
-            return cls.get_local_config_path()
-        if cls.is_path_visibility(visibility):
-            return cls.get_custom_config_path()
-        if cls.is_global(visibility):
-            return cls.get_global_config_path()
-        if cls.is_all_visibility(visibility):
+            config_path = cls.get_local_config_path()
+        elif cls.is_global(visibility):
+            config_path = cls.get_global_config_path()
+        elif cls.is_all_visibility(visibility):
             config_path = cls.check_local_config_path()
-            if config_path:
-                return config_path
-            return cls.get_global_config_path()
+            if not config_path:
+                config_path = cls.get_global_config_path()
 
-        return None
+        if create and config_path:
+            cls._create_dir(config_path)
+        return config_path
 
     @classmethod
     def init_config(cls, visibility=None):
@@ -155,8 +147,7 @@ class BaseConfigManager:
 
     @classmethod
     def is_initialized(cls):
-        config_filepath = cls.get_config_filepath(create=False)
-        return config_filepath and os.path.isfile(config_filepath)
+        return cls._get_and_check_path(cls.get_config_filepath(create=False))
 
     @classmethod
     def set_config(cls, config, init=False, visibility=None):
