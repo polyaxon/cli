@@ -133,7 +133,7 @@ class PolyaxonHTTPError(PolyaxonClientException):
 
 
 HTTP_ERROR_MESSAGES_MAPPING = {
-    400: "Statuts: 400. One or more request parameters are incorrect",
+    400: "Status: 400. One or more request parameters are incorrect",
     401: "Status: 401. Authentication failed. Retry by invoking Polyaxon login.",
     403: "Status: 403. You are not authorized to access this resource on Polyaxon.",
     404: "Status: 404. "
@@ -156,27 +156,31 @@ def handle_api_error(
     http_messages_mapping: Dict = None,
     sys_exit: bool = False,
 ):
-    http_messages_mapping = http_messages_mapping or HTTP_ERROR_MESSAGES_MAPPING
+    if http_messages_mapping:
+        http_messages_mapping.update(HTTP_ERROR_MESSAGES_MAPPING)
+    else:
+        http_messages_mapping = HTTP_ERROR_MESSAGES_MAPPING
     if message:
         logger.error(message)
     if e and hasattr(e, "status"):
-        if e.status not in [400, 404, 401, 403, 405]:
+        if e.status not in http_messages_mapping.keys():
             logger.error("Exception:")
             logger.error(e, stack_info=True, exc_info=True)
-        elif getattr(e, "body"):
-            logger.error("Error:")
-            logger.error(e.body)
+        elif getattr(e, "body") and e.status != 404:
+            logger.error("Error: %s" % e.body)
+        if getattr(e, "reason"):
+            logger.error("Reason: %s" % e.reason)
         message = http_messages_mapping.get(e.status)
         if message:
             logger.error(message)
     elif e and hasattr(e, "message"):  # Handling of HTML errors
-        if "404" in e.message:
-            logger.error(http_messages_mapping.get(404))
-        elif "401" in e.message:
-            logger.error(http_messages_mapping.get(401))
-        elif "403" in e.message:
-            logger.error(http_messages_mapping.get(403))
-        else:
+        error_found = False
+        for k in http_messages_mapping.keys():
+            if str(k) in e.message:
+                logger.error(http_messages_mapping.get(k))
+                error_found = True
+                break
+        if not error_found:
             logger.error("Error:")
             logger.error(e.message)
     elif e:

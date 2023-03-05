@@ -33,6 +33,9 @@ def download_file_or_dir(
     if check_path:
         is_file = fs.isfile(path_from)
     check_or_create_path(path_to, is_dir=not is_file)
+    if not is_file:
+        path_to = path_to.rstrip("/") + "/"
+        path_from = path_from.rstrip("/") + "/"
     fs.download(rpath=path_from, lpath=path_to, recursive=not is_file)
 
 

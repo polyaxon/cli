@@ -232,8 +232,8 @@ async def download_dir(
             fs=fs,
             fct="get",
             is_async=fs.async_impl,
-            rpath=path_from,
-            lpath=path_to,
+            rpath=path_from.rstrip("/") + "/",
+            lpath=path_to.rstrip("/") + "/",
             recursive=True,
         )
         if not os.path.exists(path_to):
