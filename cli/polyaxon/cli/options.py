@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import click
 
 OPTIONS_OWNER = {
     "args": ["--owner", "-o"],
@@ -60,4 +61,37 @@ OPTIONS_ARTIFACT_VERSION = {
 OPTIONS_RUN_UID = {
     "args": ["--uid", "-uid"],
     "kwargs": dict(type=str, help="The run uuid."),
+}
+
+
+OPTIONS_RUN_OFFLINE = {
+    "args": ["--offline"],
+    "kwargs": dict(
+        is_flag=True,
+        default=False,
+        help="To use the offline store, for resolving runs, if it exists.",
+    ),
+}
+
+OPTIONS_RUN_OFFLINE_PATH_FROM = {
+    "args": [
+        "--path",
+        "--path-from",
+    ],
+    "kwargs": dict(
+        type=click.Path(exists=False),
+        help="Optional offline root path to use where runs are persisted, "
+        "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
+    ),
+}
+OPTIONS_RUN_OFFLINE_PATH_TO = {
+    "args": [
+        "--path",
+        "--path-to",
+    ],
+    "kwargs": dict(
+        type=click.Path(exists=False),
+        help="Optional offline root path to use where runs are persisted, "
+        "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
+    ),
 }
