@@ -129,7 +129,8 @@ from polyaxon.utils.validation import validate_tags
     "-P",
     metavar="NAME=VALUE",
     multiple=True,
-    help="A parameter to override the default params of the run, form -P name=value.",
+    help="A parameter to override the default params of the run, "
+    "form `-P name=value` or `--param name=value`.",
 )
 @click.option(
     "--hparams",

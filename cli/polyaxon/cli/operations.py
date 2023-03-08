@@ -17,6 +17,7 @@ import os
 import sys
 
 import click
+import ujson
 
 from urllib3.exceptions import HTTPError
 
@@ -28,7 +29,14 @@ from polyaxon.api import (
 )
 from polyaxon.cli.dashboard import get_dashboard, get_dashboard_url
 from polyaxon.cli.errors import handle_cli_error
-from polyaxon.cli.options import OPTIONS_NAME, OPTIONS_PROJECT, OPTIONS_RUN_UID
+from polyaxon.cli.options import (
+    OPTIONS_NAME,
+    OPTIONS_PROJECT,
+    OPTIONS_RUN_OFFLINE,
+    OPTIONS_RUN_OFFLINE_PATH_FROM,
+    OPTIONS_RUN_OFFLINE_PATH_TO,
+    OPTIONS_RUN_UID,
+)
 from polyaxon.cli.utils import handle_output
 from polyaxon.client import RunClient, get_run_logs
 from polyaxon.constants.metadata import META_IS_EXTERNAL, META_REWRITE_PATH
@@ -93,12 +101,15 @@ def handle_run_statuses(status, conditions, table):
             Printer.add_status_color({"status": status}, status_key="status")["status"]
         )
     )
-    objects = [
-        dict_to_tabulate(
-            Printer.add_status_color(o.to_dict(), status_key="type"), timesince=False
+
+    def get_condition(c):
+        if hasattr(c, "to_dict"):
+            c = c.to_dict()
+        return dict_to_tabulate(
+            Printer.add_status_color(c, status_key="type"), timesince=False
         )
-        for o in conditions
-    ]
+
+    objects = [get_condition(c) for c in conditions]
 
     if not objects:
         return False
@@ -204,17 +215,9 @@ def ops(ctx, project, uid):
 @click.option("--limit", "-l", type=int, help="To limit the list of runs.")
 @click.option("--offset", "-off", type=int, help="To offset the list of runs.")
 @click.option("--columns", "-c", type=str, help="The columns to show.")
+@click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
 @click.option(
-    "--offline",
-    is_flag=True,
-    default=False,
-    help="To list offline runs if they exist.",
-)
-@click.option(
-    "--offline-path",
-    type=click.Path(exists=False),
-    help="Optional path to use to where offline runs are persisted, "
-    "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
 )
 @click.option(
     "--output",
@@ -236,7 +239,7 @@ def ls(
     offset,
     columns,
     offline,
-    offline_path,
+    path,
     output,
 ):
     """List runs for this project.
@@ -249,7 +252,7 @@ def ls(
 
     \b
 
-    Get all runs with with status {created or running}, and
+    Get all runs with status {created or running}, and
     creation date between 2018-01-01 and 2018-01-02, and params activation equal to sigmoid
     and metric loss less or equal to 0.2
 
@@ -276,7 +279,7 @@ def ls(
     """
     if offline:
         offline_path = ctx_paths.get_offline_base_path(
-            entity_kind=V1ProjectFeature.RUNTIME, path=offline_path
+            entity_kind=V1ProjectFeature.RUNTIME, path=path
         )
         if not os.path.exists(offline_path) or not os.path.isdir(offline_path):
             Printer.error(
@@ -389,17 +392,9 @@ def ls(
 @ops.command()
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
+@click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
 @click.option(
-    "--offline",
-    is_flag=True,
-    default=False,
-    help="To get an offline run if it exists.",
-)
-@click.option(
-    "--offline-path",
-    type=click.Path(exists=False),
-    help="Optional path to use to where the offline run is persisted, "
-    "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
 )
 @click.option(
     "--output",
@@ -410,7 +405,7 @@ def ls(
 )
 @click.pass_context
 @clean_outputs
-def get(ctx, project, uid, offline, offline_path, output):
+def get(ctx, project, uid, offline, path, output):
     """Get run.
 
     Uses /docs/core/cli/#caching
@@ -434,7 +429,7 @@ def get(ctx, project, uid, offline, offline_path, output):
 
     if offline:
         offline_path = ctx_paths.get_offline_path(
-            entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=offline_path
+            entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
         )
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
@@ -499,9 +494,13 @@ def get(ctx, project, uid, offline, offline_path, output):
     help="Automatic yes to prompts. "
     'Assume "yes" as answer to all prompts and run non-interactively.',
 )
+@click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
+@click.option(
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
+)
 @click.pass_context
 @clean_outputs
-def delete(ctx, project, uid, yes):
+def delete(ctx, project, uid, yes, offline, path):
     """Delete a run.
 
     Uses /docs/core/cli/#caching
@@ -517,6 +516,28 @@ def delete(ctx, project, uid, yes):
     \b
     $ polyaxon ops delete --project=cats-vs-dogs -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    if offline:
+        offline_path = ctx_paths.get_offline_path(
+            entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
+        )
+        offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
+        if not os.path.exists(offline_path):
+            Printer.error(
+                f"Could not get offline run, the path `{offline_path}` "
+                f"does not exist."
+            )
+            sys.exit(1)
+        try:
+            os.remove(offline_path)
+        except OSError as e:
+            Printer.error(
+                f"Could not delete offline run, the path `{offline_path}` "
+                f"Error %s." % e
+            )
+            sys.exit(1)
+        return
+
+    # Resume normal flow
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -551,9 +572,13 @@ def delete(ctx, project, uid, yes):
 @click.option(*OPTIONS_NAME["args"], type=str, help="Name of the run (optional).")
 @click.option("--description", type=str, help="Description of the run (optional).")
 @click.option("--tags", type=str, help="Tags of the run (comma separated values).")
+@click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
+@click.option(
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
+)
 @click.pass_context
 @clean_outputs
-def update(ctx, project, uid, name, description, tags):
+def update(ctx, project, uid, name, description, tags, offline, path):
     """Update run.
 
     Uses /docs/core/cli/#caching
@@ -567,11 +592,6 @@ def update(ctx, project, uid, name, description, tags):
     \b
     $ polyaxon ops update --project=cats-vs-dogs -uid 8aac02e3a62a4f0aaa257c59da5eab80 --tags="foo, bar" --name="unique-name"
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
-        project or ctx.obj.get("project"),
-        uid or ctx.obj.get("run_uuid"),
-        is_cli=True,
-    )
     update_dict = {}
 
     if name:
@@ -588,17 +608,47 @@ def update(ctx, project, uid, name, description, tags):
         Printer.warning("No argument was provided to update the run.")
         sys.exit(0)
 
-    try:
-        polyaxon_client = RunClient(
-            owner=owner,
-            project=project_name,
-            run_uuid=run_uuid,
-            manual_exceptions_handling=True,
+    if offline:
+        offline_path = ctx_paths.get_offline_path(
+            entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
         )
-        response = polyaxon_client.update(update_dict)
-    except (ApiException, HTTPError) as e:
-        handle_cli_error(e, message="Could not update run `{}`.".format(run_uuid))
-        sys.exit(1)
+        offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
+        if not os.path.exists(offline_path):
+            Printer.error(
+                f"Could not get offline run, the path `{offline_path}` "
+                f"does not exist."
+            )
+            sys.exit(1)
+        try:
+            response = RunConfigManager.read_from_path(offline_path)
+            for k, v in update_dict.items():
+                setattr(response, k, v)
+            with open(offline_path, "w") as config_file:
+                config_file.write(ujson.dumps(response.to_dict()))
+            run_uuid = uid or response.uuid
+        except OSError as e:
+            Printer.error(
+                f"Could not delete offline run, the path `{offline_path}` "
+                f"Error %s." % e
+            )
+            sys.exit(1)
+    else:
+        owner, project_name, run_uuid = get_project_run_or_local(
+            project or ctx.obj.get("project"),
+            uid or ctx.obj.get("run_uuid"),
+            is_cli=True,
+        )
+        try:
+            polyaxon_client = RunClient(
+                owner=owner,
+                project=project_name,
+                run_uuid=run_uuid,
+                manual_exceptions_handling=True,
+            )
+            response = polyaxon_client.update(update_dict)
+        except (ApiException, HTTPError) as e:
+            handle_cli_error(e, message="Could not update run `{}`.".format(run_uuid))
+            sys.exit(1)
 
     Printer.success("Run `{}` was updated.".format(run_uuid))
     get_run_details(response)
@@ -890,9 +940,13 @@ def invalidate(ctx, project, uid):
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
 @click.option("--watch", "-w", is_flag=True, help="Watch statuses.")
+@click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
+@click.option(
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
+)
 @click.pass_context
 @clean_outputs
-def statuses(ctx, project, uid, watch):
+def statuses(ctx, project, uid, watch, offline, path):
     """Get run's statuses.
 
     Uses /docs/core/cli/#caching
@@ -905,6 +959,30 @@ def statuses(ctx, project, uid, watch):
     \b
     $ polyaxon ops statuses -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    if offline:
+        offline_path = ctx_paths.get_offline_path(
+            entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
+        )
+        offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
+        if not os.path.exists(offline_path):
+            Printer.error(
+                f"Could not get offline run, the path `{offline_path}` "
+                f"does not exist."
+            )
+            sys.exit(1)
+        table = Printer.get_table()
+        try:
+            response = RunConfigManager.read_from_path(offline_path)
+            status, conditions = response.status, response.status_conditions
+            handle_run_statuses(status, conditions, table)
+            Printer.print(table)
+        except OSError as e:
+            Printer.error(
+                f"Could not get offline run, the path `{offline_path}` "
+                f"Error %s." % e
+            )
+            sys.exit(1)
+        return
 
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
@@ -1011,9 +1089,13 @@ def statuses(ctx, project, uid, watch):
     default=False,
     help="Whether to show all information including container names, pod names, and node names.",
 )
+@click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
+@click.option(
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
+)
 @click.pass_context
 @clean_outputs
-def logs(ctx, project, uid, follow, hide_time, all_containers, all_info):
+def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline, path):
     """Get run's logs.
 
     Uses /docs/core/cli/#caching
@@ -1026,7 +1108,7 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info):
     \b
     $ polyaxon ops logs -uid 8aac02e3a62a4f0aaa257c59da5eab80 -p mnist
     """
-
+    # TODO: add support for offline
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -1528,19 +1610,51 @@ def transfer(ctx, project, uid, to_project):
     default=False,
     help="Print the url of the dashboard for this run.",
 )
+@click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
+@click.option(
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
+)
+@click.option(
+    "--server-config",
+    "--sconfig",
+    "-SC",
+    metavar="NAME=VALUE",
+    multiple=True,
+    help="A configuration to override the default options for the local streaming server of the run, "
+    "form `-SC key=value` or `--server-config key=value` or `--sconfig key=value`.",
+)
 @click.pass_context
 @clean_outputs
-def dashboard(ctx, project, uid, yes, url):
+def dashboard(ctx, project, uid, yes, url, offline, path, server_config):
     """Open this operation's dashboard details in browser."""
-    owner, project_name, run_uuid = get_project_run_or_local(
-        project or ctx.obj.get("project"),
-        uid or ctx.obj.get("run_uuid"),
-        is_cli=True,
-    )
+    if offline:
+        offline_path = ctx_paths.get_offline_path(
+            entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
+        )
+        offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
+        if not os.path.exists(offline_path):
+            Printer.error(
+                f"Could not get offline run, the path `{offline_path}` "
+                f"does not exist."
+            )
+            sys.exit(1)
+        run_data = RunConfigManager.read_from_path(offline_path)
+        owner, project_name, run_uuid = run_data.owner, run_data.project, run_data.uuid
+    else:
+        owner, project_name, run_uuid = get_project_run_or_local(
+            project or ctx.obj.get("project"),
+            uid or ctx.obj.get("run_uuid"),
+            is_cli=True,
+        )
     subpath = "{}/{}/runs/{}".format(owner, project_name, run_uuid)
     get_dashboard(
         dashboard_url=get_dashboard_url(subpath=subpath), url_only=url, yes=yes
     )
+    if offline:
+        from haupt.cli.viewer import sanitize_server_config, viewer
+
+        server_config = sanitize_server_config(server_config)
+        ctx.invoke(viewer, path=path, **server_config)
 
 
 @ops.command()
@@ -1666,11 +1780,7 @@ def service(ctx, project, uid, yes, external, url):
     "to another while keeping the same artifacts store.",
 )
 @click.option(
-    "--path",
-    "--path-to",
-    type=click.Path(exists=False),
-    help="Optional path where the runs are persisted, "
-    "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
+    *OPTIONS_RUN_OFFLINE_PATH_TO["args"], **OPTIONS_RUN_OFFLINE_PATH_TO["kwargs"]
 )
 @click.pass_context
 @clean_outputs
@@ -1790,11 +1900,7 @@ def pull(
     help="To clean the run(s) local data after syncing.",
 )
 @click.option(
-    "--path",
-    "--path-from",
-    type=click.Path(exists=False),
-    help="Optional path where the runs are persisted, "
-    "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
+    *OPTIONS_RUN_OFFLINE_PATH_FROM["args"], **OPTIONS_RUN_OFFLINE_PATH_FROM["kwargs"]
 )
 @click.option(
     "--reset-project",
