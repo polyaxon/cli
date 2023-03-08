@@ -14,21 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
+from typing import Union
+
 from polyaxon.utils.date_utils import DateTimeFormatter, parse_datetime
 from polyaxon.utils.tz_utils import now
 
 
 def humanize_timestamp(
-    timestamp: str,
-) -> str:  # pylint:disable=too-many-return-statements
+    timestamp: Union[str, datetime],
+) -> str:
     if not timestamp:
         return timestamp
 
+    timestamp = parse_datetime(timestamp)
     return DateTimeFormatter.format_datetime(timestamp)
 
 
 def humanize_timesince(
-    timesince: str,
+    timesince: Union[str, datetime],
 ) -> str:  # pylint:disable=too-many-return-statements
     """Creates a string representation of time since the given `start_time`."""
     if not timesince:
