@@ -17,6 +17,7 @@
 
 LOCAL = "local"
 SANDBOX = "sandbox"
+CLOUD = "cloud"
 CE = "ce"
 EE = "ee"
 
@@ -37,5 +38,15 @@ def is_community(value: str):
     return value is None or value in {LOCAL, SANDBOX, CE}
 
 
+def is_cloud(value: str):
+    return CLOUD == value
+
+
 def is_ee(value: str):
     return EE == value
+
+
+def get_dist(value: str, default: str = None):
+    if value and value in {LOCAL, SANDBOX, CE, CLOUD, EE}:
+        return value
+    return default

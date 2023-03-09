@@ -333,20 +333,6 @@ class BaseConfig:
             dt = timezone.utc.localize(dt)
         return dt.astimezone(get_timezone())
 
-    @classmethod
-    def to_jsonschema(cls, dump: bool = True):
-        from marshmallow_jsonschema import JSONSchema  # pylint:disable=import-error
-
-        value = JSONSchema().dump(cls.SCHEMA())  # pylint:disable=not-callable
-        if dump:
-            return cls._dump(value)
-        return value
-
-    @classmethod
-    def write_jsonschema(cls, filepath: str):
-        with open(filepath, "w") as config_file:
-            config_file.write(cls.to_jsonschema(dump=True))
-
     @staticmethod
     def _get_bool(value, default_value):
         if isinstance(value, bool):
