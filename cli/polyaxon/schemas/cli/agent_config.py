@@ -45,19 +45,12 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS,
     EV_KEYS_K8S_APP_SECRET_NAME,
     EV_KEYS_K8S_NAMESPACE,
-    EV_KEYS_SANDBOX_DEBUG,
-    EV_KEYS_SANDBOX_HOST,
-    EV_KEYS_SANDBOX_PER_CORE,
-    EV_KEYS_SANDBOX_PORT,
-    EV_KEYS_SANDBOX_SSL_ENABLED,
-    EV_KEYS_SANDBOX_WORKERS,
 )
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.lifecycle import V1ProjectFeature
 from polyaxon.parser import parser
 from polyaxon.schemas.base import BaseConfig, BaseSchema
 from polyaxon.schemas.types import ConnectionTypeSchema, V1K8sResourceType
-from polyaxon.utils.http_utils import clean_host
 from polyaxon.utils.signal_decorators import check_partial
 
 
