@@ -436,8 +436,8 @@ class ApiClient(object):
             If parameter async_req is False or missing,
             then the method will return the response directly.
         """
-        if response_types_map and '200' in response_types_map:
-            response_types_map['201'] = response_types_map['200']
+        if response_types_map and "200" in response_types_map:
+            response_types_map["201"] = response_types_map["200"]
         if not async_req:
             return self.__call_api(
                 resource_path,
