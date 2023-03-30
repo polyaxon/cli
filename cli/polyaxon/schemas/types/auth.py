@@ -14,25 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class AuthTypeSchema(BaseCamelSchema):
-    user = RefOrObject(fields.Str(), required=True)
-    password = RefOrObject(fields.Str(), required=True)
-
-    @staticmethod
-    def schema_config():
-        return V1AuthType
-
-
-class V1AuthType(BaseTypeConfig, polyaxon_sdk.V1AuthType):
+class V1AuthType(BaseTypeConfig):
     """Auth type.
 
     Args:
@@ -103,9 +90,10 @@ class V1AuthType(BaseTypeConfig, polyaxon_sdk.V1AuthType):
        * {"user": "foo", "password": "bar"}
     """
 
-    IDENTIFIER = "auth"
-    SCHEMA = AuthTypeSchema
-    REDUCED_ATTRIBUTES = ["user", "password"]
+    _IDENTIFIER = "auth"
+
+    user: StrictStr
+    password: StrictStr
 
     def __str__(self):
         return "{}:{}".format(self.user, self.password)

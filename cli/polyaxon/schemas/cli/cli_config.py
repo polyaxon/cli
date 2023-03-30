@@ -13,61 +13,39 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import StrictStr
 
 from polyaxon import dist
-from polyaxon.schemas.api.log_handler import LogHandlerSchema
-from polyaxon.schemas.cli.checks_config import ChecksConfig, ChecksSchema
-
-
-class CliSchema(ChecksSchema):
-    current_version = fields.Str(allow_none=True)
-    installation = fields.Dict(allow_none=True)
-    compatibility = fields.Dict(allow_none=True)
-    log_handler = fields.Nested(LogHandlerSchema, allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return CliConfig
+from polyaxon.schemas.api.compatibility import V1Compatibility
+from polyaxon.schemas.api.installation import V1Installation
+from polyaxon.schemas.api.log_handler import V1LogHandler
+from polyaxon.schemas.cli.checks_config import ChecksConfig
 
 
 class CliConfig(ChecksConfig):
-    SCHEMA = CliSchema
-    IDENTIFIER = "cli"
-    DIST = "dist"
-    INTERVAL = 30 * 60
+    _IDENTIFIER = "cli"
+    _DIST = "dist"
+    _INTERVAL = 30 * 60
 
-    def __init__(
-        self,
-        current_version=None,
-        installation=None,
-        compatibility=None,
-        log_handler=None,
-        last_check=None,
-    ):
-        self.current_version = current_version
-        self.installation = installation
-        self.compatibility = compatibility
-        self.log_handler = log_handler
-        super().__init__(last_check=last_check)
+    current_version: Optional[StrictStr]
+    installation: Optional[V1Installation]
+    compatibility: Optional[V1Compatibility]
+    log_handler: Optional[V1LogHandler]
 
     @property
-    def min_version(self):
-        if not self.compatibility or "cli" not in self.compatibility:
+    def min_version(self) -> Optional[str]:
+        if not self.compatibility or not self.compatibility.cli:
             return None
-        cli_version = self.compatibility["cli"] or {}
-        return cli_version.get("min")
+        return self.compatibility.cli.min
 
     @property
-    def latest_version(self):
-        if not self.compatibility or "cli" not in self.compatibility:
+    def latest_version(self) -> Optional[str]:
+        if not self.compatibility or not self.compatibility.cli:
             return None
-        cli_version = self.compatibility["cli"] or {}
-        return cli_version.get("latest")
+        return self.compatibility.cli.latest
 
     @property
-    def is_community(self):
-        return self.installation is None or dist.is_community(
-            self.installation.get(self.DIST)
-        )
+    def is_community(self) -> bool:
+        return self.installation is None or dist.is_community(self.installation.dist)

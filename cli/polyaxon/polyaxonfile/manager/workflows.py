@@ -39,7 +39,6 @@ def get_op_from_schedule(
     op_spec.queue = compiled_operation.queue
     op_spec.component.inputs = compiled_operation.inputs
     op_spec.component.outputs = compiled_operation.outputs
-    op_spec.component.contexts = compiled_operation.contexts
     op_spec.component.run = compiled_operation.run
     return op_spec
 
@@ -56,7 +55,7 @@ def get_ops_from_suggestions(
             return None
         return k not in io_keys
 
-    op_content = V1Operation.read(content)
+    op_content = V1Operation.read(content)  # TODO: Use construct
     for suggestion in suggestions:
         params = {
             k: V1Param(value=Parser.parse_expression(v, {}), context_only=has_param(k))
@@ -77,7 +76,6 @@ def get_ops_from_suggestions(
         op_spec.params = params
         op_spec.component.inputs = compiled_operation.inputs
         op_spec.component.outputs = compiled_operation.outputs
-        op_spec.component.contexts = compiled_operation.contexts
         op_spec.component.run = compiled_operation.run
         yield op_spec
 
@@ -133,7 +131,7 @@ def is_supported_in_eager_mode(spec: Union[V1Operation, V1CompiledOperation]):
                 "Received a bad configuration, eager mode not supported"
             )
 
-    if spec.get_matrix_kind() not in V1MatrixKind.eager_values:
+    if spec.get_matrix_kind() not in V1MatrixKind.eager_values():
         raise PolyaxonSchemaError(
             "This operation is defining a matrix kind `{}` "
             "which is not supported in eager mode".format(spec.get_matrix_kind())

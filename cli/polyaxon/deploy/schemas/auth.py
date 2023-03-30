@@ -13,27 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class AuthSchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-    external = fields.Str(allow_none=True)
-    use_resolver = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return AuthConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class AuthConfig(BaseConfig):
-    SCHEMA = AuthSchema
-    REDUCED_ATTRIBUTES = ["enabled", "external", "useResolver"]
-
-    def __init__(self, enabled=None, external=None, use_resolver=None):
-        self.enabled = enabled
-        self.external = external
-        self.use_resolver = use_resolver
+class AuthConfig(BaseSchemaModel):
+    enabled: Optional[bool]
+    external: Optional[StrictStr]
+    use_resolver: Optional[bool] = Field(alias="useResolver")

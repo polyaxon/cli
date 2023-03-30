@@ -16,9 +16,10 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon import types
+from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow import V1RunKind
 from polyaxon.polyflow.operations import V1CompiledOperation
 from polyaxon.polyflow.params import ops_params
@@ -84,7 +85,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
         # Passing missing params
         params.pop("param1")
         params.pop("param2")
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params=params, inputs=op.inputs, outputs=None, is_template=False
             )
@@ -149,8 +150,8 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             params=params, inputs=None, outputs=op.outputs, is_template=False
         )
 
-        params["param1"] = {"value": None}
-        params["param2"] = {"value": None}
+        params["param1"] = {}
+        params["param2"] = {}
         assert params == {p.name: p.param.to_dict() for p in validated_params}
 
     def test_required_input_no_param_only_validated_on_run(self):
@@ -163,7 +164,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "text"}},
                 inputs=config.inputs,
@@ -211,7 +212,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 1}},
                 inputs=config.inputs,
@@ -241,7 +242,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 1}, "param2": {"value": 2}},
                 inputs=config.inputs,
@@ -255,7 +256,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 1}, "param2": {"value": 2}},
                 inputs=config.inputs,
@@ -309,7 +310,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
         # Passing wrong type
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "text"}},
                 inputs=config.inputs,
@@ -317,7 +318,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
                 inputs=config.inputs,
@@ -325,7 +326,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "12.1"}},
                 inputs=config.inputs,
@@ -333,7 +334,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": {"foo": "bar"}}},
                 inputs=config.inputs,
@@ -341,7 +342,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "gs://bucket/path/to/blob/"}},
                 inputs=config.inputs,
@@ -403,7 +404,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
         # Passing wrong param
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param7": {"value": "gs://bucket/path/to/blob/"}},
                 inputs=config.inputs,
@@ -411,7 +412,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param7": {"value": "s3://test/this/is/bad/key.txt"}},
                 inputs=config.inputs,
@@ -419,7 +420,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param7": {"value": 1}},
                 inputs=config.inputs,
@@ -447,7 +448,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
         # Passing wrong type
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "text"}},
                 inputs=config.inputs,
@@ -455,7 +456,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
                 inputs=config.inputs,
@@ -463,7 +464,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": {"foo": "bar"}}},
                 inputs=config.inputs,
@@ -471,7 +472,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "gs://bucket/path/to/blob/"}},
                 inputs=config.inputs,
@@ -499,7 +500,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
         # Passing wrong type
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param2": {"value": "test"}},
                 inputs=config.inputs,
@@ -507,7 +508,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param2": {"value": {"foo": "bar"}}},
                 inputs=config.inputs,
@@ -515,7 +516,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param2": {"value": ["gs://bucket/path/to/blob/"]}},
                 inputs=config.inputs,
@@ -538,7 +539,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
         # Passing wrong param
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param7": {"value": "gs://bucket/path/to/blob/"}},
                 inputs=config.inputs,
@@ -546,7 +547,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param7": {"value": "s3://test/this/is/bad/key.txt"}},
                 inputs=config.inputs,
@@ -554,7 +555,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param7": {"value": 1}},
                 inputs=config.inputs,
@@ -607,7 +608,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
         }
         config = V1CompiledOperation.from_dict(config_dict)
         # Validation outside the context of a pipeline
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params=params, inputs=config.inputs, outputs=None, is_template=False
             )

@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow.exceptions import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.polyflow import V1RunKind
 from polyaxon.polyflow.matrix.random_search import V1RandomSearch

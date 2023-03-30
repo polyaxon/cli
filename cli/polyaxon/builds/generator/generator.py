@@ -19,11 +19,12 @@ import os
 from typing import List, Tuple, Union
 
 from polyaxon.builds.generator.dockerfile import POLYAXON_DOCKER_TEMPLATE
+from polyaxon.schemas.types import V1DockerfileType
 from polyaxon.utils.list_utils import to_list
 
 
 class DockerFileGenerator:
-    def __init__(self, build_context, destination="."):
+    def __init__(self, build_context: V1DockerfileType, destination: str = "."):
         self.build_context = build_context
         self.dockerfile_path = os.path.join(destination, build_context.filename)
 
@@ -58,7 +59,7 @@ class DockerFileGenerator:
         docker_template = jinja2.Template(POLYAXON_DOCKER_TEMPLATE)
         return docker_template.render(
             image=self.build_context.image,
-            copy=self.get_copy(self.build_context.copy, self.build_context.workdir),
+            copy=self.get_copy(self.build_context.copy_, self.build_context.workdir),
             post_run_copy=self.get_copy(
                 self.build_context.post_run_copy, self.build_context.workdir
             ),

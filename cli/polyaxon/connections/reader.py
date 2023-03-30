@@ -18,7 +18,7 @@ import os
 
 from typing import Any, List, Optional, Set, Union
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.env_vars.keys import (
     EV_KEYS_CONNECTION_CONTEXT_PATH_FORMAT,

@@ -39,17 +39,17 @@ def get_notifier_operation(
 ) -> V1Operation:
     return V1Operation(
         params={
-            "backend": V1Param(value=backend),
-            "owner": V1Param(value=owner),
-            "project": V1Param(value=project),
-            "uuid": V1Param(value=run_uuid),
-            "name": V1Param(value=run_name),
-            "condition": V1Param(value=condition),
+            "backend": V1Param.construct(value=backend),
+            "owner": V1Param.construct(value=owner),
+            "project": V1Param.construct(value=project),
+            "uuid": V1Param.construct(value=run_uuid),
+            "name": V1Param.construct(value=run_name),
+            "condition": V1Param.construct(value=condition),
         },
-        termination=V1Termination(max_retries=3),
-        component=V1Component(
+        termination=V1Termination.construct(max_retries=3),
+        component=V1Component.construct(
             name="notifier",
-            plugins=V1Plugins(
+            plugins=V1Plugins.construct(
                 auth=False,
                 collect_logs=False,
                 collect_artifacts=False,
@@ -59,15 +59,15 @@ def get_notifier_operation(
                 external_host=True,
             ),
             inputs=[
-                V1IO(name="backend", type=types.STR, is_optional=False),
-                V1IO(name="owner", type=types.STR, is_optional=False),
-                V1IO(name="project", type=types.STR, is_optional=False),
-                V1IO(name="uuid", type=types.STR, is_optional=False),
-                V1IO(name="name", type=types.STR, is_optional=True),
-                V1IO(name="condition", type=types.DICT, is_optional=True),
-                V1IO(name="connection", type=types.STR, is_optional=True),
+                V1IO.construct(name="backend", type=types.STR, is_optional=False),
+                V1IO.construct(name="owner", type=types.STR, is_optional=False),
+                V1IO.construct(name="project", type=types.STR, is_optional=False),
+                V1IO.construct(name="uuid", type=types.STR, is_optional=False),
+                V1IO.construct(name="name", type=types.STR, is_optional=True),
+                V1IO.construct(name="condition", type=types.DICT, is_optional=True),
+                V1IO.construct(name="connection", type=types.STR, is_optional=True),
             ],
-            run=V1NotifierJob(
+            run=V1NotifierJob.construct(
                 connections=[connection],
                 container=get_default_notification_container(),
             ),

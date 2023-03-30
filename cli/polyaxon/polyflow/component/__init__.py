@@ -14,5 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.polyflow.component.component import ComponentSchema, V1Component
-from polyaxon.polyflow.component.component_reference import ComponentReferenceSchema
+from polyaxon.polyflow.component.component import V1Component
+from polyaxon.polyflow.component.component_reference import V1ComponentReference

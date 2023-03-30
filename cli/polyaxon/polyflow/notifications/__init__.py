@@ -13,27 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import StrictStr
 
 from polyaxon.lifecycle import V1Statuses
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class NotificationSchema(BaseCamelSchema):
-    connections = fields.List(fields.Str(), required=True)
-    trigger = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1Statuses.allowable_values)
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Notification
-
-
-class V1Notification(BaseConfig, polyaxon_sdk.V1Notification):
+class V1Notification(BaseSchemaModel):
     """You can configure Polyaxon to send notifications to users and systems
     about event changes in your runs.
 
@@ -96,13 +84,12 @@ class V1Notification(BaseConfig, polyaxon_sdk.V1Notification):
     In this example, the notification will be sent if the run succeeds.
     """
 
-    IDENTIFIER = "notification"
-    SCHEMA = NotificationSchema
-    REDUCED_ATTRIBUTES = [
-        "connections",
-        "trigger",
-    ]
+    _IDENTIFIER = "notification"
+
+    connections: List[StrictStr]
+    trigger: Optional[V1Statuses]
 
     def to_operator(self):
-        self.trigger = self.trigger.capitalize()
-        return super().to_dict()
+        data = super().to_dict()
+        data["trigger"] = self.trigger.capitalize()
+        return data

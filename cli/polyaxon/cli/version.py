@@ -129,7 +129,7 @@ def version(check):
         Printer.heading("Platform version:")
         config_installation = (
             dict_to_tabulate(
-                config.installation,
+                config.installation.to_dict(),
                 humanize_values=True,
                 exclude_attrs=["hmac", "auth", "host"],
             )
@@ -138,7 +138,7 @@ def version(check):
         )
         dict_tabulate(config_installation)
         Printer.heading("Compatibility versions:")
-        dict_tabulate(config.compatibility)
+        dict_tabulate(config.compatibility.to_dict() if config.compatibility else {})
         check_cli_version(config)
 
 

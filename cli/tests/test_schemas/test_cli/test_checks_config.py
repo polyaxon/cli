@@ -36,17 +36,17 @@ class TestChecksConfig(BaseTestCase):
         assert config.get_interval(1) == 1
         assert config.get_interval(-1) == -1
         assert config.get_interval(-2) == -2
-        assert config.get_interval() == ChecksConfig.INTERVAL
+        assert config.get_interval() == ChecksConfig._INTERVAL
         os.environ[EV_KEYS_INTERVALS_COMPATIBILITY_CHECK] = "-1"
         assert config.get_interval() == -1
         os.environ[EV_KEYS_INTERVALS_COMPATIBILITY_CHECK] = "-2"
-        assert config.get_interval() == ChecksConfig.INTERVAL
+        assert config.get_interval() == ChecksConfig._INTERVAL
         os.environ[EV_KEYS_INTERVALS_COMPATIBILITY_CHECK] = "1"
-        assert config.get_interval() == ChecksConfig.INTERVAL
+        assert config.get_interval() == ChecksConfig._INTERVAL
         os.environ[EV_KEYS_INTERVALS_COMPATIBILITY_CHECK] = str(
-            ChecksConfig.INTERVAL + 1
+            ChecksConfig._INTERVAL + 1
         )
-        assert config.get_interval() == ChecksConfig.INTERVAL + 1
+        assert config.get_interval() == ChecksConfig._INTERVAL + 1
 
     def test_should_check(self):
         config = ChecksConfig(last_check=now())

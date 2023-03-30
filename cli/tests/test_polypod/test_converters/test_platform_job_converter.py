@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import uuid
+
 from polyaxon import settings
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.connections.kinds import V1ConnectionKind
@@ -118,7 +120,7 @@ class TestJobConverter(BaseTestCase):
         store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/claim/path", volume_claim="claim", read_only=True
             ),
         )
@@ -214,7 +216,7 @@ class TestJobConverter(BaseTestCase):
         store1 = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3://foo"),
+            schema_=V1BucketConnection(bucket="s3://foo"),
             secret=None,
         )
 
@@ -297,7 +299,7 @@ class TestJobConverter(BaseTestCase):
             env=[],
             run=["step1", "step2"],
             filename="dockerfile2",
-            path="/test",
+            path=["/test"],
         )
         containers = self.converter.get_init_containers(
             contexts=None,
@@ -376,12 +378,11 @@ class TestJobConverter(BaseTestCase):
         store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3://foo"),
+            schema_=V1BucketConnection(bucket="s3://foo"),
         )
-        tb_args1 = V1TensorboardType(
-            port=8000, uuids="uuid1,uuid2", plugins="plug1,plug2"
-        )
-        tb_args2 = V1TensorboardType(port=8000, uuids="uuid1", use_names=True)
+        uuids = [uuid.uuid4(), uuid.uuid4()]
+        tb_args1 = V1TensorboardType(port=8000, uuids=uuids, plugins="plug1,plug2")
+        tb_args2 = V1TensorboardType(port=8000, uuids=uuids[0].hex, use_names=True)
         containers = self.converter.get_init_containers(
             contexts=None,
             artifacts_store=store,
@@ -436,7 +437,7 @@ class TestJobConverter(BaseTestCase):
         expected_containers = [
             get_git_init_container(
                 connection=V1ConnectionType(
-                    name=git1.get_name(), kind=V1ConnectionKind.GIT, schema=git1
+                    name=git1.get_name(), kind=V1ConnectionKind.GIT, schema_=git1
                 ),
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 env=self.converter.get_init_service_env_vars(),
@@ -445,7 +446,7 @@ class TestJobConverter(BaseTestCase):
             get_git_init_container(
                 container=k8s_schemas.V1Container(name="test"),
                 connection=V1ConnectionType(
-                    name=git2.get_name(), kind=V1ConnectionKind.GIT, schema=git2
+                    name=git2.get_name(), kind=V1ConnectionKind.GIT, schema_=git2
                 ),
                 mount_path="/test",
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
@@ -459,7 +460,7 @@ class TestJobConverter(BaseTestCase):
         store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3://foo"),
+            schema_=V1BucketConnection(bucket="s3://foo"),
         )
 
         # No context
@@ -514,7 +515,7 @@ class TestJobConverter(BaseTestCase):
         store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3://foo"),
+            schema_=V1BucketConnection(bucket="s3://foo"),
         )
         contexts = PluginsContextsSpec.from_config(
             V1Plugins(collect_logs=True, collect_artifacts=True, auth=True)
@@ -541,10 +542,10 @@ class TestJobConverter(BaseTestCase):
 
         secret1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
             is_requested=True,
         )
-        store.secret = secret1.schema
+        store.secret = secret1.schema_
 
         polyaxon_sidecar = V1PolyaxonSidecarContainer(
             image="sidecar/sidecar",
@@ -573,7 +574,7 @@ class TestJobConverter(BaseTestCase):
         store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3://foo"),
+            schema_=V1BucketConnection(bucket="s3://foo"),
             secret=None,
         )
         contexts = PluginsContextsSpec.from_config(

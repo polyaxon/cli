@@ -13,19 +13,50 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from polyaxon.utils.enums_utils import PEnum
 
-import polyaxon_sdk
+
+class V1MatrixKind(str, PEnum):
+    RANDOM = "random"
+    GRID = "grid"
+    HYPERBAND = "hyperband"
+    BAYES = "bayes"
+    HYPEROPT = "hyperopt"
+    ITERATIVE = "iterative"
+    MAPPING = "mapping"
+
+    @classmethod
+    def eager_values(cls):
+        return {
+            cls.RANDOM,
+            cls.GRID,
+            cls.MAPPING,
+        }
+
+    @classmethod
+    def iteration_values(cls):
+        return {
+            cls.HYPERBAND,
+            cls.BAYES,
+            cls.HYPEROPT,
+            cls.ITERATIVE,
+        }
 
 
-class V1MatrixKind(polyaxon_sdk.V1MatrixKind):
-    eager_values = {
-        polyaxon_sdk.V1MatrixKind.RANDOM,
-        polyaxon_sdk.V1MatrixKind.GRID,
-        polyaxon_sdk.V1MatrixKind.MAPPING,
-    }
-    iteration_values = {
-        polyaxon_sdk.V1MatrixKind.HYPERBAND,
-        polyaxon_sdk.V1MatrixKind.BAYES,
-        polyaxon_sdk.V1MatrixKind.HYPEROPT,
-        polyaxon_sdk.V1MatrixKind.ITERATIVE,
-    }
+class V1HPKind(str, PEnum):
+    CHOICE = "choice"
+    PCHOICE = "pchoice"
+    RANGE = "range"
+    DATERANGE = "daterange"
+    DATETIMERANGE = "datetimerange"
+    LINSPACE = "linspace"
+    LOGSPACE = "logspace"
+    GEOMSPACE = "geomspace"
+    UNIFORM = "uniform"
+    QUNIFORM = "quniform"
+    LOGUNIFORM = "loguniform"
+    QLOGUNIFORM = "qloguniform"
+    NORMAL = "normal"
+    QNORMAL = "qnormal"
+    LOGNORMAL = "lognormal"
+    QLOGNORMAL = "qlognormal"

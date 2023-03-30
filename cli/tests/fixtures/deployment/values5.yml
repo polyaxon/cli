@@ -62,13 +62,17 @@ beat:
   imageTag: latest
   imagePullPolicy: Always
 
-hooks:
-  loadFixtures: true
+apiHooks:
   imageTag: latest
   imagePullPolicy: Always
+  loadFixtures: true
+  tables: true
+  syncdb: true
+  adminUser: true
 
-tablesHook:
+cleanHooks:
   imageTag: latest
+  imagePullPolicy: Always
 
 timezone: 'Europe/Berlin'
 

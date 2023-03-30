@@ -204,6 +204,7 @@ class TestDockerfileGenerator(BaseTestCase):
         builder.clean()
 
 
+@pytest.mark.api_builds
 class TestGenerate(BaseTestCase):
     def test_generate(self):
         # Create a repo folder

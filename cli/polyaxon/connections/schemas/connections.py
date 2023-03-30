@@ -13,44 +13,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
 
-from marshmallow import INCLUDE, ValidationError, fields, post_dump
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr
 
 from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig, BaseOneOfSchema
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
-class BucketConnectionSchema(BaseCamelSchema):
-    bucket = fields.Str(required=True)
+class V1BucketConnection(BaseSchemaModel):
+    _IDENTIFIER = "bucket"
 
-    @staticmethod
-    def schema_config():
-        return V1BucketConnection
-
-
-class V1BucketConnection(BaseConfig, polyaxon_sdk.V1BucketConnection):
-    SCHEMA = BucketConnectionSchema
-    IDENTIFIER = "bucket"
+    bucket: StrictStr
 
     def patch(self, schema: "V1BucketConnection"):
         self.bucket = schema.bucket or self.bucket
 
 
-class ClaimConnectionSchema(BaseCamelSchema):
-    volume_claim = fields.Str(required=True)
-    mount_path = fields.Str(required=True)
-    read_only = fields.Bool(allow_none=True)
+class V1ClaimConnection(BaseSchemaModel):
+    _IDENTIFIER = "volume_claim"
 
-    @staticmethod
-    def schema_config():
-        return V1ClaimConnection
-
-
-class V1ClaimConnection(BaseConfig, polyaxon_sdk.V1ClaimConnection):
-    SCHEMA = ClaimConnectionSchema
-    IDENTIFIER = "volume_claim"
+    volume_claim: StrictStr = Field(alias="volumeClaim")
+    mount_path: StrictStr = Field(alias="mountPath")
+    read_only: Optional[bool] = Field(alias="readOnly")
 
     def patch(self, schema: "V1ClaimConnection"):
         self.volume_claim = schema.volume_claim or self.volume_claim
@@ -58,19 +44,12 @@ class V1ClaimConnection(BaseConfig, polyaxon_sdk.V1ClaimConnection):
         self.read_only = schema.read_only or self.read_only
 
 
-class HostPathConnectionSchema(BaseCamelSchema):
-    host_path = fields.Str(required=True)
-    mount_path = fields.Str(required=True)
-    read_only = fields.Bool(allow_none=True)
+class V1HostPathConnection(BaseSchemaModel):
+    _IDENTIFIER = "host_path"
 
-    @staticmethod
-    def schema_config():
-        return V1HostPathConnection
-
-
-class V1HostPathConnection(BaseConfig, polyaxon_sdk.V1HostPathConnection):
-    SCHEMA = HostPathConnectionSchema
-    IDENTIFIER = "host_path"
+    host_path: StrictStr = Field(alias="hostPath")
+    mount_path: StrictStr = Field(alias="mountPath")
+    read_only: Optional[bool] = Field(alias="readOnly")
 
     def patch(self, schema: "V1HostPathConnection"):
         self.host_path = schema.host_path or self.host_path
@@ -78,38 +57,23 @@ class V1HostPathConnection(BaseConfig, polyaxon_sdk.V1HostPathConnection):
         self.read_only = schema.read_only or self.read_only
 
 
-class HostConnectionSchema(BaseCamelSchema):
-    url = fields.Str(required=True)
-    insecure = fields.Bool(allow_none=True)
+class V1HostConnection(BaseSchemaModel):
+    _IDENTIFIER = "host"
 
-    @staticmethod
-    def schema_config():
-        return V1HostConnection
-
-
-class V1HostConnection(BaseConfig, polyaxon_sdk.V1HostConnection):
-    SCHEMA = HostConnectionSchema
-    IDENTIFIER = "host"
+    url: StrictStr
+    insecure: Optional[bool]
 
     def patch(self, schema: "V1HostConnection"):
         self.url = schema.url or self.url
         self.insecure = schema.insecure or self.insecure
 
 
-class GitConnectionSchema(BaseCamelSchema):
-    url = fields.Str(allow_none=True)
-    revision = fields.Str(allow_none=True)
-    flags = fields.List(fields.Str(), allow_none=True)
+class V1GitConnection(BaseSchemaModel):
+    _IDENTIFIER = "git"
 
-    @staticmethod
-    def schema_config():
-        return V1GitConnection
-
-
-class V1GitConnection(BaseConfig, polyaxon_sdk.V1GitConnection):
-    SCHEMA = GitConnectionSchema
-    IDENTIFIER = "git"
-    REDUCED_ATTRIBUTES = ["url", "revision", "flags"]
+    url: Optional[StrictStr]
+    revision: Optional[StrictStr]
+    flags: Optional[List[StrictStr]]
 
     def get_name(self):
         if self.url:
@@ -122,37 +86,21 @@ class V1GitConnection(BaseConfig, polyaxon_sdk.V1GitConnection):
         self.flags = schema.flags or self.flags
 
 
-class CustomConnectionSchema(BaseCamelSchema):
-    class Meta(BaseCamelSchema.Meta):
-        unknown = INCLUDE
-
-    @staticmethod
-    def schema_config():
-        return V1CustomConnection
-
-    @post_dump(pass_original=True)
-    def unmake_custom(self, data, obj, **kwargs):
-        value = self.schema_config().remove_reduced_attrs(data)
-        value.update({k: getattr(obj, k) for k in obj._schema_keys})
-        return value
+def patch_git(schema: Dict, gitSchema: V1GitConnection):
+    if gitSchema.url:
+        setattr(schema, "url", gitSchema.url)
+    if gitSchema.revision:
+        setattr(schema, "revision", gitSchema.revision)
+    if gitSchema.flags:
+        setattr(schema, "flags", gitSchema.flags)
 
 
-class V1CustomConnection(BaseConfig):
-    UNKNOWN_BEHAVIOUR = INCLUDE
-    IDENTIFIER = "custom"
-    SCHEMA = CustomConnectionSchema
-
-    def __init__(self, **kwargs):
-        self._schema_keys = set([])
-        for k, v in kwargs.items():
-            self._schema_keys.add(k)
-            self.__setattr__(k, v)
+class V1CustomConnection(BaseSchemaModel):
+    _IDENTIFIER = "custom"
 
     @classmethod
-    def from_dict(cls, value, unknown=None, partial: bool = False):
-        return super().from_dict(
-            value=value, unknown=cls.UNKNOWN_BEHAVIOUR, partial=partial
-        )
+    def from_dict(cls, value, partial: bool = False):
+        return super().from_dict(value=value, partial=partial)
 
     def __eq__(self, other):
         """Returns true if both objects are equal"""
@@ -178,10 +126,10 @@ class V1CustomConnection(BaseConfig):
 
 
 def validate_connection(kind, definition):
-    if kind not in V1ConnectionKind.allowable_values:
-        raise ValidationError("Connection with kind {} is not supported.".format(kind))
+    if kind not in V1ConnectionKind:
+        raise ValueError("Connection with kind {} is not supported.".format(kind))
 
-    if kind in V1ConnectionKind.BLOB_VALUES:
+    if kind in V1ConnectionKind.blob_values():
         V1BucketConnection.from_dict(definition)
 
     if kind == V1ConnectionKind.VOLUME_CLAIM:
@@ -197,19 +145,12 @@ def validate_connection(kind, definition):
         V1GitConnection.from_dict(definition)
 
 
-class ConnectionSchema(BaseOneOfSchema):
-    TYPE_FIELD = "kind"
-    TYPE_FIELD_REMOVE = True
-    UNKNOWN_BEHAVIOUR = INCLUDE
-
-    class Meta:
-        unknown = INCLUDE
-
-    SCHEMAS = {
-        V1BucketConnection.IDENTIFIER: BucketConnectionSchema,
-        V1ClaimConnection.IDENTIFIER: ClaimConnectionSchema,
-        V1HostPathConnection.IDENTIFIER: HostPathConnectionSchema,
-        V1HostConnection.IDENTIFIER: HostConnectionSchema,
-        V1GitConnection.IDENTIFIER: GitConnectionSchema,
-        V1CustomConnection.IDENTIFIER: CustomConnectionSchema,
-    }
+V1Connection = Union[
+    V1BucketConnection,
+    V1ClaimConnection,
+    V1HostPathConnection,
+    V1HostConnection,
+    V1GitConnection,
+    Dict,
+    RefField,
+]

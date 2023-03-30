@@ -13,68 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Dict, List, Optional, Union
 
-from marshmallow import fields, pre_load, validate
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr
 
 from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
-    ConnectionSchema,
-    K8sResourceSchema,
-    V1BucketConnection,
-    V1ClaimConnection,
-    V1GitConnection,
-    V1HostConnection,
-    V1HostPathConnection,
-)
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.connections.schemas import V1K8sResourceSchema
+from polyaxon.connections.schemas.connections import V1Connection
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.k8s_resources import V1K8sResourceType
 
 
-class ConnectionTypeSchema(BaseCamelSchema):
-    name = fields.Str(required=True)
-    kind = fields.Str(
-        required=True, validate=validate.OneOf(V1ConnectionKind.allowable_values)
-    )
-    description = fields.Str(allow_none=True)
-    tags = fields.List(fields.Str(), allow_none=True)
-    schema = fields.Nested(ConnectionSchema, allow_none=True)
-    secret = fields.Nested(K8sResourceSchema, allow_none=True)
-    config_map = fields.Nested(K8sResourceSchema, allow_none=True)
-    env = fields.List(fields.Dict(), allow_none=True)
-    annotations = fields.Dict(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1ConnectionType
-
-    @pre_load
-    def pre_make(self, data, **kwargs):
-        schema = data.get("schema")
-        kind = data.get("kind")
-        if schema and kind:
-            schema["kind"] = "custom"
-            if kind in V1ConnectionKind.BLOB_VALUES:
-                schema["kind"] = V1BucketConnection.IDENTIFIER
-
-            if kind == V1ConnectionKind.VOLUME_CLAIM:
-                schema["kind"] = V1ClaimConnection.IDENTIFIER
-
-            if kind == V1ConnectionKind.HOST_PATH:
-                schema["kind"] = V1HostPathConnection.IDENTIFIER
-
-            if kind == V1ConnectionKind.REGISTRY:
-                schema["kind"] = V1HostConnection.IDENTIFIER
-
-            if kind == V1ConnectionKind.GIT:
-                schema["kind"] = V1GitConnection.IDENTIFIER
-
-        return data
-
-
-class V1ConnectionType(BaseConfig, polyaxon_sdk.V1ConnectionType):
+class V1ConnectionType(BaseSchemaModel):
     """Connections are how Polyaxon connects several
     types of external systems and resources to your operations.
 
@@ -303,23 +254,46 @@ class V1ConnectionType(BaseConfig, polyaxon_sdk.V1ConnectionType):
     >>>   key2: "value2"
     """
 
-    IDENTIFIER = "connection"
-    SCHEMA = ConnectionTypeSchema
-    REDUCED_ATTRIBUTES = [
-        "name",
-        "kind",
-        "description",
-        "tags",
-        "schema",
-        "secret",
-        "configMap",
-        "env",
-        "annotations",
-    ]
+    _IDENTIFIER = "connection"
+
+    name: StrictStr
+    kind: V1ConnectionKind
+    description: Optional[StrictStr]
+    tags: Optional[Union[List[StrictStr], RefField]]
+    schema_: Optional[V1Connection] = Field(alias="schema")
+    secret: Optional[Union[V1K8sResourceSchema, RefField]]
+    config_map: Optional[Union[V1K8sResourceSchema, RefField]] = Field(
+        alias="configMap"
+    )
+    env: Optional[Union[List[Dict], RefField]]
+    annotations: Optional[Union[Dict, RefField]]
+
+    # @validator("schema_", pre=True)
+    # def pre_make(cls, schema, values):
+    #     if not schema or not isinstance(schema, dict):
+    #         return schema
+    #     kind = values.get("kind")
+    #     if kind:
+    #         if kind in V1ConnectionKind.blob_values():
+    #             return V1BucketConnection.from_dict(schema)
+    #
+    #         if kind == V1ConnectionKind.VOLUME_CLAIM:
+    #             return V1ClaimConnection.from_dict(schema)
+    #
+    #         if kind == V1ConnectionKind.HOST_PATH:
+    #             return V1HostPathConnection.from_dict(schema)
+    #
+    #         if kind == V1ConnectionKind.REGISTRY:
+    #             return V1HostConnection.from_dict(schema)
+    #
+    #         if kind == V1ConnectionKind.GIT:
+    #             return V1GitConnection.from_dict(schema)
+    #         return V1CustomConnection.from_dict(schema)
+    #     return schema
 
     @classmethod
     def from_model(cls, model) -> "V1ConnectionType":
-        schema = model.schema
+        schema = model.schema_
         secret = model.secret
         config_map = model.config_map
         if hasattr(schema, "to_dict"):
@@ -343,9 +317,9 @@ class V1ConnectionType(BaseConfig, polyaxon_sdk.V1ConnectionType):
     @property
     def store_path(self) -> str:
         if self.is_mount:
-            return self.schema.mount_path.rstrip("/")
+            return self.schema_.mount_path.rstrip("/")
         if self.is_bucket:
-            bucket = self.schema.bucket.rstrip("/")
+            bucket = self.schema_.bucket.rstrip("/")
             if self.is_wasb:
                 from polyaxon.parser.parser import parse_wasbs_path
 
@@ -386,10 +360,10 @@ class V1ConnectionType(BaseConfig, polyaxon_sdk.V1ConnectionType):
 
     def get_secret(self) -> Optional[V1K8sResourceType]:
         if self.secret:
-            return V1K8sResourceType(name=self.secret.name, schema=self.secret)
+            return V1K8sResourceType(name=self.secret.name, schema_=self.secret)
         return None
 
     def get_config_map(self) -> Optional[V1K8sResourceType]:
         if self.config_map:
-            return V1K8sResourceType(name=self.config_map.name, schema=self.config_map)
+            return V1K8sResourceType(name=self.config_map.name, schema_=self.config_map)
         return None

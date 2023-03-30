@@ -25,6 +25,7 @@ from polyaxon.cli.dashboard import get_dashboard_url
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.client import PolyaxonClient, ProjectClient
 from polyaxon.lifecycle import V1ProjectVersionKind
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.formatting import (
     Printer,
     dict_tabulate,
@@ -35,7 +36,6 @@ from polyaxon.utils.formatting import (
 from polyaxon.utils.fqn_utils import get_versioned_entity_full_name
 from polyaxon.utils.query_params import get_query_params
 from polyaxon.utils.validation import validate_tags
-from polyaxon_sdk.rest import ApiException
 
 
 def get_version_details(response, content_callback: Callable = None):

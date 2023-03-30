@@ -14,12 +14,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from uuid import UUID
+
+from pydantic import StrictStr
 
 
-class UUID(fields.UUID):
-    """A UUID field."""
+class UUIDStr(StrictStr):
+    @classmethod
+    def __get_validators__(cls) -> "CallableGenerator":
+        yield cls.validate
 
-    def _serialize(self, value, attr, obj, **kwargs):
-        validated = str(self._validated(value).hex) if value is not None else None
-        return super(fields.String, self)._serialize(validated, attr, obj)  # noqa
+    @classmethod
+    def validate(cls, value, **kwargs):
+        if isinstance(value, str):
+            return UUID(value).hex
+        if isinstance(value, UUID):
+            return value.hex
+        if not value:
+            return value
+
+        field = kwargs.get("field")
+        raise TypeError(
+            f"Field `{field.name}` value be a valid UUID, received `{value}` instead."
+        )

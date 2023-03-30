@@ -13,13 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import pytest
+import uuid
+
+from pydantic import ValidationError
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.schemas import V1BucketConnection, V1ClaimConnection
 from polyaxon.containers.names import INIT_TENSORBOARD_CONTAINER_PREFIX
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.common import constants
@@ -41,11 +44,21 @@ class TestInitTensorboard(BaseTestCase):
             name="test",
             kind=V1ConnectionKind.S3,
             tags=["test", "foo"],
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
+        with self.assertRaises(ValidationError):
+            V1TensorboardType(
+                port=6006,
+                uuids="uuid1,  uuid2",
+                use_names=True,
+                path_prefix="/path/prefix",
+                plugins="plug1, plug2",
+            )
+
+        uuids = [uuid.uuid4(), uuid.uuid4()]
         tb_args = V1TensorboardType(
             port=6006,
-            uuids="uuid1,  uuid2",
+            uuids=uuids,
             use_names=True,
             path_prefix="/path/prefix",
             plugins="plug1, plug2",
@@ -70,12 +83,13 @@ class TestInitTensorboard(BaseTestCase):
             ),
             get_auth_context_mount(read_only=True),
         ]
+        uuids_str = ",".join([u.hex for u in uuids])
         assert container.args == [
             "--context-from=s3//:foo",
             "--context-to={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
             "--connection-kind=s3",
             "--port=6006",
-            "--uuids=uuid1,uuid2",
+            "--uuids={}".format(uuids_str),
             "--use-names",
             "--path-prefix=/path/prefix",
             "--plugins=plug1,plug2",
@@ -85,16 +99,18 @@ class TestInitTensorboard(BaseTestCase):
             name="test",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             tags=["test", "foo"],
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/claim/path", volume_claim="claim", read_only=True
             ),
         )
         tb_args = V1TensorboardType(
-            port=2222, uuids="uuid1", use_names=False, plugins="plug1"
+            port=2222, uuids=uuids[0].hex, use_names=False, plugins="plug1"
         )
         container = get_tensorboard_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init/init", image_tag="", image_pull_policy="IfNotPresent"
+                image="init/init",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             tb_args=tb_args,
             artifacts_store=store,
@@ -111,7 +127,7 @@ class TestInitTensorboard(BaseTestCase):
             "--context-to={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
             "--connection-kind=volume_claim",
             "--port=2222",
-            "--uuids=uuid1",
+            "--uuids={}".format(uuids[0].hex),
             "--plugins=plug1",
         ]
         assert container.resources == get_init_resources()

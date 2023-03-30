@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow.exceptions import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.polyflow.matrix import V1Hyperband
 from polyaxon.polyflow.optimization import V1Optimization, V1OptimizationMetric

@@ -14,41 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import INCLUDE, fields
+from typing import Dict, List, Optional
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from pydantic import Extra, Field, StrictStr
 
-
-class IngressSchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-    host_name = fields.Str(allow_none=True)
-    path = fields.Str(allow_none=True)
-    tls = fields.List(fields.Dict(allow_none=True), allow_none=True)
-    annotations = fields.Dict(allow_none=True)
-
-    class Meta:
-        unknown = INCLUDE
-
-    @staticmethod
-    def schema_config():
-        return IngressConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class IngressConfig(BaseConfig):
-    SCHEMA = IngressSchema
-    REDUCED_ATTRIBUTES = ["enabled", "hostName", "tls", "annotations", "path"]
+class IngressConfig(BaseSchemaModel):
+    enabled: Optional[bool]
+    host_name: Optional[StrictStr] = Field(alias="hostName")
+    path: Optional[StrictStr]
+    tls: Optional[List[Dict]]
+    annotations: Optional[Dict]
 
-    def __init__(
-        self,
-        enabled=None,
-        host_name=None,
-        path=None,
-        tls=None,
-        annotations=None,
-        **kwargs,
-    ):
-        self.enabled = enabled
-        self.host_name = host_name
-        self.path = path
-        self.tls = tls
-        self.annotations = annotations
+    class Config:
+        extra = Extra.ignore

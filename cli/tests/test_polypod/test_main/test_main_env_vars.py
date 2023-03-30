@@ -50,48 +50,48 @@ class TestMainEnvVars(BaseTestCase):
         # Secrets
         self.resource1 = V1K8sResourceType(
             name="non_mount_test1",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=False,
         )
         self.resource2 = V1K8sResourceType(
             name="non_mount_test2",
-            schema=V1K8sResourceSchema(name="ref"),
+            schema_=V1K8sResourceSchema(name="ref"),
             is_requested=False,
         )
 
         self.resource3 = V1K8sResourceType(
             name="non_mount_test1",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=True,
         )
         self.resource4 = V1K8sResourceType(
             name="non_mount_test2",
-            schema=V1K8sResourceSchema(name="ref"),
+            schema_=V1K8sResourceSchema(name="ref"),
             is_requested=True,
         )
 
         self.resource5 = V1K8sResourceType(
             name="non_mount_test2",
-            schema=V1K8sResourceSchema(name="ref"),
+            schema_=V1K8sResourceSchema(name="ref"),
             is_requested=True,
         )
 
         self.resource6 = V1K8sResourceType(
             name="mount_test",
-            schema=V1K8sResourceSchema(name="ref", mount_path="/test"),
+            schema_=V1K8sResourceSchema(name="ref", mount_path="/test"),
             is_requested=True,
         )
         # Connections
         self.bucket_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
-            secret=self.resource3.schema,
+            schema_=V1BucketConnection(bucket="s3//:foo"),
+            secret=self.resource3.schema_,
         )
         self.mount_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
@@ -286,8 +286,8 @@ class TestMainEnvVars(BaseTestCase):
         connection = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
-            secret=self.resource6.schema,
+            schema_=V1BucketConnection(bucket="s3//:foo"),
+            secret=self.resource6.schema_,
         )
 
         env_vars = get_env_vars(

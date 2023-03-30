@@ -13,11 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from polyaxon.polyflow.run.cleaner import CleanerJobSchema, V1CleanerJob
-from polyaxon.polyflow.run.dag import DagSchema, V1Dag
-from polyaxon.polyflow.run.dask import DaskSchema, V1Dask
-from polyaxon.polyflow.run.flink import FlinkSchema, V1Flink
-from polyaxon.polyflow.run.job import JobSchema, V1Job
+from typing import Union
+from typing_extensions import Annotated
+
+from pydantic import Field
+
+from polyaxon.polyflow.run.cleaner import V1CleanerJob
+from polyaxon.polyflow.run.dag import V1Dag
+from polyaxon.polyflow.run.dask import V1Dask
+from polyaxon.polyflow.run.flink import V1Flink
+from polyaxon.polyflow.run.job import V1Job
 from polyaxon.polyflow.run.kinds import (
     V1CloningKind,
     V1PipelineKind,
@@ -25,51 +30,44 @@ from polyaxon.polyflow.run.kinds import (
     V1RunKind,
 )
 from polyaxon.polyflow.run.kubeflow.clean_pod_policy import V1CleanPodPolicy
-from polyaxon.polyflow.run.kubeflow.mpi_job import MPIJobSchema, V1MPIJob
-from polyaxon.polyflow.run.kubeflow.mx_job import MXJobMode, MXJobSchema, V1MXJob
-from polyaxon.polyflow.run.kubeflow.paddle_job import PaddleJobSchema, V1PaddleJob
-from polyaxon.polyflow.run.kubeflow.pytorch_job import PytorchJobSchema, V1PytorchJob
-from polyaxon.polyflow.run.kubeflow.replica import KFReplicaSchema, V1KFReplica
+from polyaxon.polyflow.run.kubeflow.mpi_job import V1MPIJob
+from polyaxon.polyflow.run.kubeflow.mx_job import MXJobMode, V1MXJob
+from polyaxon.polyflow.run.kubeflow.paddle_job import V1PaddleJob
+from polyaxon.polyflow.run.kubeflow.pytorch_job import V1PytorchJob
+from polyaxon.polyflow.run.kubeflow.replica import V1KFReplica
 from polyaxon.polyflow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
-from polyaxon.polyflow.run.kubeflow.tf_job import TFJobSchema, V1TFJob
-from polyaxon.polyflow.run.kubeflow.xgboost_job import V1XGBoostJob, XGBoostJobSchema
-from polyaxon.polyflow.run.notifier import NotifierJobSchema, V1NotifierJob
+from polyaxon.polyflow.run.kubeflow.tf_job import V1TFJob
+from polyaxon.polyflow.run.kubeflow.xgboost_job import V1XGBoostJob
+from polyaxon.polyflow.run.notifier import V1NotifierJob
 from polyaxon.polyflow.run.patch import validate_run_patch
-from polyaxon.polyflow.run.ray import RaySchema, V1Ray
+from polyaxon.polyflow.run.ray import V1Ray
 from polyaxon.polyflow.run.resources import V1RunResources
-from polyaxon.polyflow.run.service import ServiceSchema, V1Service
-from polyaxon.polyflow.run.spark.replica import SparkReplicaSchema, V1SparkReplica
-from polyaxon.polyflow.run.spark.spark import (
-    SparkSchema,
-    V1Spark,
-    V1SparkDeploy,
-    V1SparkType,
-)
-from polyaxon.polyflow.run.tuner import TunerJobSchema, V1TunerJob
-from polyaxon.schemas.base import BaseOneOfSchema
+from polyaxon.polyflow.run.service import V1Service
+from polyaxon.polyflow.run.spark.replica import V1SparkReplica
+from polyaxon.polyflow.run.spark.spark import V1Spark, V1SparkDeploy, V1SparkType
+from polyaxon.polyflow.run.tuner import V1TunerJob
 
-
-class RunSchema(BaseOneOfSchema):
-    TYPE_FIELD = "kind"
-    TYPE_FIELD_REMOVE = False
-    SCHEMAS = {
-        V1RunKind.JOB: JobSchema,
-        V1RunKind.SERVICE: ServiceSchema,
-        V1RunKind.DAG: DagSchema,
-        V1RunKind.MPIJOB: MPIJobSchema,
-        V1RunKind.PYTORCHJOB: PytorchJobSchema,
-        V1RunKind.TFJOB: TFJobSchema,
-        V1RunKind.MXJOB: MXJobSchema,
-        V1RunKind.PADDLEJOB: PaddleJobSchema,
-        V1RunKind.XGBJOB: XGBoostJobSchema,
-        V1RunKind.SPARK: SparkSchema,
-        V1RunKind.FLINK: FlinkSchema,
-        V1RunKind.DASK: DaskSchema,
-        V1RunKind.RAY: RaySchema,
-        V1RunKind.NOTIFIER: NotifierJobSchema,
-        V1RunKind.CLEANER: CleanerJobSchema,
-        V1RunKind.TUNER: TunerJobSchema,
-    }
+V1Runtime = Annotated[
+    Union[
+        V1Job,
+        V1Service,
+        V1Dag,
+        V1MPIJob,
+        V1PytorchJob,
+        V1TFJob,
+        V1MXJob,
+        V1PaddleJob,
+        V1XGBoostJob,
+        V1Spark,
+        V1Flink,
+        V1Dask,
+        V1Ray,
+        V1NotifierJob,
+        V1CleanerJob,
+        V1TunerJob,
+    ],
+    Field(discriminator="kind"),
+]
 
 
 class RunMixin:

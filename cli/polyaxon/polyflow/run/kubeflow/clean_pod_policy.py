@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import polyaxon_sdk
+from polyaxon.utils.enums_utils import PEnum
 
 
-class V1CleanPodPolicy(polyaxon_sdk.V1CleanPodPolicy):
-    allowable_values = polyaxon_sdk.V1CleanPodPolicy.allowable_values + [
-        i.lower() for i in polyaxon_sdk.V1CleanPodPolicy.allowable_values
-    ]
+class V1CleanPodPolicy(str, PEnum):
+    ALL = "All"
+    RUNNING = "Running"
+    var_NONE = "None"

@@ -18,14 +18,21 @@ import ast
 import jinja2
 
 from collections.abc import Mapping
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from enum import Enum
 from typing import Dict
+from uuid import UUID
 
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.polyaxonfile.specs.libs.engine import get_engine
 from polyaxon.polyaxonfile.specs.sections import Sections
 from polyaxon.polyflow import ParamSpec
-from polyaxon.utils.serialization import date_serialize, datetime_serialize
+from polyaxon.utils.serialization import (
+    date_serialize,
+    datetime_serialize,
+    timedelta_serialize,
+    uuid_serialize,
+)
 
 try:
     import numpy as np
@@ -219,10 +226,16 @@ class Parser:
     ):
         if isinstance(expression, (int, float, complex, type(None))):
             return expression
+        if isinstance(expression, Enum):
+            return expression.value
         if isinstance(expression, datetime):
-            return datetime_serialize("__dt__", {"__dt__": expression})
+            return datetime_serialize(expression)
         if isinstance(expression, date):
-            return date_serialize("__date__", {"__date__": expression})
+            return date_serialize(expression)
+        if isinstance(expression, timedelta):
+            return timedelta_serialize(expression)
+        if isinstance(expression, UUID):
+            return uuid_serialize(expression)
         if np and isinstance(expression, np.integer):
             return int(expression)
         if np and isinstance(expression, np.floating):

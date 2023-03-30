@@ -13,18 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import ValidationError, fields, validate, validates_schema
+from pydantic import Field, PositiveInt, validator
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.early_stopping import EarlyStoppingSchema
+from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.polyflow.matrix.params import HpParamSchema
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-from polyaxon.utils.signal_decorators import check_partial
+from polyaxon.polyflow.matrix.params import V1HpParam
+from polyaxon.schemas.base import skip_partial
+from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
 def validate_matrix(matrix):
@@ -33,7 +32,7 @@ def validate_matrix(matrix):
 
     for key, value in matrix.items():
         if value.is_distribution:
-            raise ValidationError(
+            raise ValueError(
                 "`{}` defines a distribution, "
                 "and it cannot be used with grid search.".format(key)
             )
@@ -41,27 +40,7 @@ def validate_matrix(matrix):
     return matrix
 
 
-class GridSearchSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1MatrixKind.GRID))
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(HpParamSchema), required=True
-    )
-    concurrency = RefOrObject(fields.Int(allow_none=True))
-    num_runs = RefOrObject(fields.Int(allow_none=True, validate=validate.Range(min=1)))
-    early_stopping = fields.List(fields.Nested(EarlyStoppingSchema), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1GridSearch
-
-    @validates_schema
-    @check_partial
-    def validate_matrix(self, data, **kwargs):
-        """Validates matrix data and creates the config objects"""
-        validate_matrix(data.get("params"))
-
-
-class V1GridSearch(BaseSearchConfig, polyaxon_sdk.V1GridSearch):
+class V1GridSearch(BaseSearchConfig):
     """Grid search is essentially an exhaustive search through a manually
     specified set of hyperparameters.
 
@@ -228,6 +207,23 @@ class V1GridSearch(BaseSearchConfig, polyaxon_sdk.V1GridSearch):
     ```
     """
 
-    SCHEMA = GridSearchSchema
-    IDENTIFIER = V1MatrixKind.GRID
-    REDUCED_ATTRIBUTES = ["numRuns", "concurrency", "earlyStopping"]
+    _IDENTIFIER = V1MatrixKind.GRID
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    params: Union[Dict[str, V1HpParam], RefField]
+    num_runs: Optional[Union[PositiveInt, RefField]] = Field(alias="numRuns")
+    concurrency: Optional[Union[PositiveInt, RefField]]
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping"
+    )
+
+    @validator("num_runs", "concurrency", pre=True)
+    def check_values(cls, v, field):
+        if v and v < 1:
+            raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")
+        return v
+
+    @validator("params", always=True)
+    @skip_partial
+    def validate_matrix(cls, params):
+        return validate_matrix(params)

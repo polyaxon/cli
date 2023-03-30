@@ -14,8 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import polyaxon_sdk
+from polyaxon.utils.enums_utils import PEnum
 
 
-class V1RunPending(polyaxon_sdk.V1RunPending):
-    pass
+class V1RunPending(str, PEnum):
+    APPROVAL = "approval"
+    UPLOAD = "upload"
+    CACHE = "cache"
+    BUILD = "build"

@@ -13,9 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from polyaxon.polyflow.references.dag import DagRefSchema, V1DagRef
-from polyaxon.polyflow.references.hub import HubRefSchema, V1HubRef
+from polyaxon.polyflow.references.dag import V1DagRef
+from polyaxon.polyflow.references.hub import V1HubRef
 from polyaxon.polyflow.references.mixin import RefMixin
-from polyaxon.polyflow.references.path import PathRefSchema, V1PathRef
-from polyaxon.polyflow.references.url import UrlRefSchema, V1UrlRef
+from polyaxon.polyflow.references.path import V1PathRef
+from polyaxon.polyflow.references.url import V1UrlRef

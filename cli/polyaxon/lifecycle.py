@@ -13,13 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import polyaxon_sdk
+import datetime
 
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import StrictStr
+
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.utils.date_utils import parse_datetime
+from polyaxon.utils.enums_utils import PEnum
 from polyaxon.utils.tz_utils import now
 
 
-class V1Stages(polyaxon_sdk.V1Stages):
+class V1Stages(str, PEnum):
     """Stage is the information that represents the current stage of an entity's version.
 
     You can describe what stage a component or a model version is at.
@@ -33,10 +39,13 @@ class V1Stages(polyaxon_sdk.V1Stages):
         DISABLED: "disabled"
     """
 
-    pass
+    TESTING = "testing"
+    STAGING = "staging"
+    PRODUCTION = "production"
+    DISABLED = "disabled"
 
 
-class V1Statuses(polyaxon_sdk.V1Statuses):
+class V1Statuses(str, PEnum):
     """Status is the information that represents the current state of a run.
 
     By examining a run status and/or the history of its statuses,
@@ -65,14 +74,37 @@ class V1Statuses(polyaxon_sdk.V1Statuses):
         UNKNOWN: "unknown"
     """
 
-    allowable_hook_values = [
-        polyaxon_sdk.V1Statuses.FAILED,
-        polyaxon_sdk.V1Statuses.STOPPED,
-        polyaxon_sdk.V1Statuses.SUCCEEDED,
-        polyaxon_sdk.V1Statuses.SKIPPED,
-        polyaxon_sdk.V1Statuses.UPSTREAM_FAILED,
-        polyaxon_sdk.V1Statuses.DONE,
-    ]
+    CREATED = "created"
+    RESUMING = "resuming"
+    ON_SCHEDULE = "on_schedule"
+    COMPILED = "compiled"
+    QUEUED = "queued"
+    SCHEDULED = "scheduled"
+    STARTING = "starting"
+    RUNNING = "running"
+    PROCESSING = "processing"
+    STOPPING = "stopping"
+    FAILED = "failed"
+    STOPPED = "stopped"
+    SUCCEEDED = "succeeded"
+    SKIPPED = "skipped"
+    WARNING = "warning"
+    UNSCHEDULABLE = "unschedulable"
+    UPSTREAM_FAILED = "upstream_failed"
+    RETRYING = "retrying"
+    UNKNOWN = "unknown"
+    DONE = "done"
+
+    @classmethod
+    def get_allowable_hook_values(cls):
+        return {
+            cls.FAILED,
+            cls.STOPPED,
+            cls.SUCCEEDED,
+            cls.SKIPPED,
+            cls.UPSTREAM_FAILED,
+            cls.DONE,
+        }
 
 
 class StatusColor:
@@ -280,7 +312,7 @@ class LifeCycle:
         return False
 
 
-class ConditionMixin:
+class BaseCondition(BaseSchemaModel):
     @classmethod
     def get_condition(
         cls,
@@ -311,19 +343,45 @@ class ConditionMixin:
         return parse_datetime(value)
 
 
-class V1StatusCondition(ConditionMixin, polyaxon_sdk.V1StatusCondition):
-    pass
+class V1StatusCondition(BaseCondition):
+    type: Optional[V1Statuses]
+    status: Optional[Union[bool, str]]
+    reason: Optional[StrictStr]
+    message: Optional[StrictStr]
+    last_update_time: Optional[datetime.datetime]
+    last_transition_time: Optional[datetime.datetime]
 
 
-class V1StageCondition(ConditionMixin, polyaxon_sdk.V1StageCondition):
-    pass
+class V1Status(BaseSchemaModel):
+    uuid: Optional[StrictStr]
+    status: Optional[V1Statuses]
+    status_conditions: Optional[List[V1StatusCondition]]
+    meta_info: Optional[Dict[str, Any]]
 
 
-class V1ProjectVersionKind(polyaxon_sdk.V1ProjectVersionKind):
-    pass
+class V1StageCondition(BaseCondition):
+    type: Optional[V1Stages]
+    status: Optional[Union[bool, str]]
+    reason: Optional[StrictStr]
+    message: Optional[StrictStr]
+    last_update_time: Optional[datetime.datetime]
+    last_transition_time: Optional[datetime.datetime]
 
 
-class V1ProjectFeature(V1ProjectVersionKind):
+class V1Stage(BaseSchemaModel):
+    uuid: Optional[StrictStr]
+    stage: Optional[V1Stages]
+    stage_conditions: Optional[List[V1StageCondition]]
+
+
+class V1ProjectVersionKind(str, PEnum):
+    COMPONENT = "component"
+    MODEL = "model"
+    ARTIFACT = "artifact"
+
+
+class V1ProjectFeature(str, PEnum):
+    COMPONENT = "component"
+    MODEL = "model"
+    ARTIFACT = "artifact"
     RUNTIME = "runtime"
-
-    allowable_values = V1ProjectVersionKind.allowable_values + [RUNTIME]

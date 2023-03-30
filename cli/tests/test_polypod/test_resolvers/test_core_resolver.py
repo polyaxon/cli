@@ -118,31 +118,31 @@ class TestResolver(BaseTestCase):
         AgentConfigManager.CONFIG_PATH = fpath
         secret1 = V1K8sResourceType(
             name="secret1",
-            schema=V1K8sResourceSchema(name="secret1"),
+            schema_=V1K8sResourceSchema(name="secret1"),
             is_requested=True,
         )
         secret2 = V1K8sResourceType(
             name="secret2",
-            schema=V1K8sResourceSchema(name="secret2"),
+            schema_=V1K8sResourceSchema(name="secret2"),
             is_requested=True,
         )
         connection1 = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
-            secret=secret1.schema,
+            schema_=V1BucketConnection(bucket="s3//:foo"),
+            secret=secret1.schema_,
         )
         connection2 = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gcs//:foo"),
-            secret=secret1.schema,
+            schema_=V1BucketConnection(bucket="gcs//:foo"),
+            secret=secret1.schema_,
         )
         connection3 = V1ConnectionType(
             name="test_wasb",
             kind=V1ConnectionKind.WASB,
-            schema=V1BucketConnection(bucket="wasbs//:foo"),
-            secret=secret2.schema,
+            schema_=V1BucketConnection(bucket="wasbs//:foo"),
+            secret=secret2.schema_,
         )
         settings.AGENT_CONFIG = AgentConfig(
             namespace="foo",
@@ -165,7 +165,10 @@ class TestResolver(BaseTestCase):
         assert resolver.namespace == "foo"
         assert resolver.connection_by_names == {connection1.name: connection1}
         assert resolver.artifacts_store == connection1
-        assert [s.schema for s in resolver.secrets] == [secret1.schema, secret2.schema]
+        assert [s.schema_ for s in resolver.secrets] == [
+            secret1.schema_,
+            secret2.schema_,
+        ]
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
 
@@ -205,7 +208,10 @@ class TestResolver(BaseTestCase):
             connection1.name: connection1,
             connection3.name: connection3,
         }
-        assert [s.schema for s in resolver.secrets] == [secret1.schema, secret2.schema]
+        assert [s.schema_ for s in resolver.secrets] == [
+            secret1.schema_,
+            secret2.schema_,
+        ]
         assert resolver.artifacts_store == connection1
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
@@ -251,7 +257,10 @@ class TestResolver(BaseTestCase):
             connection2.name: connection2,
             connection1.name: connection1,
         }
-        assert [s.schema for s in resolver.secrets] == [secret1.schema, secret2.schema]
+        assert [s.schema_ for s in resolver.secrets] == [
+            secret1.schema_,
+            secret2.schema_,
+        ]
         assert resolver.artifacts_store == connection1
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()

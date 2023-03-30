@@ -155,7 +155,7 @@ def cli(context, verbose, offline):
             context.invoked_subcommand in non_check_cmds
             or offline
             or settings.CLIENT_CONFIG.no_api
-            or PolyaxonServices.SERVICE
+            or PolyaxonServices.get_service_name()
             or DOCS_GEN
         )
         and not settings.CLI_CONFIG.installation

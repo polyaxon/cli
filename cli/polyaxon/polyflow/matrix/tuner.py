@@ -13,30 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.params import ParamSchema
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-
-
-class TunerSchema(BaseCamelSchema):
-    hub_ref = fields.Str(required=True)
-    queue = RefOrObject(fields.Str(allow_none=True))
-    presets = RefOrObject(fields.List(fields.Str(allow_none=True)))
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(ParamSchema), allow_none=True
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Tuner
+from polyaxon.polyflow.params import V1Param
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
-class V1Tuner(BaseConfig, polyaxon_sdk.V1Tuner):
+class V1Tuner(BaseSchemaModel):
     """You can configure Polyaxon to use a custom tuner to customize the built-in optimizers.
 
     The tuner allows you to customize the behavior of the operations that
@@ -135,11 +121,9 @@ class V1Tuner(BaseConfig, polyaxon_sdk.V1Tuner):
     ```
     """
 
-    IDENTIFIER = "tuner"
-    SCHEMA = TunerSchema
-    REDUCED_ATTRIBUTES = [
-        "hubRef",
-        "params",
-        "queue",
-        "presets",
-    ]
+    _IDENTIFIER = "tuner"
+
+    hub_ref: StrictStr = Field(alias="hubRef")
+    queue: Optional[StrictStr]
+    presets: Optional[Union[List[StrictStr], RefField]]
+    params: Optional[Union[Dict[str, V1Param], RefField]]

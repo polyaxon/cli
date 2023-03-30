@@ -327,16 +327,20 @@ cleaner:
               - "polyaxon-helper"
           topologyKey: "kubernetes.io/hostname"
 
-hooks:
-  image: polyaxon/polyaxon-manage
+apiHooks:
+  image: polyaxon/polyaxon-api
   imageTag: 1.0.9
   imagePullPolicy: Always
 
-tablesHook:
-  image: polyaxon/polyaxon-tables
-  imageTag: 0.4.4
-  imagePullPolicy: Always
+  loadFixtures: true
+  tables: true
+  syncdb: true
+  adminUser: true
 
+cleanHooks:
+  image: polyaxon/polyaxon-cli
+  imageTag: 1.22.0
+  imagePullPolicy: IfNotPresent
 
 externalServices:
   postgresql:

@@ -126,7 +126,7 @@ setup(
     entry_points={
         "console_scripts": ["polyaxon = polyaxon.main:cli", "plx = polyaxon.main:cli"]
     },
-    python_requires=">=3.5",
+    python_requires=">=3.7",
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",

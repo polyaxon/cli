@@ -19,6 +19,7 @@ from kubernetes.client import Configuration
 from polyaxon import settings
 from polyaxon.exceptions import PolyaxonAgentError
 from polyaxon.polypod.mixins import MIXIN_MAPPING, BaseMixin
+from polyaxon.utils.enums_utils import get_enum_value
 
 
 class BaseSpawner:
@@ -43,7 +44,9 @@ class BaseSpawner:
     def _get_mixin_for_kind(kind: str) -> BaseMixin:
         m = MIXIN_MAPPING.get(kind)
         if not m:
-            raise PolyaxonAgentError("Agent received unrecognized kind {}".format(kind))
+            raise PolyaxonAgentError(
+                "Agent received unrecognized kind {}".format(get_enum_value(kind))
+            )
         return m
 
     @property

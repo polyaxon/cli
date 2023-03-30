@@ -32,5 +32,7 @@ class TestCliConfig(BaseTestCase):
         config = CliConfig.from_dict(config_dict)
         config_to_dict = config.to_dict()
         config_to_dict.pop("last_check")
+        assert config._INTERVAL == 30 * 60
+        assert config_to_dict != config_dict
+        config_dict.pop("log_handler")
         assert config_to_dict == config_dict
-        assert config.INTERVAL == 30 * 60

@@ -14,55 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from typing import Optional
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from pydantic import Field, StrictInt, StrictStr
 
-
-class EmailSchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-    email_from = fields.Str(allow_none=True, data_key="from")
-    host = fields.Str(allow_none=True)
-    port = fields.Int(allow_none=True)
-    use_tls = fields.Bool(allow_none=True)
-    host_user = fields.Str(allow_none=True)
-    host_password = fields.Str(allow_none=True)
-    backend = fields.Str(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return EmailConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class EmailConfig(BaseConfig):
-    SCHEMA = EmailSchema
-    REDUCED_ATTRIBUTES = [
-        "enabled",
-        "from",
-        "host",
-        "port",
-        "useTls",
-        "hostUser",
-        "hostPassword",
-        "backend",
-    ]
-
-    def __init__(
-        self,  # noqa
-        enabled=None,
-        email_from=None,
-        host=None,
-        port=None,
-        use_tls=None,
-        host_user=None,
-        host_password=None,
-        backend=None,
-    ):
-        self.enabled = enabled
-        self.email_from = email_from
-        self.host = host
-        self.port = port
-        self.use_tls = use_tls
-        self.host_user = host_user
-        self.host_password = host_password
-        self.backend = backend
+class EmailConfig(BaseSchemaModel):
+    enabled: Optional[bool]
+    email_from: Optional[StrictStr] = Field(alias="from")
+    host: Optional[StrictStr]
+    port: Optional[StrictInt]
+    use_tls: Optional[bool] = Field(alias="useTls")
+    host_user: Optional[StrictStr] = Field(alias="hostUser")
+    host_password: Optional[StrictStr] = Field(alias="hostPassword")
+    backend: Optional[StrictStr]

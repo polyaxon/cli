@@ -16,7 +16,7 @@
 
 import os
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.api import LOCALHOST
 from polyaxon.env_vars.keys import EV_KEYS_NO_CONFIG, EV_KEYS_SET_AGENT

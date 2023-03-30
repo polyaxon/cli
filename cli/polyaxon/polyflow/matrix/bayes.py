@@ -13,174 +13,124 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import ValidationError, fields, validate, validates_schema
+from pydantic import Field, PositiveInt, StrictInt, root_validator, validator
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.early_stopping import EarlyStoppingSchema
+from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.polyflow.matrix.params import HpParamSchema
-from polyaxon.polyflow.matrix.tuner import TunerSchema
-from polyaxon.polyflow.optimization import OptimizationMetricSchema
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-from polyaxon.utils.signal_decorators import check_partial
+from polyaxon.polyflow.matrix.params import V1HpParam
+from polyaxon.polyflow.matrix.tuner import V1Tuner
+from polyaxon.polyflow.optimization import V1OptimizationMetric
+from polyaxon.schemas.base import BaseSchemaModel, skip_partial
+from polyaxon.schemas.fields import RefField
+from polyaxon.utils.enums_utils import PEnum
 
 
-class AcquisitionFunctions:
+class AcquisitionFunctions(str, PEnum):
     UCB = "ucb"
     EI = "ei"
     POI = "poi"
 
-    UCB_VALUES = [UCB, UCB.upper(), UCB.capitalize()]
-    EI_VALUES = [EI, EI.upper(), EI.capitalize()]
-    POI_VALUES = [POI, POI.upper(), POI.capitalize()]
+    @classmethod
+    def ucb_values(cls):
+        return {cls.UCB, cls.UCB.upper(), cls.UCB.capitalize()}
 
-    VALUES = UCB_VALUES + EI_VALUES + POI_VALUES
+    @classmethod
+    def ei_values(cls):
+        return {cls.EI, cls.EI.upper(), cls.EI.capitalize()}
+
+    @classmethod
+    def poi_values(cls):
+        return {cls.POI, cls.POI.upper(), cls.POI.capitalize()}
 
     @classmethod
     def is_ucb(cls, value):
-        return value in cls.UCB_VALUES
+        return value in cls.ucb_values()
 
     @classmethod
     def is_ei(cls, value):
-        return value in cls.EI_VALUES
+        return value in cls.ei_values()
 
     @classmethod
     def is_poi(cls, value):
-        return value in cls.POI_VALUES
+        return value in cls.poi_values()
 
 
-class GaussianProcessesKernels:
+class GaussianProcessesKernels(str, PEnum):
     RBF = "rbf"
     MATERN = "matern"
 
-    RBF_VALUES = [RBF, RBF.upper(), RBF.capitalize()]
-    MATERN_VALUES = [MATERN, MATERN.upper(), MATERN.capitalize()]
+    @classmethod
+    def rbf_value(cls):
+        return {cls.RBF, cls.RBF.upper(), cls.RBF.capitalize()}
 
-    VALUES = RBF_VALUES + MATERN_VALUES
+    @classmethod
+    def matern_value(cls):
+        return {cls.MATERN, cls.MATERN.upper(), cls.MATERN.capitalize()}
 
     @classmethod
     def is_rbf(cls, value):
-        return value in cls.RBF_VALUES
+        return value in cls.rbf_value()
 
     @classmethod
     def is_mattern(cls, value):
-        return value in cls.MATERN_VALUES
+        return value in cls.matern_value()
 
 
-class GaussianProcessSchema(BaseCamelSchema):
-    kernel = fields.Str(
-        allow_none=True, validate=validate.OneOf(GaussianProcessesKernels.VALUES)
+class GaussianProcessConfig(BaseSchemaModel):
+    _IDENTIFIER = "gaussian_process"
+
+    kernel: Optional[GaussianProcessesKernels] = Field(
+        default=GaussianProcessesKernels.MATERN
     )
-    length_scale = fields.Float(allow_none=True)
-    nu = fields.Float(allow_none=True)
-    num_restarts_optimizer = fields.Int(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return GaussianProcessConfig
-
-
-class GaussianProcessConfig(BaseConfig):
-    SCHEMA = GaussianProcessSchema
-    IDENTIFIER = "gaussian_process"
-    REDUCED_ATTRIBUTES = [
-        "kernel",
-        "lengthScale",
-        "nu",
-        "numRestartsOptimizer",
-    ]
-
-    def __init__(
-        self,
-        kernel=GaussianProcessesKernels.MATERN,
-        length_scale=1.0,
-        nu=1.5,
-        num_restarts_optimizer=0,
-    ):
-        self.kernel = kernel
-        self.length_scale = length_scale
-        self.nu = nu
-        self.num_restarts_optimizer = num_restarts_optimizer
+    length_scale: Optional[float] = Field(default=1.0, alias="lengthScale")
+    nu: Optional[float] = Field(default=1.5)
+    num_restarts_optimizer: Optional[int] = Field(
+        default=0, alias="numRestartsOptimizer"
+    )
 
 
 def validate_utility_function(acquisition_function, kappa, eps):
     condition = AcquisitionFunctions.is_ucb(acquisition_function) and kappa is None
     if condition:
-        raise ValidationError(
-            "the acquisition function `ucb` requires a parameter `kappa`"
-        )
+        raise ValueError("the acquisition function `ucb` requires a parameter `kappa`")
 
     condition = (
         AcquisitionFunctions.is_ei(acquisition_function)
         or AcquisitionFunctions.is_poi(acquisition_function)
     ) and eps is None
     if condition:
-        raise ValidationError(
+        raise ValueError(
             "the acquisition function `{}` requires a parameter `eps`".format(
                 acquisition_function
             )
         )
 
 
-class UtilityFunctionSchema(BaseCamelSchema):
-    acquisition_function = fields.Str(
-        allow_none=True, validate=validate.OneOf(AcquisitionFunctions.VALUES)
+class UtilityFunctionConfig(BaseSchemaModel):  # TODO: Rename to V1UtilityFunction
+    _IDENTIFIER = "utility_function"
+
+    acquisition_function: Optional[AcquisitionFunctions] = Field(
+        default=AcquisitionFunctions.UCB, alias="acquisitionFunction"
     )
-    gaussian_process = fields.Nested(GaussianProcessSchema, allow_none=True)
-    kappa = fields.Float(allow_none=True)
-    eps = fields.Float(allow_none=True)
-    num_warmup = fields.Int(allow_none=True)
-    num_iterations = fields.Int(allow_none=True)
+    gaussian_process: Optional[GaussianProcessConfig] = Field(alias="gaussianProcess")
+    kappa: Optional[float]
+    eps: Optional[float]
+    num_warmup: Optional[int] = Field(alias="numWarmup")
+    num_iterations: Optional[int] = Field(alias="numIterations")
 
-    @staticmethod
-    def schema_config():
-        return UtilityFunctionConfig
-
-    @validates_schema
-    @check_partial
-    def validate_utility_function(self, data, **kwargs):
+    @root_validator
+    @skip_partial
+    def validate_utility_function(cls, values):
         validate_utility_function(
-            acquisition_function=data.get("acquisition_function"),
-            kappa=data.get("kappa"),
-            eps=data.get("eps"),
+            acquisition_function=values.get("acquisition_function"),
+            kappa=values.get("kappa"),
+            eps=values.get("eps"),
         )
-
-
-class UtilityFunctionConfig(BaseConfig):
-    SCHEMA = UtilityFunctionSchema
-    IDENTIFIER = "utility_function"
-    REDUCED_ATTRIBUTES = [
-        "acquisitionFunction",
-        "eps",
-        "gaussianProcess",
-        "kappa",
-        "numWarmup",
-        "numIterations",
-    ]
-
-    def __init__(
-        self,
-        acquisition_function=AcquisitionFunctions.UCB,
-        gaussian_process=None,
-        kappa=None,
-        eps=None,
-        num_warmup=None,
-        num_iterations=None,
-    ):
-        validate_utility_function(
-            acquisition_function=acquisition_function, kappa=kappa, eps=eps
-        )
-
-        self.acquisition_function = acquisition_function
-        self.gaussian_process = gaussian_process
-        self.kappa = kappa
-        self.eps = eps
-        self.num_warmup = num_warmup
-        self.num_iterations = num_iterations
+        return values
 
 
 def validate_matrix(matrix):
@@ -189,7 +139,7 @@ def validate_matrix(matrix):
 
     for key, value in matrix.items():
         if value.is_distribution and not value.is_uniform:
-            raise ValidationError(
+            raise ValueError(
                 "`{}` defines a non uniform distribution, "
                 "and it cannot be used with bayesian optimization.".format(key)
             )
@@ -197,32 +147,7 @@ def validate_matrix(matrix):
     return matrix
 
 
-class BayesSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1MatrixKind.BAYES))
-    utility_function = fields.Nested(UtilityFunctionSchema, allow_none=True)
-    num_initial_runs = RefOrObject(fields.Int(), required=True)
-    max_iterations = RefOrObject(fields.Int(validate=validate.Range(min=1)))
-    metric = fields.Nested(OptimizationMetricSchema, required=True)
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(HpParamSchema), required=True
-    )
-    seed = RefOrObject(fields.Int(allow_none=True))
-    concurrency = RefOrObject(fields.Int(allow_none=True))
-    tuner = fields.Nested(TunerSchema, allow_none=True)
-    early_stopping = fields.List(fields.Nested(EarlyStoppingSchema), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Bayes
-
-    @validates_schema
-    @check_partial
-    def validate_matrix(self, data, **kwargs):
-        """Validates matrix data and creates the config objects"""
-        validate_matrix(data.get("params"))
-
-
-class V1Bayes(BaseSearchConfig, polyaxon_sdk.V1Bayes):
+class V1Bayes(BaseSearchConfig):
     """Bayesian optimization is an extremely powerful technique.
     The main idea behind it is to compute a posterior distribution
     over the objective function based on the data, and then select good points
@@ -521,15 +446,20 @@ class V1Bayes(BaseSearchConfig, polyaxon_sdk.V1Bayes):
     ```
     """
 
-    SCHEMA = BayesSchema
-    IDENTIFIER = V1MatrixKind.BAYES
-    REDUCED_ATTRIBUTES = [
-        "seed",
-        "concurrency",
-        "earlyStopping",
-        "tuner",
-        "utilityFunction",
-    ]
+    _IDENTIFIER = V1MatrixKind.BAYES
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    utility_function: Optional[UtilityFunctionConfig] = Field(alias="utilityFunction")
+    num_initial_runs: Union[PositiveInt, RefField] = Field(alias="numInitialRuns")
+    max_iterations: Union[PositiveInt, RefField] = Field(alias="maxIterations")
+    metric: V1OptimizationMetric
+    params: Union[Dict[str, V1HpParam], RefField]
+    seed: Optional[Union[StrictInt, RefField]]
+    concurrency: Optional[Union[PositiveInt, RefField]]
+    tuner: Optional[Union[V1Tuner, RefField]]
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping"
+    )
 
     def create_iteration(self, iteration: int = None) -> int:
         if iteration is None:
@@ -539,3 +469,8 @@ class V1Bayes(BaseSearchConfig, polyaxon_sdk.V1Bayes):
     def should_reschedule(self, iteration):
         """Return a boolean to indicate if we need to reschedule another iteration."""
         return iteration < self.max_iterations
+
+    @validator("params", always=True)
+    @skip_partial
+    def validate_matrix(cls, params):
+        return validate_matrix(params)

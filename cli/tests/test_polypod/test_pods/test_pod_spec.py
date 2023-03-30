@@ -33,9 +33,39 @@ class TestPodSpec(BaseTestCase):
         labels = {"key": "labels"}
         annotations = {"key": "annotations"}
         node_selector = {"key": "selector"}
-        affinity = [{"key": "affinity"}]
-        tolerations = {"key": "tolerations"}
-        security_context = {"uid": 222, "gid": 222}
+        affinity = {
+            "podAffinity": {
+                "requiredDuringSchedulingIgnoredDuringExecution": [
+                    {
+                        "labelSelector": {
+                            "matchExpressions": [
+                                {"key": "app", "operator": "In", "values": ["nginx"]}
+                            ]
+                        },
+                        "topologyKey": "kubernetes.io/hostname",
+                    }
+                ]
+            }
+        }
+
+        tolerations = [
+            {
+                "key": "key1",
+                "operator": "Equal",
+                "value": "value1",
+                "effect": "NoSchedule",
+            },
+            {
+                "key": "key1",
+                "operator": "Equal",
+                "value": "value1",
+                "effect": "NoExecute",
+            },
+        ]
+        security_context = {
+            "runAsUser": 1000,
+            "runAsGroup": 3000,
+        }
         restart_policy = "Never"
 
         with self.assertRaises(PolypodException):
@@ -80,15 +110,19 @@ class TestPodSpec(BaseTestCase):
         assert metadata.annotations == annotations
 
         assert isinstance(pod_spec, k8s_schemas.V1PodSpec)
-        assert pod_spec.security_context == security_context
+        assert (
+            V1Environment.swagger_to_dict(pod_spec.security_context) == security_context
+        )
         assert pod_spec.restart_policy == "Never"
         assert pod_spec.service_account_name == "sa"
         assert pod_spec.init_containers == []
         assert pod_spec.containers == [main_container]
         assert pod_spec.volumes is None
         assert pod_spec.node_selector == node_selector
-        assert pod_spec.tolerations == tolerations
-        assert pod_spec.affinity == affinity
+        assert [
+            V1Environment.swagger_to_dict(t) for t in pod_spec.tolerations
+        ] == tolerations
+        assert V1Environment.swagger_to_dict(pod_spec.affinity) == affinity
 
         environment = V1Environment(
             service_account_name="sa",

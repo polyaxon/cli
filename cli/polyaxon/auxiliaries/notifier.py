@@ -18,7 +18,7 @@ from polyaxon import pkg
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s import k8s_schemas
-from polyaxon.schemas.services import BaseServiceConfig, BaseServiceSchema
+from polyaxon.schemas.services import BaseServiceConfig
 
 
 def get_notifier_resources() -> k8s_schemas.V1ResourceRequirements:
@@ -26,12 +26,6 @@ def get_notifier_resources() -> k8s_schemas.V1ResourceRequirements:
         limits={"cpu": "1", "memory": "500Mi"},
         requests={"cpu": "0.1", "memory": "60Mi"},
     )
-
-
-class PolyaxonNotifierSchema(BaseServiceSchema):
-    @staticmethod
-    def schema_config():
-        return V1PolyaxonNotifier
 
 
 class V1PolyaxonNotifier(BaseServiceConfig):
@@ -170,8 +164,7 @@ class V1PolyaxonNotifier(BaseServiceConfig):
     ```
     """
 
-    SCHEMA = PolyaxonNotifierSchema
-    IDENTIFIER = "notifier"
+    _IDENTIFIER = "notifier"
 
     def get_image(self):
         image = self.image or "polyaxon/polyaxon-events-handlers"

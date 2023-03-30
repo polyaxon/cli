@@ -13,28 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Union
+from typing_extensions import Annotated
 
-from polyaxon.polyflow.component.component import ComponentSchema, V1Component
-from polyaxon.polyflow.references import (
-    DagRefSchema,
-    HubRefSchema,
-    PathRefSchema,
-    UrlRefSchema,
-    V1DagRef,
-    V1HubRef,
-    V1PathRef,
-    V1UrlRef,
-)
-from polyaxon.schemas.base import BaseOneOfSchema
+from pydantic import Field
 
+from polyaxon.polyflow.component.component import V1Component
+from polyaxon.polyflow.references import V1DagRef, V1HubRef, V1PathRef, V1UrlRef
 
-class ComponentReferenceSchema(BaseOneOfSchema):
-    TYPE_FIELD = "kind"
-    TYPE_FIELD_REMOVE = False
-    SCHEMAS = {
-        V1Component.IDENTIFIER: ComponentSchema,
-        V1DagRef.IDENTIFIER: DagRefSchema,
-        V1HubRef.IDENTIFIER: HubRefSchema,
-        V1PathRef.IDENTIFIER: PathRefSchema,
-        V1UrlRef.IDENTIFIER: UrlRefSchema,
-    }
+V1ComponentReference = Annotated[
+    Union[V1Component, V1DagRef, V1HubRef, V1PathRef, V1UrlRef],
+    Field(discriminator="kind"),
+]

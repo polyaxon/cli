@@ -14,22 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from typing import Optional
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class RBACSchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return RBACConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class RBACConfig(BaseConfig):
-    SCHEMA = RBACSchema
-    REDUCED_ATTRIBUTES = ["enabled"]
-
-    def __init__(self, enabled=None):
-        self.enabled = enabled
+class RBACConfig(BaseSchemaModel):
+    enabled: Optional[bool]

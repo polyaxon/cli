@@ -17,12 +17,17 @@
 import pytest
 import tempfile
 
-import polyaxon_sdk
-
 from polyaxon import settings
 from polyaxon.client.client import PolyaxonClient
 from polyaxon.constants.globals import NO_AUTH
 from polyaxon.schemas.cli.client_config import ClientConfig
+from polyaxon.sdk.api import (
+    AuthV1Api,
+    ProjectsV1Api,
+    RunsV1Api,
+    UsersV1Api,
+    VersionsV1Api,
+)
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -39,11 +44,11 @@ class TestPolyaxonClient(BaseTestCase):
 
         assert isinstance(client.config, ClientConfig)
 
-        assert isinstance(client.auth_v1, polyaxon_sdk.AuthV1Api)
-        assert isinstance(client.versions_v1, polyaxon_sdk.VersionsV1Api)
-        assert isinstance(client.projects_v1, polyaxon_sdk.ProjectsV1Api)
-        assert isinstance(client.runs_v1, polyaxon_sdk.RunsV1Api)
-        assert isinstance(client.users_v1, polyaxon_sdk.UsersV1Api)
+        assert isinstance(client.auth_v1, AuthV1Api)
+        assert isinstance(client.versions_v1, VersionsV1Api)
+        assert isinstance(client.projects_v1, ProjectsV1Api)
+        assert isinstance(client.runs_v1, RunsV1Api)
+        assert isinstance(client.users_v1, UsersV1Api)
 
     def test_from_config(self):
         settings.CLIENT_CONFIG.host = "localhost"

@@ -14,17 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import polyaxon_sdk
-
 from polyaxon.lifecycle import V1Statuses
+from polyaxon.utils.enums_utils import PEnum
 
 
-class V1TriggerPolicy(polyaxon_sdk.V1TriggerPolicy):
-    trigger_statuses_mapping = {
-        polyaxon_sdk.V1TriggerPolicy.ALL_SUCCEEDED: V1Statuses.SUCCEEDED,
-        polyaxon_sdk.V1TriggerPolicy.ALL_FAILED: V1Statuses.FAILED,
-        polyaxon_sdk.V1TriggerPolicy.ALL_DONE: V1Statuses.DONE,
-        polyaxon_sdk.V1TriggerPolicy.ONE_SUCCEEDED: V1Statuses.SUCCEEDED,
-        polyaxon_sdk.V1TriggerPolicy.ONE_FAILED: V1Statuses.FAILED,
-        polyaxon_sdk.V1TriggerPolicy.ONE_DONE: V1Statuses.DONE,
-    }
+class V1TriggerPolicy(str, PEnum):
+    ALL_SUCCEEDED = "all_succeeded"
+    ALL_FAILED = "all_failed"
+    ALL_DONE = "all_done"
+    ONE_SUCCEEDED = "one_succeeded"
+    ONE_FAILED = "one_failed"
+    ONE_DONE = "one_done"
+
+    @classmethod
+    def trigger_statuses_mapping(cls):
+        return {
+            cls.ALL_SUCCEEDED: V1Statuses.SUCCEEDED,
+            cls.ALL_FAILED: V1Statuses.FAILED,
+            cls.ALL_DONE: V1Statuses.DONE,
+            cls.ONE_SUCCEEDED: V1Statuses.SUCCEEDED,
+            cls.ONE_FAILED: V1Statuses.FAILED,
+            cls.ONE_DONE: V1Statuses.DONE,
+        }

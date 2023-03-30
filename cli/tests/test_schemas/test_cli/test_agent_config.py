@@ -18,7 +18,7 @@ import pytest
 
 import ujson
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.schemas import V1BucketConnection, V1K8sResourceSchema
@@ -49,7 +49,6 @@ class TestAgentConfig(BaseTestCase):
                 "kind": V1ConnectionKind.GCS,
                 "schema": V1BucketConnection(bucket="gs://test").to_dict(),
             },
-            EV_KEYS_AGENT_CONNECTIONS: [],
         }
         config = AgentConfig.from_dict(config_dict)
         assert config.to_light_dict() == config_dict

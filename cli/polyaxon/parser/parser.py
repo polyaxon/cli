@@ -24,7 +24,7 @@ from json import JSONDecodeError
 from typing import Dict, Union
 from urllib.parse import urlparse
 
-from marshmallow import ValidationError
+from pydantic import PydanticTypeError, PydanticValueError, ValidationError
 
 from polyaxon import types
 from polyaxon.exceptions import PolyaxonSchemaError
@@ -1107,7 +1107,13 @@ def _get_typed_value(
             new_value = type_convert(value)
             _check_options(key=key, value=new_value, options=options)
             return new_value
-        except (ValueError, ValidationError):
+        except (
+            TypeError,
+            ValueError,
+            ValidationError,
+            PydanticTypeError,
+            PydanticValueError,
+        ):
             raise PolyaxonSchemaError(
                 "Cannot convert value `{}` (key: `{}`) "
                 "to `{}`".format(value, key, target_type)
@@ -1166,7 +1172,7 @@ def _get_typed_list_value(
             default=default,
             options=options,
         )
-        if len(value) <= 1:
+        if len(value) < 1:
             raise e
 
     if not value:
@@ -1186,7 +1192,13 @@ def _get_typed_list_value(
         if isinstance(v, base_types):
             try:
                 result.append(type_convert(v))
-            except (ValueError, ValidationError):
+            except (
+                TypeError,
+                ValueError,
+                ValidationError,
+                PydanticTypeError,
+                PydanticValueError,
+            ) as e:
                 raise PolyaxonSchemaError(
                     "Cannot convert value `{}` (found in list key: `{}`) "
                     "to `{}`".format(v, key, raise_type)
@@ -1297,7 +1309,9 @@ def parse_wasbs_path(wasbs_path):
         container = parsed_url.netloc
         path = parsed_url.path or ""
         path = path.strip("/")
-    return V1WasbType(container, storage_account, path.strip("/"))
+    return V1WasbType(
+        container=container, storage_account=storage_account, path=path.strip("/")
+    )
 
 
 def parse_gcs_path(gcs_path):
@@ -1319,7 +1333,7 @@ def parse_gcs_path(gcs_path):
     if parsed_url.scheme != "gs":
         raise PolyaxonSchemaError("Received an invalid url GCS `{}`".format(gcs_path))
     blob = parsed_url.path.lstrip("/")
-    return V1GcsType(parsed_url.netloc, blob)
+    return V1GcsType(bucket=parsed_url.netloc, blob=blob)
 
 
 def parse_s3_path(s3_path):
@@ -1341,7 +1355,7 @@ def parse_s3_path(s3_path):
     else:
         bucket_name = parsed_url.netloc
         key = parsed_url.path.strip("/")
-        return V1S3Type(bucket_name, key)
+        return V1S3Type(bucket=bucket_name, key=key)
 
 
 TYPE_MAPPING = {

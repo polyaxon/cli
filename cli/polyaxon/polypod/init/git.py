@@ -116,8 +116,8 @@ def get_git_init_container(
         get_connection_env_var(connection=connection, secret=secret), check_none=True
     )
     # Add special handling to auto-inject ssh mount path
-    if connection.kind == V1ConnectionKind.SSH and secret.schema.mount_path:
-        env += [get_env_var(EV_KEYS_SSH_PATH, secret.schema.mount_path)]
+    if connection.kind == V1ConnectionKind.SSH and secret.schema_.mount_path:
+        env += [get_env_var(EV_KEYS_SSH_PATH, secret.schema_.mount_path)]
     config_map = connection.get_config_map()
     if config_map:
         volume_mounts += to_list(
@@ -132,9 +132,9 @@ def get_git_init_container(
     args = get_repo_context_args(
         name=connection.name,
         # Handle the case of custom connection
-        url=getattr(connection.schema, "url", None),
-        revision=getattr(connection.schema, "revision", None),
-        flags=getattr(connection.schema, "flags", None),
+        url=getattr(connection.schema_, "url", None),
+        revision=getattr(connection.schema_, "revision", None),
+        flags=getattr(connection.schema_, "flags", None),
         mount_path=mount_path,
         connection=connection.name if track else None,
     )

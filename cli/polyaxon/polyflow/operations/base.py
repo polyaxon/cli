@@ -13,51 +13,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Set
+from typing import Dict, List, Optional, Set, Union
 
-from marshmallow import fields, validate
+from pydantic import Field, StrictStr
 
 from polyaxon.contexts import refs as ctx_refs
 from polyaxon.lifecycle import V1Statuses
-from polyaxon.polyflow.component.base import BaseComponent, BaseComponentSchema
-from polyaxon.polyflow.events import EventTriggerSchema, V1EventKind
-from polyaxon.polyflow.joins import JoinSchema
-from polyaxon.polyflow.matrix import MatrixMixin, MatrixSchema
-from polyaxon.polyflow.schedules import ScheduleMixin, ScheduleSchema
+from polyaxon.polyflow.component.base import BaseComponent
+from polyaxon.polyflow.events import V1EventKind, V1EventTrigger
+from polyaxon.polyflow.joins import V1Join
+from polyaxon.polyflow.matrix import MatrixMixin, V1Matrix
+from polyaxon.polyflow.schedules import ScheduleMixin, V1Schedule
 from polyaxon.polyflow.trigger_policies import V1TriggerPolicy
-
-
-class BaseOpSchema(BaseComponentSchema):
-    schedule = fields.Nested(ScheduleSchema, allow_none=True)
-    events = fields.List(fields.Nested(EventTriggerSchema), allow_none=True)
-    matrix = fields.Nested(MatrixSchema, allow_none=True)
-    joins = fields.List(fields.Nested(JoinSchema), allow_none=True)
-    dependencies = fields.List(fields.Str(), allow_none=True)
-    trigger = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1TriggerPolicy.allowable_values)
-    )
-    conditions = fields.Str(allow_none=True)
-    skip_on_upstream_skip = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return BaseOp
+from polyaxon.schemas.fields import RefField
 
 
 class BaseOp(BaseComponent, MatrixMixin, ScheduleMixin):
-    SCHEMA = BaseOpSchema
-    REDUCED_ATTRIBUTES = BaseComponent.REDUCED_ATTRIBUTES + [
-        "schedule",
-        "events",
-        "matrix",
-        "joins",
-        "dependencies",
-        "trigger",
-        "conditions",
-        "skipOnUpstreamSkip",
-    ]
+    _FIELDS_SAME_KIND_PATCH = ["schedule", "matrix"]
 
-    FIELDS_SAME_KIND_PATCH = ["schedule", "matrix"]
+    schedule: Optional[V1Schedule]
+    events: Optional[Union[List[V1EventTrigger], RefField]]
+    matrix: Optional[V1Matrix]
+    joins: Optional[Union[List[V1Join], RefField]]
+    dependencies: Optional[Union[List[StrictStr], RefField]]
+    trigger: Optional[Union[V1TriggerPolicy, RefField]]
+    conditions: Optional[StrictStr]
+    skip_on_upstream_skip: Optional[bool] = Field(alias="skipOnUpstreamSkip")
 
     def get_matrix_kind(self):
         return self.matrix.kind if self.matrix else None
@@ -75,7 +56,7 @@ class BaseOp(BaseComponent, MatrixMixin, ScheduleMixin):
             if entity_ref not in statuses_by_refs:
                 continue
             for kind in e.kinds:
-                status = V1EventKind.events_statuses_mapping.get(kind)
+                status = V1EventKind.get_events_statuses_mapping().get(kind)
                 if status:
                     statuses_by_refs[entity_ref].append(status)
 

@@ -13,28 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Union
+from typing_extensions import Annotated
 
-from polyaxon.polyflow.schedules.cron import CronScheduleSchema, V1CronSchedule
-from polyaxon.polyflow.schedules.datetime import (
-    DateTimeScheduleSchema,
-    V1DateTimeSchedule,
-)
-from polyaxon.polyflow.schedules.interval import (
-    IntervalScheduleSchema,
-    V1IntervalSchedule,
-)
+from pydantic import Field
+
+from polyaxon.polyflow.schedules.cron import V1CronSchedule
+from polyaxon.polyflow.schedules.datetime import V1DateTimeSchedule
+from polyaxon.polyflow.schedules.interval import V1IntervalSchedule
 from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
-from polyaxon.schemas.base import BaseOneOfSchema
 
-
-class ScheduleSchema(BaseOneOfSchema):
-    TYPE_FIELD = "kind"
-    TYPE_FIELD_REMOVE = False
-    SCHEMAS = {
-        V1IntervalSchedule.IDENTIFIER: IntervalScheduleSchema,
-        V1CronSchedule.IDENTIFIER: CronScheduleSchema,
-        V1DateTimeSchedule.IDENTIFIER: DateTimeScheduleSchema,
-    }
+V1Schedule = Annotated[
+    Union[V1IntervalSchedule, V1CronSchedule, V1DateTimeSchedule],
+    Field(discriminator="kind"),
+]
 
 
 class ScheduleMixin:
@@ -43,12 +35,12 @@ class ScheduleMixin:
 
     @property
     def has_interval_schedule(self):
-        return self.get_schedule_kind() == V1IntervalSchedule.IDENTIFIER
+        return self.get_schedule_kind() == V1IntervalSchedule._IDENTIFIER
 
     @property
     def has_cron_schedule(self):
-        return self.get_schedule_kind() == V1CronSchedule.IDENTIFIER
+        return self.get_schedule_kind() == V1CronSchedule._IDENTIFIER
 
     @property
     def has_datetime_schedule(self):
-        return self.get_schedule_kind() == V1DateTimeSchedule.IDENTIFIER
+        return self.get_schedule_kind() == V1DateTimeSchedule._IDENTIFIER

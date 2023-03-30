@@ -30,7 +30,7 @@ class Entity:
 
 class TestStatusesTransition(BaseTestCase):
     def test_values(self):
-        assert len(V1Statuses.allowable_values) == 20
+        assert len(V1Statuses.to_list()) == 20
 
     def test_warning_statuses(self):
         assert LifeCycle.WARNING_VALUES == {
@@ -64,7 +64,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_can_check_heartbeat(self):
         assert LifeCycle.can_check_heartbeat(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if LifeCycle.is_running(status):
                 assert LifeCycle.can_check_heartbeat(status) is True
             else:
@@ -72,7 +72,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_unschedulable(self):
         assert LifeCycle.is_unschedulable(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status == V1Statuses.UNSCHEDULABLE:
                 assert LifeCycle.is_unschedulable(status) is True
             else:
@@ -80,7 +80,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_compilable(self):
         assert LifeCycle.is_unschedulable(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status in LifeCycle.COMPILABLE_VALUES:
                 assert LifeCycle.is_compilable(status) is True
             else:
@@ -88,7 +88,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_warning(self):
         assert LifeCycle.is_warning(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status in LifeCycle.WARNING_VALUES:
                 assert LifeCycle.is_warning(status) is True
             else:
@@ -96,7 +96,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_pending(self):
         assert LifeCycle.is_pending(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status in LifeCycle.PENDING_VALUES:
                 assert LifeCycle.is_pending(status) is True
             else:
@@ -104,7 +104,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_starting(self):
         assert LifeCycle.is_starting(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status == V1Statuses.STARTING:
                 assert LifeCycle.is_starting(status) is True
             else:
@@ -112,7 +112,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_running(self):
         assert LifeCycle.is_running(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status in LifeCycle.RUNNING_VALUES:
                 assert LifeCycle.is_running(status) is True
             else:
@@ -120,7 +120,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_unknown(self):
         assert LifeCycle.is_unknown(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status == V1Statuses.UNKNOWN:
                 assert LifeCycle.is_unknown(status) is True
             else:
@@ -128,7 +128,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_k8s_stoppable(self):
         assert LifeCycle.is_k8s_stoppable(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             cond = (
                 LifeCycle.is_running(status)
                 or LifeCycle.is_unschedulable(status)
@@ -143,7 +143,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def is_stopping(self):
         assert LifeCycle.is_stopping(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status == V1Statuses.STOPPING:
                 assert LifeCycle.is_stopping(status) is True
             else:
@@ -151,7 +151,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_stoppable(self):
         assert LifeCycle.is_stoppable(None) is True
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if not LifeCycle.is_done(status):
                 assert LifeCycle.is_stoppable(status) is True
             else:
@@ -159,7 +159,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_is_done(self):
         assert LifeCycle.is_done(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status in LifeCycle.DONE_VALUES:
                 assert LifeCycle.is_done(status) is True
             else:
@@ -167,7 +167,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_succeeded(self):
         assert LifeCycle.succeeded(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status == V1Statuses.SUCCEEDED:
                 assert LifeCycle.succeeded(status) is True
             else:
@@ -175,7 +175,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_failed(self):
         assert LifeCycle.failed(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status in {V1Statuses.FAILED, V1Statuses.UPSTREAM_FAILED}:
                 assert LifeCycle.failed(status) is True
             else:
@@ -183,7 +183,7 @@ class TestStatusesTransition(BaseTestCase):
 
     def test_skipped(self):
         assert LifeCycle.skipped(None) is False
-        for status in V1Statuses.allowable_values:
+        for status in V1Statuses.to_list():
             if status == V1Statuses.SKIPPED:
                 assert LifeCycle.skipped(status) is True
             else:

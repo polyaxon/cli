@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.polyflow import ForConfig, IfConfig
-
 
 class Sections:
     VERSION = "version"
@@ -118,5 +116,6 @@ class Sections:
     )
 
     REQUIRED_SECTIONS = (VERSION, KIND)
+    OPERATORS = set([])
 
-    OPERATORS = {ForConfig.IDENTIFIER: ForConfig, IfConfig.IDENTIFIER: IfConfig}
+    # OPERATORS = {ForConfig.IDENTIFIER: ForConfig, IfConfig.IDENTIFIER: IfConfig}

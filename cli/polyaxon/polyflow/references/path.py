@@ -14,26 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields, validate
+from typing_extensions import Literal
 
-import polyaxon_sdk
+from pydantic import StrictStr
 
 from polyaxon.polyflow.references.mixin import RefMixin
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.base import BaseDiscriminatedModel
 
 
-class PathRefSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("path_ref"))
-    path = fields.Str(required=True)
+class V1PathRef(BaseDiscriminatedModel, RefMixin):
+    _IDENTIFIER = "path_ref"
 
-    @staticmethod
-    def schema_config():
-        return V1PathRef
-
-
-class V1PathRef(BaseConfig, RefMixin, polyaxon_sdk.V1PathRef):
-    SCHEMA = PathRefSchema
-    IDENTIFIER = "path_ref"
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    path: StrictStr
 
     def get_kind_value(self):
         return self.path

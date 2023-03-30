@@ -20,8 +20,6 @@ import click
 
 from urllib3.exceptions import HTTPError
 
-import polyaxon_sdk
-
 from polyaxon import settings
 from polyaxon.cli.dashboard import get_dashboard_url
 from polyaxon.cli.errors import handle_cli_error, handle_command_not_in_ce
@@ -32,8 +30,9 @@ from polyaxon.managers.auth import AuthConfigManager
 from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.user import UserConfigManager
 from polyaxon.schemas.api.authentication import AccessTokenConfig, V1Credentials
+from polyaxon.schemas.responses.v1_auth import V1Auth
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.formatting import Printer, dict_tabulate, dict_to_tabulate
-from polyaxon_sdk.rest import ApiException
 
 
 @click.command()
@@ -103,7 +102,7 @@ def login(token, username, password):
             )
             return
 
-        access_auth = polyaxon_sdk.models.V1Auth(token=token.strip(" "))
+        access_auth = V1Auth(token=token.strip(" "))
 
     # Set user
     try:

@@ -14,27 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ast
+from datetime import date, datetime, timedelta
+from typing import Any, List, Optional, Union
+from typing_extensions import Annotated, Literal
 
-from collections.abc import Mapping
-from typing import Any, Union
-
-from marshmallow import fields, validate, validates_schema
-from marshmallow.exceptions import ValidationError
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon import types
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig, BaseOneOfSchema
-from polyaxon.utils.serialization import (
-    date_deserialize,
-    date_serialize,
-    datetime_deserialize,
-    datetime_serialize,
-    timedelta_deserialize,
-    timedelta_serialize,
-)
-from polyaxon.utils.signal_decorators import check_partial
+from polyaxon.polyflow.matrix.kinds import V1HPKind
+from polyaxon.schemas.base import BaseDiscriminatedModel, BaseSchemaModel, skip_partial
+from polyaxon.schemas.fields import RefField, StrictIntOrFloat
 
 try:
     import numpy as np
@@ -45,302 +34,328 @@ except (ImportError, ModuleNotFoundError):
 # pylint:disable=redefined-outer-name
 
 
-class PChoice(fields.Field):
-    def _deserialize(self, value, attr, data, **kwargs):
-        if isinstance(value, (list, tuple)) and len(value) == 2:
-            if isinstance(value[1], float) and 0 <= value[1] < 1:
-                return value
-        raise ValidationError("This field expects a list of [value<Any>, dist<float>].")
-
-
-class Range(fields.Field):
-    REQUIRED_KEYS = ["start", "stop", "step"]
-    OPTIONAL_KEY = None
-    KEYS = REQUIRED_KEYS
-    CHECK_ORDER = True
-    ACCEPT_STR_VALUE = True
-
-    def _validate_value(self, value, attr, data, **kwargs):
-        if self.ACCEPT_STR_VALUE and isinstance(value, str):
-            value = value.split(":")
-        elif isinstance(value, Mapping):
-            if set(self.REQUIRED_KEYS) - set(value.keys()):
-                raise ValidationError(
-                    "{} dict must have {} keys {}.".format(
-                        self.__class__.__name__,
-                        len(self.REQUIRED_KEYS),
-                        self.REQUIRED_KEYS,
-                    )
-                )
-            if len(value) == len(self.REQUIRED_KEYS):
-                value = [value[k] for k in self.REQUIRED_KEYS]
-            elif len(value) == len(self.KEYS):
-                value = [value[k] for k in self.KEYS]
-        elif not isinstance(value, list):
-            raise ValidationError(
-                "{} accept values formatted as the following:\n"
-                " * str: {}\n"
-                " * dict: {}\n"
-                " * list: {}".format(
-                    self.__class__.__name__,
-                    ":".join(self.REQUIRED_KEYS),
-                    dict(
-                        zip(
-                            self.REQUIRED_KEYS,
-                            ["v{}".format(i) for i in range(len(self.REQUIRED_KEYS))],
-                        )
-                    ),
-                    self.REQUIRED_KEYS,
-                )
-            )
-
-        if len(value) != len(self.REQUIRED_KEYS) and len(value) != len(self.KEYS):
-            raise ValidationError(
-                "{} requires {} or {} elements received {}".format(
-                    self.__class__.__name__,
-                    len(self.REQUIRED_KEYS),
-                    len(self.KEYS),
-                    len(value),
-                )
-            )
-        return value
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        value = self._validate_value(value, attr, data, **kwargs)
-
-        for i, v in enumerate(value):
-            try:
-                float(v)
-            except (ValueError, TypeError):
-                raise ValidationError(
-                    "{}: {} must of type int or float, received instead {}".format(
-                        self.__class__.__name__, self.REQUIRED_KEYS[i], v
-                    )
-                )
-            if not isinstance(v, (int, float)):
-                value[i] = ast.literal_eval(v)
-
-        # Check that lower value is smaller than higher value
-        if self.CHECK_ORDER and value[0] >= value[1]:
-            raise ValidationError(
-                "{key2} value must be strictly higher that {key1} value, "
-                "received instead {key1}: {val1}, {key2}: {val2}".format(
-                    key1=self.REQUIRED_KEYS[0],
-                    key2=self.REQUIRED_KEYS[1],
-                    val1=value[0],
-                    val2=value[1],
-                )
-            )
-        if len(self.REQUIRED_KEYS) == 3 and value[2] == 0:
-            raise ValidationError("{} cannot be 0".format(self.REQUIRED_KEYS[2]))
-
-        value = dict(zip(self.KEYS, value))
-        return value
-
-
-class DateRange(Range):
-    REQUIRED_KEYS = ["start", "stop", "step"]
-    KEYS = REQUIRED_KEYS
-    ACCEPT_STR_VALUE = False
-
-    def _serialize(self, value: Any, attr: str, obj: Any, **kwargs):
-        return {
-            "start": date_serialize("start", value),
-            "stop": date_serialize("stop", value),
-            "step": value["step"],
-        }
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        value = self._validate_value(value, attr, data, **kwargs)
-
-        def _date_deserialize(i, v):
-            try:
-                return date_deserialize(v)
-            except Exception as e:
-                raise ValidationError(
-                    "{}: {} must of type date, received instead {}. Error {}".format(
-                        self.__class__.__name__, self.REQUIRED_KEYS[i], v, e
-                    )
-                )
-
-        try:
-            frequency = int(value[2])
-        except Exception as e:
-            raise ValidationError(
-                "{}: {} must of type int, received instead {}. Error {}".format(
-                    self.__class__.__name__, self.REQUIRED_KEYS[2], value[2], e
-                )
-            )
-
-        value = [
-            _date_deserialize(0, value[0]),
-            _date_deserialize(1, value[1]),
-            frequency,
-        ]
-
-        # Check that lower value is smaller than higher value
-        if self.CHECK_ORDER and value[0] >= value[1]:
-            raise ValidationError(
-                "{key2} value must be strictly higher that {key1} value, "
-                "received instead {key1}: {val1}, {key2}: {val2}".format(
-                    key1=self.REQUIRED_KEYS[0],
-                    key2=self.REQUIRED_KEYS[1],
-                    val1=value[0],
-                    val2=value[1],
-                )
-            )
-        if len(self.REQUIRED_KEYS) == 3 and value[2] == 0:
-            raise ValidationError("{} cannot be 0".format(self.REQUIRED_KEYS[2]))
-
-        value = dict(zip(self.KEYS, value))
-        return value
-
-
-class DateTimeRange(Range):
-    REQUIRED_KEYS = ["start", "stop", "step"]
-    KEYS = REQUIRED_KEYS
-    ACCEPT_STR_VALUE = False
-
-    def _serialize(self, value: Any, attr: str, obj: Any, **kwargs):
-        return {
-            "start": datetime_serialize("start", value),
-            "stop": datetime_serialize("stop", value),
-            "step": timedelta_serialize("step", value),
-        }
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        value = self._validate_value(value, attr, data, **kwargs)
-
-        def _datetime_deserialize(i, v):
-            try:
-                return datetime_deserialize(v)
-            except Exception as e:
-                raise ValidationError(
-                    "{}: {} must of type datetime, received instead {}. Error {}".format(
-                        self.__class__.__name__, self.REQUIRED_KEYS[i], v, e
-                    )
-                )
-
-        try:
-            frequency = timedelta_deserialize(value[2])
-        except Exception as e:
-            raise ValidationError(
-                "{}: {} must of type int(timedelta), received instead {}. Error {}".format(
-                    self.__class__.__name__, self.REQUIRED_KEYS[2], value[2], e
-                )
-            )
-
-        value = [
-            _datetime_deserialize(0, value[0]),
-            _datetime_deserialize(1, value[1]),
-            frequency,
-        ]
-
-        # Check that lower value is smaller than higher value
-        if self.CHECK_ORDER and value[0] >= value[1]:
-            raise ValidationError(
-                "{key2} value must be strictly higher that {key1} value, "
-                "received instead {key1}: {val1}, {key2}: {val2}".format(
-                    key1=self.REQUIRED_KEYS[0],
-                    key2=self.REQUIRED_KEYS[1],
-                    val1=value[0],
-                    val2=value[1],
-                )
-            )
-        if len(self.REQUIRED_KEYS) == 3 and value[2] == 0:
-            raise ValidationError("{} cannot be 0".format(self.REQUIRED_KEYS[2]))
-
-        value = dict(zip(self.KEYS, value))
-        return value
-
-
-class LinSpace(Range):
-    REQUIRED_KEYS = ["start", "stop", "num"]
-    KEYS = REQUIRED_KEYS
-
-
-class GeomSpace(Range):
-    REQUIRED_KEYS = ["start", "stop", "num"]
-    KEYS = REQUIRED_KEYS
-
-
-class LogSpace(Range):
-    REQUIRED_KEYS = ["start", "stop", "num"]
-    OPTIONAL_KEYS = ["base"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
-
-
 def validate_pchoice(values):
     dists = [v for v in values if v]
     if sum(dists) > 1:
-        raise ValidationError("The distribution of different outcomes should sum to 1.")
+        raise ValueError("The distribution of different outcomes should sum to 1.")
 
 
-class Dist(Range):
-    CHECK_ORDER = False
+class PChoice(tuple):
+    @classmethod
+    def __get_validators__(cls) -> "CallableGenerator":
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value):
+        if isinstance(value, (list, tuple)) and len(value) == 2:
+            if isinstance(value[1], float) and 0 <= value[1] < 1:
+                return value
+        raise ValueError("This field expects a list of [value<Any>, dist<float>].")
+
+
+def _validate_range(
+    value: List, required_keys: List, keys: List, check_order: bool = True
+):
+    # TODO: Fix error message
+    if len(value) < len(required_keys):
+        raise ValueError(
+            "This field expects a list of {} or {} elements, received {}.".format(
+                len(required_keys), len(keys), len(value)
+            )
+        )
+    # Check that lower value is smaller than higher value
+    if check_order and value[0] >= value[1]:
+        raise ValueError(
+            "{key2} value must be strictly higher that {key1} value, "
+            "received instead {key1}: {val1}, {key2}: {val2}".format(
+                key1=required_keys[0],
+                key2=required_keys[1],
+                val1=value[0],
+                val2=value[1],
+            )
+        )
+    if len(required_keys) == 3 and not value[2]:
+        raise ValueError(
+            "{} must be > 0, received {}".format(required_keys[2], value[2])
+        )
+
+
+class BaseRange(BaseSchemaModel):
+    _REQUIRED_KEYS = []
+    _OPTIONAL_KEYS = []
+    _CHECK_ORDER = True
+
+    @root_validator
+    def validate_range(cls, values):
+        value = list(values.values())
+        _validate_range(
+            value,
+            cls._REQUIRED_KEYS,
+            cls._REQUIRED_KEYS + cls._OPTIONAL_KEYS,
+            check_order=cls._CHECK_ORDER,
+        )
+        return values
+
+
+class Range(BaseRange):
+    start: Union[float]
+    stop: Union[float]
+    step: StrictIntOrFloat
+    _REQUIRED_KEYS = ["start", "stop", "step"]
+
+
+class RangeStr(StrictStr):
+    _CLASS = Range
+
+    @classmethod
+    def __get_validators__(cls) -> "CallableGenerator":
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: str):
+        if not isinstance(value, str) or ":" not in value:
+            raise ValueError("This field expects a string of values separated by `:`.")
+        keys = cls._CLASS._REQUIRED_KEYS + cls._CLASS._OPTIONAL_KEYS
+        if value:
+            value = value.split(":")
+            return cls._CLASS(**dict(zip(keys, value)))
+        raise ValueError(
+            "`{}` requires `{}` or `{}` elements, received `{}`".format(
+                cls._CLASS.__name__,
+                len(cls._CLASS._REQUIRED_KEYS),
+                len(keys),
+                len(value),
+            )
+        )
+
+
+class RangeList(list):
+    _CLASS = Range
+
+    @classmethod
+    def __get_validators__(cls) -> "CallableGenerator":
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: List):
+        if not isinstance(value, list):
+            raise ValueError("This field expects a list of values.")
+        keys = cls._CLASS._REQUIRED_KEYS + cls._CLASS._OPTIONAL_KEYS
+        if value:
+            return cls._CLASS(**dict(zip(keys, value)))
+        raise ValueError(
+            "`{}` requires `{}` or `{}` elements, received `{}`".format(
+                cls._CLASS.__name__,
+                len(cls._CLASS._REQUIRED_KEYS),
+                len(keys),
+                len(value),
+            )
+        )
+
+
+class DateRange(Range):
+    start: date
+    stop: date
+    step: int
+
+
+class DateRangeList(RangeList):
+    _CLASS = DateRange
+
+
+class DateTimeRange(Range):
+    start: datetime
+    stop: datetime
+    step: timedelta
+
+
+class DateTimeRangeList(RangeList):
+    _CLASS = DateTimeRange
+
+
+class Space(BaseRange):
+    start: Union[float]
+    stop: Union[float]
+    num: int
+    _REQUIRED_KEYS = ["start", "stop", "num"]
+
+
+class LinSpace(Space):
+    pass
+
+
+class LinSpaceList(RangeList):
+    _CLASS = LinSpace
+
+
+class LinSpaceStr(RangeStr):
+    _CLASS = LinSpace
+
+
+class GeomSpace(Space):
+    pass
+
+
+class GeomSpaceList(RangeList):
+    _CLASS = GeomSpace
+
+
+class GeomSpaceStr(RangeStr):
+    _CLASS = GeomSpace
+
+
+class LogSpace(Space):
+    base: Optional[int]
+    _OPTIONAL_KEYS = ["base"]
+
+
+class LogSpaceList(RangeList):
+    _CLASS = LogSpace
+
+
+class LogSpaceStr(RangeStr):
+    _CLASS = LogSpace
+
+
+class Dist(BaseRange):
+    low: Union[float]
+    high: Union[float]
+    size: Optional[int]
+    _REQUIRED_KEYS = ["low", "high"]
+    _OPTIONAL_KEYS = ["size"]
+    _CHECK_ORDER = False
+
+
+class QDist(BaseRange):
+    low: Union[float]
+    high: Union[float]
+    q: StrictIntOrFloat
+    size: Optional[int]
+    _REQUIRED_KEYS = ["low", "high", "q"]
+    _OPTIONAL_KEYS = ["size"]
+    _CHECK_ORDER = False
 
 
 class Uniform(Dist):
-    REQUIRED_KEYS = ["low", "high"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+    pass
 
 
-class QUniform(Dist):
-    REQUIRED_KEYS = ["low", "high", "q"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+class UniformList(RangeList):
+    _CLASS = Uniform
+
+
+class UniformStr(RangeStr):
+    _CLASS = Uniform
+
+
+class QUniform(QDist):
+    pass
+
+
+class QUniformList(RangeList):
+    _CLASS = QUniform
+
+
+class QUniformStr(RangeStr):
+    _CLASS = QUniform
 
 
 class LogUniform(Dist):
-    REQUIRED_KEYS = ["low", "high"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+    pass
 
 
-class QLogUniform(Dist):
-    REQUIRED_KEYS = ["low", "high", "q"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+class LogUniformList(RangeList):
+    _CLASS = LogUniform
 
 
-class Normal(Dist):
-    REQUIRED_KEYS = ["loc", "scale"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+class LogUniformStr(RangeStr):
+    _CLASS = LogUniform
 
 
-class QNormal(Dist):
-    REQUIRED_KEYS = ["loc", "scale", "q"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+class QLogUniform(QDist):
+    pass
 
 
-class LogNormal(Dist):
-    REQUIRED_KEYS = ["loc", "scale"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+class QLogUniformList(RangeList):
+    _CLASS = QLogUniform
 
 
-class QLogNormal(Dist):
-    REQUIRED_KEYS = ["loc", "scale", "q"]
-    OPTIONAL_KEYS = ["size"]
-    KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+class QLogUniformStr(RangeStr):
+    _CLASS = QLogUniform
+
+
+class Normal(BaseRange):
+    loc: Union[float]
+    scale: Union[float]
+    size: Optional[int]
+    _REQUIRED_KEYS = ["loc", "scale"]
+    _OPTIONAL_KEYS = ["size"]
+    _CHECK_ORDER = False
+
+
+class NormalList(RangeList):
+    _CLASS = Normal
+
+
+class NormalStr(RangeStr):
+    _CLASS = Normal
+
+
+class QNormal(BaseRange):
+    loc: Union[float]
+    scale: Union[float]
+    q: StrictIntOrFloat
+    size: Optional[int]
+    _REQUIRED_KEYS = ["loc", "scale", "q"]
+    _OPTIONAL_KEYS = ["size"]
+    _CHECK_ORDER = False
+
+
+class QNormalList(RangeList):
+    _CLASS = QNormal
+
+
+class QNormalStr(RangeStr):
+    _CLASS = QNormal
+
+
+class LogNormal(Normal):
+    pass
+
+
+class LogNormalList(RangeList):
+    _CLASS = LogNormal
+
+
+class LogNormalStr(RangeStr):
+    _CLASS = LogNormal
+
+
+class QLogNormal(QNormal):
+    pass
+
+
+class QLogNormalList(RangeList):
+    _CLASS = QLogNormal
+
+
+class QLogNormalStr(RangeStr):
+    _CLASS = QLogNormal
 
 
 def validate_matrix(values):
     v = sum(map(lambda x: 1 if x else 0, values))
     if v == 0 or v > 1:
-        raise ValidationError(
+        raise ValueError(
             "Matrix element is not valid, one and only one option is required."
         )
 
 
-class BaseHpParamConfig(BaseConfig):
+class BaseHpParamConfig(BaseDiscriminatedModel):
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
         if io.type not in [types.INT, types.FLOAT]:
-            raise ValidationError(
+            raise ValueError(
                 "Param `{}` has a an input type `{}` "
                 "and it does not correspond to hyper-param type `int or float`.".format(
                     io.name,
@@ -350,16 +365,7 @@ class BaseHpParamConfig(BaseConfig):
         return True
 
 
-class HpChoiceSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("choice"))
-    value = fields.List(fields.Raw(), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpChoice
-
-
-class V1HpChoice(BaseHpParamConfig, polyaxon_sdk.V1HpChoice):
+class V1HpChoice(BaseHpParamConfig):
     """`Choice` picks a value from a of list values.
 
     ```yaml
@@ -375,8 +381,10 @@ class V1HpChoice(BaseHpParamConfig, polyaxon_sdk.V1HpChoice):
     ```
     """
 
-    SCHEMA = HpChoiceSchema
-    IDENTIFIER = "choice"
+    _IDENTIFIER = V1HPKind.CHOICE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[List[Any], RefField]]
 
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
@@ -413,22 +421,7 @@ class V1HpChoice(BaseHpParamConfig, polyaxon_sdk.V1HpChoice):
         return False
 
 
-class HpPChoiceSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("pchoice"))
-    value = fields.List(PChoice(), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpPChoice
-
-    @validates_schema
-    @check_partial
-    def validate_pchoice(self, data, **kwargs):
-        if data.get("value"):
-            validate_pchoice(values=[v[1] for v in data["value"] if v])
-
-
-class V1HpPChoice(BaseHpParamConfig, polyaxon_sdk.V1HpPChoice):
+class V1HpPChoice(BaseHpParamConfig):
     """`PChoice` picks a value with a probability from a list of
     [(value, probability), (value, probability), ...].
 
@@ -445,8 +438,18 @@ class V1HpPChoice(BaseHpParamConfig, polyaxon_sdk.V1HpPChoice):
     ```
     """
 
-    SCHEMA = HpPChoiceSchema
-    IDENTIFIER = "pchoice"
+    _IDENTIFIER = V1HPKind.PCHOICE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[List[PChoice], RefField]]
+
+    @validator("value")
+    @skip_partial
+    def validate_value(cls, value):
+        if value and isinstance(value, (list, tuple)):
+            validate_pchoice(values=[v[1] for v in value if v])
+
+        return value
 
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
@@ -477,16 +480,7 @@ class V1HpPChoice(BaseHpParamConfig, polyaxon_sdk.V1HpPChoice):
         return False
 
 
-class HpRangeSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("range"))
-    value = Range(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpRange
-
-
-class V1HpRange(BaseHpParamConfig, polyaxon_sdk.V1HpRange):
+class V1HpRange(BaseHpParamConfig):
     """`Range` picks a value from a generated list of values using `[start, stop, step]`,
     you can pass values in these forms:
       * [1, 10, 2]
@@ -506,8 +500,10 @@ class V1HpRange(BaseHpParamConfig, polyaxon_sdk.V1HpRange):
     ```
     """
 
-    SCHEMA = HpRangeSchema
-    IDENTIFIER = "range"
+    _IDENTIFIER = V1HPKind.RANGE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[Range, RangeList, RangeStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -534,16 +530,7 @@ class V1HpRange(BaseHpParamConfig, polyaxon_sdk.V1HpRange):
         return False
 
 
-class HpDateRangeSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("daterange"))
-    value = DateRange(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpDateRange
-
-
-class V1HpDateRange(BaseHpParamConfig, polyaxon_sdk.V1HpDateRange):
+class V1HpDateRange(BaseHpParamConfig):
     """`DateRange` picks a value from a generated list of values using `[start, stop, step]`,
     you can pass values in these forms:
       * `["2019-06-24", "2019-06-25", 3600 * 24]`
@@ -564,13 +551,15 @@ class V1HpDateRange(BaseHpParamConfig, polyaxon_sdk.V1HpDateRange):
     ```
     """
 
-    SCHEMA = HpDateRangeSchema
-    IDENTIFIER = "daterange"
+    _IDENTIFIER = V1HPKind.DATERANGE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[DateRange, DateRangeList, RefField]]
 
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
         if io.type != types.DATE:
-            raise ValidationError(
+            raise ValueError(
                 "Param `{}` has a an input type `{}` "
                 "and it does not correspond to hyper-param type `date`.".format(
                     io.name,
@@ -604,16 +593,7 @@ class V1HpDateRange(BaseHpParamConfig, polyaxon_sdk.V1HpDateRange):
         return False
 
 
-class HpDateTimeRangeSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("datetimerange"))
-    value = DateTimeRange(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpDateTimeRange
-
-
-class V1HpDateTimeRange(BaseHpParamConfig, polyaxon_sdk.V1HpDateTimeRange):
+class V1HpDateTimeRange(BaseHpParamConfig):
     """`DateTimeRange` picks a value from a generated list of values using `[start, stop, step]`,
     you can pass values in these forms:
       * `["2019-06-24T21:20:07+02:00", "2019-06-25T21:20:07+02:00", 3600]`
@@ -634,13 +614,15 @@ class V1HpDateTimeRange(BaseHpParamConfig, polyaxon_sdk.V1HpDateTimeRange):
     ```
     """
 
-    SCHEMA = HpDateTimeRangeSchema
-    IDENTIFIER = "datetimerange"
+    _IDENTIFIER = V1HPKind.DATETIMERANGE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[DateTimeRange, DateTimeRangeList, RefField]]
 
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
         if io.type != types.DATETIME:
-            raise ValidationError(
+            raise ValueError(
                 "Param `{}` has a an input type `{}` "
                 "and it does not correspond to hyper-param type `datetime`.".format(
                     io.name,
@@ -674,16 +656,7 @@ class V1HpDateTimeRange(BaseHpParamConfig, polyaxon_sdk.V1HpDateTimeRange):
         return False
 
 
-class HpLinSpaceSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("linspace"))
-    value = LinSpace(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpLinSpace
-
-
-class V1HpLinSpace(BaseHpParamConfig, polyaxon_sdk.V1HpLinSpace):
+class V1HpLinSpace(BaseHpParamConfig):
     """`LinSpace` picks a value from a generated list of steps from start to stop spaced evenly
     on a linear scale `[start, stop, step]`, you can pass values in these forms:
       * [1, 10, 20]
@@ -703,8 +676,10 @@ class V1HpLinSpace(BaseHpParamConfig, polyaxon_sdk.V1HpLinSpace):
     ```
     """
 
-    SCHEMA = HpLinSpaceSchema
-    IDENTIFIER = "linspace"
+    _IDENTIFIER = V1HPKind.LINSPACE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[LinSpace, LinSpaceList, LinSpaceStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -731,16 +706,7 @@ class V1HpLinSpace(BaseHpParamConfig, polyaxon_sdk.V1HpLinSpace):
         return False
 
 
-class HpLogSpaceSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("logspace"))
-    value = LogSpace(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpLogSpace
-
-
-class V1HpLogSpace(BaseHpParamConfig, polyaxon_sdk.V1HpLogSpace):
+class V1HpLogSpace(BaseHpParamConfig):
     """`LogSpace` picks a value from a generated list of steps from start to stop spaced evenly
     on a log scale `[start, stop, step]` or `[start, stop, step, base]`,
     where `base` is optional with 10 as default value,
@@ -764,8 +730,10 @@ class V1HpLogSpace(BaseHpParamConfig, polyaxon_sdk.V1HpLogSpace):
     ```
     """
 
-    SCHEMA = HpLogSpaceSchema
-    IDENTIFIER = "logspace"
+    _IDENTIFIER = V1HPKind.LOGSPACE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[LogSpace, LogSpaceList, LogSpaceStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -792,16 +760,7 @@ class V1HpLogSpace(BaseHpParamConfig, polyaxon_sdk.V1HpLogSpace):
         return False
 
 
-class HpGeomSpaceSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("geomspace"))
-    value = GeomSpace(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpGeomSpace
-
-
-class V1HpGeomSpace(BaseHpParamConfig, polyaxon_sdk.V1HpGeomSpace):
+class V1HpGeomSpace(BaseHpParamConfig):
     """`GeomSpace` picks a value from a generated list of steps from start to stop spaced evenly
     on a geometric progression `[start, stop, step]`, you can pass values in these forms:
       * [1, 10, 20]
@@ -821,8 +780,10 @@ class V1HpGeomSpace(BaseHpParamConfig, polyaxon_sdk.V1HpGeomSpace):
     ```
     """
 
-    SCHEMA = HpGeomSpaceSchema
-    IDENTIFIER = "geomspace"
+    _IDENTIFIER = V1HPKind.GEOMSPACE
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[GeomSpace, GeomSpaceList, GeomSpaceStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -849,16 +810,7 @@ class V1HpGeomSpace(BaseHpParamConfig, polyaxon_sdk.V1HpGeomSpace):
         return False
 
 
-class HpUniformSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("uniform"))
-    value = Uniform(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpUniform
-
-
-class V1HpUniform(BaseHpParamConfig, polyaxon_sdk.V1HpUniform):
+class V1HpUniform(BaseHpParamConfig):
     """`Uniform` draws samples from a uniform distribution over the half-open
     interval `[low, high)`, you can pass values in these forms:
       * 0:1
@@ -878,8 +830,10 @@ class V1HpUniform(BaseHpParamConfig, polyaxon_sdk.V1HpUniform):
     ```
     """
 
-    SCHEMA = HpUniformSchema
-    IDENTIFIER = "uniform"
+    _IDENTIFIER = V1HPKind.UNIFORM
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[Uniform, UniformList, UniformStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -906,16 +860,7 @@ class V1HpUniform(BaseHpParamConfig, polyaxon_sdk.V1HpUniform):
         return False
 
 
-class HpQUniformSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("quniform"))
-    value = QUniform(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpQUniform
-
-
-class V1HpQUniform(BaseHpParamConfig, polyaxon_sdk.V1HpQUniform):
+class V1HpQUniform(BaseHpParamConfig):
     """`QUniform` samples from a quantized uniform distribution over `[low, high]`
     (`round(uniform(low, high) / q) * q`),
     you can pass values in these forms:
@@ -937,8 +882,10 @@ class V1HpQUniform(BaseHpParamConfig, polyaxon_sdk.V1HpQUniform):
     ```
     """
 
-    SCHEMA = HpQUniformSchema
-    IDENTIFIER = "quniform"
+    _IDENTIFIER = "quniform"
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[QUniform, QUniformList, QUniformStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -965,16 +912,7 @@ class V1HpQUniform(BaseHpParamConfig, polyaxon_sdk.V1HpQUniform):
         return False
 
 
-class HpLogUniformSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("loguniform"))
-    value = LogUniform(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpLogUniform
-
-
-class V1HpLogUniform(BaseHpParamConfig, polyaxon_sdk.V1HpLogUniform):
+class V1HpLogUniform(BaseHpParamConfig):
     """`LogUniform` samples from a log uniform distribution over`[low, high]`,
     you can pass values in these forms:
       * 0:1
@@ -995,8 +933,10 @@ class V1HpLogUniform(BaseHpParamConfig, polyaxon_sdk.V1HpLogUniform):
     ```
     """
 
-    SCHEMA = HpLogUniformSchema
-    IDENTIFIER = "loguniform"
+    _IDENTIFIER = V1HPKind.LOGUNIFORM
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[LogUniform, LogUniformList, LogUniformStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -1023,16 +963,7 @@ class V1HpLogUniform(BaseHpParamConfig, polyaxon_sdk.V1HpLogUniform):
         return False
 
 
-class HpQLogUniformSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("qloguniform"))
-    value = QLogUniform(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpQLogUniform
-
-
-class V1HpQLogUniform(BaseHpParamConfig, polyaxon_sdk.V1HpQLogUniform):
+class V1HpQLogUniform(BaseHpParamConfig):
     """`LogUniform` samples from a log uniform distribution over`[low, high]`,
     you can pass values in these forms:
       * 0:1:0.1
@@ -1053,8 +984,10 @@ class V1HpQLogUniform(BaseHpParamConfig, polyaxon_sdk.V1HpQLogUniform):
     ```
     """
 
-    SCHEMA = HpQLogUniformSchema
-    IDENTIFIER = "qloguniform"
+    _IDENTIFIER = V1HPKind.QLOGUNIFORM
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[QLogUniform, QLogUniformList, QLogUniformStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -1085,16 +1018,7 @@ class V1HpQLogUniform(BaseHpParamConfig, polyaxon_sdk.V1HpQLogUniform):
         return None
 
 
-class HpNormalSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("normal"))
-    value = Normal(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpNormal
-
-
-class V1HpNormal(BaseHpParamConfig, polyaxon_sdk.V1HpNormal):
+class V1HpNormal(BaseHpParamConfig):
     """`Normal` draws random samples from a normal (Gaussian) distribution defined by
     `[loc, scale]`, you can pass values in these forms:
       * 0:1
@@ -1115,8 +1039,10 @@ class V1HpNormal(BaseHpParamConfig, polyaxon_sdk.V1HpNormal):
     ```
     """
 
-    SCHEMA = HpNormalSchema
-    IDENTIFIER = "normal"
+    _IDENTIFIER = V1HPKind.NORMAL
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[Normal, NormalList, NormalStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -1143,16 +1069,7 @@ class V1HpNormal(BaseHpParamConfig, polyaxon_sdk.V1HpNormal):
         return False
 
 
-class HpQNormalSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("qnormal"))
-    value = QNormal(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpQNormal
-
-
-class V1HpQNormal(BaseHpParamConfig, polyaxon_sdk.V1HpQNormal):
+class V1HpQNormal(BaseHpParamConfig):
     """`QNormal` draws random samples from a quantized normal (Gaussian) distribution defined by
     `[loc, scale]`, you can pass values in these forms:
       * 0:1:0.1
@@ -1173,8 +1090,10 @@ class V1HpQNormal(BaseHpParamConfig, polyaxon_sdk.V1HpQNormal):
     ```
     """
 
-    SCHEMA = HpQNormalSchema
-    IDENTIFIER = "qnormal"
+    _IDENTIFIER = V1HPKind.QNORMAL
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[QNormal, QNormalList, QNormalStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -1201,16 +1120,7 @@ class V1HpQNormal(BaseHpParamConfig, polyaxon_sdk.V1HpQNormal):
         return False
 
 
-class HpLogNormalSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("lognormal"))
-    value = LogNormal(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpLogNormal
-
-
-class V1HpLogNormal(BaseHpParamConfig, polyaxon_sdk.V1HpLogNormal):
+class V1HpLogNormal(BaseHpParamConfig):
     """`LogNormal` draws random samples from a log normal (Gaussian) distribution defined by
     `[loc, scale]`, you can pass values in these forms:
       * 0:1
@@ -1231,8 +1141,10 @@ class V1HpLogNormal(BaseHpParamConfig, polyaxon_sdk.V1HpLogNormal):
     ```
     """
 
-    SCHEMA = HpLogNormalSchema
-    IDENTIFIER = "lognormal"
+    _IDENTIFIER = V1HPKind.LOGNORMAL
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[LogNormal, LogNormalList, LogNormalStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -1259,16 +1171,7 @@ class V1HpLogNormal(BaseHpParamConfig, polyaxon_sdk.V1HpLogNormal):
         return False
 
 
-class HpQLogNormalSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("qlognormal"))
-    value = QLogNormal(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1HpQLogNormal
-
-
-class V1HpQLogNormal(BaseHpParamConfig, polyaxon_sdk.V1HpQLogNormal):
+class V1HpQLogNormal(BaseHpParamConfig):
     """`QLogNormal` draws random samples from a log normal (Gaussian) distribution defined by
     `[loc, scale]`, you can pass values in these forms:
       * 0:1:0.1
@@ -1289,8 +1192,10 @@ class V1HpQLogNormal(BaseHpParamConfig, polyaxon_sdk.V1HpQLogNormal):
     ```
     """
 
-    SCHEMA = HpQLogNormalSchema
-    IDENTIFIER = "qlognormal"
+    _IDENTIFIER = V1HPKind.QLOGNORMAL
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    value: Optional[Union[QLogNormal, QLogNormalList, QLogNormalStr, RefField]]
 
     @property
     def is_distribution(self):
@@ -1317,44 +1222,24 @@ class V1HpQLogNormal(BaseHpParamConfig, polyaxon_sdk.V1HpQLogNormal):
         return False
 
 
-class HpParamSchema(BaseOneOfSchema):
-    TYPE_FIELD = "kind"
-    TYPE_FIELD_REMOVE = False
-    SCHEMAS = {
-        V1HpChoice.IDENTIFIER: HpChoiceSchema,
-        V1HpPChoice.IDENTIFIER: HpPChoiceSchema,
-        V1HpRange.IDENTIFIER: HpRangeSchema,
-        V1HpDateRange.IDENTIFIER: HpDateRangeSchema,
-        V1HpDateTimeRange.IDENTIFIER: HpDateTimeRangeSchema,
-        V1HpLinSpace.IDENTIFIER: HpLinSpaceSchema,
-        V1HpLogSpace.IDENTIFIER: HpLogSpaceSchema,
-        V1HpGeomSpace.IDENTIFIER: HpGeomSpaceSchema,
-        V1HpUniform.IDENTIFIER: HpUniformSchema,
-        V1HpQUniform.IDENTIFIER: HpQUniformSchema,
-        V1HpLogUniform.IDENTIFIER: HpLogUniformSchema,
-        V1HpQLogUniform.IDENTIFIER: HpQLogUniformSchema,
-        V1HpNormal.IDENTIFIER: HpNormalSchema,
-        V1HpQNormal.IDENTIFIER: HpQNormalSchema,
-        V1HpLogNormal.IDENTIFIER: HpLogNormalSchema,
-        V1HpQLogNormal.IDENTIFIER: HpQLogNormalSchema,
-    }
-
-
-V1HpParam = Union[
-    V1HpChoice,
-    V1HpPChoice,
-    V1HpRange,
-    V1HpDateRange,
-    V1HpDateTimeRange,
-    V1HpLinSpace,
-    V1HpLogSpace,
-    V1HpGeomSpace,
-    V1HpUniform,
-    V1HpQUniform,
-    V1HpLogUniform,
-    V1HpQLogUniform,
-    V1HpNormal,
-    V1HpQNormal,
-    V1HpLogNormal,
-    V1HpQLogNormal,
+V1HpParam = Annotated[
+    Union[
+        V1HpChoice,
+        V1HpPChoice,
+        V1HpRange,
+        V1HpDateRange,
+        V1HpDateTimeRange,
+        V1HpLinSpace,
+        V1HpLogSpace,
+        V1HpGeomSpace,
+        V1HpUniform,
+        V1HpQUniform,
+        V1HpLogUniform,
+        V1HpQLogUniform,
+        V1HpNormal,
+        V1HpQNormal,
+        V1HpLogNormal,
+        V1HpQLogNormal,
+    ],
+    Field(discriminator="kind"),
 ]

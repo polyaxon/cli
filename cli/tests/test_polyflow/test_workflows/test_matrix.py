@@ -13,12 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import numpy as np
 import pytest
 
-from marshmallow import fields
-from marshmallow.exceptions import ValidationError
+from datetime import date, datetime, timedelta
+
+import ujson
+
+from pydantic import ValidationError
 
 from hypertune.matrix.utils import get_length, get_max, get_min, sample, to_numpy
 from polyaxon.polyflow.matrix.params import (
@@ -90,6 +92,10 @@ class TestMatrixConfigs(BaseTestCase):
         assert get_min(config) is None
         assert get_max(config) is None
 
+        config_dict["value"] = "foo"
+        with self.assertRaises(ValidationError):
+            V1HpChoice.from_dict(config_dict)
+
     def test_matrix_pchoice_option(self):
         config_dict = {"kind": "pchoice", "value": [(1, 0.1), (2, 0.3), (3, 6)]}
         with self.assertRaises(ValidationError):
@@ -100,6 +106,10 @@ class TestMatrixConfigs(BaseTestCase):
             V1HpPChoice.from_dict(config_dict)
 
         config_dict["value"] = [(1, 0.1), (2, 0.3), (3, -0.6)]
+        with self.assertRaises(ValidationError):
+            V1HpPChoice.from_dict(config_dict)
+
+        config_dict["value"] = [(1, 0.1), (2, 0.3), (3, "a")]
         with self.assertRaises(ValidationError):
             V1HpPChoice.from_dict(config_dict)
 
@@ -114,6 +124,26 @@ class TestMatrixConfigs(BaseTestCase):
         with self.assertRaises(ValidationError):
             to_numpy(config)
         assert sample(config) in [1, 2, 3]
+        assert get_length(config) == 3
+        assert config.is_categorical is False
+        assert config.is_distribution is True
+        assert config.is_range is False
+        assert config.is_uniform is False
+        assert config.is_discrete is True
+        assert config.is_continuous is False
+        assert get_min(config) is None
+        assert get_max(config) is None
+
+        config = V1HpPChoice.from_dict(config_dict)
+        assert config.to_dict() == config_dict
+
+        # Pass for correct config
+        config_dict["value"] = [("a", 0.1), ("b", 0.1), ("c", 0.8)]
+        config = V1HpPChoice.from_dict(config_dict)
+        assert config.to_dict() == config_dict
+        with self.assertRaises(ValidationError):
+            to_numpy(config)
+        assert sample(config) in ["a", "b", "c"]
         assert get_length(config) == 3
         assert config.is_categorical is False
         assert config.is_distribution is True
@@ -144,9 +174,19 @@ class TestMatrixConfigs(BaseTestCase):
             assert get_max(config) == v2
 
         # as list
+        config_dict = {"kind": "range", "value": ["1", "2", "b"]}
+        with self.assertRaises(ValidationError):
+            V1HpRange.from_dict(config_dict)
+
+        # as list
         config_dict = {"kind": "range", "value": [1, 2, 3]}
         config = V1HpRange.from_dict(config_dict)
         assert_equal(config, *config_dict["value"])
+
+        # as string
+        config_dict["value"] = "foobar"
+        with self.assertRaises(ValidationError):
+            V1HpRange.from_dict(config_dict)
 
         # as string
         config_dict["value"] = "0:10:1"
@@ -154,20 +194,27 @@ class TestMatrixConfigs(BaseTestCase):
         assert_equal(config, 0, 10, 1)
 
         # as dict
+        config_dict["value"] = {"bar": 1, "foo": 2, "step": 3}
+        with self.assertRaises(ValidationError):
+            V1HpRange.from_dict(config_dict)
+
+        # as dict
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "step": 0.1}
         config = V1HpRange.from_dict(config_dict)
         assert config.to_dict() == config_dict
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_date_range_option(self):
-        date_deserialize = fields.Date().deserialize
+        deserialize_date = lambda x: date.fromisoformat(x) if isinstance(x, str) else x
 
-        def assert_equal(config, _v1, _v2, v3):
-            v1 = date_deserialize(_v1)
-            v2 = date_deserialize(_v2)
+        def assert_equal(config, _v1, _v2, _v3):
+            v1 = deserialize_date(_v1)
+            v2 = deserialize_date(_v2)
+            v3 = int(_v3)
             result = {"start": v1, "stop": v2, "step": v3}
-            assert date_deserialize(config.to_dict()["value"]["start"]) == v1
-            assert date_deserialize(config.to_dict()["value"]["stop"]) == v2
-            assert config.to_dict()["value"]["step"] == v3
+            assert config.value.start == v1
+            assert config.value.stop == v2
+            assert config.value.step == v3
             np.testing.assert_array_equal(to_numpy(config), np.arange(**result))
             assert get_length(config) == len(np.arange(**result))
             assert sample(config) in np.arange(**result)
@@ -179,6 +226,11 @@ class TestMatrixConfigs(BaseTestCase):
             assert config.is_continuous is False
             assert get_min(config) == v1
             assert get_max(config) == v2
+
+        # as list
+        config_dict = {"kind": "daterange", "value": ["1", "2", "b"]}
+        with self.assertRaises(ValidationError):
+            V1HpDateRange.from_dict(config_dict)
 
         # as list
         config_dict = {
@@ -189,26 +241,45 @@ class TestMatrixConfigs(BaseTestCase):
         assert_equal(config, *config_dict["value"])
 
         # as dict
+        config_dict["value"] = {"bar": 1, "foo": 2, "step": 3}
+        with self.assertRaises(ValidationError):
+            V1HpDateRange.from_dict(config_dict)
+
+        # as Dict with int step
         config_dict["value"] = {
             "start": "2019-06-22",
             "stop": "2019-07-25",
             "step": 4,
         }
         config = V1HpDateRange.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
+
+        # as Dict with float step
+        config_dict["value"] = {
+            "start": "2019-06-22",
+            "stop": "2019-07-25",
+            "step": 4.0,
+        }
+        config = V1HpDateRange.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+        config_dict["value"]["step"] = 4
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_datetime_range_option(self):
-        datetime_deserialize = fields.DateTime().deserialize
-        timedelta_deserialize = fields.TimeDelta().deserialize
+        deserialize_datetime = (
+            lambda x: datetime.fromisoformat(x) if isinstance(x, str) else x
+        )
 
         def assert_equal(config, _v1, _v2, _v3):
-            v1 = datetime_deserialize(_v1)
-            v2 = datetime_deserialize(_v2)
-            v3 = timedelta_deserialize(_v3)
+            v1 = deserialize_datetime(_v1)
+            v2 = deserialize_datetime(_v2)
+            v3 = timedelta(seconds=_v3)
             result = {"start": v1, "stop": v2, "step": v3}
-            assert datetime_deserialize(config.to_dict()["value"]["start"]) == v1
-            assert datetime_deserialize(config.to_dict()["value"]["stop"]) == v2
-            assert timedelta_deserialize(config.to_dict()["value"]["step"]) == v3
+            assert config.value.start == v1
+            assert config.value.stop == v2
+            assert config.value.step == v3
             np.testing.assert_array_equal(to_numpy(config), np.arange(**result))
             assert get_length(config) == len(np.arange(**result))
             assert sample(config) in np.arange(**result)
@@ -222,6 +293,11 @@ class TestMatrixConfigs(BaseTestCase):
             assert get_max(config) == v2
 
         # as list
+        config_dict = {"kind": "datetimerange", "value": ["1", "2", "b"]}
+        with self.assertRaises(ValidationError):
+            V1HpDateTimeRange.from_dict(config_dict)
+
+        # as list
         config_dict = {
             "kind": "datetimerange",
             "value": ["2019-06-22 00:00", "2019-07-25 00:00", 3600],
@@ -230,17 +306,33 @@ class TestMatrixConfigs(BaseTestCase):
         assert_equal(config, *config_dict["value"])
 
         # as dict
+        config_dict["value"] = {"bar": 1, "foo": 2, "step": 3}
+        with self.assertRaises(ValidationError):
+            V1HpDateTimeRange.from_dict(config_dict)
+
+        # as Dict with int step
         config_dict["value"] = {
             "start": "2019-06-22T12:12:00",
             "stop": "2019-07-25T13:34:00",
             "step": 4 * 3600,
         }
         config = V1HpDateTimeRange.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as Dict with float step
+        config_dict["value"] = {
+            "start": "2019-06-22T12:12:00",
+            "stop": "2019-07-25T13:34:00",
+            "step": 4.0 * 3600,
+        }
+        config = V1HpDateTimeRange.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_linspace_option(self):
         def assert_equal(config, v1, v2, v3):
-            result = {"start": v1, "stop": v2, "num": v3}
+            result = {"start": v1, "stop": v2, "num": int(v3)}
             assert config.to_dict()["value"] == result
             np.testing.assert_array_equal(to_numpy(config), np.linspace(**result))
             assert get_length(config) == len(np.linspace(**result))
@@ -255,9 +347,19 @@ class TestMatrixConfigs(BaseTestCase):
             assert get_max(config) == v2
 
         # as list
+        config_dict = {"kind": "linspace", "value": ["1", "2", "b"]}
+        with self.assertRaises(ValidationError):
+            V1HpLinSpace.from_dict(config_dict)
+
+        # as list
         config_dict = {"kind": "linspace", "value": [1, 2, 3]}
         config = V1HpLinSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"])
+
+        # as string
+        config_dict["value"] = "foobar"
+        with self.assertRaises(ValidationError):
+            V1HpLinSpace.from_dict(config_dict)
 
         # as string
         config_dict["value"] = "0:10:1"
@@ -266,8 +368,25 @@ class TestMatrixConfigs(BaseTestCase):
 
         # as dict
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 0.1}
+        with self.assertRaises(ValidationError):
+            V1HpLinSpace.from_dict(config_dict)
+
+        # as dict with wrong keys
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "step": 2}
+        with self.assertRaises(ValidationError):
+            V1HpLinSpace.from_dict(config_dict)
+
+        # as dict num as float
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
         config = V1HpLinSpace.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict num as int
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}
+        config = V1HpLinSpace.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_geomspace_option(self):
         def assert_equal(config, v1, v2, v3):
@@ -286,14 +405,34 @@ class TestMatrixConfigs(BaseTestCase):
             assert get_max(config) == v2
 
         # as list
+        config_dict = {"kind": "geomspace", "value": ["1", "2", "b"]}
+        with self.assertRaises(ValidationError):
+            V1HpGeomSpace.from_dict(config_dict)
+
+        # as list
         config_dict = {"kind": "geomspace", "value": [1, 2, 3]}
         config = V1HpGeomSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"])
 
         # as string
+        config_dict["value"] = "foobar"
+        with self.assertRaises(ValidationError):
+            V1HpGeomSpace.from_dict(config_dict)
+
+        # as string
         config_dict["value"] = "1:10:1"
         config = V1HpGeomSpace.from_dict(config_dict)
         assert_equal(config, 1, 10, 1)
+
+        # as dict
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 0.1}
+        with self.assertRaises(ValidationError):
+            V1HpGeomSpace.from_dict(config_dict)
+
+        # as dict with wrong keys
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "step": 2}
+        with self.assertRaises(ValidationError):
+            V1HpGeomSpace.from_dict(config_dict)
 
         # as dict
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}
@@ -302,7 +441,7 @@ class TestMatrixConfigs(BaseTestCase):
 
     def test_matrix_logspace_option(self):
         def assert_equal(config, v1, v2, v3, v4=None):
-            result = {"start": v1, "stop": v2, "num": v3}
+            result = {"start": v1, "stop": v2, "num": int(v3)}
             if v4:
                 result["base"] = v4
 
@@ -320,6 +459,11 @@ class TestMatrixConfigs(BaseTestCase):
             assert get_max(config) == v2
 
         # as list
+        config_dict = {"kind": "logspace", "value": ["1", "2", "b"]}
+        with self.assertRaises(ValidationError):
+            V1HpLogSpace.from_dict(config_dict)
+
+        # as list
         config_dict = {"kind": "logspace", "value": [1, 2, 3]}
         config = V1HpLogSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"])
@@ -328,6 +472,11 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = [1, 2, 3, 2]
         config = V1HpLogSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"])
+
+        # as string
+        config_dict["value"] = "foobar"
+        with self.assertRaises(ValidationError):
+            V1HpLogSpace.from_dict(config_dict)
 
         # as string
         config_dict["value"] = "0:10:1"
@@ -341,13 +490,26 @@ class TestMatrixConfigs(BaseTestCase):
 
         # as dict
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 0.1}
+        with self.assertRaises(ValidationError):
+            V1HpLogSpace.from_dict(config_dict)
+
+        # as dict
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
         config = V1HpLogSpace.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
 
         # with base
-        config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 0.1, "base": 2}
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}
         config = V1HpLogSpace.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
+
+        # with base
+        config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1, "base": 2}
+        config = V1HpLogSpace.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_uniform_option(self):
         def assert_equal(config, v1, v2, v3=None):
@@ -372,9 +534,19 @@ class TestMatrixConfigs(BaseTestCase):
             assert get_max(config) == v2
 
         # as list
+        config_dict = {"kind": "uniform", "value": ["1", "2", "b"]}
+        with self.assertRaises(ValidationError):
+            V1HpUniform.from_dict(config_dict)
+
+        # as list
         config_dict = {"kind": "uniform", "value": [0, 1]}
         config = V1HpUniform.from_dict(config_dict)
         assert_equal(config, *config_dict["value"])
+
+        # as string
+        config_dict["value"] = "foobar"
+        with self.assertRaises(ValidationError):
+            V1HpUniform.from_dict(config_dict)
 
         # as string
         config_dict["value"] = "0:1"
@@ -382,9 +554,21 @@ class TestMatrixConfigs(BaseTestCase):
         assert_equal(config, 0, 1)
 
         # as dict
+        config_dict["value"] = {"start": 1.2, "high": 1.8, "num": 0.1}
+        with self.assertRaises(ValidationError):
+            V1HpUniform.from_dict(config_dict)
+
+        # as dict
         config_dict["value"] = {"low": 0, "high": 1}
         config = V1HpUniform.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict
+        config_dict["value"] = {"low": 0.0, "high": 1.0}
+        config = V1HpUniform.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_quniform_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -454,7 +638,14 @@ class TestMatrixConfigs(BaseTestCase):
         # as dict
         config_dict["value"] = {"low": 0, "high": 1}
         config = V1HpLogUniform.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict
+        config_dict["value"] = {"low": 0.0, "high": 1.0}
+        config = V1HpLogUniform.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_qloguniform_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -489,7 +680,14 @@ class TestMatrixConfigs(BaseTestCase):
         # as dict
         config_dict["value"] = {"low": 0, "high": 1, "q": 0.1}
         config = V1HpQLogUniform.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict
+        config_dict["value"] = {"low": 0.0, "high": 1.0, "q": 0.1}
+        config = V1HpQLogUniform.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_normal_option(self):
         def assert_equal(config, v1, v2, v3=None):
@@ -539,7 +737,14 @@ class TestMatrixConfigs(BaseTestCase):
         # as dict
         config_dict["value"] = {"loc": 60, "scale": 30}
         config = V1HpNormal.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict
+        config_dict["value"] = {"loc": 60.0, "scale": 30.0}
+        config = V1HpNormal.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_qnormal_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -574,7 +779,14 @@ class TestMatrixConfigs(BaseTestCase):
         # as dict
         config_dict["value"] = {"loc": 0, "scale": 1, "q": 0.1}
         config = V1HpQNormal.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict
+        config_dict["value"] = {"loc": 0.0, "scale": 1.0, "q": 0.1}
+        config = V1HpQNormal.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_lognormal_option(self):
         def assert_equal(config, v1, v2, v3=None):
@@ -609,7 +821,14 @@ class TestMatrixConfigs(BaseTestCase):
         # as dict
         config_dict["value"] = {"loc": 0, "scale": 1}
         config = V1HpLogNormal.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict
+        config_dict["value"] = {"loc": 0.0, "scale": 1.0}
+        config = V1HpLogNormal.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)
 
     def test_matrix_qlognormal_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -644,4 +863,11 @@ class TestMatrixConfigs(BaseTestCase):
         # as dict
         config_dict["value"] = {"loc": 0, "scale": 1, "q": 0.1}
         config = V1HpQLogNormal.from_dict(config_dict)
-        assert config.to_dict() == config_dict
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() != ujson.dumps(config_dict)
+
+        # as dict
+        config_dict["value"] = {"loc": 0.0, "scale": 1.0, "q": 0.1}
+        config = V1HpQLogNormal.from_dict(config_dict)
+        assert_equal(config, *config_dict["value"].values())
+        assert config.to_json() == ujson.dumps(config_dict)

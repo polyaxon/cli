@@ -13,94 +13,53 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Union
+from typing_extensions import Annotated, Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import Field, StrictFloat, StrictStr
 
 from polyaxon.polyflow.optimization import V1Optimization
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig, BaseOneOfSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.schemas.base import BaseDiscriminatedModel
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, FloatOrRef, IntOrRef
 
 
-class MedianStoppingPolicySchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("median"))
-    evaluation_interval = RefOrObject(fields.Int(), required=True)
-    min_interval = RefOrObject(fields.Int(allow_none=True))
-    min_samples = RefOrObject(fields.Int(allow_none=True))
+class V1MedianStoppingPolicy(BaseDiscriminatedModel):
+    _IDENTIFIER = "median"
 
-    @staticmethod
-    def schema_config():
-        return V1MedianStoppingPolicy
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
+    min_interval: Optional[IntOrRef] = Field(alias="minInterval")
+    min_samples: Optional[IntOrRef] = Field(alias="minSamples")
 
 
-class V1MedianStoppingPolicy(BaseConfig, polyaxon_sdk.V1MedianStoppingPolicy):
-    IDENTIFIER = "median"
-    SCHEMA = MedianStoppingPolicySchema
-    REDUCED_ATTRIBUTES = ["minInterval", "minSamples"]
+class V1TruncationStoppingPolicy(BaseDiscriminatedModel):
+    _IDENTIFIER = "truncation"
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    percent: FloatOrRef
+    evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
+    min_interval: Optional[IntOrRef] = Field(alias="minInterval")
+    min_samples: Optional[IntOrRef] = Field(alias="minSamples")
+    include_succeeded: Optional[BoolOrRef] = Field(alias="includeSucceeded")
 
 
-class TruncationStoppingPolicySchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("truncation"))
-    percent = RefOrObject(fields.Float(), required=True)
-    evaluation_interval = RefOrObject(fields.Int(), required=True)
-    min_interval = RefOrObject(fields.Int(allow_none=True))
-    min_samples = RefOrObject(fields.Int(allow_none=True))
+class V1DiffStoppingPolicy(BaseDiscriminatedModel):
+    _IDENTIFIER = "diff"
 
-    @staticmethod
-    def schema_config():
-        return V1TruncationStoppingPolicy
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    percent: FloatOrRef
+    evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
+    min_interval: Optional[IntOrRef] = Field(alias="minInterval")
+    min_samples: Optional[IntOrRef] = Field(alias="minSamples")
 
 
-class V1TruncationStoppingPolicy(BaseConfig, polyaxon_sdk.V1TruncationStoppingPolicy):
-    IDENTIFIER = "truncation"
-    SCHEMA = TruncationStoppingPolicySchema
-    REDUCED_ATTRIBUTES = ["minInterval", "minSamples"]
+V1EarlyStoppingPolicy = Annotated[
+    Union[V1MedianStoppingPolicy, V1TruncationStoppingPolicy, V1DiffStoppingPolicy],
+    Field(discriminator="kind", alias="earlyStopping"),
+]
 
 
-class DiffStoppingPolicySchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("diff"))
-    percent = RefOrObject(fields.Float(), required=True)
-    evaluation_interval = RefOrObject(fields.Int(), required=True)
-    min_interval = RefOrObject(fields.Int(allow_none=True))
-    min_samples = RefOrObject(fields.Int(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1DiffStoppingPolicy
-
-
-class V1DiffStoppingPolicy(BaseConfig, polyaxon_sdk.V1DiffStoppingPolicy):
-    IDENTIFIER = "diff"
-    SCHEMA = DiffStoppingPolicySchema
-    REDUCED_ATTRIBUTES = ["minInterval", "minSamples"]
-
-
-class StoppingPolicySchema(BaseOneOfSchema):
-    TYPE_FIELD = "kind"
-    TYPE_FIELD_REMOVE = False
-    SCHEMAS = {
-        V1MedianStoppingPolicy.IDENTIFIER: MedianStoppingPolicySchema,
-        V1TruncationStoppingPolicy.IDENTIFIER: TruncationStoppingPolicySchema,
-        V1DiffStoppingPolicy.IDENTIFIER: DiffStoppingPolicySchema,
-    }
-
-
-class MetricEarlyStoppingSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("metric_early_stopping"))
-    metric = RefOrObject(fields.Str(), required=True)
-    value = RefOrObject(fields.Float(), required=True)
-    optimization = RefOrObject(
-        fields.Str(validate=validate.OneOf(V1Optimization.VALUES)), required=True
-    )
-    policy = fields.Nested(StoppingPolicySchema, allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1MetricEarlyStopping
-
-
-class V1MetricEarlyStopping(BaseConfig, polyaxon_sdk.V1MetricEarlyStopping):
+class V1MetricEarlyStopping(BaseDiscriminatedModel):
     """Metric early stopping is an early stopping strategy based on metrics of runs,
     it allows to terminate a dag, a mapping, or hyperparameter tuning when a run's metric(s)
     meet(s) one or multiple conditions.
@@ -199,22 +158,16 @@ class V1MetricEarlyStopping(BaseConfig, polyaxon_sdk.V1MetricEarlyStopping):
          this policy stops a percentage of all running runs at every evaluation.
     """
 
-    SCHEMA = MetricEarlyStoppingSchema
-    IDENTIFIER = "metric_early_stopping"
+    _IDENTIFIER = "metric_early_stopping"
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    metric: StrictStr
+    value: FloatOrRef
+    optimization: Union[StrictFloat, V1Optimization]
+    policy: Optional[V1EarlyStoppingPolicy]
 
 
-class FailureEarlyStoppingSchema(BaseCamelSchema):
-    kind = fields.Str(
-        allow_none=True, validate=validate.Equal("failure_early_stopping")
-    )
-    percent = RefOrObject(fields.Float(), required=True)
-
-    @staticmethod
-    def schema_config():
-        return V1FailureEarlyStopping
-
-
-class V1FailureEarlyStopping(BaseConfig, polyaxon_sdk.V1FailureEarlyStopping):
+class V1FailureEarlyStopping(BaseDiscriminatedModel):
     """Failure early stopping is an early stopping strategy based on statuses of runs that allows
     to terminate a dag, a mapping, or hyperparameter tuning group
     when they reach a certain level of failures.
@@ -270,5 +223,7 @@ class V1FailureEarlyStopping(BaseConfig, polyaxon_sdk.V1FailureEarlyStopping):
     ```
     """
 
-    IDENTIFIER = "failure_early_stopping"
-    SCHEMA = FailureEarlyStoppingSchema
+    _IDENTIFIER = "failure_early_stopping"
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    percent: FloatOrRef

@@ -13,16 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any, Dict, Optional, Union
 
-from marshmallow import fields
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr
 
 from polyaxon import pkg
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s import k8s_schemas
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.swagger import SwaggerField
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields import BoolOrRef, IntOrRef, RefField
 
 
 def get_sidecar_resources() -> k8s_schemas.V1ResourceRequirements:
@@ -32,21 +31,7 @@ def get_sidecar_resources() -> k8s_schemas.V1ResourceRequirements:
     )
 
 
-class PolyaxonSidecarContainerSchema(BaseCamelSchema):
-    image = fields.Str(allow_none=True)
-    image_tag = fields.Str(allow_none=True)
-    image_pull_policy = fields.Str(allow_none=True)
-    resources = SwaggerField(cls=k8s_schemas.V1ResourceRequirements, allow_none=True)
-    sleep_interval = fields.Int(allow_none=True)
-    sync_interval = fields.Int(allow_none=True)
-    monitor_logs = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1PolyaxonSidecarContainer
-
-
-class V1PolyaxonSidecarContainer(BaseConfig, polyaxon_sdk.V1PolyaxonSidecarContainer):
+class V1PolyaxonSidecarContainer(BaseSchemaModel):
     """Polyaxon sidecar is a helper container that collects outputs, artifacts,
     and metadata about the main container.
 
@@ -152,16 +137,15 @@ class V1PolyaxonSidecarContainer(BaseConfig, polyaxon_sdk.V1PolyaxonSidecarConta
     ```
     """
 
-    SCHEMA = PolyaxonSidecarContainerSchema
-    IDENTIFIER = "polyaxon_sidecar"
-    REDUCED_ATTRIBUTES = [
-        "imageTag",
-        "imagePullPolicy",
-        "sleepInterval",
-        "resources",
-        "syncInterval",
-        "monitorLogs",
-    ]
+    _IDENTIFIER = "polyaxon_sidecar"
+
+    image: Optional[StrictStr]
+    image_tag: Optional[StrictStr] = Field(alias="imageTag")
+    image_pull_policy: Optional[PullPolicy] = Field(alias="imagePullPolicy")
+    sleep_interval: Optional[IntOrRef] = Field(alias="sleepInterval")
+    sync_interval: Optional[IntOrRef] = Field(alias="syncInterval")
+    monitor_logs: Optional[BoolOrRef] = Field(alias="monitorLogs")
+    resources: Optional[Union[Dict[str, Any], RefField]]
 
     def get_image(self):
         image = self.image or "polyaxon/polyaxon-sidecar"

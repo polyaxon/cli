@@ -14,12 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from polyaxon.connections.schemas.connections import (
-    BucketConnectionSchema,
-    ClaimConnectionSchema,
-    ConnectionSchema,
-    GitConnectionSchema,
-    HostConnectionSchema,
-    HostPathConnectionSchema,
     V1BucketConnection,
     V1ClaimConnection,
     V1GitConnection,
@@ -28,7 +22,6 @@ from polyaxon.connections.schemas.connections import (
     validate_connection,
 )
 from polyaxon.connections.schemas.k8s_resources import (
-    K8sResourceSchema,
     V1K8sResourceSchema,
     validate_k8s_resource,
 )

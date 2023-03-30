@@ -1,3 +1,2 @@
 traceml<1.1
 hypertune<1.1
-polyaxon-sdk==1.22.0

@@ -13,26 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class EventSchema(BaseCamelSchema):
-    name = RefOrObject(fields.Str(allow_none=True))
-    kind = RefOrObject(fields.Str(allow_none=True))
+class V1EventType(BaseTypeConfig):
+    _IDENTIFIER = "event"
 
-    @staticmethod
-    def schema_config():
-        return V1EventType
-
-
-class V1EventType(BaseTypeConfig, polyaxon_sdk.V1EventType):
-    IDENTIFIER = "event"
-    SCHEMA = EventSchema
-    REDUCED_ATTRIBUTES = ["name", "kind"]
+    name: Optional[StrictStr]
+    kind: Optional[StrictStr]

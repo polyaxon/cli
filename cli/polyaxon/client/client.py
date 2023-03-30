@@ -14,54 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import polyaxon_sdk
 
 from polyaxon import settings
 from polyaxon.constants.globals import NO_AUTH
-
-
-class ApiClient(polyaxon_sdk.ApiClient):
-    def call_api(
-        self,
-        resource_path,
-        method,
-        path_params=None,
-        query_params=None,
-        header_params=None,
-        body=None,
-        post_params=None,
-        files=None,
-        response_types_map=None,
-        auth_settings=None,
-        async_req=None,
-        _return_http_data_only=None,
-        collection_formats=None,
-        _preload_content=True,
-        _request_timeout=None,
-        _host=None,
-        _request_auth=None,
-    ):
-        if response_types_map and 200 in response_types_map:
-            response_types_map[201] = response_types_map[200]
-        return super().call_api(
-            resource_path,
-            method,
-            path_params,
-            query_params=query_params,
-            header_params=header_params,
-            body=body,
-            post_params=post_params,
-            files=files,
-            response_types_map=response_types_map,
-            auth_settings=auth_settings,
-            async_req=async_req,
-            _return_http_data_only=_return_http_data_only,
-            collection_formats=collection_formats,
-            _preload_content=_preload_content,
-            _request_timeout=_request_timeout,
-            _host=_host,
-            _request_auth=_request_auth,
-        )
+from polyaxon.sdk.api import (
+    AgentsV1Api,
+    AuthV1Api,
+    ConnectionsV1Api,
+    OrganizationsV1Api,
+    ProjectsV1Api,
+    RunsV1Api,
+    UsersV1Api,
+    VersionsV1Api,
+)
+from polyaxon.sdk.async_client.api_client import AsyncApiClient
+from polyaxon.sdk.sync_client.api_client import ApiClient
 
 
 class PolyaxonClient:
@@ -76,10 +43,6 @@ class PolyaxonClient:
      * If you have a configured CLI, Polyaxon will use the configuration of the cli.
      * If you use this client in the context of a job or a service managed by Polyaxon,
        a configuration will be available.
-
-    > N.B. PolyaxonClient requires python >= 3.5,
-    if you want to interact with Polyaxon using a client
-    compatible with python 2.7 please check polyaxon-sdk.
 
     Args:
         config: ClientConfig, optional, Instance of a ClientConfig.
@@ -107,7 +70,9 @@ class PolyaxonClient:
      * [ProjectClient](/docs/core/python-library/project-client/)
     """
 
-    def __init__(self, config=None, token=None):
+    def __init__(
+        self, config: "ClientConfig" = None, token: str = None, is_async: bool = False
+    ):
         self._config = config or settings.CLIENT_CONFIG
         token = token or self._config.token
         if not token:
@@ -117,8 +82,8 @@ class PolyaxonClient:
         else:
             self._config.token = token
 
-        self._transport = None
-        self.api_client = ApiClient(self.config.sdk_config, **self.config.client_header)
+        self.is_async = is_async
+        self.api_client = self._get_client()
         self._projects_v1 = None
         self._runs_v1 = None
         self._auth_v1 = None
@@ -128,15 +93,21 @@ class PolyaxonClient:
         self._organizations_v1 = None
         self._connections_v1 = None
 
+    def _get_client(self):
+        if self.is_async:
+            return AsyncApiClient(self.config.sdk_config, **self.config.client_header)
+        return ApiClient(self.config.sdk_config, **self.config.client_header)
+
     def reset(self):
-        self._transport = None
         self._projects_v1 = None
         self._runs_v1 = None
         self._auth_v1 = None
         self._users_v1 = None
         self._versions_v1 = None
         self._agents_v1 = None
-        self.api_client = ApiClient(self.config.sdk_config, **self.config.client_header)
+        self._connections_v1 = None
+        self._organizations_v1 = None
+        self.api_client = self._get_client()
 
     @property
     def config(self):
@@ -145,49 +116,49 @@ class PolyaxonClient:
     @property
     def projects_v1(self):
         if not self._projects_v1:
-            self._projects_v1 = polyaxon_sdk.ProjectsV1Api(self.api_client)
+            self._projects_v1 = ProjectsV1Api(self.api_client)
         return self._projects_v1
 
     @property
     def runs_v1(self):
         if not self._runs_v1:
-            self._runs_v1 = polyaxon_sdk.RunsV1Api(self.api_client)
+            self._runs_v1 = RunsV1Api(self.api_client)
         return self._runs_v1
 
     @property
     def auth_v1(self):
         if not self._auth_v1:
-            self._auth_v1 = polyaxon_sdk.AuthV1Api(self.api_client)
+            self._auth_v1 = AuthV1Api(self.api_client)
         return self._auth_v1
 
     @property
     def users_v1(self):
         if not self._users_v1:
-            self._users_v1 = polyaxon_sdk.UsersV1Api(self.api_client)
+            self._users_v1 = UsersV1Api(self.api_client)
         return self._users_v1
 
     @property
     def versions_v1(self):
         if not self._versions_v1:
-            self._versions_v1 = polyaxon_sdk.VersionsV1Api(self.api_client)
+            self._versions_v1 = VersionsV1Api(self.api_client)
         return self._versions_v1
 
     @property
     def agents_v1(self):
         if not self._agents_v1:
-            self._agents_v1 = polyaxon_sdk.AgentsV1Api(self.api_client)
+            self._agents_v1 = AgentsV1Api(self.api_client)
         return self._agents_v1
 
     @property
     def connections_v1(self):
         if not self._connections_v1:
-            self._connections_v1 = polyaxon_sdk.ConnectionsV1Api(self.api_client)
+            self._connections_v1 = ConnectionsV1Api(self.api_client)
         return self._connections_v1
 
     @property
     def organizations_v1(self):
         if not self._organizations_v1:
-            self._organizations_v1 = polyaxon_sdk.ConnectionsV1Api(self.api_client)
+            self._organizations_v1 = OrganizationsV1Api(self.api_client)
         return self._organizations_v1
 
     def sanitize_for_serialization(self, value):

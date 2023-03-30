@@ -13,27 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import StrictStr
 
 from polyaxon.polyflow.references.mixin import RefMixin
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.base import BaseDiscriminatedModel
 
 
-class DagRefSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("dag_ref"))
-    name = fields.Str(required=True)
+class V1DagRef(BaseDiscriminatedModel, RefMixin):
+    _IDENTIFIER = "dag_ref"
 
-    @staticmethod
-    def schema_config():
-        return V1DagRef
-
-
-class V1DagRef(BaseConfig, RefMixin, polyaxon_sdk.V1DagRef):
-    SCHEMA = DagRefSchema
-    IDENTIFIER = "dag_ref"
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    name: StrictStr
 
     def get_kind_value(self):
         return self.name

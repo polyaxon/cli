@@ -18,6 +18,7 @@ from collections import namedtuple
 from typing import Optional
 
 from polyaxon.lifecycle import StatusColor
+from polyaxon.utils.enums_utils import get_enum_value
 from polyaxon.utils.urls_utils import get_run_url
 
 
@@ -31,7 +32,7 @@ class NotificationSpec(
         details = "{} ({})".format(self.name, self.uuid) if self.name else self.uuid
         details = "Run: {}\n".format(details)
         if self.kind:
-            details = "Kind: `{}`\n".format(self.kind)
+            details = "Kind: `{}`\n".format(get_enum_value(self.kind))
         details += "Status: `{}`\n".format(self.status)
         if self.condition.reason:
             details += "Reason: `{}`\n".format(self.condition.reason)

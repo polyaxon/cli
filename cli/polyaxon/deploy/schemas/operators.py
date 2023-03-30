@@ -14,51 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from typing import Optional
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class OperatorsSchema(BaseCamelSchema):
-    tfjob = fields.Bool(allow_none=True)
-    pytorchjob = fields.Bool(allow_none=True)
-    paddlejob = fields.Bool(allow_none=True)
-    mpijob = fields.Bool(allow_none=True)
-    mxjob = fields.Bool(allow_none=True)
-    xgbjob = fields.Bool(allow_none=True)
-    sparkjob = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return OperatorsConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class OperatorsConfig(BaseConfig):
-    SCHEMA = OperatorsSchema
-    REDUCED_ATTRIBUTES = [
-        "tfjob",
-        "pytorchjob",
-        "paddlejob",
-        "mpijob",
-        "mxjob",
-        "xgbjob",
-        "sparkjob",
-    ]
-
-    def __init__(
-        self,
-        tfjob=None,
-        pytorchjob=None,
-        paddlejob=None,
-        mpijob=None,
-        mxjob=None,
-        xgbjob=None,
-        sparkjob=None,
-    ):
-        self.tfjob = tfjob
-        self.pytorchjob = pytorchjob
-        self.paddlejob = paddlejob
-        self.mpijob = mpijob
-        self.mxjob = mxjob
-        self.xgbjob = xgbjob
-        self.sparkjob = sparkjob
+class OperatorsConfig(BaseSchemaModel):
+    tfjob: Optional[bool]
+    pytorchjob: Optional[bool]
+    paddlejob: Optional[bool]
+    mpijob: Optional[bool]
+    mxjob: Optional[bool]
+    xgbjob: Optional[bool]
+    sparkjob: Optional[bool]

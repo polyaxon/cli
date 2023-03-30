@@ -23,11 +23,10 @@ from polyaxon.connections.schemas import (
     V1HostPathConnection,
     V1K8sResourceSchema,
 )
-from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.polypod.common.env_vars import get_env_var
 from polyaxon.polypod.common.mounts import (
     get_artifacts_context_mount,
     get_auth_context_mount,
@@ -46,61 +45,61 @@ class TestMainContainer(BaseTestCase):
         # Secrets and config maps
         self.non_mount_resource1 = V1K8sResourceType(
             name="non_mount_test1",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=False,
         )
         self.request_non_mount_resource1 = V1K8sResourceType(
             name="request_non_mount_resource1",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=True,
         )
         self.non_mount_resource2 = V1K8sResourceType(
             name="non_mount_test2",
-            schema=V1K8sResourceSchema(name="ref"),
+            schema_=V1K8sResourceSchema(name="ref"),
             is_requested=False,
         )
         self.mount_resource1 = V1K8sResourceType(
             name="mount_test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="ref", items=["item1", "item2"], mount_path="/tmp1"
             ),
             is_requested=False,
         )
         self.request_mount_resource2 = V1K8sResourceType(
             name="mount_test1",
-            schema=V1K8sResourceSchema(name="ref", mount_path="/tmp2"),
+            schema_=V1K8sResourceSchema(name="ref", mount_path="/tmp2"),
             is_requested=True,
         )
         # Connections
         self.gcs_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=self.mount_resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=self.mount_resource1.schema_,
         )
         self.s3_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
-            secret=self.non_mount_resource1.schema,
+            schema_=V1BucketConnection(bucket="s3//:foo"),
+            secret=self.non_mount_resource1.schema_,
         )
         self.az_store = V1ConnectionType(
             name="test_az",
             kind=V1ConnectionKind.WASB,
-            schema=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
-            secret=self.non_mount_resource1.schema,
+            schema_=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
+            secret=self.non_mount_resource1.schema_,
         )
         self.claim_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
         self.host_path_store = V1ConnectionType(
             name="test_path",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
+            schema_=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
         )
 
     def assert_artifacts_store_raises(self, store, run_path):
@@ -128,14 +127,14 @@ class TestMainContainer(BaseTestCase):
         artifacts_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         self.assert_artifacts_store_raises(store=artifacts_store, run_path=None)
 
         artifacts_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         self.assert_artifacts_store_raises(store=artifacts_store, run_path=[])
 
@@ -183,7 +182,7 @@ class TestMainContainer(BaseTestCase):
             main_container=k8s_schemas.V1Container(
                 name="main",
                 image="job_docker_image",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT.value,
                 command=["cmd", "-p", "-c"],
                 args=["arg1", "arg2"],
                 resources=resources,
@@ -639,7 +638,7 @@ class TestMainContainer(BaseTestCase):
         artifacts_store = V1ConnectionType(
             name="plx-outputs",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp/plx/outputs", host_path="/tmp/plx/outputs"
             ),
         )

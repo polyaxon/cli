@@ -17,8 +17,8 @@
 import pytest
 
 from polyaxon.managers.user import UserConfigManager
+from polyaxon.schemas.responses.v1_user import V1User
 from polyaxon.utils.test_utils import BaseTestCase
-from polyaxon_sdk import V1User
 
 
 @pytest.mark.managers_mark

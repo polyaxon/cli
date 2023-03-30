@@ -124,7 +124,7 @@ def _run(ctx, name, owner, project_name, description, tags, specification, log, 
     specification = CompiledOperationSpecification.apply_operation_contexts(
         specification
     )
-    content = specification.to_dict(dump=True)
+    content = specification.to_json()
     build_job.create(name=name, description=description, tags=tags, content=content)
     image = _create_docker_build(build_job, specification, project)
 

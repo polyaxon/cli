@@ -14,26 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields, validate
+from typing import Optional
 
-from polyaxon.schemas.base import NAME_REGEX, BaseCamelSchema, BaseConfig
+from pydantic import StrictStr, constr
 
-
-class RootUserSchema(BaseCamelSchema):
-    username = fields.Str(allow_none=True, validate=validate.Regexp(regex=NAME_REGEX))
-    password = fields.Str(allow_none=True)
-    email = fields.Email(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return RootUserConfig
+from polyaxon.schemas.base import NAME_REGEX, BaseSchemaModel
+from polyaxon.schemas.fields.email import EmailStr
 
 
-class RootUserConfig(BaseConfig):
-    SCHEMA = RootUserSchema
-    REDUCED_ATTRIBUTES = ["username", "password", "email"]
-
-    def __init__(self, username=None, password=None, email=None):
-        self.username = username
-        self.password = password
-        self.email = email
+class RootUserConfig(BaseSchemaModel):
+    username: Optional[constr(regex=NAME_REGEX)]
+    password: Optional[StrictStr]
+    email: Optional[EmailStr]

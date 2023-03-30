@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.deploy.schemas.root_user import RootUserConfig
 from polyaxon.utils.test_utils import BaseTestCase
@@ -26,6 +26,8 @@ class TestRootUserConfig(BaseTestCase):
             {"username": False, "password": "foo", "email": "sdf"},
             {"username": "sdf", "password": "foo", "email": "sdf"},
             {"username": "sdf", "password": "foo", "email": "sdf@boo"},
+            {"username": "foo.bar", "password": "foo", "email": "foo@bar.com"},
+            {"username": "foo bar", "password": "foo", "email": "foo@bar.com"},
         ]
 
         for config_dict in bad_config_dicts:

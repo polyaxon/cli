@@ -114,27 +114,6 @@ class CheckSpecificationDecorator:
         return self.f(*args, **kwargs)
 
 
-def check_partial(f):
-    """
-    The `CheckPartialDecorator` is a decorator to skip schema validation when `partial=True`
-
-    usage example:
-        @validates_schema
-        @check_partial
-        def my_custom_check(self, data, **kwargs):
-            ...
-            return ...
-    """
-
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        if kwargs.get("partial"):
-            return None
-        return f(*args, **kwargs)
-
-    return wrapper
-
-
 ignore_raw = IgnoreRawDecorator
 ignore_updates = IgnoreUpdatesDecorator
 ignore_updates_pre = IgnoreUpdatesPreDecorator

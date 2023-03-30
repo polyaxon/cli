@@ -13,36 +13,77 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from polyaxon.utils.enums_utils import PEnum
 
-import polyaxon_sdk
 
+class V1ConnectionKind(str, PEnum):
+    HOST_PATH = "host_path"
+    VOLUME_CLAIM = "volume_claim"
+    GCS = "gcs"
+    S3 = "s3"
+    WASB = "wasb"
+    REGISTRY = "registry"
+    GIT = "git"
+    AWS = "aws"
+    GCP = "gcp"
+    AZURE = "azure"
+    MYSQL = "mysql"
+    POSTGRES = "postgres"
+    ORACLE = "oracle"
+    VERTICA = "vertica"
+    SQLITE = "sqlite"
+    MSSQL = "mssql"
+    REDIS = "redis"
+    PRESTO = "presto"
+    MONGO = "mongo"
+    CASSANDRA = "cassandra"
+    FTP = "ftp"
+    GRPC = "grpc"
+    HDFS = "hdfs"
+    HTTP = "http"
+    PIG_CLI = "pig_cli"
+    HIVE_CLI = "hive_cli"
+    HIVE_METASTORE = "hive_metastore"
+    HIVE_SERVER2 = "hive_server2"
+    JDBC = "jdbc"
+    JENKINS = "jenkins"
+    SAMBA = "samba"
+    SNOWFLAKE = "snowflake"
+    SSH = "ssh"
+    CLOUDANT = "cloudant"
+    DATABRICKS = "databricks"
+    SEGMENT = "segment"
+    SLACK = "slack"
+    DISCORD = "discord"
+    MATTERMOST = "mattermost"
+    PAGERDUTY = "pagerduty"
+    HIPCHAT = "hipchat"
+    WEBHOOK = "webhook"
+    CUSTOM = "custom"
 
-class V1ConnectionKind(polyaxon_sdk.V1ConnectionKind):
-    MOUNT_VALUES = {
-        polyaxon_sdk.V1ConnectionKind.HOST_PATH,
-        polyaxon_sdk.V1ConnectionKind.VOLUME_CLAIM,
-    }
+    @classmethod
+    def mount_values(cls):
+        return {cls.HOST_PATH, cls.VOLUME_CLAIM}
 
-    BLOB_VALUES = {
-        polyaxon_sdk.V1ConnectionKind.GCS,
-        polyaxon_sdk.V1ConnectionKind.S3,
-        polyaxon_sdk.V1ConnectionKind.WASB,
-    }
+    @classmethod
+    def blob_values(cls):
+        return {cls.GCS, cls.S3, cls.WASB}
 
-    ARTIFACT_VALUES = BLOB_VALUES | MOUNT_VALUES
+    @classmethod
+    def artifact_values(cls):
+        return cls.blob_values() | cls.mount_values()
 
-    HOST_VALUES = {
-        polyaxon_sdk.V1ConnectionKind.GIT,
-        polyaxon_sdk.V1ConnectionKind.REGISTRY,
-    }
+    @classmethod
+    def host_values(cls):
+        return {cls.GIT, cls.REGISTRY}
 
     @classmethod
     def is_bucket(cls, kind):
-        return kind in cls.BLOB_VALUES
+        return kind in cls.blob_values()
 
     @classmethod
     def is_mount(cls, kind):
-        return kind in cls.MOUNT_VALUES
+        return kind in cls.mount_values()
 
     @classmethod
     def is_host_path(cls, kind):
@@ -54,7 +95,7 @@ class V1ConnectionKind(polyaxon_sdk.V1ConnectionKind):
 
     @classmethod
     def is_artifact(cls, kind):
-        return kind in cls.ARTIFACT_VALUES
+        return kind in cls.artifact_values()
 
     @classmethod
     def is_git(cls, kind):

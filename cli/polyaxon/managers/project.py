@@ -17,9 +17,9 @@
 import sys
 
 from polyaxon.managers.base import BaseConfigManager
+from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.utils import cli_constants
 from polyaxon.utils.formatting import Printer
-from polyaxon_sdk import V1Project
 
 
 class ProjectConfigManager(BaseConfigManager):

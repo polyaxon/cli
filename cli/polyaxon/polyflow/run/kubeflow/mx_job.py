@@ -13,48 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import Field
 
 from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.kubeflow.clean_pod_policy import V1CleanPodPolicy
-from polyaxon.polyflow.run.kubeflow.replica import KFReplicaSchema
-from polyaxon.polyflow.run.kubeflow.scheduling_policy import SchedulingPolicySchema
+from polyaxon.polyflow.run.kubeflow.replica import V1KFReplica
+from polyaxon.polyflow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.fields import RefField
+from polyaxon.utils.enums_utils import PEnum
 
 
-class MXJobMode(polyaxon_sdk.MXJobMode):
-    pass
+class MXJobMode(str, PEnum):
+    MX_TRAIN = "MXTrain"
+    MX_TUNE = "MXTune"
 
 
-class MXJobSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.MXJOB))
-    clean_pod_policy = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1CleanPodPolicy.allowable_values)
-    )
-    scheduling_policy = fields.Nested(SchedulingPolicySchema, allow_none=True)
-    mode = fields.Str(
-        allow_none=True, validate=validate.OneOf(MXJobMode.allowable_values)
-    )
-    scheduler = fields.Nested(KFReplicaSchema, allow_none=True)
-    server = fields.Nested(KFReplicaSchema, allow_none=True)
-    worker = fields.Nested(KFReplicaSchema, allow_none=True)
-    tuner_tracker = fields.Nested(KFReplicaSchema, allow_none=True)
-    tuner_server = fields.Nested(KFReplicaSchema, allow_none=True)
-    tuner = fields.Nested(KFReplicaSchema, allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1MXJob
-
-
-class V1MXJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1MXJob):
+class V1MXJob(BaseRun, DestinationImageMixin):
     """Kubeflow MXNet-Job provides an interface to train distributed experiments with MXNet.
 
     Args:
@@ -236,18 +217,18 @@ class V1MXJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1MXJob):
     ```
     """
 
-    SCHEMA = MXJobSchema
-    IDENTIFIER = V1RunKind.MXJOB
-    REDUCED_ATTRIBUTES = [
-        "cleanPodPolicy",
-        "schedulingPolicy",
-        "scheduler",
-        "server",
-        "worker",
-        "tuner",
-        "tunerTracker",
-        "tunerServer",
-    ]
+    _IDENTIFIER = V1RunKind.MXJOB
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
+    scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
+    mode: Optional[MXJobMode]
+    scheduler: Optional[Union[V1KFReplica, RefField]]
+    server: Optional[Union[V1KFReplica, RefField]]
+    worker: Optional[Union[V1KFReplica, RefField]]
+    tuner: Optional[Union[V1KFReplica, RefField]]
+    tuner_tracker: Optional[Union[V1KFReplica, RefField]] = Field(alias="tunerTracker")
+    tuner_server: Optional[Union[V1KFReplica, RefField]] = Field(alias="tunerServer")
 
     def apply_image_destination(self, image: str):
         if self.scheduler:

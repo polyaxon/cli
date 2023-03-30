@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.schemas.base import BaseConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class BaseTypeConfig(BaseConfig):
+class BaseTypeConfig(BaseSchemaModel):
     def to_param(self):
         return self.to_dict()

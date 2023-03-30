@@ -71,7 +71,7 @@ def get_file_init_container(
         image_pull_policy=polyaxon_init.image_pull_policy,
         command=["polyaxon", "initializer", "file"],
         args=[
-            "--file-context={}".format(file_args.to_dict(dump=True)),
+            "--file-context={}".format(file_args.to_json()),
             "--filepath={}".format(mount_path),
             "--copy-path={}".format(
                 ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)

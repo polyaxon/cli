@@ -13,21 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-from polyaxon.polyflow.run.job import JobSchema, V1Job
+from polyaxon.polyflow.run.job import V1Job
 from polyaxon.polyflow.run.kinds import V1RunKind
 
 
-class TunerJobSchema(JobSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.TUNER))
-
-    @staticmethod
-    def schema_config():
-        return V1TunerJob
-
-
 class V1TunerJob(V1Job):
-    SCHEMA = TunerJobSchema
-    IDENTIFIER = V1RunKind.TUNER
+    _IDENTIFIER = V1RunKind.TUNER
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER

@@ -18,6 +18,7 @@ from polyaxon.contexts import paths as ctx_paths
 from polyaxon.fs.watcher import FSWatcher
 from polyaxon.logger import logger
 from polyaxon.schemas.types import V1ConnectionType
+from polyaxon.utils.enums_utils import get_enum_value
 from polyaxon.utils.formatting import Printer
 
 
@@ -59,7 +60,9 @@ def download_artifact(
         if sync_fw:
             sync_file_watcher(path_to)
         Printer.success(
-            "{} path is initialized, path: `{}`".format(connection_kind, path_to)
+            "{} path is initialized, path: `{}`".format(
+                get_enum_value(connection_kind), path_to
+            )
         )
     except Exception as e:
         if raise_errors:

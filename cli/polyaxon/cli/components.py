@@ -206,7 +206,7 @@ def register(ctx, polyaxonfile, project, version, description, tags, force):
         kind=V1ProjectVersionKind.COMPONENT,
         description=description,
         tags=tags,
-        content=plx_file.to_dict(dump=True),
+        content=plx_file.to_json(),
         force=force,
     )
 
@@ -449,7 +449,7 @@ def update(ctx, project, version, name, description, tags):
 @click.option(
     "--to",
     "-to",
-    type=click.Choice(V1Stages.allowable_values, case_sensitive=True),
+    type=click.Choice(V1Stages.to_list(), case_sensitive=True),
     help="Stage to transition to.",
 )
 @click.option(

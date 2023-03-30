@@ -17,17 +17,15 @@
 import pytest
 import uuid
 
-from mock import MagicMock, mock
+from mock import mock
 
-from polyaxon import settings
 from polyaxon.client import RunClient
-from polyaxon.lifecycle import V1Statuses
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.client_mark
 class TestRunClient(BaseTestCase):
-    @mock.patch("polyaxon_sdk.RunsV1Api.patch_run")
+    @mock.patch("polyaxon.sdk.api.RunsV1Api.patch_run")
     def test_get_statuses(self, sdk_patch_run):
         client = RunClient(owner="owner", project="project", run_uuid=uuid.uuid4().hex)
         assert client.run_data.tags is None

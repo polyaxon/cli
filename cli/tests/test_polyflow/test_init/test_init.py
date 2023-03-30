@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.polyflow import V1Init, V1RunKind
 from polyaxon.polyflow.operations import V1CompiledOperation

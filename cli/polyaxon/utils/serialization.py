@@ -13,21 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
 
-from marshmallow import fields
+from pydantic.datetime_parse import parse_date, parse_datetime, parse_duration
+from pydantic.validators import uuid_validator
 
-_date_field = fields.Date()
-date_deserialize = _date_field.deserialize
-date_serialize = _date_field.serialize
+date_serialize = lambda x: x.isoformat()
+date_deserialize = lambda x: parse_date(x)
 
-_datetime_field = fields.DateTime()
-datetime_deserialize = _datetime_field.deserialize
-datetime_serialize = _datetime_field.serialize
+datetime_serialize = lambda x: x.isoformat()
+datetime_deserialize = lambda x: parse_datetime(x)
 
-_timedelta_field = fields.TimeDelta()
-timedelta_deserialize = _timedelta_field.deserialize
-timedelta_serialize = _timedelta_field.serialize
+timedelta_serialize = lambda x: x.total_seconds()
+timedelta_deserialize = lambda x: parse_duration(x)
 
-_uuid_field = fields.UUID()
-uuid_deserialize = _uuid_field.deserialize
-uuid_serialize = _uuid_field.serialize
+
+class _DummyField:
+    type_ = None
+
+
+_dummy_field: Any = _DummyField()
+
+uuid_serialize = lambda x: x.hex
+uuid_deserialize = lambda x: uuid_validator(x, _dummy_field)

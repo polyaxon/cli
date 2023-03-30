@@ -18,6 +18,7 @@ import pytest
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_DOCKERFILE_CONTAINER_PREFIX
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.common import constants
@@ -50,7 +51,7 @@ class TestInitDockerfile(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["polyaxon", "docker", "generate"]
         assert container.args == [
-            "--build-context={}".format(dockerfile_args.to_dict(dump=True)),
+            "--build-context={}".format(dockerfile_args.to_json()),
             "--destination={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
             "--copy-path={}".format(
                 ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format("test")
@@ -79,7 +80,9 @@ class TestInitDockerfile(BaseTestCase):
         )
         container = get_dockerfile_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init/init", image_tag="", image_pull_policy="IfNotPresent"
+                image="init/init",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             env=[],
             dockerfile_args=dockerfile_args,
@@ -93,7 +96,7 @@ class TestInitDockerfile(BaseTestCase):
         assert container.image_pull_policy == "IfNotPresent"
         assert container.command == ["polyaxon", "docker", "generate"]
         assert container.args == [
-            "--build-context={}".format(dockerfile_args.to_dict(dump=True)),
+            "--build-context={}".format(dockerfile_args.to_json()),
             "--destination=/somepath",
             "--copy-path={}".format(
                 ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format("test")

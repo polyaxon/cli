@@ -13,29 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class SchedulingPolicySchema(BaseCamelSchema):
-    min_available = fields.Int(allow_none=True)
-    queue = fields.Str(allow_none=True)
-    priority_class = fields.Str(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1SchedulingPolicy
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields import IntOrRef
 
 
-class V1SchedulingPolicy(BaseConfig, polyaxon_sdk.V1SchedulingPolicy):
-    SCHEMA = SchedulingPolicySchema
-    IDENTIFIER = "schedulingPolicy"
-    REDUCED_ATTRIBUTES = [
-        "minAvailable",
-        "queue",
-        "priorityClass",
-    ]
+class V1SchedulingPolicy(BaseSchemaModel):
+    _IDENTIFIER = "schedulingPolicy"
+
+    min_available: Optional[IntOrRef] = Field(alias="minAvailable")
+    queue: Optional[StrictStr]
+    priority_class: Optional[StrictStr] = Field(alias="priorityClass")

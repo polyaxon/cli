@@ -13,33 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
-
-from polyaxon.polyflow import BuildSchema
-from polyaxon.polyflow.component.base import BaseComponent, BaseComponentSchema
-from polyaxon.polyflow.io import IOSchema
+from polyaxon.polyflow.component.base import BaseComponent
+from polyaxon.polyflow.io import V1IO
 from polyaxon.polyflow.references import RefMixin
-from polyaxon.polyflow.run import RunMixin, RunSchema
-from polyaxon.polyflow.templates import TemplateMixinConfig, TemplateMixinSchema
-
-
-class ComponentSchema(BaseComponentSchema, TemplateMixinSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("component"))
-    inputs = fields.List(fields.Nested(IOSchema), allow_none=True)
-    outputs = fields.List(fields.Nested(IOSchema), allow_none=True)
-    build = fields.Nested(BuildSchema, allow_none=True)
-    run = fields.Nested(RunSchema, required=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Component
+from polyaxon.polyflow.run import RunMixin, V1Runtime
+from polyaxon.polyflow.templates import TemplateMixinConfig, V1Template
 
 
 class V1Component(
-    BaseComponent, TemplateMixinConfig, RunMixin, RefMixin, polyaxon_sdk.V1Component
+    BaseComponent,
+    TemplateMixinConfig,
+    RunMixin,
+    RefMixin,
 ):
     """Component is a discrete, repeatable, and self-contained action that defines
     an environment and a runtime.
@@ -387,13 +375,13 @@ class V1Component(
     ```
     """
 
-    SCHEMA = ComponentSchema
-    IDENTIFIER = "component"
-    REDUCED_ATTRIBUTES = (
-        BaseComponent.REDUCED_ATTRIBUTES
-        + TemplateMixinConfig.REDUCED_ATTRIBUTES
-        + ["inputs", "outputs", "run"]
-    )
+    _IDENTIFIER = "component"
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    inputs: Optional[List[V1IO]]
+    outputs: Optional[List[V1IO]]
+    run: Union[V1Runtime]
+    template: Optional[V1Template]
 
     def get_run_kind(self):
         return self.run.kind if self.run else None

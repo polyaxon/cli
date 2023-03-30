@@ -13,40 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List
-
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from typing import Dict, List, Optional
+from typing_extensions import Literal
 
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.polyflow.io import V1IO, IOSchema
-from polyaxon.polyflow.operations.base import BaseOp, BaseOpSchema
+from polyaxon.polyflow.io import V1IO
+from polyaxon.polyflow.operations.base import BaseOp
 from polyaxon.polyflow.params import ParamSpec, ops_params
-from polyaxon.polyflow.run import RunMixin, RunSchema
+from polyaxon.polyflow.run import RunMixin, V1Runtime
 
 
-class CompiledOperationSchema(BaseOpSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("compiled_operation"))
-    inputs = fields.List(fields.Nested(IOSchema), allow_none=True)
-    outputs = fields.List(fields.Nested(IOSchema), allow_none=True)
-    contexts = fields.List(fields.Nested(IOSchema), allow_none=True)
-    run = fields.Nested(RunSchema, required=True)
+class V1CompiledOperation(BaseOp, RunMixin):
+    _IDENTIFIER = "compiled_operation"
 
-    @staticmethod
-    def schema_config():
-        return V1CompiledOperation
-
-
-class V1CompiledOperation(BaseOp, RunMixin, polyaxon_sdk.V1CompiledOperation):
-    SCHEMA = CompiledOperationSchema
-    IDENTIFIER = "compiled_operation"
-    REDUCED_ATTRIBUTES = BaseOp.REDUCED_ATTRIBUTES + [
-        "inputs",
-        "outputs",
-        "contexts",
-        "run",
-    ]
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    inputs: Optional[List[V1IO]]
+    outputs: Optional[List[V1IO]]
+    contexts: Optional[List[V1IO]]
+    run: V1Runtime
 
     def get_run_kind(self):
         return self.run.kind if self.run else None
@@ -117,7 +101,7 @@ class V1CompiledOperation(BaseOp, RunMixin, polyaxon_sdk.V1CompiledOperation):
             for p in context_params:
                 current_param = param_specs[p].param
                 contexts.append(
-                    V1IO(
+                    V1IO.construct(
                         name=p,
                         value=current_param.value,
                         is_optional=True,

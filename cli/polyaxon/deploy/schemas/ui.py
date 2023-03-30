@@ -13,48 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class UISchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-    offline = fields.Bool(allow_none=True)
-    static_url = fields.Str(allow_none=True)
-    base_url = fields.Str(allow_none=True)
-    assets_version = fields.Str(allow_none=True)
-    admin_enabled = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return UIConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class UIConfig(BaseConfig):
-    SCHEMA = UISchema
-    REDUCED_ATTRIBUTES = [
-        "enabled",
-        "jsOffline",
-        "baseUrl",
-        "staticUrl",
-        "assetsVersion",
-        "adminEnabled",
-    ]
-
-    def __init__(
-        self,
-        enabled=None,
-        offline=None,
-        base_url=None,
-        static_url=None,
-        assets_version=None,
-        admin_enabled=None,
-    ):
-        self.enabled = enabled
-        self.offline = offline
-        self.assets_version = assets_version
-        self.base_url = base_url
-        self.static_url = static_url
-        self.admin_enabled = admin_enabled
+class UIConfig(BaseSchemaModel):
+    enabled: Optional[bool]
+    offline: Optional[bool]
+    static_url: Optional[StrictStr] = Field(alias="staticUrl")
+    base_url: Optional[StrictStr] = Field(alias="baseUrl")
+    assets_version: Optional[StrictStr] = Field(alias="assetsVersion")
+    admin_enabled: Optional[bool] = Field(alias="adminEnabled")

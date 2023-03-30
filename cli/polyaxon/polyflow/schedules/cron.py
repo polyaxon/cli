@@ -13,29 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr
 
 from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.base import BaseDiscriminatedModel
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, DatetimeOrRef, IntOrRef
 
 
-class CronScheduleSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1ScheduleKind.CRON))
-    start_at = fields.DateTime(allow_none=True)
-    end_at = fields.DateTime(allow_none=True)
-    cron = fields.String(required=True)
-    max_runs = fields.Int(allow_none=True, validate=validate.Range(min=1))
-    depends_on_past = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1CronSchedule
-
-
-class V1CronSchedule(BaseConfig, polyaxon_sdk.V1CronSchedule):
+class V1CronSchedule(BaseDiscriminatedModel):
     """Cron schedules is an interface to trigger components repeatedly using a cron definition.
 
     Args:
@@ -136,6 +124,11 @@ class V1CronSchedule(BaseConfig, polyaxon_sdk.V1CronSchedule):
     ```
     """
 
-    SCHEMA = CronScheduleSchema
-    IDENTIFIER = V1ScheduleKind.CRON
-    REDUCED_ATTRIBUTES = ["startAt", "endAt", "maxRuns", "dependsOnPast"]
+    _IDENTIFIER = V1ScheduleKind.CRON
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    cron: StrictStr
+    start_at: Optional[DatetimeOrRef] = Field(alias="startAt")
+    end_at: Optional[DatetimeOrRef] = Field(alias="endAt")
+    max_runs: Optional[IntOrRef] = Field(alias="maxRuns")
+    depends_on_past: Optional[BoolOrRef] = Field(alias="dependsOnPast")

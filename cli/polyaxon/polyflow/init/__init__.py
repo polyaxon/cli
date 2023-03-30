@@ -13,93 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
-from marshmallow import ValidationError, fields, validates_schema
+from pydantic import Field, StrictStr, root_validator, validator
 
-import polyaxon_sdk
-
-from polyaxon.containers.names import POLYAXON_INIT_PREFIX, generate_container_name
-from polyaxon.k8s import k8s_schemas
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-from polyaxon.schemas.fields.str_or_list import StrOrList
-from polyaxon.schemas.fields.swagger import SwaggerField
+from polyaxon.k8s import k8s_schemas, k8s_validation
+from polyaxon.schemas.base import BaseSchemaModel, skip_partial
+from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types import (
-    ArtifactsTypeSchema,
-    DockerfileTypeSchema,
-    FileTypeSchema,
-    GitTypeSchema,
-    TensorboardTypeSchema,
+    V1ArtifactsType,
+    V1DockerfileType,
+    V1FileType,
+    V1GitType,
+    V1TensorboardType,
 )
-from polyaxon.utils.signal_decorators import check_partial
 
 
-class InitSchema(BaseCamelSchema):
-    artifacts = fields.Nested(ArtifactsTypeSchema, allow_none=True)
-    paths = RefOrObject(fields.List(StrOrList(), allow_none=True))
-    git = fields.Nested(GitTypeSchema, allow_none=True)
-    dockerfile = fields.Nested(DockerfileTypeSchema, allow_none=True)
-    file = fields.Nested(FileTypeSchema, allow_none=True)
-    tensorboard = fields.Nested(TensorboardTypeSchema, allow_none=True)
-    lineage_ref = fields.Str(allow_none=True)
-    model_ref = fields.Str(allow_none=True)
-    artifact_ref = fields.Str(allow_none=True)
-    connection = fields.Str(allow_none=True)
-    path = fields.Str(allow_none=True)
-    container = SwaggerField(
-        cls=k8s_schemas.V1Container,
-        defaults={"name": generate_container_name(prefix=POLYAXON_INIT_PREFIX)},
-        allow_none=True,
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Init
-
-    @validates_schema
-    @check_partial
-    def validate_init(self, data, **kwargs):
-        artifacts = data.get("artifacts")
-        paths = data.get("paths")
-        git = data.get("git")
-        dockerfile = data.get("dockerfile")
-        file = data.get("file")
-        tensorboard = data.get("tensorboard")
-        lineage_ref = data.get("lineageRef")
-        model_ref = data.get("modelRef")
-        artifact_ref = data.get("artifactRef")
-        connection = data.get("connection")
-        schemas = 0
-        if artifacts:
-            schemas += 1
-        if paths:
-            schemas += 1
-        if git:
-            schemas += 1
-        if dockerfile:
-            schemas += 1
-        if file:
-            schemas += 1
-        if tensorboard:
-            schemas += 1
-        if lineage_ref:
-            schemas += 1
-        if model_ref:
-            schemas += 1
-        if artifact_ref:
-            schemas += 1
-        if schemas > 1:
-            raise ValidationError(
-                "Only one of artifacts, paths, git, file, or dockerfile can be set"
-            )
-
-        if not connection and git and not git.url:
-            raise ValidationError(
-                "git field without a valid url requires a connection to be passed."
-            )
-
-
-class V1Init(BaseConfig, polyaxon_sdk.V1Init):
+class V1Init(BaseSchemaModel):
     """Polyaxon init section exposes an interface for users to run init
     containers before the main container containing the logic for training models
     or processing data.
@@ -283,22 +213,68 @@ class V1Init(BaseConfig, polyaxon_sdk.V1Init):
      * A custom container will finally run our own custom code, in this case an echo command.
     """
 
-    IDENTIFIER = "init"
-    SCHEMA = InitSchema
-    REDUCED_ATTRIBUTES = [
-        "paths",
-        "artifacts",
-        "git",
-        "dockerfile",
-        "tensorboard",
-        "file",
-        "lineageRef",
-        "artifactRef",
-        "modelRef",
-        "connection",
-        "path",
-        "container",
-    ]
+    _IDENTIFIER = "init"
+    _SWAGGER_FIELDS = ["container"]
+
+    artifacts: Optional[Union[V1ArtifactsType, RefField]]
+    paths: Optional[Union[List[Union[List[StrictStr], StrictStr]], StrictStr, RefField]]
+    git: Optional[Union[V1GitType, RefField]]
+    dockerfile: Optional[Union[V1DockerfileType, RefField]]
+    file: Optional[Union[V1FileType, RefField]]
+    tensorboard: Optional[Union[V1TensorboardType, RefField]]
+    lineage_ref: Optional[Union[StrictStr, RefField]] = Field(alias="lineageRef")
+    model_ref: Optional[Union[StrictStr, RefField]] = Field(alias="modelRef")
+    artifact_ref: Optional[Union[StrictStr, RefField]] = Field(alias="artifactRef")
+    connection: Optional[StrictStr]
+    path: Optional[StrictStr]
+    container: Optional[Union[k8s_schemas.V1Container, RefField]]
+
+    @root_validator
+    @skip_partial
+    def validate_init(cls, values):
+        artifacts = values.get("artifacts")
+        paths = values.get("paths")
+        git = values.get("git")
+        dockerfile = values.get("dockerfile")
+        file = values.get("file")
+        tensorboard = values.get("tensorboard")
+        lineage_ref = values.get("lineage_ref")
+        model_ref = values.get("model_ref")
+        artifact_ref = values.get("artifact_ref")
+        connection = values.get("connection")
+        schemas = 0
+        if artifacts:
+            schemas += 1
+        if paths:
+            schemas += 1
+        if git:
+            schemas += 1
+        if dockerfile:
+            schemas += 1
+        if file:
+            schemas += 1
+        if tensorboard:
+            schemas += 1
+        if lineage_ref:
+            schemas += 1
+        if model_ref:
+            schemas += 1
+        if artifact_ref:
+            schemas += 1
+        if schemas > 1:
+            raise ValueError(
+                "Only one of artifacts, paths, git, file, or dockerfile can be set"
+            )
+
+        if not connection and git and not git.url:
+            raise ValueError(
+                "git field without a valid url requires a connection to be passed."
+            )
+        return values
+
+    @validator("container", always=True, pre=True)
+    def validate_container(cls, v):
+        return k8s_validation.validate_k8s_container(v)
 
     def has_connection(self):
         return any(

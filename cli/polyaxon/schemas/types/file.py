@@ -13,33 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Union
 
-from marshmallow import fields, validate
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.base import BaseTypeConfig
 from traceml.artifacts import V1ArtifactKind
 
 
-class FileTypeSchema(BaseCamelSchema):
-    content = RefOrObject(fields.Str(), required=True)
-    filename = RefOrObject(fields.Str(allow_none=True))
-    kind = RefOrObject(
-        fields.Str(
-            allow_none=True, validate=validate.OneOf(V1ArtifactKind.allowable_values)
-        )
-    )
-    chmod = RefOrObject(fields.Str(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1FileType
-
-
-class V1FileType(BaseTypeConfig, polyaxon_sdk.V1FileType):
+class V1FileType(BaseTypeConfig):
     """File type.
 
     This type allows to easily construct a file content without
@@ -175,11 +158,9 @@ class V1FileType(BaseTypeConfig, polyaxon_sdk.V1FileType):
       * kind: artifact kind, default to `file`.
     """
 
-    IDENTIFIER = "file"
-    SCHEMA = FileTypeSchema
-    REDUCED_ATTRIBUTES = [
-        "filename",
-        "kind",
-        "content",
-        "chmod",
-    ]
+    _IDENTIFIER = "file"
+
+    kind: Optional[Union[V1ArtifactKind, RefField]]
+    content: StrictStr
+    filename: Optional[StrictStr]
+    chmod: Optional[StrictStr]

@@ -13,49 +13,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Dict, List, Optional, Union
 
-from marshmallow import fields
+from pydantic import Field, StrictStr, validator
 
-from polyaxon.k8s import k8s_schemas
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.swagger import SwaggerField
-
-
-class DefaultSchedulingSchema(BaseCamelSchema):
-    node_selector = fields.Dict(allow_none=True)
-    affinity = SwaggerField(cls=k8s_schemas.V1Affinity, allow_none=True)
-    tolerations = fields.List(
-        SwaggerField(cls=k8s_schemas.V1Toleration), allow_none=True
-    )
-    image_pull_secrets = fields.List(fields.Str(), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1DefaultScheduling
+from polyaxon.k8s import k8s_schemas, k8s_validation
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class V1DefaultScheduling(BaseConfig):
-    SCHEMA = DefaultSchedulingSchema
-    IDENTIFIER = "default_scheduling"
-    REDUCED_ATTRIBUTES = [
-        "nodeSelector",
-        "affinity",
-        "tolerations",
-        "imagePullSecrets",
-    ]
+class V1DefaultScheduling(BaseSchemaModel):
+    _IDENTIFIER = "default_scheduling"
+    _SWAGGER_FIELDS = ["affinity", "tolerations"]
 
-    def __init__(
-        self,
-        node_selector=None,
-        affinity=None,
-        tolerations=None,
-        image_pull_secrets=None,
-    ):
-        self.node_selector = node_selector
-        self.affinity = affinity
-        self.tolerations = tolerations
-        self.image_pull_secrets = image_pull_secrets
+    node_selector: Optional[Dict[StrictStr, StrictStr]]
+    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
+    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
+    image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
+
+    @validator("affinity", always=True, pre=True)
+    def validate_affinity(cls, v):
+        return k8s_validation.validate_k8s_affinity(v)
+
+    @validator("tolerations", always=True, pre=True)
+    def validate_tolerations(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_toleration(vi) for vi in v]
 
     @staticmethod
     def get_service_environment(

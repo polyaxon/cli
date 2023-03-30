@@ -449,9 +449,6 @@ class TestParser(BaseTestCase):
             )
 
         with self.assertRaises(PolyaxonSchemaError):
-            parser.get_string(key="string_key_3", value="foo", is_list=True)
-
-        with self.assertRaises(PolyaxonSchemaError):
             parser.get_string(key="string_key_4", value="", is_list=True)
 
         with self.assertRaises(PolyaxonSchemaError):
@@ -487,6 +484,10 @@ class TestParser(BaseTestCase):
                 is_optional=True,
             ),
             None,
+        )
+        self.assertEqual(
+            parser.get_string(key="string_key_3", value="foo", is_list=True),
+            ["foo"],
         )
         self.assertEqual(
             parser.get_string(
@@ -622,13 +623,19 @@ class TestParser(BaseTestCase):
 
     def test_get_uri(self):
         value = parser.get_uri(key="uri_key_1", value="user:pass@siteweb.ca")
-        self.assertEqual(value, V1UriType("user", "pass", "siteweb.ca"))
+        self.assertEqual(
+            value, V1UriType(user="user", password="pass", host="siteweb.ca")
+        )
 
         value = parser.get_uri(key="uri_key_2", value="user2:pass@localhost:8080")
-        self.assertEqual(value, V1UriType("user2", "pass", "localhost:8080"))
+        self.assertEqual(
+            value, V1UriType(user="user2", password="pass", host="localhost:8080")
+        )
 
         value = parser.get_uri(key="uri_key_3", value="user2:pass@https://quay.io")
-        self.assertEqual(value, V1UriType("user2", "pass", "https://quay.io"))
+        self.assertEqual(
+            value, V1UriType(user="user2", password="pass", host="https://quay.io")
+        )
 
         value = parser.get_uri(
             key="uri_list_key_1",
@@ -642,9 +649,9 @@ class TestParser(BaseTestCase):
         self.assertEqual(
             value,
             [
-                V1UriType("user", "pass", "siteweb.ca"),
-                V1UriType("user2", "pass", "localhost:8080"),
-                V1UriType("user2", "pass", "https://quay.io"),
+                V1UriType(user="user", password="pass", host="siteweb.ca"),
+                V1UriType(user="user2", password="pass", host="localhost:8080"),
+                V1UriType(user="user2", password="pass", host="https://quay.io"),
             ],
         )
 
@@ -699,7 +706,7 @@ class TestParser(BaseTestCase):
             )
 
         with self.assertRaises(PolyaxonSchemaError):
-            parser.get_uri(key="uri_key_1", value="user:pass@siteweb.ca", is_list=True)
+            parser.get_uri(key="uri_key_1", value="", is_list=True)
 
         with self.assertRaises(PolyaxonSchemaError):
             parser.get_uri(key="uri_non_existing_key", value=None)
@@ -715,13 +722,17 @@ class TestParser(BaseTestCase):
             None,
         )
         self.assertEqual(
+            parser.get_uri(key="uri_key_1", value="user:pass@siteweb.ca", is_list=True),
+            [V1UriType(user="user", password="pass", host="siteweb.ca")],
+        )
+        self.assertEqual(
             parser.get_uri(
                 key="uri_non_existing_key",
                 value=None,
                 is_optional=True,
-                default=V1UriType("user2", "pass", "localhost:8080"),
+                default=V1UriType(user="user2", password="pass", host="localhost:8080"),
             ),
-            V1UriType("user2", "pass", "localhost:8080"),
+            V1UriType(user="user2", password="pass", host="localhost:8080"),
         )
 
         self.assertEqual(
@@ -737,13 +748,13 @@ class TestParser(BaseTestCase):
                 is_list=True,
                 is_optional=True,
                 default=[
-                    V1UriType("user", "pass", "siteweb.ca"),
-                    V1UriType("user2", "pass", "localhost:8080"),
+                    V1UriType(user="user", password="pass", host="siteweb.ca"),
+                    V1UriType(user="user2", password="pass", host="localhost:8080"),
                 ],
             ),
             [
-                V1UriType("user", "pass", "siteweb.ca"),
-                V1UriType("user2", "pass", "localhost:8080"),
+                V1UriType(user="user", password="pass", host="siteweb.ca"),
+                V1UriType(user="user2", password="pass", host="localhost:8080"),
             ],
         )
 
@@ -751,19 +762,25 @@ class TestParser(BaseTestCase):
         value = parser.get_auth(
             key="auth_key_1", value={"user": "user", "password": "pass"}
         )
-        self.assertEqual(value, V1AuthType("user", "pass"))
+        self.assertEqual(value, V1AuthType(user="user", password="pass"))
 
-        value = parser.get_auth(key="auth_key_1", value=V1AuthType("user", "pass"))
-        self.assertEqual(value, V1AuthType("user", "pass"))
+        value = parser.get_auth(
+            key="auth_key_1", value=V1AuthType(user="user", password="pass")
+        )
+        self.assertEqual(value, V1AuthType(user="user", password="pass"))
 
         value = parser.get_auth(key="auth_key_1", value="user:pass")
-        self.assertEqual(value, V1AuthType("user", "pass"))
+        self.assertEqual(value, V1AuthType(user="user", password="pass"))
 
         value = parser.get_auth(
             key="auth_list_key_1", value=["user:pass", "user2:pass"], is_list=True
         )
         self.assertEqual(
-            value, [V1AuthType("user", "pass"), V1AuthType("user2", "pass")]
+            value,
+            [
+                V1AuthType(user="user", password="pass"),
+                V1AuthType(user="user2", password="pass"),
+            ],
         )
 
         with self.assertRaises(PolyaxonSchemaError):
@@ -804,7 +821,7 @@ class TestParser(BaseTestCase):
             )
 
         with self.assertRaises(PolyaxonSchemaError):
-            parser.get_auth(key="auth_key_1", value="user:pass", is_list=True)
+            parser.get_auth(key="auth_key_1", value="", is_list=True)
 
         with self.assertRaises(PolyaxonSchemaError):
             parser.get_auth(key="auth_non_existing_key", value=None)
@@ -824,9 +841,9 @@ class TestParser(BaseTestCase):
                 key="auth_non_existing_key",
                 value=None,
                 is_optional=True,
-                default=V1AuthType("user2", "pass"),
+                default=V1AuthType(user="user2", password="pass"),
             ),
-            V1AuthType("user2", "pass"),
+            V1AuthType(user="user2", password="pass"),
         )
 
         self.assertEqual(
@@ -836,14 +853,24 @@ class TestParser(BaseTestCase):
             None,
         )
         self.assertEqual(
+            parser.get_auth(key="auth_key_1", value="user:pass", is_list=True),
+            [V1AuthType(user="user", password="pass")],
+        )
+        self.assertEqual(
             parser.get_auth(
                 key="auth_non_existing_key",
                 value=None,
                 is_list=True,
                 is_optional=True,
-                default=[V1AuthType("user", "pass"), V1AuthType("user2", "pass")],
+                default=[
+                    V1AuthType(user="user", password="pass"),
+                    V1AuthType(user="user2", password="pass"),
+                ],
             ),
-            [V1AuthType("user", "pass"), V1AuthType("user2", "pass")],
+            [
+                V1AuthType(user="user", password="pass"),
+                V1AuthType(user="user2", password="pass"),
+            ],
         )
 
     def test_get_list(self):
@@ -995,28 +1022,32 @@ class TestParser(BaseTestCase):
     def test_get_wasbs_path(self):
         # Correct url
         wasbs_path = "wasbs://container@user.blob.core.windows.net/path"
-        expected = V1WasbType("container", "user", "path")
+        expected = V1WasbType(
+            container="container", storage_account="user", path="path"
+        )
         parsed_url = parser.parse_wasbs_path(wasbs_path)
         assert parsed_url == expected
         parsed_url = parser.get_wasbs_path(key="wasb_key", value=wasbs_path)
         assert parsed_url == expected
 
         wasbs_path = "wasbs://container@user.blob.core.windows.net/"
-        expected = V1WasbType("container", "user", "")
+        expected = V1WasbType(container="container", storage_account="user", path="")
         parsed_url = parser.parse_wasbs_path(wasbs_path)
         assert parsed_url == expected
         parsed_url = parser.get_wasbs_path(key="wasb_key", value=wasbs_path)
         assert parsed_url == expected
 
         wasbs_path = "wasbs://container@user.blob.core.windows.net"
-        expected = V1WasbType("container", "user", "")
+        expected = V1WasbType(container="container", storage_account="user", path="")
         parsed_url = parser.parse_wasbs_path(wasbs_path)
         assert parsed_url == expected
         parsed_url = parser.get_wasbs_path(key="wasb_key", value=wasbs_path)
         assert parsed_url == expected
 
         wasbs_path = "wasbs://container@user.blob.core.windows.net/path/to/file"
-        expected = V1WasbType("container", "user", "path/to/file")
+        expected = V1WasbType(
+            container="container", storage_account="user", path="path/to/file"
+        )
         parsed_url = parser.parse_wasbs_path(wasbs_path)
         assert parsed_url == expected
         parsed_url = parser.get_wasbs_path(key="wasb_key", value=wasbs_path)
@@ -1044,7 +1075,7 @@ class TestParser(BaseTestCase):
     def test_parse_gcs_path(self):
         # Correct url
         gcs_path = "gs://bucket/path/to/blob"
-        expected = V1GcsType("bucket", "path/to/blob")
+        expected = V1GcsType(bucket="bucket", blob="path/to/blob")
         parsed_url = parser.parse_gcs_path(gcs_path)
         assert parsed_url == expected
         parsed_url = parser.get_gcs_path(key="gcs_key", value=gcs_path)
@@ -1059,21 +1090,21 @@ class TestParser(BaseTestCase):
 
         # Trailing slash
         gcs_path = "gs://bucket/path/to/blob/"
-        expected = V1GcsType("bucket", "path/to/blob/")
+        expected = V1GcsType(bucket="bucket", blob="path/to/blob/")
         assert parser.parse_gcs_path(gcs_path) == expected
         parsed_url = parser.get_gcs_path(key="gcs_key", value=gcs_path)
         assert parsed_url == expected
 
         # Bucket only
         gcs_path = "gs://bucket/"
-        expected = V1GcsType("bucket", "")
+        expected = V1GcsType(bucket="bucket", blob="")
         assert parser.parse_gcs_path(gcs_path) == expected
         parsed_url = parser.get_gcs_path(key="gcs_key", value=gcs_path)
         assert parsed_url == expected
 
     def test_parse_s3_path(self):
         s3_path = "s3://test/this/is/bad/key.txt"
-        expected = V1S3Type("test", "this/is/bad/key.txt")
+        expected = V1S3Type(bucket="test", key="this/is/bad/key.txt")
         parsed_url = parser.parse_s3_path(s3_path)
         assert parsed_url == expected
         parsed_url = parser.get_s3_path(key="s3_key", value=s3_path)
@@ -1173,7 +1204,7 @@ class TestParser(BaseTestCase):
             value,
             [
                 V1DockerfileType(image="foo", env={"key1": 2, "key2": 21}),
-                V1DockerfileType(image="foo2", copy=["exec1", "exec2"]),
+                V1DockerfileType(image="foo2", copy_=["exec1", "exec2"]),
                 V1DockerfileType(image="foo3", run=["exec1", "exec2"]),
             ],
         )
@@ -1467,15 +1498,29 @@ class TestParser(BaseTestCase):
         )
         self.assertEqual(value, V1TensorboardType(port=8000))
 
-        value = parser.get_tensorboard_init(
-            key="dict_key_1", value={"port": 8000, "uuids": ["uuid1", "uuid2"]}
-        )
-        self.assertEqual(value, V1TensorboardType(port=8000, uuids=["uuid1", "uuid2"]))
+        with self.assertRaises(PolyaxonSchemaError):
+            parser.get_tensorboard_init(
+                key="dict_key_1", value={"port": 8000, "uuids": "uuid1, uuid2"}
+            )
 
+        uuids = "{},{}".format(uuid.uuid4().hex, uuid.uuid4().hex)
         value = parser.get_tensorboard_init(
-            key="dict_key_1", value='{"port": 8000, "uuids": ["uuid1","uuid2"]}'
+            key="dict_key_1", value={"port": 8000, "uuids": uuids}
         )
-        self.assertEqual(value, V1TensorboardType(port=8000, uuids=["uuid1", "uuid2"]))
+        self.assertEqual(value, V1TensorboardType(port=8000, uuids=uuids))
+
+        uuids = [uuid.uuid4(), uuid.uuid4().hex]
+        value = parser.get_tensorboard_init(
+            key="dict_key_1", value={"port": 8000, "uuids": uuids}
+        )
+        self.assertEqual(value, V1TensorboardType(port=8000, uuids=uuids))
+
+        uuids = [uuid.uuid4().hex, uuid.uuid4().hex]
+        value = parser.get_tensorboard_init(
+            key="dict_key_1",
+            value='{{"port": 8000, "uuids": ["{}","{}"]}}'.format(*uuids),
+        )
+        self.assertEqual(value, V1TensorboardType(port=8000, uuids=uuids))
 
         value = parser.get_tensorboard_init(
             key="dict_key_1", value='{"useNames": false}'
@@ -1486,10 +1531,10 @@ class TestParser(BaseTestCase):
             key="dict_list_key_1",
             value=[
                 {"useNames": False},
-                {"uuids": ["uuid1", "uuid2"]},
+                {"uuids": uuids},
                 {
                     "port": 8000,
-                    "uuids": ["uuid1", "uuid2"],
+                    "uuids": uuids,
                     "plugins": ["plug1", "plug2"],
                 },
             ],
@@ -1499,10 +1544,8 @@ class TestParser(BaseTestCase):
             value,
             [
                 V1TensorboardType(use_names=False),
-                V1TensorboardType(uuids=["uuid1", "uuid2"]),
-                V1TensorboardType(
-                    port=8000, uuids=["uuid1", "uuid2"], plugins=["plug1", "plug2"]
-                ),
+                V1TensorboardType(uuids=uuids),
+                V1TensorboardType(port=8000, uuids=uuids, plugins=["plug1", "plug2"]),
             ],
         )
 

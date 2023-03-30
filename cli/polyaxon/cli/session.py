@@ -26,12 +26,14 @@ from polyaxon.constants.globals import NO_AUTH
 from polyaxon.managers.auth import AuthConfigManager
 from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.user import UserConfigManager
+from polyaxon.schemas.api.installation import V1Installation
 from polyaxon.schemas.cli.client_config import ClientConfig
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.services.values import PolyaxonServices
+from polyaxon.utils.enums_utils import get_enum_value
 from polyaxon.utils.formatting import Printer
 from polyaxon.utils.tz_utils import now
 from polyaxon.utils.versions import clean_version_for_compatibility
-from polyaxon_sdk.rest import ApiException
 
 
 def session_expired():
@@ -58,9 +60,9 @@ def get_server_installation(polyaxon_client=None):
 
 def get_installation_key(key: str) -> str:
     if not key:
-        installation = CliConfigManager.get_value("installation") or {}
-        key = installation.get("key") or uuid.uuid4().hex
-        installation["key"] = key
+        installation = CliConfigManager.get_value("installation") or V1Installation()
+        key = installation.key or uuid.uuid4().hex
+        installation.key = key
         if not CliConfigManager.is_initialized():
             CliConfigManager.reset(installation=installation)
     return key
@@ -94,7 +96,7 @@ def get_compatibility(
     try:
         return polyaxon_client.versions_v1.get_compatibility(
             uuid=key,
-            service=service,
+            service=get_enum_value(service),
             version=version,
             _request_timeout=1,
         )

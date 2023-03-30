@@ -333,27 +333,30 @@ class CompiledOperationSpecification(BaseSpecification):
                 validate_run_patch(preset.run_patch, config.run.kind),
                 strategy=preset.patch_strategy,
             )
-        patch_compiled = V1CompiledOperation(
-            name=preset.name,
-            description=preset.description,
-            tags=preset.tags,
-            is_approved=preset.is_approved,
-            presets=preset.presets,
-            queue=preset.queue,
-            cache=preset.cache,
-            build=preset.build,
-            hooks=preset.hooks,
-            events=preset.events,
-            plugins=preset.plugins,
-            termination=preset.termination,
-            matrix=preset.matrix,
-            joins=preset.joins,
-            schedule=preset.schedule,
-            dependencies=preset.dependencies,
-            trigger=preset.trigger,
-            conditions=preset.conditions,
-            skip_on_upstream_skip=preset.skip_on_upstream_skip,
-        )
+        patch_keys = {
+            "name",
+            "description",
+            "tags",
+            "is_approved",
+            "presets",
+            "queue",
+            "cache",
+            "build",
+            "hooks",
+            "events",
+            "plugins",
+            "termination",
+            "matrix",
+            "joins",
+            "schedule",
+            "dependencies",
+            "trigger",
+            "conditions",
+            "skip_on_upstream_skip",
+        }
+        patch_keys = patch_keys.intersection(preset.__fields_set__)
+        patch_data = {k: getattr(preset, k) for k in patch_keys}
+        patch_compiled = V1CompiledOperation.construct(**patch_data)
         return config.patch(patch_compiled, strategy=preset.patch_strategy)
 
     @classmethod

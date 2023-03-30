@@ -15,8 +15,8 @@
 # limitations under the License.
 
 from polyaxon.managers.base import BaseConfigManager
+from polyaxon.schemas.responses.v1_user import V1User
 from polyaxon.utils.formatting import Printer
-from polyaxon_sdk import V1User
 
 
 class UserConfigManager(BaseConfigManager):

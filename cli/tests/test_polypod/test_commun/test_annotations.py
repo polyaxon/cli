@@ -55,7 +55,7 @@ class TestAnnotations(BaseTestCase):
         store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         assert (
             get_connection_annotations(
@@ -88,7 +88,7 @@ class TestAnnotations(BaseTestCase):
         conn1 = V1ConnectionType(
             name="conn1",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
             annotations={"conn1_key1": "val1", "conn1_key2": "val2"},
@@ -96,7 +96,7 @@ class TestAnnotations(BaseTestCase):
         conn2 = V1ConnectionType(
             name="conn2",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp", host_path="/tmp", read_only=True
             ),
             annotations={"conn2_key1": "val1", "conn2_key2": "val2"},

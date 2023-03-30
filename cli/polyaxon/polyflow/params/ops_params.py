@@ -16,8 +16,7 @@
 
 from typing import Dict, List, Union
 
-from marshmallow import ValidationError
-
+from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow.io.io import V1IO
 from polyaxon.polyflow.joins import V1Join
 from polyaxon.polyflow.matrix import V1Mapping, V1Matrix
@@ -87,7 +86,7 @@ def validate_params(
             if extra_info:
                 message += " Please check: {}".format(extra_info)
 
-            raise ValidationError(message)
+            raise PolyaxonValidationError(message)
     elif not accepts_params(inputs, outputs) and params:
         extra_params = set(params.keys()) - {
             p for p in params if params[p].context_only
@@ -96,7 +95,7 @@ def validate_params(
             message = "Received unexpected params `{}`".format(extra_params)
             if extra_info:
                 message += " Please check: {}".format(extra_info)
-            raise ValidationError(message)
+            raise PolyaxonValidationError(message)
 
     matrix = matrix or {}
     inputs = inputs or []
@@ -137,7 +136,7 @@ def validate_params(
             message = "Input {} is required, no param was passed.".format(inp.name)
             if extra_info:
                 message += " Please check: {}".format(extra_info)
-            raise ValidationError(message)
+            raise PolyaxonValidationError(message)
         else:
             validated_params.append(
                 ParamSpec(
@@ -209,7 +208,7 @@ def validate_params(
         message = "Received unexpected params `{}`".format(extra_invalid_params)
         if extra_info:
             message += " Please check: {}".format(extra_info)
-        raise ValidationError(message)
+        raise PolyaxonValidationError(message)
 
     # Add all (extra) context params that were not processed during the IO check
     for p in contexts_by_keys:

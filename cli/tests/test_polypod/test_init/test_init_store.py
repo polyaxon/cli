@@ -29,6 +29,7 @@ from polyaxon.containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
     generate_container_name,
 )
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
@@ -151,7 +152,7 @@ class TestInitStore(BaseTestCase):
         s3_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         path_to = "/path-to/"
         path_from = os.path.join(s3_store.store_path, "")
@@ -172,7 +173,7 @@ class TestInitStore(BaseTestCase):
         s3_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         base_path = "/path/to/"
         path_to1 = "/path/to/path1"
@@ -244,7 +245,7 @@ class TestInitStore(BaseTestCase):
         gcs_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
+            schema_=V1BucketConnection(bucket="gs//:foo"),
         )
         path_to = "/path/to/"
         path_from = os.path.join(gcs_store.store_path, "")
@@ -265,7 +266,7 @@ class TestInitStore(BaseTestCase):
         gcs_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="Congs//:foo"),
+            schema_=V1BucketConnection(bucket="Congs//:foo"),
         )
 
         path_to1 = "/path/to/path1"
@@ -304,7 +305,7 @@ class TestInitStore(BaseTestCase):
         az_store = V1ConnectionType(
             name="test_az",
             kind=V1ConnectionKind.WASB,
-            schema=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
+            schema_=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
         )
         path_to = "/path/to/"
         path_from = os.path.join(az_store.store_path, "")
@@ -325,7 +326,7 @@ class TestInitStore(BaseTestCase):
         az_store = V1ConnectionType(
             name="test_az",
             kind=V1ConnectionKind.WASB,
-            schema=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
+            schema_=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
         )
         base_path = "/path/to/"
         path_to1 = "/path/to/path1"
@@ -364,7 +365,7 @@ class TestInitStore(BaseTestCase):
         claim_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
@@ -385,7 +386,7 @@ class TestInitStore(BaseTestCase):
         claim_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
@@ -473,7 +474,7 @@ class TestInitStore(BaseTestCase):
         host_path_store = V1ConnectionType(
             name="test_path",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp", host_path="/tmp", read_only=True
             ),
         )
@@ -494,7 +495,7 @@ class TestInitStore(BaseTestCase):
         host_path_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp", host_path="/tmp", read_only=True
             ),
         )
@@ -543,7 +544,7 @@ class TestInitStore(BaseTestCase):
         bucket_store_without_secret = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
+            schema_=V1BucketConnection(bucket="gs//:foo"),
         )
         container = get_base_store_container(
             container=k8s_schemas.V1Container(name="test"),
@@ -571,14 +572,14 @@ class TestInitStore(BaseTestCase):
     def test_get_base_store_container_with_store_with_secret(self):
         non_mount_resource1 = V1K8sResourceType(
             name="resource",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=False,
         )
         bucket_store_with_secret = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=non_mount_resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=non_mount_resource1.schema_,
         )
         container = get_base_store_container(
             container=k8s_schemas.V1Container(name="init"),
@@ -607,12 +608,12 @@ class TestInitStore(BaseTestCase):
 
         mount_resource1 = V1K8sResourceType(
             name="resource",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="resource", items=["item1", "item2"], mount_path="/tmp1"
             ),
             is_requested=False,
         )
-        bucket_store_with_secret.secret = mount_resource1.schema
+        bucket_store_with_secret.secret = mount_resource1.schema_
         container = get_base_store_container(
             container=k8s_schemas.V1Container(name="init"),
             container_name="init",
@@ -641,7 +642,7 @@ class TestInitStore(BaseTestCase):
         claim_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
@@ -672,7 +673,7 @@ class TestInitStore(BaseTestCase):
         store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
@@ -683,7 +684,9 @@ class TestInitStore(BaseTestCase):
             container=k8s_schemas.V1Container(name="init"),
             container_name="init",
             polyaxon_init=V1PolyaxonInitContainer(
-                image="foo/foo", image_tag="", image_pull_policy="IfNotPresent"
+                image="foo/foo",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             store=store,
             env=env,
@@ -706,13 +709,15 @@ class TestInitStore(BaseTestCase):
         store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
         container = get_store_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="foo/foo", image_tag="foo", image_pull_policy="IfNotPresent"
+                image="foo/foo",
+                image_tag="foo",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             connection=store,
             artifacts=None,
@@ -746,18 +751,20 @@ class TestInitStore(BaseTestCase):
         mount_path = "/test-path"
         resource1 = V1K8sResourceType(
             name="non_mount_test1",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=False,
         )
         store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=resource1.schema_,
         )
         container = get_store_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="foo/foo", image_tag="", image_pull_policy="IfNotPresent"
+                image="foo/foo",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             connection=store,
             artifacts=None,

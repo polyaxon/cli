@@ -13,22 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import EXCLUDE, fields
+from pydantic import Extra, Field, StrictStr
 
 from polyaxon.env_vars.keys import EV_KEYS_HOME
-from polyaxon.schemas.base import BaseConfig, BaseSchema
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class HomeSchema(BaseSchema):
-    path = fields.Str(data_key=EV_KEYS_HOME)
-
-    @staticmethod
-    def schema_config():
-        return HomeConfig
-
-
-class HomeConfig(BaseConfig):
+class HomeConfig(BaseSchemaModel):
     """
     Home config for managing Polyaxon's main context path.
 
@@ -37,10 +30,9 @@ class HomeConfig(BaseConfig):
         path: `str`. The context path where to write/read configs.
     """
 
-    SCHEMA = HomeSchema
-    IDENTIFIER = "home"
+    _IDENTIFIER = "home"
 
-    UNKNOWN_BEHAVIOUR = EXCLUDE
+    path: Optional[StrictStr] = Field(alias=EV_KEYS_HOME)
 
-    def __init__(self, path=None, **kwargs):
-        self.path = path
+    class Config:
+        extra = Extra.ignore

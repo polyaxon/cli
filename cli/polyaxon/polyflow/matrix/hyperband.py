@@ -15,46 +15,21 @@
 # limitations under the License.
 import math
 
-from typing import Tuple
+from typing import Dict, List, Optional, Tuple, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
+from pydantic import Field, NonNegativeFloat, PositiveInt, PrivateAttr
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.early_stopping import EarlyStoppingSchema
+from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.polyflow.matrix.params import HpParamSchema
-from polyaxon.polyflow.matrix.tuner import TunerSchema
-from polyaxon.polyflow.optimization import (
-    OptimizationMetricSchema,
-    OptimizationResourceSchema,
-)
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.polyflow.matrix.params import V1HpParam
+from polyaxon.polyflow.matrix.tuner import V1Tuner
+from polyaxon.polyflow.optimization import V1OptimizationMetric, V1OptimizationResource
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 
-class HyperbandSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1MatrixKind.HYPERBAND))
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(HpParamSchema), allow_none=True
-    )
-    max_iterations = RefOrObject(fields.Int(validate=validate.Range(min=1)))
-    eta = RefOrObject(fields.Float(validate=validate.Range(min=0)))
-    resource = fields.Nested(OptimizationResourceSchema)
-    metric = fields.Nested(OptimizationMetricSchema)
-    resume = RefOrObject(fields.Boolean(allow_none=True))
-    seed = RefOrObject(fields.Int(allow_none=True))
-    concurrency = RefOrObject(fields.Int(allow_none=True))
-    tuner = fields.Nested(TunerSchema, allow_none=True)
-    early_stopping = fields.List(fields.Nested(EarlyStoppingSchema), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Hyperband
-
-
-class V1Hyperband(BaseSearchConfig, polyaxon_sdk.V1Hyperband):
+class V1Hyperband(BaseSearchConfig):
     """Hyperband is a relatively new method for tuning iterative algorithms.
     It performs random sampling and attempts to gain an edge
     by using time spent optimizing in the best way.
@@ -351,17 +326,40 @@ class V1Hyperband(BaseSearchConfig, polyaxon_sdk.V1Hyperband):
     |4             |1           |81              |            |                 |             |                |            |                 |            |                | # noqa
     """
 
-    SCHEMA = HyperbandSchema
-    IDENTIFIER = V1MatrixKind.HYPERBAND
-    REDUCED_ATTRIBUTES = ["seed", "concurrency", "earlyStopping", "tuner", "resume"]
+    _IDENTIFIER = V1MatrixKind.HYPERBAND
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    params: Optional[Union[Dict[str, V1HpParam], RefField]]
+    max_iterations: Optional[PositiveInt] = Field(alias="maxIterations")
+    eta: Optional[Union[NonNegativeFloat, RefField]]
+    resource: Optional[V1OptimizationResource]
+    metric: Optional[V1OptimizationMetric]
+    resume: Optional[BoolOrRef]
+    seed: Optional[IntOrRef]
+    concurrency: Optional[Union[PositiveInt, RefField]]
+    tuner: Optional[V1Tuner]
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping"
+    )
+
+    _s_max: Optional[int] = PrivateAttr()
+    _B: Optional[int] = PrivateAttr()
+
+    @property
+    def s_max(self):
+        return self._s_max
+
+    @property
+    def B(self):
+        return self._B
 
     def set_tuning_params(self):
         # Maximum iterations per configuration: max_iterations
         # Defines configuration downsampling/elimination rate (default = 3): eta
         # number of times to run hyperband (brackets)
         # i.e.  # of times to repeat the outer loops over the tradeoffs `s`
-        self.s_max = int(math.log(self.max_iterations) / math.log(self.eta))
-        self.B = (
+        self._s_max = int(math.log(self.max_iterations) / math.log(self.eta))
+        self._B = (
             self.s_max + 1
         ) * self.max_iterations  # budget per bracket of successive halving
 

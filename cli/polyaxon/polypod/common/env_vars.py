@@ -44,6 +44,7 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.accelerators import requests_gpu
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.services.headers import PolyaxonServiceHeaders
+from polyaxon.utils.enums_utils import get_enum_value
 from polyaxon.utils.list_utils import to_list
 
 
@@ -122,13 +123,13 @@ def get_from_secret(
 
 def get_items_from_secret(secret: V1K8sResourceType) -> List[k8s_schemas.V1EnvVar]:
     items_from = []
-    if not secret or not secret.schema.items or secret.schema.mount_path:
+    if not secret or not secret.schema_.items or secret.schema_.mount_path:
         return items_from
 
-    for item in secret.schema.items:
+    for item in secret.schema_.items:
         items_from.append(
             get_from_secret(
-                key_name=item, secret_key_name=item, secret_ref_name=secret.schema.name
+                key_name=item, secret_key_name=item, secret_ref_name=secret.schema_.name
             )
         )
     return items_from
@@ -138,15 +139,15 @@ def get_items_from_config_map(
     config_map: V1K8sResourceType,
 ) -> List[k8s_schemas.V1EnvVar]:
     items_from = []
-    if not config_map or not config_map.schema.items:
+    if not config_map or not config_map.schema_.items:
         return items_from
 
-    for item in config_map.schema.items:
+    for item in config_map.schema_.items:
         items_from.append(
             get_from_config_map(
                 key_name=item,
                 config_map_key_name=item,
-                config_map_ref_name=config_map.schema.name,
+                config_map_ref_name=config_map.schema_.name,
             )
         )
     return items_from
@@ -176,10 +177,10 @@ def get_env_vars_from_k8s_resources(
 def get_env_from_secret(
     secret: V1K8sResourceType,
 ) -> Optional[k8s_schemas.V1EnvFromSource]:
-    if not secret or secret.schema.items or secret.schema.mount_path:
+    if not secret or secret.schema_.items or secret.schema_.mount_path:
         return None
 
-    return k8s_schemas.V1EnvFromSource(secret_ref={"name": secret.schema.name})
+    return k8s_schemas.V1EnvFromSource(secret_ref={"name": secret.schema_.name})
 
 
 def get_env_from_secrets(
@@ -193,10 +194,10 @@ def get_env_from_secrets(
 def get_env_from_config_map(
     config_map: V1K8sResourceType,
 ) -> Optional[k8s_schemas.V1EnvFromSource]:
-    if not config_map or config_map.schema.items or config_map.schema.mount_path:
+    if not config_map or config_map.schema_.items or config_map.schema_.mount_path:
         return None
 
-    return k8s_schemas.V1EnvFromSource(config_map_ref={"name": config_map.schema.name})
+    return k8s_schemas.V1EnvFromSource(config_map_ref={"name": config_map.schema_.name})
 
 
 def get_env_from_config_maps(
@@ -264,7 +265,11 @@ def get_service_env_vars(
             )
         )
     if service_header:
-        env_vars.append(get_env_var(name=EV_KEYS_HEADER_SERVICE, value=service_header))
+        env_vars.append(
+            get_env_var(
+                name=EV_KEYS_HEADER_SERVICE, value=get_enum_value(service_header)
+            )
+        )
     if include_secret_key:
         env_vars.append(
             get_from_secret(
@@ -319,11 +324,11 @@ def get_connection_env_var(
     if connection.env:
         env_vars += to_list(connection.env, check_none=True)
 
-    if not secret or not secret.schema.mount_path:
+    if not secret or not secret.schema_.mount_path:
         return env_vars
 
     context_secret_env_name = get_connection_context_path_env_name(connection.name)
-    env_vars += [get_env_var(context_secret_env_name, secret.schema.mount_path)]
+    env_vars += [get_env_var(context_secret_env_name, secret.schema_.mount_path)]
 
     return env_vars
 

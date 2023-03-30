@@ -13,18 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List
+from typing import Any, List, Optional
 
-from marshmallow import ValidationError, fields, validate, validates_schema
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon import types
-from polyaxon.exceptions import PolyaxonSchemaError
+from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
 from polyaxon.parser import parser
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.utils.deprecated_decorators import warn_deprecation
-from polyaxon.utils.signal_decorators import check_partial
+from polyaxon.schemas.base import BaseSchemaModel, skip_partial
 
 IO_NAME_BLACK_LIST = ["globals", "params", "connections"]
 IO_NAME_ERROR = (
@@ -60,25 +56,28 @@ def validate_io_value(
             return value
         return default
     except PolyaxonSchemaError as e:
-        raise ValidationError(
+        raise PolyaxonValidationError(
             "Could not parse value `%s`, an error was encountered: %s" % (value, e)
         )
 
 
 def validate_io(name, type, value, is_optional, is_list, is_flag, options):
     if type and value:
-        validate_io_value(
-            name=name,
-            type=type,
-            value=value,
-            default=None,
-            is_list=is_list,
-            is_optional=is_optional,
-            options=options,
-        )
+        try:
+            value = validate_io_value(
+                name=name,
+                type=type,
+                value=value,
+                default=None,
+                is_list=is_list,
+                is_optional=is_optional,
+                options=options,
+            )
+        except PolyaxonValidationError as e:
+            raise ValueError(e)
 
     if not is_optional and value:
-        raise ValidationError(
+        raise ValueError(
             "IO `{}` is not optional and has default value `{}`. "
             "Please either make it optional or remove the default value.".format(
                 name, value
@@ -86,49 +85,16 @@ def validate_io(name, type, value, is_optional, is_list, is_flag, options):
         )
 
     if is_flag and type != types.BOOL:
-        raise ValidationError(
+        raise TypeError(
             "IO type `{}` cannot be a flag, it must be of type `{}`".format(
                 type, types.BOOL
             )
         )
 
-
-class IOSchema(BaseCamelSchema):
-    name = fields.Str(
-        required=True, validate=validate.NoneOf(IO_NAME_BLACK_LIST, error=IO_NAME_ERROR)
-    )
-    description = fields.Str(allow_none=True)
-    type = fields.Str(allow_none=True, validate=validate.OneOf(types.VALUES))
-    value = fields.Raw(allow_none=True)
-    is_optional = fields.Bool(allow_none=True)
-    is_list = fields.Bool(allow_none=True)
-    is_flag = fields.Bool(allow_none=True)
-    arg_format = fields.Str(allow_none=True)
-    delay_validation = fields.Bool(allow_none=True)
-    options = fields.List(fields.Raw(), allow_none=True)
-    connection = fields.Str(allow_none=True)
-    to_init = fields.Bool(allow_none=True)
-    to_env = fields.Str(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1IO
-
-    @validates_schema
-    @check_partial
-    def validate_io(self, values, **kwargs):
-        validate_io(
-            name=values.get("name"),
-            type=values.get("type"),
-            value=values.get("value"),
-            is_list=values.get("is_list"),
-            is_optional=values.get("is_optional"),
-            is_flag=values.get("is_flag"),
-            options=values.get("options"),
-        )
+    return value
 
 
-class V1IO(BaseConfig, polyaxon_sdk.V1IO):
+class V1IO(BaseSchemaModel):
     """Each Component may have its own inputs and outputs.
     The inputs and outputs describe the expected parameters to pass to the component
     and their types. In the context of a DAG,
@@ -528,67 +494,50 @@ class V1IO(BaseConfig, polyaxon_sdk.V1IO):
     ```
     """
 
-    SCHEMA = IOSchema
-    IDENTIFIER = "io"
-    REDUCED_ATTRIBUTES = [
-        "description",
-        "type",
-        "value",
-        "isOptional",
-        "isFlag",
-        "isList",
-        "argFormat",
-        "delayValidation",
-        "options",
-        "connection",
-        "toInit",
-        "toEnv",
-    ]
+    _IDENTIFIER = "io"
 
-    def __init__(
-        self,
-        name=None,
-        description=None,
-        type=None,
-        value=None,
-        is_optional=None,
-        is_list=None,
-        is_flag=None,
-        arg_format=None,
-        delay_validation=None,
-        options=None,
-        connection=None,
-        to_init=None,
-        to_env=None,
-        iotype=None,
-        local_vars_configuration=None,
-    ):
-        # Backward compatibility
-        if iotype:
-            warn_deprecation(
-                deprecation_version="1.0.0",
-                details="Please note that passing `iotype` to `V1IO` "
-                "will be removed in future releases.",
-                current_logic="iotype",
-                new_logic="type",
+    name: StrictStr
+    description: Optional[StrictStr]
+    type: Optional[StrictStr]
+    is_optional: Optional[bool] = Field(alias="isOptional")
+    is_list: Optional[bool] = Field(alias="isList")
+    is_flag: Optional[bool] = Field(alias="isFlag")
+    arg_format: Optional[StrictStr] = Field(alias="argFormat")
+    delay_validation: Optional[bool] = Field(alias="delayValidation")
+    options: Optional[Any]
+    connection: Optional[StrictStr]
+    to_init: Optional[bool] = Field(alias="toInit")
+    to_env: Optional[StrictStr] = Field(alias="toEnv")
+    value: Optional[Any]
+
+    @validator("name", always=True)
+    def validate_name(cls, v):
+        if v in IO_NAME_BLACK_LIST:
+            raise ValueError(IO_NAME_ERROR)
+        return v
+
+    @validator("type", always=True)
+    def validate_type(cls, v):
+        if v and v not in types.VALUES:
+            raise ValueError(
+                "Received an input/output with an invalid type `{}`, "
+                "please use one of the following types: {}".format(v, types.VALUES)
             )
-        type = type or iotype
-        super().__init__(
-            name=name,
-            description=description,
-            type=type,
-            value=value,
-            is_optional=is_optional,
-            is_list=is_list,
-            is_flag=is_flag,
-            arg_format=arg_format,
-            delay_validation=delay_validation,
-            options=options,
-            connection=connection,
-            to_init=to_init,
-            to_env=to_env,
-            local_vars_configuration=local_vars_configuration,
+        return v
+
+    @root_validator
+    @skip_partial
+    def validate_io(cls, values):
+        validate_io(
+            name=values.get("name"),
+            type=values.get("type"),
+            value=values.get("value"),
+            is_list=values.get("is_list"),
+            is_optional=values.get("is_optional"),
+            is_flag=values.get("is_flag"),
+            options=values.get("options"),
         )
+        return values
 
     def validate_value(self, value: Any, parse: bool = True):
         if self.type is None:

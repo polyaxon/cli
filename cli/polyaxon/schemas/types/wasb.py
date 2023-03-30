@@ -13,27 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class WasbTypeSchema(BaseCamelSchema):
-    container = RefOrObject(fields.Str(allow_none=True))
-    storage_account = RefOrObject(fields.Str(allow_none=True))
-    path = RefOrObject(fields.Str(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1WasbType
-
-
-class V1WasbType(BaseTypeConfig, polyaxon_sdk.V1WasbType):
+class V1WasbType(BaseTypeConfig):
     """Wasb type.
 
     Args:
@@ -98,9 +85,11 @@ class V1WasbType(BaseTypeConfig, polyaxon_sdk.V1WasbType):
     ```
     """
 
-    IDENTIFIER = "wasb"
-    SCHEMA = WasbTypeSchema
-    REDUCED_ATTRIBUTES = ["container", "storageAccount", "path"]
+    _IDENTIFIER = "wasb"
+
+    container: Optional[StrictStr]
+    storage_account: Optional[StrictStr] = Field(alias="storageAccount")
+    path: Optional[StrictStr]
 
     def __str__(self):
         value = "wasbs://{}@{}.blob.core.windows.net".format(

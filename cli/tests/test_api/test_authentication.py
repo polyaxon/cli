@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.env_vars.keys import EV_KEYS_AUTH_TOKEN, EV_KEYS_AUTH_USERNAME
 from polyaxon.schemas.api.authentication import AccessTokenConfig, V1Credentials

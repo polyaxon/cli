@@ -16,27 +16,18 @@
 
 import base64
 
-from marshmallow import fields
+from typing import Optional
 
-from polyaxon.schemas.base import BaseConfig, BaseSchema
+from pydantic import StrictStr
 
-
-class LogHandlerSchema(BaseSchema):
-    dsn = fields.Str(allow_none=True)
-    environment = fields.Str(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return LogHandlerConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class LogHandlerConfig(BaseConfig):
-    SCHEMA = LogHandlerSchema
-    IDENTIFIER = "log_handler"
+class V1LogHandler(BaseSchemaModel):
+    _IDENTIFIER = "log_handler"
 
-    def __init__(self, dsn=None, environment=None):
-        self.dsn = dsn
-        self.environment = environment
+    dsn: Optional[StrictStr]
+    environment: Optional[StrictStr]
 
     @property
     def decoded_dsn(self):

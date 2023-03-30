@@ -13,20 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Union
 
-import polyaxon_sdk
+from pydantic import StrictStr
 
 from polyaxon.k8s.k8s_schemas import V1Container
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields import StrictIntOrFloat
 from traceml.processors.units_processors import to_cpu_value, to_memory_bytes
 
 
-class V1RunResources(polyaxon_sdk.V1RunResources):
-    MEMORY = "memory"
-    CPU = "cpu"
-    GPU = "gpu"
-    CUSTOM_RESOURCE = "custom"
-    COST = "cost"
-    VALUES = {MEMORY, CPU, GPU, CUSTOM_RESOURCE, COST}
+class V1RunResources(BaseSchemaModel):
+    cpu: Optional[Union[StrictIntOrFloat, StrictStr]]
+    memory: Optional[Union[StrictIntOrFloat, StrictStr]]
+    gpu: Optional[Union[StrictIntOrFloat, StrictStr]]
+    custom: Optional[Union[StrictIntOrFloat, StrictStr]]
+    cost: Optional[Union[StrictIntOrFloat, StrictStr]]
+
+    _MEMORY = "memory"
+    _CPU = "cpu"
+    _GPU = "gpu"
+    _CUSTOM_RESOURCE = "custom"
+    _COST = "cost"
+    _VALUES = {_MEMORY, _CPU, _GPU, _CUSTOM_RESOURCE, _COST}
 
     @classmethod
     def validate_memory(cls, value):
@@ -57,21 +66,21 @@ class V1RunResources(polyaxon_sdk.V1RunResources):
         limits = resources.get("limits") or {}
 
         for k, v in requests.items():
-            if k == cls.MEMORY:
+            if k == cls._MEMORY:
                 result.memory = v
-            elif k == cls.CPU:
+            elif k == cls._CPU:
                 result.cpu = v
-            elif cls.GPU in k:
+            elif cls._GPU in k:
                 result.gpu = v
             else:
                 result.custom = v
         # We only set limits if no requests is provided
         for k, v in limits.items():
-            if k == cls.MEMORY:
+            if k == cls._MEMORY:
                 result.memory = result.memory if result.memory else v
-            elif k == cls.CPU:
+            elif k == cls._CPU:
                 result.cpu = result.cpu if result.cpu else v
-            elif cls.GPU in k:
+            elif cls._GPU in k:
                 result.gpu = result.gpu if result.gpu else v
             elif not result.custom:
                 result.custom = v

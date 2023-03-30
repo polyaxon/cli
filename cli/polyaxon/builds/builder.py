@@ -18,6 +18,8 @@ import json
 import logging
 import time
 
+from typing import Dict, List
+
 from docker import APIClient
 from docker.errors import APIError, BuildError
 from urllib3.exceptions import ReadTimeoutError
@@ -101,7 +103,12 @@ class DockerBuilder(DockerMixin):
     IS_BUILD = True
 
     def __init__(
-        self, context, destination, credstore_env=None, registries=None, docker=None
+        self,
+        context: str,
+        destination: str,
+        credstore_env: Dict = None,
+        registries: List[V1UriType] = None,
+        docker: APIClient = None,
     ):
         self.destination = destination
 
@@ -112,7 +119,7 @@ class DockerBuilder(DockerMixin):
         self.is_pushing = False
 
     @staticmethod
-    def _validate_registries(registries):
+    def _validate_registries(registries: List[V1UriType]):
         if not registries or isinstance(registries, V1UriType):
             return True
 
@@ -138,7 +145,7 @@ class DockerBuilder(DockerMixin):
                 reauth=True,
             )
 
-    def build(self, nocache=False, memory_limit=None):
+    def build(self, nocache: bool = False, memory_limit: int = None):
         limits = {
             # Disable memory swap for building
             "memswap": -1
@@ -161,7 +168,9 @@ class DockerBuilder(DockerMixin):
 class DockerPusher(DockerMixin):
     IS_BUILD = False
 
-    def __init__(self, destination, credstore_env=None, docker=None):
+    def __init__(
+        self, destination: str, credstore_env: Dict = None, docker: APIClient = None
+    ):
         self.destination = destination
         self.docker = docker or APIClient(version="auto", credstore_env=credstore_env)
         self.is_pushing = False
@@ -172,7 +181,12 @@ class DockerPusher(DockerMixin):
 
 
 def _build(
-    context, destination, nocache, docker=None, credstore_env=None, registries=None
+    context: str,
+    destination: str,
+    nocache: bool,
+    docker: APIClient = None,
+    credstore_env: Dict = None,
+    registries: List[V1UriType] = None,
 ):
     """Build necessary code for a job to run"""
     _logger.info("Starting build ...")
@@ -195,14 +209,14 @@ def _build(
 
 
 def build(
-    context,
-    destination,
-    nocache,
-    docker=None,
-    credstore_env=None,
-    registries=None,
-    max_retries=3,
-    sleep_interval=1,
+    context: str,
+    destination: str,
+    nocache: bool,
+    docker: APIClient = None,
+    credstore_env: Dict = None,
+    registries: List[V1UriType] = None,
+    max_retries: int = 3,
+    sleep_interval: int = 1,
 ):
     """Build necessary code for a job to run"""
     retry = 0
@@ -229,7 +243,12 @@ def build(
         )
 
 
-def push(destination, docker=None, max_retries=3, sleep_interval=1):
+def push(
+    destination: str,
+    docker: APIClient = None,
+    max_retries: int = 3,
+    sleep_interval: int = 1,
+):
     docker_pusher = DockerPusher(destination=destination, docker=docker)
     retry = 0
     is_done = False
@@ -251,13 +270,13 @@ def push(destination, docker=None, max_retries=3, sleep_interval=1):
 
 
 def build_and_push(
-    context,
-    destination,
-    nocache,
-    credstore_env=None,
-    registries=None,
-    max_retries=3,
-    sleep_interval=1,
+    context: str,
+    destination: str,
+    nocache: bool,
+    credstore_env: Dict = None,
+    registries: List[V1UriType] = None,
+    max_retries: int = 3,
+    sleep_interval: int = 1,
 ):
     """Build necessary code for a job to run and push it."""
     # Build the image

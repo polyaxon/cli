@@ -13,24 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class ArtifactsMountSchema(BaseCamelSchema):
-    name = fields.Str(required=True)
-    paths = fields.List(fields.Str(), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1ArtifactsMount
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class V1ArtifactsMount(BaseConfig, polyaxon_sdk.V1ArtifactsMount):
-    IDENTIFIER = "artifacts_mount"
-    SCHEMA = ArtifactsMountSchema
-    REDUCED_ATTRIBUTES = ["paths"]
+class V1ArtifactsMount(BaseSchemaModel):
+    _IDENTIFIER = "artifacts_mount"
+
+    name: StrictStr
+    paths: Optional[List[StrictStr]]

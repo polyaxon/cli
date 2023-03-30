@@ -21,8 +21,9 @@ from polyaxon import pkg
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s import k8s_schemas
-from polyaxon.schemas.services import BaseServiceConfig, BaseServiceSchema
+from polyaxon.schemas.services import BaseServiceConfig
 from polyaxon.schemas.types import V1ConnectionType
+from polyaxon.utils.enums_utils import get_enum_value
 
 
 def get_cleaner_resources() -> k8s_schemas.V1ResourceRequirements:
@@ -30,12 +31,6 @@ def get_cleaner_resources() -> k8s_schemas.V1ResourceRequirements:
         limits={"cpu": "0.5", "memory": "1000Mi"},
         requests={"cpu": "0.1", "memory": "80Mi"},
     )
-
-
-class PolyaxonCleanerSchema(BaseServiceSchema):
-    @staticmethod
-    def schema_config():
-        return V1PolyaxonCleaner
 
 
 class V1PolyaxonCleaner(BaseServiceConfig):
@@ -173,8 +168,7 @@ class V1PolyaxonCleaner(BaseServiceConfig):
     ```
     """
 
-    SCHEMA = PolyaxonCleanerSchema
-    IDENTIFIER = "cleaner"
+    _IDENTIFIER = "cleaner"
 
     def get_image(self):
         image = self.image or "polyaxon/polyaxon-init"
@@ -196,7 +190,9 @@ def get_default_cleaner_container(
     clean_args = "polyaxon clean-artifacts {} --subpath={}".format(
         store.kind.replace("_", "-"), subpath
     )
-    wait_args = "polyaxon wait --uuid={} --kind={}".format(run_uuid, run_kind)
+    wait_args = "polyaxon wait --uuid={} --kind={}".format(
+        run_uuid, get_enum_value(run_kind)
+    )
     image = "polyaxon/polyaxon-init"
     image_tag = pkg.VERSION
     image_pull_policy = PullPolicy.IF_NOT_PRESENT.value

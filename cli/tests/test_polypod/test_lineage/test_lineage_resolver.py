@@ -101,11 +101,16 @@ class TestLineageResolver(BaseTestCase):
         }
 
     def test_collector_with_connections(self):
+        secret = V1K8sResourceType(
+            name="secret2",
+            schema_=V1K8sResourceSchema(name="secret2"),
+            is_requested=True,
+        )
         connection1 = V1ConnectionType(
             name="connection1",
             kind=V1ConnectionKind.REGISTRY,
-            schema=V1HostConnection(url="localhost:5000"),
-            secret="test",
+            schema_=V1HostConnection(url="localhost:5000"),
+            secret=secret.schema_,
         )
         artifacts = collect_io_artifacts(
             compiled_operation=self.compiled_operation,
@@ -126,25 +131,25 @@ class TestLineageResolver(BaseTestCase):
         AgentConfigManager.CONFIG_PATH = fpath
         secret1 = V1K8sResourceType(
             name="secret1",
-            schema=V1K8sResourceSchema(name="secret1"),
+            schema_=V1K8sResourceSchema(name="secret1"),
             is_requested=True,
         )
         secret2 = V1K8sResourceType(
             name="secret2",
-            schema=V1K8sResourceSchema(name="secret2"),
+            schema_=V1K8sResourceSchema(name="secret2"),
             is_requested=True,
         )
         artifacts_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
-            secret=secret1.schema,
+            schema_=V1BucketConnection(bucket="s3//:foo"),
+            secret=secret1.schema_,
         )
         connection1 = V1ConnectionType(
             name="connection1",
             kind=V1ConnectionKind.REGISTRY,
-            schema=V1HostConnection(url="localhost:5000"),
-            secret=secret2.schema,
+            schema_=V1HostConnection(url="localhost:5000"),
+            secret=secret2.schema_,
         )
         connection2 = V1ConnectionType(
             name="connection2",

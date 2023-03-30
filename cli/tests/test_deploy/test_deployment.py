@@ -14,10 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.deploy import reader
 from polyaxon.deploy.schemas.deployment import DeploymentConfig
+from polyaxon.deploy.schemas.service_types import ServiceTypes
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -31,7 +32,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress.enabled is True
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector is None
         assert config.tolerations is None
@@ -41,7 +42,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.global_concurrency is None
         assert config.scheduler is None
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.postgresql.enabled is False
         assert config.rabbitmq is None
         assert config.email is None
@@ -64,7 +66,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress.enabled is False
-        assert config.gateway.service.get("type") == "NodePort"
+        assert config.gateway.service.type == ServiceTypes.NODE_PORT
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector == {"polyaxon": "core"}
         assert config.tolerations is None
@@ -76,7 +78,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.organization_key is None
         assert config.scheduler.replicas == 3
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.postgresql.persistence is not None
         assert config.rabbitmq is None
         assert config.email is not None
@@ -99,7 +102,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress.enabled is True
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector == {"polyaxon": "core"}
         assert config.tolerations is None
@@ -111,7 +114,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.scheduler.replicas == 3
         assert config.worker.replicas == 3
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.postgresql.enabled is True
         assert config.rabbitmq.enabled is False
         assert config.redis.enabled is False
@@ -121,7 +125,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.intervals is None
         assert config.artifacts_store.name == "store"
         assert config.artifacts_store.kind == "host_path"
-        assert config.artifacts_store.schema.mount_path == "/tmp/outputs"
+        assert config.artifacts_store.schema_.mount_path == "/tmp/outputs"
         assert len(config.connections) == 2
         assert config.ldap is None
         assert config.ssl is None
@@ -136,7 +140,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone == "Europe/Berlin"
         assert config.environment == "staging"
         assert config.ingress.enabled is True
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "test"}
         assert config.node_selector == {"polyaxon": "core"}
         assert config.tolerations is None
@@ -149,7 +153,12 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.worker.replicas == 1
         assert config.beat.image_tag == "latest"
         assert config.worker.image_tag == "latest"
-        assert config.hooks.image_tag == "latest"
+        assert config.api_hooks.image_tag == "latest"
+        assert config.api_hooks.load_fixtures is True
+        assert config.api_hooks.admin_user is False
+        assert config.api_hooks.tables is False
+        assert config.api_hooks.sync_db is False
+        assert config.clean_hooks is None
         assert config.postgresql is None
         assert config.rabbitmq is None
         assert config.broker is None
@@ -159,7 +168,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.intervals is None
         assert config.artifacts_store.name == "test"
         assert config.artifacts_store.kind == "volume_claim"
-        assert config.artifacts_store.schema.volume_claim == "test"
+        assert config.artifacts_store.schema_.volume_claim == "test"
         assert len(config.connections) == 2
         assert config.auth.enabled is False
         assert config.auth.external is None
@@ -196,7 +205,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone == "Europe/Berlin"
         assert config.environment == "staging"
         assert config.ingress.enabled is True
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "test"}
         assert config.node_selector == {"polyaxon": "core"}
         assert config.tolerations is None
@@ -226,7 +235,14 @@ class TestDeploymentConfig(BaseTestCase):
             "workerMaxMemoryPerChild": 4,
         }
         assert config.beat.image_tag == "latest"
-        assert config.hooks.image_tag == "latest"
+        assert config.api_hooks.image_tag == "latest"
+        assert config.api_hooks.image_pull_policy == "Always"
+        assert config.api_hooks.load_fixtures is True
+        assert config.api_hooks.admin_user is True
+        assert config.api_hooks.tables is True
+        assert config.api_hooks.sync_db is True
+        assert config.clean_hooks.image_tag == "latest"
+        assert config.clean_hooks.image_pull_policy == "Always"
         assert config.postgresql is None
         assert config.rabbitmq.enabled is False
         assert config.broker == "redis"
@@ -276,7 +292,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress is None
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector is None
         assert config.tolerations is None
@@ -287,7 +303,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.email is None
         assert config.host_name is None
         assert config.allowed_hosts is None
@@ -323,7 +340,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress is None
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector is None
         assert config.tolerations is None
@@ -334,7 +351,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.email is None
         assert config.host_name is None
         assert config.allowed_hosts is None
@@ -364,7 +382,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress is None
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector is None
         assert config.tolerations is None
@@ -375,7 +393,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.email is None
         assert config.host_name is None
         assert config.allowed_hosts is None
@@ -407,7 +426,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress is None
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector is None
         assert config.tolerations is None
@@ -418,7 +437,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.email is None
         assert config.host_name is None
         assert config.allowed_hosts is None
@@ -441,7 +461,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.timezone is None
         assert config.environment == "staging"
         assert config.ingress is None
-        assert config.gateway.service.get("type") == "ClusterIP"
+        assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
         assert config.user.to_dict() == {"password": "root"}
         assert config.node_selector is None
         assert config.tolerations is None
@@ -452,7 +472,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.scheduler is None
         assert config.worker is None
         assert config.beat is None
-        assert config.hooks is None
+        assert config.api_hooks is None
+        assert config.clean_hooks is None
         assert config.email is None
         assert config.host_name is None
         assert config.allowed_hosts is None
@@ -519,6 +540,11 @@ class TestDeploymentConfig(BaseTestCase):
 
     def test_read_deploy_config_all_platform_values(self):
         config = reader.read("tests/fixtures/deployment/all_platform_values.yml")
+        assert isinstance(config, DeploymentConfig)
+
+        config = reader.read(
+            "tests/fixtures/deployment/all_external_platform_values.yml"
+        )
         assert isinstance(config, DeploymentConfig)
 
     def test_read_deploy_config_all_agent_values(self):

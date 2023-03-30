@@ -40,9 +40,9 @@ from polyaxon.managers.run import RunConfigManager
 from polyaxon.polyflow import V1CompiledOperation, V1Operation
 from polyaxon.schemas import V1RunPending
 from polyaxon.schemas.types import V1ArtifactsType
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 from polyaxon.utils.formatting import Printer
-from polyaxon_sdk.rest import ApiException
 
 
 class RunWatchSpec(namedtuple("RunWatchSpec", "uuid name")):

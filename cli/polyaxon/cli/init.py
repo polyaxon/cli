@@ -31,11 +31,11 @@ from polyaxon.managers.ignore import IgnoreConfigManager
 from polyaxon.managers.project import ProjectConfigManager
 from polyaxon.polyaxonfile import check_polyaxonfile
 from polyaxon.schemas.types import V1GitType
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cli_constants, indentation
 from polyaxon.utils.cache import get_local_project
 from polyaxon.utils.formatting import Printer
 from polyaxon.utils.path_utils import create_init_file
-from polyaxon_sdk.rest import ApiException
 
 
 def create_polyaxonfile():

@@ -13,13 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pytest
 
-from marshmallow.exceptions import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.connections.schemas import V1K8sResourceSchema, validate_k8s_resource
 from polyaxon.utils.test_utils import BaseTestCase
 
 
+@pytest.mark.schemas_mark
 class TestSecretResourceValidation(BaseTestCase):
     def test_claim_connect_config(self):
         config_dict = {}

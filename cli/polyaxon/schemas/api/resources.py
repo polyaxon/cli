@@ -13,120 +13,47 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional
 
-from marshmallow import fields
+from pydantic import StrictInt, StrictStr
 
-from polyaxon.schemas.base import BaseConfig, BaseSchema
-from polyaxon.schemas.fields import UUID
-
-
-class ContainerGPUResourcesSchema(BaseSchema):
-    index = fields.Int()
-    uuid = fields.Str()
-    name = fields.Str()
-    minor = fields.Int()
-    bus_id = fields.Str()
-    serial = fields.Str()
-    temperature_gpu = fields.Int()
-    utilization_gpu = fields.Int()
-    power_draw = fields.Int()
-    power_limit = fields.Int()
-    memory_free = fields.Int()
-    memory_used = fields.Int()
-    memory_total = fields.Int()
-    memory_utilization = fields.Int()
-    processes = fields.List(fields.Dict(), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return ContainerGPUResourcesConfig
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields import StrictIntOrFloat, UUIDStr
 
 
-class ContainerGPUResourcesConfig(BaseConfig):
-    SCHEMA = ContainerGPUResourcesSchema
-    IDENTIFIER = "ContainerGPUResources"
-    MEM_SIZE_ATTRIBUTES = ["memory_free", "memory_used", "memory_total"]
+class ContainerGPUResourcesConfig(BaseSchemaModel):
+    _IDENTIFIER = "ContainerGPUResources"
+    _MEM_SIZE_ATTRIBUTES = ["memory_free", "memory_used", "memory_total"]
 
-    def __init__(
-        self,
-        index,
-        uuid,
-        name,
-        minor,
-        bus_id,
-        serial,
-        temperature_gpu,
-        utilization_gpu,
-        power_draw,
-        power_limit,
-        memory_free,
-        memory_used,
-        memory_total,
-        memory_utilization,
-        processes=None,
-    ):
-        self.index = index
-        self.uuid = uuid
-        self.name = name
-        self.minor = minor
-        self.bus_id = bus_id
-        self.serial = serial
-        self.temperature_gpu = temperature_gpu
-        self.utilization_gpu = utilization_gpu
-        self.power_draw = power_draw
-        self.power_limit = power_limit
-        self.memory_free = memory_free
-        self.memory_used = memory_used
-        self.memory_total = memory_total
-        self.memory_utilization = memory_utilization
-        self.processes = processes
+    index: StrictInt
+    uuid: UUIDStr
+    name: StrictStr
+    minor: StrictInt
+    bus_id: StrictStr
+    serial: StrictStr
+    temperature_gpu: StrictIntOrFloat
+    utilization_gpu: StrictIntOrFloat
+    power_draw: StrictIntOrFloat
+    power_limit: StrictIntOrFloat
+    memory_free: StrictIntOrFloat
+    memory_used: StrictIntOrFloat
+    memory_total: StrictIntOrFloat
+    memory_utilization: StrictIntOrFloat
+    processes: Optional[List[Dict]]
 
 
-class ContainerResourcesSchema(BaseSchema):
-    job_uuid = UUID()
-    experiment_uuid = UUID()
-    job_name = fields.Str()
-    container_id = fields.Str()
-    n_cpus = fields.Int()
-    cpu_percentage = fields.Float()
-    percpu_percentage = fields.List(fields.Float(), allow_none=True)
-    memory_used = fields.Int()
-    memory_limit = fields.Int()
-    gpu_resources = fields.Nested(
-        ContainerGPUResourcesSchema, many=True, allow_none=True
-    )
+class ContainerResourcesConfig(BaseSchemaModel):
+    _IDENTIFIER = "ContainerResources"
+    _PERCENT_ATTRIBUTES = ["cpu_percentage"]
+    _MEM_SIZE_ATTRIBUTES = ["memory_used", "memory_limit"]
 
-    @staticmethod
-    def schema_config():
-        return ContainerResourcesConfig
-
-
-class ContainerResourcesConfig(BaseConfig):
-    SCHEMA = ContainerResourcesSchema
-    IDENTIFIER = "ContainerResources"
-    PERCENT_ATTRIBUTES = ["cpu_percentage"]
-    MEM_SIZE_ATTRIBUTES = ["memory_used", "memory_limit"]
-
-    def __init__(
-        self,
-        job_uuid,
-        experiment_uuid,
-        job_name,
-        container_id,
-        n_cpus,
-        cpu_percentage,
-        percpu_percentage,
-        memory_used,
-        memory_limit,
-        gpu_resources=None,
-    ):
-        self.job_uuid = job_uuid
-        self.experiment_uuid = experiment_uuid
-        self.job_name = job_name
-        self.container_id = container_id
-        self.n_cpus = n_cpus
-        self.cpu_percentage = cpu_percentage
-        self.percpu_percentage = percpu_percentage
-        self.memory_used = memory_used
-        self.memory_limit = memory_limit
-        self.gpu_resources = gpu_resources
+    job_uuid: UUIDStr
+    experiment_uuid: UUIDStr
+    job_name: StrictStr
+    container_id: StrictStr
+    n_cpus: StrictIntOrFloat
+    cpu_percentage: StrictIntOrFloat
+    percpu_percentage: Optional[List[float]]
+    memory_used: StrictIntOrFloat
+    memory_limit: StrictIntOrFloat
+    gpu_resources: Optional[List[ContainerGPUResourcesConfig]]

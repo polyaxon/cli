@@ -13,47 +13,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
+from pydantic import Field, StrictInt, StrictStr, validator
 
-import polyaxon_sdk
-
-from polyaxon.containers.names import MAIN_JOB_CONTAINER
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow.environment import EnvironmentSchema
-from polyaxon.polyflow.init import InitSchema
+from polyaxon.k8s import k8s_schemas, k8s_validation
+from polyaxon.polyflow.environment import V1Environment
+from polyaxon.polyflow.init import V1Init
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-from polyaxon.schemas.fields.swagger import SwaggerField
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 
-class ServiceSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.SERVICE))
-    environment = fields.Nested(EnvironmentSchema, allow_none=True)
-    connections = fields.List(fields.Str(), allow_none=True)
-    volumes = fields.List(SwaggerField(cls=k8s_schemas.V1Volume), allow_none=True)
-    init = fields.List(fields.Nested(InitSchema), allow_none=True)
-    sidecars = fields.List(SwaggerField(cls=k8s_schemas.V1Container), allow_none=True)
-    container = SwaggerField(
-        cls=k8s_schemas.V1Container,
-        defaults={"name": MAIN_JOB_CONTAINER},
-        allow_none=True,
-    )
-    ports = RefOrObject(fields.List(fields.Int(), allow_none=True))
-    rewrite_path = RefOrObject(fields.Bool(allow_none=True))
-    is_external = RefOrObject(fields.Bool(allow_none=True))
-    replicas = RefOrObject(fields.Int(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1Service
-
-
-class V1Service(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1Service):
+class V1Service(BaseRun, DestinationImageMixin):
     """Services are used to launch Tensorboards, Notebooks, JupyterHub apps,
     Streamlit/Voila/Bokeh apps, internal tools,
     and dashboards based on your models and data analysis.
@@ -314,21 +289,36 @@ class V1Service(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1Servi
     ```
     """
 
-    SCHEMA = ServiceSchema
-    IDENTIFIER = V1RunKind.SERVICE
-    REDUCED_ATTRIBUTES = [
-        "kind",
-        "environment",
-        "volumes",
-        "connections",
-        "init",
-        "sidecars",
-        "container",
-        "ports",
-        "rewritePath",
-        "isExternal",
-        "replicas",
-    ]
+    _IDENTIFIER = V1RunKind.SERVICE
+    _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    environment: Optional[Union[V1Environment, RefField]]
+    connections: Optional[Union[List[StrictStr], RefField]]
+    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
+    init: Optional[Union[List[V1Init], RefField]]
+    sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]]
+    container: Optional[Union[k8s_schemas.V1Container, RefField]]
+    ports: Optional[Union[List[StrictInt], RefField]]
+    rewrite_path: Optional[BoolOrRef] = Field(alias="rewritePath")
+    is_external: Optional[BoolOrRef] = Field(alias="isExternal")
+    replicas: Optional[IntOrRef]
+
+    @validator("volumes", always=True, pre=True)
+    def validate_volumes(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_volume(vi) for vi in v]
+
+    @validator("sidecars", always=True, pre=True)
+    def validate_helper_containers(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_container(vi) for vi in v]
+
+    @validator("container", always=True, pre=True)
+    def validate_container(cls, v):
+        return k8s_validation.validate_k8s_container(v)
 
     def get_resources(self):
         return V1RunResources.from_container(self.container)

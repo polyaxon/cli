@@ -15,25 +15,14 @@
 # limitations under the License.
 import os
 
-from marshmallow import fields
+from typing import Optional
 
-import polyaxon_sdk
+from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class GcsTypeSchema(BaseCamelSchema):
-    bucket = RefOrObject(fields.Str(allow_none=True))
-    blob = RefOrObject(fields.Str(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1GcsType
-
-
-class V1GcsType(BaseTypeConfig, polyaxon_sdk.V1GcsType):
+class V1GcsType(BaseTypeConfig):
     """GCS type.
 
     Args:
@@ -93,9 +82,10 @@ class V1GcsType(BaseTypeConfig, polyaxon_sdk.V1GcsType):
     ```
     """
 
-    IDENTIFIER = "gcs"
-    SCHEMA = GcsTypeSchema
-    REDUCED_ATTRIBUTES = ["bucket", "blob"]
+    _IDENTIFIER = "gcs"
+
+    bucket: Optional[StrictStr]
+    blob: Optional[StrictStr]
 
     def __str__(self):
         path = "gs://{}".format(self.bucket)

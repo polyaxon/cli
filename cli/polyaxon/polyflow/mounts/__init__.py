@@ -14,7 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.polyflow.mounts.artifacts_mounts import (
-    ArtifactsMountSchema,
-    V1ArtifactsMount,
-)
+from polyaxon.polyflow.mounts.artifacts_mounts import V1ArtifactsMount

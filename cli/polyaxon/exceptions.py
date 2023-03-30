@@ -102,6 +102,10 @@ class PQLException(PolyaxonException):
     pass
 
 
+class PolyaxonValidationError(PolyaxonSchemaError):
+    pass
+
+
 class PolyaxonfileError(PolyaxonSchemaError):
     pass
 

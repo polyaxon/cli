@@ -13,25 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import Field
 
 from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.base import BaseDiscriminatedModel
+from polyaxon.schemas.fields.ref_or_obj import DatetimeOrRef
 
 
-class DateTimeScheduleSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1ScheduleKind.DATETIME))
-    start_at = fields.DateTime(required=True)
-
-    @staticmethod
-    def schema_config():
-        return V1DateTimeSchedule
-
-
-class V1DateTimeSchedule(BaseConfig, polyaxon_sdk.V1DateTimeSchedule):
+class V1DateTimeSchedule(BaseDiscriminatedModel):
     """Date schedule is an interface to kick a component execution at a specific time.
 
     Args:
@@ -82,8 +73,10 @@ class V1DateTimeSchedule(BaseConfig, polyaxon_sdk.V1DateTimeSchedule):
     ```
     """
 
-    SCHEMA = DateTimeScheduleSchema
-    IDENTIFIER = V1ScheduleKind.DATETIME
+    _IDENTIFIER = V1ScheduleKind.DATETIME
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    start_at: DatetimeOrRef = Field(alias="startAt")
 
     @property
     def max_runs(self):

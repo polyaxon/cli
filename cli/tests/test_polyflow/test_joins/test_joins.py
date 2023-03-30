@@ -53,3 +53,15 @@ class TestJoinsConfigs(BaseTestCase):
         }
         config = V1Join.from_dict(config_dict)
         assert_equal_dict(config.to_dict(), config_dict)
+
+    def test_join_with_refs(self):
+        config_dict = {
+            "query": "metrics.metric: > {{ metric_level }}",
+            "sort": "-metrics.metric",
+            "limit": "{{ top }}",
+            "params": {
+                "metrics": {"value": "outputs.metric"},
+            },
+        }
+        config = V1Join.from_dict(config_dict)
+        assert_equal_dict(config.to_dict(), config_dict)

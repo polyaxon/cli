@@ -15,49 +15,43 @@
 # limitations under the License.
 import os
 
-from datetime import timedelta
-
-from marshmallow import fields
+from datetime import datetime, timedelta
+from typing import Optional
 
 from polyaxon.env_vars.keys import EV_KEYS_INTERVALS_COMPATIBILITY_CHECK
-from polyaxon.schemas.base import BaseConfig, BaseSchema
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.utils.tz_utils import now
 
 
-class ChecksSchema(BaseSchema):
-    last_check = fields.DateTime(allow_none=True)
+class ChecksConfig(BaseSchemaModel):
+    _IDENTIFIER = "checks"
+    _INTERVAL = 30 * 60
 
-    @staticmethod
-    def schema_config():
-        return ChecksConfig
-
-
-class ChecksConfig(BaseConfig):
-    SCHEMA = ChecksSchema
-    IDENTIFIER = "checks"
-    INTERVAL = 30 * 60
+    last_check: Optional[datetime]
 
     def __init__(
         self,
         last_check=None,
+        **data,
     ):
-        self.last_check = self.get_last_check(last_check)
+        last_check = self.get_last_check(last_check)
+        super().__init__(last_check=last_check, **data)
 
-    def get_interval(self, interval: int = None):
+    def get_interval(self, interval: int = None) -> int:
         if interval is not None:
             return interval
         interval = int(
-            os.environ.get(EV_KEYS_INTERVALS_COMPATIBILITY_CHECK, self.INTERVAL)
+            os.environ.get(EV_KEYS_INTERVALS_COMPATIBILITY_CHECK, self._INTERVAL)
         )
         if interval == -1:
             return interval
-        return max(interval, self.INTERVAL)
+        return max(interval, self._INTERVAL)
 
     @classmethod
-    def get_last_check(cls, last_check):
-        return last_check or now() - timedelta(cls.INTERVAL)
+    def get_last_check(cls, last_check) -> datetime:
+        return last_check or now() - timedelta(cls._INTERVAL)
 
-    def should_check(self, interval: int = None):
+    def should_check(self, interval: int = None) -> bool:
         interval = self.get_interval(interval=interval)
         if interval == -1:
             return False

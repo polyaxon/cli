@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.deploy.schemas.service import (
     DeploymentService,
@@ -62,7 +62,6 @@ class TestService(BaseTestCase):
         bad_config_dicts = [
             {"image": False, "imageTag": "foo", "imagePullPolicy": "sdf"},
             {"replicas": "sdf"},
-            {"concurrency": 12},
             {"resources": "foo"},
             {"enabled": "sdf"},
             {"persistence": "sdf"},
@@ -72,7 +71,7 @@ class TestService(BaseTestCase):
         ]
 
         for config_dict in bad_config_dicts:
-            with self.assertRaises((ValidationError, TypeError)):
+            with self.assertRaises(ValidationError):
                 ThirdPartyService.from_dict(config_dict)
 
         config_dict = {
@@ -107,14 +106,14 @@ class TestService(BaseTestCase):
             "postgresPassword": "sdf",
             "postgresDatabase": "sdf",
         }
-        with self.assertRaises(ValidationError):
-            PostgresqlConfig.from_dict(config_dict)
+        config = PostgresqlConfig.from_dict(config_dict)
+        assert config.to_dict() == config_dict
 
         config_dict = {
             "postgresHost": "sdf",
         }
-        with self.assertRaises(ValidationError):
-            PostgresqlConfig.from_dict(config_dict)
+        config = PostgresqlConfig.from_dict(config_dict)
+        assert config.to_dict() == config_dict
 
         config_dict = {
             "enabled": True,
@@ -157,8 +156,8 @@ class TestService(BaseTestCase):
         config_dict = {
             "password": "sdf",
         }
-        with self.assertRaises(ValidationError):
-            RedisConfig.from_dict(config_dict)
+        config = RedisConfig.from_dict(config_dict)
+        assert config.to_dict() == config_dict
 
         config_dict = {
             "usePassword": "dsf",
@@ -207,14 +206,14 @@ class TestService(BaseTestCase):
             "rabbitmqUsername": "dsf",
             "rabbitmqPassword": "sdf",
         }
-        with self.assertRaises(ValidationError):
-            RabbitmqConfig.from_dict(config_dict)
+        config = RabbitmqConfig.from_dict(config_dict)
+        assert config.to_dict() == config_dict
 
         config_dict = {
             "externalRabbitmqHost": 123,
         }
-        with self.assertRaises(ValidationError):
-            RabbitmqConfig.from_dict(config_dict)
+        config = RabbitmqConfig.from_dict(config_dict)
+        assert config.to_dict() == config_dict
 
         config_dict = {
             "enabled": True,

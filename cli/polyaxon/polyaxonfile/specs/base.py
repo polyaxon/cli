@@ -18,10 +18,8 @@ import copy
 
 from collections.abc import Mapping
 
-from marshmallow import ValidationError
-
 from polyaxon.config_reader.spec import ConfigSpec
-from polyaxon.exceptions import PolyaxonfileError
+from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 from polyaxon.pkg import SCHEMA_VERSION
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyaxonfile.specs.sections import Sections
@@ -41,6 +39,7 @@ class BaseSpecification(Sections):
     )
 
     CONFIG = None
+    PARTIAL_CONFIG = None
 
     @classmethod
     def check_version(cls, data):
@@ -118,9 +117,14 @@ class BaseSpecification(Sections):
             values = ConfigSpec.read_from([{Sections.KIND: cls._SPEC_KIND}] + values)
         cls.check_data(values)
         try:
-            config = cls.CONFIG.from_dict(copy.deepcopy(values), partial=partial)
+            if partial and cls.PARTIAL_CONFIG:
+                config = cls.PARTIAL_CONFIG.from_dict(
+                    copy.deepcopy(values), partial=partial
+                )
+            else:
+                config = cls.CONFIG.from_dict(copy.deepcopy(values), partial=partial)
         except TypeError as e:
-            raise ValidationError(
+            raise PolyaxonValidationError(
                 "Received a non valid config `{}`: `{}`".format(cls._SPEC_KIND, e)
             )
         return config

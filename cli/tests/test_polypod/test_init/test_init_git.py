@@ -20,6 +20,7 @@ from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.schemas import V1GitConnection
 from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolypodException
 from polyaxon.polyflow import V1Plugins
@@ -106,7 +107,7 @@ class TestInitGit(BaseTestCase):
         connection = V1ConnectionType(
             name="user/foo",
             kind=V1ConnectionKind.GIT,
-            schema=V1GitConnection(url="foo.com"),
+            schema_=V1GitConnection(url="foo.com"),
         )
         container = get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
@@ -134,7 +135,9 @@ class TestInitGit(BaseTestCase):
 
         container = get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init/init", image_tag="", image_pull_policy="IfNotPresent"
+                image="init/init",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             connection=connection,
             contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
@@ -150,7 +153,7 @@ class TestInitGit(BaseTestCase):
             "--repo-path={}/{}".format(
                 ctx_paths.CONTEXT_MOUNT_ARTIFACTS, connection.name
             ),
-            "--url={}".format(connection.schema.url),
+            "--url={}".format(connection.schema_.url),
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
@@ -164,13 +167,15 @@ class TestInitGit(BaseTestCase):
         connection = V1ConnectionType(
             name="user/foo",
             kind=V1ConnectionKind.GIT,
-            schema=V1GitConnection(
+            schema_=V1GitConnection(
                 url="foo.com", revision="00b9d2ea01c40f58d6b4051319f9375675a43c02"
             ),
         )
         container = get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init/init", image_tag="", image_pull_policy="IfNotPresent"
+                image="init/init",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             connection=connection,
             mount_path="/somepath",
@@ -185,7 +190,7 @@ class TestInitGit(BaseTestCase):
         assert container.command == ["polyaxon", "initializer", "git"]
         assert container.args == [
             "--repo-path=/somepath/{}".format(connection.name),
-            "--url={}".format(connection.schema.url),
+            "--url={}".format(connection.schema_.url),
             "--revision=00b9d2ea01c40f58d6b4051319f9375675a43c02",
         ]
         assert container.resources == get_init_resources()
@@ -199,7 +204,7 @@ class TestInitGit(BaseTestCase):
         connection = V1ConnectionType(
             name="user/foo",
             kind=V1ConnectionKind.GIT,
-            schema=V1GitConnection(
+            schema_=V1GitConnection(
                 url="foo.com",
                 revision="00b9d2ea01c40f58d6b4051319f9375675a43c02",
                 flags=["--falg1", "--flag2=test", "k=v"],
@@ -207,7 +212,9 @@ class TestInitGit(BaseTestCase):
         )
         container = get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init/init", image_tag="", image_pull_policy="IfNotPresent"
+                image="init/init",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             connection=connection,
             mount_path="/somepath",
@@ -222,7 +229,7 @@ class TestInitGit(BaseTestCase):
         assert container.command == ["polyaxon", "initializer", "git"]
         assert container.args == [
             "--repo-path=/somepath/{}".format(connection.name),
-            "--url={}".format(connection.schema.url),
+            "--url={}".format(connection.schema_.url),
             "--revision=00b9d2ea01c40f58d6b4051319f9375675a43c02",
             '--flags=["--falg1","--flag2=test","k=v"]',
         ]

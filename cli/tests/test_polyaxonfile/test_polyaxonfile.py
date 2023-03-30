@@ -19,12 +19,12 @@ import pytest
 
 from mock import MagicMock, patch
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon import pkg
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import EV_KEYS_USE_GIT_REGISTRY
-from polyaxon.exceptions import PolyaxonfileError
+from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 from polyaxon.lifecycle import V1ProjectVersionKind
 from polyaxon.polyaxonfile import check_polyaxonfile
 from polyaxon.polyaxonfile.specs import (
@@ -105,7 +105,7 @@ class TestPolyaxonfiles(BaseTestCase):
         del os.environ[EV_KEYS_USE_GIT_REGISTRY]
 
     def test_from_public_hub(self):
-        with patch("polyaxon_sdk.ProjectsV1Api.get_version") as request_mock:
+        with patch("polyaxon.sdk.api.ProjectsV1Api.get_version") as request_mock:
             request_mock.return_value = MagicMock(
                 kind=V1ProjectVersionKind.COMPONENT,
                 content=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
@@ -117,7 +117,7 @@ class TestPolyaxonfiles(BaseTestCase):
         assert operation.hub_ref == "component:12"
 
     def test_from_hub(self):
-        with patch("polyaxon_sdk.ProjectsV1Api.get_version") as request_mock:
+        with patch("polyaxon.sdk.api.ProjectsV1Api.get_version") as request_mock:
             request_mock.return_value = MagicMock(
                 kind=V1ProjectVersionKind.COMPONENT,
                 content=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
@@ -220,7 +220,7 @@ class TestPolyaxonfiles(BaseTestCase):
             ]
         )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
         assert run_config.inputs[0].value is None
         assert run_config.inputs[1].value is None
@@ -411,7 +411,7 @@ class TestPolyaxonfiles(BaseTestCase):
         }
         assert run_config.matrix.concurrency == 2
         assert isinstance(run_config.matrix, V1Hyperband)
-        assert run_config.matrix.kind == V1Hyperband.IDENTIFIER
+        assert run_config.matrix.kind == V1Hyperband._IDENTIFIER
         assert run_config.matrix.early_stopping is None
 
         # With build
@@ -457,7 +457,7 @@ class TestPolyaxonfiles(BaseTestCase):
         }
         assert run_config.matrix.concurrency == 2
         assert isinstance(run_config.matrix, V1Hyperband)
-        assert run_config.matrix.kind == V1Hyperband.IDENTIFIER
+        assert run_config.matrix.kind == V1Hyperband._IDENTIFIER
         assert run_config.matrix.early_stopping is None
 
     def test_matrix_file_passes_int_float_types(self):
@@ -485,7 +485,7 @@ class TestPolyaxonfiles(BaseTestCase):
         }
         assert run_config.matrix.concurrency == 2
         assert isinstance(run_config.matrix, V1GridSearch)
-        assert run_config.matrix.kind == V1GridSearch.IDENTIFIER
+        assert run_config.matrix.kind == V1GridSearch._IDENTIFIER
         assert run_config.matrix.early_stopping is None
 
     def test_matrix_early_stopping_file_passes(self):
@@ -515,7 +515,7 @@ class TestPolyaxonfiles(BaseTestCase):
         assert run_config.matrix.concurrency == 2
         assert run_config.matrix.num_runs == 300
         assert isinstance(run_config.matrix, V1RandomSearch)
-        assert run_config.matrix.kind == V1RandomSearch.IDENTIFIER
+        assert run_config.matrix.kind == V1RandomSearch._IDENTIFIER
         assert len(run_config.matrix.early_stopping) == 1
         assert isinstance(run_config.matrix.early_stopping[0], V1MetricEarlyStopping)
 
@@ -539,7 +539,7 @@ class TestPolyaxonfiles(BaseTestCase):
         ]
         assert config_run.matrix.concurrency == 2
         assert isinstance(config_run.matrix, V1Mapping)
-        assert config_run.matrix.kind == V1Mapping.IDENTIFIER
+        assert config_run.matrix.kind == V1Mapping._IDENTIFIER
         assert len(config_run.matrix.early_stopping) == 1
         assert isinstance(config_run.matrix.early_stopping[0], V1MetricEarlyStopping)
 
@@ -692,7 +692,6 @@ class TestPolyaxonfiles(BaseTestCase):
         assert run_config.run.launcher.to_dict() == {
             "replicas": 1,
             "container": {
-                "name": "polyaxon-main",
                 "image": "mpioperator/tensorflow-benchmarks:latest",
                 "command": ["mpirun", "python", "run.py"],
             },
@@ -704,7 +703,6 @@ class TestPolyaxonfiles(BaseTestCase):
         assert run_config.run.worker.environment.node_selector is not None
         assert isinstance(run_config.run.worker.environment.tolerations, list)
         assert run_config.run.worker.to_dict()["container"] == {
-            "name": "polyaxon-main",
             "image": "mpioperator/tensorflow-benchmarks:latest",
             "command": ["mpirun", "python", "run.py"],
             "resources": {"limits": {"nvidia.com/gpu": 1}},
@@ -725,7 +723,6 @@ class TestPolyaxonfiles(BaseTestCase):
                 "image": "continuumio/miniconda3",
                 "command": ["python"],
                 "args": ["-c \"print('Tweet tweet')\""],
-                "name": "polyaxon-main",
             },
         }
         assert run_config.run.to_dict() == expected_run
@@ -783,7 +780,6 @@ class TestPolyaxonfiles(BaseTestCase):
                 "command": ["python"],
                 "workingDir": "{{ globals.artifacts_path }}/repo",
                 "args": ["-c \"print('Tweet tweet')\""],
-                "name": "polyaxon-main",
             },
         }
         assert run_config.run.to_dict() == expected_run
@@ -810,7 +806,6 @@ class TestPolyaxonfiles(BaseTestCase):
                 "command": ["python"],
                 "workingDir": "{}/artifacts/repo".format(ctx_paths.CONTEXT_ROOT),
                 "args": ["-c \"print('Tweet tweet')\""],
-                "name": "polyaxon-main",
             },
         }
         run_config = CompiledOperationSpecification.apply_runtime_contexts(

@@ -35,8 +35,8 @@ def get_volume_from_connection(
         return None
     if connection.is_volume_claim:
         pv_claim = k8s_schemas.V1PersistentVolumeClaimVolumeSource(
-            claim_name=connection.schema.volume_claim,
-            read_only=connection.schema.read_only,
+            claim_name=connection.schema_.volume_claim,
+            read_only=connection.schema_.read_only,
         )
         return k8s_schemas.V1Volume(
             name=connection.name, persistent_volume_claim=pv_claim
@@ -46,7 +46,7 @@ def get_volume_from_connection(
         return k8s_schemas.V1Volume(
             name=connection.name,
             host_path=k8s_schemas.V1HostPathVolumeSource(
-                path=connection.schema.host_path
+                path=connection.schema_.host_path
             ),
         )
 
@@ -54,11 +54,11 @@ def get_volume_from_connection(
 def get_volume_from_secret(secret: V1K8sResourceType) -> Optional[k8s_schemas.V1Volume]:
     if not secret:
         return None
-    if secret.schema.mount_path:
+    if secret.schema_.mount_path:
         secret_volume = k8s_schemas.V1SecretVolumeSource(
             secret_name=secret.name,
-            items=secret.schema.items,
-            default_mode=secret.schema.default_mode,
+            items=secret.schema_.items,
+            default_mode=secret.schema_.default_mode,
         )
         return k8s_schemas.V1Volume(name=secret.name, secret=secret_volume)
 
@@ -68,11 +68,11 @@ def get_volume_from_config_map(
 ) -> Optional[k8s_schemas.V1Volume]:
     if not config_map:
         return None
-    if config_map.schema.mount_path:
+    if config_map.schema_.mount_path:
         config_map_volume = k8s_schemas.V1ConfigMapVolumeSource(
             name=config_map.name,
-            items=config_map.schema.items,
-            default_mode=config_map.schema.default_mode,
+            items=config_map.schema_.items,
+            default_mode=config_map.schema_.default_mode,
         )
         return k8s_schemas.V1Volume(name=config_map.name, config_map=config_map_volume)
 

@@ -14,39 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from typing import Optional
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from pydantic import Field, StrictInt
 
-
-class IntervalsSchema(BaseCamelSchema):
-    runs_scheduler = fields.Int(allow_none=True)
-    operations_default_retry_delay = fields.Int(allow_none=True)
-    operations_max_retry_delay = fields.Int(allow_none=True)
-    compatibility_check = fields.Int(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return IntervalsConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class IntervalsConfig(BaseConfig):
-    SCHEMA = IntervalsSchema
-    REDUCED_ATTRIBUTES = [
-        "runsScheduler",
-        "operationsDefaultRetryDelay",
-        "operationsMaxRetryDelay",
-        "compatibilityCheck",
-    ]
-
-    def __init__(
-        self,  # noqa
-        runs_scheduler=None,
-        operations_default_retry_delay=None,
-        operations_max_retry_delay=None,
-        compatibility_check=None,
-    ):
-        self.runs_scheduler = runs_scheduler
-        self.operations_default_retry_delay = operations_default_retry_delay
-        self.operations_max_retry_delay = operations_max_retry_delay
-        self.compatibility_check = compatibility_check
+class IntervalsConfig(BaseSchemaModel):
+    runs_scheduler: Optional[StrictInt] = Field(alias="runsScheduler")
+    operations_default_retry_delay: Optional[StrictInt] = Field(
+        alias="operationsDefaultRetryDelay"
+    )
+    operations_max_retry_delay: Optional[StrictInt] = Field(
+        alias="operationsMaxRetryDelay"
+    )
+    compatibility_check: Optional[StrictInt] = Field(alias="compatibilityCheck")

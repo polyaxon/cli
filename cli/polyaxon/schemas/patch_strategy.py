@@ -14,8 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import polyaxon_sdk
+from polyaxon.utils.enums_utils import PEnum
 
 
-class V1PatchStrategy(polyaxon_sdk.V1PatchStrategy):
-    pass
+class V1PatchStrategy(str, PEnum):
+    REPLACE = "replace"
+    ISNULL = "isnull"
+    POST_MERGE = "post_merge"
+    PRE_MERGE = "pre_merge"
+
+    @classmethod
+    def is_replace(cls, value):
+        return value == cls.REPLACE
+
+    @classmethod
+    def is_null(cls, value):
+        return value == cls.ISNULL
+
+    @classmethod
+    def is_post_merge(cls, value):
+        return value == cls.POST_MERGE
+
+    @classmethod
+    def is_pre_merge(cls, value):
+        return value == cls.PRE_MERGE

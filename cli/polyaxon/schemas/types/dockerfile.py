@@ -13,50 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any, Dict, List, Optional, Union
 
-from marshmallow import fields, validates_schema
+from pydantic import Field, StrictStr, validator
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
+from polyaxon.schemas.base import skip_partial
 from polyaxon.schemas.fields.docker_image import validate_image
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-from polyaxon.schemas.fields.str_or_list import StrOrList
+from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.base import BaseTypeConfig
-from polyaxon.utils.signal_decorators import check_partial
 
 POLYAXON_DOCKERFILE_NAME = "Dockerfile"
 POLYAXON_DOCKER_WORKDIR = "/code"
 POLYAXON_DOCKER_SHELL = "/bin/bash"
 
 
-class DockerfileTypeSchema(BaseCamelSchema):
-    image = RefOrObject(fields.Str(), required=True)
-    env = RefOrObject(fields.Dict(keys=fields.Str(), allow_none=True))
-    path = RefOrObject(fields.List(fields.Str(), allow_none=True))
-    copy = RefOrObject(fields.List(StrOrList(), allow_none=True))
-    post_run_copy = RefOrObject(fields.List(StrOrList(), allow_none=True))
-    run = RefOrObject(fields.List(fields.Str(), allow_none=True))
-    lang_env = RefOrObject(fields.Str(allow_none=True))
-    uid = RefOrObject(fields.Int(allow_none=True))
-    gid = RefOrObject(fields.Int(allow_none=True))
-    username = RefOrObject(fields.Str(allow_none=True))
-    filename = RefOrObject(fields.Str(allow_none=True))
-    workdir = RefOrObject(fields.Str(allow_none=True))
-    workdir_path = RefOrObject(fields.Str(allow_none=True))
-    shell = RefOrObject(fields.Str(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1DockerfileType
-
-    @validates_schema
-    @check_partial
-    def validate_dockerfile(self, data, **kwargs):
-        validate_image(data.get("image"))
-
-
-class V1DockerfileType(BaseTypeConfig, polyaxon_sdk.V1DockerfileType):
+class V1DockerfileType(BaseTypeConfig):
     """Dockerfile type.
 
     This type allows to easily construct a dockerfile without
@@ -222,50 +193,32 @@ class V1DockerfileType(BaseTypeConfig, polyaxon_sdk.V1DockerfileType):
     ```
     """
 
-    IDENTIFIER = "dockerfile"
-    SCHEMA = DockerfileTypeSchema
-    REDUCED_ATTRIBUTES = [
-        "image",
-        "env",
-        "path",
-        "copy",
-        "postRunCopy",
-        "run",
-        "langEnv",
-        "uid",
-        "gid",
-        "username",
-        "filename",
-        "workdir",
-        "workdirPath",
-        "shell",
-    ]
+    _IDENTIFIER = "dockerfile"
 
-    @property
-    def filename(self):
-        return (
-            self._filename if self._filename is not None else POLYAXON_DOCKERFILE_NAME
-        )
+    image: StrictStr
+    env: Optional[Union[Dict[StrictStr, Any], RefField]]
+    path: Optional[Union[List[StrictStr], RefField]]
+    copy_: Optional[Union[List[Union[StrictStr, List[StrictStr]]], RefField]] = Field(
+        alias="copy"
+    )
+    post_run_copy: Optional[
+        Union[List[Union[StrictStr, List[StrictStr]]], RefField]
+    ] = Field(alias="postRunCopy")
+    run: Optional[Union[List[StrictStr], RefField]]
+    lang_env: Optional[StrictStr] = Field(alias="langEnv")
+    uid: Optional[Union[int, RefField]]
+    gid: Optional[Union[int, RefField]]
+    username: Optional[StrictStr]
+    filename: Optional[StrictStr] = Field(default=POLYAXON_DOCKERFILE_NAME)
+    workdir: Optional[StrictStr] = Field(default=POLYAXON_DOCKER_WORKDIR)
+    workdir_path: Optional[StrictStr] = Field(alias="workdirPath")
+    shell: Optional[StrictStr] = Field(default=POLYAXON_DOCKER_SHELL)
 
-    @filename.setter
-    def filename(self, filename):
-        self._filename = filename
-
-    @property
-    def workdir(self):
-        return self._workdir if self._workdir is not None else POLYAXON_DOCKER_WORKDIR
-
-    @workdir.setter
-    def workdir(self, workdir):
-        self._workdir = workdir
-
-    @property
-    def shell(self):
-        return self._shell if self._shell is not None else POLYAXON_DOCKER_SHELL
-
-    @shell.setter
-    def shell(self, shell):
-        self._shell = shell
+    @validator("image")
+    @skip_partial
+    def check_image(cls, image):
+        validate_image(image)
+        return image
 
     @property
     def image_tag(self):

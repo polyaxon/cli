@@ -17,8 +17,9 @@
 
 from typing import Dict
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
+from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow.run.cleaner import V1CleanerJob
 from polyaxon.polyflow.run.dag import V1Dag
 from polyaxon.polyflow.run.dask import V1Dask
@@ -38,7 +39,7 @@ from polyaxon.polyflow.run.spark.spark import V1Spark
 from polyaxon.polyflow.run.tuner import V1TunerJob
 
 
-def validate_run_patch(run_patch: Dict, kind: V1RunKind.allowable_values):
+def validate_run_patch(run_patch: Dict, kind: V1RunKind):
     if kind == V1RunKind.JOB:
         patch = V1Job.from_dict(run_patch)
     elif kind == V1RunKind.SERVICE:
@@ -89,6 +90,8 @@ def validate_run_patch(run_patch: Dict, kind: V1RunKind.allowable_values):
     elif kind == V1RunKind.CLEANER:
         patch = V1CleanerJob.from_dict(run_patch)
     else:
-        raise ValidationError("runPatch cannot be validate without a supported kind.")
+        raise PolyaxonValidationError(
+            "runPatch cannot be validate without a supported kind."
+        )
 
     return patch

@@ -35,31 +35,31 @@ class TestMainSecrets(BaseTestCase):
         # Secrets
         self.resource1 = V1K8sResourceType(
             name="non_mount_test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="non_mount_test1", items=["item1", "item2"]
             ),
             is_requested=False,
         )
         self.resource2 = V1K8sResourceType(
             name="non_mount_test2",
-            schema=V1K8sResourceSchema(name="non_mount_test2"),
+            schema_=V1K8sResourceSchema(name="non_mount_test2"),
             is_requested=False,
         )
         self.resource3 = V1K8sResourceType(
             name="non_mount_test3",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="non_mount_test3", items=["item1", "item2"]
             ),
             is_requested=True,
         )
         self.resource4 = V1K8sResourceType(
             name="non_mount_test4",
-            schema=V1K8sResourceSchema(name="non_mount_test4"),
+            schema_=V1K8sResourceSchema(name="non_mount_test4"),
             is_requested=True,
         )
         self.resource5 = V1K8sResourceType(
             name="non_mount_test1",
-            schema=V1K8sResourceSchema(name="non_mount_test1"),
+            schema_=V1K8sResourceSchema(name="non_mount_test1"),
             is_requested=True,
         )
 
@@ -67,30 +67,30 @@ class TestMainSecrets(BaseTestCase):
         self.s3_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
-            secret=self.resource1.schema,
+            schema_=V1BucketConnection(bucket="s3//:foo"),
+            secret=self.resource1.schema_,
         )
         self.gcs_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gcs//:foo"),
-            secret=self.resource2.schema,
+            schema_=V1BucketConnection(bucket="gcs//:foo"),
+            secret=self.resource2.schema_,
         )
         self.az_store = V1ConnectionType(
             name="test_az",
             kind=V1ConnectionKind.WASB,
-            schema=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
-            secret=self.resource3.schema,
+            schema_=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
+            secret=self.resource3.schema_,
         )
         self.claim_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(mount_path="/tmp", volume_claim="test"),
+            schema_=V1ClaimConnection(mount_path="/tmp", volume_claim="test"),
         )
         self.host_path_store = V1ConnectionType(
             name="test_path",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp", host_path="/tmp", read_only=True
             ),
         )
@@ -113,63 +113,63 @@ class TestMainSecrets(BaseTestCase):
 
     def test_get_requested_secrets_and_secrets(self):
         expected = get_requested_secrets(secrets=[], connections=[self.s3_store])
-        assert [e.schema for e in expected] == [self.resource1.schema]
+        assert [e.schema_ for e in expected] == [self.resource1.schema_]
 
         expected = get_requested_secrets(
             secrets=[self.resource2], connections=[self.s3_store]
         )
-        assert [e.schema for e in expected] == [self.resource1.schema]
+        assert [e.schema_ for e in expected] == [self.resource1.schema_]
 
         expected = get_requested_secrets(
             secrets=[self.resource2], connections=[self.s3_store, self.gcs_store]
         )
-        assert [e.schema for e in expected] == [
-            self.resource1.schema,
-            self.resource2.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource1.schema_,
+            self.resource2.schema_,
         ]
 
         expected = get_requested_secrets(
             secrets=[self.resource1, self.resource2],
             connections=[self.s3_store, self.gcs_store, self.az_store],
         )
-        assert [e.schema for e in expected] == [
-            self.resource1.schema,
-            self.resource2.schema,
-            self.resource3.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource1.schema_,
+            self.resource2.schema_,
+            self.resource3.schema_,
         ]
 
     def test_get_requested_secrets(self):
         expected = get_requested_secrets(
             secrets=[self.resource1], connections=[self.s3_store]
         )
-        assert [e.schema for e in expected] == [self.resource1.schema]
+        assert [e.schema_ for e in expected] == [self.resource1.schema_]
         expected = get_requested_secrets(
             secrets=[self.resource1, self.resource3], connections=[self.s3_store]
         )
-        assert [e.schema for e in expected] == [
-            self.resource3.schema,
-            self.resource1.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource3.schema_,
+            self.resource1.schema_,
         ]
         expected = get_requested_secrets(
             secrets=[self.resource2, self.resource3, self.resource4],
             connections=[self.gcs_store],
         )
-        assert [e.schema for e in expected] == [
-            self.resource3.schema,
-            self.resource4.schema,
-            self.resource2.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource3.schema_,
+            self.resource4.schema_,
+            self.resource2.schema_,
         ]
         expected = get_requested_secrets(
             secrets=[self.resource1, self.resource2], connections=[self.gcs_store]
         )
-        assert [e.schema for e in expected] == [self.resource2.schema]
+        assert [e.schema_ for e in expected] == [self.resource2.schema_]
         expected = get_requested_secrets(
             secrets=[self.resource1, self.resource2],
             connections=[self.s3_store, self.gcs_store],
         )
-        assert [e.schema for e in expected] == [
-            self.resource1.schema,
-            self.resource2.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource1.schema_,
+            self.resource2.schema_,
         ]
         expected = get_requested_secrets(
             secrets=[self.resource1, self.resource2],
@@ -180,16 +180,16 @@ class TestMainSecrets(BaseTestCase):
                 self.claim_store,
             ],
         )
-        assert [e.schema for e in expected] == [
-            self.resource1.schema,
-            self.resource2.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource1.schema_,
+            self.resource2.schema_,
         ]
 
         new_az_store = V1ConnectionType(
             name="test_az",
             kind=V1ConnectionKind.WASB,
-            schema=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
-            secret=self.resource1,
+            schema_=V1BucketConnection(bucket="wasb://x@y.blob.core.windows.net"),
+            secret=self.resource1.schema_,
         )
         expected = get_requested_secrets(
             secrets=[self.resource1, self.resource2],
@@ -201,9 +201,9 @@ class TestMainSecrets(BaseTestCase):
                 self.claim_store,
             ],
         )
-        assert [e.schema for e in expected] == [
-            self.resource1.schema,
-            self.resource2.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource1.schema_,
+            self.resource2.schema_,
         ]
 
         # Using a requested secret with same id
@@ -217,7 +217,7 @@ class TestMainSecrets(BaseTestCase):
                 self.claim_store,
             ],
         )
-        assert [e.schema for e in expected] == [
-            self.resource5.schema,
-            self.resource2.schema,
+        assert [e.schema_ for e in expected] == [
+            self.resource5.schema_,
+            self.resource2.schema_,
         ]

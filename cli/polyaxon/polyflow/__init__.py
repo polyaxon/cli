@@ -14,43 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.polyflow.builds import BuildSchema, V1Build
-from polyaxon.polyflow.cache import CacheSchema, V1Cache
-from polyaxon.polyflow.component import ComponentSchema, V1Component
+from polyaxon.polyflow.builds import V1Build
+from polyaxon.polyflow.cache import V1Cache
+from polyaxon.polyflow.component import V1Component
 from polyaxon.polyflow.dags import DagOpSpec
 from polyaxon.polyflow.early_stopping import (
-    DiffStoppingPolicySchema,
-    EarlyStoppingSchema,
-    FailureEarlyStoppingSchema,
-    MedianStoppingPolicySchema,
-    MetricEarlyStoppingSchema,
-    StoppingPolicySchema,
-    TruncationStoppingPolicySchema,
     V1DiffStoppingPolicy,
     V1FailureEarlyStopping,
     V1MedianStoppingPolicy,
     V1MetricEarlyStopping,
     V1TruncationStoppingPolicy,
 )
-from polyaxon.polyflow.environment import EnvironmentSchema, V1Environment
-from polyaxon.polyflow.events import EventTriggerSchema, V1EventKind, V1EventTrigger
-from polyaxon.polyflow.hooks import HookSchema, V1Hook
-from polyaxon.polyflow.init import InitSchema, V1Init
-from polyaxon.polyflow.io import V1IO, IOSchema
-from polyaxon.polyflow.joins import JoinParamSchema, JoinSchema, V1Join, V1JoinParam
+from polyaxon.polyflow.environment import V1Environment
+from polyaxon.polyflow.events import V1EventKind, V1EventTrigger
+from polyaxon.polyflow.hooks import V1Hook
+from polyaxon.polyflow.init import V1Init
+from polyaxon.polyflow.io import V1IO
+from polyaxon.polyflow.joins import V1Join, V1JoinParam
 from polyaxon.polyflow.matrix import (
     AcquisitionFunctions,
-    BayesSchema,
     GaussianProcessConfig,
     GaussianProcessesKernels,
-    GridSearchSchema,
-    HyperbandSchema,
-    HyperoptSchema,
-    IterativeSchema,
-    MappingSchema,
     MatrixMixin,
-    MatrixSchema,
-    RandomSearchSchema,
     UtilityFunctionConfig,
     V1Bayes,
     V1GridSearch,
@@ -79,56 +64,27 @@ from polyaxon.polyflow.matrix import (
     V1RandomSearch,
     V1Tuner,
 )
-from polyaxon.polyflow.mounts import ArtifactsMountSchema, V1ArtifactsMount
-from polyaxon.polyflow.notifications import NotificationSchema, V1Notification
-from polyaxon.polyflow.operations import (
-    CompiledOperationSchema,
-    OperationSchema,
-    V1CompiledOperation,
-    V1Operation,
-)
-from polyaxon.polyflow.operators import ForConfig, IfConfig
+from polyaxon.polyflow.mounts import V1ArtifactsMount
+from polyaxon.polyflow.notifications import V1Notification
+from polyaxon.polyflow.operations import V1CompiledOperation, V1Operation
 from polyaxon.polyflow.optimization import (
-    OptimizationMetricSchema,
-    OptimizationResourceSchema,
-    ResourceType,
     V1Optimization,
     V1OptimizationMetric,
     V1OptimizationResource,
+    V1ResourceType,
 )
 from polyaxon.polyflow.params import ParamSpec, V1Param, ops_params
-from polyaxon.polyflow.plugins import PluginsSchema, V1Plugins
+from polyaxon.polyflow.plugins import V1Plugins
 from polyaxon.polyflow.references import (
-    DagRefSchema,
-    HubRefSchema,
-    PathRefSchema,
     RefMixin,
-    UrlRefSchema,
     V1DagRef,
     V1HubRef,
     V1PathRef,
     V1UrlRef,
 )
 from polyaxon.polyflow.run import (
-    CleanerJobSchema,
-    DagSchema,
-    DaskSchema,
-    FlinkSchema,
-    JobSchema,
-    KFReplicaSchema,
-    MPIJobSchema,
     MXJobMode,
-    MXJobSchema,
-    NotifierJobSchema,
-    PaddleJobSchema,
-    PytorchJobSchema,
     RunMixin,
-    RunSchema,
-    ServiceSchema,
-    SparkReplicaSchema,
-    SparkSchema,
-    TFJobSchema,
-    TunerJobSchema,
     V1CleanerJob,
     V1CleanPodPolicy,
     V1CloningKind,
@@ -146,6 +102,7 @@ from polyaxon.polyflow.run import (
     V1RunEdgeKind,
     V1RunKind,
     V1RunResources,
+    V1Runtime,
     V1SchedulingPolicy,
     V1Service,
     V1Spark,
@@ -155,20 +112,19 @@ from polyaxon.polyflow.run import (
     V1TFJob,
     V1TunerJob,
     V1XGBoostJob,
-    XGBoostJobSchema,
     validate_run_patch,
 )
 from polyaxon.polyflow.schedules import (
-    CronScheduleSchema,
-    DateTimeScheduleSchema,
-    IntervalScheduleSchema,
     ScheduleMixin,
-    ScheduleSchema,
     V1CronSchedule,
     V1DateTimeSchedule,
     V1IntervalSchedule,
     V1ScheduleKind,
 )
-from polyaxon.polyflow.templates import TemplateSchema, V1Template
-from polyaxon.polyflow.termination import TerminationSchema, V1Termination
+from polyaxon.polyflow.templates import V1Template
+from polyaxon.polyflow.termination import V1Termination
 from polyaxon.polyflow.trigger_policies import V1TriggerPolicy
+
+# Forward references for operations and components
+V1Dag.update_forward_refs(V1Operation=V1Operation)
+V1Dag.update_forward_refs(V1Component=V1Component)

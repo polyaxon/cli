@@ -26,10 +26,7 @@ from urllib.parse import urlparse
 
 import ujson
 
-from marshmallow import EXCLUDE
 from urllib3.exceptions import HTTPError
-
-import polyaxon_sdk
 
 from polyaxon import settings
 from polyaxon.api import K8S_V1_LOCATION, STREAMS_V1_LOCATION
@@ -57,7 +54,12 @@ from polyaxon.logger import logger
 from polyaxon.managers.ignore import IgnoreConfigManager
 from polyaxon.polyaxonfile import check_polyaxonfile
 from polyaxon.polyflow import V1Matrix, V1Operation, V1RunKind
+from polyaxon.schemas.responses.v1_operation_body import V1OperationBody
+from polyaxon.schemas.responses.v1_project_version import V1ProjectVersion
+from polyaxon.schemas.responses.v1_run import V1Run
+from polyaxon.schemas.responses.v1_run_settings import V1RunSettings
 from polyaxon.schemas.types import V1ArtifactsType
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.stores.polyaxon_store import PolyaxonStore
 from polyaxon.utils.code_reference import get_code_reference
 from polyaxon.utils.date_utils import file_modified_since
@@ -77,7 +79,6 @@ from polyaxon.utils.query_params import get_logs_params, get_query_params
 from polyaxon.utils.tz_utils import now
 from polyaxon.utils.urls_utils import get_proxy_run_url
 from polyaxon.utils.validation import validate_tags
-from polyaxon_sdk.rest import ApiException
 from traceml.artifacts import V1ArtifactKind, V1RunArtifact
 from traceml.events import V1Events
 from traceml.logging.streamer import get_logs_streamer
@@ -182,7 +183,7 @@ class RunClient:
             if self._is_offline or not settings.CLIENT_CONFIG.is_managed
             else None
         )
-        self._run_data = polyaxon_sdk.V1Run(
+        self._run_data = V1Run(
             owner=self._owner,
             project=self._project,
             uuid=self._run_uuid,
@@ -238,13 +239,11 @@ class RunClient:
         return self._run_data.status
 
     @property
-    def settings(self) -> Optional[polyaxon_sdk.V1RunSettings]:
+    def settings(self) -> Optional[V1RunSettings]:
         if not self.run_data:
             return None
         if self.run_data.settings and isinstance(self.run_data.settings, Mapping):
-            self._run_data.settings = polyaxon_sdk.V1RunSettings(
-                **self.run_data.settings
-            )
+            self._run_data.settings = V1RunSettings(**self.run_data.settings)
         return self.run_data.settings
 
     @property
@@ -329,9 +328,7 @@ class RunClient:
         self._last_update = (current_time, updates + 1)
         return False
 
-    def _update(
-        self, data: Union[Dict, polyaxon_sdk.V1Run], async_req: bool = True
-    ) -> polyaxon_sdk.V1Run:
+    def _update(self, data: Union[Dict, V1Run], async_req: bool = True) -> V1Run:
         if self._is_offline:
             return self.run_data
         response = self.client.runs_v1.patch_run(
@@ -346,9 +343,7 @@ class RunClient:
         return response
 
     @client_handler(check_no_op=True)
-    def update(
-        self, data: Union[Dict, polyaxon_sdk.V1Run], async_req: bool = False
-    ) -> polyaxon_sdk.V1Run:
+    def update(self, data: Union[Dict, V1Run], async_req: bool = False) -> V1Run:
         """Updates a run based on the data passed.
 
         [Run API](/docs/api/#operation/PatchRun)
@@ -394,8 +389,8 @@ class RunClient:
         _update_run()
 
     def _create(
-        self, data: Union[Dict, polyaxon_sdk.V1OperationBody], async_req: bool = False
-    ) -> polyaxon_sdk.V1Run:
+        self, data: Union[Dict, V1OperationBody], async_req: bool = False
+    ) -> V1Run:
         response = self.client.runs_v1.create_run(
             owner=self.owner,
             project=self.project,
@@ -421,7 +416,7 @@ class RunClient:
         is_managed: bool = True,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
-    ) -> polyaxon_sdk.V1Run:
+    ) -> V1Run:
         """Creates a new run based on the data passed.
 
         N.B. Create methods are only useful if you want to create a run programmatically,
@@ -470,10 +465,8 @@ class RunClient:
         if content:
             if isinstance(content, Mapping):
                 content = V1Operation.from_dict(content)
-            content = (
-                content if isinstance(content, str) else content.to_dict(dump=True)
-            )
-        data = polyaxon_sdk.V1OperationBody(
+            content = content if isinstance(content, str) else content.to_json()
+        data = V1OperationBody(
             name=name,
             description=description,
             tags=tags,
@@ -499,7 +492,7 @@ class RunClient:
         nocache: bool = None,
         cache: Union[int, str, bool] = None,
         approved: Union[int, str, bool] = None,
-    ) -> polyaxon_sdk.V1Run:
+    ) -> V1Run:
         """Creates a new run based on a polyaxonfile.
 
         N.B. Create methods are only useful if you want to create a run programmatically,
@@ -574,7 +567,7 @@ class RunClient:
         nocache: bool = None,
         cache: Union[int, str, bool] = None,
         approved: Union[int, str, bool] = None,
-    ) -> polyaxon_sdk.V1Run:
+    ) -> V1Run:
         """Creates a new run from a url containing a Polyaxonfile specification.
 
         N.B. Create methods are only useful if you want to create a run programmatically,
@@ -648,7 +641,7 @@ class RunClient:
         nocache: bool = None,
         cache: Union[int, str, bool] = None,
         approved: Union[int, str, bool] = None,
-    ) -> polyaxon_sdk.V1Run:
+    ) -> V1Run:
         """Creates a new run from the hub based on the component name.
 
         N.B. Create methods are only useful if you want to create a run programmatically,
@@ -1135,7 +1128,7 @@ class RunClient:
     @client_handler(check_no_op=True, check_offline=True)
     def download_artifact_for_lineage(
         self,
-        lineage: polyaxon_sdk.V1RunArtifact,
+        lineage: V1RunArtifact,
         force: bool = False,
         path_to: str = None,
     ):
@@ -1511,7 +1504,7 @@ class RunClient:
         Returns:
             V1Run instance.
         """
-        body = polyaxon_sdk.V1Run(content=override_config)
+        body = V1Run(content=override_config)
         if name:
             body.name = name
         if description:
@@ -1552,7 +1545,7 @@ class RunClient:
         Returns:
             V1Run instance.
         """
-        body = polyaxon_sdk.V1Run(content=override_config)
+        body = V1Run(content=override_config)
         return self.client.runs_v1.resume_run(
             self.owner, self.project, self.run_uuid, body=body, **kwargs
         )
@@ -2344,7 +2337,7 @@ class RunClient:
         connection: str = None,
         artifacts: List[str] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Similar to
         [ProjectClient.register_model_version](/docs/core/python-library/project-client/#register_model_version),
         directly from the run client instance,
@@ -2387,7 +2380,7 @@ class RunClient:
         connection: str = None,
         artifacts: List[str] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Similar to
         [ProjectClient.register_artifact_version](/docs/core/python-library/project-client/#register_artifact_version),
         directly from the run client instance,
@@ -2593,7 +2586,7 @@ class RunClient:
 
         with open(run_path, "r") as config_file:
             config_str = config_file.read()
-            run_config = polyaxon_sdk.V1Run(**ujson.loads(config_str))
+            run_config = V1Run(**ujson.loads(config_str))
             owner = run_config.owner
             project = run_config.project
             if reset_project or not owner:
@@ -2619,10 +2612,7 @@ class RunClient:
             return run_client
         with open(lineages_path, "r") as config_file:
             config_str = config_file.read()
-            lineages = [
-                V1RunArtifact.from_dict(l, unknown=EXCLUDE)
-                for l in ujson.loads(config_str)
-            ]
+            lineages = [V1RunArtifact.from_dict(l) for l in ujson.loads(config_str)]
             run_client._artifacts_lineage = {l.name: l for l in lineages}
             logger.info(f"Offline lineage data loaded from: {lineages_path}")
 

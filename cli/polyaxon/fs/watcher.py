@@ -18,12 +18,10 @@ import os
 
 from collections import namedtuple
 from datetime import datetime
-from typing import Dict, List
-
-from marshmallow import fields
+from typing import Dict, List, Optional
 
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.schemas.base import BaseConfig, BaseSchema
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.utils.date_utils import path_last_modified
 from polyaxon.utils.path_utils import get_files_and_dirs_in_path
 
@@ -32,22 +30,11 @@ class PathData(namedtuple("PathData", "base ts op")):
     pass
 
 
-class FSWatcherSchema(BaseSchema):
-    dir_mapping = fields.Dict(allow_none=True)
-    file_mapping = fields.Dict(allow_none=True)
+class FSWatcherConfig(BaseSchemaModel):
+    _IDENTIFIER = "fswatcher"
 
-    @staticmethod
-    def schema_config():
-        return FSWatcherConfig
-
-
-class FSWatcherConfig(BaseConfig):
-    SCHEMA = FSWatcherSchema
-    IDENTIFIER = "fswatcher"
-
-    def __init__(self, dir_mapping=None, file_mapping=None, **kwargs):
-        self.dir_mapping = dir_mapping
-        self.file_mapping = file_mapping
+    dir_mapping: Optional[Dict]
+    file_mapping: Optional[Dict]
 
     @staticmethod
     def _datetime_handler(value):

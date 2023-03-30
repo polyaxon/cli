@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.polyflow import V1Build
 from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict

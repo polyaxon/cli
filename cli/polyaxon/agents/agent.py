@@ -26,10 +26,10 @@ from polyaxon import pkg, settings
 from polyaxon.agents.base import BaseAgent
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
+from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.types import V1ConnectionType
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.versions import clean_version_for_check
-from polyaxon_sdk import V1Agent
-from polyaxon_sdk.rest import ApiException
 
 
 class Agent(BaseAgent):
@@ -84,7 +84,7 @@ class Agent(BaseAgent):
             owner=self.owner,
             agent_uuid=self.agent_uuid,
             body=V1Agent(
-                content=settings.AGENT_CONFIG.to_dict(dump=True),
+                content=settings.AGENT_CONFIG.to_json(),
                 version=clean_version_for_check(pkg.VERSION),
                 version_api=self.spawner.k8s_manager.get_version(),
             ),
@@ -109,7 +109,7 @@ class Agent(BaseAgent):
                     V1ConnectionType.from_dict(c) for c in connections
                 ]
 
-            self.content = settings.AGENT_CONFIG.to_dict(dump=True)
+            self.content = settings.AGENT_CONFIG.to_json()
             self.sync()
 
     def log_agent_running(self):

@@ -41,7 +41,7 @@ def set_raven_client(options: Dict = None) -> bool:
             dsn=dsn,
             release=pkg.VERSION,
             environment=environment,
-            server_name=PolyaxonServices.SERVICE,
+            server_name=PolyaxonServices.get_service_name(),
             sample_rate=sample_rate,
         )
         return True

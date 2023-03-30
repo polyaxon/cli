@@ -19,15 +19,15 @@ import pytest
 from mock import MagicMock, patch
 
 from polyaxon.cli.artifacts import artifacts
-from polyaxon_sdk import V1ProjectVersionKind
+from polyaxon.lifecycle import V1ProjectVersionKind
 from tests.test_cli.utils import BaseCommandTestCase
 
 
 @pytest.mark.cli_mark
 class TestCliArtifacts(BaseCommandTestCase):
-    @patch("polyaxon_sdk.ProjectsV1Api.create_version")
-    @patch("polyaxon_sdk.ProjectsV1Api.patch_version")
-    @patch("polyaxon_sdk.ProjectsV1Api.get_version")
+    @patch("polyaxon.sdk.api.ProjectsV1Api.create_version")
+    @patch("polyaxon.sdk.api.ProjectsV1Api.patch_version")
+    @patch("polyaxon.sdk.api.ProjectsV1Api.get_version")
     def test_create_artifact(self, get_version, patch_version, create_version):
         self.runner.invoke(artifacts, ["register"])
         assert create_version.call_count == 0
@@ -52,24 +52,24 @@ class TestCliArtifacts(BaseCommandTestCase):
         assert patch_version.call_count == 1
         assert create_version.call_count == 1
 
-    @patch("polyaxon_sdk.ProjectsV1Api.list_versions")
+    @patch("polyaxon.sdk.api.ProjectsV1Api.list_versions")
     def test_list_artifacts(self, list_artifacts):
         self.runner.invoke(artifacts, ["ls", "--project=owner/foo"])
         assert list_artifacts.call_count == 1
 
-    @patch("polyaxon_sdk.ProjectsV1Api.get_version")
+    @patch("polyaxon.sdk.api.ProjectsV1Api.get_version")
     def test_get_artifact(self, get_artifact):
         self.runner.invoke(artifacts, ["get", "-p", "admin/foo"])
         assert get_artifact.call_count == 1
 
-    @patch("polyaxon_sdk.ProjectsV1Api.patch_version")
+    @patch("polyaxon.sdk.api.ProjectsV1Api.patch_version")
     def test_update_artifact(self, update_artifact):
         self.runner.invoke(
             artifacts, ["update", "-p", "admin/foo", "--description=foo"]
         )
         assert update_artifact.call_count == 1
 
-    @patch("polyaxon_sdk.ProjectsV1Api.create_version_stage")
+    @patch("polyaxon.sdk.api.ProjectsV1Api.create_version_stage")
     def test_update_artifact_stage(self, stage_artifact):
         self.runner.invoke(
             artifacts, ["stage", "-p", "admin/foo", "-to", "production", "--reason=foo"]

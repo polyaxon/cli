@@ -32,8 +32,8 @@ def collect_artifacts_from_io(
     if io.type == IMAGE:
         image = io.value
         connection = connection_by_names.get(io.connection)
-        if connection and connection.schema and connection.schema.url:
-            image = "{}/{}".format(connection.schema.url, image)
+        if connection and connection.schema_ and connection.schema_.url:
+            image = "{}/{}".format(connection.schema_.url, image)
         return V1RunArtifact(
             name=io.name,
             kind=V1ArtifactKind.DOCKER_IMAGE,

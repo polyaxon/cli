@@ -13,45 +13,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
+from pydantic import Field, PositiveInt, validator
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.early_stopping import EarlyStoppingSchema
+from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.polyflow.matrix.params import HpParamSchema
-from polyaxon.polyflow.matrix.tuner import TunerSchema
-from polyaxon.polyflow.optimization import OptimizationMetricSchema
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.polyflow.matrix.params import V1HpParam
+from polyaxon.polyflow.matrix.tuner import V1Tuner
+from polyaxon.polyflow.optimization import V1OptimizationMetric
+from polyaxon.schemas.fields.ref_or_obj import IntOrRef, RefField
+from polyaxon.utils.enums_utils import PEnum
 
 
-class HyperoptSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1MatrixKind.HYPEROPT))
-    max_iterations = RefOrObject(fields.Int(allow_none=True))
-    metric = fields.Nested(OptimizationMetricSchema, required=True)
-    algorithm = fields.Str(
-        allow_none=True, validate=validate.OneOf(["tpe", "rand", "anneal"])
-    )
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(HpParamSchema), required=True
-    )
-    num_runs = RefOrObject(
-        fields.Int(required=True, validate=validate.Range(min=1)), required=True
-    )
-    seed = RefOrObject(fields.Int(allow_none=True))
-    concurrency = RefOrObject(fields.Int(allow_none=True))
-    tuner = fields.Nested(TunerSchema, allow_none=True)
-    early_stopping = fields.List(fields.Nested(EarlyStoppingSchema), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Hyperopt
+class V1HyperoptAlgorithms(str, PEnum):
+    TPE = "tpe"
+    RAND = "rand"
+    ANNEAL = "anneal"
 
 
-class V1Hyperopt(BaseSearchConfig, polyaxon_sdk.V1Hyperopt):
+class V1Hyperopt(BaseSearchConfig):
     """Hyperopt is a search algorithm that is backed by the
     [Hyperopt](http://hyperopt.github.io/hyperopt/) library
     to perform sequential model-based hyperparameter optimization.
@@ -241,17 +224,26 @@ class V1Hyperopt(BaseSearchConfig, polyaxon_sdk.V1Hyperopt):
     ```
     """
 
-    SCHEMA = HyperoptSchema
-    IDENTIFIER = V1MatrixKind.HYPEROPT
-    REDUCED_ATTRIBUTES = [
-        "maxIterations",
-        "algorithm",
-        "numRuns",
-        "seed",
-        "concurrency",
-        "earlyStopping",
-        "tuner",
-    ]
+    _IDENTIFIER = V1MatrixKind.HYPEROPT
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    max_iterations: Optional[IntOrRef] = Field(alias="maxIterations")
+    metric: V1OptimizationMetric
+    algorithm: Optional[V1HyperoptAlgorithms]
+    params: Union[Dict[str, V1HpParam], RefField]
+    num_runs: Union[PositiveInt, RefField] = Field(alias="numRuns")
+    seed: Optional[IntOrRef]
+    concurrency: Optional[Union[PositiveInt, RefField]]
+    tuner: Optional[V1Tuner]
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping"
+    )
+
+    @validator("num_runs", "concurrency", pre=True)
+    def check_values(cls, v, field):
+        if v and v < 1:
+            raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")
+        return v
 
     def create_iteration(self, iteration: int = None) -> int:
         if iteration is None:

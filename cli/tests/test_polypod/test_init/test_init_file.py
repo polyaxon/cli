@@ -18,6 +18,7 @@ import pytest
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_FILE_CONTAINER_PREFIX
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.common import constants
@@ -54,7 +55,7 @@ class TestInitFile(BaseTestCase):
             ),
             get_auth_context_mount(read_only=True),
         ]
-        assert file_args.to_dict(dump=True) == '{"content":"test","filename":"file"}'
+        assert file_args.to_json() == '{"content":"test","filename":"file"}'
         assert container.args == [
             "--file-context={}".format('{"content":"test","filename":"file"}'),
             "--filepath={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
@@ -67,7 +68,9 @@ class TestInitFile(BaseTestCase):
         file_args = V1FileType(filename="test", content="test")
         container = get_file_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init/init", image_tag="", image_pull_policy="IfNotPresent"
+                image="init/init",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
             file_args=file_args,
@@ -79,7 +82,7 @@ class TestInitFile(BaseTestCase):
         assert container.image_pull_policy == "IfNotPresent"
         assert container.command == ["polyaxon", "initializer", "file"]
         assert container.args == [
-            "--file-context={}".format(file_args.to_dict(dump=True)),
+            "--file-context={}".format(file_args.to_json()),
             "--filepath={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),
             "--copy-path={}".format(
                 ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format("test")

@@ -13,15 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from marshmallow import fields
+from typing import Dict, Optional, Union
 
-import polyaxon_sdk
+from pydantic import Field, StrictStr, validator
 
 from polyaxon import pkg
 from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.k8s import k8s_schemas
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.swagger import SwaggerField
+from polyaxon.k8s import k8s_schemas, k8s_validation
+from polyaxon.schemas.base import BaseSchemaModel
 
 
 def get_init_resources() -> k8s_schemas.V1ResourceRequirements:
@@ -31,18 +30,7 @@ def get_init_resources() -> k8s_schemas.V1ResourceRequirements:
     )
 
 
-class PolyaxonInitContainerSchema(BaseCamelSchema):
-    image = fields.Str(allow_none=True)
-    image_tag = fields.Str(allow_none=True)
-    image_pull_policy = fields.Str(allow_none=True)
-    resources = SwaggerField(cls=k8s_schemas.V1ResourceRequirements, allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1PolyaxonInitContainer
-
-
-class V1PolyaxonInitContainer(BaseConfig, polyaxon_sdk.V1PolyaxonInitContainer):
+class V1PolyaxonInitContainer(BaseSchemaModel):
     """Polyaxon init is a helper container that initialize the environment
     required for the main container to function correctly.
 
@@ -116,9 +104,17 @@ class V1PolyaxonInitContainer(BaseConfig, polyaxon_sdk.V1PolyaxonInitContainer):
     > using the init section.
     """
 
-    SCHEMA = PolyaxonInitContainerSchema
-    IDENTIFIER = "container"
-    REDUCED_ATTRIBUTES = ["imageTag", "imagePullPolicy", "resources"]
+    _IDENTIFIER = "container"
+    _SWAGGER_FIELDS = ["resources"]
+
+    image: Optional[StrictStr]
+    image_tag: Optional[StrictStr] = Field(alias="imageTag")
+    image_pull_policy: Optional[PullPolicy] = Field(alias="imagePullPolicy")
+    resources: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]]
+
+    @validator("resources", always=True, pre=True)
+    def validate_resources(cls, v):
+        return k8s_validation.validate_k8s_resource_requirements(v)
 
     def get_image(self):
         image = self.image or "polyaxon/polyaxon-init"

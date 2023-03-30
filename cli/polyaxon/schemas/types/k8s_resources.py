@@ -13,34 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.connections.schemas import K8sResourceSchema
-from polyaxon.schemas.base import BaseCamelSchema
+from polyaxon.connections.schemas import V1K8sResourceSchema
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class K8sResourceTypeSchema(BaseCamelSchema):
-    name = fields.Str(required=True)
-    schema = fields.Nested(K8sResourceSchema, allow_none=True)
-    is_requested = fields.Bool(allow_none=True)
+class V1K8sResourceType(BaseTypeConfig):
+    _IDENTIFIER = "secret_resource"
 
-    @staticmethod
-    def schema_config():
-        return V1K8sResourceType
-
-
-class V1K8sResourceType(BaseTypeConfig, polyaxon_sdk.V1K8sResourceType):
-    IDENTIFIER = "secret_resource"
-    SCHEMA = K8sResourceTypeSchema
-    REDUCED_ATTRIBUTES = ["name", "schema", "isRequested"]
+    name: StrictStr
+    schema_: Optional[V1K8sResourceSchema] = Field(alias="schema")
+    is_requested: Optional[bool] = Field(alias="isRequested")
 
     @classmethod
     def from_model(cls, model, is_requested=False) -> "V1K8sResourceType":
-        schema = model.schema
+        schema = model.schema_
         if hasattr(schema, "to_dict"):
             schema = schema.to_dict()
         return V1K8sResourceType.from_dict(

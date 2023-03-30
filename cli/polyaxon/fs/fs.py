@@ -16,11 +16,11 @@
 from typing import Optional
 
 from polyaxon import settings
+from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.reader import get_connection_context_path, get_connection_type
 from polyaxon.env_vars.getters import get_artifacts_store_name
 from polyaxon.exceptions import PolyaxonStoresException
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon_sdk import V1ConnectionKind
 
 
 def validate_store(connection_type: V1ConnectionType):

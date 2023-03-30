@@ -16,13 +16,13 @@
 
 import pytest
 
-from polyaxon.schemas.api.log_handler import LogHandlerConfig
+from polyaxon.schemas.api.log_handler import V1LogHandler
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.api_mark
-class TestLogHandlerConfig(BaseTestCase):
+class TestV1LogHandler(BaseTestCase):
     def test_log_handler_config(self):
         config_dict = {"dsn": "https//foo:bar", "environment": "staging"}
-        config = LogHandlerConfig.from_dict(config_dict)
+        config = V1LogHandler.from_dict(config_dict)
         assert config.to_dict() == config_dict

@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.polyflow.params import V1Param
 from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
@@ -24,8 +24,8 @@ from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
 
 @pytest.mark.polyflow_mark
 class TestV1Params(BaseTestCase):
-    def test_wrong_param_config(self):
-        # No name
+    def test_missing_value_param_config(self):
+        # No value
         with self.assertRaises(ValidationError):
             V1Param.from_dict({})
 
@@ -48,6 +48,12 @@ class TestV1Params(BaseTestCase):
             V1Param.from_dict({"search": {"query": "test"}, "value": {"foo": "bar"}})
 
     def test_param_config_with_value(self):
+        config_dict = {"value": None}
+        config = V1Param.from_dict(config_dict)
+        assert_equal_dict(config.to_dict(), config_dict)
+        assert config.is_literal is True
+        assert config.is_ref is False
+
         config_dict = {"value": "string_value"}
         config = V1Param.from_dict(config_dict)
         assert_equal_dict(config.to_dict(), config_dict)

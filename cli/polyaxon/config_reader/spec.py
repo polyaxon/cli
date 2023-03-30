@@ -26,9 +26,9 @@ from yaml.scanner import ScannerError
 
 from polyaxon.env_vars.keys import EV_KEYS_PUBLIC_REGISTRY, EV_KEYS_USE_GIT_REGISTRY
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.dict_utils import deep_update
 from polyaxon.utils.list_utils import to_list
-from polyaxon_sdk import ApiException
 
 
 class ConfigSpec:

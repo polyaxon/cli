@@ -51,7 +51,7 @@ class TestVolumes(BaseTestCase):
         store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         assert get_volume_from_connection(connection=store) is None
 
@@ -59,27 +59,27 @@ class TestVolumes(BaseTestCase):
         store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
         volume = get_volume_from_connection(connection=store)
         assert volume.name == store.name
-        assert volume.persistent_volume_claim.claim_name == store.schema.volume_claim
-        assert volume.persistent_volume_claim.read_only == store.schema.read_only
+        assert volume.persistent_volume_claim.claim_name == store.schema_.volume_claim
+        assert volume.persistent_volume_claim.read_only == store.schema_.read_only
 
         # Host path
         store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp", host_path="/tmp", read_only=True
             ),
         )
         volume = get_volume_from_connection(connection=store)
         assert volume.name == store.name
         assert volume.host_path == k8s_schemas.V1HostPathVolumeSource(
-            path=store.schema.host_path
+            path=store.schema_.host_path
         )
 
     def test_get_volume_from_secret(self):
@@ -89,7 +89,7 @@ class TestVolumes(BaseTestCase):
         # Store with mount path
         resource1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=False,
         )
         assert get_volume_from_secret(resource1) is None
@@ -97,7 +97,7 @@ class TestVolumes(BaseTestCase):
         # Claim store
         resource1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="ref", items=["item1", "item2"], mount_path="/tmp"
             ),
             is_requested=False,
@@ -105,7 +105,7 @@ class TestVolumes(BaseTestCase):
         volume = get_volume_from_secret(resource1)
         assert volume.name == resource1.name
         assert volume.secret.secret_name == resource1.name
-        assert volume.secret.items == resource1.schema.items
+        assert volume.secret.items == resource1.schema_.items
 
     def test_get_volume_from_config_map(self):
         # No store
@@ -114,7 +114,7 @@ class TestVolumes(BaseTestCase):
         # Store with mount path
         resource1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
             is_requested=False,
         )
         assert get_volume_from_config_map(resource1) is None
@@ -122,7 +122,7 @@ class TestVolumes(BaseTestCase):
         # Claim store
         resource1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="ref", items=["item1", "item2"], mount_path="/tmp"
             ),
             is_requested=False,
@@ -130,7 +130,7 @@ class TestVolumes(BaseTestCase):
         volume = get_volume_from_config_map(resource1)
         assert volume.name == resource1.name
         assert volume.config_map.name == resource1.name
-        assert volume.config_map.items == resource1.schema.items
+        assert volume.config_map.items == resource1.schema_.items
 
     def test_get_volume(self):
         # Empty dir

@@ -13,37 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr, validator
 
 from polyaxon.lifecycle import V1Statuses
-from polyaxon.polyflow.params import ParamSchema
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.polyflow.params import V1Param
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, RefField
 
 
-class HookSchema(BaseCamelSchema):
-    connection = fields.Str(allow_none=True)
-    trigger = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1Statuses.allowable_hook_values)
-    )
-    hub_ref = fields.Str(required=True)
-    conditions = fields.Str(allow_none=True)
-    queue = RefOrObject(fields.Str(allow_none=True))
-    presets = RefOrObject(fields.List(fields.Str(allow_none=True)))
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(ParamSchema), allow_none=True
-    )
-    disable_defaults = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Hook
-
-
-class V1Hook(BaseConfig, polyaxon_sdk.V1Hook):
+class V1Hook(BaseSchemaModel):
     """You can configure Polyaxon to send notifications and webhooks to users and systems
     when operations reaches a final state,
     or trigger any logic that is tightly coupled with a class of operations.
@@ -229,15 +209,23 @@ class V1Hook(BaseConfig, polyaxon_sdk.V1Hook):
     ```
     """
 
-    IDENTIFIER = "hook"
-    SCHEMA = HookSchema
-    REDUCED_ATTRIBUTES = [
-        "connection",
-        "trigger",
-        "hubRef",
-        "params",
-        "conditions",
-        "queue",
-        "presets",
-        "disableDefaults",
-    ]
+    _IDENTIFIER = "hook"
+
+    hub_ref: StrictStr = Field(alias="hubRef")
+    connection: Optional[StrictStr]
+    trigger: Optional[V1Statuses]
+    conditions: Optional[StrictStr]
+    queue: Optional[StrictStr]
+    presets: Optional[List[StrictStr]]
+    params: Optional[Union[Dict[str, V1Param], RefField]]
+    disable_defaults: Optional[BoolOrRef] = Field(alias="disableDefaults")
+
+    @validator("trigger")
+    def validate_trigger(cls, v):
+        if v and v not in V1Statuses.get_allowable_hook_values():
+            raise ValueError(
+                "Trigger must be one of {}".format(
+                    V1Statuses.get_allowable_hook_values()
+                )
+            )
+        return v

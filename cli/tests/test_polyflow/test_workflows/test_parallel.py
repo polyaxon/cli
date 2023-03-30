@@ -16,8 +16,9 @@
 
 import pytest
 
-from marshmallow.exceptions import ValidationError
+from pydantic import ValidationError
 
+from polyaxon.polyflow import V1MatrixKind
 from polyaxon.polyflow.matrix.bayes import (
     AcquisitionFunctions,
     GaussianProcessesKernels,
@@ -72,7 +73,7 @@ class TestWorkflowConfigs(BaseTestCase):
         assert config.to_dict() == config_dict
 
         # Add grid_search should raise
-        config_dict["matrix"] = {"kind": "grid", "numRuns": 10}
+        config_dict["matrix"] = {"kind": V1MatrixKind.GRID, "numRuns": 10}
         config_dict["matrix"]["params"] = {"lr": {"kind": "choice", "value": [1, 2, 3]}}
         config = V1CompiledOperation.from_dict(config_dict)
         assert config.to_dict() == config_dict
@@ -91,7 +92,7 @@ class TestWorkflowConfigs(BaseTestCase):
 
         # Add hyperband should raise
         config_dict["matrix"] = {
-            "kind": "hyperband",
+            "kind": V1MatrixKind.HYPERBAND,
             "maxIterations": 10,
             "eta": 3,
             "resource": {"name": "steps", "type": "int"},
@@ -133,7 +134,7 @@ class TestWorkflowConfigs(BaseTestCase):
 
         # Add bayes should raise
         config_dict["matrix"] = {
-            "kind": "bayes",
+            "kind": V1MatrixKind.BAYES,
             "metric": V1OptimizationMetric(
                 name="loss", optimization=V1Optimization.MINIMIZE
             ).to_dict(),

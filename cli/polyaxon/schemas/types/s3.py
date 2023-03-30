@@ -13,26 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class S3TypeSchema(BaseCamelSchema):
-    bucket = RefOrObject(fields.Str(allow_none=True))
-    key = RefOrObject(fields.Str(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1S3Type
-
-
-class V1S3Type(BaseTypeConfig, polyaxon_sdk.V1S3Type):
+class V1S3Type(BaseTypeConfig):
     """S3 type.
 
     Args:
@@ -92,9 +80,10 @@ class V1S3Type(BaseTypeConfig, polyaxon_sdk.V1S3Type):
     ```
     """
 
-    IDENTIFIER = "s3"
-    SCHEMA = S3TypeSchema
-    REDUCED_ATTRIBUTES = ["bucket", "key"]
+    _IDENTIFIER = "s3"
+
+    bucket: Optional[StrictStr]
+    key: Optional[StrictStr]
 
     def __str__(self):
         path = "s3://{}".format(self.bucket)

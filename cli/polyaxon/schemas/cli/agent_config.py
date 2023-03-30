@@ -15,17 +15,16 @@
 # limitations under the License.
 import os
 
-from typing import List
+from typing import Dict, List, Optional
 
-from marshmallow import EXCLUDE, ValidationError, fields, pre_load, validates_schema
+from pydantic import Extra, Field, PrivateAttr, StrictStr, validator
 
 from polyaxon.auxiliaries import (
-    DefaultSchedulingSchema,
-    PolyaxonCleanerSchema,
-    PolyaxonInitContainerSchema,
-    PolyaxonNotifierSchema,
-    PolyaxonSidecarContainerSchema,
     V1DefaultScheduling,
+    V1PolyaxonCleaner,
+    V1PolyaxonInitContainer,
+    V1PolyaxonNotifier,
+    V1PolyaxonSidecarContainer,
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import (
@@ -49,16 +48,15 @@ from polyaxon.env_vars.keys import (
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.lifecycle import V1ProjectFeature
 from polyaxon.parser import parser
-from polyaxon.schemas.base import BaseConfig, BaseSchema
-from polyaxon.schemas.types import ConnectionTypeSchema, V1K8sResourceType
-from polyaxon.utils.signal_decorators import check_partial
+from polyaxon.schemas.base import BaseSchemaModel, skip_partial, to_partial
+from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def validate_agent_config(
     artifacts_store, connections, required_artifacts_store: bool = True
-):
+) -> None:
     if required_artifacts_store and not artifacts_store:
-        raise ValidationError(
+        raise PolyaxonSchemaError(
             "A connection definition is required to set a default artifacts store."
         )
 
@@ -71,94 +69,92 @@ def validate_agent_config(
 
     for c in connections:
         if c.name in connection_names:
-            raise ValidationError(
+            raise PolyaxonSchemaError(
                 "A connection with name `{}` must be unique.".format(c.name)
             )
         connection_names.add(c.name)
 
 
-class BaseAgentSchema(BaseSchema):
-    REQUIRED_ARTIFACTS_STORE = True
+class BaseAgentConfig(BaseSchemaModel):
+    _REQUIRED_ARTIFACTS_STORE = True
 
-    artifacts_store = fields.Nested(
-        ConnectionTypeSchema,
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_ARTIFACTS_STORE,
+    artifacts_store: Optional[V1ConnectionType] = Field(
+        alias=EV_KEYS_AGENT_ARTIFACTS_STORE
     )
-    connections = fields.List(
-        fields.Nested(ConnectionTypeSchema),
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_CONNECTIONS,
+    connections: Optional[List[V1ConnectionType]] = Field(
+        alias=EV_KEYS_AGENT_CONNECTIONS
     )
+    namespace: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_NAMESPACE)
+    _all_connections: List[V1ConnectionType] = PrivateAttr()
+    _secrets: Optional[V1K8sResourceType] = PrivateAttr()
+    _config_maps: Optional[V1K8sResourceType] = PrivateAttr()
+    _connections_by_names: Dict[str, V1ConnectionType] = PrivateAttr()
 
-    @validates_schema
-    @check_partial
-    def validate_connection(self, data, **kwargs):
-        validate_agent_config(
-            data.get("artifacts_store"),
-            data.get("connections"),
-            self.REQUIRED_ARTIFACTS_STORE,
-        )
-
-    @pre_load
-    def pre_validate(self, data, **kwargs):
-        connections = data.get(EV_KEYS_AGENT_CONNECTIONS)
-        try:
-            connections = parser.get_dict(
-                key=EV_KEYS_AGENT_CONNECTIONS,
-                value=connections,
-                is_list=True,
-                is_optional=True,
-            )
-        except PolyaxonSchemaError as e:
-            raise ValidationError("Received an invalid connections") from e
-        if connections:
-            data[EV_KEYS_AGENT_CONNECTIONS] = connections
-
-        artifacts_store = data.get(EV_KEYS_AGENT_ARTIFACTS_STORE)
-        try:
-            artifacts_store = parser.get_dict(
-                key=EV_KEYS_AGENT_ARTIFACTS_STORE,
-                value=artifacts_store,
-                is_optional=True,
-            )
-        except PolyaxonSchemaError as e:
-            raise ValidationError(
-                "Received an invalid artifacts store `{}`".format(artifacts_store)
-            ) from e
-        if artifacts_store:
-            data[EV_KEYS_AGENT_ARTIFACTS_STORE] = artifacts_store
-
-        return data
-
-
-class BaseAgentConfig(BaseConfig):
-    UNKNOWN_BEHAVIOUR = EXCLUDE
-    REDUCED_ATTRIBUTES = [
-        EV_KEYS_AGENT_ARTIFACTS_STORE,
-        EV_KEYS_AGENT_CONNECTIONS,
-    ]
+    class Config:
+        extra = Extra.ignore
 
     def __init__(
-        self, artifacts_store=None, connections=None, namespace: str = None, **kwargs
+        self,
+        **data,
     ):
-        self.namespace = namespace
-        self.artifacts_store = artifacts_store
-        self.connections = connections or []
+        super().__init__(**data)
+        # Post init
         self._all_connections = []
         self.set_all_connections()
         self._secrets = None
         self._config_maps = None
         self._connections_by_names = {}
 
-    def set_all_connections(self):
-        self._all_connections = self.connections[:]
+    @validator("connections", pre=True)
+    def validate_json_list(cls, v):
+        if not isinstance(v, str):
+            return v
+        try:
+            return parser.get_dict(
+                key=EV_KEYS_AGENT_CONNECTIONS,
+                value=v,
+                is_list=True,
+                is_optional=True,
+            )
+        except PolyaxonSchemaError as e:
+            raise ValueError("Received an invalid connections") from e
+
+    @validator("artifacts_store", pre=True)
+    def validate_json(cls, v):
+        if not isinstance(v, str):
+            return v
+        try:
+            return parser.get_dict(
+                key=EV_KEYS_AGENT_ARTIFACTS_STORE,
+                value=v,
+                is_optional=True,
+            )
+        except PolyaxonSchemaError as e:
+            raise ValueError(
+                "Received an invalid artifacts store `{}`".format(v)
+            ) from e
+
+    @validator("connections")
+    @skip_partial
+    def validate_connections(cls, connections, values):
+        try:
+            validate_agent_config(
+                values.get("artifacts_store"),
+                connections,
+                cls._REQUIRED_ARTIFACTS_STORE,
+            )
+        except PolyaxonSchemaError as e:
+            raise ValueError(e)
+        return connections
+
+    def set_all_connections(self) -> None:
+        self._all_connections = self.connections[:] if self.connections else []
         if self.artifacts_store:
             self._all_connections.append(self.artifacts_store)
             validate_agent_config(self.artifacts_store, self.connections)
 
     @property
-    def all_connections(self):
+    def all_connections(self) -> List[V1ConnectionType]:
         return self._all_connections
 
     @property
@@ -188,7 +184,7 @@ class BaseAgentConfig(BaseConfig):
         return self._config_maps
 
     @property
-    def connections_by_names(self):
+    def connections_by_names(self) -> Dict[str, V1ConnectionType]:
         if self._connections_by_names or not self._all_connections:
             return self._connections_by_names
 
@@ -196,7 +192,7 @@ class BaseAgentConfig(BaseConfig):
         return self._connections_by_names
 
     @property
-    def local_root(self):
+    def local_root(self) -> str:
         artifacts_root = ctx_paths.CONTEXT_ARTIFACTS_ROOT
         if not self.artifacts_store:
             return artifacts_root
@@ -206,7 +202,7 @@ class BaseAgentConfig(BaseConfig):
 
         return artifacts_root
 
-    def get_local_path(self, subpath: str, entity: str = None):
+    def get_local_path(self, subpath: str, entity: str = None) -> str:
         full_path = self.local_root
         if entity == V1ProjectFeature.RUNTIME:
             from polyaxon.services.values import PolyaxonServices
@@ -219,14 +215,14 @@ class BaseAgentConfig(BaseConfig):
         return f"{full_path}/{subpath}"
 
     @property
-    def store_root(self):
+    def store_root(self) -> str:
         artifacts_root = ctx_paths.CONTEXT_ARTIFACTS_ROOT
         if not self.artifacts_store:
             return artifacts_root
 
         return self.artifacts_store.store_path
 
-    def get_store_path(self, subpath: str, entity: str = None):
+    def get_store_path(self, subpath: str, entity: str = None) -> str:
         full_path = self.store_root
         if entity == V1ProjectFeature.RUNTIME:
             from polyaxon.services.values import PolyaxonServices
@@ -241,207 +237,87 @@ class BaseAgentConfig(BaseConfig):
         return full_path
 
 
-class AgentSchema(BaseAgentSchema):
-    REQUIRED_ARTIFACTS_STORE = True
+class AgentConfig(BaseAgentConfig):
+    _IDENTIFIER = "agent"
 
-    namespace = fields.Str(allow_none=True, data_key=EV_KEYS_K8S_NAMESPACE)
-    is_replica = fields.Bool(allow_none=True, data_key=EV_KEYS_AGENT_IS_REPLICA)
-    compressed_logs = fields.Bool(
-        allow_none=True, data_key=EV_KEYS_AGENT_COMPRESSED_LOGS
+    is_replica: Optional[bool] = Field(alias=EV_KEYS_AGENT_IS_REPLICA)
+    compressed_logs: Optional[bool] = Field(alias=EV_KEYS_AGENT_COMPRESSED_LOGS)
+    sidecar: Optional[V1PolyaxonSidecarContainer] = Field(alias=EV_KEYS_AGENT_SIDECAR)
+    init: Optional[V1PolyaxonInitContainer] = Field(alias=EV_KEYS_AGENT_INIT)
+    notifier: Optional[V1PolyaxonNotifier] = Field(alias=EV_KEYS_AGENT_NOTIFIER)
+    cleaner: Optional[V1PolyaxonCleaner] = Field(alias=EV_KEYS_AGENT_CLEANER)
+    use_proxy_env_vars_use_in_ops: Optional[bool] = Field(
+        alias=EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
     )
-    sidecar = fields.Nested(
-        PolyaxonSidecarContainerSchema,
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_SIDECAR,
+    default_scheduling: Optional[V1DefaultScheduling] = Field(
+        alias=EV_KEYS_AGENT_DEFAULT_SCHEDULING
     )
-    init = fields.Nested(
-        PolyaxonInitContainerSchema, allow_none=True, data_key=EV_KEYS_AGENT_INIT
+    default_image_pull_secrets: Optional[List[StrictStr]] = Field(
+        alias=EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS
     )
-    notifier = fields.Nested(
-        PolyaxonNotifierSchema, allow_none=True, data_key=EV_KEYS_AGENT_NOTIFIER
-    )
-    cleaner = fields.Nested(
-        PolyaxonCleanerSchema, allow_none=True, data_key=EV_KEYS_AGENT_CLEANER
-    )
-    use_proxy_env_vars_use_in_ops = fields.Bool(
-        allow_none=True, data_key=EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
-    )
-    default_scheduling = fields.Nested(
-        DefaultSchedulingSchema,
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_DEFAULT_SCHEDULING,
-    )
-    default_image_pull_secrets = fields.List(
-        fields.Str(),
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
-    )
-    app_secret_name = fields.Str(
-        allow_none=True,
-        data_key=EV_KEYS_K8S_APP_SECRET_NAME,
-    )
-    agent_secret_name = fields.Str(
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_SECRET_NAME,
-    )
-    runs_sa = fields.Str(
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_RUNS_SA,
-    )
+    app_secret_name: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_APP_SECRET_NAME)
+    agent_secret_name: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_SECRET_NAME)
+    runs_sa: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_RUNS_SA)
     # This refresh logic will mitigate several issues with AKS's numerous networking problems
-    spawner_refresh_interval = fields.Integer(
-        allow_none=True,
-        data_key=EV_KEYS_AGENT_SPAWNER_REFRESH_INTERVAL,
+    spawner_refresh_interval: Optional[int] = Field(
+        alias=EV_KEYS_AGENT_SPAWNER_REFRESH_INTERVAL
     )
 
-    @staticmethod
-    def schema_config():
-        return AgentConfig
+    def __init__(
+        self,
+        default_scheduling=None,
+        default_image_pull_secrets=None,
+        **data,
+    ):
+        if not default_scheduling and default_image_pull_secrets:
+            default_scheduling = V1DefaultScheduling()
+        if default_scheduling and not default_scheduling.image_pull_secrets:
+            default_scheduling.image_pull_secrets = default_image_pull_secrets
+        super().__init__(
+            default_scheduling=default_scheduling,
+            default_image_pull_secrets=default_image_pull_secrets,
+            **data,
+        )
 
-    @pre_load
-    def pre_validate(self, data, **kwargs):
-        data = super().pre_validate(data, **kwargs)
-
-        sidecar = data.get(EV_KEYS_AGENT_SIDECAR)
+    @validator(
+        "artifacts_store",
+        "sidecar",
+        "init",
+        "cleaner",
+        "notifier",
+        "default_scheduling",
+        pre=True,
+    )
+    def validate_json(cls, v, field):
+        if not isinstance(v, str):
+            return v
         try:
-            sidecar = parser.get_dict(
-                key=EV_KEYS_AGENT_SIDECAR, value=sidecar, is_optional=True
-            )
-        except PolyaxonSchemaError as e:
-            raise ValidationError(
-                "Received an invalid sidecar `{}`".format(sidecar)
-            ) from e
-        if sidecar:
-            data[EV_KEYS_AGENT_SIDECAR] = sidecar
-
-        init = data.get(EV_KEYS_AGENT_INIT)
-        try:
-            init = parser.get_dict(key=EV_KEYS_AGENT_INIT, value=init, is_optional=True)
-        except PolyaxonSchemaError as e:
-            raise ValidationError("Received an invalid init `{}`".format(init)) from e
-        if init:
-            data[EV_KEYS_AGENT_INIT] = init
-
-        cleaner = data.get(EV_KEYS_AGENT_CLEANER)
-        try:
-            cleaner = parser.get_dict(
-                key=EV_KEYS_AGENT_CLEANER, value=cleaner, is_optional=True
-            )
-        except PolyaxonSchemaError as e:
-            raise ValidationError(
-                "Received an invalid cleaner `{}`".format(cleaner)
-            ) from e
-        if cleaner:
-            data[EV_KEYS_AGENT_CLEANER] = cleaner
-
-        notifier = data.get(EV_KEYS_AGENT_NOTIFIER)
-        try:
-            notifier = parser.get_dict(
-                key=EV_KEYS_AGENT_NOTIFIER, value=notifier, is_optional=True
-            )
-        except PolyaxonSchemaError as e:
-            raise ValidationError(
-                "Received an invalid notifier `{}`".format(notifier)
-            ) from e
-        if notifier:
-            data[EV_KEYS_AGENT_NOTIFIER] = notifier
-
-        default_scheduling = data.get(EV_KEYS_AGENT_DEFAULT_SCHEDULING)
-        try:
-            default_scheduling = parser.get_dict(
-                key=EV_KEYS_AGENT_DEFAULT_SCHEDULING,
-                value=default_scheduling,
+            return parser.get_dict(
+                key=field.name,
+                value=v,
                 is_optional=True,
             )
         except PolyaxonSchemaError as e:
-            raise ValidationError(
-                "Received an invalid default_scheduling `{}`".format(default_scheduling)
+            raise ValueError(
+                "Received an invalid {} `{}`".format(field.alias, v)
             ) from e
-        if default_scheduling:
-            data[EV_KEYS_AGENT_DEFAULT_SCHEDULING] = default_scheduling
 
-        default_image_pull_secrets = data.get(EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS)
+    @validator("default_image_pull_secrets", pre=True)
+    def validate_str_list(cls, v, field):
         try:
-            default_image_pull_secrets = parser.get_string(
-                key=EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
-                value=default_image_pull_secrets,
+            return parser.get_string(
+                key=field.alias,
+                value=v,
                 is_optional=True,
                 is_list=True,
             )
         except PolyaxonSchemaError as e:
-            raise ValidationError(
-                "Received an invalid default_image_pull_secrets `{}`".format(
-                    default_image_pull_secrets
-                )
+            raise ValueError(
+                "Received an invalid {} `{}`".format(field.alias, v)
             ) from e
-        if default_image_pull_secrets:
-            data[EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS] = default_image_pull_secrets
 
-        return data
-
-
-class AgentConfig(BaseAgentConfig):
-    SCHEMA = AgentSchema
-    IDENTIFIER = "agent"
-    REDUCED_ATTRIBUTES = BaseAgentConfig.REDUCED_ATTRIBUTES + [
-        EV_KEYS_AGENT_SIDECAR,
-        EV_KEYS_AGENT_INIT,
-        EV_KEYS_AGENT_NOTIFIER,
-        EV_KEYS_AGENT_CLEANER,
-        EV_KEYS_AGENT_IS_REPLICA,
-        EV_KEYS_AGENT_COMPRESSED_LOGS,
-        EV_KEYS_K8S_APP_SECRET_NAME,
-        EV_KEYS_AGENT_SECRET_NAME,
-        EV_KEYS_AGENT_RUNS_SA,
-        EV_KEYS_AGENT_SPAWNER_REFRESH_INTERVAL,
-        EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS,
-        EV_KEYS_AGENT_DEFAULT_SCHEDULING,
-        EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
-    ]
-
-    def __init__(
-        self,
-        namespace=None,
-        is_replica=None,
-        compressed_logs=None,
-        sidecar=None,
-        init=None,
-        notifier=None,
-        cleaner=None,
-        artifacts_store=None,
-        connections=None,
-        app_secret_name=None,
-        agent_secret_name=None,
-        runs_sa=None,
-        spawner_refresh_interval=None,
-        default_scheduling=None,
-        use_proxy_env_vars_use_in_ops=None,
-        default_image_pull_secrets=None,
-        **kwargs,
-    ):
-        super().__init__(
-            artifacts_store=artifacts_store,
-            connections=connections,
-            namespace=namespace,
-            **kwargs,
-        )
-        self.is_replica = is_replica
-        self.compressed_logs = compressed_logs
-        self.sidecar = sidecar
-        self.init = init
-        self.notifier = notifier
-        self.cleaner = cleaner
-        self.app_secret_name = app_secret_name
-        self.agent_secret_name = agent_secret_name
-        self.runs_sa = runs_sa
-        self.spawner_refresh_interval = spawner_refresh_interval
-        self.default_image_pull_secrets = default_image_pull_secrets
-        self.use_proxy_env_vars_use_in_ops = use_proxy_env_vars_use_in_ops
-        self.default_scheduling = default_scheduling
-        if not self.default_scheduling and self.default_image_pull_secrets:
-            self.default_scheduling = V1DefaultScheduling()
-        if self.default_scheduling and not self.default_scheduling.image_pull_secrets:
-            self.default_scheduling.image_pull_secrets = self.default_image_pull_secrets
-
-    def get_spawner_refresh_interval(self):
+    def get_spawner_refresh_interval(self) -> int:
         return self.spawner_refresh_interval or 60 * 5
+
+
+PartialAgentConfig = to_partial(AgentConfig)

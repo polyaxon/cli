@@ -18,7 +18,7 @@ import sys
 
 import click
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon import settings
 from polyaxon.cli.executor import docker_run, k8s_run, platform_run

@@ -13,27 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class GitTypeSchema(BaseCamelSchema):
-    url = RefOrObject(fields.Str(allow_none=True))
-    revision = RefOrObject(fields.Str(allow_none=True))
-    flags = RefOrObject(fields.List(fields.Str(), allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1GitType
-
-
-class V1GitType(BaseTypeConfig, polyaxon_sdk.V1GitType):
+class V1GitType(BaseTypeConfig):
     """Git type allows you to pass a git repo as a parameter.
 
     If used as an input type, Polyaxon can resolve several git connections
@@ -151,9 +139,11 @@ class V1GitType(BaseTypeConfig, polyaxon_sdk.V1GitType):
     ```
     """
 
-    IDENTIFIER = "git"
-    SCHEMA = GitTypeSchema
-    REDUCED_ATTRIBUTES = ["url", "revision", "flags"]
+    _IDENTIFIER = "git"
+
+    url: Optional[StrictStr]
+    revision: Optional[StrictStr]
+    flags: Optional[Union[List[StrictStr], RefField]]
 
     def get_name(self):
         if self.url:

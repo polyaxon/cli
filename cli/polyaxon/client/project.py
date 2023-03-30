@@ -21,10 +21,6 @@ from typing import Dict, List, Tuple, Union
 
 import ujson
 
-from marshmallow import EXCLUDE
-
-import polyaxon_sdk
-
 from polyaxon.client.client import PolyaxonClient
 from polyaxon.client.decorators import client_handler, get_global_or_inline_config
 from polyaxon.constants.globals import DEFAULT
@@ -33,12 +29,17 @@ from polyaxon.env_vars.getters.user import get_local_owner
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.lifecycle import V1ProjectVersionKind, V1StageCondition
 from polyaxon.logger import logger
+from polyaxon.schemas.responses.v1_list_project_versions_response import (
+    V1ListProjectVersionsResponse,
+)
+from polyaxon.schemas.responses.v1_project import V1Project
+from polyaxon.schemas.responses.v1_project_version import V1ProjectVersion
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.fqn_utils import get_entity_full_name, get_entity_info
 from polyaxon.utils.path_utils import check_or_create_path, delete_path
 from polyaxon.utils.query_params import get_query_params
 from polyaxon.utils.tz_utils import now
 from polyaxon.utils.validation import validate_tags
-from polyaxon_sdk.rest import ApiException
 from traceml.artifacts import V1RunArtifact
 
 
@@ -112,7 +113,7 @@ class ProjectClient:
         self._client = client
         self._owner = owner or DEFAULT
         self._project = project
-        self._project_data = polyaxon_sdk.V1Project()
+        self._project_data = V1Project()
 
     @property
     def client(self):
@@ -143,9 +144,7 @@ class ProjectClient:
             self._project_data.owner = self.owner
 
     @client_handler(check_no_op=True, check_offline=True)
-    def create(
-        self, data: Union[Dict, polyaxon_sdk.V1Project]
-    ) -> polyaxon_sdk.V1Project:
+    def create(self, data: Union[Dict, V1Project]) -> V1Project:
         """Creates a new project based on the data passed.
 
         [Project API](/docs/api/#operation/CreateProject)
@@ -176,7 +175,7 @@ class ProjectClient:
     @client_handler(check_no_op=True, check_offline=True)
     def list(
         self, query: str = None, sort: str = None, limit: int = None, offset: int = None
-    ) -> List[polyaxon_sdk.V1Project]:
+    ) -> List[V1Project]:
         """Lists projects under the current owner.
 
         [Project API](/docs/api/#operation/ListProjects)
@@ -201,9 +200,7 @@ class ProjectClient:
         return self.client.projects_v1.delete_project(self.owner, self.project)
 
     @client_handler(check_no_op=True, check_offline=True)
-    def update(
-        self, data: Union[Dict, polyaxon_sdk.V1Project]
-    ) -> polyaxon_sdk.V1Project:
+    def update(self, data: Union[Dict, V1Project]) -> V1Project:
         """Updates a project based on the data passed.
 
         [Project API](/docs/api/#operation/PatchProject)
@@ -248,10 +245,10 @@ class ProjectClient:
         return self.client.runs_v1.list_runs(self.owner, self.project, **params)
 
     def _validate_kind(self, kind: V1ProjectVersionKind):
-        if kind not in V1ProjectVersionKind.allowable_values:
+        if kind not in V1ProjectVersionKind:
             raise ValueError(
                 "The kind `{}` is not supported, it must be one of the values `{}`".format(
-                    kind, V1ProjectVersionKind.allowable_values
+                    kind, V1ProjectVersionKind.to_list()
                 )
             )
 
@@ -263,7 +260,7 @@ class ProjectClient:
         sort: str = None,
         limit: int = None,
         offset: int = None,
-    ) -> polyaxon_sdk.V1ListProjectVersionsResponse:
+    ) -> V1ListProjectVersionsResponse:
         """Lists project versions under the current owner/project based on version kind.
 
         This is a generic function that maps to list:
@@ -300,7 +297,7 @@ class ProjectClient:
         sort: str = None,
         limit: int = None,
         offset: int = None,
-    ) -> polyaxon_sdk.V1ListProjectVersionsResponse:
+    ) -> V1ListProjectVersionsResponse:
         """Lists component versions under the current owner/project.
 
         [Project API](/docs/api/#operation/ListProjectVersions)
@@ -331,7 +328,7 @@ class ProjectClient:
         sort: str = None,
         limit: int = None,
         offset: int = None,
-    ) -> polyaxon_sdk.V1ListProjectVersionsResponse:
+    ) -> V1ListProjectVersionsResponse:
         """Lists model versions under the current owner/project.
 
         [Project API](/docs/api/#operation/ListProjectVersions)
@@ -362,7 +359,7 @@ class ProjectClient:
         sort: str = None,
         limit: int = None,
         offset: int = None,
-    ) -> polyaxon_sdk.V1ListProjectVersionsResponse:
+    ) -> V1ListProjectVersionsResponse:
         """Lists artifact versions under the current owner/project.
 
         [Project API](/docs/api/#operation/ListProjectVersions)
@@ -387,9 +384,7 @@ class ProjectClient:
         )
 
     @client_handler(check_no_op=True, check_offline=True)
-    def get_version(
-        self, kind: V1ProjectVersionKind, version: str
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    def get_version(self, kind: V1ProjectVersionKind, version: str) -> V1ProjectVersion:
         """Gets a project version under the current owner/project based on version kind.
 
         This is a generic function that maps to get:
@@ -415,7 +410,7 @@ class ProjectClient:
         return response
 
     @client_handler(check_no_op=True, check_offline=True)
-    def get_component_version(self, version: str) -> polyaxon_sdk.V1ProjectVersion:
+    def get_component_version(self, version: str) -> V1ProjectVersion:
         """Gets a component version under the current owner/project.
 
         [Project API](/docs/api/#operation/GetVersion)
@@ -429,7 +424,7 @@ class ProjectClient:
         return self.get_version(kind=V1ProjectVersionKind.COMPONENT, version=version)
 
     @client_handler(check_no_op=True, check_offline=True)
-    def get_model_version(self, version: str) -> polyaxon_sdk.V1ProjectVersion:
+    def get_model_version(self, version: str) -> V1ProjectVersion:
         """Gets a model version under the current owner/project.
 
         [Project API](/docs/api/#operation/GetVersion)
@@ -443,7 +438,7 @@ class ProjectClient:
         return self.get_version(kind=V1ProjectVersionKind.MODEL, version=version)
 
     @client_handler(check_no_op=True, check_offline=True)
-    def get_artifact_version(self, version: str) -> polyaxon_sdk.V1ProjectVersion:
+    def get_artifact_version(self, version: str) -> V1ProjectVersion:
         """Gets an artifact version under the current owner/project.
 
         [Project API](/docs/api/#operation/GetVersion)
@@ -538,8 +533,8 @@ class ProjectClient:
     def create_version(
         self,
         kind: V1ProjectVersionKind,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Creates a project version based on the data passed based on version kind.
 
         This is a generic function based on the kind passed and creates a:
@@ -557,7 +552,7 @@ class ProjectClient:
             V1ProjectVersion.
         """
         self._validate_kind(kind)
-        if isinstance(data, polyaxon_sdk.V1ProjectVersion):
+        if isinstance(data, V1ProjectVersion):
             data.kind = kind
         elif isinstance(data, dict):
             data["kind"] = kind
@@ -572,8 +567,8 @@ class ProjectClient:
     @client_handler(check_no_op=True, check_offline=True)
     def create_component_version(
         self,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Creates a component version based on the data passed.
 
         [Project API](/docs/api/#operation/CreateVersion)
@@ -592,8 +587,8 @@ class ProjectClient:
     @client_handler(check_no_op=True, check_offline=True)
     def create_model_version(
         self,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Creates a model version based on the data passed.
 
         [Project API](/docs/api/#operation/CreateVersion)
@@ -612,8 +607,8 @@ class ProjectClient:
     @client_handler(check_no_op=True, check_offline=True)
     def create_artifact_version(
         self,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Creates an artifact version based on the data passed.
 
         [Project API](/docs/api/#operation/CreateVersion)
@@ -634,8 +629,8 @@ class ProjectClient:
         self,
         kind: V1ProjectVersionKind,
         version: str,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Updates a project version based on the data passed and version kind.
 
         This is a generic function based on the kind passed and patches a:
@@ -667,8 +662,8 @@ class ProjectClient:
     def patch_component_version(
         self,
         version: str,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Updates a component version based on the data passed.
 
         [Project API](/docs/api/#operation/PatchVersion)
@@ -690,8 +685,8 @@ class ProjectClient:
     def patch_model_version(
         self,
         version: str,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Updates a model version based on the data passed.
 
         [Project API](/docs/api/#operation/PatchVersion)
@@ -713,8 +708,8 @@ class ProjectClient:
     def patch_artifact_version(
         self,
         version: str,
-        data: Union[Dict, polyaxon_sdk.V1ProjectVersion],
-    ) -> polyaxon_sdk.V1ProjectVersion:
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
         """Updates an artifact version based on the data passed.
 
         [Project API](/docs/api/#operation/PatchVersion)
@@ -744,7 +739,7 @@ class ProjectClient:
         connection: str = None,
         artifacts: List[str] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Creates or Updates a project version based on the data passed.
 
         This is a generic function based on the kind passed and registers a:
@@ -787,7 +782,7 @@ class ProjectClient:
             artifacts = validate_tags(artifacts, validate_yaml=True)
 
         if to_update:
-            version_config = polyaxon_sdk.V1ProjectVersion()
+            version_config = V1ProjectVersion()
             if description is not None:
                 version_config.description = description
             if tags:
@@ -806,7 +801,7 @@ class ProjectClient:
                 data=version_config,
             )
         else:
-            version_config = polyaxon_sdk.V1ProjectVersion(
+            version_config = V1ProjectVersion(
                 name=version,
                 description=description,
                 tags=tags,
@@ -826,7 +821,7 @@ class ProjectClient:
         content: Union[str, Dict] = None,
         run: str = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Creates or Updates a component version based on the data passed.
 
         Args:
@@ -861,7 +856,7 @@ class ProjectClient:
         connection: str = None,
         artifacts: List[str] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Create or Update a model version based on the data passed.
 
         Args:
@@ -900,7 +895,7 @@ class ProjectClient:
         connection: str = None,
         artifacts: List[str] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Create or Update an artifact version based on the data passed.
 
         Args:
@@ -1228,7 +1223,7 @@ class ProjectClient:
         tags: Union[str, List[str]] = None,
         content: Union[str, Dict] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Copies the version to the same project or to a destination project.
 
         If `to_project` is provided,
@@ -1284,7 +1279,7 @@ class ProjectClient:
         tags: Union[str, List[str]] = None,
         content: Union[str, Dict] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Copies the component version to the same project or to a destination project.
 
         If `to_project` is provided,
@@ -1327,7 +1322,7 @@ class ProjectClient:
         tags: Union[str, List[str]] = None,
         content: Union[str, Dict] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Copies the model version to the same project or to a destination project.
 
         If `to_project` is provided,
@@ -1370,7 +1365,7 @@ class ProjectClient:
         tags: Union[str, List[str]] = None,
         content: Union[str, Dict] = None,
         force: bool = False,
-    ) -> polyaxon_sdk.V1ProjectVersion:
+    ) -> V1ProjectVersion:
         """Copies the artifact version to the same project or to a destination project.
 
         If `to_project` is provided,
@@ -1404,7 +1399,7 @@ class ProjectClient:
         )
 
     @client_handler(check_no_op=True)
-    def persist_version(self, config: polyaxon_sdk.V1ProjectVersion, path: str):
+    def persist_version(self, config: V1ProjectVersion, path: str):
         """Persists a version to a local path.
 
         Args:
@@ -1435,9 +1430,7 @@ class ProjectClient:
             config_file.write(config.content)
 
     @client_handler(check_no_op=True, check_offline=True)
-    def download_artifacts_for_version(
-        self, config: polyaxon_sdk.V1ProjectVersion, path: str
-    ):
+    def download_artifacts_for_version(self, config: V1ProjectVersion, path: str):
         """Collects and downloads all artifacts and assets linked to a version.
 
         Args:
@@ -1465,8 +1458,7 @@ class ProjectClient:
             return
 
         run_artifacts = [
-            V1RunArtifact.from_dict(a, unknown=EXCLUDE)
-            for a in meta_info.get("lineage", [])
+            V1RunArtifact.from_dict(a) for a in meta_info.get("lineage", [])
         ]
         if not run_artifacts:
             logger.info(

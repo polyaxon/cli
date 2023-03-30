@@ -16,9 +16,12 @@
 import os
 
 from polyaxon.env_vars.keys import EV_KEYS_SERVICE
+from polyaxon.utils.enums_utils import PEnum
+
+SERVICE = None
 
 
-class PolyaxonServices:  # noqa
+class PolyaxonServices(str, PEnum):
     PLATFORM = "platform"
     AUTH = "auth"
     UI = "ui"
@@ -37,63 +40,62 @@ class PolyaxonServices:  # noqa
     HP_SEARCH = "hp_search"
     EVENTS_HANDLER = "events-handlers"
 
-    VALUES = {
-        PLATFORM,
-        CLI,
-        UI,
-        API,
-        GATEWAY,
-        STREAMS,
-        SANDBOX,
-        AUTH,
-        INITIALIZER,
-        SIDECAR,
-        RUNNER,
-        AGENT,
-        OPERATOR,
-        BILLING,
-        HP_SEARCH,
-        EVENTS_HANDLER,
-    }
-    AGENT_VALUES = [PLATFORM, CLI, UI, OPERATOR, AGENT, INITIALIZER, SIDECAR]
-    SERVICE = None
+    @classmethod
+    def agent_values(cls):
+        return [
+            cls.PLATFORM,
+            cls.CLI,
+            cls.UI,
+            cls.OPERATOR,
+            cls.AGENT,
+            cls.INITIALIZER,
+            cls.SIDECAR,
+        ]
+
+    @classmethod
+    def get_service_name(cls):
+        global SERVICE
+
+        return SERVICE
 
     @classmethod
     def set_service_name(cls, value: str = None):
-        cls.SERVICE = value or os.environ.get(EV_KEYS_SERVICE)
+        global SERVICE
+
+        SERVICE = value or os.environ.get(EV_KEYS_SERVICE)
 
     @classmethod
     def is_agent(cls, value: str = None):
-        return cls.AGENT == (value or cls.SERVICE)
+        return cls.AGENT == (value or cls.get_service_name())
 
     @classmethod
     def is_sandbox(cls, value: str = None):
-        return cls.SANDBOX == (value or cls.SERVICE)
+        return cls.SANDBOX == (value or cls.get_service_name())
 
     @classmethod
     def is_hp_search(cls, value: str = None):
-        return cls.HP_SEARCH == (value or cls.SERVICE)
+        return cls.HP_SEARCH == (value or cls.get_service_name())
 
     @classmethod
     def is_init(cls, value: str = None):
-        return (value or cls.SERVICE) in {cls.INIT, cls.INITIALIZER}
+        return (value or cls.get_service_name()) in {cls.INIT, cls.INITIALIZER}
 
     @classmethod
     def is_sidecar(cls, value: str = None):
-        return cls.SIDECAR == (value or cls.SERVICE)
+        return cls.SIDECAR == (value or cls.get_service_name())
 
     @classmethod
     def is_streams(cls, value: str = None):
-        return cls.STREAMS == (value or cls.SERVICE)
+        return cls.STREAMS == (value or cls.get_service_name())
 
     @classmethod
     def is_api(cls, value: str = None):
-        return cls.API == (value or cls.SERVICE)
+        return cls.API == (value or cls.get_service_name())
 
     @classmethod
     def is_gateway(cls, value: str = None):
-        return cls.GATEWAY == (value or cls.SERVICE)
+        return cls.GATEWAY == (value or cls.get_service_name())
 
     @classmethod
     def is_events_handlers(cls, value: str = None):
-        return cls.EVENTS_HANDLER == (value or cls.SERVICE)
+        return cls.EVENTS_HANDLER == (value or cls.get_service_name())

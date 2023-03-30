@@ -47,13 +47,13 @@ class TestDockerBuilder(BaseTestCase):
             DockerBuilder(
                 context=".",
                 destination="image:tag",
-                registries=["foo", V1UriType("user", "pwd", "host")],
+                registries=["foo", V1UriType(user="user", password="pwd", host="host")],
             )
 
         builder = DockerBuilder(
             context=".",
             destination="image:tag",
-            registries=[V1UriType("user", "pwd", "host")],
+            registries=[V1UriType(user="user", password="pwd", host="host")],
         )
 
         assert builder.registries is not None
@@ -64,8 +64,8 @@ class TestDockerBuilder(BaseTestCase):
             context=".",
             destination="image:tag",
             registries=[
-                V1UriType("user", "pwd", "host"),
-                V1UriType("user", "pwd", "host"),
+                V1UriType(user="user", password="pwd", host="host"),
+                V1UriType(user="user", password="pwd", host="host"),
             ],
         )
         builder.login_private_registries()
@@ -84,6 +84,7 @@ class TestDockerBuilder(BaseTestCase):
         assert push_mock.call_count == 1
 
 
+@pytest.mark.api_builds
 class TestBuilder(BaseTestCase):
     @mock.patch("docker.APIClient.build")
     @mock.patch("docker.APIClient.login")
@@ -105,8 +106,8 @@ class TestBuilder(BaseTestCase):
             destination="image_name:image_tag",
             nocache=True,
             registries=[
-                V1UriType("user", "pwd", "host"),
-                V1UriType("user", "pwd", "host"),
+                V1UriType(user="user", password="pwd", host="host"),
+                V1UriType(user="user", password="pwd", host="host"),
             ],
         )
         assert login_mock.call_count == 2
@@ -121,8 +122,8 @@ class TestBuilder(BaseTestCase):
             destination="image_name:image_tag",
             nocache=True,
             registries=[
-                V1UriType("user", "pwd", "host"),
-                V1UriType("user", "pwd", "host"),
+                V1UriType(user="user", password="pwd", host="host"),
+                V1UriType(user="user", password="pwd", host="host"),
             ],
         )
         assert login_mock.call_count == 2

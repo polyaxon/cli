@@ -13,38 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any, Dict, List, Optional, Union
 
-from marshmallow import fields, validate
+from pydantic import Field, StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.cache import CacheSchema
-from polyaxon.polyflow.params import ParamSchema
+from polyaxon.polyflow.cache import V1Cache
+from polyaxon.polyflow.params import V1Param
 from polyaxon.schemas import V1PatchStrategy
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
-class BuildSchema(BaseCamelSchema):
-    hub_ref = fields.Str(required=True)
-    connection = fields.Str(allow_none=True)
-    queue = RefOrObject(fields.Str(allow_none=True))
-    presets = RefOrObject(fields.List(fields.Str(allow_none=True)))
-    cache = fields.Nested(CacheSchema, allow_none=True)
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(ParamSchema), allow_none=True
-    )
-    run_patch = fields.Dict(keys=fields.Str(), values=fields.Raw(), allow_none=True)
-    patch_strategy = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1PatchStrategy.allowable_values)
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Build
-
-
-class V1Build(BaseConfig, polyaxon_sdk.V1Build):
+class V1Build(BaseSchemaModel):
     """You can configure Polyaxon to automatically trigger a build process anytime
     the component or operation is instantiated.
 
@@ -244,15 +224,14 @@ class V1Build(BaseConfig, polyaxon_sdk.V1Build):
      * `pre_merge`: applies deep merge where newer values are applied first.
     """
 
-    IDENTIFIER = "build"
-    SCHEMA = BuildSchema
-    REDUCED_ATTRIBUTES = [
-        "hubRef",
-        "connection",
-        "queue",
-        "presets",
-        "cache",
-        "params",
-        "runPatch",
-        "patchStrategy",
-    ]
+    _IDENTIFIER = "build"
+    hub_ref: StrictStr = Field(alias="hubRef")
+    connection: Optional[StrictStr]
+    queue: Optional[StrictStr]
+    presets: Optional[Union[List[StrictStr], RefField]]
+    cache: Optional[Union[V1Cache, RefField]]
+    params: Optional[Dict[str, Union[V1Param, RefField]]]
+    run_patch: Optional[Dict[str, Any]] = Field(alias="runPatch")
+    patch_strategy: Optional[Union[V1PatchStrategy, RefField]] = Field(
+        alias="patchStrategy"
+    )

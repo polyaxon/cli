@@ -391,17 +391,22 @@ class TestPatchSpecifications(BaseTestCase):
         result = tmp_operation.patch(preset, strategy=V1PatchStrategy.REPLACE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
-        assert result_dict.pop("name") == operation.name
-        assert result_dict.pop("trigger") == operation.trigger
-        assert result_dict.pop("conditions") == operation.conditions
-        assert result_dict.pop("skipOnUpstreamSkip") == operation.skip_on_upstream_skip
-        assert result_dict.pop("schedule") == operation.schedule.to_dict()
-        assert result_dict.pop("conditions", None) is None
-        assert result_dict.pop("matrix") == operation.matrix.to_dict()
+        assert operation.name is not None
+        assert "name" not in result_dict
+        assert operation.trigger is not None
+        assert "trigger" not in result_dict
+        assert operation.conditions is not None
+        assert "conditions" not in result_dict
+        assert operation.skip_on_upstream_skip is not None
+        assert "skipOnUpstreamSkip" not in result_dict
+        assert operation.schedule is not None
+        assert "schedule" not in result_dict
+        assert operation.matrix is not None
+        assert "matrix" not in result_dict
         assert result_dict.pop("cache") == operation.cache.to_dict()
         assert result_dict.pop("plugins") == operation.plugins.to_dict()
         assert result_dict.pop("termination") == operation.termination.to_dict()
-        assert result_dict.pop("build", None) is not None
+        assert result_dict.pop("build") is not None
         expected = preset.to_dict()
         expected.pop("isPreset")
         expected.pop("cache")
@@ -515,14 +520,39 @@ class TestPatchSpecifications(BaseTestCase):
         result = tmp_operation.patch(preset, strategy=V1PatchStrategy.POST_MERGE)
         result_dict = result.to_dict()
         assert result_dict["description"] == ""
-        result_dict["description"] = self.DEFAULT_STR_VALUE
         assert result_dict["queue"] == ""
-        result_dict["queue"] = "{}/{}".format(
-            self.DEFAULT_STR_VALUE, self.DEFAULT_STR_VALUE
-        )
-        result_dict["presets"] = [self.DEFAULT_STR_VALUE]
+        assert result_dict.pop("hubRef") == operation.hub_ref
+        expected = preset.to_dict()
+        assert expected.pop("isPreset") is True
+        assert result_dict.pop("build") is not None
+        assert "build" not in expected
+        assert result_dict.pop("cache") == operation.cache.to_dict()
+        assert expected.pop("cache") == {}
+        assert result_dict.pop("joins") == [j.to_dict() for j in operation.joins]
+        assert expected.pop("joins") == []
+        assert result_dict.pop("params") == {
+            k: j.to_dict() for k, j in operation.params.items()
+        }
+        assert expected.pop("params") == {}
+        assert result_dict.pop("dependencies") == operation.dependencies
+        assert expected.pop("dependencies") == []
+        assert result_dict.pop("presets") == operation.presets
+        assert expected.pop("presets") == []
+        assert result_dict.pop("events") == [j.to_dict() for j in operation.events]
+        assert expected.pop("events") == []
+        assert result_dict.pop("hooks") == [j.to_dict() for j in operation.hooks]
+        assert expected.pop("hooks") == []
+        assert result_dict.pop("plugins") == operation.plugins.to_dict()
+        assert expected.pop("plugins") == {}
+        assert result_dict.pop("termination") == operation.termination.to_dict()
+        assert expected.pop("termination") == {}
+        assert result_dict.pop("tags") == operation.tags
+        assert expected.pop("tags") == []
+        assert result_dict.pop("runPatch") == operation.run_patch
+        assert expected.pop("runPatch") == preset.run_patch
+
         # Since there's no component to validate the runPatch section it stays the same
-        assert result_dict == operation.to_dict()
+        assert result_dict == expected
 
         operation = self.get_full_operation_with_component()
         tmp_operation = self.get_full_operation_with_component()
@@ -535,12 +565,24 @@ class TestPatchSpecifications(BaseTestCase):
         result_dict["queue"] = "{}/{}".format(
             self.DEFAULT_STR_VALUE, self.DEFAULT_STR_VALUE
         )
+        assert "conditions" not in result_dict
+        result_dict["conditions"] = self.DEFAULT_STR_VALUE
+        assert "name" not in result_dict
+        result_dict["name"] = self.DEFAULT_STR_VALUE
+        assert "matrix" not in result_dict
+        result_dict["matrix"] = operation.matrix.to_dict()
+        assert "schedule" not in result_dict
+        result_dict["schedule"] = operation.schedule.to_dict()
+        assert "skipOnUpstreamSkip" not in result_dict
+        result_dict["skipOnUpstreamSkip"] = True
+        assert "trigger" not in result_dict
+        result_dict["trigger"] = operation.trigger
         # Run patch was validated and merged
         assert result_dict["runPatch"]["environment"]["serviceAccountName"] == ""
         result_dict["runPatch"]["environment"][
             "serviceAccountName"
         ] = operation.run_patch["environment"]["serviceAccountName"]
-        assert result_dict["runPatch"]["container"].pop("name") == MAIN_JOB_CONTAINER
+
         assert result_dict == operation.to_dict()
 
     def test_patch_post_merge_full_values_with_full_preset(self):
@@ -585,8 +627,8 @@ class TestPatchSpecifications(BaseTestCase):
         expected["matrix"]["values"] = (
             operation.matrix.values + expected["matrix"]["values"]
         )
+        result_dict["params"] = expected["params"]
         # Run patch was validated and merged
-        assert result_dict["runPatch"]["container"].pop("name") == MAIN_JOB_CONTAINER
         assert (
             result_dict["runPatch"]["connections"]
             == operation.run_patch["connections"] + expected["runPatch"]["connections"]
@@ -616,7 +658,6 @@ class TestPatchSpecifications(BaseTestCase):
 
         assert result_dict.pop("hubRef") == operation.hub_ref
         assert result_dict.pop("component") == operation.component.to_dict()
-        expected["runPatch"]["container"].pop("name")
         assert result_dict == expected
 
     def test_patch_pre_merge_empty_values_with_empty_preset(self):
@@ -667,7 +708,6 @@ class TestPatchSpecifications(BaseTestCase):
         preset = self.get_empty_preset()
         result = tmp_operation.patch(preset, strategy=V1PatchStrategy.PRE_MERGE)
         result_dict = result.to_dict()
-        assert result_dict["runPatch"]["container"].pop("name") == MAIN_JOB_CONTAINER
         # Run patch was validated and merged
         assert result_dict == operation.to_dict()
 
@@ -719,7 +759,6 @@ class TestPatchSpecifications(BaseTestCase):
             preset_dict["matrix"]["values"] + operation.matrix.values
         )
         # Run patch was validated and merged
-        assert result_dict["runPatch"]["container"].pop("name") == MAIN_JOB_CONTAINER
         assert result_dict["runPatch"]["container"].pop("resources") == deep_update(
             preset_dict["runPatch"]["container"]["resources"],
             expected["runPatch"]["container"]["resources"],
@@ -1074,13 +1113,13 @@ class TestApplyPreset(BaseTestApplyPreset):
         )
         assert self.compiled_operation.termination is not None
         assert self.compiled_operation.termination.to_dict() == termination2
-        assert self.compiled_operation.termination is not None
+        assert self.compiled_operation.run.environment is not None
         env = self.compiled_operation.run.environment.to_dict()
         assert env == environment2
         assert self.compiled_operation.plugins is not None
         assert self.compiled_operation.plugins.to_dict() == plugins2
 
-        termination3 = {"maxRetries": 15}
+        termination3 = {"maxRetries": 15, "timeout": None, "ttl": None}
         environment3 = {
             "labels": {},
             "annotations": {},
@@ -1104,12 +1143,8 @@ class TestApplyPreset(BaseTestApplyPreset):
             == self.compiled_operation
         )
         assert self.compiled_operation.termination is not None
-        assert self.compiled_operation.termination.to_dict() == {
-            "maxRetries": 15,
-            "timeout": 10,
-            "ttl": 10,
-        }
-        assert self.compiled_operation.termination is not None
+        assert self.compiled_operation.termination.to_dict() == {"maxRetries": 15}
+        assert self.compiled_operation.run.environment is not None
         env = self.compiled_operation.run.environment.to_dict()
         assert env == environment3
         assert self.compiled_operation.plugins is not None

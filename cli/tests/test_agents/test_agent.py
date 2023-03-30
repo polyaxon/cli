@@ -35,10 +35,10 @@ class TestAgents(BaseTestCase):
         assert isinstance(agent.spawner, Spawner)
         assert isinstance(agent.client, PolyaxonClient)
 
-    @patch("polyaxon_sdk.AgentsV1Api.sync_agent")
-    @patch("polyaxon_sdk.AgentsV1Api.create_agent_status")
-    @patch("polyaxon_sdk.AgentsV1Api.get_agent_state")
-    @patch("polyaxon_sdk.AgentsV1Api.get_agent")
+    @patch("polyaxon.sdk.api.AgentsV1Api.sync_agent")
+    @patch("polyaxon.sdk.api.AgentsV1Api.create_agent_status")
+    @patch("polyaxon.sdk.api.AgentsV1Api.get_agent_state")
+    @patch("polyaxon.sdk.api.AgentsV1Api.get_agent")
     @patch("polyaxon.agents.base.Spawner")
     def test_init_agent(
         self, _, get_agent, get_agent_state, create_agent_status, sync_agent

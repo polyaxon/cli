@@ -52,13 +52,13 @@ beat:
   imageTag: latest
   imagePullPolicy: Always
 
-hooks:
-  loadFixtures: true
+apiHooks:
   imageTag: latest
   imagePullPolicy: Always
-
-tablesHook:
-  imageTag: latest
+  loadFixtures: true
+  tables: false
+  syncdb: false
+  adminUser: false
 
 timezone: 'Europe/Berlin'
 

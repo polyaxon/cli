@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import Mapping
 from typing import Dict
 
 from polyaxon.exceptions import PolyaxonSchemaError
@@ -28,6 +27,7 @@ from polyaxon.polyflow import (
     V1Param,
     validate_run_patch,
 )
+from polyaxon.polyflow.operations.operation import PartialV1Operation
 from polyaxon.utils.list_utils import to_list
 
 
@@ -37,6 +37,7 @@ class OperationSpecification(BaseSpecification):
     _SPEC_KIND = kinds.OPERATION
 
     CONFIG = V1Operation
+    PARTIAL_CONFIG = PartialV1Operation
 
     @classmethod
     def compile_operation(
@@ -79,7 +80,7 @@ class OperationSpecification(BaseSpecification):
                 return
 
             contexts.append(
-                V1IO(
+                V1IO.construct(
                     name=c_name,
                     to_init=c_io.to_init,
                     to_env=c_io.to_env,
@@ -97,29 +98,32 @@ class OperationSpecification(BaseSpecification):
             for p in j.params or {}:
                 get_context_io(c_name=p, c_io=j.params[p], is_list=True)
 
-        patch_compiled = V1CompiledOperation(
-            name=config.name,
-            cost=config.cost,
-            description=config.description,
-            contexts=contexts,
-            tags=config.tags,
-            is_approved=config.is_approved,
-            presets=config.presets,
-            queue=config.queue,
-            cache=config.cache,
-            build=config.build,
-            hooks=config.hooks,
-            events=config.events,
-            plugins=config.plugins,
-            termination=config.termination,
-            matrix=config.matrix,
-            joins=config.joins,
-            schedule=config.schedule,
-            dependencies=config.dependencies,
-            trigger=config.trigger,
-            conditions=config.conditions,
-            skip_on_upstream_skip=config.skip_on_upstream_skip,
-        )
+        patch_keys = {
+            "name",
+            "cost",
+            "description",
+            "contexts",
+            "tags",
+            "is_approved",
+            "presets",
+            "queue",
+            "cache",
+            "build",
+            "hooks",
+            "events",
+            "plugins",
+            "termination",
+            "matrix",
+            "joins",
+            "schedule",
+            "dependencies",
+            "trigger",
+            "conditions",
+            "skip_on_upstream_skip",
+        }
+        patch_keys = patch_keys.intersection(config.__fields_set__)
+        patch_data = {k: getattr(config, k) for k in patch_keys}
+        patch_compiled = V1CompiledOperation.construct(contexts=contexts, **patch_data)
 
         values = [
             {cls.VERSION: config.version},
@@ -135,7 +139,7 @@ class OperationSpecification(BaseSpecification):
             if isinstance(values, cls.CONFIG):
                 values.is_preset = True
                 return values
-            elif isinstance(values, Mapping):
+            elif isinstance(values, Dict):
                 values[cls.IS_PRESET] = True
             else:
                 values = to_list(values)

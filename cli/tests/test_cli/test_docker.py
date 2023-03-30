@@ -30,6 +30,6 @@ class TestCliDocker(BaseCommandTestCase):
         build_context = V1DockerfileType(image="foo")
         self.runner.invoke(
             docker,
-            ["generate", "--build-context={}".format(build_context.to_dict(dump=True))],
+            ["generate", "--build-context={}".format(build_context.to_json())],
         )
         assert generate_create.call_count == 1

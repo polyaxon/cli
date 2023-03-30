@@ -22,6 +22,7 @@ from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.connections.kinds import V1ConnectionKind
+from polyaxon.connections.schemas.connections import patch_git
 from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolypodException
@@ -348,7 +349,7 @@ class BaseConverter(ConverterAbstract):
                     V1ConnectionKind.is_ssh(connection_spec.kind)
                     and init_connection.git
                 ):
-                    connection_spec.schema.patch_git(init_connection.git)
+                    patch_git(connection_spec.schema_, init_connection.git)
                     containers.append(
                         get_git_init_container(
                             polyaxon_init=polyaxon_init,
@@ -365,7 +366,7 @@ class BaseConverter(ConverterAbstract):
                     )
                 elif V1ConnectionKind.is_git(connection_spec.kind):
                     if init_connection.git:  # Update the default schema
-                        connection_spec.schema.patch(init_connection.git)
+                        connection_spec.schema_.patch(init_connection.git)
                     containers.append(
                         get_git_init_container(
                             polyaxon_init=polyaxon_init,
@@ -437,7 +438,7 @@ class BaseConverter(ConverterAbstract):
                             connection=V1ConnectionType(
                                 name=git_name,
                                 kind=V1ConnectionKind.GIT,
-                                schema=init_connection.git,
+                                schema_=init_connection.git,
                                 secret=None,
                             ),
                             container=init_connection.container,

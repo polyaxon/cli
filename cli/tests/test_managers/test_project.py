@@ -17,8 +17,8 @@
 import pytest
 
 from polyaxon.managers.project import ProjectConfigManager
+from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.utils.test_utils import BaseTestCase
-from polyaxon_sdk import V1Project
 
 
 @pytest.mark.managers_mark

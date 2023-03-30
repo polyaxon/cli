@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import ValidationError
-
 from polyaxon.contexts.params import PARAM_REGEX
 
 
@@ -24,16 +22,16 @@ def validate_image(image, allow_none=False):
         if allow_none:
             return
         else:
-            raise ValidationError("Image is required")
+            raise ValueError("Image is required")
     param = PARAM_REGEX.search(image)
     if param:
         return
     if " " in image:
-        raise ValidationError("Invalid docker image `{}`".format(image))
+        raise ValueError("Invalid docker image `{}`".format(image))
     tagged_image = image.split(":")
     if len(tagged_image) > 3:
-        raise ValidationError("Invalid docker image `{}`".format(image))
+        raise ValueError("Invalid docker image `{}`".format(image))
     if len(tagged_image) == 3 and (
         "/" not in tagged_image[1] or tagged_image[1].startswith("/")
     ):
-        raise ValidationError("Invalid docker image `{}`".format(image))
+        raise ValueError("Invalid docker image `{}`".format(image))

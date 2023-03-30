@@ -17,9 +17,8 @@ import uuid
 
 from typing import Optional
 
-from marshmallow import ValidationError
-
 from polyaxon.contexts.params import PARAM_REGEX
+from polyaxon.exceptions import PolyaxonValidationError
 
 OPS = "ops"
 RUNS = "runs"
@@ -134,15 +133,15 @@ def validate_ref(ref: str, name: str):
     # validate ref
     ref_parts = ref.split(".")
     if len(ref_parts) > 2:
-        raise ValidationError(
+        raise PolyaxonValidationError(
             "Could not parse ref `{}` for param `{}`.".format(ref, name)
         )
     if len(ref_parts) == 1 and ref_parts[0] != DAG:
-        raise ValidationError(
+        raise PolyaxonValidationError(
             "Could not parse ref `{}` for param `{}`.".format(ref_parts[0], name)
         )
     if len(ref_parts) == 2 and ref_parts[0] not in ENTITIES:
-        raise ValidationError(
+        raise PolyaxonValidationError(
             "Could not parse ref `{}` for param `{}`. "
             "Operation ref must be one of `{}`".format(ref_parts[0], name, ENTITIES)
         )
@@ -150,7 +149,7 @@ def validate_ref(ref: str, name: str):
         try:
             uuid.UUID(ref_parts[1])
         except (KeyError, ValueError):
-            raise ValidationError(
+            raise PolyaxonValidationError(
                 "Param value `{}` should reference a valid run uuid.".format(
                     ref_parts[1]
                 )

@@ -25,6 +25,7 @@ from polyaxon.connections.schemas import (
     V1K8sResourceSchema,
 )
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.exceptions import PolypodException
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.common.env_vars import (
@@ -62,7 +63,7 @@ class TestSidecarContainer(BaseTestCase):
                 env=None,
                 polyaxon_sidecar=V1PolyaxonSidecarContainer(
                     image="sidecar/sidecar",
-                    image_pull_policy="IfNotPresent",
+                    image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                     sleep_interval=213,
                     sync_interval=213,
                 ),
@@ -74,14 +75,14 @@ class TestSidecarContainer(BaseTestCase):
         artifacts_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         self.assert_artifacts_store_raises(store=artifacts_store)
 
         artifacts_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(volume_claim="foo", mount_path="/foo"),
+            schema_=V1ClaimConnection(volume_claim="foo", mount_path="/foo"),
         )
         self.assert_artifacts_store_raises(store=artifacts_store)
 
@@ -91,7 +92,7 @@ class TestSidecarContainer(BaseTestCase):
             env=None,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=213,
             ),
@@ -109,7 +110,7 @@ class TestSidecarContainer(BaseTestCase):
         mount_non_managed_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 volume_claim="test", mount_path="/tmp", read_only=True
             ),
         )
@@ -118,7 +119,7 @@ class TestSidecarContainer(BaseTestCase):
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=-1,
             ),
@@ -139,14 +140,14 @@ class TestSidecarContainer(BaseTestCase):
         bucket_non_managed_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         sidecar = get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=-1,
             ),
@@ -168,14 +169,14 @@ class TestSidecarContainer(BaseTestCase):
         ]
         resource1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
             is_requested=False,
         )
         bucket_managed_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=resource1.schema_,
         )
 
         # Default auth is included
@@ -185,7 +186,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -210,7 +211,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=-212,
             ),
@@ -234,14 +235,14 @@ class TestSidecarContainer(BaseTestCase):
         ]
         resource1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
+            schema_=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
             is_requested=False,
         )
         bucket_managed_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=resource1.schema_,
         )
 
         # Both logs/outputs
@@ -251,7 +252,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -291,7 +292,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=-212,
             ),
@@ -332,7 +333,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -376,7 +377,7 @@ class TestSidecarContainer(BaseTestCase):
         ]
         resource1 = V1K8sResourceType(
             name="test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="test1", items=["item1", "item2"], mount_path="/path"
             ),
             is_requested=False,
@@ -384,8 +385,8 @@ class TestSidecarContainer(BaseTestCase):
         bucket_managed_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=resource1.schema_,
         )
 
         # Both logs and outputs
@@ -395,7 +396,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -436,7 +437,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -478,7 +479,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -522,13 +523,13 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key2", value="value2"),
         ]
         resource1 = V1K8sResourceType(
-            name="test1", schema=V1K8sResourceSchema(name="ref"), is_requested=False
+            name="test1", schema_=V1K8sResourceSchema(name="ref"), is_requested=False
         )
         bucket_managed_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=resource1.schema_,
         )
 
         # both logs and outputs
@@ -538,7 +539,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -578,7 +579,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -619,7 +620,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -662,7 +663,7 @@ class TestSidecarContainer(BaseTestCase):
         mount_managed_store = V1ConnectionType(
             name="test_path",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
+            schema_=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
             secret=None,
         )
 
@@ -673,7 +674,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -712,7 +713,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -752,7 +753,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -792,13 +793,13 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key2", value="value2"),
         ]
         resource1 = V1K8sResourceType(
-            name="test1", schema=V1K8sResourceSchema(name="ref1"), is_requested=False
+            name="test1", schema_=V1K8sResourceSchema(name="ref1"), is_requested=False
         )
         blob_managed_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=resource1.schema_,
         )
 
         # logs and outputs
@@ -808,7 +809,7 @@ class TestSidecarContainer(BaseTestCase):
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="sidecar/sidecar",
                 image_tag="",
-                image_pull_policy="IfNotPresent",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
                 sleep_interval=213,
                 sync_interval=212,
             ),
@@ -843,7 +844,7 @@ class TestSidecarContainer(BaseTestCase):
         artifacts_store = V1ConnectionType(
             name="plx-outputs",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp/plx/outputs", host_path="/tmp/plx/outputs"
             ),
         )
@@ -866,7 +867,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="foo",
-                image_pull_policy="Always",
+                image_pull_policy=PullPolicy.ALWAYS,
                 sleep_interval=2,
                 sync_interval=212,
             ),
@@ -886,7 +887,7 @@ class TestSidecarContainer(BaseTestCase):
         artifacts_store = V1ConnectionType(
             name="plx-outputs",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 mount_path="/tmp/plx/outputs", host_path="/tmp/plx/outputs"
             ),
         )
@@ -909,7 +910,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="foo",
-                image_pull_policy="Always",
+                image_pull_policy=PullPolicy.ALWAYS,
                 sleep_interval=2,
                 sync_interval=212,
             ),
@@ -946,7 +947,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="foo",
-                image_pull_policy="Always",
+                image_pull_policy=PullPolicy.ALWAYS,
                 sleep_interval=2,
                 sync_interval=212,
             ),

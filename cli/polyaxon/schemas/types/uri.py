@@ -13,27 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class UriTypeSchema(BaseCamelSchema):
-    user = RefOrObject(fields.Str(required=True))
-    password = RefOrObject(fields.Str(required=True))
-    host = RefOrObject(fields.Str(required=True))
-
-    @staticmethod
-    def schema_config():
-        return V1UriType
-
-
-class V1UriType(BaseTypeConfig, polyaxon_sdk.V1UriType):
+class V1UriType(BaseTypeConfig):
     """Uri type.
 
     Args:
@@ -93,9 +80,11 @@ class V1UriType(BaseTypeConfig, polyaxon_sdk.V1UriType):
     > Normally you should not be passing auth details in plain values.
     """
 
-    IDENTIFIER = "uri"
-    SCHEMA = UriTypeSchema
-    REDUCED_ATTRIBUTES = ["user", "password", "host"]
+    _IDENTIFIER = "uri"
+
+    user: Optional[StrictStr]
+    password: Optional[StrictStr]
+    host: Optional[StrictStr]
 
     def __str__(self):
         return "{}:{}@{}".format(self.user, self.password, self.host)

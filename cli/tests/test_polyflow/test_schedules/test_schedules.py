@@ -13,17 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import pytest
 
-from marshmallow import ValidationError
+from typing import List
+
+import ujson
+
+from pydantic import ValidationError
 
 from polyaxon.polyflow.schedules import (
-    ScheduleSchema,
     V1CronSchedule,
     V1DateTimeSchedule,
     V1IntervalSchedule,
+    V1Schedule,
 )
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.utils.test_utils import BaseTestCase
 from polyaxon.utils.tz_utils import now
 
@@ -114,9 +118,9 @@ class TestScheduleConfigs(BaseTestCase):
         configs = [
             {
                 "kind": "interval",
-                "frequency": 2,
                 "startAt": now().isoformat(),
                 "endAt": now().isoformat(),
+                "frequency": 2.0,
                 "dependsOnPast": False,
             },
             {
@@ -128,8 +132,13 @@ class TestScheduleConfigs(BaseTestCase):
             },
             {
                 "kind": "datetime",
-                "startAt": "2010-01-01T00:00+00:00",
+                "startAt": "2010-01-01T00:00:00+00:00",
             },
         ]
 
-        ScheduleSchema().load(configs, many=True)
+        class DummyModel(BaseSchemaModel):
+            schedules: List[V1Schedule]
+
+        result = DummyModel(schedules=configs)
+
+        assert result.to_json() == ujson.dumps({"schedules": configs})

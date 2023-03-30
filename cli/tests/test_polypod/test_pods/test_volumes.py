@@ -50,26 +50,26 @@ class TestPodVolumes(BaseTestCase):
         # Secrets and config maps
         self.non_mount_resource1 = V1K8sResourceType(
             name="non_mount_test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="non_mount_test1", items=["item1", "item2"]
             ),
             is_requested=False,
         )
         self.non_mount_resource2 = V1K8sResourceType(
             name="non_mount_test2",
-            schema=V1K8sResourceSchema(name="non_mount_test2"),
+            schema_=V1K8sResourceSchema(name="non_mount_test2"),
             is_requested=False,
         )
         self.mount_resource1 = V1K8sResourceType(
             name="mount_test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="mount_test1", items=["item1", "item2"], mount_path="/tmp1"
             ),
             is_requested=False,
         )
         self.mount_resource2 = V1K8sResourceType(
             name="mount_test1",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="mount_test1", items=["item1", "item2"], mount_path="/tmp2"
             ),
             is_requested=False,
@@ -83,31 +83,31 @@ class TestPodVolumes(BaseTestCase):
         self.s3_store = V1ConnectionType(
             name="test_s3",
             kind=V1ConnectionKind.S3,
-            schema=V1BucketConnection(bucket="s3//:foo"),
-            secret=self.mount_resource1.schema,
+            schema_=V1BucketConnection(bucket="s3//:foo"),
+            secret=self.mount_resource1.schema_,
         )
         self.gcs_store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
-            secret=self.mount_resource1.schema,
+            schema_=V1BucketConnection(bucket="gs//:foo"),
+            secret=self.mount_resource1.schema_,
         )
         self.az_store = V1ConnectionType(
             name="test_az",
             kind=V1ConnectionKind.WASB,
-            secret=self.mount_resource1.schema,
+            secret=self.mount_resource1.schema_,
         )
         self.claim_store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
         self.host_path_store = V1ConnectionType(
             name="test_path",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
+            schema_=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
         )
 
     def test_default_volumes(self):
@@ -548,8 +548,8 @@ class TestPodVolumes(BaseTestCase):
             V1ConnectionType(
                 name="connection",
                 kind=V1ConnectionKind.S3,
-                schema=None,
-                secret=secret.schema,
+                schema_=None,
+                secret=secret.schema_,
             )
             if connection
             else None
@@ -576,8 +576,8 @@ class TestPodVolumes(BaseTestCase):
             V1ConnectionType(
                 name="connection",
                 kind=V1ConnectionKind.S3,
-                schema=None,
-                config_map=config_map.schema,
+                schema_=None,
+                config_map=config_map.schema_,
             )
             if connection
             else None

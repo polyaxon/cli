@@ -42,6 +42,7 @@ from polyaxon.polypod.common.mounts import (
 )
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.schemas.types import V1ArtifactsType, V1ConnectionType
+from polyaxon.utils.enums_utils import get_enum_value
 from polyaxon.utils.list_utils import to_list
 
 
@@ -85,7 +86,7 @@ def cp_store_args(
     if check_path:
         args.append("--check-path")
     return "polyaxon initializer path --connection-kind={} --path-from={} --path-to={} {};".format(
-        backend, path_from, path_to, " ".join(args)
+        get_enum_value(backend), path_from, path_to, " ".join(args)
     )
 
 

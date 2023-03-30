@@ -316,9 +316,6 @@ class TestConfigManager(BaseTestCase):
             self.config.get_string("string_list_error_key_4", is_list=True)
 
         with self.assertRaises(PolyaxonSchemaError):
-            self.config.get_string("string_key_3", is_list=True)
-
-        with self.assertRaises(PolyaxonSchemaError):
             self.config.get_string("string_key_4", is_list=True)
 
         with self.assertRaises(PolyaxonSchemaError):
@@ -327,6 +324,7 @@ class TestConfigManager(BaseTestCase):
         with self.assertRaises(PolyaxonSchemaError):
             self.config.get_string("string_non_existing_key", is_list=True)
 
+        self.assertEqual(self.config.get_string("string_key_3", is_list=True), ["foo"])
         self.assertEqual(
             self.config.get_string("string_non_existing_key", is_optional=True), None
         )
@@ -431,21 +429,27 @@ class TestConfigManager(BaseTestCase):
 
     def test_get_uri(self):
         value = self.config.get_uri("uri_key_1")
-        self.assertEqual(value, V1UriType("user", "pass", "siteweb.ca"))
+        self.assertEqual(
+            value, V1UriType(user="user", password="pass", host="siteweb.ca")
+        )
 
         value = self.config.get_uri("uri_key_2")
-        self.assertEqual(value, V1UriType("user2", "pass", "localhost:8080"))
+        self.assertEqual(
+            value, V1UriType(user="user2", password="pass", host="localhost:8080")
+        )
 
         value = self.config.get_uri("uri_key_3")
-        self.assertEqual(value, V1UriType("user2", "pass", "https://quay.io"))
+        self.assertEqual(
+            value, V1UriType(user="user2", password="pass", host="https://quay.io")
+        )
 
         value = self.config.get_uri("uri_list_key_1", is_list=True)
         self.assertEqual(
             value,
             [
-                V1UriType("user", "pass", "siteweb.ca"),
-                V1UriType("user2", "pass", "localhost:8080"),
-                V1UriType("user2", "pass", "https://quay.io"),
+                V1UriType(user="user", password="pass", host="siteweb.ca"),
+                V1UriType(user="user2", password="pass", host="localhost:8080"),
+                V1UriType(user="user2", password="pass", host="https://quay.io"),
             ],
         )
 
@@ -477,14 +481,15 @@ class TestConfigManager(BaseTestCase):
             self.config.get_uri("uri_list_error_key_4", is_list=True)
 
         with self.assertRaises(PolyaxonSchemaError):
-            self.config.get_uri("uri_key_1", is_list=True)
-
-        with self.assertRaises(PolyaxonSchemaError):
             self.config.get_uri("uri_non_existing_key")
 
         with self.assertRaises(PolyaxonSchemaError):
             self.config.get_uri("uri_non_existing_key", is_list=True)
 
+        self.assertEqual(
+            self.config.get_uri("uri_key_1", is_list=True),
+            [V1UriType(user="user", password="pass", host="siteweb.ca")],
+        )
         self.assertEqual(
             self.config.get_uri("uri_non_existing_key", is_optional=True), None
         )
@@ -492,9 +497,9 @@ class TestConfigManager(BaseTestCase):
             self.config.get_uri(
                 "uri_non_existing_key",
                 is_optional=True,
-                default=V1UriType("user2", "pass", "localhost:8080"),
+                default=V1UriType(user="user2", password="pass", host="localhost:8080"),
             ),
-            V1UriType("user2", "pass", "localhost:8080"),
+            V1UriType(user="user2", password="pass", host="localhost:8080"),
         )
 
         self.assertEqual(
@@ -508,23 +513,27 @@ class TestConfigManager(BaseTestCase):
                 is_list=True,
                 is_optional=True,
                 default=[
-                    V1UriType("user", "pass", "siteweb.ca"),
-                    V1UriType("user2", "pass", "localhost:8080"),
+                    V1UriType(user="user", password="pass", host="siteweb.ca"),
+                    V1UriType(user="user2", password="pass", host="localhost:8080"),
                 ],
             ),
             [
-                V1UriType("user", "pass", "siteweb.ca"),
-                V1UriType("user2", "pass", "localhost:8080"),
+                V1UriType(user="user", password="pass", host="siteweb.ca"),
+                V1UriType(user="user2", password="pass", host="localhost:8080"),
             ],
         )
 
     def test_get_auth(self):
         value = self.config.get_auth("auth_key_1")
-        self.assertEqual(value, V1AuthType("user", "pass"))
+        self.assertEqual(value, V1AuthType(user="user", password="pass"))
 
         value = self.config.get_auth("auth_list_key_1", is_list=True)
         self.assertEqual(
-            value, [V1AuthType("user", "pass"), V1AuthType("user2", "pass")]
+            value,
+            [
+                V1AuthType(user="user", password="pass"),
+                V1AuthType(user="user2", password="pass"),
+            ],
         )
 
         with self.assertRaises(PolyaxonSchemaError):
@@ -555,14 +564,15 @@ class TestConfigManager(BaseTestCase):
             self.config.get_auth("auth_list_error_key_4", is_list=True)
 
         with self.assertRaises(PolyaxonSchemaError):
-            self.config.get_auth("auth_key_1", is_list=True)
-
-        with self.assertRaises(PolyaxonSchemaError):
             self.config.get_auth("auth_non_existing_key")
 
         with self.assertRaises(PolyaxonSchemaError):
             self.config.get_auth("auth_non_existing_key", is_list=True)
 
+        self.assertEqual(
+            self.config.get_auth("auth_key_1", is_list=True),
+            [V1AuthType(user="user", password="pass")],
+        )
         self.assertEqual(
             self.config.get_auth("auth_non_existing_key", is_optional=True), None
         )
@@ -570,9 +580,9 @@ class TestConfigManager(BaseTestCase):
             self.config.get_auth(
                 "auth_non_existing_key",
                 is_optional=True,
-                default=V1AuthType("user2", "pass"),
+                default=V1AuthType(user="user2", password="pass"),
             ),
-            V1AuthType("user2", "pass"),
+            V1AuthType(user="user2", password="pass"),
         )
 
         self.assertEqual(
@@ -586,9 +596,15 @@ class TestConfigManager(BaseTestCase):
                 "auth_non_existing_key",
                 is_list=True,
                 is_optional=True,
-                default=[V1AuthType("user", "pass"), V1AuthType("user2", "pass")],
+                default=[
+                    V1AuthType(user="user", password="pass"),
+                    V1AuthType(user="user2", password="pass"),
+                ],
             ),
-            [V1AuthType("user", "pass"), V1AuthType("user2", "pass")],
+            [
+                V1AuthType(user="user", password="pass"),
+                V1AuthType(user="user2", password="pass"),
+            ],
         )
 
     def test_get_list(self):

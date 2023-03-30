@@ -14,55 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import fields
+from typing import Optional
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from pydantic import Field, StrictInt, StrictStr
 
-
-class ProxySchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-    use_in_ops = fields.Bool(allow_none=True)
-    http_proxy = fields.Str(allow_none=True)
-    https_proxy = fields.Str(allow_none=True)
-    no_proxy = fields.Str(allow_none=True)
-    port = fields.Int(allow_none=True)
-    host = fields.Str(allow_none=True)
-    kind = fields.Str(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return ProxyConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class ProxyConfig(BaseConfig):
-    SCHEMA = ProxySchema
-    REDUCED_ATTRIBUTES = [
-        "enabled",
-        "useInOps",
-        "httpProxy",
-        "httpsProxy",
-        "noProxy",
-        "port",
-        "host",
-        "kind",
-    ]
-
-    def __init__(
-        self,
-        enabled=None,
-        use_in_ops=None,
-        http_proxy=None,
-        https_proxy=None,
-        no_proxy=None,
-        port=None,
-        host=None,
-        kind=None,
-    ):
-        self.enabled = enabled
-        self.use_in_ops = use_in_ops
-        self.http_proxy = http_proxy
-        self.https_proxy = https_proxy
-        self.no_proxy = no_proxy
-        self.port = port
-        self.host = host
-        self.kind = kind
+class ProxyConfig(BaseSchemaModel):
+    enabled: Optional[bool]
+    use_in_ops: Optional[bool] = Field(alias="useInOps")
+    http_proxy: Optional[StrictStr] = Field(alias="httpProxy")
+    https_proxy: Optional[StrictStr] = Field(alias="httpsProxy")
+    no_proxy: Optional[StrictStr] = Field(alias="noProxy")
+    port: Optional[StrictInt]
+    host: Optional[StrictStr]
+    kind: Optional[StrictStr]

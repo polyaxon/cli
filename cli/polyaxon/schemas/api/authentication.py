@@ -13,25 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import EXCLUDE, fields
-
-import polyaxon_sdk
+from pydantic import Extra, Field, StrictStr
 
 from polyaxon.env_vars.keys import EV_KEYS_AUTH_TOKEN, EV_KEYS_AUTH_USERNAME
-from polyaxon.schemas.base import BaseConfig, BaseSchema
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class AccessTokenSchema(BaseSchema):
-    username = fields.Str(data_key=EV_KEYS_AUTH_USERNAME)
-    token = fields.Str(data_key=EV_KEYS_AUTH_TOKEN)
-
-    @staticmethod
-    def schema_config():
-        return AccessTokenConfig
-
-
-class AccessTokenConfig(BaseConfig):
+class AccessTokenConfig(BaseSchemaModel):
     """
     Access token config.
 
@@ -41,26 +31,16 @@ class AccessTokenConfig(BaseConfig):
         token: `str`. The user's token.
     """
 
-    SCHEMA = AccessTokenSchema
-    IDENTIFIER = "token"
+    _IDENTIFIER = "token"
 
-    UNKNOWN_BEHAVIOUR = EXCLUDE
+    username: Optional[StrictStr] = Field(alias=EV_KEYS_AUTH_USERNAME)
+    token: Optional[StrictStr] = Field(alias=EV_KEYS_AUTH_TOKEN)
 
-    def __init__(self, username=None, token=None, **kwargs):
-        self.username = username
-        self.token = token
-
-
-class CredentialsSchema(BaseSchema):
-    username = fields.Str()
-    password = fields.Str()
-
-    @staticmethod
-    def schema_config():
-        return V1Credentials
+    class Config:
+        extra = Extra.ignore
 
 
-class V1Credentials(BaseConfig, polyaxon_sdk.V1Credentials):
+class V1Credentials(BaseSchemaModel):
     """
     Credentials config.
 
@@ -70,9 +50,7 @@ class V1Credentials(BaseConfig, polyaxon_sdk.V1Credentials):
         password: `str`. The user's password.
     """
 
-    SCHEMA = CredentialsSchema
-    IDENTIFIER = "credentials"
+    _IDENTIFIER = "credentials"
 
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
+    username: StrictStr
+    password: StrictStr

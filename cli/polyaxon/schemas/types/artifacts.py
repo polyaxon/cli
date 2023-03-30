@@ -13,28 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
-from marshmallow import fields
+from pydantic import StrictInt
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-from polyaxon.schemas.fields.str_or_list import StrOrList
+from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class ArtifactsTypeSchema(BaseCamelSchema):
-    files = RefOrObject(fields.List(StrOrList(), allow_none=True))
-    dirs = RefOrObject(fields.List(StrOrList(), allow_none=True))
-    workers = RefOrObject(fields.Int(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1ArtifactsType
-
-
-class V1ArtifactsType(BaseTypeConfig, polyaxon_sdk.V1ArtifactsType):
+class V1ArtifactsType(BaseTypeConfig):
     """Artifacts type allows to easily pass
     the files and directories to initialize as a single parameter.
 
@@ -182,6 +169,8 @@ class V1ArtifactsType(BaseTypeConfig, polyaxon_sdk.V1ArtifactsType):
     ```
     """
 
-    IDENTIFIER = "artifacts"
-    SCHEMA = ArtifactsTypeSchema
-    REDUCED_ATTRIBUTES = ["files", "dirs", "workers"]
+    _IDENTIFIER = "artifacts"
+
+    files: Optional[Union[List[Union[str, List[str]]], RefField]]
+    dirs: Optional[Union[List[Union[str, List[str]]], RefField]]
+    workers: Optional[Union[StrictInt, RefField]]

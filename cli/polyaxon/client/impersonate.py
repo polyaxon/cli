@@ -20,13 +20,13 @@ from polyaxon.client.client import PolyaxonClient
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.schemas.api.authentication import AccessTokenConfig
-from polyaxon_sdk.rest import ApiException
+from polyaxon.sdk.exceptions import ApiException
 
 
 def create_context_auth(access_token, context_auth_path=None):
     context_auth_path = context_auth_path or ctx_paths.CONTEXT_MOUNT_AUTH
     with open(context_auth_path, "w") as config_file:
-        config_file.write(access_token.to_dict(dump=True))
+        config_file.write(access_token.to_json())
 
 
 def impersonate(owner: str, project: str, run_uuid: str, client: PolyaxonClient = None):

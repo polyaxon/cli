@@ -52,6 +52,7 @@ from polyaxon.logger import clean_outputs, not_in_ce
 from polyaxon.managers.run import RunConfigManager
 from polyaxon.polyaxonfile import OperationSpecification
 from polyaxon.polyflow import V1RunKind
+from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 from polyaxon.utils.csv_utils import write_csv
 from polyaxon.utils.formatting import (
@@ -65,7 +66,6 @@ from polyaxon.utils.formatting import (
 )
 from polyaxon.utils.list_utils import to_list
 from polyaxon.utils.validation import validate_tags
-from polyaxon_sdk.rest import ApiException
 
 DEFAULT_EXCLUDE = [
     "owner",
@@ -812,9 +812,7 @@ def restart(
     """
     content = None
     if polyaxonfile:
-        content = OperationSpecification.read(polyaxonfile, is_preset=True).to_dict(
-            dump=True
-        )
+        content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
 
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
@@ -875,9 +873,7 @@ def resume(ctx, project, uid, polyaxonfile):
     """
     content = None
     if polyaxonfile:
-        content = OperationSpecification.read(polyaxonfile, is_preset=True).to_dict(
-            dump=True
-        )
+        content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
 
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),

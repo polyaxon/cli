@@ -17,10 +17,14 @@
 import os
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon import types
-from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
+from polyaxon.exceptions import (
+    PolyaxonfileError,
+    PolyaxonSchemaError,
+    PolyaxonValidationError,
+)
 from polyaxon.polyaxonfile.specs import (
     CompiledOperationSpecification,
     ComponentSpecification,
@@ -129,7 +133,7 @@ class TestSpecifications(BaseTestCase):
         run_config = V1CompiledOperation.read(content)
 
         # Raise because required inputs are not met
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
         # Validation for template should pass
@@ -138,7 +142,7 @@ class TestSpecifications(BaseTestCase):
             p.name: p.param.value for p in validated_params
         }
         # Validation for non template should raise
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.validate_params(is_template=False)
 
     def test_apply_context_passes_with_required_inputs_and_params(self):
@@ -179,7 +183,7 @@ class TestSpecifications(BaseTestCase):
         }
         run_config = V1CompiledOperation.read(content)
         # no params
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
         params = {
@@ -251,7 +255,7 @@ class TestSpecifications(BaseTestCase):
         }
         run_config = V1CompiledOperation.read(content)
         # no params
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
         params = {
@@ -269,6 +273,8 @@ class TestSpecifications(BaseTestCase):
         assert run_config.inputs[1].value is None
         validated_params = run_config.validate_params(params=params)
         run_config.apply_params(params=params)
+        assert params != {p.name: p.param.to_dict() for p in validated_params}
+        params["git_repo"]["value"] = params["git_repo"]["value"].to_dict()
         assert params == {p.name: p.param.to_dict() for p in validated_params}
         assert run_config.inputs[0].connection == "docker-registry"
         assert run_config.inputs[1].connection == "repo-connection"

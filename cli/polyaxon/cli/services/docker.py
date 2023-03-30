@@ -17,7 +17,7 @@ import sys
 
 import click
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.builds.generator import DockerFileGenerator
 from polyaxon.cli.check import check_polyaxonfile
@@ -109,7 +109,7 @@ def generate(
                     compiled_operation
                 )
             )
-        except PolyaxonSchemaError:
+        except (PolyaxonSchemaError, ValidationError):
             Printer.error(
                 "Could not run this polyaxonfile locally, "
                 "a context is required to resolve it dependencies."
@@ -178,7 +178,7 @@ def build(context, destination, nocache, max_retries, sleep_interval, reraise):
 
     try:
         validate_image(destination)
-    except ValidationError as e:
+    except ValueError as e:
         handle_cli_error(e, message="Image destination is invalid.")
 
     try:

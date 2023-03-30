@@ -13,63 +13,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from datetime import datetime, timedelta
+from typing import Union
 
-from marshmallow import ValidationError, fields
-from marshmallow.base import FieldABC
+from pydantic import StrictFloat, StrictInt, StrictStr
+from pydantic.validators import strict_str_validator
 
 from polyaxon.contexts.params import PARAM_REGEX
 
 
-def get_ref_or_obj(container, value):
-    try:
-        return container.deserialize(value)
-    except (ValueError, TypeError, ValidationError):
-        pass
+class RefField(StrictStr):
+    @classmethod
+    def __get_validators__(cls) -> "CallableGenerator":
+        yield strict_str_validator
+        yield cls.validate
 
-    if not isinstance(value, str):
-        raise ValidationError(
-            "This field expects an {container} or a str containing a param reference.".format(
-                container=container.__class__.__name__
+    @classmethod
+    def validate(cls, value, **kwargs):
+        if not isinstance(value, str):
+            return value
+
+        field = kwargs.get("field")
+        param = PARAM_REGEX.search(value)
+        if not param:  # TODO: Fix error message
+            raise ValueError(
+                f"Field `{field.name}` value must be equal to `{field.default}`, received `{value}` instead."
             )
-        )
-
-    param = PARAM_REGEX.search(value)
-    if not param:
-        raise ValidationError(
-            "This field expects an {container} or a param ref inside {{  }}.".format(
-                container=container.__class__.__name__
-            )
-        )
-    return value
+        return value
 
 
-class RefOrObject(fields.Field):
-    def __init__(self, cls_or_instance, **kwargs):
-        super().__init__(allow_none=True, **kwargs)
-        if isinstance(cls_or_instance, type):
-            if not issubclass(cls_or_instance, FieldABC):
-                raise ValueError(
-                    "The type of the element "
-                    "must be a subclass of "
-                    "marshmallow.base.FieldABC"
-                )
-            self.container = cls_or_instance()
-        else:
-            if not isinstance(cls_or_instance, FieldABC):
-                raise ValueError(
-                    "The instances of the "
-                    "element must be of type "
-                    "marshmallow.base.FieldABC"
-                )
-            self.container = cls_or_instance
-
-    def _validate(self, value):
-        if isinstance(value, str):
-            param = PARAM_REGEX.search(value)
-            if not param:
-                super()._validate(value)
-        else:
-            super()._validate(value)
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        return get_ref_or_obj(self.container, value)
+BoolOrRef = Union[bool, RefField]
+IntOrRef = Union[StrictInt, RefField]
+StrictFloatOrRef = Union[StrictFloat, RefField]
+FloatOrRef = Union[float, RefField]
+DatetimeOrRef = Union[datetime, RefField]
+TimeDeltaOrRef = Union[timedelta, RefField]

@@ -14,19 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.schemas.types.artifacts import ArtifactsTypeSchema, V1ArtifactsType
-from polyaxon.schemas.types.auth import AuthTypeSchema, V1AuthType
-from polyaxon.schemas.types.connections import ConnectionTypeSchema, V1ConnectionType
-from polyaxon.schemas.types.dockerfile import DockerfileTypeSchema, V1DockerfileType
-from polyaxon.schemas.types.event import EventSchema, V1EventType
-from polyaxon.schemas.types.file import FileTypeSchema, V1FileType
-from polyaxon.schemas.types.gcs import GcsTypeSchema, V1GcsType
-from polyaxon.schemas.types.git import GitTypeSchema, V1GitType
-from polyaxon.schemas.types.k8s_resources import (
-    K8sResourceTypeSchema,
-    V1K8sResourceType,
-)
-from polyaxon.schemas.types.s3 import S3TypeSchema, V1S3Type
-from polyaxon.schemas.types.tensorboard import TensorboardTypeSchema, V1TensorboardType
-from polyaxon.schemas.types.uri import UriTypeSchema, V1UriType
-from polyaxon.schemas.types.wasb import V1WasbType, WasbTypeSchema
+from polyaxon.schemas.types.artifacts import V1ArtifactsType
+from polyaxon.schemas.types.auth import V1AuthType
+from polyaxon.schemas.types.connections import V1ConnectionType
+from polyaxon.schemas.types.dockerfile import V1DockerfileType
+from polyaxon.schemas.types.event import V1EventType
+from polyaxon.schemas.types.file import V1FileType
+from polyaxon.schemas.types.gcs import V1GcsType
+from polyaxon.schemas.types.git import V1GitType
+from polyaxon.schemas.types.k8s_resources import V1K8sResourceType
+from polyaxon.schemas.types.s3 import V1S3Type
+from polyaxon.schemas.types.tensorboard import V1TensorboardType
+from polyaxon.schemas.types.uri import V1UriType
+from polyaxon.schemas.types.wasb import V1WasbType

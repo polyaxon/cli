@@ -407,7 +407,7 @@ def update(ctx, project, version, name, description, tags):
 @click.option(
     "--to",
     "-to",
-    type=click.Choice(V1Stages.allowable_values, case_sensitive=True),
+    type=click.Choice(V1Stages.to_list(), case_sensitive=True),
     help="Stage to transition to.",
 )
 @click.option(

@@ -50,10 +50,10 @@ class TestCliConfigManagerMethods(BaseTestCase):
         os.remove(path)
 
     def test_set_compatibility(self):
-        with patch.object(CliConfigManager, "set_config") as patch_fct:
-            CliConfigManager.reset(current_version=True)
-
-        assert patch_fct.call_count == 1
+        config = CliConfigManager.get_config_or_default()
+        assert config.current_version is None
+        config = CliConfigManager.reset(current_version="1.2.3")
+        assert config.current_version == "1.2.3"
 
     def test_should_check(self):
         with patch.object(CliConfigManager, "reset") as patch_fct:

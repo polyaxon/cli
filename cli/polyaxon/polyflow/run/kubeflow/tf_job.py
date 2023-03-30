@@ -13,40 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import Field
 
 from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.kubeflow.clean_pod_policy import V1CleanPodPolicy
-from polyaxon.polyflow.run.kubeflow.replica import KFReplicaSchema
-from polyaxon.polyflow.run.kubeflow.scheduling_policy import SchedulingPolicySchema
+from polyaxon.polyflow.run.kubeflow.replica import V1KFReplica
+from polyaxon.polyflow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.fields import RefField
 
 
-class TFJobSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.TFJOB))
-    clean_pod_policy = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1CleanPodPolicy.allowable_values)
-    )
-    enable_dynamic_worker = fields.Bool(allow_none=True)
-    scheduling_policy = fields.Nested(SchedulingPolicySchema, allow_none=True)
-    chief = fields.Nested(KFReplicaSchema, allow_none=True)
-    ps = fields.Nested(KFReplicaSchema, allow_none=True)
-    worker = fields.Nested(KFReplicaSchema, allow_none=True)
-    evaluator = fields.Nested(KFReplicaSchema, allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1TFJob
-
-
-class V1TFJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1TFJob):
+class V1TFJob(BaseRun, DestinationImageMixin):
     """Kubeflow TF-Job provides an interface to train distributed experiments with TensorFlow.
 
     Args:
@@ -201,17 +184,16 @@ class V1TFJob(BaseConfig, BaseRun, DestinationImageMixin, polyaxon_sdk.V1TFJob):
     ```
     """
 
-    SCHEMA = TFJobSchema
-    IDENTIFIER = V1RunKind.TFJOB
-    REDUCED_ATTRIBUTES = [
-        "enableDynamicWorker",
-        "cleanPodPolicy",
-        "schedulingPolicy",
-        "chief",
-        "ps",
-        "worker",
-        "evaluator",
-    ]
+    _IDENTIFIER = V1RunKind.TFJOB
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
+    enable_dynamic_worker: Optional[bool] = Field(alias="enableDynamicWorker")
+    scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
+    chief: Optional[Union[V1KFReplica, RefField]]
+    ps: Optional[Union[V1KFReplica, RefField]]
+    worker: Optional[Union[V1KFReplica, RefField]]
+    evaluator: Optional[Union[V1KFReplica, RefField]]
 
     def apply_image_destination(self, image: str):
         if self.chief:

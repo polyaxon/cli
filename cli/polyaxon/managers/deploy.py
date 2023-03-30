@@ -114,7 +114,7 @@ class DeployConfigManager:
 
     @property
     def is_valid(self):
-        return self.deployment_type in DeploymentTypes.VALUES
+        return self.deployment_type in DeploymentTypes.to_list()
 
     def check_for_kubernetes(self):
         # Deployment on k8s requires helm & kubectl to be installed

@@ -13,27 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import StrictStr
 
 from polyaxon.polyflow.references.mixin import RefMixin
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.base import BaseDiscriminatedModel
 
 
-class HubRefSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("hub_ref"))
-    name = fields.Str(required=True)
+class V1HubRef(BaseDiscriminatedModel, RefMixin):
+    _IDENTIFIER = "hub_ref"
 
-    @staticmethod
-    def schema_config():
-        return V1HubRef
-
-
-class V1HubRef(BaseConfig, RefMixin, polyaxon_sdk.V1HubRef):
-    SCHEMA = HubRefSchema
-    IDENTIFIER = "hub_ref"
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    name: StrictStr
 
     def get_kind_value(self):
         return self.name

@@ -13,26 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import Field
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-
-
-class TerminationSchema(BaseCamelSchema):
-    max_retries = RefOrObject(fields.Int(allow_none=True))
-    ttl = RefOrObject(fields.Int(allow_none=True))
-    timeout = RefOrObject(fields.Int(allow_none=True))
-
-    @staticmethod
-    def schema_config():
-        return V1Termination
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import IntOrRef
 
 
-class V1Termination(BaseConfig, polyaxon_sdk.V1Termination):
+class V1Termination(BaseSchemaModel):
     """The termination section allows to define and control when
     to stop an operation and how long to keep its resources on the cluster.
 
@@ -123,6 +112,8 @@ class V1Termination(BaseConfig, polyaxon_sdk.V1Termination):
     ```
     """
 
-    IDENTIFIER = "termination"
-    SCHEMA = TerminationSchema
-    REDUCED_ATTRIBUTES = ["maxRetries", "timeout", "ttl"]
+    _IDENTIFIER = "termination"
+
+    max_retries: Optional[IntOrRef] = Field(alias="maxRetries")
+    ttl: Optional[IntOrRef]
+    timeout: Optional[IntOrRef]

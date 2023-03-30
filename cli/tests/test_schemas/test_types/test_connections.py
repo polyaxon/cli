@@ -22,7 +22,6 @@ from polyaxon.connections.schemas import (
     V1ClaimConnection,
     V1HostPathConnection,
 )
-from polyaxon.connections.schemas.connections import V1CustomConnection
 from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -35,30 +34,30 @@ class TestConnectionType(BaseTestCase):
             name="test",
             kind=V1ConnectionKind.S3,
             tags=["test", "foo"],
-            schema=V1BucketConnection(bucket="s3//:foo"),
+            schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         self.gcs_store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.GCS,
             tags=["test"],
-            schema=V1BucketConnection(bucket="gs//:foo"),
+            schema_=V1BucketConnection(bucket="gs//:foo"),
         )
         self.az_store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.WASB,
-            schema=V1BucketConnection(bucket="wasbs://x@y.blob.core.windows.net"),
+            schema_=V1BucketConnection(bucket="wasbs://x@y.blob.core.windows.net"),
         )
         self.claim_store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 volume_claim="test", mount_path="/tmp", read_only=True
             ),
         )
         self.host_path_store = V1ConnectionType(
             name="test",
             kind=V1ConnectionKind.HOST_PATH,
-            schema=V1HostPathConnection(
+            schema_=V1HostPathConnection(
                 host_path="/tmp", mount_path="/tmp", read_only=True
             ),
         )
@@ -71,19 +70,19 @@ class TestConnectionType(BaseTestCase):
         self.custom_connection2 = V1ConnectionType(
             name="ssh",
             kind=V1ConnectionKind.SSH,
-            schema=V1CustomConnection(key1="val1", key2="val2"),
+            schema_=dict(key1="val1", key2="val2"),
         )
 
     def test_store_path(self):
-        assert self.s3_store.store_path == self.s3_store.schema.bucket
+        assert self.s3_store.store_path == self.s3_store.schema_.bucket
         assert self.s3_store.tags == ["test", "foo"]
-        assert self.gcs_store.store_path == self.gcs_store.schema.bucket
+        assert self.gcs_store.store_path == self.gcs_store.schema_.bucket
         assert self.gcs_store.tags == ["test"]
         assert self.az_store.store_path == "x"
         assert self.az_store.tags is None
-        assert self.claim_store.store_path == self.claim_store.schema.mount_path
+        assert self.claim_store.store_path == self.claim_store.schema_.mount_path
         assert self.claim_store.tags is None
-        assert self.host_path_store.store_path == self.claim_store.schema.mount_path
+        assert self.host_path_store.store_path == self.claim_store.schema_.mount_path
         assert self.host_path_store.tags is None
 
     def test_is_bucket(self):
@@ -112,11 +111,13 @@ class TestConnectionType(BaseTestCase):
 
         assert result.name == spec.name
         assert result.kind == spec.kind
-        if spec.schema is None:
-            assert result.schema == spec.schema
+        if spec.schema_ is None:
+            assert result.schema_ == spec.schema_
+        elif isinstance(spec.schema_, dict):
+            assert result.schema_ == spec.schema_
         else:
-            value_dict = spec.schema.to_dict()
-            result_dict = result.schema.to_dict()
+            value_dict = spec.schema_.to_dict()
+            result_dict = result.schema_.to_dict()
             assert value_dict.keys() == result_dict.keys()
             for k in result_dict.keys():
                 assert value_dict[k] == result_dict[k]
@@ -128,8 +129,7 @@ class TestConnectionType(BaseTestCase):
         self.assert_from_model(self.az_store)
         self.assert_from_model(self.claim_store)
         self.assert_from_model(self.host_path_store)
-        assert self.custom_connection1.schema is None
+        assert self.custom_connection1.schema_ is None
         self.assert_from_model(self.custom_connection1)
-        assert self.custom_connection2.schema.key1 == "val1"
-        assert self.custom_connection2.schema.key2 == "val2"
+        assert self.custom_connection2.schema_ == {"key1": "val1", "key2": "val2"}
         self.assert_from_model(self.custom_connection2)

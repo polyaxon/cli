@@ -13,25 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseConfig, BaseSchema
-
-
-class UserSchema(BaseSchema):
-    username = fields.Str()
-    email = fields.Email(allow_none=True)
-    name = fields.Str(allow_none=True)
-    theme = fields.Int(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return UserConfig
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields import EmailStr
 
 
-class UserConfig(BaseConfig, polyaxon_sdk.V1User):
-    SCHEMA = UserSchema
-    IDENTIFIER = "user"
+class UserConfig(BaseSchemaModel):
+    _IDENTIFIER = "user"
+
+    username: StrictStr
+    email: Optional[EmailStr]
+    name: Optional[StrictStr]
+    theme: Optional[int]

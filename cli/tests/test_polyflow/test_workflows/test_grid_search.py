@@ -13,10 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import pytest
 
-from marshmallow.exceptions import ValidationError
+from copy import copy
+from datetime import datetime, timedelta
+
+from pydantic import ValidationError
 
 from polyaxon.polyflow import V1RunKind
 from polyaxon.polyflow.matrix.grid_search import V1GridSearch
@@ -87,7 +89,12 @@ class TestWorkflowV1GridSearchBackfill(BaseTestCase):
             },
         }
         config = V1GridSearch.from_dict(config_dict)
-        assert_equal_dict(config.to_dict(), config_dict)
+        assert_equal_dict(
+            config.to_dict(),
+            config_dict,
+            date_keys=["start", "stop"],
+            timedelta_keys=["step"],
+        )
 
         # Raises for negative values
         config_dict["numRuns"] = -5
@@ -105,7 +112,12 @@ class TestWorkflowV1GridSearchBackfill(BaseTestCase):
 
         config_dict["numRuns"] = 5
         config = V1GridSearch.from_dict(config_dict)
-        assert_equal_dict(config.to_dict(), config_dict)
+        assert_equal_dict(
+            config.to_dict(),
+            config_dict,
+            date_keys=["start", "stop"],
+            timedelta_keys=["step"],
+        )
 
     def test_datetime_backfill_config(self):
         config_dict = {
@@ -124,7 +136,12 @@ class TestWorkflowV1GridSearchBackfill(BaseTestCase):
             },
         }
         config = V1GridSearch.from_dict(config_dict)
-        assert_equal_dict(config.to_dict(), config_dict)
+        assert_equal_dict(
+            config.to_dict(),
+            config_dict,
+            datetime_keys=["start", "stop"],
+            timedelta_keys=["step"],
+        )
 
         # Raises for negative values
         config_dict["numRuns"] = -5
@@ -142,7 +159,12 @@ class TestWorkflowV1GridSearchBackfill(BaseTestCase):
 
         config_dict["numRuns"] = 5
         config = V1GridSearch.from_dict(config_dict)
-        assert_equal_dict(config.to_dict(), config_dict)
+        assert_equal_dict(
+            config.to_dict(),
+            config_dict,
+            datetime_keys=["start", "stop"],
+            timedelta_keys=["step"],
+        )
 
     def test_wrong_date_backfill_config(self):
         config_dict = {

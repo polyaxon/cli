@@ -23,7 +23,7 @@ import ujson
 
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.logger import logger
-from polyaxon.schemas.base import BaseConfig
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.utils.path_utils import check_or_create_path
 
 
@@ -160,13 +160,20 @@ class BaseConfigManager:
             return
 
         with open(config_filepath, "w") as config_file:
-            if hasattr(config, "to_dict"):
+            if hasattr(config, "to_json"):
                 logger.debug(
                     "Setting %s in the file %s\n",
                     config.to_dict(),
                     cls.CONFIG_FILE_NAME,
                 )
-                config_file.write(ujson.dumps(config.to_dict()))
+                config_file.write(config.to_json())
+            elif hasattr(config, "to_dict"):
+                logger.debug(
+                    "Setting %s in the file %s\n",
+                    config.to_dict(),
+                    cls.CONFIG_FILE_NAME,
+                )
+                config_file.write(config.to_dict())
             elif isinstance(config, Mapping):
                 config_file.write(ujson.dumps(config))
             else:
@@ -188,7 +195,7 @@ class BaseConfigManager:
 
     @classmethod
     def read_from_path(cls, config_filepath: str):
-        if issubclass(cls.CONFIG, BaseConfig):
+        if issubclass(cls.CONFIG, BaseSchemaModel):
             return cls.CONFIG.read(config_filepath)
         with open(config_filepath, "r") as config_file:
             config_str = config_file.read()

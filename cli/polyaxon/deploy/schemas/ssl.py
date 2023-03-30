@@ -13,27 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class SSLSchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-    secret_name = fields.Str(allow_none=True)
-    path = fields.Str(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return SSLConfig
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class SSLConfig(BaseConfig):
-    SCHEMA = SSLSchema
-    REDUCED_ATTRIBUTES = ["enabled"]
-
-    def __init__(self, enabled=None, secret_name=None, path=None):  # noqa
-        self.enabled = enabled
-        self.secret_name = secret_name
-        self.path = path
+class SSLConfig(BaseSchemaModel):
+    enabled: Optional[bool]
+    secret_name: Optional[StrictStr] = Field(alias="secretName")
+    path: Optional[StrictStr]

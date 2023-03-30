@@ -13,25 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class TemplateSchema(BaseCamelSchema):
-    enabled = fields.Bool(allow_none=True)
-    description = fields.Str(allow_none=True)
-    fields = fields.List(fields.Str(), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Template
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, RefField
 
 
-class V1Template(BaseConfig, polyaxon_sdk.V1Template):
+class V1Template(BaseSchemaModel):
     """A template is way for users to define
     specifications (components/operations) and signal to the CLI/API
     that they are not executable without modification.
@@ -103,18 +93,14 @@ class V1Template(BaseConfig, polyaxon_sdk.V1Template):
     ```
     """
 
-    IDENTIFIER = "template"
-    SCHEMA = TemplateSchema
-    REDUCED_ATTRIBUTES = ["enabled", "description", "fields"]
+    _IDENTIFIER = "template"
+
+    enabled: Optional[BoolOrRef]
+    description: Optional[StrictStr]
+    fields: Optional[Union[List[StrictStr], RefField]]
 
 
-class TemplateMixinSchema(BaseCamelSchema):
-    template = fields.Nested(TemplateSchema, allow_none=True)
-
-
-class TemplateMixinConfig(BaseConfig):
-    REDUCED_ATTRIBUTES = ["template"]
-
+class TemplateMixinConfig:
     def disable_template(self):
         if self.is_template():
             self.template.enabled = False

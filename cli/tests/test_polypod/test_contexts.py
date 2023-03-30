@@ -97,7 +97,7 @@ class TestResolveContexts(BaseTestCase):
         store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/claim/path", volume_claim="claim", read_only=True
             ),
         )
@@ -167,8 +167,8 @@ class TestResolveContexts(BaseTestCase):
                 "original_uuid": "uuid-copy",
                 "store_path": "/claim/path",
             },
-            "init": {"test_claim": store.schema.to_dict()},
-            "connections": {"test_claim": store.schema.to_dict()},
+            "init": {"test_claim": store.schema_.to_dict()},
+            "connections": {"test_claim": store.schema_.to_dict()},
         }
 
     def test_resolver_outputs_collections(self):
@@ -176,7 +176,7 @@ class TestResolveContexts(BaseTestCase):
         store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/claim/path", volume_claim="claim", read_only=True
             ),
         )
@@ -242,8 +242,8 @@ class TestResolveContexts(BaseTestCase):
                 "is_independent": True,
                 "store_path": "",
             },
-            "init": {"test_claim": store.schema.to_dict()},
-            "connections": {"test_claim": store.schema.to_dict()},
+            "init": {"test_claim": store.schema_.to_dict()},
+            "connections": {"test_claim": store.schema_.to_dict()},
         }
 
     def test_resolver_mount_artifacts_store(self):
@@ -251,7 +251,7 @@ class TestResolveContexts(BaseTestCase):
         store = V1ConnectionType(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(
+            schema_=V1ClaimConnection(
                 mount_path="/claim/path", volume_claim="claim", read_only=True
             ),
         )
@@ -316,8 +316,8 @@ class TestResolveContexts(BaseTestCase):
                 "is_independent": True,
                 "store_path": "/claim/path",
             },
-            "init": {"test_claim": store.schema.to_dict()},
-            "connections": {"test_claim": store.schema.to_dict()},
+            "init": {"test_claim": store.schema_.to_dict()},
+            "connections": {"test_claim": store.schema_.to_dict()},
         }
 
     def test_resolver_default_service_ports(self):

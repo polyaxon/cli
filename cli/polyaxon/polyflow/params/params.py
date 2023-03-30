@@ -16,27 +16,27 @@
 
 from collections import namedtuple
 from collections.abc import Mapping
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
-from marshmallow import ValidationError, fields, validates_schema
-
-import polyaxon_sdk
+from pydantic import Field, StrictStr, validator
 
 from polyaxon import types
 from polyaxon.contexts import refs as ctx_refs
 from polyaxon.contexts import sections as ctx_sections
 from polyaxon.contexts.params import PARAM_REGEX
+from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.parser import parser
 from polyaxon.polyflow.init import V1Init
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.base import BaseSchemaModel, skip_partial
 from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.signal_decorators import check_partial
 
 
-def validate_param_value(value, ref, to_init, context_only):
+def validate_param_value(value, ref):
     if ref and not isinstance(value, str):
-        raise ValidationError(
-            "Value `{}` must be of type string when a ref is provided.".format(value)
+        raise TypeError(
+            "Value must be of type string when a ref is provided, received `{}` instead.".format(
+                value
+            )
         )
 
 
@@ -73,8 +73,6 @@ class ParamValueMixin:
         validate_param_value(
             value=self.value,
             ref=self.ref,
-            to_init=self.to_init,
-            context_only=self.context_only,
         )
 
     @property
@@ -122,13 +120,13 @@ class ParamValueMixin:
 
             value_parts = [s.strip() for s in value_parts.split(".")]
             if len(value_parts) > 3:
-                raise ValidationError(
+                raise PolyaxonValidationError(
                     "Could not parse value `{}` for param `{}`.".format(
                         self.value, name
                     )
                 )
             if len(value_parts) == 1 and value_parts[0] not in ctx_sections.CONTEXTS:
-                raise ValidationError(
+                raise PolyaxonValidationError(
                     "Received an invalid value `{}` for param `{}`. "
                     "Value must be one of `{}`".format(
                         self.value, name, ctx_sections.CONTEXTS
@@ -140,7 +138,7 @@ class ParamValueMixin:
                 and self.is_dag_ref
                 and value_parts[0] == ctx_sections.OUTPUTS
             ):
-                raise ValidationError(
+                raise PolyaxonValidationError(
                     "Received an invalid value `{}` for param `{}`. "
                     "You can not use `{}` of current dag".format(
                         self.value, name, ctx_sections.OUTPUTS
@@ -150,7 +148,7 @@ class ParamValueMixin:
                 len(value_parts) == 2
                 and value_parts[0] not in ctx_sections.CONTEXTS_WITH_NESTING
             ):
-                raise ValidationError(
+                raise PolyaxonValidationError(
                     "Received an invalid value `{}` for param `{}`. "
                     "Value `{}` must be one of `{}`".format(
                         self.value,
@@ -160,7 +158,7 @@ class ParamValueMixin:
                     )
                 )
             if len(value_parts) == 3 and value_parts[0] != ctx_sections.ARTIFACTS:
-                raise ValidationError(
+                raise PolyaxonValidationError(
                     "Received an invalid value `{}` for param `{}`. "
                     "Value `{}` must can only be equal to `{}`".format(
                         self.value, name, value_parts[0], ctx_sections.ARTIFACTS
@@ -169,7 +167,7 @@ class ParamValueMixin:
         if self.is_ref:
             if self.is_join_ref:
                 if not is_context and not is_list and iotype != types.ARTIFACTS:
-                    raise ValidationError(
+                    raise PolyaxonValidationError(
                         "Param `{}` has a an input type `{}`, "
                         "it does not expect a list of values from the join. "
                         "You should either pass a single value or add `isList` "
@@ -192,30 +190,7 @@ class ParamValueMixin:
         )
 
 
-class ParamSchema(BaseCamelSchema):
-    value = fields.Raw(required=True, allow_none=True)
-    ref = fields.Str(allow_none=True)
-    context_only = fields.Bool(allow_none=True)
-    connection = fields.Str(allow_none=True)
-    to_init = fields.Bool(allow_none=True)
-    to_env = fields.Str(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Param
-
-    @validates_schema
-    @check_partial
-    def validate_param(self, values, **kwargs):
-        validate_param_value(
-            value=values.get("value"),
-            ref=values.get("ref"),
-            context_only=values.get("context_only"),
-            to_init=values.get("to_init"),
-        )
-
-
-class V1Param(BaseConfig, ctx_refs.RefMixin, ParamValueMixin, polyaxon_sdk.V1Param):
+class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     """Params can provide values to inputs/outputs.
 
     Params can be passed in several ways
@@ -423,15 +398,26 @@ class V1Param(BaseConfig, ctx_refs.RefMixin, ParamValueMixin, polyaxon_sdk.V1Par
     ```
     """
 
-    SCHEMA = ParamSchema
-    IDENTIFIER = "param"
-    REDUCED_ATTRIBUTES = [
-        "ref",
-        "contextOnly",
-        "connection",
-        "toInit",
-        "toEnv",
-    ]
+    _IDENTIFIER = "param"
+
+    value: Any = ""
+    ref: Optional[StrictStr]
+    context_only: Optional[bool] = Field(alias="contextOnly")
+    connection: Optional[StrictStr]
+    to_init: Optional[bool] = Field(alias="toInit")
+    to_env: Optional[StrictStr] = Field(alias="toEnv")
+
+    @validator("value", always=True, pre=True)
+    def check_value(cls, value):
+        if value == "":
+            raise ValueError("Param value cannot be empty.")
+        return value
+
+    @validator("ref")
+    @skip_partial
+    def check_ref(cls, ref, values):
+        validate_param_value(value=values.get("value"), ref=ref)
+        return ref
 
 
 class ParamSpec(
@@ -493,7 +479,7 @@ class ParamSpec(
             return False
 
         if not self.type:
-            raise ValidationError(
+            raise PolyaxonValidationError(
                 "Param `{}` cannot be turned to an initializer without a valid type! "
                 "Please set an input with a type to use the `to_init` field.".format(
                     self.name
@@ -506,7 +492,7 @@ class ParamSpec(
         if self.type in {types.GIT, types.ARTIFACTS, types.DOCKERFILE}:
             return True
 
-        raise ValidationError(
+        raise PolyaxonValidationError(
             "Param `{}` with type `{}`, "
             "cannot be turned to an init container automatically.".format(
                 self.name, self.type, self.param.ref
@@ -547,7 +533,7 @@ class ParamSpec(
         """
         if self.param.is_join_ref:
             if not self.is_list and self.type != types.ARTIFACTS:
-                raise ValidationError(
+                raise PolyaxonValidationError(
                     "Param `{}` has a an input type `{}`"
                     "and it does not expect a list of values from the join".format(
                         self.name,
@@ -569,7 +555,7 @@ class ParamSpec(
             # Artifacts can be logged during runtime
             if self.param.entity_type == types.ARTIFACTS:
                 return
-            raise ValidationError(
+            raise PolyaxonValidationError(
                 "Param `{}` has a ref value `{}`, "
                 "but reference with name `{}` has no such information, "
                 "please check that your polyaxonfile defines the correct template".format(
@@ -578,7 +564,7 @@ class ParamSpec(
             )
 
         if not types.are_compatible(self.type, context[self.param.searchable_ref].type):
-            raise ValidationError(
+            raise PolyaxonValidationError(
                 "Param `{}` has a an input type `{}` "
                 "and it does not correspond to the type of the value `{}` "
                 "received from `{}` with type `{}`".format(
@@ -591,7 +577,7 @@ class ParamSpec(
             )
 
         if self.is_list != context[self.param.searchable_ref].is_list:
-            raise ValidationError(
+            raise PolyaxonValidationError(
                 "Param `{}` has a an input type List[`{}`]"
                 "and it does not correspond to the output value `{}` received from `{}`".format(
                     self.name, self.type, self.param.value, self.param.ref

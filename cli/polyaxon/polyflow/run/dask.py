@@ -13,44 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
+from pydantic import Field, StrictStr, validator
 
-import polyaxon_sdk
-
-from polyaxon.containers.names import MAIN_JOB_CONTAINER
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow.environment import EnvironmentSchema
-from polyaxon.polyflow.init import InitSchema
+from polyaxon.k8s import k8s_schemas, k8s_validation
+from polyaxon.polyflow.environment import V1Environment
+from polyaxon.polyflow.init import V1Init
+from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.swagger import SwaggerField
+from polyaxon.schemas.fields import IntOrRef, RefField
 
 
-class DaskSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.DASK))
-    threads = fields.Int(allow_none=True)
-    scale = fields.Int(allow_none=True)
-    adapt_min = fields.Int(allow_none=True)
-    adapt_max = fields.Int(allow_none=True)
-    adapt_interval = fields.Int(allow_none=True)
-    environment = fields.Nested(EnvironmentSchema, allow_none=True)
-    connections = fields.List(fields.Str(), allow_none=True)
-    volumes = fields.List(SwaggerField(cls=k8s_schemas.V1Volume), allow_none=True)
-    init = fields.List(fields.Nested(InitSchema), allow_none=True)
-    sidecars = fields.List(SwaggerField(cls=k8s_schemas.V1Container), allow_none=True)
-    container = SwaggerField(
-        cls=k8s_schemas.V1Container,
-        defaults={"name": MAIN_JOB_CONTAINER},
-        allow_none=True,
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Dask
-
-
-class V1Dask(BaseConfig, polyaxon_sdk.V1Dask):
+class V1Dask(BaseRun):
     """Dask jobs are used to run distributed jobs using a
     [Dask cluster](https://kubernetes.dask.org/en/latest/).
 
@@ -321,19 +297,34 @@ class V1Dask(BaseConfig, polyaxon_sdk.V1Dask):
     ```
     """
 
-    SCHEMA = DaskSchema
-    IDENTIFIER = V1RunKind.DASK
-    REDUCED_ATTRIBUTES = [
-        "kind",
-        "threads",
-        "scale",
-        "adaptMin",
-        "adaptMax",
-        "adaptInterval",
-        "environment",
-        "connections",
-        "volumes",
-        "init",
-        "sidecars",
-        "container",
-    ]
+    _IDENTIFIER = V1RunKind.DASK
+    _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    threads: Optional[IntOrRef]
+    scale: Optional[IntOrRef]
+    adapt_min: Optional[IntOrRef] = Field(alias="adaptMin")
+    adapt_max: Optional[IntOrRef] = Field(alias="adaptMax")
+    adapt_interval: Optional[IntOrRef] = Field(alias="adaptInterval")
+    environment: Optional[Union[V1Environment, RefField]]
+    connections: Optional[Union[List[StrictStr], RefField]]
+    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
+    init: Optional[Union[List[V1Init], RefField]]
+    sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]]
+    container: Optional[Union[k8s_schemas.V1Container, RefField]]
+
+    @validator("volumes", always=True, pre=True)
+    def validate_volumes(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_volume(vi) for vi in v]
+
+    @validator("sidecars", always=True, pre=True)
+    def validate_helper_containers(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_container(vi) for vi in v]
+
+    @validator("container", always=True, pre=True)
+    def validate_container(cls, v):
+        return k8s_validation.validate_k8s_container(v)

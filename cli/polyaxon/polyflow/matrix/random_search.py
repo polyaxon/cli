@@ -13,37 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
+from pydantic import Field, PositiveInt, validator
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.early_stopping import EarlyStoppingSchema
+from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.polyflow.matrix.params import HpParamSchema
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.polyflow.matrix.params import V1HpParam
+from polyaxon.schemas.fields.ref_or_obj import IntOrRef, RefField
 
 
-class RandomSearchSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1MatrixKind.RANDOM))
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(HpParamSchema), required=True
-    )
-    num_runs = RefOrObject(
-        fields.Int(required=True, validate=validate.Range(min=1)), required=True
-    )
-    seed = RefOrObject(fields.Int(allow_none=True))
-    concurrency = RefOrObject(fields.Int(allow_none=True))
-    early_stopping = fields.List(fields.Nested(EarlyStoppingSchema), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1RandomSearch
-
-
-class V1RandomSearch(BaseSearchConfig, polyaxon_sdk.V1RandomSearch):
+class V1RandomSearch(BaseSearchConfig):
     """Random search creates a number of unique experiments by sampling randomly
     from a search space.
     Random search is a competitive method for black-box parameter tuning in machine learning.
@@ -232,6 +214,19 @@ class V1RandomSearch(BaseSearchConfig, polyaxon_sdk.V1RandomSearch):
     ```
     """
 
-    SCHEMA = RandomSearchSchema
-    IDENTIFIER = V1MatrixKind.RANDOM
-    REDUCED_ATTRIBUTES = ["numRuns", "seed", "concurrency", "earlyStopping"]
+    _IDENTIFIER = V1MatrixKind.RANDOM
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    params: Union[Dict[str, V1HpParam], RefField]
+    num_runs: Union[PositiveInt, RefField] = Field(alias="numRuns")
+    seed: Optional[IntOrRef]
+    concurrency: Optional[Union[PositiveInt, RefField]]
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping"
+    )
+
+    @validator("num_runs", "concurrency", pre=True)
+    def check_values(cls, v, field):
+        if v and v < 1:
+            raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")
+        return v

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.deploy.schemas.ingress import IngressConfig
 from polyaxon.utils.test_utils import BaseTestCase

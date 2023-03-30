@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.polyflow import V1Build, V1EventKind, V1Hook, V1Param, V1RunKind
 from polyaxon.polyflow.operations import V1Operation
@@ -640,10 +640,13 @@ class TestV1Operations(BaseTestCase):
         }
         build = V1Build.from_dict(config_dict)
         op = V1Operation.from_build(build)
-        assert op.params.pop("destination") == V1Param(
+        expected_params = V1Param(
             connection="provided",
             value="foo/bar",
         )
+        assert op.params.pop("destination") == expected_params
+        assert build.params.pop("destination") == expected_params
+
         assert op.hub_ref == build.hub_ref
         assert op.params == build.params
         assert op.presets == build.presets
@@ -676,10 +679,13 @@ class TestV1Operations(BaseTestCase):
         }
         build = V1Build.from_dict(config_dict)
         op = V1Operation.from_build(build)
-        assert op.params.pop("destination") == V1Param(
+        expected_params = V1Param(
             connection=build.connection,
             value="foo/bar",
         )
+        assert op.params.pop("destination") == expected_params
+        assert build.params.pop("destination") == expected_params
+
         assert op.hub_ref == build.hub_ref
         assert op.params == build.params
         assert op.presets == build.presets

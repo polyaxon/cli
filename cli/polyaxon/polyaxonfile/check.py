@@ -66,7 +66,6 @@ def collect_references(config: V1Operation, path_context: str = None):
         path_context = path_ref
     else:
         raise PolyaxonfileError("Operation found without component")
-
     component = get_specification(data=component)
     if component.kind != kinds.COMPONENT:
         if config.has_url_reference:

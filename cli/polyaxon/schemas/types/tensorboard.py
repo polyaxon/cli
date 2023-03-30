@@ -13,29 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
-from marshmallow import fields
+from pydantic import Field, StrictInt, StrictStr, validator
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.schemas.fields import RefField, UUIDStr
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class TensorboardTypeSchema(BaseCamelSchema):
-    port = RefOrObject(fields.Int(allow_none=True))
-    uuids = RefOrObject(fields.List(fields.Str(allow_none=True)))
-    use_names = RefOrObject(fields.Bool(allow_none=True))
-    path_prefix = RefOrObject(fields.Str(allow_none=True))
-    plugins = RefOrObject(fields.List(fields.Str(allow_none=True)))
-
-    @staticmethod
-    def schema_config():
-        return V1TensorboardType
-
-
-class V1TensorboardType(BaseTypeConfig, polyaxon_sdk.V1TensorboardType):
+class V1TensorboardType(BaseTypeConfig):
     """Tensorboard type.
 
     This type allows to initialize Tensorboard logs foe one or multiple operations.
@@ -155,12 +141,18 @@ class V1TensorboardType(BaseTypeConfig, polyaxon_sdk.V1TensorboardType):
       * plugins: an optional comma separated list of plugins to install before starting the tensorboard service.
     """
 
-    IDENTIFIER = "tensorboard"
-    SCHEMA = TensorboardTypeSchema
-    REDUCED_ATTRIBUTES = [
-        "port",
-        "uuids",
-        "useNames",
-        "pathPrefix",
-        "plugins",
-    ]
+    _IDENTIFIER = "tensorboard"
+
+    port: Optional[Union[StrictInt, RefField]]
+    uuids: Optional[Union[List[UUIDStr], RefField]]
+    use_names: Optional[Union[bool, RefField]] = Field(alias="useNames")
+    path_prefix: Optional[StrictStr] = Field(alias="pathPrefix")
+    plugins: Optional[Union[List[StrictStr], RefField]]
+
+    @validator("uuids", "plugins", pre=True)
+    def validate_str_list(cls, v, field):
+        from polyaxon.parser import parser
+
+        if isinstance(v, str):
+            return parser.get_string(field, v, is_list=True)
+        return v

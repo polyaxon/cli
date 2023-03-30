@@ -13,33 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, Optional, Union
 
-from marshmallow import fields
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.params.params import ParamSchema, ParamValueMixin
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-
-
-class JoinParamSchema(ParamSchema):
-    ref = None
-
-    @staticmethod
-    def schema_config():
-        return V1JoinParam
+from polyaxon.polyflow.params.params import ParamValueMixin, V1Param
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import IntOrRef, RefField
 
 
-class V1JoinParam(BaseConfig, ParamValueMixin, polyaxon_sdk.V1JoinParam):
-    SCHEMA = JoinParamSchema
-    IDENTIFIER = "join_param"
-    REDUCED_ATTRIBUTES = [
-        "contextOnly",
-        "connection",
-        "toInit",
-        "toEnv",
-    ]
+class V1JoinParam(V1Param, ParamValueMixin):
+    _IDENTIFIER = "join_param"
 
     @property
     def is_literal(self):
@@ -70,21 +54,7 @@ class V1JoinParam(BaseConfig, ParamValueMixin, polyaxon_sdk.V1JoinParam):
         return False
 
 
-class JoinSchema(BaseCamelSchema):
-    query = fields.Str(required=True)
-    sort = fields.Str(allow_none=True)
-    limit = RefOrObject(fields.Int(allow_none=True))
-    offset = RefOrObject(fields.Int(allow_none=True))
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(JoinParamSchema), allow_none=True
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Join
-
-
-class V1Join(BaseConfig, polyaxon_sdk.V1Join):
+class V1Join(BaseSchemaModel):
     """Joins allow to query several runs based on a search specification.
 
     The result of the join will be a list of values based on the results from executing the search.
@@ -248,10 +218,11 @@ class V1Join(BaseConfig, polyaxon_sdk.V1Join):
     The fields supported: `value`, `context_only`, `connection`, `to_init`
     """
 
-    SCHEMA = JoinSchema
-    IDENTIFIER = "join"
-    REDUCED_ATTRIBUTES = [
-        "sort",
-        "limit",
-        "offset",
-    ]
+    _IDENTIFIER = "join"
+
+    ref: Optional[StrictStr]
+    query: StrictStr
+    sort: Optional[StrictStr]
+    limit: Optional[IntOrRef]
+    offset: Optional[IntOrRef]
+    params: Optional[Union[Dict[str, V1JoinParam], RefField]]

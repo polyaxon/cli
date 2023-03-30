@@ -343,7 +343,6 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
                 "image": "{{ image }}",
                 "command": ["python3", "main.py"],
                 "args": "--lr={{ lr }}",
-                "name": "polyaxon-main",
                 "resources": {"requests": {"cpu": 1}},
             },
         }
@@ -375,7 +374,6 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
                 "image": "foo",
                 "command": ["python3", "main.py"],
                 "args": "--lr=0.001",
-                "name": "polyaxon-main",
                 "resources": {"requests": {"cpu": 1}},
             },
         }
@@ -400,7 +398,7 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
         assert run_config.run.early_stopping[0].kind == "failure_early_stopping"
         assert isinstance(run_config.run.early_stopping[0], V1FailureEarlyStopping)
         assert len(run_config.run.early_stopping) == 1
-        assert run_config.run.kind == V1Dag.IDENTIFIER
+        assert run_config.run.kind == V1Dag._IDENTIFIER
         assert len(run_config.run.operations) == 2
         assert len(run_config.run.components) == 1
         template_random = run_config.run.operations[1].matrix
@@ -436,7 +434,7 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
         assert run_config.run.concurrency == 4
         assert isinstance(run_config.run, V1Dag)
         assert run_config.run.early_stopping is None
-        assert run_config.run.kind == V1Dag.IDENTIFIER
+        assert run_config.run.kind == V1Dag._IDENTIFIER
         assert len(run_config.run.operations) == 2
         assert len(run_config.run.components) == 1
         template_hyperband = run_config.run.operations[1].matrix
@@ -487,7 +485,7 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
         assert run_config.run.concurrency == 4
         assert isinstance(run_config.run, V1Dag)
         assert run_config.run.early_stopping is None
-        assert run_config.run.kind == V1Dag.IDENTIFIER
+        assert run_config.run.kind == V1Dag._IDENTIFIER
         assert len(run_config.run.operations) == 2
         assert len(run_config.run.components) == 1
         template_grid = run_config.run.operations[1].matrix

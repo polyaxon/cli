@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from polyaxon.utils.enums_utils import PEnum
 
-class DeploymentTypes:
+
+class DeploymentTypes(str, PEnum):
     KUBERNETES = "kubernetes"
     MINIKUBE = "minikube"
     MICRO_K8S = "microk8s"
@@ -23,12 +25,8 @@ class DeploymentTypes:
     DOCKER = "docker"
     HEROKU = "heroku"
 
-    VALUES = [KUBERNETES, MINIKUBE, MICRO_K8S, DOCKER_COMPOSE, DOCKER, HEROKU]
 
-
-class DeploymentCharts:
+class DeploymentCharts(str, PEnum):
     PLATFORM = "platform"
     AGENT = "agent"
     GATEWAY = "gateway"
-
-    VALUES = [PLATFORM, AGENT, GATEWAY]

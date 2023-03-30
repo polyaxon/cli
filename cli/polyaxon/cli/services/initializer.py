@@ -19,7 +19,7 @@ import sys
 
 import click
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.connections.kinds import V1ConnectionKind

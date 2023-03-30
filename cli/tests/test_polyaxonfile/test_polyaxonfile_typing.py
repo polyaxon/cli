@@ -17,9 +17,9 @@
 import os
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
-from polyaxon.exceptions import PolyaxonfileError
+from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyaxonfile import check_polyaxonfile
 from polyaxon.polyaxonfile.specs import (
@@ -55,7 +55,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         )
 
         # Inputs don't have delayed validation by default
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
         # Outputs have delayed validation by default
@@ -102,7 +102,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             ]
         )
         # Inputs don't have delayed validation by default
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.validate_params(is_template=False, check_all_refs=True)
 
         # Outputs have delayed validation by default
@@ -122,7 +122,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             ]
         )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
         assert run_config.inputs[0].value is None
@@ -165,7 +165,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         )
 
         # Adding extra value raises
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.validate_params(
                 params={
                     "loss": {"value": "bar"},
@@ -183,7 +183,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             )
 
         # Adding non valid params raises
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.validate_params(params={"value": {"value": 1.1}})
 
     def test_required_inputs_with_arg_format(self):
@@ -196,7 +196,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             ]
         )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
         assert run_config.inputs[0].value is None
@@ -241,7 +241,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         )
 
         # Adding extra value raises
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.validate_params(
                 params={
                     "loss": {"value": "bar"},
@@ -259,7 +259,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             )
 
         # Adding non valid params raises
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.validate_params(params={"value": {"value": 1.1}})
 
     def test_matrix_file_passes_int_float_types(self):
@@ -289,7 +289,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         }
         assert isinstance(run_config.matrix, V1GridSearch)
         assert run_config.matrix.concurrency == 2
-        assert run_config.matrix.kind == V1GridSearch.IDENTIFIER
+        assert run_config.matrix.kind == V1GridSearch._IDENTIFIER
         assert run_config.matrix.early_stopping is None
 
     def test_matrix_job_file_passes_int_float_types(self):
@@ -317,7 +317,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         }
         assert isinstance(run_config.matrix, V1GridSearch)
         assert run_config.matrix.concurrency == 2
-        assert run_config.matrix.kind == V1GridSearch.IDENTIFIER
+        assert run_config.matrix.kind == V1GridSearch._IDENTIFIER
         assert run_config.matrix.early_stopping is None
 
     def test_matrix_file_with_required_inputs_and_wrong_matrix_type_fails(self):
@@ -352,7 +352,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         }
         assert run_config.matrix.concurrency == 2
         assert isinstance(run_config.matrix, V1Hyperband)
-        assert run_config.matrix.kind == V1Hyperband.IDENTIFIER
+        assert run_config.matrix.kind == V1Hyperband._IDENTIFIER
         assert run_config.matrix.early_stopping is None
 
     def test_run_simple_file_passes(self):
@@ -372,7 +372,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             "loss": V1Param(value="MeanSquaredError"),
             "num_masks": V1Param(value=None),
         } == {p.name: p.param for p in validated_params}
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
         validated_params = run_config.validate_params(
@@ -388,7 +388,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             "--loss={{loss}}",
         ]
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             # Applying context before applying params
             CompiledOperationSpecification.apply_operation_contexts(run_config)
 
@@ -433,7 +433,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         ref_param = param_specs_by_name["model_path"]
         assert ref_param.to_dict() == params["model_path"]
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.apply_params(params=params)
 
         # Passing correct context
@@ -464,7 +464,7 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
         ref_param = param_specs_by_name["model_path"]
         assert ref_param.to_dict() == params["model_path"]
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             run_config.apply_params(params=params)
 
         run_config.apply_params(

@@ -30,19 +30,19 @@ def get_mount_from_store(
 
     return k8s_schemas.V1VolumeMount(
         name=store.name,
-        mount_path=store.schema.mount_path,
-        read_only=store.schema.read_only,
+        mount_path=store.schema_.mount_path,
+        read_only=store.schema_.read_only,
     )
 
 
 def get_mount_from_resource(
     resource: V1K8sResourceType,
 ) -> Optional[k8s_schemas.V1VolumeMount]:
-    if not resource or not resource.schema.mount_path:
+    if not resource or not resource.schema_.mount_path:
         return None
 
     return k8s_schemas.V1VolumeMount(
-        name=resource.name, mount_path=resource.schema.mount_path, read_only=True
+        name=resource.name, mount_path=resource.schema_.mount_path, read_only=True
     )
 
 

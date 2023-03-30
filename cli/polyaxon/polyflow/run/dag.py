@@ -15,45 +15,30 @@
 # limitations under the License.
 
 from collections.abc import Mapping
-from typing import Set
+from typing import Any, Dict, ForwardRef, List, Optional, Set, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
-
-import polyaxon_sdk
+from pydantic import Field, PositiveInt, PrivateAttr, StrictStr, validator
 
 from polyaxon import types
 from polyaxon.contexts import sections as ctx_sections
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.pkg import SCHEMA_VERSION
 from polyaxon.polyflow import dags
-from polyaxon.polyflow.early_stopping import EarlyStoppingSchema
-from polyaxon.polyflow.environment import EnvironmentSchema
+from polyaxon.polyflow.early_stopping import V1EarlyStopping
+from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.io import V1IO
 from polyaxon.polyflow.params import ops_params
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
-from polyaxon.schemas.fields.swagger import SwaggerField
+from polyaxon.schemas.fields.ref_or_obj import RefField
+
+V1Operation = ForwardRef("V1Operation")
+V1Component = ForwardRef("V1Component")
 
 
-class DagSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1RunKind.DAG))
-    operations = fields.List(fields.Nested("OperationSchema"))
-    components = fields.List(fields.Nested("ComponentSchema"))
-    environment = fields.Nested(EnvironmentSchema, allow_none=True)
-    connections = fields.List(fields.Str(), allow_none=True)
-    volumes = fields.List(SwaggerField(cls=k8s_schemas.V1Volume), allow_none=True)
-    concurrency = RefOrObject(fields.Int(allow_none=True))
-    early_stopping = fields.List(fields.Nested(EarlyStoppingSchema), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Dag
-
-
-class V1Dag(BaseConfig, BaseRun, polyaxon_sdk.V1Dag):
+class V1Dag(BaseRun):
     """Dag (Directed Acyclic Graphs) is
     a collection of all the operations you want to run,
     organized in a way that reflects their relationships and dependencies.
@@ -323,39 +308,33 @@ class V1Dag(BaseConfig, BaseRun, polyaxon_sdk.V1Dag):
 
     """
 
-    SCHEMA = DagSchema
-    IDENTIFIER = V1RunKind.DAG
-    REDUCED_ATTRIBUTES = [
-        "operations",
-        "components",
-        "concurrency",
-        "earlyStopping",
-        "environment",
-        "connections",
-        "volumes",
-    ]
+    _IDENTIFIER = V1RunKind.DAG
+    _SWAGGER_FIELDS = ["volumes"]
 
-    def __init__(
-        self,
-        operations=None,
-        components=None,
-        concurrency=None,
-        early_stopping=None,
-        kind=None,
-        environment=None,
-        connections=None,
-        volumes=None,
-    ):
-        super().__init__(
-            kind=kind,
-            operations=operations,
-            components=components,
-            concurrency=concurrency,
-            early_stopping=early_stopping,
-            environment=environment,
-            connections=connections,
-            volumes=volumes,
-        )
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    operations: Optional[Union[List[V1Operation], RefField]]
+    components: Optional[Union[List[V1Component], RefField]]
+    environment: Optional[Union[V1Environment, RefField]]
+    connections: Optional[Union[List[StrictStr], RefField]]
+    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
+    concurrency: Optional[Union[PositiveInt, RefField]]
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping"
+    )
+
+    _dag: Dict[str, "DagOpSpec"] = PrivateAttr()
+    _components_by_names: Dict[str, V1Component] = PrivateAttr()
+    _op_component_mapping: Dict[str, str] = PrivateAttr()
+    _context: Dict[str, Any] = PrivateAttr()
+
+    @validator("volumes", always=True, pre=True)
+    def validate_volumes(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_volume(vi) for vi in v]
+
+    def __init__(self, **data):
+        super().__init__(**data)
         self._dag = {}  # OpName -> DagOpSpec
         self._components_by_names = {}  # ComponentName -> Component
         self._op_component_mapping = {}  # OpName -> ComponentName
@@ -470,17 +449,19 @@ class V1Dag(BaseConfig, BaseRun, polyaxon_sdk.V1Dag):
         inputs = inputs or []
 
         for g_context in ctx_sections.GLOBALS_CONTEXTS:
-            self._context["dag.{}.{}".format(ctx_sections.GLOBALS, g_context)] = V1IO(
+            self._context[
+                "dag.{}.{}".format(ctx_sections.GLOBALS, g_context)
+            ] = V1IO.construct(
                 name=g_context, type=types.STR, value="", is_optional=True
             )
 
-        self._context["dag.{}".format(ctx_sections.INPUTS)] = V1IO(
+        self._context["dag.{}".format(ctx_sections.INPUTS)] = V1IO.construct(
             name="inputs", type=types.DICT, value={}, is_optional=True
         )
-        self._context["dag.{}".format(ctx_sections.GLOBALS)] = V1IO(
+        self._context["dag.{}".format(ctx_sections.GLOBALS)] = V1IO.construct(
             name="globals", type=types.STR, value="", is_optional=True
         )
-        self._context["dag.{}".format(ctx_sections.ARTIFACTS)] = V1IO(
+        self._context["dag.{}".format(ctx_sections.ARTIFACTS)] = V1IO.construct(
             name="artifacts", type=types.STR, value="", is_optional=True
         )
 
@@ -562,24 +543,34 @@ class V1Dag(BaseConfig, BaseRun, polyaxon_sdk.V1Dag):
             for g_context in ctx_sections.GLOBALS_CONTEXTS:
                 self._context[
                     "ops.{}.{}.{}".format(op_name, ctx_sections.GLOBALS, g_context)
-                ] = V1IO(name=g_context, type=types.STR, value="", is_optional=True)
+                ] = V1IO.construct(
+                    name=g_context, type=types.STR, value="", is_optional=True
+                )
 
             # We allow to resolve name, status, project, all outputs/inputs, iteration
-            self._context["ops.{}.{}".format(op_name, ctx_sections.INPUTS)] = V1IO(
+            self._context[
+                "ops.{}.{}".format(op_name, ctx_sections.INPUTS)
+            ] = V1IO.construct(
                 name="inputs", type=types.DICT, value={}, is_optional=True
             )
-            self._context["ops.{}.{}".format(op_name, ctx_sections.OUTPUTS)] = V1IO(
+            self._context[
+                "ops.{}.{}".format(op_name, ctx_sections.OUTPUTS)
+            ] = V1IO.construct(
                 name="outputs", type=types.DICT, value={}, is_optional=True
             )
-            self._context["ops.{}.{}".format(op_name, ctx_sections.GLOBALS)] = V1IO(
+            self._context[
+                "ops.{}.{}".format(op_name, ctx_sections.GLOBALS)
+            ] = V1IO.construct(
                 name="globals", type=types.STR, value="", is_optional=True
             )
-            self._context["ops.{}.{}".format(op_name, ctx_sections.ARTIFACTS)] = V1IO(
+            self._context[
+                "ops.{}.{}".format(op_name, ctx_sections.ARTIFACTS)
+            ] = V1IO.construct(
                 name="artifacts", type=types.STR, value="", is_optional=True
             )
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.INPUTS_OUTPUTS)
-            ] = V1IO(name="io", type=types.STR, value={}, is_optional=True)
+            ] = V1IO.construct(name="io", type=types.STR, value={}, is_optional=True)
 
         for op in self.operations:
             if op.has_component_reference:

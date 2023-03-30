@@ -13,27 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Union
+from typing_extensions import Annotated
+
+from pydantic import Field
 
 from polyaxon.polyflow.early_stopping.policies import (
-    DiffStoppingPolicySchema,
-    FailureEarlyStoppingSchema,
-    MedianStoppingPolicySchema,
-    MetricEarlyStoppingSchema,
-    StoppingPolicySchema,
-    TruncationStoppingPolicySchema,
     V1DiffStoppingPolicy,
     V1FailureEarlyStopping,
     V1MedianStoppingPolicy,
     V1MetricEarlyStopping,
     V1TruncationStoppingPolicy,
 )
-from polyaxon.schemas.base import BaseOneOfSchema
 
-
-class EarlyStoppingSchema(BaseOneOfSchema):
-    TYPE_FIELD = "kind"
-    TYPE_FIELD_REMOVE = False
-    SCHEMAS = {
-        V1MetricEarlyStopping.IDENTIFIER: MetricEarlyStoppingSchema,
-        V1FailureEarlyStopping.IDENTIFIER: FailureEarlyStoppingSchema,
-    }
+V1EarlyStopping = Annotated[
+    Union[V1MetricEarlyStopping, V1FailureEarlyStopping],
+    Field(discriminator="kind", alias="earlyStopping"),
+]

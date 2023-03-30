@@ -13,30 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate
+from pydantic import Field, PositiveInt, validator
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.early_stopping import EarlyStoppingSchema
+from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.schemas.base import BaseCamelSchema
-from polyaxon.schemas.fields.ref_or_obj import RefOrObject
+from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
-class MappingSchema(BaseCamelSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal(V1MatrixKind.MAPPING))
-    values = RefOrObject(fields.List(fields.Dict(), required=True), required=True)
-    concurrency = RefOrObject(fields.Int(allow_none=True))
-    early_stopping = fields.List(fields.Nested(EarlyStoppingSchema), allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Mapping
-
-
-class V1Mapping(BaseSearchConfig, polyaxon_sdk.V1Mapping):
+class V1Mapping(BaseSearchConfig):
     """Mapping is a flexible way for dynamically executing a component sequentially or in parallel
     based on a list of parameter combinations.
 
@@ -129,9 +117,22 @@ class V1Mapping(BaseSearchConfig, polyaxon_sdk.V1Mapping):
     [early stopping section](/docs/automation/helpers/early-stopping/).
     """
 
-    SCHEMA = MappingSchema
-    IDENTIFIER = V1MatrixKind.MAPPING
-    REDUCED_ATTRIBUTES = ["concurrency", "earlyStopping"]
+    _IDENTIFIER = V1MatrixKind.MAPPING
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    values: List[Union[Dict, RefField]]
+    concurrency: Optional[Union[PositiveInt, RefField]]
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping"
+    )
+
+    @validator("concurrency")
+    def check_concurrency(cls, v):
+        if v and v < 1:
+            raise ValueError(
+                f"concurrency must be greater than 1, received `{v} instead."
+            )
+        return v
 
     def has_key(self, key: str):
         return self.values and key in set(self.values[0].keys())

@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from polyaxon.utils.enums_utils import PEnum
 
-class ServiceTypes:
+
+class ServiceTypes(str, PEnum):
     LOAD_BALANCER = "LoadBalancer"
     NODE_PORT = "NodePort"
     CLUSTER_IP = "ClusterIP"
-
-    VALUES = [LOAD_BALANCER, NODE_PORT, CLUSTER_IP]

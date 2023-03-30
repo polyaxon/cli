@@ -23,6 +23,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_OFFLINE_ROOT,
     EV_KEYS_SANDBOX_ROOT,
 )
+from polyaxon.utils.enums_utils import get_enum_value
 
 
 def polyaxon_user_path():
@@ -85,7 +86,7 @@ def get_offline_base_path(entity_kind: str, path: str = None):
 
     path = path or CONTEXT_OFFLINE_ROOT
     entity_kind = "run" if entity_kind == V1ProjectFeature.RUNTIME else entity_kind
-    return "{}/{}s".format(path.rstrip("/"), entity_kind)
+    return "{}/{}s".format(path.rstrip("/"), get_enum_value(entity_kind))
 
 
 def get_offline_path(entity_value: str, entity_kind: str, path: str = None):
@@ -93,7 +94,9 @@ def get_offline_path(entity_value: str, entity_kind: str, path: str = None):
 
     path = path or CONTEXT_OFFLINE_ROOT
     entity_kind = "run" if entity_kind == V1ProjectFeature.RUNTIME else entity_kind
-    return "{}/{}s/{}".format(path.rstrip("/"), entity_kind, entity_value)
+    return "{}/{}s/{}".format(
+        path.rstrip("/"), get_enum_value(entity_kind), entity_value
+    )
 
 
 def mount_sandbox():

@@ -48,10 +48,10 @@ class BaseContextsManager:
     ) -> Dict:
         connections = to_list(connections, check_none=True)
         for connection in connections:
-            if connection_by_names[connection].schema:
+            if connection_by_names[connection].schema_:
                 contexts[key][connection] = connection_by_names[
                     connection
-                ].schema.to_dict()
+                ].schema_.to_dict()
             else:
                 contexts[key][connection] = {}
         return contexts

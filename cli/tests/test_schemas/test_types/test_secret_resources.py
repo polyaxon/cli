@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.connections.schemas import V1K8sResourceSchema
 from polyaxon.schemas.types import V1K8sResourceType
@@ -28,11 +28,11 @@ class TestV1K8sResourceType(BaseTestCase):
     def setUp(self):
         self.spec1 = V1K8sResourceType(name="test1", is_requested=True)
         self.spec2 = V1K8sResourceType(
-            name="test2", schema=V1K8sResourceSchema(name="ref2"), is_requested=False
+            name="test2", schema_=V1K8sResourceSchema(name="ref2"), is_requested=False
         )
         self.spec3 = V1K8sResourceType(
             name="test3",
-            schema=V1K8sResourceSchema(
+            schema_=V1K8sResourceSchema(
                 name="ref3", items=["item45"], mount_path="/some_path"
             ),
             is_requested=False,

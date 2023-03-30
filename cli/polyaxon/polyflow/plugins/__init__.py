@@ -13,40 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
-from marshmallow import fields
+from pydantic import Field, StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.auxiliaries.sidecar import PolyaxonSidecarContainerSchema
-from polyaxon.polyflow.notifications import NotificationSchema
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class PluginsSchema(BaseCamelSchema):
-    auth = fields.Bool(allow_none=True)
-    docker = fields.Bool(allow_none=True)
-    shm = fields.Bool(allow_none=True)
-    mount_artifacts_store = fields.Bool(allow_none=True)
-    collect_artifacts = fields.Bool(allow_none=True)
-    collect_logs = fields.Bool(allow_none=True)
-    collect_resources = fields.Bool(allow_none=True)
-    sync_statuses = fields.Bool(allow_none=True)
-    auto_resume = fields.Bool(allow_none=True)
-    external_host = fields.Bool(allow_none=True)
-    log_level = fields.Str(allow_none=True)
-    notifications = fields.List(fields.Nested(NotificationSchema), allow_none=True)
-    sidecar = fields.Nested(
-        PolyaxonSidecarContainerSchema,
-        allow_none=True,
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Plugins
+from polyaxon.auxiliaries.sidecar import V1PolyaxonSidecarContainer
+from polyaxon.polyflow.notifications import V1Notification
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, RefField
 
 
-class V1Plugins(BaseConfig, polyaxon_sdk.V1Plugins):
+class V1Plugins(BaseSchemaModel):
     """Plugins section provides a way to customize extra Polyaxon utilities.
 
     By default, Polyaxon injects some information for example an auth context
@@ -295,20 +272,18 @@ class V1Plugins(BaseConfig, polyaxon_sdk.V1Plugins):
     ```
     """
 
-    IDENTIFIER = "plugins"
-    SCHEMA = PluginsSchema
-    REDUCED_ATTRIBUTES = [
-        "auth",
-        "docker",
-        "shm",
-        "mountArtifactsStore",
-        "collectArtifacts",
-        "collectLogs",
-        "collectResources",
-        "autoResume",
-        "syncStatuses",
-        "externalHost",
-        "logLevel",
-        "sidecar",
-        "notifications",
-    ]
+    _IDENTIFIER = "plugins"
+
+    auth: Optional[BoolOrRef]
+    docker: Optional[BoolOrRef]
+    shm: Optional[BoolOrRef]
+    mount_artifacts_store: Optional[BoolOrRef] = Field(alias="mountArtifactsStore")
+    collect_artifacts: Optional[BoolOrRef] = Field(alias="collectArtifacts")
+    collect_logs: Optional[BoolOrRef] = Field(alias="collectLogs")
+    collect_resources: Optional[BoolOrRef] = Field(alias="collectResources")
+    sync_statuses: Optional[BoolOrRef] = Field(alias="syncStatuses")
+    auto_resume: Optional[BoolOrRef] = Field(alias="autoResume")
+    log_level: Optional[StrictStr] = Field(alias="logLevel")
+    external_host: Optional[BoolOrRef] = Field(alias="externalHost")
+    sidecar: Optional[Union[V1PolyaxonSidecarContainer, RefField]]
+    notifications: Optional[Union[List[V1Notification], RefField]]

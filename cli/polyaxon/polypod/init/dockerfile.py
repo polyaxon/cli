@@ -70,7 +70,7 @@ def get_dockerfile_init_container(
         image_pull_policy=polyaxon_init.image_pull_policy,
         command=["polyaxon", "docker", "generate"],
         args=[
-            "--build-context={}".format(dockerfile_args.to_dict(dump=True)),
+            "--build-context={}".format(dockerfile_args.to_json()),
             "--destination={}".format(mount_path),
             "--copy-path={}".format(
                 ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)

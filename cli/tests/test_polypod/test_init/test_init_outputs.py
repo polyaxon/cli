@@ -23,6 +23,7 @@ from polyaxon.containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
     generate_container_name,
 )
+from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
@@ -59,11 +60,12 @@ class TestInitOutputsStore(BaseTestCase):
         store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
-            schema=V1BucketConnection(bucket="gs//:foo"),
+            schema_=V1BucketConnection(bucket="gs//:foo"),
         )
         container = get_artifacts_path_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             artifacts_store=store,
             run_path="run_uid",
@@ -87,7 +89,8 @@ class TestInitOutputsStore(BaseTestCase):
                 INIT_ARTIFACTS_CONTAINER_PREFIX, "default", False
             ),
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             store=store,
             env=[],
@@ -100,11 +103,12 @@ class TestInitOutputsStore(BaseTestCase):
         store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(mount_path="/claim/path", volume_claim="claim"),
+            schema_=V1ClaimConnection(mount_path="/claim/path", volume_claim="claim"),
         )
         container = get_artifacts_path_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             artifacts_store=store,
             run_path="run_uid",
@@ -128,7 +132,8 @@ class TestInitOutputsStore(BaseTestCase):
                 INIT_ARTIFACTS_CONTAINER_PREFIX, "default", False
             ),
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             store=store,
             env=[],
@@ -141,11 +146,12 @@ class TestInitOutputsStore(BaseTestCase):
         store = V1ConnectionType(
             name="test_gcs",
             kind=V1ConnectionKind.VOLUME_CLAIM,
-            schema=V1ClaimConnection(mount_path="/claim/path", volume_claim="claim"),
+            schema_=V1ClaimConnection(mount_path="/claim/path", volume_claim="claim"),
         )
         container = get_artifacts_path_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             artifacts_store=store,
             run_path="run_uid",
@@ -169,7 +175,8 @@ class TestInitOutputsStore(BaseTestCase):
                 INIT_ARTIFACTS_CONTAINER_PREFIX, "default", False
             ),
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             store=store,
             env=[],
@@ -180,7 +187,8 @@ class TestInitOutputsStore(BaseTestCase):
 
         container = get_artifacts_path_container(
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             artifacts_store=store,
             run_path="run_uid",
@@ -194,7 +202,8 @@ class TestInitOutputsStore(BaseTestCase):
                 INIT_ARTIFACTS_CONTAINER_PREFIX, "default", False
             ),
             polyaxon_init=V1PolyaxonInitContainer(
-                image="init", image_pull_policy="IfNotPresent"
+                image="init",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             store=store,
             env=[],

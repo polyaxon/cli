@@ -13,85 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
+from copy import copy
+from typing import Dict, Optional
+from typing_extensions import Literal
 
-from marshmallow import ValidationError, fields, validate, validates_schema
+from pydantic import Field, StrictStr, root_validator, validator
 
-import polyaxon_sdk
-
-from polyaxon.polyflow.builds import BuildSchema, V1Build
-from polyaxon.polyflow.component.component import ComponentSchema
+from polyaxon.polyflow.builds import V1Build
+from polyaxon.polyflow.component.component import V1Component
 from polyaxon.polyflow.hooks import V1Hook
-from polyaxon.polyflow.operations.base import BaseOp, BaseOpSchema
-from polyaxon.polyflow.params import ParamSchema, V1Param
+from polyaxon.polyflow.operations.base import BaseOp
+from polyaxon.polyflow.params import V1Param
 from polyaxon.polyflow.references import V1DagRef, V1HubRef, V1PathRef, V1UrlRef
 from polyaxon.polyflow.run.patch import validate_run_patch
-from polyaxon.polyflow.templates import TemplateMixinConfig, TemplateMixinSchema
+from polyaxon.polyflow.templates import TemplateMixinConfig, V1Template
+from polyaxon.schemas.base import skip_partial, to_partial
 from polyaxon.schemas.patch_strategy import V1PatchStrategy
-from polyaxon.utils.signal_decorators import check_partial
 
 
-class OperationSchema(BaseOpSchema, TemplateMixinSchema):
-    kind = fields.Str(allow_none=True, validate=validate.Equal("operation"))
-    params = fields.Dict(
-        keys=fields.Str(), values=fields.Nested(ParamSchema), allow_none=True
-    )
-    build = fields.Nested(BuildSchema, allow_none=True)
-    run_patch = fields.Dict(keys=fields.Str(), values=fields.Raw(), allow_none=True)
-    hub_ref = fields.Str(allow_none=True)
-    dag_ref = fields.Str(allow_none=True)
-    url_ref = fields.Str(allow_none=True)
-    path_ref = fields.Str(allow_none=True)
-    component = fields.Nested(ComponentSchema, allow_none=True)
-    patch_strategy = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1PatchStrategy.allowable_values)
-    )
-    is_preset = fields.Bool(allow_none=True)
-
-    @staticmethod
-    def schema_config():
-        return V1Operation
-
-    @validates_schema
-    @check_partial
-    def validate_run_patch(self, data, **kwargs):
-        component = data.get("component")
-        run_patch = data.get("run_patch")
-        if not component or not run_patch:
-            return
-
-        validate_run_patch(run_patch=run_patch, kind=component.run.kind)
-
-    @validates_schema
-    @check_partial
-    def validate_reference(self, data, **kwargs):
-        if data.get("is_preset"):
-            return
-        count = 0
-        hub_ref = data.get("hub_ref")
-        if hub_ref:
-            count += 1
-        dag_ref = data.get("dag_ref")
-        if dag_ref:
-            count += 1
-        url_ref = data.get("url_ref")
-        if url_ref:
-            count += 1
-        path_ref = data.get("path_ref")
-        if path_ref:
-            count += 1
-        component = data.get("component")
-        if component and count == 0:
-            count += 1
-
-        if count != 1:
-            raise ValidationError(
-                "One and only one reference must be specified: "
-                "hub_ref, dag_ref, url_ref, path_ref, component."
-            )
-
-
-class V1Operation(BaseOp, TemplateMixinConfig, polyaxon_sdk.V1Operation):
+class V1Operation(BaseOp, TemplateMixinConfig):
     """An operation is how Polyaxon executes a component by passing parameters,
     connections, and a run environment.
 
@@ -554,24 +494,8 @@ class V1Operation(BaseOp, TemplateMixinConfig, polyaxon_sdk.V1Operation):
     ```
     """
 
-    SCHEMA = OperationSchema
-    IDENTIFIER = "operation"
-    REDUCED_ATTRIBUTES = (
-        BaseOp.REDUCED_ATTRIBUTES
-        + TemplateMixinConfig.REDUCED_ATTRIBUTES
-        + [
-            "params",
-            "hubRef",
-            "dagRef",
-            "urlRef",
-            "pathRef",
-            "component",
-            "runPatch",
-            "isPreset",
-            "patchStrategy",
-        ]
-    )
-    FIELDS_MANUAL_PATCH = [
+    _IDENTIFIER = "operation"
+    _FIELDS_MANUAL_PATCH = [
         "version",
         "is_preset",
         "hub_ref",
@@ -582,6 +506,61 @@ class V1Operation(BaseOp, TemplateMixinConfig, polyaxon_sdk.V1Operation):
         "run_patch",
         "patch_strategy",
     ]
+
+    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    params: Optional[Dict[StrictStr, V1Param]]
+    hub_ref: Optional[StrictStr] = Field(alias="hubRef")
+    dag_ref: Optional[StrictStr] = Field(alias="dagRef")
+    url_ref: Optional[StrictStr] = Field(alias="urlRef")
+    path_ref: Optional[StrictStr] = Field(alias="pathRef")
+    component: Optional[V1Component]
+    patch_strategy: Optional[V1PatchStrategy] = Field(alias="patchStrategy")
+    is_preset: Optional[bool] = Field(alias="isPreset")
+    run_patch: Optional[Dict] = Field(alias="runPatch")
+    template: Optional[V1Template]
+
+    @root_validator
+    @skip_partial
+    def validate_reference(cls, values):
+        if not values:
+            return values
+        if values.get("is_preset"):
+            return values
+        count = 0
+        hub_ref = values.get("hub_ref")
+        if hub_ref:
+            count += 1
+        dag_ref = values.get("dag_ref")
+        if dag_ref:
+            count += 1
+        url_ref = values.get("url_ref")
+        if url_ref:
+            count += 1
+        path_ref = values.get("path_ref")
+        if path_ref:
+            count += 1
+        component = values.get("component")
+        if component and count == 0:
+            count += 1
+
+        if count != 1:
+            raise ValueError(
+                "One and only one reference must be specified: "
+                "hub_ref, dag_ref, url_ref, path_ref, component."
+            )
+        return values
+
+    @validator("run_patch")
+    @skip_partial
+    def validate_run_patch(cls, run_patch, values):
+        component = values.get("component")
+        if values.get("is_preset"):
+            return run_patch
+        if not component or not run_patch:
+            return run_patch
+
+        validate_run_patch(run_patch=run_patch, kind=component.run.kind)
+        return run_patch
 
     @property
     def has_component_reference(self) -> bool:
@@ -652,9 +631,9 @@ class V1Operation(BaseOp, TemplateMixinConfig, polyaxon_sdk.V1Operation):
             or not config.component.run.kind
         ):
             # We don't have a kind, we don't do anything
-            if strategy == V1PatchStrategy.ISNULL:
+            if V1PatchStrategy.is_null(strategy):
                 return result
-            if strategy == V1PatchStrategy.REPLACE:
+            if V1PatchStrategy.is_replace(strategy):
                 setattr(result, "run_patch", value)
                 return result
             return result
@@ -681,7 +660,7 @@ class V1Operation(BaseOp, TemplateMixinConfig, polyaxon_sdk.V1Operation):
             for k, v in contexts.items():
                 params[k] = V1Param(value=v, context_only=True)
 
-        return cls(
+        return cls.construct(
             run_patch=run_patch,
             hub_ref=hook.hub_ref,
             presets=hook.presets,
@@ -693,18 +672,18 @@ class V1Operation(BaseOp, TemplateMixinConfig, polyaxon_sdk.V1Operation):
     def from_build(cls, build: V1Build, contexts: Dict = None):
         # Extend params with
         contexts = contexts or {}
-        params = build.params or {}
+        params = copy(build.params or {})
         for k, v in contexts.items():
             params[k] = V1Param(value=v, context_only=True)
 
-        destination = params.get("destination") or V1Param()
+        destination = params.get("destination") or V1Param(value=None)
         if not destination.value:
             destination.value = "{{ globals.project_name }}:{{ globals.uuid }}"
         if not destination.connection or build.connection:
             destination.connection = build.connection
         params["destination"] = destination
 
-        return cls(
+        return cls.construct(
             run_patch=build.run_patch,
             patch_strategy=build.patch_strategy,
             hub_ref=build.hub_ref,
@@ -713,3 +692,6 @@ class V1Operation(BaseOp, TemplateMixinConfig, polyaxon_sdk.V1Operation):
             cache=build.cache,
             params=params,
         )
+
+
+PartialV1Operation = to_partial(V1Operation)

@@ -17,11 +17,9 @@ import time
 import traceback
 
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 from kubernetes.client.rest import ApiException
-
-import polyaxon_sdk
 
 from polyaxon import live_state, settings
 from polyaxon.agents import converter
@@ -32,6 +30,8 @@ from polyaxon.exceptions import PolypodException
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon.logger import logger
 from polyaxon.schemas.cli.checks_config import ChecksConfig
+from polyaxon.schemas.responses.v1_agent import V1Agent
+from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
 from polyaxon.utils.tz_utils import now
 from polyaxon.utils.workers_utils import exit_context, get_pool_workers, get_wait
 
@@ -47,31 +47,31 @@ class BaseAgent:
         self._spawner_refreshed_at = now()
         self.client = PolyaxonClient()
         self._graceful_shutdown = False
-        self.content = settings.AGENT_CONFIG.to_dict(dump=True)
+        self.content = settings.AGENT_CONFIG.to_json()
 
-    def get_info(self) -> polyaxon_sdk.V1Agent:
+    def get_info(self) -> V1Agent:
         raise NotImplementedError
 
-    def get_state(self) -> polyaxon_sdk.V1AgentStateResponse:
+    def get_state(self) -> V1AgentStateResponse:
         raise NotImplementedError
 
     def sync_compatible_updates(self, compatible_updates: Dict):
         raise NotImplementedError
 
     @classmethod
-    def get_healthz_config(cls):
+    def get_healthz_config(cls) -> Optional[ChecksConfig]:
         try:
             return ChecksConfig.read(cls.HEALTH_FILE, config_type=".json")
         except Exception:  # noqa
             return
 
     @classmethod
-    def ping(cls):
+    def ping(cls) -> None:
         ChecksConfig.init_file(cls.HEALTH_FILE)
         config = cls.get_healthz_config()
         if config:
             config.last_check = now()
-            config.write(cls.HEALTH_FILE, mode=config.WRITE_MODE)
+            config.write(cls.HEALTH_FILE, mode=config._WRITE_MODE)
 
     @classmethod
     def pong(cls, interval: int = 15) -> bool:
@@ -80,7 +80,7 @@ class BaseAgent:
             return False
         return not config.should_check(interval=interval)
 
-    def refresh_spawner(self):
+    def refresh_spawner(self) -> None:
         if (
             now() - self._spawner_refreshed_at
         ).total_seconds() > settings.AGENT_CONFIG.get_spawner_refresh_interval():
@@ -110,7 +110,7 @@ class BaseAgent:
         finally:
             self.end()
 
-    def _check_status(self, agent_state):
+    def _check_status(self, agent_state) -> None:
         if agent_state.status == V1Statuses.STOPPED:
             print(
                 "Agent has been stopped from the platform,"
@@ -126,14 +126,14 @@ class BaseAgent:
             )
             self.end(sleep=self.SLEEP_ARCHIVED_TIME)
 
-    def end(self, sleep: int = None):
+    def end(self, sleep: int = None) -> None:
         self._graceful_shutdown = True
         if sleep:
             time.sleep(sleep)
         else:
             logger.info("Agent is shutting down.")
 
-    def process(self, pool: "ThreadPoolExecutor") -> polyaxon_sdk.V1AgentStateResponse:
+    def process(self, pool: "ThreadPoolExecutor") -> V1AgentStateResponse:
         try:
             agent_state = self.get_state()
             if agent_state.compatible_updates:
@@ -143,7 +143,7 @@ class BaseAgent:
                 logger.info("Starting runs submission process.")
             else:
                 logger.info("No state was found.")
-                return polyaxon_sdk.V1AgentStateResponse()
+                return V1AgentStateResponse()
 
             state = agent_state.state
             for run_data in state.schedules or []:
@@ -167,7 +167,7 @@ class BaseAgent:
             return agent_state
         except Exception as exc:
             logger.error(exc)
-            return polyaxon_sdk.V1AgentStateResponse()
+            return V1AgentStateResponse()
 
     def log_run_failed(
         self,
@@ -235,7 +235,7 @@ class BaseAgent:
         status: str,
         reason: str = None,
         message: str = None,
-    ):
+    ) -> None:
         status_condition = V1StatusCondition.get_condition(
             type=status, status=True, reason=reason, message=message
         )
@@ -247,7 +247,7 @@ class BaseAgent:
             async_req=True,
         )
 
-    def clean_run(self, run_uuid: str, run_kind: str):
+    def clean_run(self, run_uuid: str, run_kind: str) -> None:
         try:
             self.spawner.clean(run_uuid=run_uuid, run_kind=run_kind)
             self.spawner.stop(run_uuid=run_uuid, run_kind=run_kind)
@@ -327,7 +327,7 @@ class BaseAgent:
                 message="Agent failed during compilation with unknown exception.\n",
             )
 
-    def submit_run(self, run_data: Tuple[str, str, str, str]):
+    def submit_run(self, run_data: Tuple[str, str, str, str]) -> None:
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.prepare_run_resource(
             owner_name=run_owner,
@@ -365,7 +365,7 @@ class BaseAgent:
 
     def make_and_create_run(
         self, run_data: Tuple[str, str, str, str], default_auth: bool = False
-    ):
+    ) -> None:
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.make_run_resource(
             owner_name=run_owner,
@@ -394,7 +394,7 @@ class BaseAgent:
                 )
             )
 
-    def apply_run(self, run_data: Tuple[str, str, str, str]):
+    def apply_run(self, run_data: Tuple[str, str, str, str]) -> None:
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.prepare_run_resource(
             owner_name=run_owner,
@@ -419,7 +419,7 @@ class BaseAgent:
             )
             self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
 
-    def check_run(self, run_data: Tuple[str, str]):
+    def check_run(self, run_data: Tuple[str, str]) -> None:
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
             self.spawner.get(run_uuid=run_uuid, run_kind=run_data[1])
@@ -432,7 +432,7 @@ class BaseAgent:
                     run_owner=run_owner, run_project=run_project, run_uuid=run_uuid
                 )
 
-    def stop_run(self, run_data: Tuple[str, str]):
+    def stop_run(self, run_data: Tuple[str, str]) -> None:
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
             self.spawner.stop(run_uuid=run_uuid, run_kind=run_data[1])
@@ -451,7 +451,7 @@ class BaseAgent:
                 message="Agent failed stopping run.\n",
             )
 
-    def delete_run(self, run_data: Tuple[str, str, str, str]):
+    def delete_run(self, run_data: Tuple[str, str, str, str]) -> None:
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
         if run_data[3]:

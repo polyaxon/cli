@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow.exceptions import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.polyflow.matrix.bayes import (
     AcquisitionFunctions,

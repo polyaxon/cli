@@ -13,64 +13,65 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from marshmallow import fields, validate
+from pydantic import StrictStr
 
-import polyaxon_sdk
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.utils.enums_utils import PEnum
 
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
 
+class V1ResourceType(str, PEnum):
+    INT = "int"
+    FLOAT = "float"
 
-class ResourceType(polyaxon_sdk.V1ResourceType):
-    INT = polyaxon_sdk.V1ResourceType.INT
-    FLOAT = polyaxon_sdk.V1ResourceType.FLOAT
+    @classmethod
+    def init_values(cls):
+        return {cls.INT, cls.INT.upper(), cls.INT.capitalize()}
 
-    INT_VALUES = {INT, INT.upper(), INT.capitalize()}
-    FLOAT_VALUES = {FLOAT, FLOAT.upper(), FLOAT.capitalize()}
+    @classmethod
+    def float_values(cls):
+        return {cls.FLOAT, cls.FLOAT.upper(), cls.FLOAT.capitalize()}
 
-    VALUES = INT_VALUES | FLOAT_VALUES
+    @classmethod
+    def values(cls):
+        return cls.init_values() | cls.float_values()
 
     @classmethod
     def is_int(cls, value):
-        return value in cls.INT_VALUES
+        return value in cls.init_values()
 
     @classmethod
     def is_float(cls, value):
-        return value in cls.FLOAT_VALUES
+        return value in cls.float_values()
 
 
-class V1Optimization(polyaxon_sdk.V1Optimization):
-    MAXIMIZE = polyaxon_sdk.V1Optimization.MAXIMIZE
-    MINIMIZE = polyaxon_sdk.V1Optimization.MINIMIZE
+class V1Optimization(str, PEnum):
+    MAXIMIZE = "maximize"
+    MINIMIZE = "minimize"
 
-    MAXIMIZE_VALUES = [MAXIMIZE, MAXIMIZE.upper(), MAXIMIZE.capitalize()]
-    MINIMIZE_VALUES = [MINIMIZE, MINIMIZE.upper(), MINIMIZE.capitalize()]
+    @classmethod
+    def maximize_values(cls):
+        return [cls.MAXIMIZE, cls.MAXIMIZE.upper(), cls.MAXIMIZE.capitalize()]
 
-    VALUES = MAXIMIZE_VALUES + MINIMIZE_VALUES
+    @classmethod
+    def minimize_values(cls):
+        return [cls.MINIMIZE, cls.MINIMIZE.upper(), cls.MINIMIZE.capitalize()]
 
     @classmethod
     def maximize(cls, value):
-        return value in cls.MAXIMIZE_VALUES
+        return value in cls.maximize_values()
 
     @classmethod
     def minimize(cls, value):
-        return value in cls.MINIMIZE_VALUES
+        return value in cls.minimize_values()
 
 
-class OptimizationMetricSchema(BaseCamelSchema):
-    name = fields.Str()
-    optimization = fields.Str(
-        allow_none=True, validate=validate.OneOf(V1Optimization.VALUES)
-    )
+class V1OptimizationMetric(BaseSchemaModel):
+    _IDENTIFIER = "optimization_metric"
 
-    @staticmethod
-    def schema_config():
-        return V1OptimizationMetric
-
-
-class V1OptimizationMetric(BaseConfig, polyaxon_sdk.V1OptimizationMetric):
-    SCHEMA = OptimizationMetricSchema
-    IDENTIFIER = "optimization_metric"
+    name: StrictStr
+    optimization: Optional[V1Optimization]
 
     def get_for_sort(self):
         if self.optimization == V1Optimization.MINIMIZE:
@@ -78,22 +79,15 @@ class V1OptimizationMetric(BaseConfig, polyaxon_sdk.V1OptimizationMetric):
         return "-{}".format(self.name)
 
 
-class OptimizationResourceSchema(BaseCamelSchema):
-    name = fields.Str()
-    type = fields.Str(allow_none=True, validate=validate.OneOf(ResourceType.VALUES))
+class V1OptimizationResource(BaseSchemaModel):
+    _IDENTIFIER = "optimization_resource"
 
-    @staticmethod
-    def schema_config():
-        return V1OptimizationResource
-
-
-class V1OptimizationResource(BaseConfig, polyaxon_sdk.V1OptimizationResource):
-    SCHEMA = OptimizationResourceSchema
-    IDENTIFIER = "optimization_resource"
+    name: StrictStr
+    type: Optional[V1ResourceType]
 
     def cast_value(self, value):
-        if ResourceType.is_int(self.type):
+        if V1ResourceType.is_int(self.type):
             return int(value)
-        if ResourceType.is_float(self.type):
+        if V1ResourceType.is_float(self.type):
             return float(value)
         return value

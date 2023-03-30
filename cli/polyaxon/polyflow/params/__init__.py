@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.polyflow.params.params import ParamSchema, ParamSpec, V1Param
+from polyaxon.polyflow.params.params import ParamSpec, V1Param

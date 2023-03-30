@@ -13,11 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, Optional, Union
+
 import urllib3
 
-from marshmallow import EXCLUDE, fields
-
-import polyaxon_sdk
+from pydantic import Extra, Field, StrictStr
 
 from polyaxon.api import LOCALHOST, POLYAXON_CLOUD_HOST
 from polyaxon.contexts import paths as ctx_paths
@@ -43,6 +43,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_LOG_LEVEL,
     EV_KEYS_NO_API,
     EV_KEYS_NO_OP,
+    EV_KEYS_RETRIES,
     EV_KEYS_SSL_CA_CERT,
     EV_KEYS_TIME_ZONE,
     EV_KEYS_TIMEOUT,
@@ -52,184 +53,104 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.pkg import VERSION
-from polyaxon.schemas.base import BaseConfig, BaseSchema
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.sdk.configuration import Configuration
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
 from polyaxon.utils.http_utils import clean_host
 
 
-class ClientSchema(BaseSchema):
-    host = fields.Str(allow_none=True, data_key=EV_KEYS_HOST)
-    version = fields.Str(allow_none=True, data_key=EV_KEYS_API_VERSION)
-    debug = fields.Bool(allow_none=True, data_key=EV_KEYS_DEBUG)
-    log_level = fields.Str(allow_none=True, data_key=EV_KEYS_LOG_LEVEL)
-    authentication_type = fields.Str(
-        allow_none=True, data_key=EV_KEYS_AUTHENTICATION_TYPE
+class ClientConfig(BaseSchemaModel):
+    _IDENTIFIER = "global"
+
+    _PAGE_SIZE = 20
+    _BASE_URL = "{}/api/{}"
+
+    host: Optional[StrictStr] = Field(alias=EV_KEYS_HOST)
+    version: Optional[StrictStr] = Field(default="v1", alias=EV_KEYS_API_VERSION)
+    debug: Optional[bool] = Field(default=False, alias=EV_KEYS_DEBUG)
+    log_level: Optional[StrictStr] = Field(alias=EV_KEYS_LOG_LEVEL)
+    authentication_type: Optional[StrictStr] = Field(
+        default=AuthenticationTypes.TOKEN, alias=EV_KEYS_AUTHENTICATION_TYPE
     )
-    is_managed = fields.Bool(allow_none=True, data_key=EV_KEYS_IS_MANAGED)
-    is_offline = fields.Bool(allow_none=True, data_key=EV_KEYS_IS_OFFLINE)
-    in_cluster = fields.Bool(allow_none=True, data_key=EV_KEYS_K8S_IN_CLUSTER)
-    no_op = fields.Bool(allow_none=True, data_key=EV_KEYS_NO_OP)
-    timeout = fields.Float(allow_none=True, data_key=EV_KEYS_TIMEOUT)
-    tracking_timeout = fields.Float(allow_none=True, data_key=EV_KEYS_TRACKING_TIMEOUT)
-    timezone = fields.Str(allow_none=True, data_key=EV_KEYS_TIME_ZONE)
-    watch_interval = fields.Int(allow_none=True, data_key=EV_KEYS_WATCH_INTERVAL)
-    interval = fields.Float(allow_none=True, data_key=EV_KEYS_INTERVAL)
-    verify_ssl = fields.Bool(allow_none=True, data_key=EV_KEYS_VERIFY_SSL)
-    ssl_ca_cert = fields.Str(allow_none=True, data_key=EV_KEYS_SSL_CA_CERT)
-    cert_file = fields.Str(allow_none=True, data_key=EV_KEYS_CERT_FILE)
-    key_file = fields.Str(allow_none=True, data_key=EV_KEYS_KEY_FILE)
-    assert_hostname = fields.Bool(allow_none=True, data_key=EV_KEYS_ASSERT_HOSTNAME)
-    connection_pool_maxsize = fields.Int(
-        allow_none=True, data_key=EV_KEYS_CONNECTION_POOL_MAXSIZE
+    is_managed: Optional[bool] = Field(default=False, alias=EV_KEYS_IS_MANAGED)
+    is_offline: Optional[bool] = Field(default=False, alias=EV_KEYS_IS_OFFLINE)
+    in_cluster: Optional[bool] = Field(default=False, alias=EV_KEYS_K8S_IN_CLUSTER)
+    no_op: Optional[bool] = Field(default=False, alias=EV_KEYS_NO_OP)
+    timeout: Optional[float] = Field(default=20, alias=EV_KEYS_TIMEOUT)
+    tracking_timeout: Optional[float] = Field(default=1, alias=EV_KEYS_TRACKING_TIMEOUT)
+    timezone: Optional[StrictStr] = Field(alias=EV_KEYS_TIME_ZONE)
+    watch_interval: Optional[int] = Field(default=5, alias=EV_KEYS_WATCH_INTERVAL)
+    interval: Optional[float] = Field(default=5, alias=EV_KEYS_INTERVAL)
+    verify_ssl: Optional[bool] = Field(alias=EV_KEYS_VERIFY_SSL)
+    ssl_ca_cert: Optional[StrictStr] = Field(alias=EV_KEYS_SSL_CA_CERT)
+    cert_file: Optional[StrictStr] = Field(alias=EV_KEYS_CERT_FILE)
+    key_file: Optional[StrictStr] = Field(alias=EV_KEYS_KEY_FILE)
+    assert_hostname: Optional[bool] = Field(alias=EV_KEYS_ASSERT_HOSTNAME)
+    connection_pool_maxsize: Optional[int] = Field(
+        alias=EV_KEYS_CONNECTION_POOL_MAXSIZE
     )
-    archives_root = fields.Str(allow_none=True, data_key=EV_KEYS_ARCHIVES_ROOT)
-
-    header = fields.Str(allow_none=True, data_key=EV_KEYS_HEADER)
-    header_service = fields.Str(allow_none=True, data_key=EV_KEYS_HEADER_SERVICE)
-
-    namespace = fields.Str(allow_none=True, data_key=EV_KEYS_K8S_NAMESPACE)
-    no_api = fields.Bool(allow_none=True, data_key=EV_KEYS_NO_API)
-    disable_errors_reporting = fields.Bool(
-        allow_none=True, data_key=EV_KEYS_DISABLE_ERRORS_REPORTING
+    archives_root: Optional[StrictStr] = Field(
+        default=ctx_paths.CONTEXT_ARCHIVES_ROOT, alias=EV_KEYS_ARCHIVES_ROOT
     )
-    compatibility_check_interval = fields.Int(
-        allow_none=True, data_key=EV_KEYS_INTERVALS_COMPATIBILITY_CHECK
+    header: Optional[Union[StrictStr, PolyaxonServiceHeaders]] = Field(
+        alias=EV_KEYS_HEADER
     )
+    header_service: Optional[Union[StrictStr, PolyaxonServices]] = Field(
+        alias=EV_KEYS_HEADER_SERVICE
+    )
+    namespace: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_NAMESPACE)
+    no_api: Optional[bool] = Field(default=False, alias=EV_KEYS_NO_API)
+    disable_errors_reporting: Optional[bool] = Field(
+        default=False, alias=EV_KEYS_DISABLE_ERRORS_REPORTING
+    )
+    compatibility_check_interval: Optional[int] = Field(
+        alias=EV_KEYS_INTERVALS_COMPATIBILITY_CHECK
+    )
+    retries: Optional[int] = Field(alias=EV_KEYS_RETRIES)
+    token: Optional[StrictStr]
+    client_header: Optional[Dict]
 
-    @staticmethod
-    def schema_config():
-        return ClientConfig
-
-
-class ClientConfig(BaseConfig):
-    SCHEMA = ClientSchema
-    IDENTIFIER = "global"
-
-    PAGE_SIZE = 20
-    BASE_URL = "{}/api/{}"
-
-    UNKNOWN_BEHAVIOUR = EXCLUDE
-
-    REDUCED_ATTRIBUTES = [
-        EV_KEYS_HOST,
-        EV_KEYS_API_VERSION,
-        EV_KEYS_ASSERT_HOSTNAME,
-        EV_KEYS_AUTHENTICATION_TYPE,
-        EV_KEYS_CERT_FILE,
-        EV_KEYS_CONNECTION_POOL_MAXSIZE,
-        EV_KEYS_ARCHIVES_ROOT,
-        EV_KEYS_DEBUG,
-        EV_KEYS_HEADER,
-        EV_KEYS_HEADER_SERVICE,
-        EV_KEYS_K8S_IN_CLUSTER,
-        EV_KEYS_INTERVAL,
-        EV_KEYS_IS_MANAGED,
-        EV_KEYS_IS_OFFLINE,
-        EV_KEYS_K8S_NAMESPACE,
-        EV_KEYS_KEY_FILE,
-        EV_KEYS_LOG_LEVEL,
-        EV_KEYS_NO_API,
-        EV_KEYS_NO_OP,
-        EV_KEYS_SSL_CA_CERT,
-        EV_KEYS_TIMEOUT,
-        EV_KEYS_TRACKING_TIMEOUT,
-        EV_KEYS_VERIFY_SSL,
-        EV_KEYS_WATCH_INTERVAL,
-        EV_KEYS_DISABLE_ERRORS_REPORTING,
-        EV_KEYS_INTERVALS_COMPATIBILITY_CHECK,
-    ]
+    class Config:
+        extra = Extra.ignore
 
     def __init__(
         self,
-        host=None,
-        token=None,
-        debug=None,
-        log_level=None,
-        version=None,
-        authentication_type=None,
-        is_managed=None,
-        is_offline=None,
-        in_cluster=None,
-        no_op=None,
-        timeout=None,
-        tracking_timeout=None,
-        timezone=None,
-        watch_interval=None,
-        interval=None,
-        verify_ssl=None,
-        ssl_ca_cert=None,
-        cert_file=None,
-        key_file=None,
-        assert_hostname=None,
-        connection_pool_maxsize=None,
-        archives_root=None,
-        header=None,
-        header_service=None,
-        namespace=None,
-        no_api=None,
-        disable_errors_reporting=None,
-        compatibility_check_interval=None,
+        host: str = None,
+        token: str = None,
         use_cloud_host: bool = False,
         retries: int = None,
-        **kwargs
+        **data
     ):
-        self.host = (
+        host = (
             clean_host(host or LOCALHOST) if not use_cloud_host else POLYAXON_CLOUD_HOST
         )
+        super().__init__(host=host, **data)
         self.retries = retries if not use_cloud_host else 0
         self.token = token
-        self.debug = self._get_bool(debug, False)
-        self.log_level = log_level
-        self.version = version or "v1"
-        self.is_managed = self._get_bool(is_managed, False)
-        self.is_offline = self._get_bool(is_offline, False)
-        self.in_cluster = self._get_bool(in_cluster, False)
-        self.no_op = self._get_bool(no_op, False)
-        self.verify_ssl = verify_ssl
-        self.ssl_ca_cert = ssl_ca_cert
-        self.cert_file = cert_file
-        self.key_file = key_file
-        self.assert_hostname = self._get_bool(assert_hostname, None)
-        self.connection_pool_maxsize = connection_pool_maxsize
-        self.archives_root = archives_root or ctx_paths.CONTEXT_ARCHIVES_ROOT
-        self.header = header
-        self.header_service = header_service
-        self.timeout = timeout or 20
-        self.tracking_timeout = tracking_timeout or 1
-        self.timezone = timezone
-        self.interval = interval or 5
-        self.watch_interval = watch_interval or 5
-        self.namespace = namespace
-        self.no_api = self._get_bool(no_api, False)
-        self.authentication_type = authentication_type or AuthenticationTypes.TOKEN
-        self.disable_errors_reporting = self._get_bool(disable_errors_reporting, False)
-        self.compatibility_check_interval = compatibility_check_interval
-
         self.client_header = {}
-
         if all([self.header, self.header_service]):
             self.client_header["header_name"] = self.header
             self.client_header["header_value"] = self.header_service
 
     @property
-    def base_url(self):
-        return self.BASE_URL.format(clean_host(self.host), self.version)
+    def base_url(self) -> str:
+        return self._BASE_URL.format(clean_host(self.host), self.version)
 
-    def set_cli_header(self):
+    def set_cli_header(self) -> None:
         self.header = PolyaxonServiceHeaders.get_header(PolyaxonServiceHeaders.SERVICE)
         self.header_service = VERSION
         self.client_header["header_name"] = self.header
         self.client_header["header_value"] = self.header_service
 
-    def set_agent_header(self):
+    def set_agent_header(self) -> None:
         self.header = PolyaxonServiceHeaders.get_header(PolyaxonServiceHeaders.SERVICE)
         self.header_service = PolyaxonServices.AGENT
         self.client_header["header_name"] = self.header
         self.client_header["header_value"] = self.header_service
 
-    def get_full_headers(self, headers=None, auth_key="Authorization"):
+    def get_full_headers(self, headers=None, auth_key="Authorization") -> Dict:
         request_headers = {}
         request_headers.update(headers or {})
         request_headers.update(self.client_header or {})
@@ -243,13 +164,13 @@ class ClientConfig(BaseConfig):
         return request_headers
 
     @property
-    def sdk_config(self):
+    def sdk_config(self) -> Configuration:
         if not self.host and not self.in_cluster:
             raise PolyaxonClientException(
                 "Api config requires at least a host if not running in-cluster."
             )
 
-        config = polyaxon_sdk.Configuration()
+        config = Configuration()
         config.retries = self.retries
         config.debug = self.debug
         config.host = clean_host(self.host)
@@ -268,12 +189,12 @@ class ClientConfig(BaseConfig):
         return config
 
     @property
-    def sdk_async_config(self):
+    def sdk_async_config(self) -> Configuration:
         config = self.sdk_config
         config.connection_pool_maxsize = 100
         return config
 
     @classmethod
-    def patch_from(cls, config: "ClientConfig", **kwargs):
+    def patch_from(cls, config: "ClientConfig", **kwargs) -> "ClientConfig":
         data = {**config.to_dict(), **kwargs}
         return cls.from_dict(data)

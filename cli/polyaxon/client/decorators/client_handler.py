@@ -21,7 +21,7 @@ from polyaxon import settings
 from polyaxon.client import PolyaxonClient
 from polyaxon.client.decorators.errors import handle_client_error
 from polyaxon.logger import logger
-from polyaxon_sdk.rest import ApiException
+from polyaxon.sdk.exceptions import ApiException
 
 
 def client_handler(

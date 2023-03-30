@@ -13,29 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
-from marshmallow import fields, validate
+from pydantic import StrictStr
 
-import polyaxon_sdk
-
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-
-
-class CacheSchema(BaseCamelSchema):
-    disable = fields.Bool(allow_none=True)
-    ttl = fields.Int(allow_none=True)
-    io = fields.List(fields.Str(), allow_none=True)
-    sections = fields.List(
-        fields.Str(validate=validate.OneOf(["containers", "init", "connections"])),
-        allow_none=True,
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Cache
+from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, IntOrRef, RefField
+from polyaxon.utils.enums_utils import PEnum
 
 
-class V1Cache(BaseConfig, polyaxon_sdk.V1Cache):
+class V1Cache(BaseSchemaModel):
     """Polyaxon provides a caching layer for operation executions,
     this behavior is enabled by default for all runs executed in the context of a DAG,
     a hyperparameter tuning, or a mapping.
@@ -125,6 +112,14 @@ class V1Cache(BaseConfig, polyaxon_sdk.V1Cache):
     ```
     """
 
-    SCHEMA = CacheSchema
-    IDENTIFIER = "cache"
-    REDUCED_ATTRIBUTES = ["disable", "ttl", "io", "sections"]
+    _IDENTIFIER = "cache"
+
+    class CacheSections(str, PEnum):
+        CONTAINERS = "containers"
+        INIT = "init"
+        CONNECTIONS = "connections"
+
+    disable: Optional[BoolOrRef]
+    ttl: Optional[IntOrRef]
+    io: Optional[Union[List[StrictStr], RefField]]
+    sections: Optional[Union[List[CacheSections], RefField]]

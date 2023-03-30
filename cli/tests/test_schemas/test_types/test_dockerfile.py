@@ -16,7 +16,7 @@
 
 import pytest
 
-from marshmallow import ValidationError
+from pydantic import ValidationError
 
 from polyaxon.schemas.types.dockerfile import (
     POLYAXON_DOCKER_SHELL,

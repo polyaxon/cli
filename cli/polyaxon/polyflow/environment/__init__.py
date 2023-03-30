@@ -13,65 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Union
+from typing_extensions import Literal
 
-from marshmallow import fields, validate, validates_schema
+from pydantic import Field, StrictStr, validator
 
-import polyaxon_sdk
-
-from polyaxon.k8s import k8s_schemas
-from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
-from polyaxon.schemas.fields.swagger import SwaggerField
-from polyaxon.utils.sanitizers import sanitize_string_dict
-from polyaxon.utils.signal_decorators import check_partial
+from polyaxon.k8s import k8s_schemas, k8s_validation
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class EnvironmentSchema(BaseCamelSchema):
-    labels = fields.Dict(allow_none=True)
-    annotations = fields.Dict(allow_none=True)
-    node_selector = fields.Dict(allow_none=True)
-    affinity = SwaggerField(cls=k8s_schemas.V1Affinity, allow_none=True)
-    tolerations = fields.List(
-        SwaggerField(cls=k8s_schemas.V1Toleration), allow_none=True
-    )
-    node_name = fields.Str(allow_none=True)
-    service_account_name = fields.Str(allow_none=True)
-    host_aliases = fields.List(
-        SwaggerField(cls=k8s_schemas.V1HostAlias), allow_none=True
-    )
-    security_context = SwaggerField(cls=k8s_schemas.V1SecurityContext, allow_none=True)
-    image_pull_secrets = fields.List(fields.Str(), allow_none=True)
-    host_network = fields.Bool(allow_none=True)
-    host_pid = fields.Bool(allow_none=True, data_key="hostPID")
-    dns_policy = fields.Str(allow_none=True)
-    dns_config = SwaggerField(cls=k8s_schemas.V1PodDNSConfig, allow_none=True)
-    scheduler_name = fields.Str(allow_none=True)
-    priority_class_name = fields.Str(allow_none=True)
-    priority = fields.Int(allow_none=True)
-    restart_policy = fields.Str(
-        allow_none=True, validate=validate.OneOf(["Always", "OnFailure", "Never"])
-    )
-
-    @staticmethod
-    def schema_config():
-        return V1Environment
-
-    @validates_schema
-    @check_partial
-    def validate_param(self, values, **kwargs):
-        labels = values.get("labels")
-        if labels:
-            values["labels"] = sanitize_string_dict(labels)
-        annotations = values.get("annotations")
-        if annotations:
-            values["annotations"] = sanitize_string_dict(annotations)
-        node_selector = sanitize_string_dict(values.get("nodeSelector"))
-        if node_selector:
-            values["nodeSelector"] = sanitize_string_dict(node_selector)
-
-        return values
-
-
-class V1Environment(BaseConfig, polyaxon_sdk.V1Environment):
+class V1Environment(BaseSchemaModel):
     """The environment section allows to alter the
     configuration of the runtime of your jobs, experiments, and services.
 
@@ -444,25 +395,62 @@ class V1Environment(BaseConfig, polyaxon_sdk.V1Environment):
     ```
     """
 
-    IDENTIFIER = "environment"
-    SCHEMA = EnvironmentSchema
-    REDUCED_ATTRIBUTES = [
-        "labels",
-        "annotations",
-        "nodeSelector",
+    _IDENTIFIER = "environment"
+    _SWAGGER_FIELDS = [
         "affinity",
         "tolerations",
-        "nodeName",
-        "serviceAccountName",
-        "hostAliases",
         "securityContext",
-        "imagePullSecrets",
-        "hostNetwork",
-        "hostPID",
-        "dnsPolicy",
+        "hostAliases",
         "dnsConfig",
-        "schedulerName",
-        "priorityClassName",
-        "priority",
-        "restartPolicy",
     ]
+
+    labels: Optional[Dict[StrictStr, StrictStr]]
+    annotations: Optional[Dict[StrictStr, StrictStr]]
+    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(alias="nodeSelector")
+    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
+    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
+    node_name: Optional[StrictStr] = Field(alias="nodeName")
+    service_account_name: Optional[StrictStr] = Field(alias="serviceAccountName")
+    host_aliases: Optional[List[k8s_schemas.V1HostAlias]] = Field(alias="hostAliases")
+    security_context: Optional[Union[k8s_schemas.V1SecurityContext, Dict]] = Field(
+        alias="securityContext"
+    )
+    image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
+    host_network: Optional[bool] = Field(alias="hostNetwork")
+    host_pid: Optional[bool] = Field(alias="hostPID")
+    dns_policy: Optional[StrictStr] = Field(alias="dnsPolicy")
+    dns_config: Optional[k8s_schemas.V1PodDNSConfig] = Field(alias="dnsConfig")
+    scheduler_name: Optional[StrictStr] = Field(alias="schedulerName")
+    priority_class_name: Optional[StrictStr] = Field(alias="priorityClassName")
+    priority: Optional[int]
+    restart_policy: Optional[Literal["Always", "OnFailure", "Never"]] = Field(
+        alias="restartPolicy"
+    )
+
+    @validator("affinity", always=True, pre=True)
+    def validate_affinity(cls, v):
+        return k8s_validation.validate_k8s_affinity(v)
+
+    @validator("tolerations", always=True, pre=True)
+    def validate_tolerations(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_toleration(vi) for vi in v]
+
+    @validator("host_aliases", always=True, pre=True)
+    def validate_host_aliases(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_host_alias(vi) for vi in v]
+
+    @validator("security_context", always=True, pre=True)
+    def validate_security_context(cls, v):
+        if not v:
+            return v
+        return k8s_validation.validate_k8s_security_context(v)
+
+    @validator("dns_config", always=True, pre=True)
+    def validate_dns_config(cls, v):
+        if not v:
+            return v
+        return k8s_validation.validate_k8s_pod_dns_config(v)
