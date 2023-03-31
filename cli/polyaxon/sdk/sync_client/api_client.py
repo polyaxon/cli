@@ -76,15 +76,13 @@ class ApiClient(object):
         cookie=None,
         pool_threads=1,
     ):
-        from polyaxon.sdk.sync_client import rest
-
         # use default configuration if none is provided
         if configuration is None:
             configuration = Configuration.get_default()
         self.configuration = configuration
         self.pool_threads = pool_threads
 
-        self.rest_client = rest.RESTClientObject(configuration)
+        self.rest_client = self._get_rest_client()
         self.default_headers = {}
         if header_name is not None:
             self.default_headers[header_name] = header_value
@@ -106,6 +104,11 @@ class ApiClient(object):
             self._pool = None
             if hasattr(atexit, "unregister"):
                 atexit.unregister(self.close)
+
+    def _get_rest_client(self):
+        from polyaxon.sdk.sync_client import rest
+
+        return rest.RESTClientObject(self.configuration)
 
     @property
     def pool(self):
@@ -142,7 +145,7 @@ class ApiClient(object):
         :return: The ApiClient object.
         """
         if cls._default is None:
-            cls._default = ApiClient()
+            cls._default = cls()
         return cls._default
 
     @classmethod
