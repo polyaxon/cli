@@ -21,9 +21,18 @@ from polyaxon.sdk.api import (
     AgentsV1Api,
     AuthV1Api,
     ConnectionsV1Api,
+    DashboardsV1Api,
     OrganizationsV1Api,
+    PresetsV1Api,
+    ProjectDashboardsV1Api,
+    ProjectSearchesV1Api,
     ProjectsV1Api,
+    QueuesV1Api,
     RunsV1Api,
+    SearchesV1Api,
+    ServiceAccountsV1Api,
+    TagsV1Api,
+    TeamsV1Api,
     UsersV1Api,
     VersionsV1Api,
 )
@@ -86,26 +95,46 @@ class PolyaxonClient:
         self.api_client = self._get_client()
         self._projects_v1 = None
         self._runs_v1 = None
+        self._project_dashboards_v1 = None
+        self._project_searches_v1 = None
         self._auth_v1 = None
         self._users_v1 = None
         self._versions_v1 = None
         self._agents_v1 = None
-        self._organizations_v1 = None
+        self._queues_v1 = None
+        self._service_accounts_v1 = None
+        self._presets_v1 = None
+        self._tags_v1 = None
+        self._teams_v1 = None
         self._connections_v1 = None
+        self._dashboards_v1 = None
+        self._searches_v1 = None
+        self._organizations_v1 = None
 
     def _get_client(self):
         if self.is_async:
-            return AsyncApiClient(self.config.async_sdk_config, **self.config.client_header)
+            return AsyncApiClient(
+                self.config.async_sdk_config, **self.config.client_header
+            )
         return ApiClient(self.config.sdk_config, **self.config.client_header)
 
     def reset(self):
         self._projects_v1 = None
         self._runs_v1 = None
+        self._project_dashboards_v1 = None
+        self._project_searches_v1 = None
         self._auth_v1 = None
         self._users_v1 = None
         self._versions_v1 = None
         self._agents_v1 = None
+        self._queues_v1 = None
+        self._service_accounts_v1 = None
+        self._presets_v1 = None
+        self._tags_v1 = None
+        self._teams_v1 = None
         self._connections_v1 = None
+        self._dashboards_v1 = None
+        self._searches_v1 = None
         self._organizations_v1 = None
         self.api_client = self._get_client()
 
@@ -150,10 +179,64 @@ class PolyaxonClient:
         return self._agents_v1
 
     @property
+    def queues_v1(self):
+        if not self._queues_v1:
+            self._queues_v1 = QueuesV1Api(self.api_client)
+        return self._queues_v1
+
+    @property
+    def service_accounts_v1(self):
+        if not self._service_accounts_v1:
+            self._service_accounts_v1 = ServiceAccountsV1Api(self.api_client)
+        return self._service_accounts_v1
+
+    @property
+    def tags_v1(self):
+        if not self._tags_v1:
+            self._tags_v1 = TagsV1Api(self.api_client)
+        return self._tags_v1
+
+    @property
+    def teams_v1(self):
+        if not self._teams_v1:
+            self._teams_v1 = TeamsV1Api(self.api_client)
+        return self._teams_v1
+
+    @property
     def connections_v1(self):
         if not self._connections_v1:
             self._connections_v1 = ConnectionsV1Api(self.api_client)
         return self._connections_v1
+
+    @property
+    def project_dashboards_v1(self):
+        if not self._project_dashboards_v1:
+            self._project_dashboards_v1 = ProjectDashboardsV1Api(self.api_client)
+        return self._project_dashboards_v1
+
+    @property
+    def project_searches_v1(self):
+        if not self._project_searches_v1:
+            self._project_searches_v1 = ProjectSearchesV1Api(self.api_client)
+        return self._project_searches_v1
+
+    @property
+    def dashboards_v1(self):
+        if not self._dashboards_v1:
+            self._dashboards_v1 = DashboardsV1Api(self.api_client)
+        return self._dashboards_v1
+
+    @property
+    def searches_v1(self):
+        if not self._searches_v1:
+            self._searches_v1 = SearchesV1Api(self.api_client)
+        return self._searches_v1
+
+    @property
+    def presets_v1(self):
+        if not self._presets_v1:
+            self._presets_v1 = PresetsV1Api(self.api_client)
+        return self._presets_v1
 
     @property
     def organizations_v1(self):
