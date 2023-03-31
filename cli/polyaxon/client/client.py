@@ -95,7 +95,7 @@ class PolyaxonClient:
 
     def _get_client(self):
         if self.is_async:
-            return AsyncApiClient(self.config.sdk_config, **self.config.client_header)
+            return AsyncApiClient(self.config.async_sdk_config, **self.config.client_header)
         return ApiClient(self.config.sdk_config, **self.config.client_header)
 
     def reset(self):

@@ -189,7 +189,7 @@ class ClientConfig(BaseSchemaModel):
         return config
 
     @property
-    def sdk_async_config(self) -> Configuration:
+    def async_sdk_config(self) -> Configuration:
         config = self.sdk_config
         config.connection_pool_maxsize = 100
         return config
