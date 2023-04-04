@@ -26,7 +26,7 @@ from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def convert(
-    namespace: str,
+    namespace: Optional[str],
     owner_name: str,
     project_name: str,
     run_name: str,
@@ -37,13 +37,18 @@ def convert(
     connection_by_names: Optional[Dict[str, V1ConnectionType]],
     secrets: Optional[Iterable[V1K8sResourceType]],
     config_maps: Optional[Iterable[V1K8sResourceType]],
-    polyaxon_sidecar: V1PolyaxonSidecarContainer = None,
-    polyaxon_init: V1PolyaxonInitContainer = None,
+    polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer] = None,
+    polyaxon_init: Optional[V1PolyaxonInitContainer] = None,
     default_sa: Optional[str] = None,
     converters: Dict[V1RunKind, Type[BaseConverter]] = CORE_CONVERTERS,
     internal_auth: bool = False,
     default_auth: bool = False,
 ) -> Dict:
+    if not namespace:
+        raise PolyaxonCompilerError(
+            "Converter Error. "
+            "Namespace is required to create a k8s resource specification."
+        )
     if compiled_operation.has_pipeline:
         raise PolyaxonCompilerError(
             "Converter Error. "

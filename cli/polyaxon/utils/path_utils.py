@@ -29,7 +29,7 @@ from polyaxon.utils import cli_constants
 from polyaxon.utils.list_utils import to_list
 
 
-def check_or_create_path(path: Optional[str] = None, is_dir: bool = False) -> None:
+def check_or_create_path(path: Optional[str] = None, is_dir: bool = False):
     if not is_dir:
         path = os.path.dirname(os.path.abspath(path))
     if not os.path.exists(path):

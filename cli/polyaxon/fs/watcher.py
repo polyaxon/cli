@@ -89,7 +89,7 @@ class FSWatcher:
             dir_mapping=config.get_dir_mapping(), file_mapping=config.get_file_mapping()
         )
 
-    def write(self, config_path: str = ctx_paths.CONTEXT_MOUNT_FILE_WATCHER) -> None:
+    def write(self, config_path: str = ctx_paths.CONTEXT_MOUNT_FILE_WATCHER):
         config = FSWatcherConfig.read(
             {
                 "dir_mapping": self._dir_mapping,

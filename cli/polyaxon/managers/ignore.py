@@ -22,7 +22,7 @@ from pathlib import PurePath
 from typing import List, Optional
 
 from polyaxon.logger import logger
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.utils import cli_constants
 from polyaxon.utils.list_utils import to_list
 from polyaxon.utils.path_utils import unix_style_path
@@ -111,7 +111,7 @@ def translate(pat: str) -> str:
 class IgnoreConfigManager(BaseConfigManager):
     """Manages .polyaxonignore file in the current directory"""
 
-    VISIBILITY = BaseConfigManager.VISIBILITY_LOCAL
+    VISIBILITY = ManagerVisibility.LOCAL
     CONFIG_FILE_NAME = ".polyaxonignore"
 
     @staticmethod

@@ -18,7 +18,7 @@ import sys
 
 from typing import Type
 
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.utils import cli_constants
 from polyaxon.utils.formatting import Printer
@@ -27,7 +27,7 @@ from polyaxon.utils.formatting import Printer
 class ProjectConfigManager(BaseConfigManager):
     """Manages project configuration .project file."""
 
-    VISIBILITY = BaseConfigManager.VISIBILITY_ALL
+    VISIBILITY = ManagerVisibility.ALL
     IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".project"
     CONFIG: Type[V1Project] = V1Project

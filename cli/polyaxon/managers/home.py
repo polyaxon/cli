@@ -19,14 +19,14 @@ from typing import Dict, Type
 
 from polyaxon.config_reader.manager import ConfigManager
 from polyaxon.config_reader.spec import ConfigSpec
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.api.home import HomeConfig
 
 
 class HomeConfigManager(BaseConfigManager):
     """Manages home configuration .home file."""
 
-    VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
+    VISIBILITY = ManagerVisibility.GLOBAL
     CONFIG_FILE_NAME = ".home"
     CONFIG: Type[HomeConfig] = HomeConfig
 

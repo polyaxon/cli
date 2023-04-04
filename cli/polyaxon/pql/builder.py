@@ -54,7 +54,7 @@ class BaseCondition:
 
 
 class BaseOperatorCondition(BaseCondition):
-    def __init__(self, op: str, negation: bool = False) -> None:
+    def __init__(self, op: str, negation: bool = False):
         if op not in self.VALUES and op not in self.REPRESENTATIONS:
             raise PQLException(
                 "Received an invalid operator `{}`, "
@@ -88,7 +88,7 @@ class BaseOperatorCondition(BaseCondition):
 class CallbackCondition(BaseCondition):
     """The `CallbackCondition` represents a filter based on a callback to apply."""
 
-    def __init__(self, callback: Callable) -> None:
+    def __init__(self, callback: Callable):
         self.callback = callback
         self.negation = False
 

@@ -66,7 +66,7 @@ class BaseAgent:
             return None
 
     @classmethod
-    def ping(cls) -> None:
+    def ping(cls):
         ChecksConfig.init_file(cls.HEALTH_FILE)
         config = cls.get_healthz_config()
         if config:

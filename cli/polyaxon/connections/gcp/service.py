@@ -17,11 +17,18 @@
 import json
 import os
 
+from typing import TYPE_CHECKING, List, Optional
+
 from polyaxon.connections.base import BaseService
 from polyaxon.connections.gcp.base import get_gc_client
 from polyaxon.connections.reader import get_connection_context_path
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.utils.path_utils import create_polyaxon_tmp
+
+if TYPE_CHECKING:
+    from google.oauth2.service_account import Credentials
+
+    from polyaxon.schemas.types import V1ConnectionType
 
 
 class GCPService(BaseService):
@@ -36,13 +43,13 @@ class GCPService(BaseService):
 
     def set_connection(
         self,
-        connection=None,
-        connection_type=None,
-        project_id=None,
-        key_path=None,
-        keyfile_dict=None,
-        credentials=None,
-        scopes=None,
+        connection: Optional[str] = None,
+        connection_type: Optional["V1ConnectionType"] = None,
+        project_id: Optional[str] = None,
+        key_path: Optional[str] = None,
+        keyfile_dict: Optional[str] = None,
+        credentials: Optional["Credentials"] = None,
+        scopes: Optional[List[str]] = None,
     ):
         """
         Sets a new gc client.

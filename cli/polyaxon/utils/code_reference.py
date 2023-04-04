@@ -162,9 +162,9 @@ def is_dirty(path: str = ".") -> bool:
     return bool(run_command(cmd="git diff --stat", data=None, location=path, chw=True))
 
 
-def get_code_reference(path: str = ".", url: Optional[str] = None) -> Optional[Dict]:
+def get_code_reference(path: str = ".", url: Optional[str] = None) -> Dict:
     if not is_git_initialized(path):
-        return None
+        return {}
 
     url = url or get_remote(path)
     if "git@" in url:
@@ -175,9 +175,9 @@ def get_code_reference(path: str = ".", url: Optional[str] = None) -> Optional[D
     return {"commit": get_commit(path), "branch": get_branch_name(path), "url": url}
 
 
-def get_code_reference_all(path: str = ".") -> Optional[Dict]:
+def get_code_reference_all(path: str = ".") -> Dict:
     if not is_git_initialized(path):
-        return None
+        return {}
 
     return {
         "commit": get_commit(path),

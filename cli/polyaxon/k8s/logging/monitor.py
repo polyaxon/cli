@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from datetime import datetime
-from typing import Any, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional
 
 from kubernetes.client.rest import ApiException
 
@@ -33,7 +33,7 @@ def query_logs(
     stream: bool = False,
     since_seconds: Optional[int] = None,
 ) -> Any:
-    params = {}
+    params: Dict[str, Any] = {}
     if stream:
         params = {"follow": True, "_preload_content": False}
     if since_seconds:
@@ -84,7 +84,7 @@ def process_logs(
     pod_id: str,
     container_id: str,
     filepath: str,
-    since_seconds: int,
+    since_seconds: Optional[int],
 ) -> bool:
     logs = None
     retries = 0

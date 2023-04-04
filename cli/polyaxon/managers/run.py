@@ -15,7 +15,7 @@
 # limitations under the License.
 from typing import Type
 
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.responses.v1_run import V1Run
 from polyaxon.utils.formatting import Printer
 
@@ -23,7 +23,7 @@ from polyaxon.utils.formatting import Printer
 class RunConfigManager(BaseConfigManager):
     """Manages run configuration .run file."""
 
-    VISIBILITY = BaseConfigManager.VISIBILITY_ALL
+    VISIBILITY = ManagerVisibility.ALL
     IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".run"
     CONFIG: Type[V1Run] = V1Run

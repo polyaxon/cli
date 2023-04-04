@@ -17,7 +17,7 @@ import datetime
 
 from typing import TYPE_CHECKING, Optional, Type
 
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.cli.cli_config import CliConfig
 from polyaxon.utils.tz_utils import now
 
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 class CliConfigManager(BaseConfigManager):
     """Manages access cli configuration .cli file."""
 
-    VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
+    VISIBILITY = ManagerVisibility.GLOBAL
     CONFIG_FILE_NAME = ".cli"
     CONFIG: Type[CliConfig] = CliConfig
 

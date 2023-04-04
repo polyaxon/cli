@@ -20,14 +20,14 @@ from typing import Type
 from polyaxon.config_reader.manager import ConfigManager
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.cli.agent_config import AgentConfig
 
 
 class AgentConfigManager(BaseConfigManager):
     """Manages agent configuration .agent file."""
 
-    VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
+    VISIBILITY = ManagerVisibility.GLOBAL
     CONFIG_FILE_NAME = ".agent"
     CONFIG: Type[AgentConfig] = AgentConfig
 

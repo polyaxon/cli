@@ -63,7 +63,7 @@ class PQLManager:
         key: str,
         tokenized_query: Dict[str, Iterable],
         update_tokenized_query: Dict[str, Iterable],
-    ) -> None:
+    ):
         field, suffix = parse_field(key)
         if field in cls.FIELDS_TRANS:
             field_trans = cls.FIELDS_TRANS[field]["field"]

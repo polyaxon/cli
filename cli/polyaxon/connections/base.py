@@ -13,9 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import abc
 
 
-class BaseService:
+class BaseService(abc.ABC):
     def __init__(self, connection=None, **kwargs):
         self._connection = connection
         self._connection_type = kwargs.get("connection_type")
@@ -31,5 +32,6 @@ class BaseService:
             self.set_connection()
         return self._connection
 
+    @abc.abstractmethod
     def set_connection(self, **kwargs):
         raise NotImplementedError

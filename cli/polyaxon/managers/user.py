@@ -15,7 +15,7 @@
 # limitations under the License.
 from typing import Type
 
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.responses.v1_user import V1User
 from polyaxon.utils.formatting import Printer
 
@@ -23,7 +23,7 @@ from polyaxon.utils.formatting import Printer
 class UserConfigManager(BaseConfigManager):
     """Manages user configuration .user file."""
 
-    VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
+    VISIBILITY = ManagerVisibility.GLOBAL
     IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".user"
     CONFIG: Type[V1User] = V1User

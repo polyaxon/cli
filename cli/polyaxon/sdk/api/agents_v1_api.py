@@ -396,7 +396,7 @@ class AgentsV1Api(BaseApi):
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
         **kwargs
-    ) -> None:  # noqa: E501
+    ):  # noqa: E501
         """Delete agent  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -2097,7 +2097,7 @@ class AgentsV1Api(BaseApi):
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
         **kwargs
-    ) -> None:  # noqa: E501
+    ):  # noqa: E501
         """Sync agent  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an

@@ -17,60 +17,63 @@
 import os
 
 from collections.abc import Mapping
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 import ujson
 
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.logger import logger
 from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.utils.enums_utils import PEnum
 from polyaxon.utils.path_utils import check_or_create_path
+
+
+class ManagerVisibility(str, PEnum):
+    GLOBAL = "global"
+    LOCAL = "local"
+    ALL = "all"
 
 
 class BaseConfigManager:
     """Base class for managing a configuration file."""
 
-    VISIBILITY_GLOBAL = "global"
-    VISIBILITY_LOCAL = "local"
-    VISIBILITY_ALL = "all"
-
-    VISIBILITY = None
+    VISIBILITY: ManagerVisibility
     IN_POLYAXON_DIR = False
-    CONFIG_PATH = None
-    CONFIG_FILE_NAME = None
-    CONFIG = None
+    CONFIG_PATH: Optional[str] = None
+    CONFIG_FILE_NAME: Optional[str] = None
+    CONFIG: Type[BaseSchemaModel]
 
     @classmethod
-    def is_global(cls, visibility=None) -> bool:
+    def is_global(cls, visibility: Optional[ManagerVisibility] = None) -> bool:
         visibility = visibility or cls.VISIBILITY
-        return visibility == cls.VISIBILITY_GLOBAL
+        return visibility == ManagerVisibility.GLOBAL
 
     @classmethod
     def is_local(cls, visibility=None) -> bool:
         visibility = visibility or cls.VISIBILITY
-        return visibility == cls.VISIBILITY_LOCAL
+        return visibility == ManagerVisibility.LOCAL
 
     @classmethod
     def is_all_visibility(cls, visibility=None) -> bool:
         visibility = visibility or cls.VISIBILITY
-        return visibility == cls.VISIBILITY_ALL
+        return visibility == ManagerVisibility.ALL
 
     @classmethod
     def get_visibility(cls) -> str:
         if cls.is_all_visibility():
             return (
-                cls.VISIBILITY_LOCAL
+                ManagerVisibility.LOCAL
                 if cls.is_locally_initialized()
-                else cls.VISIBILITY_GLOBAL
+                else ManagerVisibility.GLOBAL
             )
         return cls.VISIBILITY
 
     @classmethod
-    def set_config_path(cls, config_path: Optional[str]) -> None:
+    def set_config_path(cls, config_path: Optional[str]):
         cls.CONFIG_PATH = config_path
 
     @staticmethod
-    def _create_dir(config_file_path) -> None:
+    def _create_dir(config_file_path):
         try:
             check_or_create_path(config_file_path, is_dir=False)
         except OSError:
@@ -154,7 +157,7 @@ class BaseConfigManager:
     @classmethod
     def set_config(
         cls, config: Any, init: bool = False, visibility: Optional[str] = None
-    ) -> None:
+    ):
         config_filepath = cls.get_config_filepath(visibility=visibility)
 
         if os.path.isfile(config_filepath) and init:
@@ -247,11 +250,11 @@ class BaseConfigManager:
                 _purge()
             else:
                 config_filepath = cls.get_config_filepath(
-                    create=False, visibility=cls.VISIBILITY_LOCAL
+                    create=False, visibility=ManagerVisibility.LOCAL
                 )
                 _purge()
                 config_filepath = cls.get_config_filepath(
-                    create=False, visibility=cls.VISIBILITY_GLOBAL
+                    create=False, visibility=ManagerVisibility.GLOBAL
                 )
                 _purge()
         else:

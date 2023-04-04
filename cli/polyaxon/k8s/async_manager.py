@@ -219,6 +219,7 @@ class AsyncK8SManager:
                     ) from e
                 else:
                     logger.error("K8S error: {}".format(e))
+        return {}, False
 
     async def get_custom_object(
         self, name: str, group: str, version: str, plural: str, reraise: bool = False

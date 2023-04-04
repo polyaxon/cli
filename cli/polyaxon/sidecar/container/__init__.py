@@ -16,7 +16,7 @@
 import asyncio
 import os
 
-from kubernetes.client.rest import ApiException
+from kubernetes_asyncio.client.rest import ApiException
 
 from polyaxon.client import RunClient
 from polyaxon.contexts import paths as ctx_paths

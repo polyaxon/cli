@@ -20,7 +20,7 @@ import pytest
 from mock import patch
 
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.managers.base import BaseConfigManager
+from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -43,7 +43,7 @@ class TestBaseConfigManger(BaseTestCase):
 
         # Test configuration
         # Set IS_GLOBAL = False
-        self.DummyConfigManger.VISIBILITY = BaseConfigManager.VISIBILITY_LOCAL
+        self.DummyConfigManger.VISIBILITY = ManagerVisibility.LOCAL
 
         # Set IN_POLYAXON_DIR = True
         self.DummyConfigManger.IN_POLYAXON_DIR = True
@@ -72,7 +72,7 @@ class TestBaseConfigManger(BaseTestCase):
 
         # Test configuration
         # Set IS_GLOBAL = True
-        self.DummyConfigManger.VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
+        self.DummyConfigManger.VISIBILITY = ManagerVisibility.GLOBAL
 
         with patch.object(self.DummyConfigManger, "_create_dir") as path_fct:
             config_file1 = self.DummyConfigManger.get_config_filepath(create=True)
