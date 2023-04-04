@@ -150,16 +150,13 @@ def cli(context, verbose, offline):
         "port-forward",
         "sandbox",
     ]
-    if (
-        not (
-            context.invoked_subcommand in non_check_cmds
-            or offline
-            or settings.CLIENT_CONFIG.no_api
-            or PolyaxonServices.get_service_name()
-            or DOCS_GEN
-        )
-        and not settings.CLI_CONFIG.installation
-    ):
+    if not (
+        context.invoked_subcommand in non_check_cmds
+        or offline
+        or settings.CLIENT_CONFIG.no_api
+        or PolyaxonServices.get_service_name()
+        or DOCS_GEN
+    ) and not (settings.CLI_CONFIG or settings.CLI_CONFIG.installation):
         cli_config = set_versions_config(is_cli=False)
         settings.CLI_CONFIG = cli_config
         check_cli_version(cli_config, is_cli=False)

@@ -43,7 +43,7 @@ HEALTH_CHECK_INTERVAL = 60
 HOME_CONFIG: "HomeConfig" = HomeConfigManager.get_config_from_env()
 AUTH_CONFIG: Optional["AccessTokenConfig"] = None
 CLIENT_CONFIG: "ClientConfig"
-CLI_CONFIG: "CliConfig"
+CLI_CONFIG: Optional["CliConfig"] = None
 AGENT_CONFIG: Optional["AgentConfig"] = None
 
 PolyaxonServices.set_service_name()

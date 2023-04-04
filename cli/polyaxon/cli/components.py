@@ -49,7 +49,7 @@ from polyaxon.utils.formatting import Printer, dict_tabulate, list_dicts_to_tabu
 
 
 def get_current_or_public_client():
-    if settings.CLI_CONFIG.is_community:
+    if settings.CLI_CONFIG and settings.CLI_CONFIG.is_community:
         return PolyaxonClient(
             config=ClientConfig(use_cloud_host=True, verify_ssl=False),
             token=NO_AUTH,
