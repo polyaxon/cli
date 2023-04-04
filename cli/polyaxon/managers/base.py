@@ -37,11 +37,11 @@ class ManagerVisibility(str, PEnum):
 class BaseConfigManager:
     """Base class for managing a configuration file."""
 
-    VISIBILITY: ManagerVisibility
+    VISIBILITY: ManagerVisibility = None
     IN_POLYAXON_DIR = False
     CONFIG_PATH: Optional[str] = None
     CONFIG_FILE_NAME: Optional[str] = None
-    CONFIG: Type[BaseSchemaModel]
+    CONFIG: Type[BaseSchemaModel] = None
 
     @classmethod
     def is_global(cls, visibility: Optional[ManagerVisibility] = None) -> bool:
