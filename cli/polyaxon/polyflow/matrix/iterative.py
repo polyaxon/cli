@@ -255,7 +255,7 @@ class V1Iterative(BaseSearchConfig):
             raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")
         return v
 
-    def create_iteration(self, iteration: int = None) -> int:
+    def create_iteration(self, iteration: Optional[int] = None) -> int:
         if iteration is None:
             return 0
         return iteration + 1

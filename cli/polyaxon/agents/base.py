@@ -63,7 +63,7 @@ class BaseAgent:
         try:
             return ChecksConfig.read(cls.HEALTH_FILE, config_type=".json")
         except Exception:  # noqa
-            return
+            return None
 
     @classmethod
     def ping(cls) -> None:
@@ -80,7 +80,7 @@ class BaseAgent:
             return False
         return not config.should_check(interval=interval)
 
-    def refresh_spawner(self) -> None:
+    def refresh_spawner(self):
         if (
             now() - self._spawner_refreshed_at
         ).total_seconds() > settings.AGENT_CONFIG.get_spawner_refresh_interval():
@@ -88,7 +88,7 @@ class BaseAgent:
             self.spawner.refresh()
             self._spawner_refreshed_at = now()
 
-    def start(self) -> None:
+    def start(self):
         try:
             with exit_context() as exit_event:
                 index = 0
@@ -110,7 +110,7 @@ class BaseAgent:
         finally:
             self.end()
 
-    def _check_status(self, agent_state) -> None:
+    def _check_status(self, agent_state):
         if agent_state.status == V1Statuses.STOPPED:
             print(
                 "Agent has been stopped from the platform,"
@@ -126,7 +126,7 @@ class BaseAgent:
             )
             self.end(sleep=self.SLEEP_ARCHIVED_TIME)
 
-    def end(self, sleep: int = None) -> None:
+    def end(self, sleep: Optional[int] = None):
         self._graceful_shutdown = True
         if sleep:
             time.sleep(sleep)
@@ -143,9 +143,11 @@ class BaseAgent:
                 logger.info("Starting runs submission process.")
             else:
                 logger.info("No state was found.")
-                return V1AgentStateResponse()
+                return V1AgentStateResponse.construct()
 
             state = agent_state.state
+            if not state:
+                return agent_state
             for run_data in state.schedules or []:
                 pool.submit(self.submit_run, run_data)
             for run_data in state.queued or []:
@@ -167,7 +169,7 @@ class BaseAgent:
             return agent_state
         except Exception as exc:
             logger.error(exc)
-            return V1AgentStateResponse()
+            return V1AgentStateResponse.construct()
 
     def log_run_failed(
         self,
@@ -175,8 +177,8 @@ class BaseAgent:
         run_project: str,
         run_uuid: str,
         exc: Exception,
-        message: str = None,
-    ) -> None:
+        message: Optional[str] = None,
+    ):
         message = message or "Agent failed deploying run.\n"
         message += "error: {}\n{}".format(repr(exc), traceback.format_exc())
         self.log_run_status(
@@ -189,7 +191,7 @@ class BaseAgent:
         )
         logger.warning(message)
 
-    def log_run_stopped(self, run_owner: str, run_project: str, run_uuid: str) -> None:
+    def log_run_stopped(self, run_owner: str, run_project: str, run_uuid: str):
         message = "Run was not found. The agent assumed it was already stopped."
         self.log_run_status(
             run_owner=run_owner,
@@ -201,9 +203,7 @@ class BaseAgent:
         )
         logger.warning(message)
 
-    def log_run_scheduled(
-        self, run_owner: str, run_project: str, run_uuid: str
-    ) -> None:
+    def log_run_scheduled(self, run_owner: str, run_project: str, run_uuid: str):
         message = "Run was scheduled by the agent."
         self.log_run_status(
             run_owner=run_owner,
@@ -215,7 +215,7 @@ class BaseAgent:
         )
         logger.info(message)
 
-    def log_run_running(self, run_owner: str, run_project: str, run_uuid: str) -> None:
+    def log_run_running(self, run_owner: str, run_project: str, run_uuid: str):
         message = "Run changes were applied by the agent."
         self.log_run_status(
             run_owner=run_owner,
@@ -233,9 +233,9 @@ class BaseAgent:
         run_project: str,
         run_uuid: str,
         status: str,
-        reason: str = None,
-        message: str = None,
-    ) -> None:
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+    ):
         status_condition = V1StatusCondition.get_condition(
             type=status, status=True, reason=reason, message=message
         )
@@ -247,7 +247,7 @@ class BaseAgent:
             async_req=True,
         )
 
-    def clean_run(self, run_uuid: str, run_kind: str) -> None:
+    def clean_run(self, run_uuid: str, run_kind: str):
         try:
             self.spawner.clean(run_uuid=run_uuid, run_kind=run_kind)
             self.spawner.stop(run_uuid=run_uuid, run_kind=run_kind)
@@ -269,7 +269,7 @@ class BaseAgent:
         run_uuid: str,
         content: str,
         default_auth=False,
-    ) -> Dict:
+    ) -> Optional[Dict]:
         try:
             return converter.make_and_convert(
                 owner_name=owner_name,
@@ -291,6 +291,7 @@ class BaseAgent:
                     repr(e), traceback.format_exc()
                 )
             )
+        return None
 
     def prepare_run_resource(
         self,
@@ -299,7 +300,7 @@ class BaseAgent:
         run_name: str,
         run_uuid: str,
         content: str,
-    ) -> Dict:
+    ) -> Optional[Dict]:
         try:
             return converter.convert(
                 owner_name=owner_name,
@@ -326,8 +327,9 @@ class BaseAgent:
                 exc=e,
                 message="Agent failed during compilation with unknown exception.\n",
             )
+        return None
 
-    def submit_run(self, run_data: Tuple[str, str, str, str]) -> None:
+    def submit_run(self, run_data: Tuple[str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.prepare_run_resource(
             owner_name=run_owner,
@@ -365,7 +367,7 @@ class BaseAgent:
 
     def make_and_create_run(
         self, run_data: Tuple[str, str, str, str], default_auth: bool = False
-    ) -> None:
+    ):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.make_run_resource(
             owner_name=run_owner,
@@ -394,7 +396,7 @@ class BaseAgent:
                 )
             )
 
-    def apply_run(self, run_data: Tuple[str, str, str, str]) -> None:
+    def apply_run(self, run_data: Tuple[str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.prepare_run_resource(
             owner_name=run_owner,
@@ -419,7 +421,7 @@ class BaseAgent:
             )
             self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
 
-    def check_run(self, run_data: Tuple[str, str]) -> None:
+    def check_run(self, run_data: Tuple[str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
             self.spawner.get(run_uuid=run_uuid, run_kind=run_data[1])
@@ -432,7 +434,7 @@ class BaseAgent:
                     run_owner=run_owner, run_project=run_project, run_uuid=run_uuid
                 )
 
-    def stop_run(self, run_data: Tuple[str, str]) -> None:
+    def stop_run(self, run_data: Tuple[str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
             self.spawner.stop(run_uuid=run_uuid, run_kind=run_data[1])
@@ -451,7 +453,7 @@ class BaseAgent:
                 message="Agent failed stopping run.\n",
             )
 
-    def delete_run(self, run_data: Tuple[str, str, str, str]) -> None:
+    def delete_run(self, run_data: Tuple[str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
         if run_data[3]:

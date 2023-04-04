@@ -137,10 +137,12 @@ class PeriodicWSTransportMixin(RetryTransportMixin):
 
         return self._periodic_ws_workers
 
-    def get_periodic_http_worker(self, url, **kwargs):
+    def get_periodic_http_worker(self, **kwargs):
+        url = kwargs.get("url")
+        if not url:
+            raise PolyaxonClientException("Periodic worker expects a url argument.")
         worker = self.periodic_ws_workers.get(url)
         if not worker or not worker.is_alive():
-            kwargs["url"] = url
             kwargs["request"] = self.socket(url, message_handler=None, **kwargs)
             worker = PeriodicWorker(
                 callback=self.queue_ws_request,

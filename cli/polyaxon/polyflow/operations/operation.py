@@ -669,7 +669,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         )
 
     @classmethod
-    def from_build(cls, build: V1Build, contexts: Dict = None):
+    def from_build(cls, build: V1Build, contexts: Optional[Dict] = None):
         # Extend params with
         contexts = contexts or {}
         params = copy(build.params or {})

@@ -52,8 +52,8 @@ def get_repo_context_args(
     url: str,
     revision: str,
     mount_path: str,
-    connection: str = None,
-    flags: List[str] = None,
+    connection: Optional[str] = None,
+    flags: Optional[List[str]] = None,
 ) -> List[str]:
     if not name:
         raise PolypodException("A repo name is required to create a repo context.")
@@ -83,7 +83,7 @@ def get_git_init_container(
     contexts: PluginsContextsSpec,
     container: Optional[k8s_schemas.V1Container] = None,
     env: List[k8s_schemas.V1EnvVar] = None,
-    mount_path: str = None,
+    mount_path: Optional[str] = None,
     track: bool = False,
 ) -> k8s_schemas.V1Container:
     if not connection:

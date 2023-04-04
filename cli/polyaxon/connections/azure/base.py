@@ -30,45 +30,45 @@ def get_account_name(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs
-):
+) -> Optional[str]:
     # Check kwargs
     value = kwargs.get("account_name") or kwargs.get("AZURE_ACCOUNT_NAME")
     if value:
         return value
     # Check env/path keys
     keys = keys or ["AZURE_ACCOUNT_NAME"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_account_key(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs
-):
+) -> Optional[str]:
     value = kwargs.get("account_key") or kwargs.get("AZURE_ACCOUNT_KEY")
     if value:
         return value
     keys = keys or ["AZURE_ACCOUNT_KEY"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_connection_string(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs
-):
+) -> Optional[str]:
     value = kwargs.get("connection_string") or kwargs.get("AZURE_CONNECTION_STRING")
     if value:
         return value
     keys = keys or ["AZURE_CONNECTION_STRING"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_sas_token(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs
-):
+) -> Optional[str]:
     value = (
         kwargs.get("sas_token")
         or kwargs.get("AZURE_SAS_TOKEN")
@@ -77,47 +77,49 @@ def get_sas_token(
     if value:
         return value
     keys = keys or ["AZURE_SAS_TOKEN", "AZURE_STORAGE_SAS_TOKEN"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_tenant_id(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs
-):
+) -> Optional[str]:
     value = kwargs.get("tenant_id") or kwargs.get("AZURE_TENANT_ID")
     if value:
         return value
     keys = keys or ["AZURE_TENANT_ID"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_client_id(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs
-):
+) -> Optional[str]:
     value = kwargs.get("client_id") or kwargs.get("AZURE_CLIENT_ID")
     if value:
         return value
     keys = keys or ["AZURE_CLIENT_ID"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_client_secret(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs
-):
+) -> Optional[str]:
     value = kwargs.get("client_secret") or kwargs.get("AZURE_CLIENT_SECRET")
     if value:
         return value
     keys = keys or ["AZURE_CLIENT_SECRET"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def set_env_vars(
-    account_name: str = None, account_key: str = None, connection_string: str = None
+    account_name: Optional[str] = None,
+    account_key: Optional[str] = None,
+    connection_string: Optional[str] = None,
 ):
     if account_name:
         os.environ["AZURE_ACCOUNT_NAME"] = account_name

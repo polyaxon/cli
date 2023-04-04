@@ -25,7 +25,7 @@ class ComposeConfigManager(BaseConfigManager):
     FREQUENCY = 3
 
     @classmethod
-    def get_config_filepath(cls, create=True):
+    def get_config_filepath(cls, create: bool = True) -> str:
         path = super().get_config_filepath(create=create)
         values = path.split("/")[:-1]
         cls._create_dir("/".join(values))

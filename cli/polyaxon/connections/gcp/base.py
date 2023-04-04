@@ -18,7 +18,7 @@ import json
 import os
 
 from collections.abc import Mapping
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import google.auth
 import google.oauth2.service_account
@@ -30,14 +30,14 @@ from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonStoresException
 from polyaxon.logger import logger
 
-DEFAULT_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
+DEFAULT_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
 
 
 def get_project_id(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = kwargs.get("project_id")
     if value:
         return value
@@ -47,58 +47,58 @@ def get_project_id(
         "GC_PROJECT_ID",
         "GOOGLE_PROJECT_ID",
     ]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_key_path(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = kwargs.get("key_path")
     if value:
         return value
     keys = keys or ["GC_KEY_PATH", "GOOGLE_KEY_PATH", "GOOGLE_APPLICATION_CREDENTIALS"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_keyfile_dict(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[Dict]:
     value = kwargs.get("keyfile_dict")
     if value:
         return value
     keys = keys or ["GC_KEYFILE_DICT", "GOOGLE_KEYFILE_DICT"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_scopes(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = kwargs.get("scopes")
     if value:
         return value
     keys = keys or ["GC_SCOPES", "GOOGLE_SCOPES"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_gc_credentials(
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Credentials:
     """
     Returns the Credentials object for Google API
     """
     key_path = get_key_path(context_path=context_path, **kwargs)
     keyfile_dict = get_keyfile_dict(context_path=context_path, **kwargs)
-    scopes = get_scopes(context_path=context_path, **kwargs)
+    _scopes = get_scopes(context_path=context_path, **kwargs)
 
-    if scopes is not None:
-        scopes = [s.strip() for s in scopes.split(",")]
+    if _scopes is not None:
+        scopes = [s.strip() for s in _scopes.split(",")]
     else:
         scopes = DEFAULT_SCOPES
 
@@ -126,7 +126,7 @@ def get_gc_credentials(
         # Get credentials from JSON data.
         try:
             if not isinstance(keyfile_dict, Mapping):
-                keyfile_dict = json.loads(keyfile_dict)
+                keyfile_dict = json.loads(keyfile_dict)  # type: ignore
 
             # Convert escaped newlines to actual newlines if any.
             keyfile_dict["private_key"] = keyfile_dict["private_key"].replace(
@@ -146,7 +146,7 @@ def get_gc_access_token(
     credentials=None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> str:
     credentials = credentials or get_gc_credentials(context_path=context_path, **kwargs)
     return credentials.token
 
@@ -155,7 +155,7 @@ def get_gc_client(
     credentials=None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Any:
     from google.cloud.storage.client import Client
 
     credentials = credentials or get_gc_credentials(context_path=context_path, **kwargs)

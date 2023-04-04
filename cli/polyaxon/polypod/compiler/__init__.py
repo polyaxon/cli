@@ -13,10 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional, Type
 
-from polyaxon.polyflow import V1CompiledOperation
+from polyaxon.polyflow import V1CompiledOperation, V1RunKind
 from polyaxon.polypod.compiler import converter, resolver
+
+if TYPE_CHECKING:
+    from polyaxon.polypod.compiler.converters import BaseConverter
 
 
 def make(
@@ -28,10 +31,10 @@ def make(
     run_path: str,
     compiled_operation: V1CompiledOperation,
     params: Optional[Dict],
-    default_sa: str = None,
+    default_sa: Optional[str] = None,
     internal_auth: bool = False,
     default_auth: bool = False,
-    converters: Dict[str, Any] = converter.CORE_CONVERTERS,
+    converters: Dict[V1RunKind, Type["BaseConverter"]] = converter.CORE_CONVERTERS,
 ):
     resolver_obj, compiled_operation = resolver.resolve(
         compiled_operation=compiled_operation,

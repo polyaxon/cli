@@ -117,10 +117,10 @@ class ClientConfig(BaseSchemaModel):
 
     def __init__(
         self,
-        host: str = None,
-        token: str = None,
+        host: Optional[str] = None,
+        token: Optional[str] = None,
         use_cloud_host: bool = False,
-        retries: int = None,
+        retries: Optional[int] = None,
         **data
     ):
         host = (

@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 
@@ -61,7 +61,7 @@ def get_proxy_run_url(
     owner: str,
     project: str,
     run_uuid: str,
-    subpath: str = None,
+    subpath: Optional[str] = None,
 ) -> str:
     url_path = "{namespace}/{owner}/{project}/runs/{run_uuid}".format(
         namespace=namespace,

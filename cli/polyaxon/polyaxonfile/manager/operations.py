@@ -16,7 +16,7 @@
 import copy
 
 from collections.abc import Mapping
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from polyaxon import pkg
 from polyaxon.env_vars.getters.queue import get_queue_info
@@ -33,22 +33,22 @@ from polyaxon.utils.bool_utils import to_bool
 
 
 def get_op_specification(
-    config: Union[V1Component, V1Operation] = None,
-    hub: str = None,
-    params: Dict = None,
-    hparams: Dict = None,
-    matrix_kind: str = None,
-    matrix_concurrency: int = None,
-    matrix_num_runs: int = None,
-    matrix: V1Matrix = None,
-    presets: List[str] = None,
-    queue: str = None,
-    nocache: bool = None,
-    cache: Union[int, str, bool] = None,
-    approved: Union[int, str, bool] = None,
+    config: Optional[Union[V1Component, V1Operation]] = None,
+    hub: Optional[str] = None,
+    params: Optional[Dict] = None,
+    hparams: Optional[Dict] = None,
+    matrix_kind: Optional[str] = None,
+    matrix_concurrency: Optional[int] = None,
+    matrix_num_runs: Optional[int] = None,
+    matrix: Optional[Union[Dict, V1Matrix]] = None,
+    presets: Optional[List[str]] = None,
+    queue: Optional[str] = None,
+    nocache: Optional[bool] = None,
+    cache: Optional[Union[int, str, bool]] = None,
+    approved: Optional[Union[int, str, bool]] = None,
     validate_params: bool = True,
-    preset_files: List[str] = None,
-    git_init: V1Init = None,
+    preset_files: Optional[List[str]] = None,
+    git_init: Optional[V1Init] = None,
 ) -> V1Operation:
     if cache and nocache:
         raise PolyaxonfileError("Received both 'cache' and 'nocache'")

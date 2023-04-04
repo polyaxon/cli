@@ -18,7 +18,7 @@ import json
 import logging
 import time
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from docker import APIClient
 from docker.errors import APIError, BuildError
@@ -32,7 +32,7 @@ _logger = logging.getLogger("polyaxon.dockerizer")
 
 
 class DockerMixin:
-    IS_BUILD = None
+    IS_BUILD: Optional[bool] = None
 
     def _prepare_log_lines(self, log_line):  # pylint:disable=too-many-branches
         raw = log_line.decode("utf-8").strip()
@@ -106,9 +106,9 @@ class DockerBuilder(DockerMixin):
         self,
         context: str,
         destination: str,
-        credstore_env: Dict = None,
-        registries: List[V1UriType] = None,
-        docker: APIClient = None,
+        credstore_env: Optional[Dict] = None,
+        registries: Optional[List[V1UriType]] = None,
+        docker: Optional[APIClient] = None,
     ):
         self.destination = destination
 
@@ -119,7 +119,7 @@ class DockerBuilder(DockerMixin):
         self.is_pushing = False
 
     @staticmethod
-    def _validate_registries(registries: List[V1UriType]):
+    def _validate_registries(registries: Optional[List[V1UriType]]):
         if not registries or isinstance(registries, V1UriType):
             return True
 
@@ -145,7 +145,7 @@ class DockerBuilder(DockerMixin):
                 reauth=True,
             )
 
-    def build(self, nocache: bool = False, memory_limit: int = None):
+    def build(self, nocache: bool = False, memory_limit: Optional[int] = None):
         limits = {
             # Disable memory swap for building
             "memswap": -1
@@ -169,7 +169,10 @@ class DockerPusher(DockerMixin):
     IS_BUILD = False
 
     def __init__(
-        self, destination: str, credstore_env: Dict = None, docker: APIClient = None
+        self,
+        destination: str,
+        credstore_env: Optional[Dict] = None,
+        docker: Optional[APIClient] = None,
     ):
         self.destination = destination
         self.docker = docker or APIClient(version="auto", credstore_env=credstore_env)
@@ -184,9 +187,9 @@ def _build(
     context: str,
     destination: str,
     nocache: bool,
-    docker: APIClient = None,
-    credstore_env: Dict = None,
-    registries: List[V1UriType] = None,
+    docker: Optional[APIClient] = None,
+    credstore_env: Optional[Dict] = None,
+    registries: Optional[List[V1UriType]] = None,
 ):
     """Build necessary code for a job to run"""
     _logger.info("Starting build ...")
@@ -212,9 +215,9 @@ def build(
     context: str,
     destination: str,
     nocache: bool,
-    docker: APIClient = None,
-    credstore_env: Dict = None,
-    registries: List[V1UriType] = None,
+    docker: Optional[APIClient] = None,
+    credstore_env: Optional[Dict] = None,
+    registries: Optional[List[V1UriType]] = None,
     max_retries: int = 3,
     sleep_interval: int = 1,
 ):
@@ -245,7 +248,7 @@ def build(
 
 def push(
     destination: str,
-    docker: APIClient = None,
+    docker: Optional[APIClient] = None,
     max_retries: int = 3,
     sleep_interval: int = 1,
 ):
@@ -273,8 +276,8 @@ def build_and_push(
     context: str,
     destination: str,
     nocache: bool,
-    credstore_env: Dict = None,
-    registries: List[V1UriType] = None,
+    credstore_env: Optional[Dict] = None,
+    registries: Optional[List[V1UriType]] = None,
     max_retries: int = 3,
     sleep_interval: int = 1,
 ):

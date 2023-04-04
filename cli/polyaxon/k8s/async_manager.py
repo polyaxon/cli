@@ -15,6 +15,8 @@
 # limitations under the License.=
 import re
 
+from typing import Dict, List, Optional, Tuple
+
 from kubernetes_asyncio import client, config
 from kubernetes_asyncio.client import Configuration
 from kubernetes_asyncio.client.rest import ApiException
@@ -25,7 +27,7 @@ from polyaxon.logger import logger
 
 
 class AsyncK8SManager:
-    def __init__(self, namespace="default", in_cluster=False):
+    def __init__(self, namespace: str = "default", in_cluster: bool = False):
         self.namespace = namespace
         self.in_cluster = in_cluster
 
@@ -37,13 +39,15 @@ class AsyncK8SManager:
         self.k8s_version_api = None
 
     @staticmethod
-    def get_managed_by_polyaxon(instance: str):
+    def get_managed_by_polyaxon(instance: str) -> str:
         return "app.kubernetes.io/instance={},app.kubernetes.io/managed-by=polyaxon".format(
             instance
         )
 
     @staticmethod
-    async def load_config(in_cluster=False, k8s_config=None):
+    async def load_config(
+        in_cluster: bool = False, k8s_config: Optional[bool] = None
+    ) -> Configuration:
         if not k8s_config:
             if in_cluster:
                 config.load_incluster_config()
@@ -52,8 +56,10 @@ class AsyncK8SManager:
         return Configuration.get_default_copy()
 
     @classmethod
-    def get_config_auth(cls, k8s_config=None):
-        api_key = k8s_config.api_key or {}
+    def get_config_auth(cls, k8s_config: Optional[Configuration] = None) -> str:
+        if not k8s_config or not k8s_config.api_key:
+            return ""
+        api_key = k8s_config.api_key
         if api_key.get("authorization", ""):
             api_key = api_key.get("authorization", "")
         elif api_key.get("BearerToken", ""):
@@ -65,7 +71,7 @@ class AsyncK8SManager:
         api_pattern = re.compile("bearer", re.IGNORECASE)
         return api_pattern.sub("", api_key).strip()
 
-    async def setup(self, k8s_config=None):
+    async def setup(self, k8s_config: Optional[Configuration] = None):
         if not k8s_config:
             if self.in_cluster:
                 config.load_incluster_config()
@@ -88,9 +94,9 @@ class AsyncK8SManager:
     async def set_namespace(self, namespace):
         self.namespace = namespace
 
-    async def get_pod(self, name, reraise=False):
+    async def get_pod(self, name, reraise=False) -> Optional[client.V1Pod]:
         try:
-            return await self.k8s_api.read_namespaced_pod(
+            return await self.k8s_api.read_namespaced_pod(  # type: ignore[attr-defined]
                 name=name, namespace=self.namespace
             )
         except ApiException as e:
@@ -98,11 +104,13 @@ class AsyncK8SManager:
                 raise PolyaxonK8SError("Connection error: %s" % e) from e
             return None
 
-    async def is_pod_running(self, pod_id: str, container_id: str):
-        event = await self.k8s_api.read_namespaced_pod_status(pod_id, self.namespace)
+    async def is_pod_running(self, pod_id: str, container_id: str) -> bool:
+        event = await self.k8s_api.read_namespaced_pod_status(pod_id, self.namespace)  # type: ignore[attr-defined]
         return is_pod_running(event, container_id)
 
-    async def _list_namespace_resource(self, resource_api, reraise=False, **kwargs):
+    async def _list_namespace_resource(
+        self, resource_api, reraise=False, **kwargs
+    ) -> List:
         try:
             res = await resource_api(namespace=self.namespace, **kwargs)
             return [p for p in res.items]
@@ -112,25 +120,25 @@ class AsyncK8SManager:
                 raise PolyaxonK8SError("Connection error: %s" % e) from e
             return []
 
-    async def list_pods(self, reraise=False, **kwargs):
+    async def list_pods(self, reraise=False, **kwargs) -> List[client.V1Pod]:
         return await self._list_namespace_resource(
-            resource_api=self.k8s_api.list_namespaced_pod,
+            resource_api=self.k8s_api.list_namespaced_pod,  # type: ignore[attr-defined]
             reraise=reraise,
             **kwargs,
         )
 
-    async def list_jobs(self, reraise=False, **kwargs):
+    async def list_jobs(self, reraise=False, **kwargs) -> List[client.V1Job]:
         return await self._list_namespace_resource(
-            resource_api=self.k8s_batch_api.list_namespaced_job,
+            resource_api=self.k8s_batch_api.list_namespaced_job,  # type: ignore[attr-defined]
             reraise=reraise,
             **kwargs,
         )
 
     async def list_custom_objects(
         self, group, version, plural, reraise=False, **kwargs
-    ):
+    ) -> List:
         return await self._list_namespace_resource(
-            resource_api=self.k8s_custom_object_api.list_namespaced_custom_object,
+            resource_api=self.k8s_custom_object_api.list_namespaced_custom_object,  # type: ignore[attr-defined]
             reraise=reraise,
             group=group,
             version=version,
@@ -138,22 +146,28 @@ class AsyncK8SManager:
             **kwargs,
         )
 
-    async def list_services(self, reraise=False, **kwargs):
+    async def list_services(
+        self, reraise: bool = False, **kwargs
+    ) -> List[client.V1Service]:
         return await self._list_namespace_resource(
-            resource_api=self.k8s_api.list_namespaced_service,
+            resource_api=self.k8s_api.list_namespaced_service,  # type: ignore[attr-defined]
             reraise=reraise,
             **kwargs,
         )
 
-    async def list_deployments(self, reraise=False, **kwargs):
+    async def list_deployments(
+        self, reraise: bool = False, **kwargs
+    ) -> List[client.V1Deployment]:
         return await self._list_namespace_resource(
-            resource_api=self.k8s_apps_api.list_namespaced_deployment,
+            resource_api=self.k8s_apps_api.list_namespaced_deployment,  # type: ignore[attr-defined]
             reraise=reraise,
             **kwargs,
         )
 
-    async def create_custom_object(self, name, group, version, plural, body):
-        resp = await self.k8s_custom_object_api.create_namespaced_custom_object(
+    async def create_custom_object(
+        self, name: str, group: str, version: str, plural: str, body: Dict
+    ) -> Dict:
+        resp = await self.k8s_custom_object_api.create_namespaced_custom_object(  # type: ignore[attr-defined]
             group=group,
             version=version,
             plural=plural,
@@ -163,8 +177,10 @@ class AsyncK8SManager:
         logger.debug("Custom object `{}` was created".format(name))
         return resp
 
-    async def update_custom_object(self, name, group, version, plural, body):
-        resp = await self.k8s_custom_object_api.patch_namespaced_custom_object(
+    async def update_custom_object(
+        self, name: str, group: str, version: str, plural: str, body: Dict
+    ) -> Dict:
+        resp = await self.k8s_custom_object_api.patch_namespaced_custom_object(  # type: ignore[attr-defined]
             name=name,
             group=group,
             version=version,
@@ -176,8 +192,14 @@ class AsyncK8SManager:
         return resp
 
     async def create_or_update_custom_object(
-        self, name, group, version, plural, body, reraise=False
-    ):
+        self,
+        name: str,
+        group: str,
+        version: str,
+        plural: str,
+        body: Dict,
+        reraise: bool = False,
+    ) -> Tuple[Dict, bool]:
         try:
             create = await self.create_custom_object(
                 name=name, group=group, version=version, plural=plural, body=body
@@ -198,7 +220,9 @@ class AsyncK8SManager:
                 else:
                     logger.error("K8S error: {}".format(e))
 
-    async def get_custom_object(self, name, group, version, plural, reraise=False):
+    async def get_custom_object(
+        self, name: str, group: str, version: str, plural: str, reraise: bool = False
+    ) -> Optional[Dict]:
         try:
             return await self.k8s_custom_object_api.get_namespaced_custom_object(
                 name=name,
@@ -212,7 +236,9 @@ class AsyncK8SManager:
                 raise PolyaxonK8SError("Connection error: %s" % e) from e
             return None
 
-    async def delete_custom_object(self, name, group, version, plural, reraise=False):
+    async def delete_custom_object(
+        self, name: str, group: str, version: str, plural: str, reraise: bool = False
+    ):
         try:
             await self.k8s_custom_object_api.delete_namespaced_custom_object(
                 name=name,

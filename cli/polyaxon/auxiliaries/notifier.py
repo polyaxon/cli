@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from polyaxon import pkg
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
@@ -166,16 +167,18 @@ class V1PolyaxonNotifier(BaseServiceConfig):
 
     _IDENTIFIER = "notifier"
 
-    def get_image(self):
+    def get_image(self) -> str:
         image = self.image or "polyaxon/polyaxon-events-handlers"
         image_tag = self.image_tag if self.image_tag is not None else pkg.VERSION
         return "{}:{}".format(image, image_tag) if image_tag else image
 
-    def get_resources(self):
+    def get_resources(self) -> k8s_schemas.V1ResourceRequirements:
         return self.resources if self.resources else get_notifier_resources()
 
 
-def get_default_notification_container(notifier: V1PolyaxonNotifier = None):
+def get_default_notification_container(
+    notifier: Optional[V1PolyaxonNotifier] = None,
+) -> k8s_schemas.V1Container:
     image = "polyaxon/polyaxon-events-handlers"
     image_tag = pkg.VERSION
     image_pull_policy = PullPolicy.IF_NOT_PRESENT.value

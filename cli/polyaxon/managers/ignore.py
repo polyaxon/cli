@@ -19,7 +19,7 @@ import re
 
 from collections import namedtuple
 from pathlib import PurePath
-from typing import List
+from typing import List, Optional
 
 from polyaxon.logger import logger
 from polyaxon.managers.base import BaseConfigManager
@@ -30,7 +30,7 @@ from polyaxon.utils.path_utils import unix_style_path
 
 class Pattern(namedtuple("Pattern", "pattern is_exclude re")):
     @staticmethod
-    def create(pattern):
+    def create(pattern: str) -> "Pattern":
         if pattern[0:1] == "!":
             is_exclude = False
             pattern = pattern[1:]
@@ -44,11 +44,11 @@ class Pattern(namedtuple("Pattern", "pattern is_exclude re")):
             re=re.compile(translate(pattern), re.IGNORECASE),
         )
 
-    def match(self, path):
+    def match(self, path: str) -> bool:
         return bool(self.re.match(path))
 
 
-def translate(pat):
+def translate(pat: str) -> str:
     def _translate_segment():
         # pylint:disable=undefined-loop-variable
         if segment == "*":
@@ -115,11 +115,11 @@ class IgnoreConfigManager(BaseConfigManager):
     CONFIG_FILE_NAME = ".polyaxonignore"
 
     @staticmethod
-    def _is_empty_or_comment(line):
+    def _is_empty_or_comment(line: str) -> bool:
         return not line or line.startswith("#")
 
     @staticmethod
-    def _remove_trailing_spaces(line):
+    def _remove_trailing_spaces(line: str) -> str:
         """Remove trailing spaces unless they are quoted with a backslash."""
         while line.endswith(" ") and not line.endswith("\\ "):
             line = line[:-1]
@@ -130,14 +130,16 @@ class IgnoreConfigManager(BaseConfigManager):
         cls.set_config(cli_constants.DEFAULT_IGNORE_LIST, init=True)
 
     @classmethod
-    def find_matching(cls, path, patterns):
+    def find_matching(cls, path: str, patterns: List[Pattern]) -> List[Pattern]:
         """Yield all matching patterns for path."""
         for pattern in patterns:
             if pattern.match(path):
                 yield pattern
 
     @classmethod
-    def is_ignored(cls, path, patterns, is_dir: bool = False):
+    def is_ignored(
+        cls, path: str, patterns: List[Pattern], is_dir: bool = False
+    ) -> bool:
         """Check whether a path is ignored. For directories, include a trailing slash."""
         status = None
         path = "{}/".format(path.rstrip("/")) if is_dir else path
@@ -146,7 +148,7 @@ class IgnoreConfigManager(BaseConfigManager):
         return status
 
     @classmethod
-    def read_file(cls, ignore_file):
+    def read_file(cls, ignore_file: List[str]) -> List[str]:
         for line in ignore_file:
             line = line.rstrip("\r\n")
 
@@ -156,11 +158,11 @@ class IgnoreConfigManager(BaseConfigManager):
             yield cls._remove_trailing_spaces(line)
 
     @classmethod
-    def get_patterns(cls, ignore_file):
+    def get_patterns(cls, ignore_file: List[str]) -> List[Pattern]:
         return [Pattern.create(line) for line in cls.read_file(ignore_file)]
 
     @staticmethod
-    def get_push_patterns():
+    def get_push_patterns() -> List[Pattern]:
         return [
             Pattern.create("*.plx.json"),
             Pattern.create("*.plx.index"),
@@ -168,7 +170,7 @@ class IgnoreConfigManager(BaseConfigManager):
         ]
 
     @classmethod
-    def get_config(cls):
+    def get_config(cls) -> List[Pattern]:
         config_filepath = cls.get_config_filepath()
 
         if not os.path.isfile(config_filepath):
@@ -180,8 +182,10 @@ class IgnoreConfigManager(BaseConfigManager):
 
     @classmethod
     def get_unignored_filepaths(
-        cls, path: str = None, addtional_patterns: List[Pattern] = None
-    ):
+        cls,
+        path: Optional[str] = None,
+        addtional_patterns: Optional[List[Pattern]] = None,
+    ) -> List[str]:
         config = to_list(cls.get_config(), check_none=True)
         config += to_list(addtional_patterns, check_none=True)
         unignored_files = []
@@ -206,7 +210,7 @@ class IgnoreConfigManager(BaseConfigManager):
         return unignored_files
 
     @staticmethod
-    def _matches_patterns(path, patterns):
+    def _matches_patterns(path: str, patterns: List[str]) -> bool:
         """Given a list of patterns, returns a if a path matches any pattern."""
         for glob in patterns:
             try:
@@ -217,7 +221,12 @@ class IgnoreConfigManager(BaseConfigManager):
         return False
 
     @classmethod
-    def _ignore_path(cls, path, ignore_list=None, allowed_list=None):
+    def _ignore_path(
+        cls,
+        path: str,
+        ignore_list: Optional[List[str]] = None,
+        allowed_list: Optional[List[str]] = None,
+    ) -> bool:
         """Returns a whether a path should be ignored or not."""
         ignore_list = ignore_list or []
         allowed_list = allowed_list or []
@@ -226,5 +235,5 @@ class IgnoreConfigManager(BaseConfigManager):
         )
 
     @classmethod
-    def get_value(cls, key):
+    def get_value(cls, key: str):
         pass

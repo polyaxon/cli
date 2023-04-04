@@ -31,10 +31,10 @@ def resolve(
     params: Optional[Dict[str, Dict]],
     run=None,
     resolver_cls=None,
-    created_at: datetime = None,
-    compiled_at: datetime = None,
+    created_at: Optional[datetime] = None,
+    compiled_at: Optional[datetime] = None,
     cloning_kind: V1CloningKind = None,
-    original_uuid: str = None,
+    original_uuid: Optional[str] = None,
     is_independent: bool = True,
     eager: bool = False,
 ):
@@ -76,10 +76,10 @@ def resolve_hooks(
     params: Optional[Dict[str, Dict]],
     run=None,
     resolver_cls=None,
-    created_at: datetime = None,
-    compiled_at: datetime = None,
+    created_at: Optional[datetime] = None,
+    compiled_at: Optional[datetime] = None,
     cloning_kind: V1CloningKind = None,
-    original_uuid: str = None,
+    original_uuid: Optional[str] = None,
     eager: bool = False,
 ) -> List[V1Operation]:
     resolver_cls = resolver_cls or BaseResolver

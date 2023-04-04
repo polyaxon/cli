@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 from gcsfs import GCSFileSystem as BaseGCSFileSystem
 
 from polyaxon.connections.gcp.base import get_gc_credentials, get_project_id
@@ -26,7 +28,7 @@ class GCSFileSystem(BaseGCSFileSystem):
 
 
 def get_fs(
-    context_path: str = None,
+    context_path: Optional[str] = None,
     asynchronous: bool = False,
     use_listings_cache: bool = False,
     **kwargs

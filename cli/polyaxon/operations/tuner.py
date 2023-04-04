@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from polyaxon.polyflow import (
     V1Bayes,
@@ -31,7 +32,7 @@ def get_tuner(
     matrix: V1Matrix,
     join: V1Join,
     iteration: int,
-    bracket_iteration: int = None,
+    bracket_iteration: Optional[int] = None,
 ) -> V1Operation:
     params = {
         "matrix": V1Param(value=matrix.to_light_dict()),

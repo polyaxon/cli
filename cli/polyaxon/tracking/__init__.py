@@ -26,22 +26,22 @@ TRACKING_RUN = None
 
 
 def init(
-    owner: str = None,
-    project: str = None,
-    run_uuid: str = None,
-    client: RunClient = None,
+    owner: Optional[str] = None,
+    project: Optional[str] = None,
+    run_uuid: Optional[str] = None,
+    client: Optional[RunClient] = None,
     track_code: bool = True,
     track_env: bool = True,
     track_logs: bool = True,
     refresh_data: bool = False,
-    artifacts_path: str = None,
-    collect_artifacts: str = None,
-    collect_resources: str = None,
-    is_offline: bool = None,
-    is_new: bool = None,
-    name: str = None,
-    description: str = None,
-    tags: List[str] = None,
+    artifacts_path: Optional[str] = None,
+    collect_artifacts: Optional[str] = None,
+    collect_resources: Optional[str] = None,
+    is_offline: Optional[bool] = None,
+    is_new: Optional[bool] = None,
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    tags: Optional[List[str]] = None,
 ) -> Optional[Run]:
     global TRACKING_RUN
 
@@ -66,7 +66,7 @@ def init(
     return TRACKING_RUN
 
 
-def get_or_create_run(tracking_run: Run = None) -> Optional[Run]:
+def get_or_create_run(tracking_run: Optional[Run] = None) -> Optional[Run]:
     global TRACKING_RUN
 
     TRACKING_RUN = tracking.get_or_create_run(tracking_run)

@@ -209,7 +209,7 @@ def get_base_store_container(
     env_from: List[k8s_schemas.V1EnvFromSource],
     volume_mounts: List[k8s_schemas.V1VolumeMount],
     args: List[str],
-    command: List[str] = None,
+    command: Optional[List[str]] = None,
 ) -> Optional[k8s_schemas.V1Container]:
     env = env or []
     env_from = env_from or []
@@ -271,7 +271,7 @@ def get_store_container(
     paths: Union[List[str], List[Tuple[str, str]]],
     container: Optional[k8s_schemas.V1Container] = None,
     env: List[k8s_schemas.V1EnvVar] = None,
-    mount_path: str = None,
+    mount_path: Optional[str] = None,
     is_default_artifacts_store: bool = False,
 ) -> Optional[k8s_schemas.V1Container]:
     container_name = generate_container_name(

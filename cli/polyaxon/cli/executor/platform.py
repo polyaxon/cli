@@ -17,7 +17,7 @@
 import sys
 
 from collections import namedtuple
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from urllib3.exceptions import HTTPError
 
@@ -64,7 +64,7 @@ def run(
     upload_from: str,
     watch: bool,
     eager: bool,
-    output: str = None,
+    output: Optional[str] = None,
 ):
     polyaxon_client = RunClient(
         owner=owner, project=project_name, manual_exceptions_handling=True
@@ -88,7 +88,9 @@ def run(
         )
 
     def create_run(
-        is_managed: bool = True, meta_info: Dict = None, pending: str = None
+        is_managed: bool = True,
+        meta_info: Optional[Dict] = None,
+        pending: Optional[str] = None,
     ):
         try:
             response = polyaxon_client.create(

@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from collections.abc import Mapping
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from polyaxon.containers.names import generate_container_name
 from polyaxon.k8s import k8s_schemas
@@ -26,16 +26,16 @@ from polyaxon.utils.sanitizers import sanitize_value
 
 def patch_container(
     container: k8s_schemas.V1Container,
-    name: str = None,
-    command: List[str] = None,
-    args: List[str] = None,
-    image: str = None,
-    image_pull_policy: str = None,
-    env: List[k8s_schemas.V1EnvVar] = None,
-    env_from: List[k8s_schemas.V1EnvFromSource] = None,
-    volume_mounts: List[k8s_schemas.V1VolumeMount] = None,
-    ports: List[k8s_schemas.V1ContainerPort] = None,
-    resources: k8s_schemas.V1ResourceRequirements = None,
+    name: Optional[str] = None,
+    command: Optional[List[str]] = None,
+    args: Optional[List[str]] = None,
+    image: Optional[str] = None,
+    image_pull_policy: Optional[str] = None,
+    env: Optional[List[k8s_schemas.V1EnvVar]] = None,
+    env_from: Optional[List[k8s_schemas.V1EnvFromSource]] = None,
+    volume_mounts: Optional[List[k8s_schemas.V1VolumeMount]] = None,
+    ports: Optional[List[k8s_schemas.V1ContainerPort]] = None,
+    resources: Optional[k8s_schemas.V1ResourceRequirements] = None,
 ) -> k8s_schemas.V1Container:
     container.name = sanitize_container_name(name or container.name)
     container.env = to_list(container.env, check_none=True) + to_list(
@@ -67,7 +67,7 @@ def sanitize_container_name(name: str) -> str:
 
 
 def ensure_container_name(
-    container: k8s_schemas.V1Container, prefix: str = None
+    container: k8s_schemas.V1Container, prefix: Optional[str] = None
 ) -> k8s_schemas.V1Container:
     if not container:
         return container

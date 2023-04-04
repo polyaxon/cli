@@ -413,7 +413,7 @@ class V1Hyperband(BaseSearchConfig):
         return num_runs_to_keep > 0
 
     def create_iteration(
-        self, iteration: int = None, bracket_iteration: int = 0
+        self, iteration: Optional[int] = None, bracket_iteration: int = 0
     ) -> Tuple[int, int]:
         """Create an iteration for hyperband."""
         if iteration is None:

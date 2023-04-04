@@ -15,7 +15,7 @@
 # limitations under the License.
 import os
 
-from typing import List
+from typing import List, Optional
 
 from polyaxon import pkg
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
@@ -170,12 +170,12 @@ class V1PolyaxonCleaner(BaseServiceConfig):
 
     _IDENTIFIER = "cleaner"
 
-    def get_image(self):
+    def get_image(self) -> str:
         image = self.image or "polyaxon/polyaxon-init"
         image_tag = self.image_tag if self.image_tag is not None else pkg.VERSION
         return "{}:{}".format(image, image_tag) if image_tag else image
 
-    def get_resources(self):
+    def get_resources(self) -> k8s_schemas.V1ResourceRequirements:
         return self.resources if self.resources else get_cleaner_resources()
 
 
@@ -183,8 +183,8 @@ def get_default_cleaner_container(
     store: V1ConnectionType,
     run_uuid: str,
     run_kind: str,
-    cleaner: V1PolyaxonCleaner = None,
-):
+    cleaner: Optional[V1PolyaxonCleaner] = None,
+) -> k8s_schemas.V1Container:
     subpath = os.path.join(store.store_path, run_uuid)
 
     clean_args = "polyaxon clean-artifacts {} --subpath={}".format(
@@ -215,8 +215,8 @@ def get_default_cleaner_container(
 def get_batch_cleaner_container(
     store: V1ConnectionType,
     paths: List[str],
-    cleaner: V1PolyaxonCleaner = None,
-):
+    cleaner: Optional[V1PolyaxonCleaner] = None,
+) -> k8s_schemas.V1Container:
     subpaths = [os.path.join(store.store_path, subpath) for subpath in paths]
     subpaths = " ".join(["-sp={}".format(sp) for sp in subpaths])
 

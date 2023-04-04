@@ -110,11 +110,11 @@ def list_project_versions_response(
     owner: str,
     project_name: str,
     kind: V1ProjectVersionKind,
-    limit: str = None,
-    offset: str = None,
-    query: str = None,
-    sort: str = None,
-    client: PolyaxonClient = None,
+    limit: Optional[str] = None,
+    offset: Optional[str] = None,
+    query: Optional[str] = None,
+    sort: Optional[str] = None,
+    client: Optional[PolyaxonClient] = None,
 ):
     polyaxon_client = ProjectClient(
         owner=owner,
@@ -137,11 +137,11 @@ def list_project_versions(
     owner: str,
     project_name: str,
     kind: V1ProjectVersionKind,
-    limit: str = None,
-    offset: str = None,
-    query: str = None,
-    sort: str = None,
-    client: PolyaxonClient = None,
+    limit: Optional[str] = None,
+    offset: Optional[str] = None,
+    query: Optional[str] = None,
+    sort: Optional[str] = None,
+    client: Optional[PolyaxonClient] = None,
 ):
     version_info = "<owner: {}> <project: {}>".format(owner, project_name)
     response = list_project_versions_response(
@@ -190,11 +190,11 @@ def register_project_version(
     project_name: str,
     version: str,
     kind: V1ProjectVersionKind,
-    description: str = None,
+    description: Optional[str] = None,
     tags: Optional[Union[str, List[str]]] = None,
-    content: str = None,
-    run: str = None,
-    connection: str = None,
+    content: Optional[str] = None,
+    run: Optional[str] = None,
+    connection: Optional[str] = None,
     artifacts: Optional[Union[str, List[str]]] = None,
     force: bool = False,
 ):
@@ -237,11 +237,11 @@ def copy_project_version(
     project_name: str,
     version: str,
     kind: V1ProjectVersionKind,
-    to_project: str = None,
-    name: str = None,
-    description: str = None,
+    to_project: Optional[str] = None,
+    name: Optional[str] = None,
+    description: Optional[str] = None,
     tags: Optional[Union[str, List[str]]] = None,
-    content: str = None,
+    content: Optional[str] = None,
     force: bool = False,
 ):
     version = version or "latest"
@@ -292,7 +292,7 @@ def get_project_version(
     kind: V1ProjectVersionKind,
     version: str,
     content_callback: Callable = None,
-    client: PolyaxonClient = None,
+    client: Optional[PolyaxonClient] = None,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
     polyaxon_client = ProjectClient(
@@ -321,7 +321,7 @@ def get_project_version_stages(
     project_name: str,
     kind: V1ProjectVersionKind,
     version: str,
-    client: PolyaxonClient = None,
+    client: Optional[PolyaxonClient] = None,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
     polyaxon_client = ProjectClient(
@@ -381,8 +381,8 @@ def update_project_version(
     project_name: str,
     kind: V1ProjectVersionKind,
     version: str,
-    name: str = None,
-    description: str = None,
+    name: Optional[str] = None,
+    description: Optional[str] = None,
     tags: Optional[Union[str, List[str]]] = None,
     content_callback: Callable = None,
 ):
@@ -455,8 +455,8 @@ def stage_project_version(
     kind: V1ProjectVersionKind,
     version: str,
     to: str,
-    reason: str = None,
-    message: str = None,
+    reason: Optional[str] = None,
+    message: Optional[str] = None,
 ):
     fqn_version = get_versioned_entity_full_name(owner, project_name, version)
     polyaxon_client = ProjectClient(
@@ -546,11 +546,11 @@ def pull_one_or_many_project_versions(
     project_name: str,
     kind: V1ProjectVersionKind,
     version: str,
-    all_versions: bool = None,
-    query: str = None,
-    limit: int = None,
-    offset: int = None,
-    path: str = None,
+    all_versions: Optional[bool] = None,
+    query: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
+    path: Optional[str] = None,
     download_artifacts: bool = True,
 ):
     def _pull(version_name: str):

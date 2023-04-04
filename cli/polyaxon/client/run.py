@@ -21,7 +21,7 @@ import uuid
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import ujson
@@ -83,6 +83,13 @@ from traceml.artifacts import V1ArtifactKind, V1RunArtifact
 from traceml.events import V1Events
 from traceml.logging.streamer import get_logs_streamer
 
+if TYPE_CHECKING:
+    from polyaxon.schemas.responses.v1_list_run_artifacts_response import (
+        V1ListRunArtifactsResponse,
+    )
+    from traceml.logging import V1Logs
+    from traceml.tracking.run import Run
+
 
 class RunClient:
     """RunClient is a client to communicate with Polyaxon runs endpoints.
@@ -130,12 +137,12 @@ class RunClient:
     @client_handler(check_no_op=True)
     def __init__(
         self,
-        owner: str = None,
-        project: str = None,
-        run_uuid: str = None,
-        client: PolyaxonClient = None,
-        is_offline: bool = None,
-        no_op: bool = None,
+        owner: Optional[str] = None,
+        project: Optional[str] = None,
+        run_uuid: Optional[str] = None,
+        client: Optional[PolyaxonClient] = None,
+        is_offline: Optional[bool] = None,
+        no_op: Optional[bool] = None,
         manual_exceptions_handling: bool = False,
     ):
         self._manual_exceptions_handling = manual_exceptions_handling
@@ -183,7 +190,7 @@ class RunClient:
             if self._is_offline or not settings.CLIENT_CONFIG.is_managed
             else None
         )
-        self._run_data = V1Run(
+        self._run_data = V1Run.construct(
             owner=self._owner,
             project=self._project,
             uuid=self._run_uuid,
@@ -191,17 +198,17 @@ class RunClient:
             runtime=default_runtime,
             is_managed=False if self._is_offline else None,
         )
-        self._namespace = None
-        self._results = {}
-        self._artifacts_lineage = {}
-        self._default_filename_sanitize_paths = []
-        self._last_update = None
-        self._store = None
+        self._namespace: Optional[str] = None
+        self._results: Dict[str, Any] = {}
+        self._artifacts_lineage: Dict[str, V1RunArtifact] = {}
+        self._default_filename_sanitize_paths: List[str] = []
+        self._last_update: Optional[Tuple[datetime, int]] = None
+        self._store: Optional[PolyaxonStore] = None
 
     def _set_is_offline(
         self,
-        client: PolyaxonClient = None,
-        is_offline: bool = None,
+        client: Optional[PolyaxonClient] = None,
+        is_offline: Optional[bool] = None,
     ):
         if is_offline is not None:
             return is_offline
@@ -211,8 +218,8 @@ class RunClient:
 
     def _set_no_op(
         self,
-        client: PolyaxonClient = None,
-        no_op: bool = None,
+        client: Optional[PolyaxonClient] = None,
+        no_op: Optional[bool] = None,
     ):
         if no_op is not None:
             return no_op
@@ -235,7 +242,7 @@ class RunClient:
         return self._store
 
     @property
-    def status(self) -> str:
+    def status(self) -> Optional[Union[V1Statuses, str]]:
         return self._run_data.status
 
     @property
@@ -254,18 +261,18 @@ class RunClient:
             self._namespace = self.settings.namespace
         else:
             self._namespace = self.get_namespace()
-        return self._namespace
+        return self._namespace or ""
 
     @property
     def owner(self) -> str:
-        return self._owner
+        return self._owner or ""
 
     def set_owner(self, owner: str):
         self._owner = owner
 
     @property
     def project(self) -> str:
-        return self._project
+        return self._project or ""
 
     def set_project(self, project: str):
         self._project = project
@@ -286,24 +293,24 @@ class RunClient:
         return self._artifacts_lineage
 
     @client_handler(check_no_op=True)
-    def get_inputs(self) -> Dict:
+    def get_inputs(self) -> Dict[str, Any]:
         """Gets the run's inputs.
         Returns:
             dict, all the run inputs/params.
         """
         if not self._run_data.inputs:
             self.refresh_data()
-        return self._run_data.inputs
+        return self._run_data.inputs or {}
 
     @client_handler(check_no_op=True)
-    def get_outputs(self) -> Dict:
+    def get_outputs(self) -> Dict[str, Any]:
         """Gets the run's outputs.
         Returns:
              dict, all the run outputs/metrics.
         """
         if not self._run_data.inputs:
             self.refresh_data()
-        return self._run_data.outputs
+        return self._run_data.outputs or {}
 
     @client_handler(check_no_op=True, check_offline=True)
     def refresh_data(
@@ -357,7 +364,7 @@ class RunClient:
         """
         if self._is_offline:
             for k in data:
-                setattr(self._run_data, k, getattr(data, k, None))
+                setattr(self._run_data, k, getattr(data, k, None))  # type: ignore
         return self._update(data=data, async_req=async_req)
 
     @client_handler(check_no_op=True)
@@ -409,10 +416,10 @@ class RunClient:
     @client_handler(check_no_op=True)
     def create(
         self,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, Sequence[str]] = None,
-        content: Union[str, Dict, V1Operation] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
         is_managed: bool = True,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
@@ -465,8 +472,9 @@ class RunClient:
         if content:
             if isinstance(content, Mapping):
                 content = V1Operation.from_dict(content)
-            content = content if isinstance(content, str) else content.to_json()
-        data = V1OperationBody(
+            if isinstance(content, V1Operation):
+                content = content.to_json()
+        data = V1OperationBody.construct(
             name=name,
             description=description,
             tags=tags,
@@ -482,16 +490,16 @@ class RunClient:
     def create_from_polyaxonfile(
         self,
         polyaxonfile: str,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, Sequence[str]] = None,
-        params: Dict = None,
-        matrix: Union[Dict, V1Matrix] = None,
-        presets: List[str] = None,
-        queue: str = None,
-        nocache: bool = None,
-        cache: Union[int, str, bool] = None,
-        approved: Union[int, str, bool] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        params: Optional[Dict] = None,
+        matrix: Optional[Union[Dict, V1Matrix]] = None,
+        presets: Optional[List[str]] = None,
+        queue: Optional[str] = None,
+        nocache: Optional[bool] = None,
+        cache: Optional[Union[int, str, bool]] = None,
+        approved: Optional[Union[int, str, bool]] = None,
     ) -> V1Run:
         """Creates a new run based on a polyaxonfile.
 
@@ -557,16 +565,16 @@ class RunClient:
     def create_from_url(
         self,
         url: str,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, Sequence[str]] = None,
-        params: Dict = None,
-        matrix: Union[Dict, V1Matrix] = None,
-        presets: List[str] = None,
-        queue: str = None,
-        nocache: bool = None,
-        cache: Union[int, str, bool] = None,
-        approved: Union[int, str, bool] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        params: Optional[Dict] = None,
+        matrix: Optional[Union[Dict, V1Matrix]] = None,
+        presets: Optional[List[str]] = None,
+        queue: Optional[str] = None,
+        nocache: Optional[bool] = None,
+        cache: Optional[Union[int, str, bool]] = None,
+        approved: Optional[Union[int, str, bool]] = None,
     ) -> V1Run:
         """Creates a new run from a url containing a Polyaxonfile specification.
 
@@ -631,16 +639,16 @@ class RunClient:
     def create_from_hub(
         self,
         component: str,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, Sequence[str]] = None,
-        params: Dict = None,
-        matrix: Union[Dict, V1Matrix] = None,
-        presets: str = None,
-        queue: str = None,
-        nocache: bool = None,
-        cache: Union[int, str, bool] = None,
-        approved: Union[int, str, bool] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        params: Optional[Dict] = None,
+        matrix: Optional[Union[Dict, V1Matrix]] = None,
+        presets: Optional[List[str]] = None,
+        queue: Optional[str] = None,
+        nocache: Optional[bool] = None,
+        cache: Optional[Union[int, str, bool]] = None,
+        approved: Optional[Union[int, str, bool]] = None,
     ) -> V1Run:
         """Creates a new run from the hub based on the component name.
 
@@ -703,11 +711,11 @@ class RunClient:
     @client_handler(check_no_op=True)
     def log_status(
         self,
-        status: str,
-        reason: str = None,
-        message: str = None,
-        last_transition_time: datetime = None,
-        last_update_time: datetime = None,
+        status: Union[str, V1Statuses],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
     ):
         """Logs a new run status.
 
@@ -733,9 +741,9 @@ class RunClient:
             last_update_time: datetime, default `now`.
         """
         reason = reason or "PolyaxonClient"
-        self._run_data.status = status
+        self._run_data.status = status  # type: ignore
         current_date = now()
-        status_condition = V1StatusCondition(
+        status_condition = V1StatusCondition.construct(
             type=status,
             status=True,
             reason=reason,
@@ -761,8 +769,8 @@ class RunClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def get_statuses(
-        self, last_status: str = None
-    ) -> Tuple[str, List[V1StatusCondition]]:
+        self, last_status: Optional[str] = None
+    ) -> Tuple[Union[str, V1Statuses], List[V1StatusCondition]]:
         """Gets the run's statuses.
 
         [Run API](/docs/api/#operation/GetRunStatus)
@@ -788,12 +796,12 @@ class RunClient:
                     break
                 _conditions.append(c)
 
-            return response.status, reversed(_conditions)
+            return response.status, reversed(_conditions)  # type: ignore
 
         except (ApiException, HTTPError) as e:
             raise PolyaxonClientException("Api error: %s" % e) from e
 
-    def _wait_for_condition(self, statuses: List[str] = None):
+    def _wait_for_condition(self, statuses: Optional[List[str]] = None):
         statuses = to_list(statuses, check_none=True)
 
         def condition():
@@ -817,9 +825,9 @@ class RunClient:
     @client_handler(check_no_op=True, check_offline=True)
     def wait_for_condition(
         self,
-        statuses: List[str] = None,
+        statuses: Optional[List[str]] = None,
         print_status: bool = False,
-        live_update: any = None,
+        live_update: Any = None,
     ):
         """Waits for the run's last status to meet a condition.
 
@@ -843,7 +851,7 @@ class RunClient:
                 live_update.update(status="{}\n".format(latest_status["status"]))
 
     @client_handler(check_no_op=True, check_offline=True)
-    def watch_statuses(self, statuses: List[str] = None):
+    def watch_statuses(self, statuses: Optional[List[str]] = None):
         """Watches run statuses.
 
         If statuses is passed the watch will wait for a condition:
@@ -898,9 +906,9 @@ class RunClient:
     @client_handler(check_no_op=True, check_offline=True)
     def shell(
         self,
-        command: str = None,
-        pod: str = None,
-        container: str = None,
+        command: Optional[str] = None,
+        pod: Optional[str] = None,
+        container: Optional[str] = None,
         stderr: bool = True,
         stdin: bool = True,
         stdout: bool = True,
@@ -995,7 +1003,7 @@ class RunClient:
         self,
         kind: V1ArtifactKind,
         names: List[str],
-        orient: str = None,
+        orient: Optional[str] = None,
         force: bool = False,
     ):
         """Gets the run's events
@@ -1023,7 +1031,7 @@ class RunClient:
         kind: V1ArtifactKind,
         runs: List[str],
         names: List[str],
-        orient: str = None,
+        orient: Optional[str] = None,
         force: bool = False,
     ):
         """Gets events for multiple runs.
@@ -1050,8 +1058,12 @@ class RunClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def get_artifacts_lineage(
-        self, query: str = None, sort: str = None, limit: int = None, offset: int = None
-    ):
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> "V1ListRunArtifactsResponse":
         """Gets the run's artifacts lineage.
 
         [Run API](/docs/api/#operation/GetRunArtifactsLineage)
@@ -1076,7 +1088,11 @@ class RunClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def get_runs_artifacts_lineage(
-        self, query: str = None, sort: str = None, limit: int = None, offset: int = None
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ):
         """Gets the artifacts lineage for multiple runs under project based on query.
 
@@ -1130,7 +1146,7 @@ class RunClient:
         self,
         lineage: V1RunArtifact,
         force: bool = False,
-        path_to: str = None,
+        path_to: Optional[str] = None,
     ):
         """Downloads an run artifact given a lineage reference.
 
@@ -1145,7 +1161,7 @@ class RunClient:
         if not self.run_uuid:
             return
 
-        lineage_path = lineage.path
+        lineage_path = lineage.path or ""
         summary = lineage.summary or {}
         is_event = summary.get("is_event")
         has_step = summary.get("step")
@@ -1205,7 +1221,9 @@ class RunClient:
             )
 
     @client_handler(check_no_op=True, check_offline=True)
-    def download_artifact(self, path: str, force: bool = False, path_to: str = None):
+    def download_artifact(
+        self, path: str, force: bool = False, path_to: Optional[str] = None
+    ):
         """Downloads a single run artifact.
 
         Args:
@@ -1237,10 +1255,10 @@ class RunClient:
     def download_artifacts(
         self,
         path: str = "",
-        path_to: str = None,
+        path_to: Optional[str] = None,
         untar: bool = True,
         delete_tar: bool = True,
-        extract_path: str = None,
+        extract_path: Optional[str] = None,
         check_path: bool = False,
     ):
         """Downloads a subpath containing multiple run artifacts.
@@ -1283,7 +1301,7 @@ class RunClient:
     def upload_artifact(
         self,
         filepath: str,
-        path: str = None,
+        path: Optional[str] = None,
         untar: bool = False,
         overwrite: bool = True,
         show_progress: bool = True,
@@ -1326,7 +1344,7 @@ class RunClient:
         dirpath: str,
         path: str = "",
         overwrite: bool = True,
-        relative_to: str = None,
+        relative_to: Optional[str] = None,
     ):
         """Uploads a full directory to the run's artifacts store path.
 
@@ -1367,7 +1385,7 @@ class RunClient:
         files: List[str],
         path: str = "",
         overwrite: bool = True,
-        relative_to: str = None,
+        relative_to: Optional[str] = None,
     ):
         """Uploads multiple artifacts to the run's artifacts store path.
 
@@ -1482,11 +1500,11 @@ class RunClient:
         self,
         override_config=None,
         copy: bool = False,
-        copy_dirs: List[str] = None,
-        copy_files: List[str] = None,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, Sequence[str]] = None,
+        copy_dirs: Optional[List[str]] = None,
+        copy_files: Optional[List[str]] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
         **kwargs,
     ):
         """Restarts the current run
@@ -1504,19 +1522,18 @@ class RunClient:
         Returns:
             V1Run instance.
         """
-        body = V1Run(content=override_config)
+        body = V1Run.construct(content=override_config)
         if name:
             body.name = name
         if description:
             body.description = description
         if tags:
-            tags = validate_tags(tags, validate_yaml=True)
-            body.tags = tags
+            body.tags = validate_tags(tags, validate_yaml=True)
         if copy or copy_dirs or copy_files:
             if copy_dirs or copy_files:
                 copy_dirs = to_list(copy_dirs, check_none=True)
                 copy_files = to_list(copy_files, check_none=True)
-                copy_artifacts = V1ArtifactsType()
+                copy_artifacts = V1ArtifactsType.construct()
                 if copy_dirs:
                     copy_artifacts.dirs = [
                         "{}/{}".format(self.run_uuid, cp) for cp in copy_dirs
@@ -1603,7 +1620,7 @@ class RunClient:
             inputs: **kwargs, e.g. param1=value1, param2=value2, ...
         """
         inputs = {to_fqn_name(k): v for k, v in inputs.items()}
-        patch_dict = {"inputs": inputs}
+        patch_dict: Dict[str, Any] = {"inputs": inputs}
         if reset is False:
             patch_dict["merge"] = True
             self._run_data.inputs = self._run_data.inputs or {}
@@ -1625,7 +1642,7 @@ class RunClient:
             outputs: **kwargs, e.g. output1=value1, metric2=value2, ...
         """
         outputs = {to_fqn_name(k): v for k, v in outputs.items()}
-        patch_dict = {"outputs": outputs}
+        patch_dict: Dict[str, Any] = {"outputs": outputs}
         if reset is False:
             patch_dict["merge"] = True
             self._run_data.outputs = self._run_data.outputs or {}
@@ -1659,7 +1676,7 @@ class RunClient:
             meta: **kwargs, e.g. concurrency=10, has_flag=True, ...
         """
         meta = {to_fqn_name(k): v for k, v in meta.items()}
-        patch_dict = {"meta_info": meta}
+        patch_dict: Dict[str, Any] = {"meta_info": meta}
         if reset is False:
             patch_dict["merge"] = True
             self._run_data.meta_info = self._run_data.meta_info or {}
@@ -1671,7 +1688,7 @@ class RunClient:
     @client_handler(check_no_op=True)
     def log_tags(
         self,
-        tags: Union[str, Sequence[str]],
+        tags: Union[str, List[str]],
         reset: bool = False,
         async_req: bool = True,
     ):
@@ -1685,11 +1702,12 @@ class RunClient:
             async_req: bool, optional, default: False, execute request asynchronously.
         """
         tags = validate_tags(tags, validate_yaml=True)
-        patch_dict = {"tags": tags}
-        if reset is False:
+        patch_dict: Dict[str, Any] = {"tags": tags}
+        if reset is False and tags:
             patch_dict["merge"] = True
-            self._run_data.tags = self._run_data.tags or []
-            self._run_data.tags += [t for t in tags if t not in self._run_data.tags]
+            current_tags = self._run_data.tags or []  # type: List[str]
+            current_tags += [t for t in tags if t not in current_tags]
+            self._run_data.tags = current_tags
         else:
             self._run_data.tags = tags
         self._update(patch_dict, async_req=async_req)
@@ -1710,9 +1728,9 @@ class RunClient:
 
     def _log_end_status(
         self,
-        status: str,
-        reason: str = None,
-        message: str = None,
+        status: Union[str, V1Statuses],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
     ):
         """Sets the current run to `status` status.
 
@@ -1759,7 +1777,7 @@ class RunClient:
         self._log_end_status(status=V1Statuses.STOPPED, message=message)
 
     @client_handler(check_no_op=True)
-    def log_failed(self, reason: str = None, message: str = None):
+    def log_failed(self, reason: Optional[str] = None, message: Optional[str] = None):
         """Sets the current run to `failed` status.
 
         <blockquote class="info">
@@ -1777,7 +1795,9 @@ class RunClient:
             message=message,
         )
 
-    def _sanitize_filename(self, filename: str, for_patterns: List[str] = None) -> str:
+    def _sanitize_filename(
+        self, filename: str, for_patterns: Optional[List[str]] = None
+    ) -> str:
         """Ensures that the filename never includes common context paths"""
         if not self.run_uuid or ctx_paths.CONTEXT_ROOT not in filename:
             return to_fqn_name(filename)
@@ -1808,7 +1828,9 @@ class RunClient:
 
         return to_fqn_name(filename)
 
-    def _sanitize_filepath(self, filepath: str, rel_path: str = None) -> str:
+    def _sanitize_filepath(
+        self, filepath: str, rel_path: Optional[str] = None
+    ) -> Optional[str]:
         """Ensures that the filepath never includes common context paths"""
         if not filepath or rel_path:
             return rel_path
@@ -1899,7 +1921,7 @@ class RunClient:
         self.log_meta(progress=value)
 
     @client_handler(check_no_op=True)
-    def log_code_ref(self, code_ref: Dict = None, is_input: bool = True):
+    def log_code_ref(self, code_ref: Optional[Dict] = None, is_input: bool = True):
         """Logs code reference as a
         lineage information with the code_ref dictionary in the summary field.
 
@@ -1910,7 +1932,7 @@ class RunClient:
         """
         code_ref = code_ref or get_code_reference()
         if code_ref and "commit" in code_ref:
-            artifact_run = V1RunArtifact(
+            artifact_run = V1RunArtifact.construct(
                 name=code_ref.get("commit"),
                 kind=V1ArtifactKind.CODEREF,
                 summary=code_ref,
@@ -1920,10 +1942,10 @@ class RunClient:
 
     def _calculate_summary_for_path_or_content(
         self,
-        hash: str = None,
-        path: str = None,
+        hash: Optional[str] = None,
+        path: Optional[str] = None,
         content=None,
-        summary: Dict = None,
+        summary: Optional[Dict] = None,
         skip_hash_calculation: bool = False,
     ):
         summary = summary or {}
@@ -1980,10 +2002,10 @@ class RunClient:
     def log_data_ref(
         self,
         name: str,
-        hash: str = None,
-        path: str = None,
+        hash: Optional[str] = None,
+        path: Optional[str] = None,
         content=None,
-        summary: Dict = None,
+        summary: Optional[Dict] = None,
         is_input: bool = True,
         skip_hash_calculation: bool = False,
     ):
@@ -2016,12 +2038,12 @@ class RunClient:
         self,
         path: str,
         kind: V1ArtifactKind,
-        name: str = None,
-        hash: str = None,
+        name: Optional[str] = None,
+        hash: Optional[str] = None,
         content=None,
-        summary: Dict = None,
+        summary: Optional[Dict] = None,
         is_input: bool = False,
-        rel_path: str = None,
+        rel_path: Optional[str] = None,
         skip_hash_calculation: bool = False,
     ):
         """Logs an artifact reference with custom kind.
@@ -2064,7 +2086,7 @@ class RunClient:
             name = name or get_base_filename(path)
             rel_path = self._sanitize_filepath(filepath=path, rel_path=rel_path)
         if name:
-            artifact_run = V1RunArtifact(
+            artifact_run = V1RunArtifact.construct(
                 name=self._sanitize_filename(name),
                 kind=kind,
                 path=rel_path,
@@ -2077,11 +2099,11 @@ class RunClient:
     def log_model_ref(
         self,
         path: str,
-        name: str = None,
-        framework: str = None,
-        summary: Dict = None,
+        name: Optional[str] = None,
+        framework: Optional[str] = None,
+        summary: Optional[Dict] = None,
         is_input: bool = False,
-        rel_path: str = None,
+        rel_path: Optional[str] = None,
         skip_hash_calculation: bool = False,
     ):
         """Logs model reference.
@@ -2129,12 +2151,12 @@ class RunClient:
     def log_file_ref(
         self,
         path: str,
-        name: str = None,
-        hash: str = None,
+        name: Optional[str] = None,
+        hash: Optional[str] = None,
         content=None,
-        summary: Dict = None,
+        summary: Optional[Dict] = None,
         is_input: bool = False,
-        rel_path: str = None,
+        rel_path: Optional[str] = None,
         skip_hash_calculation: bool = False,
     ):
         """Logs file reference.
@@ -2167,11 +2189,11 @@ class RunClient:
     def log_dir_ref(
         self,
         path: str,
-        name: str = None,
-        hash: str = None,
-        summary: Dict = None,
+        name: Optional[str] = None,
+        hash: Optional[str] = None,
+        summary: Optional[Dict] = None,
         is_input: bool = False,
-        rel_path: str = None,
+        rel_path: Optional[str] = None,
         skip_hash_calculation: bool = False,
     ):
         """Logs dir reference.
@@ -2212,7 +2234,7 @@ class RunClient:
         path: str,
         name: str = "tensorboard",
         is_input: bool = False,
-        rel_path: str = None,
+        rel_path: Optional[str] = None,
     ):
         """Logs tensorboard reference.
 
@@ -2278,7 +2300,11 @@ class RunClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def list(
-        self, query: str = None, sort: str = None, limit: int = None, offset: int = None
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ):
         """Lists runs under the current owner - project.
 
@@ -2302,7 +2328,11 @@ class RunClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def list_children(
-        self, query: str = None, sort: str = None, limit: int = None, offset: int = None
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ):
         """Lists run's children if the current run has a pipeline.
 
@@ -2331,11 +2361,11 @@ class RunClient:
     def promote_to_model_version(
         self,
         version: str,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
-        connection: str = None,
-        artifacts: List[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Similar to
@@ -2374,11 +2404,11 @@ class RunClient:
     def promote_to_artifact_version(
         self,
         version: str,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
-        connection: str = None,
-        artifacts: List[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Similar to
@@ -2425,7 +2455,7 @@ class RunClient:
         summaries = []
         last_values = {}
         connection_name = get_artifacts_store_name()
-        with get_files_in_path_context(current_events_path) as files:
+        with get_files_in_path_context(current_events_path) as files:  # type: List[str]
             for f in files:
                 if last_check and not file_modified_since(
                     filepath=f, last_time=last_check
@@ -2440,7 +2470,7 @@ class RunClient:
                 # Get only the relpath from run uuid
                 event_rel_path = self._sanitize_filepath(filepath=f)
                 summary = event.get_summary()
-                run_artifact = V1RunArtifact(
+                run_artifact = V1RunArtifact.construct(
                     name=event_name,
                     kind=V1ArtifactKind.SYSTEM if is_system_resource else events_kind,
                     connection=connection_name,
@@ -2557,10 +2587,10 @@ class RunClient:
     def load_offline_run(
         cls,
         path: str,
-        run_client: Union["RunClient", "Run"] = None,
+        run_client: Optional[Union["RunClient", "Run"]] = None,
         reset_project: bool = False,
         raise_if_not_found: bool = False,
-    ) -> Union["RunClient", "Run"]:
+    ) -> Optional[Union["RunClient", "Run"]]:
         """Loads an offline run from a local path.
 
         > **Note**: When the `offline` mode is enabled, and the run uuid is provided,
@@ -2582,18 +2612,18 @@ class RunClient:
                 raise PolyaxonClientException(f"Offline data was not found: {run_path}")
             else:
                 logger.info(f"Offline data was not found: {run_path}")
-                return
+                return None
 
         with open(run_path, "r") as config_file:
             config_str = config_file.read()
             run_config = V1Run(**ujson.loads(config_str))
             owner = run_config.owner
             project = run_config.project
-            if reset_project or not owner:
-                owner = run_client.owner
-            if reset_project or not project:
-                project = run_client.project
             if run_client:
+                if reset_project or not owner:
+                    owner = run_client.owner
+                if reset_project or not project:
+                    project = run_client.project
                 run_client._owner = owner
                 run_client._project = project
                 run_client._run_uuid = run_config.uuid
@@ -2603,7 +2633,7 @@ class RunClient:
                     project=project,
                     run_uuid=run_config.uuid,
                 )
-            run_client._run_data = run_config
+            run_client._run_data = run_config  # type: ignore
             logger.info(f"Offline data loaded from: {run_path}")
 
         lineages_path = "{}/{}".format(path, ctx_paths.CONTEXT_LOCAL_LINEAGES)
@@ -2613,7 +2643,7 @@ class RunClient:
         with open(lineages_path, "r") as config_file:
             config_str = config_file.read()
             lineages = [V1RunArtifact.from_dict(l) for l in ujson.loads(config_str)]
-            run_client._artifacts_lineage = {l.name: l for l in lineages}
+            run_client._artifacts_lineage = {l.name: l for l in lineages}  # type: ignore
             logger.info(f"Offline lineage data loaded from: {lineages_path}")
 
         return run_client
@@ -2621,7 +2651,7 @@ class RunClient:
     @client_handler(check_no_op=True)
     def pull_remote_run(
         self,
-        path: str = None,
+        path: Optional[str] = None,
         download_artifacts: bool = True,
     ):
         """Download a run on Polyaxon's API and artifacts store to local path.
@@ -2721,7 +2751,7 @@ def get_run_logs(
                 )
                 sys.exit(1)
 
-    def handle_status(last_status: str = None, live_update=None):
+    def handle_status(last_status: Optional[str] = None, live_update=None):
         if not last_status:
             return {"status": None}
 

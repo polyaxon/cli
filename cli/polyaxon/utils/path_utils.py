@@ -21,7 +21,7 @@ import tarfile
 import tempfile
 
 from contextlib import contextmanager
-from typing import List, Tuple
+from typing import Any, List, Optional, Pattern, Tuple, Union
 
 from polyaxon.exceptions import PolyaxonPathException
 from polyaxon.logger import logger
@@ -29,7 +29,7 @@ from polyaxon.utils import cli_constants
 from polyaxon.utils.list_utils import to_list
 
 
-def check_or_create_path(path: str = None, is_dir=False) -> None:
+def check_or_create_path(path: Optional[str] = None, is_dir: bool = False) -> None:
     if not is_dir:
         path = os.path.dirname(os.path.abspath(path))
     if not os.path.exists(path):
@@ -80,7 +80,7 @@ def copy_to_tmp_dir(path: str, dir_name: str) -> str:
     return tmp_path
 
 
-def copy_file(filename, path_to, use_basename=True):
+def copy_file(filename: str, path_to: str, use_basename: bool = True) -> Optional[str]:
     if use_basename:
         path_to = append_basename(path_to, filename)
 
@@ -93,7 +93,7 @@ def copy_file(filename, path_to, use_basename=True):
 
 
 @contextmanager
-def get_files_by_paths(file_type, filepaths):
+def get_files_by_paths(file_type: str, filepaths: List[str]) -> Tuple[List[str], int]:
     local_files = []
     total_file_size = 0
 
@@ -112,7 +112,7 @@ def get_files_by_paths(file_type, filepaths):
 
 def get_files_and_dirs_in_path(
     path: str,
-    exclude: List[str] = None,
+    exclude: Optional[List[str]] = None,
     collect_dirs: bool = False,
 ) -> Tuple[List[str], List[str]]:
     result_files = []
@@ -130,7 +130,7 @@ def get_files_and_dirs_in_path(
     return result_files, result_dirs
 
 
-def get_files_in_path(path: str, exclude: List[str] = None) -> List[str]:
+def get_files_in_path(path: str, exclude: Optional[List[str]] = None) -> List[str]:
     return get_files_and_dirs_in_path(path, exclude, False)[0]
 
 
@@ -141,7 +141,9 @@ def get_dirs_under_path(path: str) -> List[str]:
 
 
 @contextmanager
-def get_files_in_path_context(path: str, exclude: List[str] = None):
+def get_files_in_path_context(
+    path: str, exclude: Optional[List[str]] = None
+) -> List[str]:
     """
     Gets all the files under a certain path.
 
@@ -155,13 +157,13 @@ def get_files_in_path_context(path: str, exclude: List[str] = None):
     yield get_files_in_path(path, exclude=exclude)
 
 
-def unix_style_path(path):
+def unix_style_path(path) -> str:
     if os.path.sep != "/":
         return path.replace(os.path.sep, "/")
     return path
 
 
-def create_init_file():
+def create_init_file() -> bool:
     if os.path.exists(cli_constants.INIT_FILE_PATH):
         return False
 
@@ -171,7 +173,9 @@ def create_init_file():
     return True
 
 
-def create_tarfile(files: List[str], tar_path: str, relative_to: str = None) -> None:
+def create_tarfile(
+    files: List[str], tar_path: str, relative_to: Optional[str] = None
+) -> None:
     """Create a tar file based on the list of files passed"""
     with tarfile.open(tar_path, "w:gz") as tar:
         for f in files:
@@ -180,7 +184,9 @@ def create_tarfile(files: List[str], tar_path: str, relative_to: str = None) -> 
 
 
 @contextmanager
-def create_tarfile_from_path(files, path_name, relative_to: str = None):
+def create_tarfile_from_path(
+    files: List[str], path_name: str, relative_to: Optional[str] = None
+) -> str:
     """Create a tar file based on the list of files passed"""
     fd, filename = tempfile.mkstemp(prefix=path_name, suffix=".tar.gz")
     create_tarfile(files, filename, relative_to)
@@ -192,9 +198,9 @@ def create_tarfile_from_path(files, path_name, relative_to: str = None):
 
 
 def untar_file(
-    filename: str = None,
+    filename: Optional[str] = None,
     delete_tar: bool = True,
-    extract_path: str = None,
+    extract_path: Optional[str] = None,
     use_filepath: bool = True,
 ):
     extract_path = extract_path or "."
@@ -232,7 +238,7 @@ def append_basename(path, filename):
     return os.path.join(path, os.path.basename(filename))
 
 
-def check_dirname_exists(path, is_dir=False):
+def check_dirname_exists(path: str, is_dir: bool = False):
     if not is_dir:
         path = os.path.dirname(os.path.abspath(path))
     if not os.path.isdir(path):
@@ -241,7 +247,7 @@ def check_dirname_exists(path, is_dir=False):
         )
 
 
-def create_polyaxon_tmp():
+def create_polyaxon_tmp() -> str:
     base_path = os.path.join("/tmp", ".polyaxon")
     if not os.path.exists(base_path):
         try:
@@ -253,15 +259,15 @@ def create_polyaxon_tmp():
     return base_path
 
 
-def get_path_extension(filepath: str):
+def get_path_extension(filepath: str) -> str:
     return ".".join(os.path.basename(filepath).split(".")[1:]).lower()
 
 
-def get_base_filename(filepath: str):
+def get_base_filename(filepath: str) -> str:
     return os.path.basename(filepath).split(".")[0]
 
 
-def module_type(obj, type_pattern):
+def module_type(obj: Any, type_pattern: Union[str, Pattern]) -> bool:
     obj_type = type(obj)
     module = obj_type.__module__
     name = obj_type.__name__
@@ -282,7 +288,9 @@ def copy_dir_path(from_path: str, asset_path: str):
     shutil.copytree(from_path, asset_path)
 
 
-def copy_file_or_dir_path(from_path: str, asset_path: str, use_basename: bool = False):
+def copy_file_or_dir_path(
+    from_path: str, asset_path: str, use_basename: bool = False
+) -> str:
     if use_basename:
         dir_name = os.path.basename(os.path.normpath(from_path))
         asset_path = (

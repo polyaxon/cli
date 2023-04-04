@@ -222,7 +222,9 @@ def get_env_from_k8s_resources(
     return env_vars
 
 
-def get_base_env_vars(use_proxy_env_vars_use_in_ops: bool, log_level: str = None):
+def get_base_env_vars(
+    use_proxy_env_vars_use_in_ops: bool, log_level: Optional[str] = None
+):
     env = [
         get_from_field_ref(name=EV_KEYS_K8S_NODE_NAME, field_path="spec.nodeName"),
         get_from_field_ref(name=EV_KEYS_K8S_NAMESPACE, field_path="metadata.namespace"),

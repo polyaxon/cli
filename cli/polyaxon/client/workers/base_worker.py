@@ -18,9 +18,11 @@ import atexit
 import os
 import threading
 
+from typing import Optional
+
 
 class BaseWorker:
-    NAME = None
+    NAME: Optional[str] = None
 
     def __init__(self):
         assert self.NAME, "Worker class `{}` must have a valid name.".format(

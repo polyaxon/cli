@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from polyaxon.agents import converter
 from polyaxon.agents.spawners.spawner import Spawner
@@ -26,7 +27,7 @@ def start(
     run_kind: str,
     run_uuid: str,
     namespace: str,
-    in_cluster: bool = None,
+    in_cluster: Optional[bool] = None,
     default_auth: bool = False,
 ):
     resource = converter.convert(
@@ -50,7 +51,7 @@ def apply(
     run_kind: str,
     run_uuid: str,
     namespace: str,
-    in_cluster: bool = None,
+    in_cluster: Optional[bool] = None,
     default_auth: bool = False,
 ):
     resource = converter.convert(
@@ -66,13 +67,17 @@ def apply(
     )
 
 
-def stop(run_kind: str, run_uuid: str, namespace: str, in_cluster: bool = None):
+def stop(
+    run_kind: str, run_uuid: str, namespace: str, in_cluster: Optional[bool] = None
+):
     Spawner(namespace=namespace, in_cluster=in_cluster).stop(
         run_uuid=run_uuid, run_kind=run_kind
     )
 
 
-def clean(run_kind: str, run_uuid: str, namespace: str, in_cluster: bool = None):
+def clean(
+    run_kind: str, run_uuid: str, namespace: str, in_cluster: Optional[bool] = None
+):
     Spawner(namespace=namespace, in_cluster=in_cluster).clean(
         run_uuid=run_uuid, run_kind=run_kind
     )
@@ -86,7 +91,7 @@ def make_and_create(
     run_kind: str,
     run_uuid: str,
     namespace: str,
-    in_cluster: bool = None,
+    in_cluster: Optional[bool] = None,
 ):
     resource = converter.make_and_convert(
         owner_name=owner_name,

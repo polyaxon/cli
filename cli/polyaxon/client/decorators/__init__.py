@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.client.decorators.client_handler import (
+from polyaxon.client.decorators.client_call_handler import (
     client_handler,
     get_global_or_inline_config,
 )

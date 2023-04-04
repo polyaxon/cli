@@ -16,7 +16,7 @@
 import os
 import subprocess
 
-from typing import List
+from typing import List, Optional
 
 from polyaxon.client import RunClient
 from polyaxon.init.artifacts import download_artifact
@@ -48,7 +48,7 @@ def _command(
     port: int,
     logdir: str,
     path_prefix: str,
-    plugins: List[str] = None,
+    plugins: Optional[List[str]] = None,
 ):
     cmd = []
 

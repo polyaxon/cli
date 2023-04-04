@@ -31,7 +31,7 @@ def query_logs(
     pod_id: str,
     container_id: str,
     stream: bool = False,
-    since_seconds: int = None,
+    since_seconds: Optional[int] = None,
 ) -> Any:
     params = {}
     if stream:

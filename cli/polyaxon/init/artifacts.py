@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import TYPE_CHECKING, Union
 
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.fs.watcher import FSWatcher
@@ -20,6 +21,9 @@ from polyaxon.logger import logger
 from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.utils.enums_utils import get_enum_value
 from polyaxon.utils.formatting import Printer
+
+if TYPE_CHECKING:
+    from polyaxon.connections.kinds import V1ConnectionKind
 
 
 def sync_file_watcher(path: str):
@@ -35,7 +39,7 @@ def sync_file_watcher(path: str):
 
 def download_artifact(
     connection_name: str,
-    connection_kind: str,
+    connection_kind: Union[str, V1ConnectionKind],
     path_from: str,
     path_to: str,
     is_file: bool,
@@ -46,7 +50,9 @@ def download_artifact(
     from polyaxon.fs.fs import get_sync_fs_from_type
     from polyaxon.fs.manager import download_file_or_dir
 
-    connection_type = V1ConnectionType(name=connection_name, kind=connection_kind)
+    connection_type = V1ConnectionType.construct(
+        name=connection_name, kind=connection_kind
+    )
     fs = get_sync_fs_from_type(connection_type=connection_type)
 
     try:

@@ -60,7 +60,7 @@ def get_artifacts_path_container(
     artifacts_store: V1ConnectionType,
     run_path: str,
     auto_resume: bool,
-    env: List[k8s_schemas.V1EnvVar] = None,
+    env: Optional[List[k8s_schemas.V1EnvVar]] = None,
 ) -> Optional[k8s_schemas.V1Container]:
     if not artifacts_store:
         raise PolypodException("Init artifacts container requires a store.")

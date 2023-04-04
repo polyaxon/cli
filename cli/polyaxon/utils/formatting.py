@@ -19,7 +19,7 @@ import sys
 import urllib.parse as urlparse
 import yaml
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import parse_qs
 
 import click
@@ -260,7 +260,7 @@ class Printer:
         cls.console.print(text)
 
     @classmethod
-    def help(cls, command_help: str = None):
+    def help(cls, command_help: Optional[str] = None):
         if command_help:
             cls.console.print(
                 "Please run [white]`polyaxon {} --help`[/white] for more details".format(
@@ -278,7 +278,7 @@ class Printer:
         cls.console.print(text, style="header")
 
     @classmethod
-    def warning(cls, text, command_help: str = None):
+    def warning(cls, text, command_help: Optional[str] = None):
         cls.console.print(text, style="warning")
         if command_help:
             cls.help(command_help)
@@ -288,7 +288,9 @@ class Printer:
         cls.console.print(text, style="success")
 
     @classmethod
-    def error(cls, text, sys_exit: bool = False, command_help: str = None, **kwargs):
+    def error(
+        cls, text, sys_exit: bool = False, command_help: Optional[str] = None, **kwargs
+    ):
         cls.console.print(text, style="error")
         if command_help:
             cls.help(command_help)
@@ -415,7 +417,7 @@ class Printer:
 
 
 def flatten_keys(
-    objects: List[Dict], columns: List[str], columns_prefix: Dict = None
+    objects: List[Dict], columns: List[str], columns_prefix: Optional[Dict] = None
 ) -> Tuple[List[Dict], Dict]:
     # Extend run with params_keys
     keys = set([])

@@ -13,10 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
+
+from typing import TYPE_CHECKING, Optional, Type
 
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.schemas.cli.cli_config import CliConfig
 from polyaxon.utils.tz_utils import now
+
+if TYPE_CHECKING:
+    from polyaxon.schemas.api.compatibility import V1Compatibility
+    from polyaxon.schemas.api.installation import V1Installation
+    from polyaxon.schemas.api.log_handler import V1LogHandler
 
 
 class CliConfigManager(BaseConfigManager):
@@ -24,17 +32,17 @@ class CliConfigManager(BaseConfigManager):
 
     VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
     CONFIG_FILE_NAME = ".cli"
-    CONFIG = CliConfig
+    CONFIG: Type[CliConfig] = CliConfig
 
     @classmethod
     def reset(
         cls,
-        current_version=None,
-        installation=None,
-        compatibility=None,
-        log_handler=None,
-        last_check=None,
-    ):
+        current_version: Optional[str] = None,
+        installation: Optional["V1Installation"] = None,
+        compatibility: Optional["V1Compatibility"] = None,
+        log_handler: Optional["V1LogHandler"] = None,
+        last_check: Optional[datetime.datetime] = None,
+    ) -> Optional[CliConfig]:
         if not any(
             [current_version, installation, compatibility, log_handler, last_check]
         ):
@@ -55,7 +63,7 @@ class CliConfigManager(BaseConfigManager):
         return cli_config
 
     @classmethod
-    def should_check(cls, interval: int = None):
+    def should_check(cls, interval: Optional[int] = None) -> bool:
         config = cls.get_config_or_default()
         should_check = config.should_check(interval=interval)
         if should_check:
@@ -63,5 +71,5 @@ class CliConfigManager(BaseConfigManager):
         return should_check
 
     @classmethod
-    def get_config_from_env(cls):
+    def get_config_from_env(cls) -> Optional[CliConfig]:
         pass

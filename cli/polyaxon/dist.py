@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Optional
 
 LOCAL = "local"
 SANDBOX = "sandbox"
@@ -46,7 +46,7 @@ def is_ee(value: str):
     return EE == value
 
 
-def get_dist(value: str, default: str = None):
+def get_dist(value: str, default: Optional[str] = None):
     if value and value in {LOCAL, SANDBOX, CE, CLOUD, EE}:
         return value
     return default

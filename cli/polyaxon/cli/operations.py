@@ -16,6 +16,8 @@
 import os
 import sys
 
+from typing import Any
+
 import click
 import ujson
 
@@ -2012,7 +2014,7 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
         sys.exit(1)
 
 
-def _wait_for_running_condition(client, live_update):
+def _wait_for_running_condition(client: RunClient, live_update: Any):
     client.refresh_data()
     if LifeCycle.is_running(client.run_data.status):
         return
@@ -2035,7 +2037,7 @@ def _wait_for_running_condition(client, live_update):
         sys.exit()
 
 
-def wait_for_running_condition(client):
+def wait_for_running_condition(client: RunClient):
     with Printer.console.status("Waiting for running condition ...") as live_update:
         try:
             _wait_for_running_condition(client, live_update)

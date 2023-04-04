@@ -17,7 +17,7 @@
 import os
 
 from collections.abc import Mapping
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import ujson
 
@@ -41,22 +41,22 @@ class BaseConfigManager:
     CONFIG = None
 
     @classmethod
-    def is_global(cls, visibility=None):
+    def is_global(cls, visibility=None) -> bool:
         visibility = visibility or cls.VISIBILITY
         return visibility == cls.VISIBILITY_GLOBAL
 
     @classmethod
-    def is_local(cls, visibility=None):
+    def is_local(cls, visibility=None) -> bool:
         visibility = visibility or cls.VISIBILITY
         return visibility == cls.VISIBILITY_LOCAL
 
     @classmethod
-    def is_all_visibility(cls, visibility=None):
+    def is_all_visibility(cls, visibility=None) -> bool:
         visibility = visibility or cls.VISIBILITY
         return visibility == cls.VISIBILITY_ALL
 
     @classmethod
-    def get_visibility(cls):
+    def get_visibility(cls) -> str:
         if cls.is_all_visibility():
             return (
                 cls.VISIBILITY_LOCAL
@@ -66,11 +66,11 @@ class BaseConfigManager:
         return cls.VISIBILITY
 
     @classmethod
-    def set_config_path(cls, config_path: Optional[str]):
+    def set_config_path(cls, config_path: Optional[str]) -> None:
         cls.CONFIG_PATH = config_path
 
     @staticmethod
-    def _create_dir(config_file_path):
+    def _create_dir(config_file_path) -> None:
         try:
             check_or_create_path(config_file_path, is_dir=False)
         except OSError:
@@ -121,7 +121,9 @@ class BaseConfigManager:
         return config_path
 
     @classmethod
-    def get_config_filepath(cls, create=True, visibility=None):
+    def get_config_filepath(
+        cls, create: bool = True, visibility: Optional[str] = None
+    ) -> str:
         config_path = None
         if cls.is_local(visibility):
             config_path = cls.get_local_config_path()
@@ -137,20 +139,22 @@ class BaseConfigManager:
         return config_path
 
     @classmethod
-    def init_config(cls, visibility=None):
+    def init_config(cls, visibility: Optional[str] = None):
         config = cls.get_config()
         cls.set_config(config, init=True, visibility=visibility)
 
     @classmethod
-    def is_locally_initialized(cls):
+    def is_locally_initialized(cls) -> Optional[str]:
         return cls.check_local_config_path()
 
     @classmethod
-    def is_initialized(cls):
+    def is_initialized(cls) -> Optional[str]:
         return cls._get_and_check_path(cls.get_config_filepath(create=False))
 
     @classmethod
-    def set_config(cls, config, init=False, visibility=None):
+    def set_config(
+        cls, config: Any, init: bool = False, visibility: Optional[str] = None
+    ) -> None:
         config_filepath = cls.get_config_filepath(visibility=visibility)
 
         if os.path.isfile(config_filepath) and init:
@@ -183,7 +187,7 @@ class BaseConfigManager:
                 config_file.write(config)
 
     @classmethod
-    def get_config(cls, check: bool = True):
+    def get_config(cls, check: bool = True) -> Optional[Any]:
         if check and not cls.is_initialized():
             return None
 
@@ -194,7 +198,7 @@ class BaseConfigManager:
         return cls.read_from_path(config_filepath)
 
     @classmethod
-    def read_from_path(cls, config_filepath: str):
+    def read_from_path(cls, config_filepath: str) -> Optional[Any]:
         if issubclass(cls.CONFIG, BaseSchemaModel):
             return cls.CONFIG.read(config_filepath)
         with open(config_filepath, "r") as config_file:
@@ -202,11 +206,11 @@ class BaseConfigManager:
         return cls.CONFIG(**ujson.loads(config_str))
 
     @classmethod
-    def get_config_defaults(cls):
+    def get_config_defaults(cls) -> Dict:
         return {}
 
     @classmethod
-    def get_config_or_default(cls):
+    def get_config_or_default(cls) -> Any:
         if not cls.is_initialized():
             return cls.CONFIG(
                 **cls.get_config_defaults()
@@ -215,11 +219,11 @@ class BaseConfigManager:
         return cls.get_config(check=False)
 
     @classmethod
-    def get_config_from_env(cls, **kwargs):
+    def get_config_from_env(cls, **kwargs) -> Any:
         raise NotImplementedError
 
     @classmethod
-    def get_value(cls, key):
+    def get_value(cls, key) -> Optional[Any]:
         config = cls.get_config()
         if config:
             if hasattr(config, key):
@@ -230,7 +234,7 @@ class BaseConfigManager:
         return None
 
     @classmethod
-    def purge(cls, visibility=None):
+    def purge(cls, visibility: Optional[str] = None):
         def _purge():
             if config_filepath and os.path.isfile(config_filepath):
                 os.remove(config_filepath)

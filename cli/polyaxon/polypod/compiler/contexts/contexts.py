@@ -17,7 +17,7 @@
 import os
 
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 from polyaxon.contexts import keys as ctx_keys
 from polyaxon.contexts import paths as ctx_paths
@@ -65,14 +65,14 @@ def resolve_globals_contexts(
     iteration: int,
     created_at: datetime,
     compiled_at: datetime,
-    schedule_at: datetime = None,
-    started_at: datetime = None,
-    finished_at: datetime = None,
-    duration: int = None,
-    plugins: V1Plugins = None,
+    schedule_at: Optional[datetime] = None,
+    started_at: Optional[datetime] = None,
+    finished_at: Optional[datetime] = None,
+    duration: Optional[int] = None,
+    plugins: Optional[V1Plugins] = None,
     artifacts_store: V1ConnectionType = None,
     cloning_kind: V1CloningKind = None,
-    original_uuid: str = None,
+    original_uuid: Optional[str] = None,
     is_independent: bool = True,
 ) -> Dict:
     resolved_contexts = {
@@ -145,12 +145,12 @@ def resolve_contexts(
     iteration: int,
     created_at: datetime,
     compiled_at: datetime,
-    schedule_at: datetime = None,
-    started_at: datetime = None,
-    finished_at: datetime = None,
-    duration: int = None,
+    schedule_at: Optional[datetime] = None,
+    started_at: Optional[datetime] = None,
+    finished_at: Optional[datetime] = None,
+    duration: Optional[int] = None,
     cloning_kind: V1CloningKind = None,
-    original_uuid: str = None,
+    original_uuid: Optional[str] = None,
     is_independent: bool = True,
 ) -> Dict:
     run_kind = compiled_operation.get_run_kind()

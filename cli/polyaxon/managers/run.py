@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Type
 
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.schemas.responses.v1_run import V1Run
@@ -25,10 +26,10 @@ class RunConfigManager(BaseConfigManager):
     VISIBILITY = BaseConfigManager.VISIBILITY_ALL
     IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".run"
-    CONFIG = V1Run
+    CONFIG: Type[V1Run] = V1Run
 
     @classmethod
-    def get_config_or_raise(cls):
+    def get_config_or_raise(cls) -> V1Run:
         run = cls.get_config()
         if not run:
             Printer.error("No run was provided.", sys_exit=True)

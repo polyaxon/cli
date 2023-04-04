@@ -15,6 +15,8 @@
 # limitations under the License.
 import os
 
+from typing import Type
+
 from polyaxon.config_reader.manager import ConfigManager
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
@@ -27,7 +29,7 @@ class AgentConfigManager(BaseConfigManager):
 
     VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
     CONFIG_FILE_NAME = ".agent"
-    CONFIG = AgentConfig
+    CONFIG: Type[AgentConfig] = AgentConfig
 
     @classmethod
     def get_config_or_default(cls) -> AgentConfig:

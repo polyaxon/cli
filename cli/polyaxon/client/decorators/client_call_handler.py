@@ -15,6 +15,8 @@
 # limitations under the License.
 import functools
 
+from typing import Callable, Optional
+
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
@@ -29,7 +31,7 @@ def client_handler(
     check_offline: bool = False,
     can_log_events: bool = False,
     can_log_outputs: bool = False,
-):
+) -> Callable:
     """
     The `ClientHandlerDecorator` is a decorator to handle several checks in PolyaxonClient.
 
@@ -54,7 +56,7 @@ def client_handler(
             return ...
     """
 
-    def _check_global_or_inline_config(args, config_key):
+    def _check_global_or_inline_config(args, config_key) -> Optional[bool]:
         self_arg = args[0] if args else None
         config_value = getattr(self_arg, f"_{config_key}", None)
         return get_global_or_inline_config(
@@ -63,7 +65,7 @@ def client_handler(
             client=getattr(self_arg, "_client", None),
         )
 
-    def client_handler_wrapper(f):
+    def client_handler_wrapper(f: Callable) -> Callable:
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
             if check_no_op and _check_global_or_inline_config(args, "no_op"):
@@ -127,9 +129,9 @@ def client_handler(
 
 def get_global_or_inline_config(
     config_key: str,
-    config_value: bool = None,
-    client: PolyaxonClient = None,
-):
+    config_value: Optional[bool] = None,
+    client: Optional[PolyaxonClient] = None,
+) -> Optional[bool]:
     if config_value is not None:
         return config_value
     if client and client.config and getattr(client.config, config_key) is not None:

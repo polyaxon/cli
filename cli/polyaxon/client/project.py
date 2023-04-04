@@ -17,7 +17,7 @@ import os
 
 from datetime import datetime
 from requests import HTTPError
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import ujson
 
@@ -27,7 +27,7 @@ from polyaxon.constants.globals import DEFAULT
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.getters.user import get_local_owner
 from polyaxon.exceptions import PolyaxonClientException
-from polyaxon.lifecycle import V1ProjectVersionKind, V1StageCondition
+from polyaxon.lifecycle import V1ProjectVersionKind, V1StageCondition, V1Stages
 from polyaxon.logger import logger
 from polyaxon.schemas.responses.v1_list_project_versions_response import (
     V1ListProjectVersionsResponse,
@@ -82,11 +82,11 @@ class ProjectClient:
     @client_handler(check_no_op=True)
     def __init__(
         self,
-        owner: str = None,
-        project: str = None,
-        client: PolyaxonClient = None,
-        is_offline: bool = None,
-        no_op: bool = None,
+        owner: Optional[str] = None,
+        project: Optional[str] = None,
+        client: Optional[PolyaxonClient] = None,
+        is_offline: Optional[bool] = None,
+        no_op: Optional[bool] = None,
         manual_exceptions_handling: bool = False,
     ):
         self._manual_exceptions_handling = manual_exceptions_handling
@@ -113,7 +113,7 @@ class ProjectClient:
         self._client = client
         self._owner = owner or DEFAULT
         self._project = project
-        self._project_data = V1Project()
+        self._project_data = V1Project.construct()
 
     @property
     def client(self):
@@ -174,7 +174,11 @@ class ProjectClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def list(
-        self, query: str = None, sort: str = None, limit: int = None, offset: int = None
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[V1Project]:
         """Lists projects under the current owner.
 
@@ -222,7 +226,11 @@ class ProjectClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def list_runs(
-        self, query: str = None, sort: str = None, limit: int = None, offset: int = None
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ):
         """Lists runs under the current owner/project.
 
@@ -256,10 +264,10 @@ class ProjectClient:
     def list_versions(
         self,
         kind: V1ProjectVersionKind,
-        query: str = None,
-        sort: str = None,
-        limit: int = None,
-        offset: int = None,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> V1ListProjectVersionsResponse:
         """Lists project versions under the current owner/project based on version kind.
 
@@ -293,10 +301,10 @@ class ProjectClient:
     @client_handler(check_no_op=True, check_offline=True)
     def list_component_versions(
         self,
-        query: str = None,
-        sort: str = None,
-        limit: int = None,
-        offset: int = None,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> V1ListProjectVersionsResponse:
         """Lists component versions under the current owner/project.
 
@@ -324,10 +332,10 @@ class ProjectClient:
     @client_handler(check_no_op=True, check_offline=True)
     def list_model_versions(
         self,
-        query: str = None,
-        sort: str = None,
-        limit: int = None,
-        offset: int = None,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> V1ListProjectVersionsResponse:
         """Lists model versions under the current owner/project.
 
@@ -355,10 +363,10 @@ class ProjectClient:
     @client_handler(check_no_op=True, check_offline=True)
     def list_artifact_versions(
         self,
-        query: str = None,
-        sort: str = None,
-        limit: int = None,
-        offset: int = None,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> V1ListProjectVersionsResponse:
         """Lists artifact versions under the current owner/project.
 
@@ -732,12 +740,12 @@ class ProjectClient:
         self,
         kind: V1ProjectVersionKind,
         version: str,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
-        run: str = None,
-        connection: str = None,
-        artifacts: List[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        run: Optional[str] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Creates or Updates a project version based on the data passed.
@@ -773,22 +781,24 @@ class ProjectClient:
         except (ApiException, HTTPError, AttributeError):
             to_update = False
 
-        if content:
-            content = content if isinstance(content, str) else ujson.dumps(content)
+        def _get_content() -> str:
+            return content if isinstance(content, str) else ujson.dumps(content)
 
+        if content:
+            content = _get_content()
         if tags is not None:
             tags = validate_tags(tags, validate_yaml=True)
         if artifacts is not None:
             artifacts = validate_tags(artifacts, validate_yaml=True)
 
         if to_update:
-            version_config = V1ProjectVersion()
+            version_config = V1ProjectVersion.construct()
             if description is not None:
                 version_config.description = description
             if tags:
                 version_config.tags = tags
             if content:
-                version_config.content = content
+                version_config.content = content  # type: ignore
             if run:
                 version_config.run = run
             if artifacts is not None:
@@ -801,7 +811,7 @@ class ProjectClient:
                 data=version_config,
             )
         else:
-            version_config = V1ProjectVersion(
+            version_config = V1ProjectVersion.construct(
                 name=version,
                 description=description,
                 tags=tags,
@@ -816,10 +826,10 @@ class ProjectClient:
     def register_component_version(
         self,
         version: str,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
-        run: str = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        run: Optional[str] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Creates or Updates a component version based on the data passed.
@@ -849,12 +859,12 @@ class ProjectClient:
     def register_model_version(
         self,
         version: str,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
-        run: str = None,
-        connection: str = None,
-        artifacts: List[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        run: Optional[str] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Create or Update a model version based on the data passed.
@@ -888,12 +898,12 @@ class ProjectClient:
     def register_artifact_version(
         self,
         version: str,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
-        run: str = None,
-        connection: str = None,
-        artifacts: List[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        run: Optional[str] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Create or Update an artifact version based on the data passed.
@@ -995,11 +1005,11 @@ class ProjectClient:
         self,
         kind: V1ProjectVersionKind,
         version: str,
-        stage: str,
-        reason: str = None,
-        message: str = None,
-        last_transition_time: datetime = None,
-        last_update_time: datetime = None,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
     ):
         """Creates a new a project version stage.
 
@@ -1022,7 +1032,7 @@ class ProjectClient:
         """
         self._validate_kind(kind)
         current_date = now()
-        stage_condition = V1StageCondition(
+        stage_condition = V1StageCondition.construct(
             type=stage,
             status=True,
             reason=reason or "ClientStageUpdate",
@@ -1043,11 +1053,11 @@ class ProjectClient:
     def stage_component_version(
         self,
         version: str,
-        stage: str,
-        reason: str = None,
-        message: str = None,
-        last_transition_time: datetime = None,
-        last_update_time: datetime = None,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
     ):
         """Creates a new a component version stage.
 
@@ -1075,11 +1085,11 @@ class ProjectClient:
     def stage_model_version(
         self,
         version: str,
-        stage: str,
-        reason: str = None,
-        message: str = None,
-        last_transition_time: datetime = None,
-        last_update_time: datetime = None,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
     ):
         """Creates a new a model version stage.
 
@@ -1107,11 +1117,11 @@ class ProjectClient:
     def stage_artifact_version(
         self,
         version: str,
-        stage: str,
-        reason: str = None,
-        message: str = None,
-        last_transition_time: datetime = None,
-        last_update_time: datetime = None,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
     ):
         """Creates a new an artifact version stage.
 
@@ -1217,11 +1227,11 @@ class ProjectClient:
         self,
         kind: V1ProjectVersionKind,
         version: str,
-        to_project: str = None,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Copies the version to the same project or to a destination project.
@@ -1273,11 +1283,11 @@ class ProjectClient:
     def copy_component_version(
         self,
         version: str,
-        to_project: str = None,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Copies the component version to the same project or to a destination project.
@@ -1316,11 +1326,11 @@ class ProjectClient:
     def copy_model_version(
         self,
         version: str,
-        to_project: str = None,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Copies the model version to the same project or to a destination project.
@@ -1359,11 +1369,11 @@ class ProjectClient:
     def copy_artifact_version(
         self,
         version: str,
-        to_project: str = None,
-        name: str = None,
-        description: str = None,
-        tags: Union[str, List[str]] = None,
-        content: Union[str, Dict] = None,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Copies the artifact version to the same project or to a destination project.

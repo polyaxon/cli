@@ -13,14 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
+from typing import Dict, Optional
 
 from polyaxon.exceptions import handle_api_error
 from polyaxon.utils.formatting import Printer
 
 
 def handle_cli_error(
-    e, message: str = None, http_messages_mapping: Dict = None, sys_exit: bool = False
+    e,
+    message: Optional[str] = None,
+    http_messages_mapping: Optional[Dict] = None,
+    sys_exit: bool = False,
 ):
     handle_api_error(
         logger=Printer,

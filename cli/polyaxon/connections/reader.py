@@ -58,7 +58,9 @@ def get_from_env(keys: Union[Set[str], List[str], str]) -> Any:
     return None
 
 
-def get_from_path(context_path: str, keys: Union[Set[str], List[str], str]) -> Any:
+def get_from_path(
+    context_path: str, keys: Union[Set[str], List[str], str]
+) -> Optional[Any]:
     """
     Returns a variable from one of the list of keys based on a base path.
     Args:
@@ -73,7 +75,7 @@ def get_from_path(context_path: str, keys: Union[Set[str], List[str], str]) -> A
 
     keys = keys or []
     if not isinstance(keys, (list, tuple)):
-        keys = [keys]
+        keys = [keys]  # type: ignore
     for key in keys:
         key_path = os.path.join(context_path, key)
         if not os.path.exists(key_path):
@@ -126,17 +128,16 @@ def get_connection_type(name: Optional[str]) -> Optional[V1ConnectionType]:
         return None
 
     try:
-        spec = V1ConnectionType.read(spec, config_type=".json")
+        return V1ConnectionType.read(spec, config_type=".json")
     except ValidationError as e:
         logger.warning(
             "A connection spec was found for {}, "
             "but the reading the spec raised an error {}.".format(name, repr(e))
         )
         return None
-    return spec
 
 
-def read_keys(context_path: str, keys: List[str]) -> Any:
+def read_keys(context_path: str, keys: List[str]) -> Optional[Any]:
     """Returns a variable by checking first a context path and then in the environment."""
     keys = (
         {k.lower() for k in keys}

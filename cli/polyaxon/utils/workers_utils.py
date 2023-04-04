@@ -19,16 +19,16 @@ import signal
 import threading
 
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Optional
 
 from polyaxon.logger import logger
 
 
-def get_pool_workers():
+def get_pool_workers() -> int:
     return min(32, (os.cpu_count() or 1) + 4)
 
 
-def get_core_workers(per_core: int, max_workers: int = None):
+def get_core_workers(per_core: int, max_workers: Optional[int] = None) -> int:
     count = per_core * (os.cpu_count() or 1) + 1
     return max(count, max_workers) if max_workers else count
 

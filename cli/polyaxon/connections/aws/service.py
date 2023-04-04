@@ -16,10 +16,15 @@
 
 import os
 
+from typing import TYPE_CHECKING, Optional
+
 from polyaxon.connections.aws.base import get_aws_client, get_aws_resource
 from polyaxon.connections.base import BaseService
 from polyaxon.connections.reader import get_connection_context_path
 from polyaxon.exceptions import PolyaxonConnectionError
+
+if TYPE_CHECKING:
+    from polyaxon.schemas.types import V1ConnectionType
 
 
 class AWSService(BaseService):
@@ -72,15 +77,15 @@ class AWSService(BaseService):
 
     def set_connection(
         self,
-        connection=None,
-        connection_type=None,
-        endpoint_url=None,
-        aws_access_key_id=None,
-        aws_secret_access_key=None,
-        aws_session_token=None,
-        region_name=None,
-        aws_use_ssl=True,
-        aws_verify_ssl=None,
+        connection: Optional[str] = None,
+        connection_type: Optional["V1ConnectionType"] = None,
+        endpoint_url: Optional[str] = None,
+        aws_access_key_id: Optional[str] = None,
+        aws_secret_access_key: Optional[str] = None,
+        aws_session_token: Optional[str] = None,
+        region_name: Optional[str] = None,
+        aws_use_ssl: Optional[bool] = None,
+        aws_verify_ssl: Optional[bool] = None,
     ):
         """
         Sets a new connection.

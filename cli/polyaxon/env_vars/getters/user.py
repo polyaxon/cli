@@ -29,7 +29,7 @@ def get_local_owner(is_cli: bool = False):
     if UserConfigManager.is_initialized():
         try:
             user_config = UserConfigManager.get_config()
-            owner = user_config.organization
+            owner = user_config.organization if user_config else None
         except TypeError:
             Printer.error(
                 "Found an invalid user config or user config cache, "

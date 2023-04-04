@@ -66,7 +66,7 @@ def hash_files(
 
 def hash_dir(
     dirpath: str,
-    exclude: List[str] = None,
+    exclude: Optional[List[str]] = None,
     hash_length: int = 12,
     chunk_size: int = 64 * 1024,
     hash_md5: Any = None,

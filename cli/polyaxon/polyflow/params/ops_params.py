@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow.io.io import V1IO
@@ -27,13 +27,13 @@ def validate_params(
     params: Dict[str, Union[Dict, V1Param]],
     inputs: List[V1IO],
     outputs: List[V1IO],
-    contexts: List[V1IO] = None,
-    matrix: V1Matrix = None,
+    contexts: Optional[List[V1IO]] = None,
+    matrix: Optional[Union[Dict, V1Matrix]] = None,
     joins: List[V1Join] = None,
-    context: Dict = None,
+    context: Optional[Dict] = None,
     is_template: bool = True,
     check_all_refs: bool = False,
-    extra_info: str = None,
+    extra_info: Optional[str] = None,
     parse_values: bool = False,
 ) -> List[ParamSpec]:
     """

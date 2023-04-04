@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import TYPE_CHECKING, Optional
 
 from polyaxon import settings
 from polyaxon.constants.globals import NO_AUTH
@@ -38,6 +38,9 @@ from polyaxon.sdk.api import (
 )
 from polyaxon.sdk.async_client.api_client import AsyncApiClient
 from polyaxon.sdk.sync_client.api_client import ApiClient
+
+if TYPE_CHECKING:
+    from polyaxon.schemas.cli.client_config import ClientConfig
 
 
 class PolyaxonClient:
@@ -80,11 +83,14 @@ class PolyaxonClient:
     """
 
     def __init__(
-        self, config: "ClientConfig" = None, token: str = None, is_async: bool = False
+        self,
+        config: Optional["ClientConfig"] = None,
+        token: Optional[str] = None,
+        is_async: bool = False,
     ):
         self._config = config or settings.CLIENT_CONFIG
         token = token or self._config.token
-        if not token:
+        if not token and settings.AUTH_CONFIG:
             self._config.token = settings.AUTH_CONFIG.token
         elif token == NO_AUTH:
             self._config.token = None

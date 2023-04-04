@@ -13,11 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
+from typing import Dict, Optional
 
 
 def get_query_params(
-    limit: str = None, offset: str = None, query: str = None, sort: str = None
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
+    query: Optional[str] = None,
+    sort: Optional[str] = None,
 ) -> Dict:
     params = {}
     if limit:
@@ -32,7 +35,9 @@ def get_query_params(
     return params
 
 
-def get_logs_params(last_time: str = None, last_file: str = None) -> Dict:
+def get_logs_params(
+    last_time: Optional[str] = None, last_file: Optional[str] = None
+) -> Dict:
     params = {}
     if last_file:
         params["last_file"] = last_file

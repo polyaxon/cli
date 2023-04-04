@@ -15,7 +15,7 @@
 # limitations under the License.
 import copy
 
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Type, Union
 
 from polyaxon import types
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
@@ -39,10 +39,10 @@ class CompiledOperationSpecification(BaseSpecification):
 
     _SPEC_KIND = kinds.COMPILED_OPERATION
 
-    CONFIG = V1CompiledOperation
+    CONFIG: Type[V1CompiledOperation] = V1CompiledOperation
 
     @staticmethod
-    def dict_to_param_spec(contexts: Dict = None, is_context: bool = False):
+    def dict_to_param_spec(contexts: Optional[Dict] = None, is_context: bool = False):
         contexts = contexts or {}
         return {
             k: ParamSpec(
@@ -61,7 +61,7 @@ class CompiledOperationSpecification(BaseSpecification):
     def calculate_context_spec(
         cls,
         config: V1CompiledOperation,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
         should_be_resolved: bool = False,
     ) -> Dict[str, ParamSpec]:
         param_spec = config.validate_params(
@@ -88,7 +88,7 @@ class CompiledOperationSpecification(BaseSpecification):
         cls,
         config: V1CompiledOperation,
         param_spec: Dict[str, ParamSpec] = None,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
     ) -> V1CompiledOperation:
         if not param_spec:
             param_spec = cls.calculate_context_spec(config=config, contexts=contexts)
@@ -109,7 +109,7 @@ class CompiledOperationSpecification(BaseSpecification):
         cls,
         config: V1CompiledOperation,
         param_spec: Dict[str, ParamSpec] = None,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
     ) -> V1CompiledOperation:
         if config.is_dag_run:
             return cls._apply_dag_context(config)
@@ -123,7 +123,7 @@ class CompiledOperationSpecification(BaseSpecification):
         cls,
         connections: List[str],
         init: List[V1Init],
-        artifact_store: str = None,
+        artifact_store: Optional[str] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ):
         if connections:
@@ -156,7 +156,7 @@ class CompiledOperationSpecification(BaseSpecification):
     def _apply_distributed_run_connections_params(
         cls,
         config: V1CompiledOperation,
-        artifact_store: str = None,
+        artifact_store: Optional[str] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ):
         def _resolve_replica(replica):
@@ -199,8 +199,8 @@ class CompiledOperationSpecification(BaseSpecification):
     def apply_run_connections_params(
         cls,
         config: V1CompiledOperation,
-        artifact_store: str = None,
-        contexts: Dict = None,
+        artifact_store: Optional[str] = None,
+        contexts: Optional[Dict] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ) -> V1CompiledOperation:
         if not param_spec:
@@ -227,8 +227,8 @@ class CompiledOperationSpecification(BaseSpecification):
     def apply_params(
         cls,
         config: V1CompiledOperation,
-        params: Dict = None,
-        context: Dict = None,
+        params: Optional[Dict] = None,
+        context: Optional[Dict] = None,
     ) -> V1CompiledOperation:
         config.apply_params(params, context)
         return config
@@ -238,7 +238,7 @@ class CompiledOperationSpecification(BaseSpecification):
         cls,
         config: V1CompiledOperation,
         section,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ):
         if not param_spec:
@@ -250,7 +250,7 @@ class CompiledOperationSpecification(BaseSpecification):
     def _apply_runtime_contexts(
         cls,
         config: V1CompiledOperation,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ) -> V1CompiledOperation:
         if not param_spec:
@@ -264,7 +264,7 @@ class CompiledOperationSpecification(BaseSpecification):
     def _apply_distributed_runtime_contexts(
         cls,
         config: V1CompiledOperation,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ) -> V1CompiledOperation:
         if not param_spec:
@@ -285,7 +285,7 @@ class CompiledOperationSpecification(BaseSpecification):
     def apply_runtime_contexts(
         cls,
         config: V1CompiledOperation,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ) -> V1CompiledOperation:
         if config.has_pipeline:
@@ -309,7 +309,7 @@ class CompiledOperationSpecification(BaseSpecification):
     def apply_hooks_contexts(
         cls,
         config: V1CompiledOperation,
-        contexts: Dict = None,
+        contexts: Optional[Dict] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ) -> List[V1Hook]:
         if not param_spec:

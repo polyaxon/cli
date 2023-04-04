@@ -48,7 +48,7 @@ def get_custom_init_container(
     contexts: PluginsContextsSpec,
     container: Optional[k8s_schemas.V1Container],
     env: List[k8s_schemas.V1EnvVar] = None,
-    mount_path: str = None,
+    mount_path: Optional[str] = None,
 ) -> k8s_schemas.V1Container:
     if not connection:
         raise PolypodException("A connection is required to create a repo context.")

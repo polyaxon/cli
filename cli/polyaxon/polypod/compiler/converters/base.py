@@ -64,14 +64,14 @@ from polyaxon.utils.string_utils import slugify
 
 class ConverterAbstract:
     def get_main_env_vars(
-        self, external_host: bool = False, log_level: str = None, **kwargs
+        self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
         raise NotImplementedError
 
     def get_polyaxon_sidecar_service_env_vars(
         self,
         external_host: bool = False,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
         raise NotImplementedError
 
@@ -83,7 +83,7 @@ class ConverterAbstract:
     def get_init_service_env_vars(
         self,
         external_host: bool = False,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
         raise NotImplementedError
 
@@ -214,7 +214,7 @@ class BaseConverter(ConverterAbstract):
         return {c.name: c for c in values}
 
     def get_main_env_vars(
-        self, external_host: bool = False, log_level: str = None, **kwargs
+        self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
         return get_base_env_vars(
             settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops, log_level=log_level
@@ -223,7 +223,7 @@ class BaseConverter(ConverterAbstract):
     def get_polyaxon_sidecar_service_env_vars(
         self,
         external_host: bool = False,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
         env = []
         if settings.CLIENT_CONFIG.no_api:
@@ -245,7 +245,7 @@ class BaseConverter(ConverterAbstract):
     def get_init_service_env_vars(
         self,
         external_host: bool = False,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
         env = []
         if settings.CLIENT_CONFIG.no_api:
@@ -307,7 +307,7 @@ class BaseConverter(ConverterAbstract):
         contexts: PluginsContextsSpec,
         artifacts_store: V1ConnectionType,
         sidecar_containers: List[k8s_schemas.V1Container],
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1Container]:
         sidecar_containers = [
             ensure_container_name(container=c, prefix=SIDECAR_PREFIX)
@@ -335,7 +335,7 @@ class BaseConverter(ConverterAbstract):
         init_connections: List[V1Init],
         connection_by_names: Dict[str, V1ConnectionType],
         contexts: PluginsContextsSpec,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1Container]:
         containers = []
         external_host = contexts.external_host if contexts else False
@@ -513,7 +513,7 @@ class BaseConverter(ConverterAbstract):
         init_connections: List[V1Init],
         init_containers: List[k8s_schemas.V1Container],
         connection_by_names: Dict[str, V1ConnectionType],
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1Container]:
         init_containers = [
             ensure_container_name(container=c, prefix=INIT_PREFIX)
@@ -582,9 +582,9 @@ class BaseConverter(ConverterAbstract):
         secrets: Optional[Iterable[V1K8sResourceType]],
         config_maps: Optional[Iterable[V1K8sResourceType]],
         kv_env_vars: List[List],
-        default_sa: str = None,
+        default_sa: Optional[str] = None,
         ports: List[int] = None,
-        num_replicas: int = None,
+        num_replicas: Optional[int] = None,
     ) -> ReplicaSpec:
         volumes = volumes or []
         init = init or []
@@ -675,13 +675,13 @@ class PlatformConverterMixin(ConverterAbstract):
     def get_service_env_vars(
         self,
         service_header: str,
-        header: str = None,
+        header: Optional[str] = None,
         include_secret_key: bool = False,
         include_internal_token: bool = False,
         include_agent_token: bool = False,
-        authentication_type: str = None,
+        authentication_type: Optional[str] = None,
         external_host: bool = False,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1EnvVar]:
         header = header or PolyaxonServiceHeaders.SERVICE
         return get_service_env_vars(
@@ -701,7 +701,7 @@ class PlatformConverterMixin(ConverterAbstract):
         )
 
     def get_main_env_vars(
-        self, external_host: bool = False, log_level: str = None, **kwargs
+        self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
     ):
         return self.get_service_env_vars(
             service_header=PolyaxonServices.RUNNER,
@@ -712,7 +712,7 @@ class PlatformConverterMixin(ConverterAbstract):
     def get_auth_service_env_vars(
         self,
         external_host: bool = False,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1EnvVar]:
         return self.get_service_env_vars(
             service_header=PolyaxonServices.INITIALIZER,
@@ -733,7 +733,7 @@ class PlatformConverterMixin(ConverterAbstract):
         )
 
     def get_polyaxon_sidecar_service_env_vars(
-        self, external_host: bool = False, log_level: str = None
+        self, external_host: bool = False, log_level: Optional[str] = None
     ) -> List[k8s_schemas.V1EnvVar]:
         return self.get_service_env_vars(
             service_header=PolyaxonServices.SIDECAR,
@@ -746,7 +746,7 @@ class PlatformConverterMixin(ConverterAbstract):
     def get_init_service_env_vars(
         self,
         external_host: bool = False,
-        log_level: str = None,
+        log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1EnvVar]:
         return self.get_service_env_vars(
             service_header=PolyaxonServices.INITIALIZER,

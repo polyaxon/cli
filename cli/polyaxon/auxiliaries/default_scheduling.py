@@ -13,12 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from pydantic import Field, StrictStr, validator
 
 from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.schemas.base import BaseSchemaModel
+
+if TYPE_CHECKING:
+    from polyaxon.polyflow import V1Environment
 
 
 class V1DefaultScheduling(BaseSchemaModel):
@@ -31,11 +34,11 @@ class V1DefaultScheduling(BaseSchemaModel):
     image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
 
     @validator("affinity", always=True, pre=True)
-    def validate_affinity(cls, v):
+    def validate_affinity(cls, v) -> k8s_schemas.V1Affinity:
         return k8s_validation.validate_k8s_affinity(v)
 
     @validator("tolerations", always=True, pre=True)
-    def validate_tolerations(cls, v):
+    def validate_tolerations(cls, v) -> List[k8s_schemas.V1Toleration]:
         if not v:
             return v
         return [k8s_validation.validate_k8s_toleration(vi) for vi in v]
@@ -47,7 +50,7 @@ class V1DefaultScheduling(BaseSchemaModel):
     ) -> "V1Environment":
         from polyaxon.polyflow import V1Environment
 
-        env = V1Environment()
+        env = V1Environment.construct()
         if service and service.node_selector:
             env.node_selector = service.node_selector
         elif default_scheduling and default_scheduling.node_selector:

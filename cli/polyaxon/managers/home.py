@@ -15,6 +15,8 @@
 # limitations under the License.
 import os
 
+from typing import Dict, Type
+
 from polyaxon.config_reader.manager import ConfigManager
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.managers.base import BaseConfigManager
@@ -26,10 +28,10 @@ class HomeConfigManager(BaseConfigManager):
 
     VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
     CONFIG_FILE_NAME = ".home"
-    CONFIG = HomeConfig
+    CONFIG: Type[HomeConfig] = HomeConfig
 
     @classmethod
-    def get_config_defaults(cls):
+    def get_config_defaults(cls) -> Dict[str, str]:
         return {"path": cls.get_global_config_path()}
 
     @classmethod

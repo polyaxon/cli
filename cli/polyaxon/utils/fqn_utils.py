@@ -42,7 +42,7 @@ def get_cleaner_resource_name(run_uuid: str) -> str:
     return "plx-cleaner-{}".format(run_uuid)
 
 
-def get_resource_name_for_kind(run_uuid: str, run_kind: str = None) -> str:
+def get_resource_name_for_kind(run_uuid: str, run_kind: Optional[str] = None) -> str:
     if run_kind == "cleaner":
         return get_cleaner_resource_name(run_uuid)
     # Operation
@@ -63,7 +63,9 @@ def to_fqn_name(name: str) -> str:
     return value
 
 
-def get_entity_full_name(owner: str = None, entity: str = None) -> str:
+def get_entity_full_name(
+    owner: Optional[str] = None, entity: Optional[str] = None
+) -> str:
     if owner and entity:
         return "{}/{}".format(owner, entity)
     return entity
@@ -90,7 +92,7 @@ def get_entity_info(entity):
 
 
 def get_versioned_entity_full_name(
-    owner: Optional[str], component: str, tag: str = None
+    owner: Optional[str], component: str, tag: Optional[str] = None
 ) -> str:
     if tag:
         component = "{}:{}".format(component, tag)

@@ -18,7 +18,7 @@ import atexit
 import sys
 import time
 
-from typing import Dict
+from typing import Dict, Optional
 
 from urllib3.exceptions import HTTPError
 
@@ -27,13 +27,14 @@ from polyaxon.agents.base import BaseAgent
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon.schemas.responses.v1_agent import V1Agent
+from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
 from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.versions import clean_version_for_check
 
 
 class Agent(BaseAgent):
-    def __init__(self, owner, agent_uuid):
+    def __init__(self, owner: str, agent_uuid: str):
         super().__init__(sleep_interval=None)
 
         self.owner = owner
@@ -60,15 +61,17 @@ class Agent(BaseAgent):
             self.log_agent_warning()
         time.sleep(1)
 
-    def get_info(self):
+    def get_info(self) -> V1Agent:
         return self.client.agents_v1.get_agent(owner=self.owner, uuid=self.agent_uuid)
 
-    def get_state(self):
+    def get_state(self) -> V1AgentStateResponse:
         return self.client.agents_v1.get_agent_state(
             owner=self.owner, uuid=self.agent_uuid
         )
 
-    def log_agent_status(self, status: str, reason: str = None, message: str = None):
+    def log_agent_status(
+        self, status: str, reason: Optional[str] = None, message: Optional[str] = None
+    ):
         status_condition = V1StatusCondition.get_condition(
             type=status, status=True, reason=reason, message=message
         )
@@ -93,12 +96,12 @@ class Agent(BaseAgent):
     def sync_compatible_updates(self, compatible_updates: Dict):
         if compatible_updates and settings.AGENT_CONFIG:
             init = compatible_updates.get("init")
-            if init:
+            if init and settings.AGENT_CONFIG.init:
                 init = V1PolyaxonInitContainer.from_dict(init)
                 settings.AGENT_CONFIG.init = settings.AGENT_CONFIG.init.patch(init)
 
             sidecar = compatible_updates.get("sidecar")
-            if sidecar:
+            if sidecar and settings.AGENT_CONFIG.sidecar:
                 sidecar = V1PolyaxonSidecarContainer.from_dict(sidecar)
                 settings.AGENT_CONFIG.sidecar = settings.AGENT_CONFIG.sidecar.patch(
                     sidecar

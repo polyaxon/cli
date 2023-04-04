@@ -13,30 +13,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+from pydantic import Field
 
 from polyaxon import settings
 from polyaxon.auxiliaries import (
+    V1PolyaxonInitContainer,
+    V1PolyaxonSidecarContainer,
     get_default_init_container,
     get_default_sidecar_container,
 )
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.polyflow import V1CompiledOperation, V1Init
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.schemas.cli.agent_config import AgentConfig
+from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.utils.list_utils import to_list
 
 
-class PolypodConfig:
-    def __init__(self, internal_auth: bool = False):
-        self.polyaxon_sidecar = None
-        self.polyaxon_init = None
-        self.namespace = None
-        self.secrets = None
-        self.config_maps = None
-        self.connection_by_names = {}
-        self.artifacts_store = None
-        self.default_sa = None
-        self.internal_auth = internal_auth
+class PolypodConfig(BaseSchemaModel):
+    polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer]
+    polyaxon_init: Optional[V1PolyaxonInitContainer]
+    namespace: Optional[str]
+    secrets: Optional[List[V1K8sResourceType]]
+    config_maps: Optional[List[V1K8sResourceType]]
+    connection_by_names: Optional[Dict[str, V1ConnectionType]]
+    artifacts_store: Optional[V1ConnectionType]
+    default_sa: Optional[str]
+    internal_auth: Optional[bool] = Field(default=False)
 
     def resolve(
         self, compiled_operation: V1CompiledOperation, agent_config: AgentConfig = None
@@ -65,6 +70,8 @@ class PolypodConfig:
     def _resolve_run_connections(
         self, compiled_operation: V1CompiledOperation, agent_config: AgentConfig
     ):
+        if not self.connection_by_names:
+            self.connection_by_names = {}
         if agent_config.artifacts_store:  # Resolve default artifacts store
             self.connection_by_names[
                 agent_config.artifacts_store.name
@@ -93,7 +100,7 @@ class PolypodConfig:
 
     def _resolve_connections(self, connections: List[str], agent_config: AgentConfig):
         if connections:
-            connection_by_names = {}
+            connection_by_names = self.connection_by_names or {}
             missing_connections = set()
             for c in connections:
                 if c not in agent_config.connections_by_names:
@@ -106,7 +113,7 @@ class PolypodConfig:
                     "but were not found in the "
                     "agent.connections catalog: `{}`".format(missing_connections)
                 )
-            self.connection_by_names.update(connection_by_names)
+            self.connection_by_names = connection_by_names
 
     def _resolve_replica_connections(
         self, connections: List[str], init: List[V1Init], agent_config: AgentConfig

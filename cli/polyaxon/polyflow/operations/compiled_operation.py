@@ -37,8 +37,8 @@ class V1CompiledOperation(BaseOp, RunMixin):
 
     def validate_params(
         self,
-        params: Dict = None,
-        context: Dict = None,
+        params: Optional[Dict] = None,
+        context: Optional[Dict] = None,
         is_template: bool = True,
         check_all_refs: bool = False,
         parse_values: bool = False,

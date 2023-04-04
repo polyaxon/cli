@@ -18,13 +18,13 @@
 import functools
 import warnings
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from polyaxon.utils.versions import compare_versions
 
 
 class DeprecatedWarning(DeprecationWarning):
-    def __init__(self, message, details: str = None):
+    def __init__(self, message, details: Optional[str] = None):
         self.message = message
         self.details = details
         super(DeprecatedWarning, self).__init__(message, details)
@@ -38,9 +38,9 @@ class UnsupportedWarning(DeprecatedWarning):
 
 
 def check_deprecation(
-    current_version: str = None,
-    deprecation_version: str = None,
-    latest_version: str = None,
+    current_version: Optional[str] = None,
+    deprecation_version: Optional[str] = None,
+    latest_version: Optional[str] = None,
 ) -> Tuple[bool, bool]:
     if deprecation_version is None and latest_version is not None:
         raise TypeError(
@@ -68,7 +68,7 @@ def get_deprecation_warning_message(
     deprecation_version: str,
     latest_version: str,
     current_logic: str,
-    new_logic: str = None,
+    new_logic: Optional[str] = None,
 ) -> str:
     message = [f"`{current_logic}` is deprecated as of `{deprecation_version}`"]
     if latest_version:
@@ -79,12 +79,12 @@ def get_deprecation_warning_message(
 
 
 def warn_deprecation(
-    deprecation_version: str = None,
-    latest_version: str = None,
-    current_version: str = None,
-    current_logic: str = None,
-    new_logic: str = None,
-    details: str = None,
+    deprecation_version: Optional[str] = None,
+    latest_version: Optional[str] = None,
+    current_version: Optional[str] = None,
+    current_logic: Optional[str] = None,
+    new_logic: Optional[str] = None,
+    details: Optional[str] = None,
 ):
     is_deprecated, is_unsupported = check_deprecation(
         current_version=current_version,
@@ -108,12 +108,12 @@ def warn_deprecation(
 
 
 def deprecated(
-    deprecation_version: str = None,
-    latest_version: str = None,
-    current_version: str = None,
-    current_logic: str = None,
-    new_logic: str = None,
-    details: str = None,
+    deprecation_version: Optional[str] = None,
+    latest_version: Optional[str] = None,
+    current_version: Optional[str] = None,
+    current_logic: Optional[str] = None,
+    new_logic: Optional[str] = None,
+    details: Optional[str] = None,
 ):
     """This decorator can be used to warn about deprecated functions.
 

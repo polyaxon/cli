@@ -202,7 +202,7 @@ class BaseAgentConfig(BaseSchemaModel):
 
         return artifacts_root
 
-    def get_local_path(self, subpath: str, entity: str = None) -> str:
+    def get_local_path(self, subpath: str, entity: Optional[str] = None) -> str:
         full_path = self.local_root
         if entity == V1ProjectFeature.RUNTIME:
             from polyaxon.services.values import PolyaxonServices
@@ -222,7 +222,7 @@ class BaseAgentConfig(BaseSchemaModel):
 
         return self.artifacts_store.store_path
 
-    def get_store_path(self, subpath: str, entity: str = None) -> str:
+    def get_store_path(self, subpath: str, entity: Optional[str] = None) -> str:
         full_path = self.store_root
         if entity == V1ProjectFeature.RUNTIME:
             from polyaxon.services.values import PolyaxonServices

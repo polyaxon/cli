@@ -156,7 +156,7 @@ def _read_from_public_hub(hub: str):
             )
         raise PolyaxonClientException(
             "Component `{}` could not be fetched, "
-            "an error was encountered".format(hub, e)
+            "an error was encountered {}".format(hub, e)
         )
 
 
@@ -177,15 +177,15 @@ def _read_from_polyaxon_hub(hub: str):
             )
         else:
             client = PolyaxonClient()
-        client = ProjectClient(owner=owner, project=component, client=client)
-        response = client.get_version(
+        project_client = ProjectClient(owner=owner, project=component, client=client)
+        response = project_client.get_version(
             kind=V1ProjectVersionKind.COMPONENT, version=version
         )
         return _read_from_stream(response.content)
     except (ApiException, HTTPError) as e:
         raise PolyaxonClientException(
             "Component `{}` could not be fetched, "
-            "an error was encountered".format(hub, e)
+            "an error was encountered {}".format(hub, e)
         )
 
 

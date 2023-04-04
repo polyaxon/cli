@@ -37,7 +37,7 @@ class ChecksConfig(BaseSchemaModel):
         last_check = self.get_last_check(last_check)
         super().__init__(last_check=last_check, **data)
 
-    def get_interval(self, interval: int = None) -> int:
+    def get_interval(self, interval: Optional[int] = None) -> int:
         if interval is not None:
             return interval
         interval = int(
@@ -51,7 +51,7 @@ class ChecksConfig(BaseSchemaModel):
     def get_last_check(cls, last_check) -> datetime:
         return last_check or now() - timedelta(cls._INTERVAL)
 
-    def should_check(self, interval: int = None) -> bool:
+    def should_check(self, interval: Optional[int] = None) -> bool:
         interval = self.get_interval(interval=interval)
         if interval == -1:
             return False

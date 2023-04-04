@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Type
 
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.polyflow import V1Init
@@ -24,14 +25,14 @@ class GitConfigManager(BaseConfigManager):
 
     VISIBILITY = BaseConfigManager.VISIBILITY_LOCAL
     CONFIG_FILE_NAME = "polyaxongit.yaml"
-    CONFIG = V1Init
+    CONFIG: Type[V1Init] = V1Init
 
     @classmethod
-    def get_config_from_env(cls):
+    def get_config_from_env(cls) -> V1Init:
         pass
 
     @classmethod
-    def get_config(cls, check: bool = True):
+    def get_config(cls, check: bool = True) -> V1Init:
         config = super(GitConfigManager, cls).get_config(check=check)
         if not config.git:
             config.git = V1GitType()

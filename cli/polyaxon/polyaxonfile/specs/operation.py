@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
+from typing import Dict, Optional, Type
 
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.polyaxonfile.specs import kinds
@@ -36,14 +36,14 @@ class OperationSpecification(BaseSpecification):
 
     _SPEC_KIND = kinds.OPERATION
 
-    CONFIG = V1Operation
-    PARTIAL_CONFIG = PartialV1Operation
+    CONFIG: Type[V1Operation] = V1Operation
+    PARTIAL_CONFIG: Type[PartialV1Operation] = PartialV1Operation
 
     @classmethod
     def compile_operation(
         cls,
         config: V1Operation,
-        override: Dict = None,
+        override: Optional[Dict] = None,
         use_override_patch_strategy: bool = False,
     ) -> V1CompiledOperation:
         preset_patch_strategy = None

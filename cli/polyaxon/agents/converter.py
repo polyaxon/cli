@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
+from typing import Dict, Optional
 
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.polypod.compiler import converter, make
@@ -29,9 +29,9 @@ def convert(
     run_uuid: str,
     content: str,
     default_auth: bool,
-    agent_content: str = None,
+    agent_content: Optional[str] = None,
 ) -> Dict:
-    polypod_config = PolypodConfig()
+    polypod_config = PolypodConfig.construct()
     compiled_operation = CompiledOperationSpecification.read(content)
 
     polypod_config.resolve(

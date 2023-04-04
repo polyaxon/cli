@@ -17,7 +17,7 @@
 import os
 
 from collections import OrderedDict
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.config_reader.spec import ConfigSpec
@@ -33,7 +33,7 @@ from polyaxon.utils.formatting import Printer, dict_tabulate
 from polyaxon.utils.list_utils import to_list
 
 
-def collect_dag_components(dag: V1Dag, path_context: str = None):
+def collect_dag_components(dag: V1Dag, path_context: Optional[str] = None):
     """Collect components that cannot be resolved by the scheduler"""
     for op in dag.operations:
         op_name = op.name
@@ -49,7 +49,7 @@ def collect_dag_components(dag: V1Dag, path_context: str = None):
                 )
 
 
-def collect_references(config: V1Operation, path_context: str = None):
+def collect_references(config: V1Operation, path_context: Optional[str] = None):
     if config.has_component_reference:
         return config
     elif config.has_hub_reference:
@@ -86,27 +86,27 @@ def collect_references(config: V1Operation, path_context: str = None):
 
 
 def check_polyaxonfile(
-    polyaxonfile: str = None,
-    python_module: str = None,
-    url: str = None,
-    hub: str = None,
-    params: Union[List[str], Dict] = None,
-    hparams: Union[List[str], Dict] = None,
-    matrix_kind: str = None,
-    matrix_concurrency: int = None,
-    matrix_num_runs: int = None,
-    matrix: V1Matrix = None,
-    presets: List[str] = None,
-    queue: str = None,
-    nocache: bool = None,
-    cache: Union[int, str, bool] = None,
+    polyaxonfile: Optional[str] = None,
+    python_module: Optional[str] = None,
+    url: Optional[str] = None,
+    hub: Optional[str] = None,
+    params: Optional[Union[List[str], Dict]] = None,
+    hparams: Optional[Union[List[str], Dict]] = None,
+    matrix_kind: Optional[str] = None,
+    matrix_concurrency: Optional[int] = None,
+    matrix_num_runs: Optional[int] = None,
+    matrix: Optional[Union[Dict, V1Matrix]] = None,
+    presets: Optional[List[str]] = None,
+    queue: Optional[str] = None,
+    nocache: Optional[bool] = None,
+    cache: Optional[Union[int, str, bool]] = None,
     verbose: bool = True,
     is_cli: bool = True,
     to_op: bool = True,
     validate_params: bool = True,
-    approved: Union[int, str, bool] = None,
+    approved: Optional[Union[int, str, bool]] = None,
     eager: bool = False,
-    git_init: V1Init = None,
+    git_init: Optional[V1Init] = None,
     ignore_template: bool = False,
 ):
     if sum([1 for i in [python_module, url, hub] if i]) > 1:

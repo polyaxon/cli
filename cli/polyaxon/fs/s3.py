@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 from s3fs import S3FileSystem as BaseS3FileSystem
 
 from polyaxon.connections.aws.base import (
@@ -29,12 +31,12 @@ from polyaxon.connections.aws.base import (
 class S3FileSystem(BaseS3FileSystem):
     retries = 5
 
-    async def _ls(self, path, detail=False, force=False):
+    async def _ls(self, path: str, detail: bool = False, force: bool = False):
         return await super()._ls(path, detail=detail, refresh=force)
 
 
 def get_fs(
-    context_path: str = None,
+    context_path: Optional[str] = None,
     asynchronous: bool = False,
     use_listings_cache: bool = False,
     **kwargs
@@ -50,7 +52,7 @@ def get_fs(
         client_kwargs["endpoint_url"] = endpoint_url
     verify_ssl = get_aws_verify_ssl(context_path=context_path, **kwargs)
     if verify_ssl is not None:
-        client_kwargs["verify"] = verify_ssl
+        client_kwargs["verify"] = verify_ssl  # type: ignore[assignment]
 
     return S3FileSystem(
         key=get_aws_access_key_id(context_path=context_path, **kwargs),

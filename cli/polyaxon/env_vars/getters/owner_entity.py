@@ -42,7 +42,9 @@ def resolve_entity_info(entity: str, entity_name: str, is_cli: bool = False):
 
     if not owner and (not settings.CLI_CONFIG or settings.CLI_CONFIG.is_community):
         owner = DEFAULT
-    owner = owner or settings.AUTH_CONFIG.username
+
+    if not owner:
+        owner = settings.AUTH_CONFIG.username if settings.AUTH_CONFIG else None
 
     if not all([owner, entity_value]):
         message = "Please provide a valid {}.".format(entity_name)

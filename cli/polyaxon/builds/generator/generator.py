@@ -26,7 +26,7 @@ from polyaxon.utils.list_utils import to_list
 class DockerFileGenerator:
     def __init__(self, build_context: V1DockerfileType, destination: str = "."):
         self.build_context = build_context
-        self.dockerfile_path = os.path.join(destination, build_context.filename)
+        self.dockerfile_path = os.path.join(destination, build_context.get_filename())
 
     def clean(self):
         # Clean dockerfile
@@ -34,7 +34,7 @@ class DockerFileGenerator:
             return
         os.remove(self.dockerfile_path)
 
-    def create(self, save=True):
+    def create(self, save: bool = True) -> str:
         # Create DockerFile
         rendered_dockerfile = self.render()
         if save:

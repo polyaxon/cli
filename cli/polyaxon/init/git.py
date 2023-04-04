@@ -16,7 +16,7 @@
 
 import os
 
-from typing import List
+from typing import List, Optional
 
 from git import Repo as GitRepo
 
@@ -107,7 +107,9 @@ def get_clone_url(url: str) -> str:
     return url
 
 
-def clone_git_repo(repo_path: str, url: str, flags: List[str] = None) -> str:
+def clone_git_repo(
+    repo_path: str, url: str, flags: Optional[List[str]] = None
+) -> GitRepo:
     if has_ssh_access():
         return GitRepo.clone_from(
             url=url,
@@ -122,7 +124,7 @@ def clone_and_checkout_git_repo(
     repo_path: str,
     clone_url: str,
     revision: str,
-    flags: List[str] = None,
+    flags: Optional[List[str]] = None,
 ):
     clone_git_repo(repo_path=repo_path, url=clone_url, flags=flags)
     if revision:
@@ -135,7 +137,7 @@ def fetch_git_repo(
     repo_path: str,
     clone_url: str,
     revision: str,
-    flags: List[str] = None,
+    flags: Optional[List[str]] = None,
 ):
     check_or_create_path(repo_path, is_dir=True)
     git_init(repo_path)
@@ -152,8 +154,8 @@ def create_code_repo(
     repo_path: str,
     url: str,
     revision: str,
-    connection: str = None,
-    flags: List[str] = None,
+    connection: Optional[str] = None,
+    flags: Optional[List[str]] = None,
 ):
     run_client = get_client_or_raise()
 
@@ -196,7 +198,7 @@ def create_code_repo(
         return
 
     code_ref = get_code_reference(path=repo_path, url=url)
-    artifact_run = V1RunArtifact(
+    artifact_run = V1RunArtifact.construct(
         name=code_ref.get("commit"),
         kind=V1ArtifactKind.CODEREF,
         connection=connection,

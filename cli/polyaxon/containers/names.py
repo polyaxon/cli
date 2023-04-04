@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 MAIN_JOB_CONTAINER = "polyaxon-main"
 SIDECAR_CONTAINER = "polyaxon-sidecar"
@@ -43,7 +44,7 @@ SIDECAR_PREFIX = "sidecar"
 
 
 def generate_container_name(
-    prefix: str, suffix: str = None, unique: bool = True
+    prefix: str, suffix: Optional[str] = None, unique: bool = True
 ) -> str:
     import uuid
 

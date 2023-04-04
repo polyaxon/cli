@@ -17,6 +17,8 @@
 import sys
 import uuid
 
+from typing import Optional
+
 from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg
@@ -74,7 +76,7 @@ def get_compatibility(
     version: str,
     is_cli: bool = True,
     set_config: bool = True,
-    polyaxon_client: PolyaxonClient = None,
+    polyaxon_client: Optional[PolyaxonClient] = None,
 ):
     key = get_installation_key(key)
     try:
@@ -149,7 +151,7 @@ def set_versions_config(
     set_handler: bool = False,
     service=PolyaxonServices.CLI,
     version=pkg.VERSION,
-    key: str = None,
+    key: Optional[str] = None,
     is_cli: bool = True,
 ):
     from polyaxon import settings

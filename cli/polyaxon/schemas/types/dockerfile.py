@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import Field, StrictStr, validator
 
@@ -198,11 +198,17 @@ class V1DockerfileType(BaseTypeConfig):
     image: StrictStr
     env: Optional[Union[Dict[StrictStr, Any], RefField]]
     path: Optional[Union[List[StrictStr], RefField]]
-    copy_: Optional[Union[List[Union[StrictStr, List[StrictStr]]], RefField]] = Field(
-        alias="copy"
-    )
+    copy_: Optional[
+        Union[
+            List[Union[StrictStr, List[StrictStr], Tuple[StrictStr, StrictStr]]],
+            RefField,
+        ]
+    ] = Field(alias="copy")
     post_run_copy: Optional[
-        Union[List[Union[StrictStr, List[StrictStr]]], RefField]
+        Union[
+            List[Union[StrictStr, List[StrictStr], Tuple[StrictStr, StrictStr]]],
+            RefField,
+        ]
     ] = Field(alias="postRunCopy")
     run: Optional[Union[List[StrictStr], RefField]]
     lang_env: Optional[StrictStr] = Field(alias="langEnv")
@@ -231,3 +237,6 @@ class V1DockerfileType(BaseTypeConfig):
             return "latest" if "/" in tagged_image[-1] else tagged_image[-1]
         if len(tagged_image) == 3:
             return tagged_image[-1]
+
+    def get_filename(self) -> str:
+        return self.filename or POLYAXON_DOCKERFILE_NAME

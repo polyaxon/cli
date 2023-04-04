@@ -15,6 +15,8 @@
 # limitations under the License.
 import os
 
+from typing import Type
+
 from polyaxon.config_reader.manager import ConfigManager
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.managers.base import BaseConfigManager
@@ -26,7 +28,7 @@ class ClientConfigManager(BaseConfigManager):
 
     VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
     CONFIG_FILE_NAME = ".client"
-    CONFIG = ClientConfig
+    CONFIG: Type[ClientConfig] = ClientConfig
 
     @classmethod
     def get_config_from_env(cls, **kwargs) -> ClientConfig:

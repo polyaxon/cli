@@ -55,10 +55,10 @@ class BaseResolver:
         run_uuid: str,
         run_path: str,
         params: Optional[Dict],
-        created_at: datetime = None,
-        compiled_at: datetime = None,
+        created_at: Optional[datetime] = None,
+        compiled_at: Optional[datetime] = None,
         cloning_kind: V1CloningKind = None,
-        original_uuid: str = None,
+        original_uuid: Optional[str] = None,
         is_independent: bool = True,
         eager: bool = False,
     ):
@@ -191,7 +191,7 @@ class BaseResolver:
         pass
 
     def resolve_connections(self):
-        polypod_config = PolypodConfig()
+        polypod_config = PolypodConfig.construct()
         polypod_config.resolve(
             compiled_operation=self.compiled_operation, agent_config=self.agent_config
         )

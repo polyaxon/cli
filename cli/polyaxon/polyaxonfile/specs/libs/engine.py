@@ -13,13 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import jinja2
+
+from typing import Optional
 
 from markupsafe import soft_str
 
 
-def map_format(value, pattern, variable_name: str = None):
+def map_format(value, pattern, variable_name: Optional[str] = None):
     if variable_name:
         return soft_str(pattern) % {variable_name: value}
     return soft_str(pattern) % value

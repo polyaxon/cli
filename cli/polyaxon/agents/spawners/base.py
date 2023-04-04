@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from kubernetes.client import Configuration
 
@@ -25,9 +26,9 @@ from polyaxon.utils.enums_utils import get_enum_value
 class BaseSpawner:
     def __init__(
         self,
-        namespace: str = None,
+        namespace: Optional[str] = None,
         k8s_config: Configuration = None,
-        in_cluster: bool = None,
+        in_cluster: Optional[bool] = None,
     ):
         if in_cluster is None:
             in_cluster = settings.CLIENT_CONFIG.in_cluster

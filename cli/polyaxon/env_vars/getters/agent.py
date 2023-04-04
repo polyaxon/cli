@@ -16,11 +16,13 @@
 
 import os
 
+from typing import Optional, Tuple
+
 from polyaxon.env_vars.keys import EV_KEYS_AGENT_INSTANCE, EV_KEYS_ARTIFACTS_STORE_NAME
 from polyaxon.exceptions import PolyaxonAgentError
 
 
-def get_agent_info(agent_instance: str = None):
+def get_agent_info(agent_instance: Optional[str] = None) -> Tuple[str, str]:
     agent_instance = agent_instance or os.getenv(EV_KEYS_AGENT_INSTANCE, None)
     if not agent_instance:
         raise PolyaxonAgentError(

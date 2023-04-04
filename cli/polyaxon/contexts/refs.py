@@ -52,24 +52,24 @@ def get_entity_ref(ref: str) -> Optional[str]:
 def get_entity_type(value: str) -> str:
     value_parts = PARAM_REGEX.search(value)
     if value_parts:
-        value_parts = value_parts.group(1).strip()
+        results = value_parts.group(1).strip()
     else:
-        value_parts = value
+        results = value
 
-    return value_parts.split(".")[0]
+    return results.split(".")[0]
 
 
-def get_entity_value(value: str) -> str:
+def get_entity_value(value: str) -> Optional[str]:
     value_parts = PARAM_REGEX.search(value)
     if value_parts:
-        value_parts = value_parts.group(1).strip()
+        results = value_parts.group(1).strip()
     else:
-        value_parts = value
+        results = value
 
-    value_parts = value_parts.split(".")
-    if len(value_parts) < 2:
+    results = results.split(".")
+    if len(results) < 2:
         return None
-    return value_parts[-1]
+    return results[-1]
 
 
 def parse_ref_value(value: str) -> str:
@@ -82,17 +82,17 @@ def parse_ref_value(value: str) -> str:
 
 class RefMixin:
     @property
-    def is_literal(self):
-        return not self.ref
+    def is_literal(self) -> bool:
+        return not self.ref  # type: ignore[attr-defined]
 
     @property
-    def is_ref(self):
-        return self.ref is not None
+    def is_ref(self) -> bool:
+        return self.ref is not None  # type: ignore[attr-defined]
 
     @property
-    def is_template_ref(self):
+    def is_template_ref(self) -> bool:
         try:
-            value_parts = PARAM_REGEX.search(self.value)
+            value_parts = PARAM_REGEX.search(self.value)  # type: ignore[attr-defined]
             if value_parts:
                 return True
         except Exception:  # noqa
@@ -100,25 +100,25 @@ class RefMixin:
         return False
 
     @property
-    def is_runs_ref(self):
+    def is_runs_ref(self) -> bool:
         if not self.is_ref:
             return False
 
-        return is_runs_ref(self.ref)
+        return is_runs_ref(self.ref)  # type: ignore[attr-defined]
 
     @property
-    def is_ops_ref(self):
+    def is_ops_ref(self) -> bool:
         if not self.is_ref:
             return False
 
-        return is_ops_ref(self.ref)
+        return is_ops_ref(self.ref)  # type: ignore[attr-defined]
 
     @property
-    def is_dag_ref(self):
+    def is_dag_ref(self) -> bool:
         if not self.is_ref:
             return False
 
-        return is_dag_ref(self.ref)
+        return is_dag_ref(self.ref)  # type: ignore[attr-defined]
 
     @property
     def is_join_ref(self):
@@ -126,7 +126,7 @@ class RefMixin:
 
     @property
     def entity_ref(self) -> Optional[str]:
-        return get_entity_ref(self.ref)
+        return get_entity_ref(self.ref)  # type: ignore[attr-defined]
 
 
 def validate_ref(ref: str, name: str):

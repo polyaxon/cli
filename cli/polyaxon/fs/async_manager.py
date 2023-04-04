@@ -15,7 +15,7 @@
 # limitations under the License.
 import os
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import aiofiles
 
@@ -40,7 +40,9 @@ async def ensure_async_execution(
     return await run_sync(getattr(fs, fct), *args, **kwargs)
 
 
-async def upload_data(fs: FSSystem, subpath: str, data):
+async def upload_data(fs: FSSystem, subpath: str, data) -> Optional[str]:
+    if not settings.AGENT_CONFIG:
+        return None
     path_to = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
@@ -57,7 +59,9 @@ async def upload_data(fs: FSSystem, subpath: str, data):
         return None
 
 
-async def upload_file(fs: FSSystem, subpath: str):
+async def upload_file(fs: FSSystem, subpath: str) -> Optional[str]:
+    if not settings.AGENT_CONFIG:
+        return None
     path_from = settings.AGENT_CONFIG.get_local_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
@@ -79,6 +83,8 @@ async def upload_file(fs: FSSystem, subpath: str):
 
 
 async def check_is_file(fs: FSSystem, subpath: str) -> bool:
+    if not settings.AGENT_CONFIG:
+        return False
     filepath = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
@@ -98,6 +104,8 @@ async def check_is_file(fs: FSSystem, subpath: str) -> bool:
 
 
 async def upload_dir(fs: FSSystem, subpath: str) -> Optional[str]:
+    if not settings.AGENT_CONFIG:
+        return None
     path_from = settings.AGENT_CONFIG.get_local_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
@@ -125,10 +133,12 @@ async def upload_dir(fs: FSSystem, subpath: str) -> Optional[str]:
 async def download_file(
     fs: FSSystem, subpath: str, check_cache: bool = True
 ) -> Optional[str]:
+    if not settings.AGENT_CONFIG:
+        return None
     path_from = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
-    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root, subpath)
+    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root or "", subpath)
 
     if os.path.exists(path_to):
         if check_cache:
@@ -161,7 +171,7 @@ async def download_files(
     fs: FSSystem,
     subpaths: List[str],
     check_cache: bool = True,
-    pkg_files: List[str] = None,
+    pkg_files: Optional[List[str]] = None,
 ) -> List[str]:
     pkg_files = to_list(pkg_files, check_none=True)
     for subpath in subpaths:
@@ -181,10 +191,12 @@ async def download_files(
 async def open_file(
     fs: FSSystem, subpath: str, check_cache: bool = True
 ) -> Optional[str]:
+    if not settings.AGENT_CONFIG:
+        return None
     path_from = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
-    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root, subpath)
+    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root or "", subpath)
 
     if os.path.exists(path_to):
         if check_cache:
@@ -222,10 +234,12 @@ async def open_file(
 async def download_dir(
     fs: FSSystem, subpath: str, to_tar: bool = False
 ) -> Optional[str]:
+    if not settings.AGENT_CONFIG:
+        return None
     path_from = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
-    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root, subpath)
+    path_to = os.path.join(settings.CLIENT_CONFIG.archives_root or "", subpath)
     check_or_create_path(path_to, is_dir=True)
     try:
         await ensure_async_execution(
@@ -249,9 +263,9 @@ async def download_dir(
 async def download_dirs(
     fs: FSSystem,
     subpaths: List[str],
-    pkg_files: List[str] = None,
+    pkg_files: Optional[List[str]] = None,
     to_tar: bool = False,
-    tar_filename: str = None,
+    tar_filename: Optional[Optional[str]] = None,
 ) -> Union[str, List[str]]:
     pkg_files = to_list(pkg_files, check_none=True)
     for subpath in subpaths:
@@ -274,8 +288,10 @@ async def download_dirs(
 
 
 async def list_files(
-    fs: FSSystem, subpath: str, filepath: str = None, force: bool = False
+    fs: FSSystem, subpath: str, filepath: Optional[str] = None, force: bool = False
 ) -> Dict:
+    if not settings.AGENT_CONFIG:
+        return {}
     store_path = settings.AGENT_CONFIG.get_store_path(
         subpath=subpath, entity=V1ProjectFeature.RUNTIME
     )
@@ -290,7 +306,7 @@ async def list_files(
             detail=True,
             force=force,
         )
-        results = {"files": {}, "dirs": []}
+        results: Dict[str, Any] = {"files": {}, "dirs": []}
         for p in paths:
             name = os.path.basename(p["name"])
             if p.get("type") == "file":
@@ -304,9 +320,9 @@ async def list_files(
         return {"files": {}, "dirs": [], "error": error}
 
 
-async def delete_file_or_dir(
-    fs: FSSystem, subpath: Union[str, List[str]], is_file: bool
-) -> bool:
+async def delete_file_or_dir(fs: FSSystem, subpath: Union[str], is_file: bool) -> bool:
+    if not settings.AGENT_CONFIG:
+        return False
     try:
         await ensure_async_execution(
             fs=fs,
@@ -323,9 +339,13 @@ async def delete_file_or_dir(
         return False
 
 
-async def tar_files(filename: str, pkg_files: List[str], subpath: str = None) -> str:
+async def tar_files(
+    filename: str, pkg_files: List[str], subpath: Optional[str] = None
+) -> str:
     relative_to = (
-        os.path.join(settings.CLIENT_CONFIG.archives_root, subpath) if subpath else None
+        os.path.join(settings.CLIENT_CONFIG.archives_root or "", subpath)
+        if subpath
+        else None
     )
     return await run_sync(
         sync_tar_files,

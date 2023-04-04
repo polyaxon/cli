@@ -16,6 +16,8 @@
 
 import sys
 
+from typing import Type
+
 from polyaxon.managers.base import BaseConfigManager
 from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.utils import cli_constants
@@ -28,10 +30,10 @@ class ProjectConfigManager(BaseConfigManager):
     VISIBILITY = BaseConfigManager.VISIBILITY_ALL
     IN_POLYAXON_DIR = True
     CONFIG_FILE_NAME = ".project"
-    CONFIG = V1Project
+    CONFIG: Type[V1Project] = V1Project
 
     @classmethod
-    def get_config_or_raise(cls):
+    def get_config_or_raise(cls) -> V1Project:
         project = cls.get_config()
         if not project:
             Printer.error(

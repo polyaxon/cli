@@ -15,7 +15,7 @@
 # limitations under the License.
 import os
 
-from typing import List
+from typing import List, Optional
 
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.fs.async_manager import ensure_async_execution
@@ -91,7 +91,7 @@ async def sync_artifacts(
     fw: FSWatcher,
     store_path: str,
     run_uuid: str,
-    exclude: List[str] = None,
+    exclude: Optional[List[str]] = None,
 ):
     fw.init()
     path_from = ctx_paths.CONTEXT_MOUNT_ARTIFACTS_FORMAT.format(run_uuid)

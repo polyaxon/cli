@@ -156,7 +156,9 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
         return self.resources if self.resources else get_sidecar_resources()
 
 
-def get_default_sidecar_container(schema=True):
+def get_default_sidecar_container(
+    schema=True,
+) -> Union[Dict, V1PolyaxonSidecarContainer]:
     default = {
         "image": "polyaxon/polyaxon-sidecar",
         "imageTag": pkg.VERSION,

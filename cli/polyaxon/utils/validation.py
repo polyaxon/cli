@@ -13,11 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional, Union
 
 from polyaxon.utils.list_utils import to_list
 
 
-def validate_tags(tags, validate_yaml: bool = False):
+def validate_tags(
+    tags: Optional[Union[str, List[str]]], validate_yaml: bool = False
+) -> Optional[List[str]]:
     if not tags:
         return None
 

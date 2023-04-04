@@ -81,7 +81,7 @@ class PostgresqlConfig(ThirdPartyService):
 
 
 class RedisConfig(ThirdPartyService):
-    image: Optional[Dict]
+    image: Optional[Dict]  # type: ignore[assignment]
     non_broker: Optional[bool] = Field(alias="nonBroker")
     use_password: Optional[bool] = Field(alias="usePassword")
     auth: Optional[Dict]

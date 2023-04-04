@@ -16,6 +16,8 @@
 
 import os
 
+from typing import Optional
+
 from polyaxon import settings
 from polyaxon.env_vars.getters.project import get_project_or_local
 from polyaxon.env_vars.keys import (
@@ -55,7 +57,7 @@ def get_project_run_or_local(project=None, run_uuid=None, is_cli: bool = True):
     return user, project_name, run_uuid
 
 
-def get_collect_artifacts(arg: bool = None, default: bool = None):
+def get_collect_artifacts(arg: Optional[bool] = None, default: Optional[bool] = None):
     """If set, Polyaxon will collect artifacts"""
     return (
         arg
@@ -64,7 +66,7 @@ def get_collect_artifacts(arg: bool = None, default: bool = None):
     )
 
 
-def get_collect_resources(arg: bool = None, default: bool = None):
+def get_collect_resources(arg: Optional[bool] = None, default: Optional[bool] = None):
     """If set, Polyaxon will collect resources"""
     return (
         arg
@@ -78,7 +80,7 @@ def get_log_level():
     return settings.CLIENT_CONFIG.log_level
 
 
-def get_run_info(run_instance: str = None):
+def get_run_info(run_instance: Optional[str] = None):
     run_instance = run_instance or os.getenv(EV_KEYS_RUN_INSTANCE, None)
     if not run_instance:
         raise PolyaxonClientException(

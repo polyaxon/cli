@@ -27,7 +27,7 @@ class V1BucketConnection(BaseSchemaModel):
 
     bucket: StrictStr
 
-    def patch(self, schema: "V1BucketConnection"):
+    def patch(self, schema: "V1BucketConnection"):  # type: ignore
         self.bucket = schema.bucket or self.bucket
 
 
@@ -38,7 +38,7 @@ class V1ClaimConnection(BaseSchemaModel):
     mount_path: StrictStr = Field(alias="mountPath")
     read_only: Optional[bool] = Field(alias="readOnly")
 
-    def patch(self, schema: "V1ClaimConnection"):
+    def patch(self, schema: "V1ClaimConnection"):  # type: ignore
         self.volume_claim = schema.volume_claim or self.volume_claim
         self.mount_path = schema.mount_path or self.mount_path
         self.read_only = schema.read_only or self.read_only
@@ -51,7 +51,7 @@ class V1HostPathConnection(BaseSchemaModel):
     mount_path: StrictStr = Field(alias="mountPath")
     read_only: Optional[bool] = Field(alias="readOnly")
 
-    def patch(self, schema: "V1HostPathConnection"):
+    def patch(self, schema: "V1HostPathConnection"):  # type: ignore
         self.host_path = schema.host_path or self.host_path
         self.mount_path = schema.mount_path or self.mount_path
         self.read_only = schema.read_only or self.read_only
@@ -63,7 +63,7 @@ class V1HostConnection(BaseSchemaModel):
     url: StrictStr
     insecure: Optional[bool]
 
-    def patch(self, schema: "V1HostConnection"):
+    def patch(self, schema: "V1HostConnection"):  # type: ignore
         self.url = schema.url or self.url
         self.insecure = schema.insecure or self.insecure
 
@@ -80,7 +80,7 @@ class V1GitConnection(BaseSchemaModel):
             return self.url.split("/")[-1].split(".")[0]
         return None
 
-    def patch(self, schema: "GitConnectionSchema"):
+    def patch(self, schema: "GitConnectionSchema"):  # type: ignore
         self.url = schema.url or self.url
         self.revision = schema.revision or self.revision
         self.flags = schema.flags or self.flags
@@ -93,36 +93,6 @@ def patch_git(schema: Dict, gitSchema: V1GitConnection):
         setattr(schema, "revision", gitSchema.revision)
     if gitSchema.flags:
         setattr(schema, "flags", gitSchema.flags)
-
-
-class V1CustomConnection(BaseSchemaModel):
-    _IDENTIFIER = "custom"
-
-    @classmethod
-    def from_dict(cls, value, partial: bool = False):
-        return super().from_dict(value=value, partial=partial)
-
-    def __eq__(self, other):
-        """Returns true if both objects are equal"""
-        if not isinstance(other, V1CustomConnection):
-            return False
-
-        return self.to_dict() == other.to_dict()
-
-    def patch_git(self, schema: "GitConnectionSchema"):
-        if schema.url:
-            if "url" not in self._schema_keys:
-                self._schema_keys.add("url")
-            setattr(self, "url", schema.url)
-        if schema.revision:
-            if "revision" not in self._schema_keys:
-                self._schema_keys.add("revision")
-            setattr(self, "revision", schema.revision)
-
-        if schema.flags:
-            if "flags" not in self._schema_keys:
-                self._schema_keys.add("flags")
-            setattr(self, "flags", schema.flags)
 
 
 def validate_connection(kind, definition):

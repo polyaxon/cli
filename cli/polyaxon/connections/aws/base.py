@@ -23,7 +23,7 @@ def get_aws_access_key_id(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = (
         kwargs.get("access_key_id")
         or kwargs.get("aws_access_key_id")
@@ -32,14 +32,14 @@ def get_aws_access_key_id(
     if value:
         return value
     keys = keys or ["AWS_ACCESS_KEY_ID"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_aws_secret_access_key(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = (
         kwargs.get("secret_access_key")
         or kwargs.get("aws_secret_access_key")
@@ -48,14 +48,14 @@ def get_aws_secret_access_key(
     if value:
         return value
     keys = keys or ["AWS_SECRET_ACCESS_KEY"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_aws_security_token(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = (
         kwargs.get("session_token")
         or kwargs.get("aws_session_token")
@@ -66,14 +66,14 @@ def get_aws_security_token(
     if value:
         return value
     keys = keys or ["AWS_SECURITY_TOKEN"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_region(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = (
         kwargs.get("region")
         or kwargs.get("region_name")
@@ -83,14 +83,14 @@ def get_region(
     if value:
         return value
     keys = keys or ["AWS_REGION"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_endpoint_url(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> Optional[str]:
     value = (
         kwargs.get("endpoint_url")
         or kwargs.get("aws_endpoint_url")
@@ -99,21 +99,21 @@ def get_endpoint_url(
     if value:
         return value
     keys = keys or ["AWS_ENDPOINT_URL"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_aws_use_ssl(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> bool:
     value = (
         kwargs.get("use_ssl") or kwargs.get("aws_use_ssl") or kwargs.get("AWS_USE_SSL")
     )
     if value is not None:
         return value
     keys = keys or ["AWS_USE_SSL"]
-    value = read_keys(context_path=context_path, keys=keys)
+    value = read_keys(context_path=context_path, keys=keys)  # type: ignore
     if value is not None:
         return value
     return True
@@ -123,7 +123,7 @@ def get_aws_verify_ssl(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> bool:
     value = kwargs.get(
         "verify_ssl",
         kwargs.get("aws_verify_ssl", kwargs.get("AWS_VERIFY_SSL", None)),
@@ -131,7 +131,7 @@ def get_aws_verify_ssl(
     if value is not None:
         return value
     keys = keys or ["AWS_VERIFY_SSL"]
-    value = read_keys(context_path=context_path, keys=keys)
+    value = read_keys(context_path=context_path, keys=keys)  # type: ignore
     if value is not None:
         return value
     return True
@@ -141,7 +141,7 @@ def get_aws_legacy_api(
     keys: Optional[Union[str, List[str]]] = None,
     context_path: Optional[str] = None,
     **kwargs,
-):
+) -> bool:
     value = (
         kwargs.get("legacy_api")
         or kwargs.get("aws_legacy_api")
@@ -150,7 +150,7 @@ def get_aws_legacy_api(
     if value:
         return value
     keys = keys or ["AWS_LEGACY_API"]
-    return read_keys(context_path=context_path, keys=keys)
+    return read_keys(context_path=context_path, keys=keys)  # type: ignore
 
 
 def get_legacy_api(legacy_api=False, **kwargs):

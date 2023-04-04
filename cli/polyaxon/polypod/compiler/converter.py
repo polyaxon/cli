@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Iterable, Optional
+from typing import Dict, Iterable, Optional, Type
 
 from kubernetes import client as k8s_client
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.exceptions import PolyaxonCompilerError
-from polyaxon.polyflow import V1CompiledOperation
-from polyaxon.polypod.compiler.converters import CORE_CONVERTERS
+from polyaxon.polyflow import V1CompiledOperation, V1RunKind
+from polyaxon.polypod.compiler.converters import CORE_CONVERTERS, BaseConverter
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
@@ -39,8 +39,8 @@ def convert(
     config_maps: Optional[Iterable[V1K8sResourceType]],
     polyaxon_sidecar: V1PolyaxonSidecarContainer = None,
     polyaxon_init: V1PolyaxonInitContainer = None,
-    default_sa: str = None,
-    converters: Dict[str, Any] = CORE_CONVERTERS,
+    default_sa: Optional[str] = None,
+    converters: Dict[V1RunKind, Type[BaseConverter]] = CORE_CONVERTERS,
     internal_auth: bool = False,
     default_auth: bool = False,
 ) -> Dict:

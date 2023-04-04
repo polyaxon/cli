@@ -23,8 +23,6 @@ from polyaxon.connections.reader import get_connection_context_path
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.utils.path_utils import create_polyaxon_tmp
 
-DEFAULT_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
-
 
 class GCPService(BaseService):
     def __init__(self, connection=None, **kwargs):

@@ -16,6 +16,8 @@
 
 import os
 
+from typing import TYPE_CHECKING, Optional
+
 from pydantic import ValidationError
 
 from polyaxon.api import LOCALHOST
@@ -27,20 +29,27 @@ from polyaxon.services.values import PolyaxonServices
 from polyaxon.utils.bool_utils import to_bool
 from polyaxon.utils.formatting import Printer
 
+if TYPE_CHECKING:
+    from polyaxon.deploy.schemas.auth import AccessTokenConfig
+    from polyaxon.schemas.api.home import HomeConfig
+    from polyaxon.schemas.cli.agent_config import AgentConfig
+    from polyaxon.schemas.cli.cli_config import CliConfig
+    from polyaxon.schemas.cli.client_config import ClientConfig
+
 MIN_TIMEOUT = 1
 LONG_REQUEST_TIMEOUT = 3600
 HEALTH_CHECK_INTERVAL = 60
 
-HOME_CONFIG = HomeConfigManager.get_config_from_env()
-AUTH_CONFIG = None
-CLIENT_CONFIG = None
-CLI_CONFIG = None
-AGENT_CONFIG = None
+HOME_CONFIG: "HomeConfig" = HomeConfigManager.get_config_from_env()
+AUTH_CONFIG: Optional["AccessTokenConfig"] = None
+CLIENT_CONFIG: "ClientConfig"
+CLI_CONFIG: "CliConfig"
+AGENT_CONFIG: Optional["AgentConfig"] = None
 
 PolyaxonServices.set_service_name()
 
 
-def set_agent_config(config: "AgentConfig" = None):
+def set_agent_config(config: Optional["AgentConfig"] = None):
     from polyaxon.managers.agent import AgentConfigManager
 
     global AGENT_CONFIG

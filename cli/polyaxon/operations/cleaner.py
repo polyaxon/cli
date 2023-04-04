@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List
+from typing import List, Optional
 
 from polyaxon.auxiliaries import get_default_cleaner_container
 from polyaxon.auxiliaries.cleaner import V1PolyaxonCleaner, get_batch_cleaner_container
@@ -32,8 +32,8 @@ def get_cleaner_operation(
     connection: V1ConnectionType,
     run_uuid: str,
     run_kind: str,
-    environment: V1Environment = None,
-    cleaner: V1PolyaxonCleaner = None,
+    environment: Optional[V1Environment] = None,
+    cleaner: Optional[V1PolyaxonCleaner] = None,
 ) -> V1Operation:
     return V1Operation(
         termination=V1Termination(max_retries=1),
@@ -61,8 +61,8 @@ def get_cleaner_operation(
 def get_batch_cleaner_operation(
     connection: V1ConnectionType,
     paths: List[str],
-    environment: V1Environment = None,
-    cleaner: V1PolyaxonCleaner = None,
+    environment: Optional[V1Environment] = None,
+    cleaner: Optional[V1PolyaxonCleaner] = None,
 ) -> V1Operation:
     return V1Operation(
         termination=V1Termination(max_retries=1),

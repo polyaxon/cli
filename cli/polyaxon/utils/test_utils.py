@@ -19,7 +19,7 @@ import os
 import tempfile
 
 from collections.abc import Mapping
-from typing import List
+from typing import List, Optional
 from unittest import TestCase, mock
 
 import ujson
@@ -39,9 +39,9 @@ from polyaxon.utils.path_utils import delete_path
 def assert_equal_dict(
     dict1,
     dict2,
-    datetime_keys: List[str] = None,
-    date_keys: List[str] = None,
-    timedelta_keys: List[str] = None,
+    datetime_keys: Optional[List[str]] = None,
+    date_keys: Optional[List[str]] = None,
+    timedelta_keys: Optional[List[str]] = None,
 ):
     datetime_keys = datetime_keys or []
     timedelta_keys = timedelta_keys or []

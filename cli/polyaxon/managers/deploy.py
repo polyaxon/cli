@@ -16,6 +16,8 @@
 
 import shutil
 
+from typing import Dict, Optional
+
 import click
 
 from polyaxon import settings
@@ -35,10 +37,10 @@ class DeployConfigManager:
     def __init__(
         self,
         config: DeploymentConfig = None,
-        filepath=None,
-        deployment_type=False,
-        manager_path=None,
-        dry_run=False,
+        filepath: Optional[str] = None,
+        deployment_type: bool = False,
+        manager_path: Optional[str] = None,
+        dry_run: bool = False,
     ):
         self.config = config
         self.filepath = filepath
@@ -51,7 +53,7 @@ class DeployConfigManager:
         self.compose = ComposeOperator()
 
     @property
-    def deployment_type(self):
+    def deployment_type(self) -> str:
         if self.type:
             return self.type
         if self.config and self.config.deployment_type:
@@ -59,19 +61,19 @@ class DeployConfigManager:
         return DeploymentTypes.KUBERNETES
 
     @property
-    def deployment_version(self):
+    def deployment_version(self) -> Optional[str]:
         if self.config and self.config.deployment_version:
             return self.config.deployment_version
         return None
 
     @property
-    def deployment_namespace(self):
+    def deployment_namespace(self) -> str:
         if self.config and self.config.namespace:
             return self.config.namespace
         return DEFAULT_NAMESPACE
 
     @property
-    def k8s_chart(self):
+    def k8s_chart(self) -> str:
         deployment_chart = DeploymentCharts.PLATFORM
         if self.config and self.config.deployment_chart:
             deployment_chart = self.config.deployment_chart
@@ -81,7 +83,7 @@ class DeployConfigManager:
             return "polyaxon/agent"
 
     @property
-    def release_name(self):
+    def release_name(self) -> str:
         if self.config and self.config.release_name:
             return self.config.release_name
         deployment_chart = DeploymentCharts.PLATFORM
@@ -93,7 +95,7 @@ class DeployConfigManager:
             return "agent"
 
     @property
-    def is_kubernetes(self):
+    def is_kubernetes(self) -> bool:
         return self.deployment_type in {
             DeploymentTypes.KUBERNETES,
             DeploymentTypes.MINIKUBE,
@@ -101,22 +103,22 @@ class DeployConfigManager:
         }
 
     @property
-    def is_docker_compose(self):
+    def is_docker_compose(self) -> bool:
         return self.deployment_type == DeploymentTypes.DOCKER_COMPOSE
 
     @property
-    def is_docker(self):
+    def is_docker(self) -> bool:
         return self.deployment_type == DeploymentTypes.DOCKER
 
     @property
-    def is_heroku(self):
+    def is_heroku(self) -> bool:
         return self.deployment_type == DeploymentTypes.HEROKU
 
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
         return self.deployment_type in DeploymentTypes.to_list()
 
-    def check_for_kubernetes(self):
+    def check_for_kubernetes(self) -> bool:
         # Deployment on k8s requires helm & kubectl to be installed
         if not self.kubectl.check():
             raise PolyaxonException("kubectl is required to run this command.")
@@ -133,7 +135,7 @@ class DeployConfigManager:
         self.helm.execute(args=["repo", "update"])
         return True
 
-    def check_for_docker_compose(self):
+    def check_for_docker_compose(self) -> bool:
         # Deployment on docker compose requires Docker & Docker Compose to be installed
         if not self.docker.check():
             raise PolyaxonException("Docker is required to run this command.")
@@ -148,18 +150,18 @@ class DeployConfigManager:
             Printer.success("Docker Compose deployment is initialised.")
         return True
 
-    def check_for_docker(self):
+    def check_for_docker(self) -> bool:
         if not self.docker.check():
             raise PolyaxonException("Docker is required to run this command.")
         return True
 
-    def check_for_heroku(self):
+    def check_for_heroku(self) -> bool:
         return True
 
-    def nvidia_device_plugin(self):
+    def nvidia_device_plugin(self) -> str:
         return "https://github.com/NVIDIA/k8s-device-plugin/blob/v1.10/nvidia-device-plugin.yml"
 
-    def check(self):
+    def check(self) -> None:
         """Add platform specific checks"""
         if not self.is_valid:
             raise PolyaxonException(
@@ -179,7 +181,7 @@ class DeployConfigManager:
                 "Deployment `{}` is not valid".format(self.deployment_type)
             )
 
-    def _get_or_create_namespace(self):
+    def _get_or_create_namespace(self) -> None:
         stdout = self._check_namespace()
         if stdout:
             return
@@ -198,7 +200,7 @@ class DeployConfigManager:
         except PolyaxonOperatorException:
             return
 
-    def _check_namespace(self):
+    def _check_namespace(self) -> Optional[Dict]:
         with Printer.console.status(
             f"Checking `{self.deployment_namespace}` namespace ..."
         ):

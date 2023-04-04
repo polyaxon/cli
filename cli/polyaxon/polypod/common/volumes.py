@@ -78,7 +78,10 @@ def get_volume_from_config_map(
 
 
 def get_volume(
-    volume: str, claim_name: str = None, host_path: str = None, read_only: bool = None
+    volume: str,
+    claim_name: Optional[str] = None,
+    host_path: Optional[str] = None,
+    read_only: Optional[bool] = None,
 ) -> k8s_schemas.V1Volume:
     if claim_name:
         pv_claim = k8s_schemas.V1PersistentVolumeClaimVolumeSource(

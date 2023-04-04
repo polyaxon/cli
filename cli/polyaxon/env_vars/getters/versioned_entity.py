@@ -92,7 +92,8 @@ def get_model_info(entity: str, entity_name: str, is_cli: bool = False):
         entity=entity, entity_name=entity_name, default_owner=owner
     )
 
-    owner = owner or settings.AUTH_CONFIG.username
+    if not owner:
+        owner = settings.AUTH_CONFIG.username if settings.AUTH_CONFIG else None
 
     if not all([owner, entity_name]):
         message = "Please provide a valid {}.".format(entity_name)

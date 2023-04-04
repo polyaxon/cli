@@ -113,19 +113,21 @@ class V1PolyaxonInitContainer(BaseSchemaModel):
     resources: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]]
 
     @validator("resources", always=True, pre=True)
-    def validate_resources(cls, v):
+    def validate_resources(cls, v) -> k8s_schemas.V1ResourceRequirements:
         return k8s_validation.validate_k8s_resource_requirements(v)
 
-    def get_image(self):
+    def get_image(self) -> str:
         image = self.image or "polyaxon/polyaxon-init"
         image_tag = self.image_tag if self.image_tag is not None else pkg.VERSION
         return "{}:{}".format(image, image_tag) if image_tag else image
 
-    def get_resources(self):
+    def get_resources(self) -> k8s_schemas.V1ResourceRequirements:
         return self.resources if self.resources else get_init_resources()
 
 
-def get_default_init_container(schema=True):
+def get_default_init_container(
+    schema: bool = True,
+) -> Union[Dict, V1PolyaxonInitContainer]:
     default = {
         "image": "polyaxon/polyaxon-init",
         "imageTag": pkg.VERSION,

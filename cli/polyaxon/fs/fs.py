@@ -38,7 +38,7 @@ def get_artifacts_connection_type() -> Optional[V1ConnectionType]:
 
 
 def _get_fs_from_type(
-    connection_type: V1ConnectionType,
+    connection_type: Optional[V1ConnectionType],
     asynchronous: bool = False,
     use_listings_cache: bool = False,
     **kwargs

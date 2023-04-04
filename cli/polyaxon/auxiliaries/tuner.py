@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 from polyaxon import pkg
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
@@ -20,7 +22,9 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.k8s_schemas import V1Container
 
 
-def get_default_tuner_container(command, bracket_iteration: int = None):
+def get_default_tuner_container(
+    command, bracket_iteration: Optional[int] = None
+) -> V1Container:
     args = [
         "{{params.matrix.as_arg}}",
         "{{params.join.as_arg}}",

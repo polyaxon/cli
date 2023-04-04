@@ -15,6 +15,8 @@
 # limitations under the License.
 import os
 
+from typing import Type
+
 from polyaxon.config_reader.manager import ConfigManager
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.contexts import paths as ctx_paths
@@ -27,7 +29,7 @@ class AuthConfigManager(BaseConfigManager):
 
     VISIBILITY = BaseConfigManager.VISIBILITY_GLOBAL
     CONFIG_FILE_NAME = ".auth"
-    CONFIG = AccessTokenConfig
+    CONFIG: Type[AccessTokenConfig] = AccessTokenConfig
 
     @classmethod
     def get_config_from_env(cls) -> AccessTokenConfig:

@@ -461,7 +461,7 @@ class V1Bayes(BaseSearchConfig):
         alias="earlyStopping"
     )
 
-    def create_iteration(self, iteration: int = None) -> int:
+    def create_iteration(self, iteration: Optional[int] = None) -> int:
         if iteration is None:
             return 0
         return iteration + 1

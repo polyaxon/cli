@@ -19,7 +19,7 @@ import pprint
 
 from collections.abc import Mapping
 from datetime import timezone
-from typing import Any, Callable
+from typing import Any, Callable, Dict, Optional
 
 import ujson
 
@@ -44,7 +44,7 @@ class BaseMetaConfig:
 
 
 class BaseSchemaModel(BaseModel):
-    _IDENTIFIER = None
+    _IDENTIFIER: Optional[str] = None
     _DEFAULT_INCLUDE_ATTRIBUTES = []
     _DEFAULT_EXCLUDE_ATTRIBUTES = []
     _DATETIME_ATTRIBUTES = []
@@ -71,8 +71,7 @@ class BaseSchemaModel(BaseModel):
         humanize_values=False,
         include_attrs=None,
         exclude_attrs=None,
-        dump=False,
-    ):
+    ) -> Dict[str, Any]:
         obj_dict = self.to_dict(humanize_values=humanize_values)
         if all([include_attrs, exclude_attrs]):
             raise PolyaxonSchemaError(
@@ -86,21 +85,17 @@ class BaseSchemaModel(BaseModel):
             exclude_attrs = set(obj_dict.keys()) - set(include_attrs)
         for attr in exclude_attrs:
             obj_dict.pop(attr, None)
-
-        if dump:
-            return self._dump(obj_dict)
         return obj_dict
 
     def to_dict(
         self,
         humanize_values=False,
-        dump=False,
         include_kind=False,
         include_version=False,
         exclude_unset=True,
         exclude_none=True,
         exclude_defaults=False,
-    ):
+    ) -> Dict[str, Any]:
         obj = self.obj_to_dict(
             self,
             humanize_values=humanize_values,
@@ -110,8 +105,6 @@ class BaseSchemaModel(BaseModel):
             exclude_none=exclude_none,
             exclude_defaults=exclude_defaults,
         )
-        if dump:
-            return self._dump(obj)
         return obj
 
     def to_json(
@@ -119,7 +112,7 @@ class BaseSchemaModel(BaseModel):
         humanize_values=False,
         include_kind=False,
         include_version=False,
-    ):
+    ) -> str:
         if include_kind and "kind" in self.__fields__.keys():
             self.kind = self._IDENTIFIER
 
@@ -233,11 +226,11 @@ class BaseSchemaModel(BaseModel):
         return cls.from_dict(values, partial=partial)
 
     @classmethod
-    def init_file(cls, filepath: str, config=None):
+    def init_file(cls, filepath: str, config: Optional["BaseSchemaModel"] = None):
         if not os.path.exists(filepath):
             cls.write(config or cls(), filepath=filepath, mode=cls._WRITE_MODE)
 
-    def write(self, filepath: str, mode: int = None):
+    def write(self, filepath: str, mode: Optional[int] = None):
         with open(filepath, "w") as config_file:
             config_file.write(self.to_json())
             if mode is not None:
@@ -247,7 +240,9 @@ class BaseSchemaModel(BaseModel):
         return self.from_dict(self.to_dict())
 
     @staticmethod
-    def patch_normal_merge(current_value, value, strategy: V1PatchStrategy = None):
+    def patch_normal_merge(
+        current_value, value, strategy: Optional[V1PatchStrategy] = None
+    ):
         strategy = strategy or V1PatchStrategy.POST_MERGE
 
         if isinstance(current_value, Mapping):
@@ -274,7 +269,9 @@ class BaseSchemaModel(BaseModel):
                 return current_value
 
     @classmethod
-    def patch_swagger_field(cls, config, values, strategy: V1PatchStrategy = None):
+    def patch_swagger_field(
+        cls, config, values, strategy: Optional[V1PatchStrategy] = None
+    ):
         strategy = strategy or V1PatchStrategy.POST_MERGE
 
         openapi_types = getattr(config, "openapi_types", {})
@@ -300,7 +297,7 @@ class BaseSchemaModel(BaseModel):
 
     @classmethod
     def patch_swagger_field_list(
-        cls, current_value, value, strategy: V1PatchStrategy = None
+        cls, current_value, value, strategy: Optional[V1PatchStrategy] = None
     ):
         strategy = strategy or V1PatchStrategy.POST_MERGE
 
@@ -312,7 +309,7 @@ class BaseSchemaModel(BaseModel):
         return cls.patch_normal_merge(current_value, value, strategy)
 
     @classmethod
-    def patch_obj(cls, config, values, strategy: V1PatchStrategy = None):
+    def patch_obj(cls, config, values, strategy: Optional[V1PatchStrategy] = None):
         strategy = strategy or V1PatchStrategy.POST_MERGE
 
         for key in config.__fields__.keys():
@@ -389,7 +386,7 @@ class BaseSchemaModel(BaseModel):
 
         return config
 
-    def patch(self, values, strategy: V1PatchStrategy = None):
+    def patch(self, values, strategy: Optional[V1PatchStrategy] = None):
         strategy = strategy or V1PatchStrategy.POST_MERGE
         return self.patch_obj(self, values, strategy)
 

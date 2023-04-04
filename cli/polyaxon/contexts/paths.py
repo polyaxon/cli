@@ -16,6 +16,8 @@
 
 import os
 
+from typing import Optional
+
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARCHIVES_ROOT,
     EV_KEYS_ARTIFACTS_ROOT,
@@ -81,7 +83,7 @@ CONTEXTS_EVENTS_SUBPATH_FORMAT = "{}/events"
 CONTEXTS_SYSTEM_RESOURCES_EVENTS_SUBPATH_FORMAT = "{}/resources"
 
 
-def get_offline_base_path(entity_kind: str, path: str = None):
+def get_offline_base_path(entity_kind: str, path: Optional[str] = None) -> str:
     from polyaxon.lifecycle import V1ProjectFeature
 
     path = path or CONTEXT_OFFLINE_ROOT
@@ -89,7 +91,9 @@ def get_offline_base_path(entity_kind: str, path: str = None):
     return "{}/{}s".format(path.rstrip("/"), get_enum_value(entity_kind))
 
 
-def get_offline_path(entity_value: str, entity_kind: str, path: str = None):
+def get_offline_path(
+    entity_value: str, entity_kind: str, path: Optional[str] = None
+) -> str:
     from polyaxon.lifecycle import V1ProjectFeature
 
     path = path or CONTEXT_OFFLINE_ROOT

@@ -15,7 +15,7 @@
 # limitations under the License.
 import sys
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from click import ClickException
 
@@ -156,8 +156,8 @@ HTTP_ERROR_MESSAGES_MAPPING = {
 def handle_api_error(
     e,
     logger: Any,
-    message: str = None,
-    http_messages_mapping: Dict = None,
+    message: Optional[str] = None,
+    http_messages_mapping: Optional[Dict] = None,
     sys_exit: bool = False,
 ):
     if http_messages_mapping:

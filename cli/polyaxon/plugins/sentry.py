@@ -16,12 +16,12 @@
 
 import logging
 
-from typing import Dict
+from typing import Dict, Optional
 
 logger = logging.getLogger("polyaxon.cli")
 
 
-def set_raven_client(options: Dict = None) -> bool:
+def set_raven_client(options: Optional[Dict] = None) -> bool:
     from polyaxon import pkg, settings
     from polyaxon.services.values import PolyaxonServices
 

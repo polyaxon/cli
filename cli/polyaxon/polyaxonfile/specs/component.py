@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Type
 
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyaxonfile.specs.base import BaseSpecification
@@ -24,4 +25,4 @@ class ComponentSpecification(BaseSpecification):
 
     _SPEC_KIND = kinds.COMPONENT
 
-    CONFIG = V1Component
+    CONFIG: Type[V1Component] = V1Component

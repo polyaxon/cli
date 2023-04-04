@@ -15,6 +15,8 @@
 # limitations under the License.
 import os
 
+from typing import Optional
+
 from polyaxon.env_vars.keys import EV_KEYS_SERVICE
 from polyaxon.utils.enums_utils import PEnum
 
@@ -59,43 +61,43 @@ class PolyaxonServices(str, PEnum):
         return SERVICE
 
     @classmethod
-    def set_service_name(cls, value: str = None):
+    def set_service_name(cls, value: Optional[str] = None):
         global SERVICE
 
         SERVICE = value or os.environ.get(EV_KEYS_SERVICE)
 
     @classmethod
-    def is_agent(cls, value: str = None):
+    def is_agent(cls, value: Optional[str] = None):
         return cls.AGENT == (value or cls.get_service_name())
 
     @classmethod
-    def is_sandbox(cls, value: str = None):
+    def is_sandbox(cls, value: Optional[str] = None):
         return cls.SANDBOX == (value or cls.get_service_name())
 
     @classmethod
-    def is_hp_search(cls, value: str = None):
+    def is_hp_search(cls, value: Optional[str] = None):
         return cls.HP_SEARCH == (value or cls.get_service_name())
 
     @classmethod
-    def is_init(cls, value: str = None):
+    def is_init(cls, value: Optional[str] = None):
         return (value or cls.get_service_name()) in {cls.INIT, cls.INITIALIZER}
 
     @classmethod
-    def is_sidecar(cls, value: str = None):
+    def is_sidecar(cls, value: Optional[str] = None):
         return cls.SIDECAR == (value or cls.get_service_name())
 
     @classmethod
-    def is_streams(cls, value: str = None):
+    def is_streams(cls, value: Optional[str] = None):
         return cls.STREAMS == (value or cls.get_service_name())
 
     @classmethod
-    def is_api(cls, value: str = None):
+    def is_api(cls, value: Optional[str] = None):
         return cls.API == (value or cls.get_service_name())
 
     @classmethod
-    def is_gateway(cls, value: str = None):
+    def is_gateway(cls, value: Optional[str] = None):
         return cls.GATEWAY == (value or cls.get_service_name())
 
     @classmethod
-    def is_events_handlers(cls, value: str = None):
+    def is_events_handlers(cls, value: Optional[str] = None):
         return cls.EVENTS_HANDLER == (value or cls.get_service_name())
