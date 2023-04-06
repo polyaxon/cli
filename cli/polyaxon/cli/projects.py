@@ -19,7 +19,7 @@ import sys
 import click
 
 from clipped.dict_utils import list_dicts_to_tabulate
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 from clipped.response_utils import get_meta_response
 from clipped.validation import validate_tags
 from urllib3.exceptions import HTTPError
@@ -167,7 +167,7 @@ def ls(owner, query, sort, limit, offset):
     if meta:
         Printer.heading("Projects for owner {}".format(owner))
         Printer.heading("Navigation:")
-        dict_tabulate(meta)
+        Printer.dict_tabulate(meta)
     else:
         Printer.heading("No projects found for owner {}".format(owner))
 
@@ -188,7 +188,7 @@ def ls(owner, query, sort, limit, offset):
     )
     if objects:
         Printer.heading("Projects:")
-        dict_tabulate(objects, is_list_dict=True)
+        Printer.dict_tabulate(objects, is_list_dict=True)
 
 
 @project.command()

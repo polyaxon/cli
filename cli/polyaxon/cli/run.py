@@ -18,6 +18,7 @@ import sys
 
 import click
 
+from clipped import git_utils
 from clipped.formatting import Printer
 from clipped.validation import validate_tags
 from pydantic import ValidationError
@@ -34,7 +35,6 @@ from polyaxon.polyaxonfile import (
     OperationSpecification,
     check_polyaxonfile,
 )
-from clipped import git_utils
 
 
 @click.command()

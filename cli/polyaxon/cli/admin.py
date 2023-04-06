@@ -42,7 +42,7 @@ def read_deployment_config(filepaths, command: str):
             Printer.error(
                 "`{}` must be a valid file".format(filepath),
                 sys_exit=True,
-                command_help="admin {}".format(command),
+                command_help="polyaxon admin {}".format(command),
             )
     try:
         deployment_config = reader.read(filepaths)

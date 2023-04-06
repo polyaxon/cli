@@ -19,7 +19,7 @@ import os
 from collections import OrderedDict
 from typing import Dict, List, Optional, Union
 
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 from clipped.list_utils import to_list
 
 from polyaxon.cli.errors import handle_cli_error
@@ -251,7 +251,7 @@ def get_matrix_info(kind, concurrency, early_stopping=False, **kwargs):
     if "num_runs" in kwargs:
         info["Num of runs to create"] = kwargs["num_runs"]
 
-    dict_tabulate(info)
+    Printer.dict_tabulate(info)
 
 
 DEFAULT_POLYAXON_FILE_NAME = [

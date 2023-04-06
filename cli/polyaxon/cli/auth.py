@@ -19,7 +19,7 @@ import sys
 import click
 
 from clipped.dict_utils import dict_to_tabulate
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
@@ -150,4 +150,4 @@ def whoami():
 
     response = dict_to_tabulate(user.to_dict(), exclude_attrs=["role", "theme"])
     Printer.heading("User info:")
-    dict_tabulate(response)
+    Printer.dict_tabulate(response)

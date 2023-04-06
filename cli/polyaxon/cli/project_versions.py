@@ -20,7 +20,7 @@ from typing import Callable, List, Optional, Union
 import click
 
 from clipped.dict_utils import dict_to_tabulate, list_dicts_to_tabulate
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 from clipped.query_params import get_query_params
 from clipped.response_utils import get_meta_response
 from clipped.validation import validate_tags
@@ -45,14 +45,14 @@ def get_version_details(response, content_callback: Callable = None):
     )
 
     Printer.heading("Version info:")
-    dict_tabulate(response)
+    Printer.dict_tabulate(response)
 
     if meta_info:
         artifacts = meta_info.pop("artifacts", None)
         lineage = meta_info.pop("lineage", artifacts)
         if meta_info:
             Printer.heading("Version meta info:")
-            dict_tabulate(meta_info)
+            Printer.dict_tabulate(meta_info)
 
         if lineage:
             Printer.heading("Version artifacts lineage:")
@@ -154,7 +154,7 @@ def list_project_versions(
     if meta:
         Printer.heading("Versions for {}".format(version_info))
         Printer.heading("Navigation:")
-        dict_tabulate(meta)
+        Printer.dict_tabulate(meta)
     else:
         Printer.header("No version found for {}".format(version_info))
 
@@ -178,7 +178,7 @@ def list_project_versions(
     )
     if objects:
         Printer.heading("Versions:")
-        dict_tabulate(objects, is_list_dict=True)
+        Printer.dict_tabulate(objects, is_list_dict=True)
 
 
 def register_project_version(

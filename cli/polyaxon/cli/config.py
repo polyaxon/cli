@@ -19,7 +19,7 @@ import sys
 import click
 
 from clipped.dict_utils import dict_to_tabulate
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 
 from polyaxon import settings
 from polyaxon.cli.errors import handle_cli_error
@@ -67,10 +67,10 @@ def show():
     Printer.heading(
         "In addition to environment variables, global configs will be loaded from:"
     )
-    dict_tabulate(_config.to_dict())
+    Printer.dict_tabulate(_config.to_dict())
     _config = ClientConfigManager.get_config_or_default()
     Printer.heading("Client config:")
-    dict_tabulate(_config.to_dict())
+    Printer.dict_tabulate(_config.to_dict())
     _config = CliConfigManager.get_config_or_default()
     if _config:
         Printer.heading("CLI config:")
@@ -85,7 +85,7 @@ def show():
                 exclude_attrs=["hmac", "auth", "host"],
             )
             Printer.heading("Platform config:")
-            dict_tabulate(config_installation)
+            Printer.dict_tabulate(config_installation)
         else:
             Printer.warning("This cli is not connected to a Polyaxon Host.")
     _config = UserConfigManager.get_config_or_default()
@@ -96,7 +96,7 @@ def show():
             humanize_values=True,
             exclude_attrs=["theme"],
         )
-        dict_tabulate(config_user)
+        Printer.dict_tabulate(config_user)
 
 
 @config.command()
@@ -123,7 +123,7 @@ def get(keys):
         else:
             Printer.print("Key `{}` is not recognised.".format(key))
 
-    dict_tabulate(print_values)
+    Printer.dict_tabulate(print_values)
 
 
 @config.command()

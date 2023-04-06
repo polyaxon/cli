@@ -28,7 +28,7 @@ from clipped.dict_utils import (
     list_dicts_to_csv,
     list_dicts_to_tabulate,
 )
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 from clipped.list_utils import to_list
 from clipped.response_utils import get_meta_response
 from clipped.validation import validate_tags
@@ -132,21 +132,21 @@ def get_run_details(run):  # pylint:disable=redefined-outer-name
 
     if run.inputs:
         Printer.heading("Run inputs:")
-        dict_tabulate(run.inputs)
+        Printer.dict_tabulate(run.inputs)
 
     if run.outputs:
         Printer.heading("Run outputs:")
-        dict_tabulate(run.outputs)
+        Printer.dict_tabulate(run.outputs)
 
     if run.settings:
         Printer.heading("Run settings:")
-        dict_tabulate(
+        Printer.dict_tabulate(
             run.settings.to_dict() if hasattr(run.settings, "to_dict") else run.settings
         )
 
     if run.meta_info:
         Printer.heading("Run meta info:")
-        dict_tabulate(run.meta_info)
+        Printer.dict_tabulate(run.meta_info)
 
     if run.readme:
         Printer.heading("Run readme:")
@@ -173,7 +173,7 @@ def get_run_details(run):  # pylint:disable=redefined-outer-name
     )
 
     Printer.heading("Run info:")
-    dict_tabulate(response)
+    Printer.dict_tabulate(response)
 
 
 @click.group()
@@ -321,7 +321,7 @@ def ls(
         if meta:
             Printer.heading("Runs for project `{}/{}`.".format(owner, project_name))
             Printer.heading("Navigation:")
-            dict_tabulate(meta)
+            Printer.dict_tabulate(meta)
         else:
             Printer.heading(
                 "No runs found for project `{}/{}`.".format(owner, project_name)
@@ -387,7 +387,7 @@ def ls(
                 "  2. You can select the columns to show using `-c col1,cl2,col3,...`"
             )
             Printer.heading("Runs:")
-            dict_tabulate(objects, is_list_dict=True)
+            Printer.dict_tabulate(objects, is_list_dict=True)
 
 
 @ops.command()

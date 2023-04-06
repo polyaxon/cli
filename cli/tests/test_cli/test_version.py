@@ -38,7 +38,7 @@ class TestCliVersion(BaseCommandTestCase):
 
     @patch("polyaxon.sdk.api.VersionsV1Api.get_installation")
     @patch("polyaxon.sdk.api.VersionsV1Api.get_compatibility")
-    @patch("polyaxon.cli.version.dict_tabulate")
+    @patch("polyaxon.cli.version.Printer.dict_tabulate")
     @patch("polyaxon.managers.cli.CliConfigManager.reset")
     def test_versions(
         self, config_rest, dict_tabulate, get_compatibility, get_installation

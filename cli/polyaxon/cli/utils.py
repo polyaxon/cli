@@ -16,7 +16,7 @@
 import ujson
 
 from clipped.dict_utils import dict_to_tabulate
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 
 
 def get_entity_details(entity: any, entity_name: str):
@@ -45,7 +45,7 @@ def get_entity_details(entity: any, entity_name: str):
     )
 
     Printer.heading("{} info:".format(entity_name))
-    dict_tabulate(response)
+    Printer.dict_tabulate(response)
 
 
 def handle_output(response: any, output: str):

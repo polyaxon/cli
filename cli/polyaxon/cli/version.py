@@ -20,7 +20,7 @@ import click
 
 from clipped import indentation
 from clipped.dict_utils import dict_to_tabulate
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 from clipped.versions import clean_version_for_check, compare_versions
 
 from polyaxon import pkg
@@ -138,9 +138,11 @@ def version(check):
             if config.installation
             else {"Server": "not found or not deployed"}
         )
-        dict_tabulate(config_installation)
+        Printer.dict_tabulate(config_installation)
         Printer.heading("Compatibility versions:")
-        dict_tabulate(config.compatibility.to_dict() if config.compatibility else {})
+        Printer.dict_tabulate(
+            config.compatibility.to_dict() if config.compatibility else {}
+        )
         check_cli_version(config)
 
 

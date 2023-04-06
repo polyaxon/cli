@@ -19,7 +19,7 @@ import sys
 import click
 
 from clipped.dict_utils import list_dicts_to_tabulate
-from clipped.formatting import Printer, dict_tabulate
+from clipped.formatting import Printer
 
 from polyaxon import settings
 from polyaxon.cli.errors import handle_cli_error
@@ -70,12 +70,12 @@ def get_specification_details(content):
     if specification.inputs:
         Printer.heading("Component inputs:")
         objects = list_dicts_to_tabulate([i.to_dict() for i in specification.inputs])
-        dict_tabulate(objects, is_list_dict=True)
+        Printer.dict_tabulate(objects, is_list_dict=True)
 
     if specification.outputs:
         Printer.heading("Component outputs:")
         objects = list_dicts_to_tabulate([o.to_dict() for o in specification.outputs])
-        dict_tabulate(objects, is_list_dict=True)
+        Printer.dict_tabulate(objects, is_list_dict=True)
 
     Printer.heading("Content:")
     Printer.print_yaml(content)
@@ -192,7 +192,7 @@ def register(ctx, polyaxonfile, project, version, description, tags, force):
     if not polyaxonfile or not os.path.isfile(polyaxonfile):
         Printer.error(
             "Please provide a path to a polyaxonfile to create a component version.",
-            command_help="components register",
+            command_help="polyaxon components register",
             sys_exit=True,
         )
     try:
