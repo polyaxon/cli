@@ -237,6 +237,13 @@ securityContext:
   runAsNonRoot: true
   fsGroupChangePolicy: "Always"
 
+labels:
+  foo: bar
+  moo: zoo
+annotations:
+  foo: bar
+  moo: zoo
+priorityClassName: "foobar"
 nodeSelector: {}
 tolerations: []
 affinity:

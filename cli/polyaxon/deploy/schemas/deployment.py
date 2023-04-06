@@ -221,6 +221,9 @@ class DeploymentConfig(BaseSchemaModel):
     node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(alias="nodeSelector")
     tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
     affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
+    labels: Optional[Dict[StrictStr, StrictStr]] = Field(alias="labels")
+    annotations: Optional[Dict[StrictStr, StrictStr]] = Field(alias="annotations")
+    priority_class_name: Optional[StrictStr] = Field(alias="priorityClassName")
     celery_node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
         alias="celeryNodeSelector"
     )
