@@ -15,12 +15,13 @@
 # limitations under the License.
 from typing import TYPE_CHECKING, Union
 
+from clipped.enums_utils import get_enum_value
+from clipped.formatting import Printer
+
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.fs.watcher import FSWatcher
 from polyaxon.logger import logger
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon.utils.enums_utils import get_enum_value
-from polyaxon.utils.formatting import Printer
 
 if TYPE_CHECKING:
     from polyaxon.connections.kinds import V1ConnectionKind

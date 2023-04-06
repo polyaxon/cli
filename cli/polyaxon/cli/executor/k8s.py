@@ -18,6 +18,8 @@ import sys
 
 from typing import List
 
+from clipped.formatting import Printer
+
 from polyaxon import settings
 from polyaxon.agents.spawners.spawner import Spawner
 from polyaxon.cli.errors import handle_cli_error
@@ -30,7 +32,6 @@ from polyaxon.exceptions import (
 from polyaxon.polyaxonfile.specs import OperationSpecification
 from polyaxon.polyflow import V1Operation
 from polyaxon.polypod import compiler
-from polyaxon.utils.formatting import Printer
 from polyaxon.utils.fqn_utils import get_resource_name
 
 

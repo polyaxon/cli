@@ -15,7 +15,7 @@
 # limitations under the License.
 from typing import Tuple
 
-from polyaxon.utils.enums_utils import PEnum, get_enum_value
+from clipped.enums_utils import PEnum, get_enum_value
 
 
 class PolyaxonServiceHeaders(str, PEnum):

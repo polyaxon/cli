@@ -19,6 +19,7 @@ import sys
 from collections import namedtuple
 from typing import Dict, List, Optional
 
+from clipped.formatting import Printer
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.dashboard import get_dashboard_url
@@ -42,7 +43,6 @@ from polyaxon.schemas import V1RunPending
 from polyaxon.schemas.types import V1ArtifactsType
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
-from polyaxon.utils.formatting import Printer
 
 
 class RunWatchSpec(namedtuple("RunWatchSpec", "uuid name")):

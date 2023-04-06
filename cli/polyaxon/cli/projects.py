@@ -18,6 +18,10 @@ import sys
 
 import click
 
+from clipped.dict_utils import list_dicts_to_tabulate
+from clipped.formatting import Printer, dict_tabulate
+from clipped.response_utils import get_meta_response
+from clipped.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.dashboard import get_dashboard_url
@@ -35,13 +39,6 @@ from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 from polyaxon.utils.cache import get_local_project
-from polyaxon.utils.formatting import (
-    Printer,
-    dict_tabulate,
-    get_meta_response,
-    list_dicts_to_tabulate,
-)
-from polyaxon.utils.validation import validate_tags
 
 
 @click.group()

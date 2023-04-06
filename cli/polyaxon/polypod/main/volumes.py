@@ -16,6 +16,8 @@
 
 from typing import Iterable, List, Optional
 
+from clipped.list_utils import to_list
+
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init
@@ -29,7 +31,6 @@ from polyaxon.polypod.common.mounts import (
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
-from polyaxon.utils.list_utils import to_list
 
 
 def get_volume_mounts(

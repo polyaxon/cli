@@ -18,6 +18,9 @@ import os
 
 from typing import List, Optional, Tuple, Union
 
+from clipped.enums_utils import get_enum_value
+from clipped.list_utils import to_list
+
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
@@ -42,8 +45,6 @@ from polyaxon.polypod.common.mounts import (
 )
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.schemas.types import V1ArtifactsType, V1ConnectionType
-from polyaxon.utils.enums_utils import get_enum_value
-from polyaxon.utils.list_utils import to_list
 
 
 def get_or_create_args(path):

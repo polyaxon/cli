@@ -16,10 +16,11 @@
 
 from typing import List
 
+from clipped.list_utils import to_list
+
 from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.env_vars import get_env_var
-from polyaxon.utils.list_utils import to_list
 
 
 def get_sidecar_env_vars(

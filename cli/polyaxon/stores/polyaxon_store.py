@@ -19,6 +19,14 @@ import requests
 
 from typing import Dict, List
 
+from clipped.formatting import Printer
+from clipped.list_utils import to_list
+from clipped.path_utils import (
+    check_or_create_path,
+    create_tarfile_from_path,
+    get_files_by_paths,
+    untar_file,
+)
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 from polyaxon import settings
@@ -30,14 +38,6 @@ from polyaxon.exceptions import (
     PolyaxonShouldExitError,
 )
 from polyaxon.logger import logger
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.path_utils import (
-    check_or_create_path,
-    create_tarfile_from_path,
-    get_files_by_paths,
-    untar_file,
-)
 from traceml.processors.units_processors import format_sizeof
 
 

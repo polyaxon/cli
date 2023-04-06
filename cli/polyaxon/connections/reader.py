@@ -18,6 +18,7 @@ import os
 
 from typing import Any, List, Optional, Set, Union
 
+from clipped.path_utils import check_dirname_exists
 from pydantic import ValidationError
 
 from polyaxon.env_vars.keys import (
@@ -26,7 +27,6 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.logger import logger
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon.utils.path_utils import check_dirname_exists
 
 
 def get_from_env(keys: Union[Set[str], List[str], str]) -> Any:

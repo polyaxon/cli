@@ -15,7 +15,8 @@
 # limitations under the License.
 import ujson
 
-from polyaxon.utils.formatting import Printer, dict_tabulate, dict_to_tabulate
+from clipped.dict_utils import dict_to_tabulate
+from clipped.formatting import Printer, dict_tabulate
 
 
 def get_entity_details(entity: any, entity_name: str):

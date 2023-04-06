@@ -17,10 +17,11 @@ import sys
 
 from typing import Tuple
 
+from clipped.formatting import Printer
+
 from polyaxon.constants.globals import DEFAULT, DEFAULT_HUB
 from polyaxon.env_vars.getters.user import get_local_owner
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
-from polyaxon.utils.formatting import Printer
 
 
 def get_versioned_entity_info(

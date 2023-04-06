@@ -18,9 +18,10 @@ import os
 from datetime import datetime, timedelta
 from typing import Optional
 
+from clipped.tz_utils import now
+
 from polyaxon.env_vars.keys import EV_KEYS_INTERVALS_COMPATIBILITY_CHECK
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.utils.tz_utils import now
 
 
 class ChecksConfig(BaseSchemaModel):

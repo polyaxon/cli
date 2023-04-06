@@ -16,6 +16,8 @@
 
 from typing import List, Optional
 
+from clipped.list_utils import to_list
+
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.containers.names import (
@@ -28,7 +30,6 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.mounts import get_artifacts_context_mount
 from polyaxon.polypod.init.store import get_base_store_container, get_volume_args
 from polyaxon.schemas.types import V1ArtifactsType, V1ConnectionType
-from polyaxon.utils.list_utils import to_list
 
 
 def get_artifacts_store_args(artifacts_path: str, clean: bool) -> str:

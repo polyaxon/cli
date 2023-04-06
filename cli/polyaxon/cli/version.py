@@ -18,13 +18,15 @@ import sys
 
 import click
 
+from clipped import indentation
+from clipped.dict_utils import dict_to_tabulate
+from clipped.formatting import Printer, dict_tabulate
+from clipped.versions import clean_version_for_check, compare_versions
+
 from polyaxon import pkg
 from polyaxon.cli.session import set_versions_config
 from polyaxon.deploy.operators.pip import PipOperator
 from polyaxon.logger import clean_outputs, logger
-from polyaxon.utils import indentation
-from polyaxon.utils.formatting import Printer, dict_tabulate, dict_to_tabulate
-from polyaxon.utils.versions import clean_version_for_check, compare_versions
 
 PROJECT_CLI_NAME = "polyaxon"
 

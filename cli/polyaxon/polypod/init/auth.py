@@ -16,12 +16,13 @@
 
 from typing import List
 
+from clipped.list_utils import to_list
+
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import INIT_AUTH_CONTAINER
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.containers import patch_container
 from polyaxon.polypod.common.mounts import get_auth_context_mount
-from polyaxon.utils.list_utils import to_list
 
 
 def get_auth_context_container(

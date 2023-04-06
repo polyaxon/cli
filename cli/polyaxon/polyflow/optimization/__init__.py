@@ -15,10 +15,10 @@
 # limitations under the License.
 from typing import Optional
 
+from clipped.enums_utils import PEnum
 from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.utils.enums_utils import PEnum
 
 
 class V1ResourceType(str, PEnum):

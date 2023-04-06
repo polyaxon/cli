@@ -20,6 +20,8 @@ import sys
 
 from typing import List
 
+from clipped.formatting import Printer
+
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.deploy.operators.docker import DockerOperator
@@ -33,7 +35,6 @@ from polyaxon.exceptions import (
 from polyaxon.polyaxonfile import CompiledOperationSpecification
 from polyaxon.polyflow import V1CompiledOperation
 from polyaxon.tracking import Run
-from polyaxon.utils.formatting import Printer
 
 POLYAXON_DATA_PATH = "/tmp/data"
 

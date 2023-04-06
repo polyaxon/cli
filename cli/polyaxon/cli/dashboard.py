@@ -18,11 +18,12 @@ import sys
 
 import click
 
+from clipped.formatting import Printer
+from clipped.http_utils import clean_host
+
 from polyaxon import settings
 from polyaxon.api import POLYAXON_CLOUD_HOST
 from polyaxon.logger import clean_outputs
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.http_utils import clean_host
 
 
 def get_dashboard_url(

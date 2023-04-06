@@ -17,8 +17,9 @@
 from collections import namedtuple
 from typing import Optional
 
+from clipped.enums_utils import get_enum_value
+
 from polyaxon.lifecycle import StatusColor
-from polyaxon.utils.enums_utils import get_enum_value
 from polyaxon.utils.urls_utils import get_run_url
 
 

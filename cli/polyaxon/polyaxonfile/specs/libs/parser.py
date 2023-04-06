@@ -23,16 +23,17 @@ from enum import Enum
 from typing import Dict
 from uuid import UUID
 
-from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.polyaxonfile.specs.libs.engine import get_engine
-from polyaxon.polyaxonfile.specs.sections import Sections
-from polyaxon.polyflow import ParamSpec
-from polyaxon.utils.serialization import (
+from clipped.serialization import (
     date_serialize,
     datetime_serialize,
     timedelta_serialize,
     uuid_serialize,
 )
+
+from polyaxon.exceptions import PolyaxonSchemaError
+from polyaxon.polyaxonfile.specs.libs.engine import get_engine
+from polyaxon.polyaxonfile.specs.sections import Sections
+from polyaxon.polyflow import ParamSpec
 
 try:
     import numpy as np

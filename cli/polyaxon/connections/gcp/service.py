@@ -19,11 +19,12 @@ import os
 
 from typing import TYPE_CHECKING, List, Optional
 
+from clipped.path_utils import create_project_tmp
+
 from polyaxon.connections.base import BaseService
 from polyaxon.connections.gcp.base import get_gc_client
 from polyaxon.connections.reader import get_connection_context_path
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.utils.path_utils import create_polyaxon_tmp
 
 if TYPE_CHECKING:
     from google.oauth2.service_account import Credentials
@@ -83,7 +84,7 @@ class GCPService(BaseService):
         if self._key_path:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self._key_path
         elif self._keyfile_dict:
-            create_polyaxon_tmp()
+            create_project_tmp(".polyaxon")
             with open(ctx_paths.CONTEXT_MOUNT_GC, "w") as outfile:
                 json.dump(self._keyfile_dict, outfile)
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ctx_paths.CONTEXT_MOUNT_GC

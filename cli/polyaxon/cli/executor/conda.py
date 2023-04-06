@@ -18,6 +18,9 @@ import os
 import subprocess
 import sys
 
+from clipped.formatting import Printer
+from clipped.hashing import hash_value
+
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.deploy.operators.conda import CondaOperator
 from polyaxon.exceptions import (
@@ -26,8 +29,6 @@ from polyaxon.exceptions import (
     PolyaxonHTTPError,
     PolyaxonShouldExitError,
 )
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.hashing import hash_value
 
 
 def _get_conda_env_name(conda_env):

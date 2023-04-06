@@ -16,6 +16,7 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.enums_utils import PEnum
 from pydantic import Field, PositiveInt, StrictInt, root_validator, validator
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
@@ -26,7 +27,6 @@ from polyaxon.polyflow.matrix.tuner import V1Tuner
 from polyaxon.polyflow.optimization import V1OptimizationMetric
 from polyaxon.schemas.base import BaseSchemaModel, skip_partial
 from polyaxon.schemas.fields import RefField
-from polyaxon.utils.enums_utils import PEnum
 
 
 class AcquisitionFunctions(str, PEnum):

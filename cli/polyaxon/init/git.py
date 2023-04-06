@@ -18,6 +18,16 @@ import os
 
 from typing import List, Optional
 
+from clipped.git_utils import (
+    add_remote,
+    checkout_revision,
+    get_code_reference,
+    git_fetch,
+    git_init,
+    set_remote,
+    update_submodules,
+)
+from clipped.path_utils import check_or_create_path
 from git import Repo as GitRepo
 
 from polyaxon.client.init import get_client_or_raise
@@ -29,16 +39,6 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolyaxonContainerException
 from polyaxon.lifecycle import V1Statuses
-from polyaxon.utils.code_reference import (
-    add_remote,
-    checkout_revision,
-    get_code_reference,
-    git_fetch,
-    git_init,
-    set_remote,
-    update_submodules,
-)
-from polyaxon.utils.path_utils import check_or_create_path
 from traceml.artifacts import V1ArtifactKind, V1RunArtifact
 
 

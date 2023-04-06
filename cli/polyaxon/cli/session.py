@@ -19,6 +19,10 @@ import uuid
 
 from typing import Optional
 
+from clipped.enums_utils import get_enum_value
+from clipped.formatting import Printer
+from clipped.tz_utils import now
+from clipped.versions import clean_version_for_compatibility
 from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg
@@ -32,10 +36,6 @@ from polyaxon.schemas.api.installation import V1Installation
 from polyaxon.schemas.cli.client_config import ClientConfig
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.services.values import PolyaxonServices
-from polyaxon.utils.enums_utils import get_enum_value
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.tz_utils import now
-from polyaxon.utils.versions import clean_version_for_compatibility
 
 
 def session_expired():

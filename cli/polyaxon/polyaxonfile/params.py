@@ -17,9 +17,10 @@
 from collections.abc import Mapping
 from typing import Dict, List, Union
 
+from clipped.formatting import Printer
+
 from polyaxon.exceptions import PolyaxonfileError
 from polyaxon.polyaxonfile.specs.libs.parser import Parser
-from polyaxon.utils.formatting import Printer
 
 
 def parse_params(params: Union[List[str], Dict], is_cli: bool = True):

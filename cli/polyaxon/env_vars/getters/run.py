@@ -18,6 +18,9 @@ import os
 
 from typing import Optional
 
+from clipped.bool_utils import to_bool
+from clipped.formatting import Printer
+
 from polyaxon import settings
 from polyaxon.env_vars.getters.project import get_project_or_local
 from polyaxon.env_vars.keys import (
@@ -27,8 +30,6 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.managers.run import RunConfigManager
-from polyaxon.utils.bool_utils import to_bool
-from polyaxon.utils.formatting import Printer
 
 
 def get_run_or_local(run_uuid=None, is_cli: bool = False):

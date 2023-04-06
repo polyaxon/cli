@@ -18,6 +18,8 @@ import os
 
 from typing import Optional
 
+from clipped.enums_utils import get_enum_value
+
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARCHIVES_ROOT,
     EV_KEYS_ARTIFACTS_ROOT,
@@ -25,7 +27,6 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_OFFLINE_ROOT,
     EV_KEYS_SANDBOX_ROOT,
 )
-from polyaxon.utils.enums_utils import get_enum_value
 
 
 def polyaxon_user_path():

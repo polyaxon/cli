@@ -16,6 +16,8 @@
 
 from typing import Dict, Iterable, List, Optional
 
+from clipped.list_utils import to_list
+
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init
@@ -29,7 +31,6 @@ from polyaxon.polypod.main.k8s_resources import (
 from polyaxon.polypod.main.volumes import get_volume_mounts
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
-from polyaxon.utils.list_utils import to_list
 
 
 def get_main_container(

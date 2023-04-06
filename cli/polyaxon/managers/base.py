@@ -21,11 +21,12 @@ from typing import Any, Dict, Optional, Type
 
 import ujson
 
+from clipped.enums_utils import PEnum
+from clipped.path_utils import check_or_create_path
+
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.logger import logger
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.utils.enums_utils import PEnum
-from polyaxon.utils.path_utils import check_or_create_path
 
 
 class ManagerVisibility(str, PEnum):

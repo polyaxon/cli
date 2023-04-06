@@ -15,9 +15,10 @@
 # limitations under the License.
 from typing import Type
 
+from clipped.formatting import Printer
+
 from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.responses.v1_user import V1User
-from polyaxon.utils.formatting import Printer
 
 
 class UserConfigManager(BaseConfigManager):

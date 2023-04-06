@@ -18,6 +18,8 @@ import os
 
 from typing import TYPE_CHECKING, Optional
 
+from clipped.bool_utils import to_bool
+from clipped.formatting import Printer
 from pydantic import ValidationError
 
 from polyaxon.api import LOCALHOST
@@ -26,8 +28,6 @@ from polyaxon.managers.client import ClientConfigManager
 from polyaxon.managers.home import HomeConfigManager
 from polyaxon.managers.user import UserConfigManager
 from polyaxon.services.values import PolyaxonServices
-from polyaxon.utils.bool_utils import to_bool
-from polyaxon.utils.formatting import Printer
 
 if TYPE_CHECKING:
     from polyaxon.deploy.schemas.auth import AccessTokenConfig

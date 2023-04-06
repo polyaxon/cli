@@ -15,12 +15,12 @@
 # limitations under the License.
 from typing import Optional
 
+from clipped.enums_utils import get_enum_value
 from kubernetes.client import Configuration
 
 from polyaxon import settings
 from polyaxon.exceptions import PolyaxonAgentError
 from polyaxon.polypod.mixins import MIXIN_MAPPING, BaseMixin
-from polyaxon.utils.enums_utils import get_enum_value
 
 
 class BaseSpawner:

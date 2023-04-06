@@ -18,10 +18,11 @@ import sys
 
 from typing import Type
 
+from clipped.formatting import Printer
+
 from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.utils import cli_constants
-from polyaxon.utils.formatting import Printer
 
 
 class ProjectConfigManager(BaseConfigManager):

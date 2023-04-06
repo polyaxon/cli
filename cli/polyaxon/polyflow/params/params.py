@@ -18,6 +18,7 @@ from collections import namedtuple
 from collections.abc import Mapping
 from typing import Any, Dict, Optional
 
+from clipped.list_utils import to_list
 from pydantic import Field, StrictStr, validator
 
 from polyaxon import types
@@ -28,7 +29,6 @@ from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.parser import parser
 from polyaxon.polyflow.init import V1Init
 from polyaxon.schemas.base import BaseSchemaModel, skip_partial
-from polyaxon.utils.list_utils import to_list
 
 
 def validate_param_value(value, ref):

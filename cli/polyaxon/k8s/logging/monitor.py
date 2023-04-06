@@ -17,12 +17,12 @@
 from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
+from clipped.tz_utils import now
 from kubernetes.client.rest import ApiException
 
 from polyaxon.client import RunClient
 from polyaxon.exceptions import PolyaxonK8SError
 from polyaxon.k8s.manager import K8SManager
-from polyaxon.utils.tz_utils import now
 from traceml.logging import V1Log
 
 

@@ -16,6 +16,7 @@
 import asyncio
 import os
 
+from clipped.tz_utils import now
 from kubernetes_asyncio.client.rest import ApiException
 
 from polyaxon.client import RunClient
@@ -35,7 +36,6 @@ from polyaxon.settings import CLIENT_CONFIG
 from polyaxon.sidecar.container.intervals import get_sync_interval
 from polyaxon.sidecar.container.monitors import sync_artifacts, sync_logs
 from polyaxon.sidecar.ignore import CONTAINER_IGNORE_FOLDERS
-from polyaxon.utils.tz_utils import now
 
 
 async def start_sidecar(

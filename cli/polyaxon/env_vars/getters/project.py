@@ -16,14 +16,15 @@
 
 import sys
 
+from clipped.formatting import Printer
+from clipped.string_utils import validate_slug
+
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.env_vars.getters.user import get_local_owner
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
 from polyaxon.managers.project import ProjectConfigManager
 from polyaxon.utils.cache import get_local_project
-from polyaxon.utils.formatting import Printer
 from polyaxon.utils.fqn_utils import get_entity_info
-from polyaxon.utils.string_utils import validate_slug
 
 
 def get_project_error_message(owner, project):

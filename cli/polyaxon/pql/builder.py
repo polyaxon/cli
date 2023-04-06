@@ -17,10 +17,11 @@
 from collections import namedtuple
 from typing import Any, Callable, Optional
 
-from polyaxon.exceptions import PolyaxonDateTimeFormatterException, PQLException
-from polyaxon.utils.bool_utils import to_bool
-from polyaxon.utils.date_utils import DateTimeFormatter
-from polyaxon.utils.list_utils import to_list
+from clipped.bool_utils import to_bool
+from clipped.date_utils import DateTimeFormatter, DateTimeFormatterException
+from clipped.list_utils import to_list
+
+from polyaxon.exceptions import PQLException
 
 
 class QueryCondSpec(namedtuple("QueryCondSpec", "cond params")):
@@ -322,7 +323,7 @@ class DateTimeCondition(ComparisonCondition):
         try:
             start_date = DateTimeFormatter.extract(params[0], timezone)
             end_date = DateTimeFormatter.extract(params[1], timezone)
-        except PolyaxonDateTimeFormatterException as e:
+        except DateTimeFormatterException as e:
             raise PQLException(e)
 
         name = "{}__range".format(name)

@@ -15,6 +15,7 @@
 # limitations under the License.
 from typing import TYPE_CHECKING, Dict, List, Optional
 
+from clipped.list_utils import to_list
 from pydantic import Field
 
 from polyaxon import settings
@@ -29,7 +30,6 @@ from polyaxon.polyflow import V1CompiledOperation, V1Init
 from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
-from polyaxon.utils.list_utils import to_list
 
 
 class PolypodConfig(BaseSchemaModel):

@@ -20,6 +20,7 @@ import time
 
 from typing import Dict, Optional
 
+from clipped.versions import clean_version_for_check
 from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg, settings
@@ -30,7 +31,6 @@ from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
 from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.sdk.exceptions import ApiException
-from polyaxon.utils.versions import clean_version_for_check
 
 
 class Agent(BaseAgent):

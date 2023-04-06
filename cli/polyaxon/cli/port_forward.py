@@ -17,6 +17,8 @@ import sys
 
 import click
 
+from clipped.formatting import Printer
+
 from polyaxon import settings
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.deploy.schemas.deployment_types import DeploymentTypes
@@ -25,7 +27,6 @@ from polyaxon.managers.auth import AuthConfigManager
 from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.client import ClientConfigManager
 from polyaxon.managers.user import UserConfigManager
-from polyaxon.utils.formatting import Printer
 
 
 @click.command()

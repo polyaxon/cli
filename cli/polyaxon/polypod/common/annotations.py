@@ -16,9 +16,10 @@
 
 from typing import Dict, List, Optional
 
+from clipped.list_utils import to_list
+
 from polyaxon.polyflow import V1Init
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon.utils.list_utils import to_list
 
 
 def get_connection_annotations(

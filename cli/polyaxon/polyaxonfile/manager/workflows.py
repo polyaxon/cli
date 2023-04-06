@@ -17,10 +17,11 @@ import copy
 
 from typing import Dict, List, Union
 
+from clipped.formatting import Printer
+
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.polyaxonfile.specs.libs.parser import Parser
 from polyaxon.polyflow import V1CompiledOperation, V1MatrixKind, V1Operation, V1Param
-from polyaxon.utils.formatting import Printer
 
 
 def get_op_from_schedule(

@@ -18,8 +18,9 @@ import os
 
 from typing import List, Optional
 
+from clipped.path_utils import create_tarfile, get_files_in_path
+
 from polyaxon import settings
-from polyaxon.utils.path_utils import create_tarfile, get_files_in_path
 
 
 def tar_dir(download_path: str) -> str:

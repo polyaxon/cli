@@ -24,6 +24,8 @@ from unittest import TestCase, mock
 
 import ujson
 
+from clipped.path_utils import delete_path
+
 from polyaxon import dist, settings
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.schemas import V1HostPathConnection
@@ -33,7 +35,6 @@ from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.schemas.cli.cli_config import CliConfig
 from polyaxon.schemas.cli.client_config import ClientConfig
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon.utils.path_utils import delete_path
 
 
 def assert_equal_dict(

@@ -16,6 +16,8 @@
 
 import click
 
+from clipped.formatting import Printer
+
 from polyaxon.cli.options import OPTIONS_ARTIFACT_VERSION, OPTIONS_NAME, OPTIONS_PROJECT
 from polyaxon.cli.project_versions import (
     copy_project_version,
@@ -33,7 +35,6 @@ from polyaxon.cli.project_versions import (
 from polyaxon.env_vars.getters import get_project_or_local
 from polyaxon.lifecycle import V1ProjectVersionKind, V1Stages
 from polyaxon.logger import clean_outputs, not_in_ce
-from polyaxon.utils.formatting import Printer
 
 
 @click.group()

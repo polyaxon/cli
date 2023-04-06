@@ -17,13 +17,14 @@ import os
 
 from typing import List, Optional
 
+from clipped.enums_utils import get_enum_value
+
 from polyaxon import pkg
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s import k8s_schemas
 from polyaxon.schemas.services import BaseServiceConfig
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon.utils.enums_utils import get_enum_value
 
 
 def get_cleaner_resources() -> k8s_schemas.V1ResourceRequirements:

@@ -19,6 +19,9 @@ import os
 from collections import OrderedDict
 from typing import Dict, List, Optional, Union
 
+from clipped.formatting import Printer, dict_tabulate
+from clipped.list_utils import to_list
+
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
@@ -29,8 +32,6 @@ from polyaxon.polyaxonfile.manager import (
 from polyaxon.polyaxonfile.params import parse_hparams, parse_params
 from polyaxon.polyaxonfile.specs import get_specification, kinds
 from polyaxon.polyflow import V1Dag, V1Init, V1Matrix, V1Operation
-from polyaxon.utils.formatting import Printer, dict_tabulate
-from polyaxon.utils.list_utils import to_list
 
 
 def collect_dag_components(dag: V1Dag, path_context: Optional[str] = None):

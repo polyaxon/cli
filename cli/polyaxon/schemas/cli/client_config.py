@@ -17,6 +17,7 @@ from typing import Dict, Optional, Union
 
 import urllib3
 
+from clipped.http_utils import clean_host
 from pydantic import Extra, Field, StrictStr
 
 from polyaxon.api import LOCALHOST, POLYAXON_CLOUD_HOST
@@ -58,7 +59,6 @@ from polyaxon.sdk.configuration import Configuration
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
-from polyaxon.utils.http_utils import clean_host
 
 
 class ClientConfig(BaseSchemaModel):

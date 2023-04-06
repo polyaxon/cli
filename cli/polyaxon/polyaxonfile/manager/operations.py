@@ -18,6 +18,8 @@ import copy
 from collections.abc import Mapping
 from typing import Dict, List, Optional, Union
 
+from clipped.bool_utils import to_bool
+
 from polyaxon import pkg
 from polyaxon.env_vars.getters.queue import get_queue_info
 from polyaxon.exceptions import PolyaxonfileError
@@ -29,7 +31,6 @@ from polyaxon.polyaxonfile.specs import (
 )
 from polyaxon.polyflow import V1Component, V1Init, V1Matrix, V1MatrixKind, V1Operation
 from polyaxon.schemas import V1PatchStrategy
-from polyaxon.utils.bool_utils import to_bool
 
 
 def get_op_specification(

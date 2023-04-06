@@ -94,10 +94,6 @@ class PolyaxonSchemaError(PolyaxonException):
     pass
 
 
-class PolyaxonDateTimeFormatterException(PolyaxonException):
-    pass
-
-
 class PQLException(PolyaxonException):
     pass
 

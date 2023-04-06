@@ -16,10 +16,11 @@
 
 from typing import Dict, List, Optional
 
+from clipped.list_utils import to_list
+
 from polyaxon.polyflow import V1IO, V1CompiledOperation
 from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.types import IMAGE, LINEAGE_VALUES
-from polyaxon.utils.list_utils import to_list
 from traceml.artifacts import V1ArtifactKind, V1RunArtifact
 
 

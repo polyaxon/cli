@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from clipped.enums_utils import PEnum
+
 from polyaxon.lifecycle import V1Statuses
-from polyaxon.utils.enums_utils import PEnum
 
 
 class V1TriggerPolicy(str, PEnum):

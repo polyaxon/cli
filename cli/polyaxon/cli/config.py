@@ -18,6 +18,9 @@ import sys
 
 import click
 
+from clipped.dict_utils import dict_to_tabulate
+from clipped.formatting import Printer, dict_tabulate
+
 from polyaxon import settings
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.session import set_versions_config
@@ -26,7 +29,6 @@ from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.client import ClientConfigManager
 from polyaxon.managers.home import HomeConfigManager
 from polyaxon.managers.user import UserConfigManager
-from polyaxon.utils.formatting import Printer, dict_tabulate, dict_to_tabulate
 
 
 def validate_options(ctx, param, value):

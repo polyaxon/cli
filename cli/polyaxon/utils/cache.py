@@ -13,9 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from clipped.formatting import Printer
+
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.managers.project import ProjectConfigManager
-from polyaxon.utils.formatting import Printer
 
 CACHE_ERROR = (
     "Found an invalid project config or project config cache, "

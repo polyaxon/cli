@@ -16,10 +16,11 @@
 
 import sys
 
+from clipped.formatting import Printer
+
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.managers.user import UserConfigManager
-from polyaxon.utils.formatting import Printer
 
 
 def get_local_owner(is_cli: bool = False):

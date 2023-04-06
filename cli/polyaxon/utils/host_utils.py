@@ -15,9 +15,10 @@
 # limitations under the License.
 import os
 
+from clipped.http_utils import clean_host
+
 from polyaxon.api import LOCALHOST
 from polyaxon.env_vars.keys import EV_KEYS_PLATFORM_HOST
-from polyaxon.utils.http_utils import clean_host
 
 
 def get_api_host(default: str = LOCALHOST):

@@ -21,6 +21,11 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import ujson
 
+from clipped.path_utils import check_or_create_path, delete_path
+from clipped.query_params import get_query_params
+from clipped.tz_utils import now
+from clipped.validation import validate_tags
+
 from polyaxon.client.client import PolyaxonClient
 from polyaxon.client.decorators import client_handler, get_global_or_inline_config
 from polyaxon.constants.globals import DEFAULT
@@ -36,10 +41,6 @@ from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.schemas.responses.v1_project_version import V1ProjectVersion
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.fqn_utils import get_entity_full_name, get_entity_info
-from polyaxon.utils.path_utils import check_or_create_path, delete_path
-from polyaxon.utils.query_params import get_query_params
-from polyaxon.utils.tz_utils import now
-from polyaxon.utils.validation import validate_tags
 from traceml.artifacts import V1RunArtifact
 
 

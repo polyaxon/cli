@@ -19,6 +19,7 @@ from typing import List
 
 import ujson
 
+from clipped.tz_utils import now
 from pydantic import ValidationError
 
 from polyaxon.polyflow.schedules import (
@@ -29,7 +30,6 @@ from polyaxon.polyflow.schedules import (
 )
 from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.utils.test_utils import BaseTestCase
-from polyaxon.utils.tz_utils import now
 
 
 @pytest.mark.polyflow_mark

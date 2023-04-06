@@ -24,6 +24,12 @@ from json import JSONDecodeError
 from typing import Dict, Union
 from urllib.parse import urlparse
 
+from clipped.bool_utils import strtobool
+from clipped.serialization import (
+    date_deserialize,
+    datetime_deserialize,
+    uuid_deserialize,
+)
 from pydantic import PydanticTypeError, PydanticValueError, ValidationError
 
 from polyaxon import types
@@ -42,12 +48,6 @@ from polyaxon.schemas.types import (
     V1TensorboardType,
     V1UriType,
     V1WasbType,
-)
-from polyaxon.utils.bool_utils import strtobool
-from polyaxon.utils.serialization import (
-    date_deserialize,
-    datetime_deserialize,
-    uuid_deserialize,
 )
 
 
@@ -179,7 +179,7 @@ def get_boolean(
             key=key,
             value=value,
             target_type=bool,
-            type_convert=lambda x: bool(strtobool(x)),
+            type_convert=lambda x: strtobool(x),
             is_optional=is_optional,
             default=default,
             options=options,
@@ -189,7 +189,7 @@ def get_boolean(
         key=key,
         value=value,
         target_type=bool,
-        type_convert=lambda x: bool(strtobool(x)),
+        type_convert=lambda x: strtobool(x),
         is_optional=is_optional,
         default=default,
         options=options,

@@ -17,11 +17,12 @@
 from collections.abc import Mapping
 from typing import Dict, List, Optional
 
+from clipped.list_utils import to_list
+from clipped.sanitizers import sanitize_value
+
 from polyaxon.containers.names import generate_container_name
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.container_resources import sanitize_resources
-from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.sanitizers import sanitize_value
 
 
 def patch_container(

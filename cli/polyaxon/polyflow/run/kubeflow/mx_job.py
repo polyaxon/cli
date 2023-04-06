@@ -16,6 +16,7 @@
 from typing import Optional, Union
 from typing_extensions import Literal
 
+from clipped.enums_utils import PEnum
 from pydantic import Field
 
 from polyaxon.k8s.k8s_schemas import V1Container
@@ -27,7 +28,6 @@ from polyaxon.polyflow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin
 from polyaxon.schemas.fields import RefField
-from polyaxon.utils.enums_utils import PEnum
 
 
 class MXJobMode(str, PEnum):

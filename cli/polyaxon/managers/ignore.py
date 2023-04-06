@@ -21,11 +21,12 @@ from collections import namedtuple
 from pathlib import PurePath
 from typing import List, Optional
 
+from clipped.list_utils import to_list
+from clipped.path_utils import unix_style_path
+
 from polyaxon.logger import logger
 from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.utils import cli_constants
-from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.path_utils import unix_style_path
 
 
 class Pattern(namedtuple("Pattern", "pattern is_exclude re")):

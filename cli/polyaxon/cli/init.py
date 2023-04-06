@@ -19,6 +19,8 @@ import sys
 
 import click
 
+from clipped import indentation
+from clipped.formatting import Printer
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.errors import handle_cli_error
@@ -32,10 +34,18 @@ from polyaxon.managers.project import ProjectConfigManager
 from polyaxon.polyaxonfile import check_polyaxonfile
 from polyaxon.schemas.types import V1GitType
 from polyaxon.sdk.exceptions import ApiException
-from polyaxon.utils import cli_constants, indentation
+from polyaxon.utils import cli_constants
 from polyaxon.utils.cache import get_local_project
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.path_utils import create_init_file
+
+
+def create_init_file() -> bool:
+    if os.path.exists(cli_constants.INIT_FILE_PATH):
+        return False
+
+    with open(cli_constants.INIT_FILE_PATH, "w") as f:
+        f.write(cli_constants.INIT_FILE_TEMPLATE)
+
+    return True
 
 
 def create_polyaxonfile():

@@ -18,6 +18,11 @@ import copy
 
 from typing import Any, Dict, Iterable, List, Optional
 
+from clipped.http_utils import clean_host
+from clipped.list_utils import to_list
+from clipped.sanitizers import sanitize_string_dict
+from clipped.string_utils import slugify
+
 from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
@@ -56,10 +61,6 @@ from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
 from polyaxon.utils.fqn_utils import get_resource_name, get_run_instance
 from polyaxon.utils.host_utils import get_api_host
-from polyaxon.utils.http_utils import clean_host
-from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.sanitizers import sanitize_string_dict
-from polyaxon.utils.string_utils import slugify
 
 
 class ConverterAbstract:

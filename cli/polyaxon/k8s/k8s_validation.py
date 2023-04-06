@@ -15,8 +15,9 @@
 # limitations under the License.
 from typing import Dict, Optional, Type, TypeVar, Union
 
+from clipped.string_utils import to_snake_case
+
 from polyaxon.k8s import k8s_schemas
-from polyaxon.utils.string_utils import to_snake_case
 
 Swagger = TypeVar("Swagger")
 

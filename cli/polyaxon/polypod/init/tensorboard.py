@@ -16,6 +16,10 @@
 
 from typing import List, Optional
 
+from clipped.enums_utils import get_enum_value
+from clipped.list_utils import to_list
+from clipped.validation import validate_tags
+
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import (
     INIT_TENSORBOARD_CONTAINER_PREFIX,
@@ -33,9 +37,6 @@ from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.init.store import get_base_store_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1ConnectionType, V1TensorboardType
-from polyaxon.utils.enums_utils import get_enum_value
-from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.validation import validate_tags
 
 
 def _get_args(tb_args: V1TensorboardType):

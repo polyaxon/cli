@@ -16,11 +16,11 @@
 
 from typing import List, Union
 
+from clipped.list_utils import to_list
+from clipped.path_utils import check_or_create_path
 from fsspec import AbstractFileSystem
 
 from polyaxon.logger import logger
-from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.path_utils import check_or_create_path
 
 
 def download_file_or_dir(

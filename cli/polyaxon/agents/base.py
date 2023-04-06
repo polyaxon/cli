@@ -19,6 +19,8 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional, Tuple
 
+from clipped.tz_utils import now
+from clipped.workers_utils import exit_context, get_pool_workers, get_wait
 from kubernetes.client.rest import ApiException
 
 from polyaxon import live_state, settings
@@ -32,8 +34,6 @@ from polyaxon.logger import logger
 from polyaxon.schemas.cli.checks_config import ChecksConfig
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
-from polyaxon.utils.tz_utils import now
-from polyaxon.utils.workers_utils import exit_context, get_pool_workers, get_wait
 
 
 class BaseAgent:

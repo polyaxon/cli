@@ -20,6 +20,8 @@ from typing import Dict, Optional
 
 import click
 
+from clipped.formatting import Printer
+
 from polyaxon import settings
 from polyaxon.deploy.operators.compose import ComposeOperator
 from polyaxon.deploy.operators.docker import DockerOperator
@@ -30,7 +32,6 @@ from polyaxon.deploy.schemas.deployment_types import DeploymentCharts, Deploymen
 from polyaxon.exceptions import PolyaxonException, PolyaxonOperatorException
 from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon.managers.compose import ComposeConfigManager
-from polyaxon.utils.formatting import Printer
 
 
 class DeployConfigManager:

@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-NEWLINES = ("\n", "\r", "\r\n")
-
 INIT_COMMAND = (
     "`polyaxon init -p PROJECT_NAME [--polyaxonfile] [--git-connection] [--git-url]`"
 )

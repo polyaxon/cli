@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.utils.enums_utils import PEnum
+from clipped.enums_utils import PEnum
 
 
 class V1CleanPodPolicy(str, PEnum):

@@ -17,13 +17,14 @@ import os
 
 from typing import Any, Dict, List, Optional, Union
 
+from clipped.http_utils import add_notification_referrer_param, clean_host
+from clipped.list_utils import to_list
+
 from polyaxon import settings
 from polyaxon.exceptions import PolyaxonNotificationException
 from polyaxon.logger import logger
 from polyaxon.notifiers.spec import NotificationSpec
 from polyaxon.parser import parser
-from polyaxon.utils.http_utils import add_notification_referrer_param, clean_host
-from polyaxon.utils.list_utils import to_list
 from polyaxon.utils.urls_utils import validate_url
 
 ConfigType = Union[Dict, List[Dict]]

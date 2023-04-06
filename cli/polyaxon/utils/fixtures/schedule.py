@@ -16,6 +16,8 @@
 
 from datetime import timedelta
 
+from clipped.tz_utils import now
+
 from polyaxon.polyflow import (
     V1HpRange,
     V1HpUniform,
@@ -23,7 +25,6 @@ from polyaxon.polyflow import (
     V1Optimization,
     V1RunKind,
 )
-from polyaxon.utils.tz_utils import now
 
 
 def get_fxt_schedule_with_inputs_outputs(start_at=None, delta=7):

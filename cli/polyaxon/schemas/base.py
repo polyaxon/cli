@@ -23,16 +23,16 @@ from typing import Any, Callable, Dict, Optional
 
 import ujson
 
+from clipped.dict_utils import deep_update
+from clipped.humanize import humanize_timesince
+from clipped.string_utils import to_camel_case
+from clipped.tz_utils import get_timezone
 from pydantic import BaseModel, Extra
 
 from polyaxon import pkg
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.schemas.patch_strategy import V1PatchStrategy
-from polyaxon.utils.dict_utils import deep_update
-from polyaxon.utils.humanize import humanize_timesince
-from polyaxon.utils.string_utils import to_camel_case
-from polyaxon.utils.tz_utils import get_timezone
 from traceml.processors.units_processors import to_percentage, to_unit_memory
 
 
@@ -396,7 +396,10 @@ class BaseSchemaModel(BaseModel):
             return dt
         if not dt.tzinfo:
             dt = timezone.utc.localize(dt)
-        return dt.astimezone(get_timezone())
+
+        from polyaxon import settings
+
+        return dt.astimezone(get_timezone(tz=settings.CLIENT_CONFIG.timezone))
 
     @staticmethod
     def _get_bool(value, default_value):

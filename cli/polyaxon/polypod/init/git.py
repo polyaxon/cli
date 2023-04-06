@@ -19,6 +19,8 @@ from typing import List, Optional
 
 import ujson
 
+from clipped.list_utils import to_list
+
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
@@ -44,7 +46,6 @@ from polyaxon.polypod.common.mounts import (
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon.utils.list_utils import to_list
 
 
 def get_repo_context_args(

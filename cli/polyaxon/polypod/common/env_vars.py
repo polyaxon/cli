@@ -19,6 +19,9 @@ import os
 
 from typing import Any, Iterable, List, Optional
 
+from clipped.enums_utils import get_enum_value
+from clipped.list_utils import to_list
+
 from polyaxon.connections.reader import (
     get_connection_context_path_env_name,
     get_connection_schema_env_name,
@@ -44,8 +47,6 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.accelerators import requests_gpu
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.services.headers import PolyaxonServiceHeaders
-from polyaxon.utils.enums_utils import get_enum_value
-from polyaxon.utils.list_utils import to_list
 
 
 def get_str_var(value: Any) -> str:

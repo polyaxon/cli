@@ -16,11 +16,12 @@
 
 from typing import Dict, List, Optional, Tuple
 
+from clipped.list_utils import to_list
+from clipped.sanitizers import sanitize_string_dict
+
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Environment
-from polyaxon.utils.list_utils import to_list
-from polyaxon.utils.sanitizers import sanitize_string_dict
 
 
 def get_pod_spec(

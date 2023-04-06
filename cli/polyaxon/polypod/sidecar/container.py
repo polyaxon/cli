@@ -16,6 +16,8 @@
 
 from typing import List, Optional
 
+from clipped.list_utils import to_list
+
 from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
@@ -35,7 +37,6 @@ from polyaxon.polypod.common.mounts import (
 from polyaxon.polypod.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1ConnectionType
-from polyaxon.utils.list_utils import to_list
 
 SIDECAR_CONTAINER = "polyaxon-sidecar"
 

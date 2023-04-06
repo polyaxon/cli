@@ -20,13 +20,13 @@ import time
 
 from typing import Dict, List, Optional
 
+from clipped.logging_utils import LogLevels
 from docker import APIClient
 from docker.errors import APIError, BuildError
 from urllib3.exceptions import ReadTimeoutError
 
 from polyaxon.exceptions import PolyaxonBuildException
 from polyaxon.schemas.types import V1UriType
-from polyaxon.utils.log_utils import LogLevels
 
 _logger = logging.getLogger("polyaxon.dockerizer")
 

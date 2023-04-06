@@ -16,6 +16,8 @@
 
 from typing import Dict, Optional, Type
 
+from clipped.list_utils import to_list
+
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyaxonfile.specs.base import BaseSpecification
@@ -28,7 +30,6 @@ from polyaxon.polyflow import (
     validate_run_patch,
 )
 from polyaxon.polyflow.operations.operation import PartialV1Operation
-from polyaxon.utils.list_utils import to_list
 
 
 class OperationSpecification(BaseSpecification):

@@ -19,6 +19,11 @@ from typing import Callable, List, Optional, Union
 
 import click
 
+from clipped.dict_utils import dict_to_tabulate, list_dicts_to_tabulate
+from clipped.formatting import Printer, dict_tabulate
+from clipped.query_params import get_query_params
+from clipped.response_utils import get_meta_response
+from clipped.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.dashboard import get_dashboard_url
@@ -26,16 +31,7 @@ from polyaxon.cli.errors import handle_cli_error
 from polyaxon.client import PolyaxonClient, ProjectClient
 from polyaxon.lifecycle import V1ProjectVersionKind
 from polyaxon.sdk.exceptions import ApiException
-from polyaxon.utils.formatting import (
-    Printer,
-    dict_tabulate,
-    dict_to_tabulate,
-    get_meta_response,
-    list_dicts_to_tabulate,
-)
 from polyaxon.utils.fqn_utils import get_versioned_entity_full_name
-from polyaxon.utils.query_params import get_query_params
-from polyaxon.utils.validation import validate_tags
 
 
 def get_version_details(response, content_callback: Callable = None):

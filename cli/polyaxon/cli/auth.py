@@ -18,6 +18,8 @@ import sys
 
 import click
 
+from clipped.dict_utils import dict_to_tabulate
+from clipped.formatting import Printer, dict_tabulate
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
@@ -32,7 +34,6 @@ from polyaxon.managers.user import UserConfigManager
 from polyaxon.schemas.api.authentication import AccessTokenConfig, V1Credentials
 from polyaxon.schemas.responses.v1_auth import V1Auth
 from polyaxon.sdk.exceptions import ApiException
-from polyaxon.utils.formatting import Printer, dict_tabulate, dict_to_tabulate
 
 
 @click.command()

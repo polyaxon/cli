@@ -17,7 +17,7 @@ from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 
-def validate_url(url):
+def validate_url(url: str):
     if not url.startswith(("http://", "https://")):
         return False
     parsed = urlparse(url)

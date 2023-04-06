@@ -15,8 +15,9 @@
 # limitations under the License.
 from typing import Dict, Optional
 
+from clipped.formatting import Printer
+
 from polyaxon.exceptions import handle_api_error
-from polyaxon.utils.formatting import Printer
 
 
 def handle_cli_error(

@@ -18,6 +18,8 @@ import sys
 
 import click
 
+from clipped.formatting import Printer
+from clipped.validation import validate_tags
 from pydantic import ValidationError
 
 from polyaxon import settings
@@ -32,9 +34,7 @@ from polyaxon.polyaxonfile import (
     OperationSpecification,
     check_polyaxonfile,
 )
-from polyaxon.utils import code_reference
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.validation import validate_tags
+from clipped import git_utils
 
 
 @click.command()
@@ -345,12 +345,12 @@ def run(
         git_init = GitConfigManager.get_config()
         if git_revision:
             git_init.git.revision = git_revision
-        elif code_reference.is_git_initialized(path="."):
-            if code_reference.is_dirty(path="."):
+        elif git_utils.is_git_initialized(path="."):
+            if git_utils.is_dirty(path="."):
                 Printer.warning(
                     "Polyaxon detected uncommitted changes in the current git repo!"
                 )
-            commit_hash = code_reference.get_commit()
+            commit_hash = git_utils.get_commit()
             git_init.git.revision = commit_hash
         else:
             Printer.warning(

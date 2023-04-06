@@ -19,14 +19,14 @@ import sys
 
 import click
 
+from clipped.formatting import Printer
+from clipped.path_utils import check_or_create_path, copy_file
 from pydantic import ValidationError
 
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.schemas.types import V1FileType
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.path_utils import check_or_create_path, copy_file
 
 
 @click.group()
@@ -54,8 +54,9 @@ def auth():
 )
 def file(file_context, filepath, copy_path, track):
     """Create auth context."""
+    from clipped.hashing import hash_value
+
     from polyaxon.init.file import create_file_lineage
-    from polyaxon.utils.hashing import hash_value
 
     try:
         file_context = V1FileType.from_dict(ConfigSpec.read_from(file_context))
@@ -334,8 +335,9 @@ def tensorboard(
     plugins,
 ):
     """Create path context."""
+    from clipped.validation import validate_tags
+
     from polyaxon.init.tensorboard import initialize_tensorboard
-    from polyaxon.utils.validation import validate_tags
 
     uuids = validate_tags(uuids)
     plugins = validate_tags(plugins)

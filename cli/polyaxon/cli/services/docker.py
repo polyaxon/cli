@@ -17,6 +17,8 @@ import sys
 
 import click
 
+from clipped.formatting import Printer
+from clipped.path_utils import copy_file
 from pydantic import ValidationError
 
 from polyaxon.builds.generator import DockerFileGenerator
@@ -27,8 +29,6 @@ from polyaxon.exceptions import PolyaxonBuildException, PolyaxonSchemaError
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.schemas.fields.docker_image import validate_image
 from polyaxon.schemas.types import V1DockerfileType
-from polyaxon.utils.formatting import Printer
-from polyaxon.utils.path_utils import copy_file
 
 
 @click.group()
@@ -77,8 +77,9 @@ def generate(
     polyaxonfile, python_module, build_context, destination, copy_path, params, track
 ):
     """Generate a dockerfile given the polyaxonfile."""
+    from clipped.hashing import hash_value
+
     from polyaxon.init.dockerfile import create_dockerfile_lineage
-    from polyaxon.utils.hashing import hash_value
 
     if all([polyaxonfile, build_context]):
         Printer.error("Only a polyaxonfile or a build context option is required.")

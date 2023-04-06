@@ -16,6 +16,8 @@
 
 from typing import List, Optional
 
+from clipped.list_utils import to_list
+
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import (
     INIT_FILE_CONTAINER_PREFIX,
@@ -33,7 +35,6 @@ from polyaxon.polypod.common.mounts import (
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1FileType
-from polyaxon.utils.list_utils import to_list
 
 
 def get_file_init_container(

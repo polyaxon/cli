@@ -17,12 +17,12 @@ import datetime
 
 from typing import Any, Dict, List, Optional, Union
 
+from clipped.date_utils import parse_datetime
+from clipped.enums_utils import PEnum
+from clipped.tz_utils import now
 from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.utils.date_utils import parse_datetime
-from polyaxon.utils.enums_utils import PEnum
-from polyaxon.utils.tz_utils import now
 
 
 class V1Stages(str, PEnum):

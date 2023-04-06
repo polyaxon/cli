@@ -16,9 +16,10 @@
 
 import click
 
+from clipped.formatting import Printer
+
 from polyaxon.logger import clean_outputs
 from polyaxon.polyaxonfile.check import check_polyaxonfile
-from polyaxon.utils.formatting import Printer
 
 
 @click.command()

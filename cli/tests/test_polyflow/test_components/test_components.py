@@ -16,13 +16,13 @@
 
 import pytest
 
+from clipped.tz_utils import local_datetime, now
 from pydantic import ValidationError
 
 from polyaxon import types
 from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow import V1Component, V1RunKind, ops_params
 from polyaxon.utils.test_utils import BaseTestCase
-from polyaxon.utils.tz_utils import local_datetime, now
 
 
 @pytest.mark.components_mark

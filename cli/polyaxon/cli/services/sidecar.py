@@ -17,8 +17,9 @@ import asyncio
 
 import click
 
+from clipped.coroutine import coroutine
+
 from polyaxon.logger import logger
-from polyaxon.utils.coroutine import coroutine
 
 
 @click.command()

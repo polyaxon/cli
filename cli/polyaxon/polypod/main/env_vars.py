@@ -16,6 +16,8 @@
 
 from typing import Iterable, List
 
+from clipped.list_utils import to_list
+
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARTIFACTS_STORE_NAME,
     EV_KEYS_COLLECT_ARTIFACTS,
@@ -31,7 +33,6 @@ from polyaxon.polypod.common.env_vars import (
 )
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
-from polyaxon.utils.list_utils import to_list
 
 
 def get_env_vars(

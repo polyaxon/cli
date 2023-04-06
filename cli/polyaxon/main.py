@@ -18,6 +18,9 @@ import os
 
 import click
 
+from clipped.bool_utils import to_bool
+from clipped.formatting import Printer
+
 from polyaxon import settings
 from polyaxon.cli.admin import admin
 from polyaxon.cli.artifacts import artifacts
@@ -37,8 +40,6 @@ from polyaxon.cli.session import set_versions_config
 from polyaxon.cli.version import check_cli_version, upgrade, version
 from polyaxon.logger import clean_outputs, configure_logger
 from polyaxon.services.values import PolyaxonServices
-from polyaxon.utils.bool_utils import to_bool
-from polyaxon.utils.formatting import Printer
 
 DOCS_GEN = to_bool(os.environ.get("POLYAXON_DOCS_GEN", False))
 
