@@ -29,6 +29,7 @@ from dateutil.parser import parse
 
 import polyaxon.sdk.models
 
+from polyaxon import pkg
 from polyaxon.sdk.configuration import Configuration
 from polyaxon.sdk.exceptions import ApiException, ApiValueError
 
@@ -88,7 +89,7 @@ class ApiClient(object):
             self.default_headers[header_name] = header_value
         self.cookie = cookie
         # Set default User-Agent.
-        self.user_agent = "OpenAPI-Generator/1.22.0/python"
+        self.user_agent = "OpenAPI-Generator/{}/python".format(pkg.VERSION)
         self.client_side_validation = configuration.client_side_validation
 
     def __enter__(self):
