@@ -83,7 +83,7 @@ async def query_k8s_operation_logs(
         since_seconds = (new_time - last_time).total_seconds() - 1
         params["since_seconds"] = int(since_seconds)
     if stream:
-        params["tail_lines"] = V1Logs.CHUNK_SIZE
+        params["tail_lines"] = V1Logs._CHUNK_SIZE
     logs = []
 
     pods = await k8s_manager.list_pods(
@@ -112,7 +112,7 @@ async def query_k8s_pod_logs(
         since_seconds = (new_time - last_time).total_seconds() - 1
         params["since_seconds"] = int(since_seconds)
     if stream:
-        params["tail_lines"] = V1Logs.CHUNK_SIZE
+        params["tail_lines"] = V1Logs._CHUNK_SIZE
 
     logs = await handle_pod_logs(k8s_manager=k8s_manager, pod=pod, **params)
 

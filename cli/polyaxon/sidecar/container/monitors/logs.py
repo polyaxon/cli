@@ -55,5 +55,5 @@ async def sync_logs(
     path_from = "{}/{}.plx".format(path_from, pod.metadata.name)
     check_or_create_path(path_from, is_dir=False)
     async with aiofiles.open(path_from, "w") as filepath:
-        _logs = V1Logs(logs=logs)
+        _logs = V1Logs.construct(logs=logs)
         await filepath.write("{}\n{}".format(_logs.get_csv_header(), _logs.to_csv()))
