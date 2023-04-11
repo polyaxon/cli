@@ -40,7 +40,7 @@ def sync_file_watcher(path: str):
 
 def download_artifact(
     connection_name: str,
-    connection_kind: Union[str, V1ConnectionKind],
+    connection_kind: Union[str, "V1ConnectionKind"],
     path_from: str,
     path_to: str,
     is_file: bool,
