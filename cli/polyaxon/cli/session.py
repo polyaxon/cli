@@ -104,7 +104,8 @@ def get_compatibility(
         )
     except ApiException as e:
         if e.status == 403 and is_cli:
-            session_expired()
+            Printer.error("Could not reach the compatibility API.")
+            return
         if set_config:
             CliConfigManager.reset(last_check=now())
         if is_cli:
