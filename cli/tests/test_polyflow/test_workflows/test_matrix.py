@@ -18,8 +18,7 @@ import pytest
 
 from datetime import date, datetime, timedelta
 
-import ujson
-
+from clipped.json_utils import orjson_dumps
 from pydantic import ValidationError
 
 from hypertune.matrix.utils import get_length, get_max, get_min, sample, to_numpy
@@ -202,7 +201,7 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "step": 0.1}
         config = V1HpRange.from_dict(config_dict)
         assert config.to_dict() == config_dict
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_date_range_option(self):
         deserialize_date = lambda x: date.fromisoformat(x) if isinstance(x, str) else x
@@ -253,7 +252,7 @@ class TestMatrixConfigs(BaseTestCase):
         }
         config = V1HpDateRange.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
         # as Dict with float step
         config_dict["value"] = {
@@ -263,9 +262,9 @@ class TestMatrixConfigs(BaseTestCase):
         }
         config = V1HpDateRange.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
         config_dict["value"]["step"] = 4
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_datetime_range_option(self):
         deserialize_datetime = (
@@ -318,7 +317,7 @@ class TestMatrixConfigs(BaseTestCase):
         }
         config = V1HpDateTimeRange.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as Dict with float step
         config_dict["value"] = {
@@ -328,7 +327,7 @@ class TestMatrixConfigs(BaseTestCase):
         }
         config = V1HpDateTimeRange.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_linspace_option(self):
         def assert_equal(config, v1, v2, v3):
@@ -380,13 +379,13 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
         config = V1HpLinSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict num as int
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}
         config = V1HpLinSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_geomspace_option(self):
         def assert_equal(config, v1, v2, v3):
@@ -497,19 +496,19 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
         config = V1HpLogSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # with base
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}
         config = V1HpLogSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
         # with base
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1, "base": 2}
         config = V1HpLogSpace.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_uniform_option(self):
         def assert_equal(config, v1, v2, v3=None):
@@ -562,13 +561,13 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"low": 0, "high": 1}
         config = V1HpUniform.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict
         config_dict["value"] = {"low": 0.0, "high": 1.0}
         config = V1HpUniform.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_quniform_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -639,13 +638,13 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"low": 0, "high": 1}
         config = V1HpLogUniform.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict
         config_dict["value"] = {"low": 0.0, "high": 1.0}
         config = V1HpLogUniform.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_qloguniform_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -681,13 +680,13 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"low": 0, "high": 1, "q": 0.1}
         config = V1HpQLogUniform.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict
         config_dict["value"] = {"low": 0.0, "high": 1.0, "q": 0.1}
         config = V1HpQLogUniform.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_normal_option(self):
         def assert_equal(config, v1, v2, v3=None):
@@ -738,13 +737,13 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"loc": 60, "scale": 30}
         config = V1HpNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict
         config_dict["value"] = {"loc": 60.0, "scale": 30.0}
         config = V1HpNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_qnormal_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -780,13 +779,13 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"loc": 0, "scale": 1, "q": 0.1}
         config = V1HpQNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict
         config_dict["value"] = {"loc": 0.0, "scale": 1.0, "q": 0.1}
         config = V1HpQNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_lognormal_option(self):
         def assert_equal(config, v1, v2, v3=None):
@@ -822,13 +821,13 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"loc": 0, "scale": 1}
         config = V1HpLogNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict
         config_dict["value"] = {"loc": 0.0, "scale": 1.0}
         config = V1HpLogNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_qlognormal_option(self):
         def assert_equal(config, v1, v2, q, v3=None):
@@ -864,10 +863,10 @@ class TestMatrixConfigs(BaseTestCase):
         config_dict["value"] = {"loc": 0, "scale": 1, "q": 0.1}
         config = V1HpQLogNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != ujson.dumps(config_dict)
+        assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict
         config_dict["value"] = {"loc": 0.0, "scale": 1.0, "q": 0.1}
         config = V1HpQLogNormal.from_dict(config_dict)
         assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() == ujson.dumps(config_dict)
+        assert config.to_json() == orjson_dumps(config_dict)

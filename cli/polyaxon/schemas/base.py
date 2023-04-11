@@ -21,10 +21,11 @@ from collections.abc import Mapping
 from datetime import timezone
 from typing import Any, Callable, Dict, Optional
 
-import ujson
+import orjson
 
 from clipped.dict_utils import deep_update
 from clipped.humanize import humanize_timesince
+from clipped.json_utils import orjson_dumps
 from clipped.string_utils import to_camel_case
 from clipped.tz_utils import get_timezone
 from pydantic import BaseModel, Extra
@@ -34,13 +35,6 @@ from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.schemas.patch_strategy import V1PatchStrategy
 from traceml.processors.units_processors import to_percentage, to_unit_memory
-
-
-class BaseMetaConfig:
-    allow_population_by_field_name = True
-    validate_assignment = True
-    arbitrary_types_allowed = True
-    extra = Extra.forbid
 
 
 class BaseSchemaModel(BaseModel):
@@ -63,8 +57,8 @@ class BaseSchemaModel(BaseModel):
         return cls._IDENTIFIER
 
     @staticmethod
-    def _dump(obj_dict):
-        return ujson.dumps(obj_dict)
+    def _dump(obj_dict) -> str:
+        return orjson_dumps(obj_dict)
 
     def to_light_dict(
         self,
@@ -414,8 +408,8 @@ class BaseSchemaModel(BaseModel):
         arbitrary_types_allowed = True
         use_enum_values = True
         extra = Extra.forbid
-        json_dumps: Callable[..., str] = ujson.dumps
-        json_loads = ujson.loads
+        json_dumps: Callable[..., str] = orjson_dumps
+        json_loads = orjson.loads
 
 
 def to_partial(cls):

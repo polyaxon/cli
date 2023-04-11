@@ -24,13 +24,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
-import ujson
+import orjson
 
 from clipped.date_utils import file_modified_since
 from clipped.formatting import Printer
 from clipped.git_utils import get_code_reference
 from clipped.hashing import hash_dir, hash_file, hash_value
 from clipped.http_utils import absolute_uri
+from clipped.json_utils import orjson_dumps
 from clipped.list_utils import to_list
 from clipped.path_utils import (
     check_or_create_path,
@@ -2564,7 +2565,7 @@ class RunClient:
         run_path = "{}/{}".format(path, ctx_paths.CONTEXT_LOCAL_RUN)
         with open(run_path, "w") as config_file:
             config_file.write(
-                ujson.dumps(self.client.sanitize_for_serialization(self.run_data))
+                orjson_dumps(self.client.sanitize_for_serialization(self.run_data))
             )
 
         if not self._artifacts_lineage:
@@ -2574,7 +2575,7 @@ class RunClient:
         lineages_path = "{}/{}".format(path, ctx_paths.CONTEXT_LOCAL_LINEAGES)
         with open(lineages_path, "w") as config_file:
             config_file.write(
-                ujson.dumps(
+                orjson_dumps(
                     [
                         self.client.sanitize_for_serialization(l)
                         for l in self._artifacts_lineage.values()
@@ -2616,7 +2617,7 @@ class RunClient:
 
         with open(run_path, "r") as config_file:
             config_str = config_file.read()
-            run_config = V1Run(**ujson.loads(config_str))
+            run_config = V1Run(**orjson.loads(config_str))
             owner = run_config.owner
             project = run_config.project
             if run_client:
@@ -2642,7 +2643,7 @@ class RunClient:
             return run_client
         with open(lineages_path, "r") as config_file:
             config_str = config_file.read()
-            lineages = [V1RunArtifact.from_dict(l) for l in ujson.loads(config_str)]
+            lineages = [V1RunArtifact.from_dict(l) for l in orjson.loads(config_str)]
             run_client._artifacts_lineage = {l.name: l for l in lineages}  # type: ignore
             logger.info(f"Offline lineage data loaded from: {lineages_path}")
 

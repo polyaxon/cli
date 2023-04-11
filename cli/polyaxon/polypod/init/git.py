@@ -17,8 +17,7 @@ import os
 
 from typing import List, Optional
 
-import ujson
-
+from clipped.json_utils import orjson_dumps
 from clipped.list_utils import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
@@ -74,7 +73,7 @@ def get_repo_context_args(
 
     flags = to_list(flags, check_none=True)
     if flags:
-        args.append("--flags={}".format(ujson.dumps(flags)))
+        args.append("--flags={}".format(orjson_dumps(flags)))
     return args
 
 

@@ -17,8 +17,7 @@ import pytest
 
 from typing import List
 
-import ujson
-
+from clipped.json_utils import orjson_dumps
 from clipped.tz_utils import now
 from pydantic import ValidationError
 
@@ -141,4 +140,4 @@ class TestScheduleConfigs(BaseTestCase):
 
         result = DummyModel(schedules=configs)
 
-        assert result.to_json() == ujson.dumps({"schedules": configs})
+        assert result.to_json() == orjson_dumps({"schedules": configs})

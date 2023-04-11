@@ -13,10 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import ujson
 
 from clipped.dict_utils import dict_to_tabulate
 from clipped.formatting import Printer
+from clipped.json_utils import orjson_dumps
 
 
 def get_entity_details(entity: any, entity_name: str):
@@ -55,4 +55,4 @@ def handle_output(response: any, output: str):
     if "path=" in output:
         json_path = output.strip("path=")
         with open(json_path, "w", encoding="utf8", newline="") as output_file:
-            output_file.write(ujson.dumps(response))
+            output_file.write(orjson_dumps(response))

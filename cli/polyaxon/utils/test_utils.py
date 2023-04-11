@@ -22,8 +22,7 @@ from collections.abc import Mapping
 from typing import List, Optional
 from unittest import TestCase, mock
 
-import ujson
-
+from clipped.json_utils import orjson_dumps
 from clipped.path_utils import delete_path
 
 from polyaxon import dist, settings
@@ -174,11 +173,11 @@ class TestEnvVarsCase(BaseTestCase):
 
     @staticmethod
     def check_valid_dict_value(key, expected_function, value):
-        os.environ[key] = ujson.dumps(value)
+        os.environ[key] = orjson_dumps(value)
         assert expected_function() == value
 
     def check_raise_for_invalid_value(self, key, expected_function, value, exception):
-        os.environ[key] = ujson.dumps(value)
+        os.environ[key] = orjson_dumps(value)
         with self.assertRaises(exception):
             expected_function()
 

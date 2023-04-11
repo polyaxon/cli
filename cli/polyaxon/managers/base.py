@@ -19,9 +19,10 @@ import os
 from collections.abc import Mapping
 from typing import Any, Dict, Optional, Type
 
-import ujson
+import orjson
 
 from clipped.enums_utils import PEnum
+from clipped.json_utils import orjson_dumps
 from clipped.path_utils import check_or_create_path
 
 from polyaxon.contexts import paths as ctx_paths
@@ -183,7 +184,7 @@ class BaseConfigManager:
                 )
                 config_file.write(config.to_dict())
             elif isinstance(config, Mapping):
-                config_file.write(ujson.dumps(config))
+                config_file.write(orjson_dumps(config))
             else:
                 logger.debug(
                     "Setting %s in the file %s\n", config, cls.CONFIG_FILE_NAME
@@ -207,7 +208,7 @@ class BaseConfigManager:
             return cls.CONFIG.read(config_filepath)
         with open(config_filepath, "r") as config_file:
             config_str = config_file.read()
-        return cls.CONFIG(**ujson.loads(config_str))
+        return cls.CONFIG(**orjson.loads(config_str))
 
     @classmethod
     def get_config_defaults(cls) -> Dict:

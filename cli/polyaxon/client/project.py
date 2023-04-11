@@ -19,8 +19,7 @@ from datetime import datetime
 from requests import HTTPError
 from typing import Dict, List, Optional, Tuple, Union
 
-import ujson
-
+from clipped.json_utils import orjson_dumps
 from clipped.path_utils import check_or_create_path, delete_path
 from clipped.query_params import get_query_params
 from clipped.tz_utils import now
@@ -783,7 +782,7 @@ class ProjectClient:
             to_update = False
 
         def _get_content() -> str:
-            return content if isinstance(content, str) else ujson.dumps(content)
+            return content if isinstance(content, str) else orjson_dumps(content)
 
         if content:
             content = _get_content()
@@ -1428,7 +1427,7 @@ class ProjectClient:
         version_path = "{}/{}".format(path, ctx_paths.CONTEXT_LOCAL_VERSION)
         with open(version_path, "w") as config_file:
             config_file.write(
-                ujson.dumps(self.client.sanitize_for_serialization(config))
+                orjson_dumps(self.client.sanitize_for_serialization(config))
             )
         if not config.content:
             return

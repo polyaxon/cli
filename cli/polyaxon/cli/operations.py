@@ -19,7 +19,6 @@ import sys
 from typing import Any
 
 import click
-import ujson
 
 from clipped.csv_utils import write_csv
 from clipped.dict_utils import (
@@ -29,6 +28,7 @@ from clipped.dict_utils import (
     list_dicts_to_tabulate,
 )
 from clipped.formatting import Printer
+from clipped.json_utils import orjson_dumps
 from clipped.list_utils import to_list
 from clipped.response_utils import get_meta_response
 from clipped.validation import validate_tags
@@ -625,7 +625,7 @@ def update(ctx, project, uid, name, description, tags, offline, path):
             for k, v in update_dict.items():
                 setattr(response, k, v)
             with open(offline_path, "w") as config_file:
-                config_file.write(ujson.dumps(response.to_dict()))
+                config_file.write(orjson_dumps(response.to_dict()))
             run_uuid = uid or response.uuid
         except OSError as e:
             Printer.error(

@@ -78,12 +78,12 @@ def notify(
     outputs,
 ):
     """Notifier command."""
-    import ujson
+    import orjson
 
     from polyaxon.lifecycle import V1StatusCondition
     from polyaxon.notifiers import NOTIFIERS, NotificationSpec
 
-    condition = ujson.loads(condition)
+    condition = orjson.loads(condition)
     condition = V1StatusCondition.get_condition(**condition)
     status = status or condition.type
     notification = NotificationSpec(
