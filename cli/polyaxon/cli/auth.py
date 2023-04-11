@@ -33,7 +33,14 @@ from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.user import UserConfigManager
 from polyaxon.schemas.api.authentication import AccessTokenConfig, V1Credentials
 from polyaxon.schemas.responses.v1_auth import V1Auth
+from polyaxon.schemas.responses.v1_user import V1User
 from polyaxon.sdk.exceptions import ApiException
+
+
+def get_user_info(user: V1User):
+    response = dict_to_tabulate(user.to_dict(), exclude_attrs=["role", "theme"])
+    Printer.heading("User info:")
+    Printer.dict_tabulate(response)
 
 
 @click.command()
@@ -119,6 +126,7 @@ def login(token, username, password):
     UserConfigManager.set_config(user)
     polyaxon_client.config.token = access_auth.token
     Printer.success("Login successful")
+    get_user_info(user)
 
     set_versions_config(polyaxon_client=polyaxon_client, set_handler=True)
 
@@ -141,13 +149,10 @@ def whoami():
     try:
         polyaxon_client = PolyaxonClient()
         user = polyaxon_client.users_v1.get_user()
+        get_user_info(user)
     except ApiException as e:
         if e.status == 403:
             session_expired()
         handle_cli_error(e, message="Could not get the user info.", sys_exit=True)
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not load user info.", sys_exit=True)
-
-    response = dict_to_tabulate(user.to_dict(), exclude_attrs=["role", "theme"])
-    Printer.heading("User info:")
-    Printer.dict_tabulate(response)
