@@ -80,7 +80,7 @@ from polyaxon.sdk.exceptions import ApiException
 from polyaxon.stores.polyaxon_store import PolyaxonStore
 from polyaxon.utils.fqn_utils import get_entity_full_name, to_fqn_name
 from polyaxon.utils.urls_utils import get_proxy_run_url
-from traceml.artifacts import V1ArtifactKind, V1RunArtifact
+from traceml.artifacts import V1ArtifactKind, V1RunArtifact, V1RunArtifacts
 from traceml.events import V1Events
 from traceml.logging.streamer import get_logs_streamer
 
@@ -2277,6 +2277,11 @@ class RunClient:
                     b = V1RunArtifact.read(b)
                 self._artifacts_lineage[b.name] = b
             return
+
+        if isinstance(body, (dict, V1RunArtifact)):
+            body = V1RunArtifacts(artifacts=[body])
+        else:
+            body = V1RunArtifacts(artifacts=body)
         self.client.runs_v1.create_run_artifacts_lineage(
             self.owner,
             self.project,
