@@ -28,13 +28,13 @@ from clipped.humanize import humanize_timesince
 from clipped.json_utils import orjson_dumps
 from clipped.string_utils import to_camel_case
 from clipped.tz_utils import get_timezone
+from clipped.units_processors import to_percentage, to_unit_memory
 from pydantic import BaseModel, Extra
 
 from polyaxon import pkg
 from polyaxon.config_reader.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.schemas.patch_strategy import V1PatchStrategy
-from traceml.processors.units_processors import to_percentage, to_unit_memory
 
 
 class BaseSchemaModel(BaseModel):

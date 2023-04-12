@@ -15,12 +15,12 @@
 # limitations under the License.
 from typing import Optional, Union
 
+from clipped.units_processors import to_cpu_value, to_memory_bytes
 from pydantic import StrictStr
 
 from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.schemas.fields import StrictIntOrFloat
-from traceml.processors.units_processors import to_cpu_value, to_memory_bytes
 
 
 class V1RunResources(BaseSchemaModel):

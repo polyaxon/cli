@@ -27,6 +27,7 @@ from clipped.path_utils import (
     get_files_by_paths,
     untar_file,
 )
+from clipped.units_processors import format_sizeof
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 from polyaxon import settings
@@ -38,7 +39,6 @@ from polyaxon.exceptions import (
     PolyaxonShouldExitError,
 )
 from polyaxon.logger import logger
-from traceml.processors.units_processors import format_sizeof
 
 
 class PolyaxonStore:
