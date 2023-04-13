@@ -16,7 +16,7 @@
 
 import pytest
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.schemas import V1ClaimConnection

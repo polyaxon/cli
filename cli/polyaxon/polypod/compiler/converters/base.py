@@ -18,10 +18,10 @@ import copy
 
 from typing import Any, Dict, Iterable, List, Optional
 
-from clipped.http_utils import clean_host
-from clipped.list_utils import to_list
-from clipped.sanitizers import sanitize_string_dict
-from clipped.string_utils import slugify
+from clipped.utils.http import clean_host
+from clipped.utils.lists import to_list
+from clipped.utils.sanitizers import sanitize_string_dict
+from clipped.utils.strings import slugify
 
 from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1

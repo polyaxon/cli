@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clipped.units_processors import to_cpu_value, to_memory_bytes
+from clipped.utils.units import to_cpu_value, to_memory_bytes
 
 from polyaxon.constants.globals import UNKNOWN
 

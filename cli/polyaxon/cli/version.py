@@ -18,10 +18,10 @@ import sys
 
 import click
 
-from clipped import indentation
-from clipped.dict_utils import dict_to_tabulate
 from clipped.formatting import Printer
-from clipped.versions import clean_version_for_check, compare_versions
+from clipped.utils import indentation
+from clipped.utils.dicts import dict_to_tabulate
+from clipped.utils.versions import clean_version_for_check, compare_versions
 
 from polyaxon import pkg
 from polyaxon.cli.session import set_versions_config

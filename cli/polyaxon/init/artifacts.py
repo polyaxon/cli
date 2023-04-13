@@ -15,8 +15,8 @@
 # limitations under the License.
 from typing import TYPE_CHECKING, Union
 
-from clipped.enums_utils import get_enum_value
 from clipped.formatting import Printer
+from clipped.utils.enums import get_enum_value
 
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.fs.watcher import FSWatcher

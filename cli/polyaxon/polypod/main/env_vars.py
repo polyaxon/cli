@@ -16,7 +16,7 @@
 
 from typing import Iterable, List
 
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARTIFACTS_STORE_NAME,

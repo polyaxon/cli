@@ -18,7 +18,7 @@ from typing import List, Union
 import click
 
 from clipped.formatting import Printer
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.schemas.types import V1ConnectionType

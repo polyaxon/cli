@@ -20,8 +20,8 @@ from collections import namedtuple
 from datetime import datetime
 from typing import Dict, List, Optional, Set
 
-from clipped.date_utils import path_last_modified
-from clipped.path_utils import get_files_and_dirs_in_path
+from clipped.utils.dates import path_last_modified
+from clipped.utils.paths import get_files_and_dirs_in_path
 
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.schemas.base import BaseSchemaModel

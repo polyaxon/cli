@@ -17,8 +17,8 @@
 from collections.abc import Mapping
 from typing import Dict, List, Optional
 
-from clipped.list_utils import to_list
-from clipped.sanitizers import sanitize_value
+from clipped.utils.lists import to_list
+from clipped.utils.sanitizers import sanitize_value
 
 from polyaxon.containers.names import generate_container_name
 from polyaxon.k8s import k8s_schemas

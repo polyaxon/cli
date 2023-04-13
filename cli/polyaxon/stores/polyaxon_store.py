@@ -20,14 +20,14 @@ import requests
 from typing import Dict, List
 
 from clipped.formatting import Printer
-from clipped.list_utils import to_list
-from clipped.path_utils import (
+from clipped.utils.lists import to_list
+from clipped.utils.paths import (
     check_or_create_path,
     create_tarfile_from_path,
     get_files_by_paths,
     untar_file,
 )
-from clipped.units_processors import format_sizeof
+from clipped.utils.units import format_sizeof
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 from polyaxon import settings

@@ -21,9 +21,9 @@ from typing import Any, Dict, Optional, Type
 
 import orjson
 
-from clipped.enums_utils import PEnum
-from clipped.json_utils import orjson_dumps
-from clipped.path_utils import check_or_create_path
+from clipped.utils.enums import PEnum
+from clipped.utils.json import orjson_dumps
+from clipped.utils.paths import check_or_create_path
 
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.logger import logger

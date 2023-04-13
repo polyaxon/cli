@@ -24,8 +24,8 @@ from json import JSONDecodeError
 from typing import Dict, Union
 from urllib.parse import urlparse
 
-from clipped.bool_utils import strtobool
-from clipped.serialization import (
+from clipped.utils.bools import strtobool
+from clipped.utils.serialization import (
     date_deserialize,
     datetime_deserialize,
     uuid_deserialize,

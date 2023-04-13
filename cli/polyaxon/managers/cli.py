@@ -17,7 +17,7 @@ import datetime
 
 from typing import TYPE_CHECKING, Optional, Type
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 
 from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.cli.cli_config import CliConfig

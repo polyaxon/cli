@@ -18,8 +18,8 @@ import os
 
 from typing import List, Optional, Tuple, Union
 
-from clipped.enums_utils import get_enum_value
-from clipped.list_utils import to_list
+from clipped.utils.enums import get_enum_value
+from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import (

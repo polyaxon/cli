@@ -18,8 +18,8 @@ import sys
 
 import click
 
-from clipped.dict_utils import list_dicts_to_tabulate
 from clipped.formatting import Printer
+from clipped.utils.dicts import list_dicts_to_tabulate
 
 from polyaxon import settings
 from polyaxon.cli.errors import handle_cli_error

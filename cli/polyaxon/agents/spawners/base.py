@@ -15,7 +15,7 @@
 # limitations under the License.
 from typing import Optional
 
-from clipped.enums_utils import get_enum_value
+from clipped.utils.enums import get_enum_value
 from kubernetes.client import Configuration
 
 from polyaxon import settings

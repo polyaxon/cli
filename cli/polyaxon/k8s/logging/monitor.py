@@ -17,7 +17,7 @@
 from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 from kubernetes.client.rest import ApiException
 
 from polyaxon.client import RunClient

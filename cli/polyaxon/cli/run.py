@@ -18,9 +18,9 @@ import sys
 
 import click
 
-from clipped import git_utils
 from clipped.formatting import Printer
-from clipped.validation import validate_tags
+from clipped.utils import git as git_utils
+from clipped.utils.validation import validate_tags
 from pydantic import ValidationError
 
 from polyaxon import settings

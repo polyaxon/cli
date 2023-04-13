@@ -19,8 +19,8 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional, Tuple
 
-from clipped.tz_utils import now
-from clipped.workers_utils import exit_context, get_pool_workers, get_wait
+from clipped.utils.tz import now
+from clipped.utils.workers import exit_context, get_pool_workers, get_wait
 from kubernetes.client.rest import ApiException
 
 from polyaxon import live_state, settings

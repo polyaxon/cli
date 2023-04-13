@@ -17,7 +17,7 @@
 from requests import RequestException
 from typing import Dict, List
 
-from clipped.requests_utils import safe_request
+from clipped.utils.requests import safe_request
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.logger import logger

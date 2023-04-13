@@ -17,9 +17,9 @@
 from collections import namedtuple
 from typing import Any, Callable, Optional
 
-from clipped.bool_utils import to_bool
-from clipped.date_utils import DateTimeFormatter, DateTimeFormatterException
-from clipped.list_utils import to_list
+from clipped.utils.bools import to_bool
+from clipped.utils.dates import DateTimeFormatter, DateTimeFormatterException
+from clipped.utils.lists import to_list
 
 from polyaxon.exceptions import PQLException
 

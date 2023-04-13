@@ -23,12 +23,12 @@ from typing import Any, Callable, Dict, Optional
 
 import orjson
 
-from clipped.dict_utils import deep_update
-from clipped.humanize import humanize_timesince
-from clipped.json_utils import orjson_dumps
-from clipped.string_utils import to_camel_case
-from clipped.tz_utils import get_timezone
-from clipped.units_processors import to_percentage, to_unit_memory
+from clipped.utils.dicts import deep_update
+from clipped.utils.humanize import humanize_timesince
+from clipped.utils.json import orjson_dumps
+from clipped.utils.strings import to_camel_case
+from clipped.utils.tz import get_timezone
+from clipped.utils.units import to_percentage, to_unit_memory
 from pydantic import BaseModel, Extra
 
 from polyaxon import pkg

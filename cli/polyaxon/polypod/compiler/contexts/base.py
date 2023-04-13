@@ -17,7 +17,7 @@
 
 from typing import Dict, List
 
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.polyflow import V1CompiledOperation, V1Init
 from polyaxon.schemas.types import V1ConnectionType

@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 
 from polyaxon.lifecycle import LifeCycle, V1Statuses
 from polyaxon.utils.test_utils import BaseTestCase

@@ -20,18 +20,18 @@ from typing import Any
 
 import click
 
-from clipped.csv_utils import write_csv
-from clipped.dict_utils import (
+from clipped.formatting import Printer
+from clipped.utils.csv import write_csv
+from clipped.utils.dicts import (
     dict_to_tabulate,
     flatten_keys,
     list_dicts_to_csv,
     list_dicts_to_tabulate,
 )
-from clipped.formatting import Printer
-from clipped.json_utils import orjson_dumps
-from clipped.list_utils import to_list
-from clipped.response_utils import get_meta_response
-from clipped.validation import validate_tags
+from clipped.utils.json import orjson_dumps
+from clipped.utils.lists import to_list
+from clipped.utils.responses import get_meta_response
+from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
 from polyaxon.api import (

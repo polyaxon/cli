@@ -18,7 +18,7 @@ import sys
 import click
 
 from clipped.formatting import Printer
-from clipped.path_utils import copy_file
+from clipped.utils.paths import copy_file
 from pydantic import ValidationError
 
 from polyaxon.builds.generator import DockerFileGenerator
@@ -77,7 +77,7 @@ def generate(
     polyaxonfile, python_module, build_context, destination, copy_path, params, track
 ):
     """Generate a dockerfile given the polyaxonfile."""
-    from clipped.hashing import hash_value
+    from clipped.utils.hashing import hash_value
 
     from polyaxon.init.dockerfile import create_dockerfile_lineage
 

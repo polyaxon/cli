@@ -15,7 +15,7 @@
 # limitations under the License.
 from typing import Optional, Union
 
-from clipped.units_processors import to_cpu_value, to_memory_bytes
+from clipped.utils.units import to_cpu_value, to_memory_bytes
 from pydantic import StrictStr
 
 from polyaxon.k8s.k8s_schemas import V1Container

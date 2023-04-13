@@ -19,8 +19,8 @@ import sys
 
 import click
 
-from clipped import indentation
 from clipped.formatting import Printer
+from clipped.utils import indentation
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.errors import handle_cli_error

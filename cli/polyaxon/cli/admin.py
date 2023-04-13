@@ -20,8 +20,8 @@ import time
 import click
 
 from clipped.formatting import Printer
-from clipped.list_utils import to_list
-from clipped.validation import validate_tags
+from clipped.utils.lists import to_list
+from clipped.utils.validation import validate_tags
 
 from polyaxon.cli.dashboard import get_dashboard, get_dashboard_url
 from polyaxon.cli.errors import handle_cli_error

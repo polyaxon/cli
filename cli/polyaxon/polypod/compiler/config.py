@@ -15,7 +15,7 @@
 # limitations under the License.
 from typing import TYPE_CHECKING, Dict, List, Optional
 
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 from pydantic import Field
 
 from polyaxon import settings

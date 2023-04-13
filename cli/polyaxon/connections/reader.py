@@ -18,7 +18,7 @@ import os
 
 from typing import Any, List, Optional, Set, Union
 
-from clipped.path_utils import check_dirname_exists
+from clipped.utils.paths import check_dirname_exists
 from pydantic import ValidationError
 
 from polyaxon.env_vars.keys import (

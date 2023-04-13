@@ -16,7 +16,7 @@
 
 from datetime import timedelta
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 
 from polyaxon.polyflow import (
     V1HpRange,

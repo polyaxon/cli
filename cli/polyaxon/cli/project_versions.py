@@ -19,11 +19,11 @@ from typing import Callable, List, Optional, Union
 
 import click
 
-from clipped.dict_utils import dict_to_tabulate, list_dicts_to_tabulate
 from clipped.formatting import Printer
-from clipped.query_params import get_query_params
-from clipped.response_utils import get_meta_response
-from clipped.validation import validate_tags
+from clipped.utils.dicts import dict_to_tabulate, list_dicts_to_tabulate
+from clipped.utils.query_params import get_query_params
+from clipped.utils.responses import get_meta_response
+from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.dashboard import get_dashboard_url

@@ -16,7 +16,7 @@
 import asyncio
 import os
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 from kubernetes_asyncio.client.rest import ApiException
 
 from polyaxon.client import RunClient

@@ -21,8 +21,8 @@ from collections import namedtuple
 from pathlib import PurePath
 from typing import List, Optional
 
-from clipped.list_utils import to_list
-from clipped.path_utils import unix_style_path
+from clipped.utils.lists import to_list
+from clipped.utils.paths import unix_style_path
 
 from polyaxon.logger import logger
 from polyaxon.managers.base import BaseConfigManager, ManagerVisibility

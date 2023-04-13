@@ -17,7 +17,7 @@ import os
 
 from typing import List, Optional
 
-from clipped.enums_utils import get_enum_value
+from clipped.utils.enums import get_enum_value
 
 from polyaxon import pkg
 from polyaxon.containers.names import MAIN_JOB_CONTAINER

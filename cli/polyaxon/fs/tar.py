@@ -18,7 +18,7 @@ import os
 
 from typing import List, Optional
 
-from clipped.path_utils import create_tarfile, get_files_in_path
+from clipped.utils.paths import create_tarfile, get_files_in_path
 
 from polyaxon import settings
 

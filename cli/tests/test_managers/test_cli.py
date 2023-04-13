@@ -21,7 +21,7 @@ import uuid
 from datetime import timedelta
 from mock import patch
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 
 from polyaxon.managers.cli import CliConfigManager
 from polyaxon.schemas.cli.cli_config import CliConfig

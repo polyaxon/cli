@@ -19,7 +19,7 @@ import tempfile
 
 from datetime import timedelta
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 
 from polyaxon.env_vars.keys import EV_KEYS_INTERVALS_COMPATIBILITY_CHECK
 from polyaxon.schemas.cli.checks_config import ChecksConfig

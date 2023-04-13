@@ -16,8 +16,8 @@
 
 from typing import Dict, List, Optional, Tuple
 
-from clipped.list_utils import to_list
-from clipped.sanitizers import sanitize_string_dict
+from clipped.utils.lists import to_list
+from clipped.utils.sanitizers import sanitize_string_dict
 
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas

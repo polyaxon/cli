@@ -5,8 +5,8 @@ from typing import Dict, List, Union
 import click
 
 from clipped.formatting import Printer
-from clipped.list_utils import to_list
-from clipped.units_processors import to_percentage, to_unit_memory
+from clipped.utils.lists import to_list
+from clipped.utils.units import to_percentage, to_unit_memory
 
 from polyaxon.schemas.api.resources import ContainerResourcesConfig
 

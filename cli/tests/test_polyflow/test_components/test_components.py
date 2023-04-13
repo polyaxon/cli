@@ -16,7 +16,7 @@
 
 import pytest
 
-from clipped.tz_utils import local_datetime, now
+from clipped.utils.tz import local_datetime, now
 from pydantic import ValidationError
 
 from polyaxon import types

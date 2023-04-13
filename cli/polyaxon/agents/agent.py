@@ -20,7 +20,7 @@ import time
 
 from typing import Dict, Optional
 
-from clipped.versions import clean_version_for_check
+from clipped.utils.versions import clean_version_for_check
 from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg, settings

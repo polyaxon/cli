@@ -19,7 +19,7 @@ import subprocess
 import sys
 
 from clipped.formatting import Printer
-from clipped.hashing import hash_value
+from clipped.utils.hashing import hash_value
 
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.deploy.operators.conda import CondaOperator

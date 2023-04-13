@@ -22,8 +22,8 @@ from collections.abc import Mapping
 from typing import List, Optional
 from unittest import TestCase, mock
 
-from clipped.json_utils import orjson_dumps
-from clipped.path_utils import delete_path
+from clipped.utils.json import orjson_dumps
+from clipped.utils.paths import delete_path
 
 from polyaxon import dist, settings
 from polyaxon.connections.kinds import V1ConnectionKind

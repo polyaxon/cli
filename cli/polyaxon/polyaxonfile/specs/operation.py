@@ -16,7 +16,7 @@
 
 from typing import Dict, Optional, Type
 
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.polyaxonfile.specs import kinds

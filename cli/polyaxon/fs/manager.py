@@ -16,8 +16,8 @@
 
 from typing import List, Union
 
-from clipped.list_utils import to_list
-from clipped.path_utils import check_or_create_path
+from clipped.utils.lists import to_list
+from clipped.utils.paths import check_or_create_path
 from fsspec import AbstractFileSystem
 
 from polyaxon.logger import logger

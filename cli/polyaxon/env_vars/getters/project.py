@@ -17,7 +17,7 @@
 import sys
 
 from clipped.formatting import Printer
-from clipped.string_utils import validate_slug
+from clipped.utils.strings import validate_slug
 
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.env_vars.getters.user import get_local_owner

@@ -16,7 +16,7 @@
 
 import pytest
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 from pydantic import ValidationError
 
 from polyaxon import types

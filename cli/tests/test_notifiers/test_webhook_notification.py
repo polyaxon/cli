@@ -20,7 +20,7 @@ import uuid
 
 from unittest.mock import patch
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.exceptions import PolyaxonNotificationException

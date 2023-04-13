@@ -26,23 +26,23 @@ from urllib.parse import urlparse
 
 import orjson
 
-from clipped.date_utils import file_modified_since
 from clipped.formatting import Printer
-from clipped.git_utils import get_code_reference
-from clipped.hashing import hash_dir, hash_file, hash_value
-from clipped.http_utils import absolute_uri
-from clipped.json_utils import orjson_dumps
-from clipped.list_utils import to_list
-from clipped.path_utils import (
+from clipped.utils.dates import file_modified_since
+from clipped.utils.git import get_code_reference
+from clipped.utils.hashing import hash_dir, hash_file, hash_value
+from clipped.utils.http import absolute_uri
+from clipped.utils.json import orjson_dumps
+from clipped.utils.lists import to_list
+from clipped.utils.paths import (
     check_or_create_path,
     delete_path,
     get_base_filename,
     get_dirs_under_path,
     get_files_in_path_context,
 )
-from clipped.query_params import get_logs_params, get_query_params
-from clipped.tz_utils import now
-from clipped.validation import validate_tags
+from clipped.utils.query_params import get_logs_params, get_query_params
+from clipped.utils.tz import now
+from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings

@@ -18,7 +18,7 @@ import pytest
 
 from datetime import date, datetime, timedelta
 
-from clipped.json_utils import orjson_dumps
+from clipped.utils.json import orjson_dumps
 from pydantic import ValidationError
 
 from hypertune.matrix.utils import get_length, get_max, get_min, sample, to_numpy

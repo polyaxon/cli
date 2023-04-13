@@ -16,7 +16,7 @@
 
 from typing import Dict, Iterable, List, Optional
 
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init

@@ -16,7 +16,7 @@
 
 from typing import List, Optional, Tuple
 
-from clipped.tz_utils import now
+from clipped.utils.tz import now
 from kubernetes_asyncio.client.models import V1Pod
 from kubernetes_asyncio.client.rest import ApiException
 

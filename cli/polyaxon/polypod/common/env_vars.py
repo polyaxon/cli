@@ -19,8 +19,8 @@ import os
 
 from typing import Any, Iterable, List, Optional
 
-from clipped.enums_utils import get_enum_value
-from clipped.list_utils import to_list
+from clipped.utils.enums import get_enum_value
+from clipped.utils.lists import to_list
 
 from polyaxon.connections.reader import (
     get_connection_context_path_env_name,

@@ -19,10 +19,10 @@ from typing import Any, Dict, List, Optional, Union
 
 import aiofiles
 
-from clipped.coroutine import run_sync
-from clipped.hashing import hash_value
-from clipped.list_utils import to_list
-from clipped.path_utils import check_or_create_path
+from clipped.utils.coroutine import run_sync
+from clipped.utils.hashing import hash_value
+from clipped.utils.lists import to_list
+from clipped.utils.paths import check_or_create_path
 
 from polyaxon import settings
 from polyaxon.fs.tar import tar_dir

@@ -16,7 +16,7 @@
 
 from typing import List
 
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import INIT_AUTH_CONTAINER

@@ -23,7 +23,7 @@ from enum import Enum
 from typing import Dict
 from uuid import UUID
 
-from clipped.serialization import (
+from clipped.utils.serialization import (
     date_serialize,
     datetime_serialize,
     timedelta_serialize,

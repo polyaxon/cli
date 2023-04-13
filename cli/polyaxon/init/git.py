@@ -18,7 +18,7 @@ import os
 
 from typing import List, Optional
 
-from clipped.git_utils import (
+from clipped.utils.git import (
     add_remote,
     checkout_revision,
     get_code_reference,
@@ -27,7 +27,7 @@ from clipped.git_utils import (
     set_remote,
     update_submodules,
 )
-from clipped.path_utils import check_or_create_path
+from clipped.utils.paths import check_or_create_path
 from git import Repo as GitRepo
 
 from polyaxon.client.init import get_client_or_raise

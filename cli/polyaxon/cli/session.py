@@ -19,10 +19,10 @@ import uuid
 
 from typing import Optional
 
-from clipped.enums_utils import get_enum_value
 from clipped.formatting import Printer
-from clipped.tz_utils import now
-from clipped.versions import clean_version_for_compatibility
+from clipped.utils.enums import get_enum_value
+from clipped.utils.tz import now
+from clipped.utils.versions import clean_version_for_compatibility
 from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg

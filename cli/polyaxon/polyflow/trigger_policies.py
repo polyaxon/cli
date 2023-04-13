@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clipped.enums_utils import PEnum
+from clipped.utils.enums import PEnum
 
 from polyaxon.lifecycle import V1Statuses
 

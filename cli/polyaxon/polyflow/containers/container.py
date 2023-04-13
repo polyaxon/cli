@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clipped.list_utils import to_list
-from clipped.string_utils import strip_spaces
+from clipped.utils.lists import to_list
+from clipped.utils.strings import strip_spaces
 
 
 def get_container_command_args(config):

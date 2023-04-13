@@ -17,8 +17,8 @@ import pytest
 
 from typing import List
 
-from clipped.json_utils import orjson_dumps
-from clipped.tz_utils import now
+from clipped.utils.json import orjson_dumps
+from clipped.utils.tz import now
 from pydantic import ValidationError
 
 from polyaxon.polyflow.schedules import (

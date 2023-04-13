@@ -16,7 +16,7 @@
 from typing import Optional, Union
 from typing_extensions import Literal
 
-from clipped.enums_utils import PEnum
+from clipped.utils.enums import PEnum
 from pydantic import Field
 
 from polyaxon.k8s.k8s_schemas import V1Container

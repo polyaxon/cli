@@ -19,7 +19,7 @@ import sys
 import click
 
 from clipped.formatting import Printer
-from clipped.http_utils import clean_host
+from clipped.utils.http import clean_host
 
 from polyaxon import settings
 from polyaxon.api import POLYAXON_CLOUD_HOST

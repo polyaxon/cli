@@ -15,7 +15,7 @@
 # limitations under the License.
 from typing import List, Union
 
-from clipped.enums_utils import PEnum
+from clipped.utils.enums import PEnum
 from pydantic import StrictStr
 
 from polyaxon.contexts import refs as ctx_refs

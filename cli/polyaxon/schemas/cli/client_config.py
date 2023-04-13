@@ -17,7 +17,7 @@ from typing import Dict, Optional, Union
 
 import urllib3
 
-from clipped.http_utils import clean_host
+from clipped.utils.http import clean_host
 from pydantic import Extra, Field, StrictStr
 
 from polyaxon.api import LOCALHOST, POLYAXON_CLOUD_HOST

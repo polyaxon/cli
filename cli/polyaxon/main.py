@@ -18,8 +18,8 @@ import os
 
 import click
 
-from clipped.bool_utils import to_bool
 from clipped.formatting import Printer
+from clipped.utils.bools import to_bool
 
 from polyaxon import settings
 from polyaxon.cli.admin import admin

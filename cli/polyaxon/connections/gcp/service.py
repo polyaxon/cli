@@ -19,7 +19,7 @@ import os
 
 from typing import TYPE_CHECKING, List, Optional
 
-from clipped.path_utils import create_project_tmp
+from clipped.utils.paths import create_project_tmp
 
 from polyaxon.connections.base import BaseService
 from polyaxon.connections.gcp.base import get_gc_client

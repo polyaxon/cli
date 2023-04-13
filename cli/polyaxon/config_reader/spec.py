@@ -24,8 +24,8 @@ from requests import HTTPError
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
-from clipped.dict_utils import deep_update
-from clipped.list_utils import to_list
+from clipped.utils.dicts import deep_update
+from clipped.utils.lists import to_list
 
 from polyaxon.env_vars.keys import EV_KEYS_PUBLIC_REGISTRY, EV_KEYS_USE_GIT_REGISTRY
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
@@ -122,7 +122,7 @@ class ConfigSpec:
 
 
 def _read_from_url(url: str):
-    from clipped.requests_utils import safe_request
+    from clipped.utils.requests import safe_request
 
     resp = safe_request(url)
     resp.raise_for_status()

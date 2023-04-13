@@ -20,7 +20,7 @@ from collections import OrderedDict
 from typing import Dict, List, Optional, Union
 
 from clipped.formatting import Printer
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.config_reader.spec import ConfigSpec

@@ -18,7 +18,7 @@ import os
 
 from typing import List, Tuple, Union
 
-from clipped.list_utils import to_list
+from clipped.utils.lists import to_list
 
 from polyaxon.builds.generator.dockerfile import POLYAXON_DOCKER_TEMPLATE
 from polyaxon.schemas.types import V1DockerfileType

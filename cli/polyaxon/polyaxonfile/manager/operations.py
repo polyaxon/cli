@@ -18,7 +18,7 @@ import copy
 from collections.abc import Mapping
 from typing import Dict, List, Optional, Union
 
-from clipped.bool_utils import to_bool
+from clipped.utils.bools import to_bool
 
 from polyaxon import pkg
 from polyaxon.env_vars.getters.queue import get_queue_info

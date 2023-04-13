@@ -18,8 +18,8 @@ import os
 
 from typing import TYPE_CHECKING, Optional
 
-from clipped.bool_utils import to_bool
 from clipped.formatting import Printer
+from clipped.utils.bools import to_bool
 from pydantic import ValidationError
 
 from polyaxon.api import LOCALHOST

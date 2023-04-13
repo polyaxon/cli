@@ -18,7 +18,7 @@ from typing import Optional
 
 import aiofiles
 
-from clipped.path_utils import check_or_create_path, delete_path
+from clipped.utils.paths import check_or_create_path, delete_path
 from kubernetes_asyncio.client.models import V1Pod
 
 from polyaxon.contexts import paths as ctx_paths

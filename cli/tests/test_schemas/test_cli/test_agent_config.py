@@ -16,7 +16,7 @@
 
 import pytest
 
-from clipped.json_utils import orjson_dumps
+from clipped.utils.json import orjson_dumps
 from pydantic import ValidationError
 
 from polyaxon.connections.kinds import V1ConnectionKind

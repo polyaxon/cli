@@ -18,7 +18,7 @@ import os
 
 from typing import Optional
 
-from clipped.enums_utils import get_enum_value
+from clipped.utils.enums import get_enum_value
 
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARCHIVES_ROOT,

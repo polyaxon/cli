@@ -16,7 +16,7 @@
 
 from typing import Dict
 
-from clipped.date_utils import to_timestamp
+from clipped.utils.dates import to_timestamp
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.notifiers.keys import INTEGRATIONS_WEBHOOKS_SLACK

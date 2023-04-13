@@ -18,10 +18,10 @@ import sys
 
 import click
 
-from clipped.dict_utils import list_dicts_to_tabulate
 from clipped.formatting import Printer
-from clipped.response_utils import get_meta_response
-from clipped.validation import validate_tags
+from clipped.utils.dicts import list_dicts_to_tabulate
+from clipped.utils.responses import get_meta_response
+from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
 from polyaxon.cli.dashboard import get_dashboard_url

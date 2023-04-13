@@ -16,7 +16,7 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
-from clipped.enums_utils import PEnum
+from clipped.utils.enums import PEnum
 from pydantic import Field, PositiveInt, validator
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping

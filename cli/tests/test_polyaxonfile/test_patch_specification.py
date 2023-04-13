@@ -16,8 +16,8 @@
 
 import pytest
 
-from clipped.dict_utils import deep_update
-from clipped.tz_utils import now
+from clipped.utils.dicts import deep_update
+from clipped.utils.tz import now
 
 from polyaxon import pkg, types
 from polyaxon.containers.names import MAIN_JOB_CONTAINER

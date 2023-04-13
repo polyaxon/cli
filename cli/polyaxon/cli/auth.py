@@ -18,8 +18,8 @@ import sys
 
 import click
 
-from clipped.dict_utils import dict_to_tabulate
 from clipped.formatting import Printer
+from clipped.utils.dicts import dict_to_tabulate
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clipped.enums_utils import PEnum
+from clipped.utils.enums import PEnum
 
 
 class V1CleanPodPolicy(str, PEnum):

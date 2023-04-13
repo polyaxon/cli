@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from clipped.dict_utils import dict_to_tabulate
 from clipped.formatting import Printer
-from clipped.json_utils import orjson_dumps
+from clipped.utils.dicts import dict_to_tabulate
+from clipped.utils.json import orjson_dumps
 
 
 def get_entity_details(entity: any, entity_name: str):

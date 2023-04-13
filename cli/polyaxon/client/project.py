@@ -19,11 +19,11 @@ from datetime import datetime
 from requests import HTTPError
 from typing import Dict, List, Optional, Tuple, Union
 
-from clipped.json_utils import orjson_dumps
-from clipped.path_utils import check_or_create_path, delete_path
-from clipped.query_params import get_query_params
-from clipped.tz_utils import now
-from clipped.validation import validate_tags
+from clipped.utils.json import orjson_dumps
+from clipped.utils.paths import check_or_create_path, delete_path
+from clipped.utils.query_params import get_query_params
+from clipped.utils.tz import now
+from clipped.utils.validation import validate_tags
 
 from polyaxon.client.client import PolyaxonClient
 from polyaxon.client.decorators import client_handler, get_global_or_inline_config

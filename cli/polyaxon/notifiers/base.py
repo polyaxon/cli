@@ -17,8 +17,8 @@ import os
 
 from typing import Any, Dict, List, Optional, Union
 
-from clipped.http_utils import add_notification_referrer_param, clean_host
-from clipped.list_utils import to_list
+from clipped.utils.http import add_notification_referrer_param, clean_host
+from clipped.utils.lists import to_list
 
 from polyaxon import settings
 from polyaxon.exceptions import PolyaxonNotificationException

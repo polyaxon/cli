@@ -17,8 +17,8 @@ import os
 
 from typing import List, Optional
 
-from clipped.json_utils import orjson_dumps
-from clipped.list_utils import to_list
+from clipped.utils.json import orjson_dumps
+from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.connections.kinds import V1ConnectionKind

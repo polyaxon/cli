@@ -16,9 +16,9 @@
 
 from typing import List, Optional
 
-from clipped.enums_utils import get_enum_value
-from clipped.list_utils import to_list
-from clipped.validation import validate_tags
+from clipped.utils.enums import get_enum_value
+from clipped.utils.lists import to_list
+from clipped.utils.validation import validate_tags
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import (

@@ -17,7 +17,7 @@ import os
 
 from typing import Optional
 
-from clipped.enums_utils import PEnum
+from clipped.utils.enums import PEnum
 
 from polyaxon.env_vars.keys import EV_KEYS_SERVICE
 
