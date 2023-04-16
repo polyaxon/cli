@@ -19,7 +19,6 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple
 
 from clipped.utils.dates import path_last_modified
-from clipped.utils.json import orjson_dumps
 from clipped.utils.paths import get_files_and_dirs_in_path
 
 from polyaxon.contexts import paths as ctx_paths
@@ -29,12 +28,17 @@ from polyaxon.schemas.base import BaseSchemaModel
 class PathData(BaseSchemaModel):
     __root__: Tuple[str, datetime, str]
 
+    class Config(BaseSchemaModel.Config):
+        validate_assignment = False
+
     @property
     def base(self) -> str:
         return self.__root__[0]
 
     @property
     def ts(self) -> datetime:
+        if isinstance(self.__root__[1], str):
+            self.__root__ = (self.__root__[0], datetime.fromisoformat(self.__root__[1]), self.__root__[1])
         return self.__root__[1]
 
     @property
@@ -52,12 +56,16 @@ class FSWatcher(BaseSchemaModel):
     dir_mapping: Optional[Dict[str, PathData]]
     file_mapping: Optional[Dict[str, PathData]]
 
+    @property
+    def dirs_mp(self) -> Dict[str, PathData]:
+        return self.dir_mapping or {}
+
+    @property
+    def files_mp(self) -> Dict[str, PathData]:
+        return self.file_mapping or {}
+
     class Config(BaseSchemaModel.Config):
         validate_assignment = False
-
-    @classmethod
-    def _dump(cls, obj_dict: Dict) -> str:
-        return orjson_dumps(obj_dict)
 
     @staticmethod
     def delete(path: str):
@@ -74,27 +82,27 @@ class FSWatcher(BaseSchemaModel):
         data = mapping.get(rel_path)
         if data:
             if current_ts > data.ts:
-                mapping[rel_path] = PathData.construct(base_path, current_ts, self._PUT)
+                mapping[rel_path] = PathData.construct(__root__=(base_path, current_ts, self._PUT))
             else:
-                mapping[rel_path] = PathData.construct(base_path, data.ts, self._NOOP)
+                mapping[rel_path] = PathData.construct(__root__=(base_path, data.ts, self._NOOP))
         else:
-            mapping[rel_path] = PathData.construct(base_path, current_ts, self._PUT)
+            mapping[rel_path] = PathData.construct(__root__=(base_path, current_ts, self._PUT))
         return mapping
 
     def sync_file(self, path: str, base_path: str):
-        self.file_mapping = self._sync_path(path, base_path, self.file_mapping)
+        self.file_mapping = self._sync_path(path, base_path, self.files_mp)
 
     def sync_dir(self, path: str, base_path: str):
-        self.dir_mapping = self._sync_path(path, base_path, self.dir_mapping)
+        self.dir_mapping = self._sync_path(path, base_path, self.dirs_mp)
 
     def init(self):
         self.dir_mapping = {
-            p: PathData.construct(d.base, d.ts, self._RM)
-            for p, d in self.dir_mapping.items()
+            p: PathData.construct(__root__=(d.base, d.ts, self._RM))
+            for p, d in self.dirs_mp.items()
         }
         self.file_mapping = {
-            p: PathData.construct(d.base, d.ts, self._RM)
-            for p, d in self.file_mapping.items()
+            p: PathData.construct(__root__=(d.base, d.ts, self._RM))
+            for p, d in self.files_mp.items()
         }
 
     def sync(self, path: str, exclude: Optional[List[str]] = None):
@@ -115,17 +123,17 @@ class FSWatcher(BaseSchemaModel):
         return {k: p for k, p in mapping.items() if p.op != op}
 
     def get_files_to_put(self) -> Set:
-        return self._get_mapping_by_op(self.file_mapping, self._PUT)
+        return self._get_mapping_by_op(self.files_mp, self._PUT)
 
     def get_files_to_rm(self) -> Set:
-        results = self._get_mapping_by_op(self.file_mapping, self._RM)
-        self.file_mapping = self._clean_by_op(self.file_mapping, self._RM)
+        results = self._get_mapping_by_op(self.files_mp, self._RM)
+        self.file_mapping = self._clean_by_op(self.files_mp, self._RM)
         return results
 
     def get_dirs_to_put(self) -> Set:
-        return self._get_mapping_by_op(self.dir_mapping, self._PUT)
+        return self._get_mapping_by_op(self.dirs_mp, self._PUT)
 
     def get_dirs_to_rm(self) -> Set:
-        results = self._get_mapping_by_op(self.dir_mapping, self._RM)
-        self.file_mapping = self._clean_by_op(self.file_mapping, self._RM)
+        results = self._get_mapping_by_op(self.dirs_mp, self._RM)
+        self.file_mapping = self._clean_by_op(self.dirs_mp, self._RM)
         return results
