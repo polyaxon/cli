@@ -15,9 +15,8 @@
 # limitations under the License.
 import os
 
-from collections import namedtuple
 from datetime import datetime
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 from clipped.utils.dates import path_last_modified
 from clipped.utils.json import orjson_dumps
@@ -27,77 +26,47 @@ from polyaxon.contexts import paths as ctx_paths
 from polyaxon.schemas.base import BaseSchemaModel
 
 
-class PathData(namedtuple("PathData", "base ts op")):
-    pass
+class PathData(BaseSchemaModel):
+    __root__: Tuple[str, datetime, str]
+
+    @property
+    def base(self) -> str:
+        return self.__root__[0]
+
+    @property
+    def ts(self) -> datetime:
+        return self.__root__[1]
+
+    @property
+    def op(self) -> str:
+        return self.__root__[2]
 
 
-class FSWatcherConfig(BaseSchemaModel):
+class FSWatcher(BaseSchemaModel):
     _IDENTIFIER = "fswatcher"
 
-    dir_mapping: Optional[Dict]
-    file_mapping: Optional[Dict]
+    _PUT = "put"
+    _RM = "rm"
+    _NOOP = ""
 
-    @staticmethod
-    def _datetime_handler(value: datetime) -> str:
-        if isinstance(value, datetime):
-            return value.isoformat()
-        raise TypeError("Unknown type")
+    dir_mapping: Optional[Dict[str, PathData]]
+    file_mapping: Optional[Dict[str, PathData]]
+
+    class Config(BaseSchemaModel.Config):
+        validate_assignment = False
 
     @classmethod
     def _dump(cls, obj_dict: Dict) -> str:
-        return orjson_dumps(obj_dict, default=cls._datetime_handler)
-
-    @staticmethod
-    def _parse_mapping(mapping: Optional[Dict]) -> Optional[Dict]:
-        if not mapping:
-            return None
-        return {
-            k: PathData(v[0], datetime.fromisoformat(v[1]), v[2])
-            for k, v in mapping.items()
-        }
+        return orjson_dumps(obj_dict)
 
     @staticmethod
     def delete(path: str):
         if os.path.exists(path):
             os.remove(path)
 
-    def get_dir_mapping(self) -> Optional[Dict]:
-        return self._parse_mapping(self.dir_mapping)
-
-    def get_file_mapping(self) -> Optional[Dict]:
-        return self._parse_mapping(self.file_mapping)
-
-
-class FSWatcher:
-    PUT = "put"
-    RM = "rm"
-    NOOP = ""
-
-    def __init__(
-        self, dir_mapping: Optional[Dict] = None, file_mapping: Optional[Dict] = None
-    ):
-        self._dir_mapping = dir_mapping or {}
-        self._file_mapping = file_mapping or {}
-
-    @classmethod
-    def read(
-        cls, config_path: str = ctx_paths.CONTEXT_MOUNT_FILE_WATCHER
-    ) -> "FSWatcher":
-        if not os.path.exists(config_path):
-            return cls()
-        config = FSWatcherConfig.read(config_path)
-        return cls(
-            dir_mapping=config.get_dir_mapping(), file_mapping=config.get_file_mapping()
-        )
-
-    def write(self, config_path: str = ctx_paths.CONTEXT_MOUNT_FILE_WATCHER):
-        config = FSWatcherConfig.read(
-            {
-                "dir_mapping": self._dir_mapping,
-                "file_mapping": self._file_mapping,
-            }
-        )
-        return config.write(config_path)
+    def write(self, filepath: str, mode: Optional[int] = None):
+        filepath = filepath or ctx_paths.CONTEXT_MOUNT_FILE_WATCHER
+        return super().write(filepath=filepath, mode=mode)
 
     def _sync_path(self, path: str, base_path: str, mapping: Dict) -> Dict:
         current_ts = path_last_modified(path)
@@ -105,25 +74,27 @@ class FSWatcher:
         data = mapping.get(rel_path)
         if data:
             if current_ts > data.ts:
-                mapping[rel_path] = PathData(base_path, current_ts, self.PUT)
+                mapping[rel_path] = PathData.construct(base_path, current_ts, self._PUT)
             else:
-                mapping[rel_path] = PathData(base_path, data.ts, self.NOOP)
+                mapping[rel_path] = PathData.construct(base_path, data.ts, self._NOOP)
         else:
-            mapping[rel_path] = PathData(base_path, current_ts, self.PUT)
+            mapping[rel_path] = PathData.construct(base_path, current_ts, self._PUT)
         return mapping
 
     def sync_file(self, path: str, base_path: str):
-        self._file_mapping = self._sync_path(path, base_path, self._file_mapping)
+        self.file_mapping = self._sync_path(path, base_path, self.file_mapping)
 
     def sync_dir(self, path: str, base_path: str):
-        self._dir_mapping = self._sync_path(path, base_path, self._dir_mapping)
+        self.dir_mapping = self._sync_path(path, base_path, self.dir_mapping)
 
     def init(self):
-        self._dir_mapping = {
-            p: PathData(d.base, d.ts, self.RM) for p, d in self._dir_mapping.items()
+        self.dir_mapping = {
+            p: PathData.construct(d.base, d.ts, self._RM)
+            for p, d in self.dir_mapping.items()
         }
-        self._file_mapping = {
-            p: PathData(d.base, d.ts, self.RM) for p, d in self._file_mapping.items()
+        self.file_mapping = {
+            p: PathData.construct(d.base, d.ts, self._RM)
+            for p, d in self.file_mapping.items()
         }
 
     def sync(self, path: str, exclude: Optional[List[str]] = None):
@@ -144,17 +115,17 @@ class FSWatcher:
         return {k: p for k, p in mapping.items() if p.op != op}
 
     def get_files_to_put(self) -> Set:
-        return self._get_mapping_by_op(self._file_mapping, self.PUT)
+        return self._get_mapping_by_op(self.file_mapping, self._PUT)
 
     def get_files_to_rm(self) -> Set:
-        results = self._get_mapping_by_op(self._file_mapping, self.RM)
-        self._file_mapping = self._clean_by_op(self._file_mapping, self.RM)
+        results = self._get_mapping_by_op(self.file_mapping, self._RM)
+        self.file_mapping = self._clean_by_op(self.file_mapping, self._RM)
         return results
 
     def get_dirs_to_put(self) -> Set:
-        return self._get_mapping_by_op(self._dir_mapping, self.PUT)
+        return self._get_mapping_by_op(self.dir_mapping, self._PUT)
 
     def get_dirs_to_rm(self) -> Set:
-        results = self._get_mapping_by_op(self._dir_mapping, self.RM)
-        self._file_mapping = self._clean_by_op(self._file_mapping, self.RM)
+        results = self._get_mapping_by_op(self.dir_mapping, self._RM)
+        self.file_mapping = self._clean_by_op(self.file_mapping, self._RM)
         return results
