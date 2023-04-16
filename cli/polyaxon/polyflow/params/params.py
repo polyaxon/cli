@@ -18,7 +18,9 @@ from collections import namedtuple
 from collections.abc import Mapping
 from typing import Any, Dict, Optional
 
+from clipped.config.schema import skip_partial
 from clipped.utils.lists import to_list
+from clipped.utils.strings import to_string
 from pydantic import Field, StrictStr, validator
 
 from polyaxon import types
@@ -26,9 +28,8 @@ from polyaxon.contexts import refs as ctx_refs
 from polyaxon.contexts import sections as ctx_sections
 from polyaxon.contexts.params import PARAM_REGEX
 from polyaxon.exceptions import PolyaxonValidationError
-from polyaxon.parser import parser
 from polyaxon.polyflow.init import V1Init
-from polyaxon.schemas.base import BaseSchemaModel, skip_partial
+from polyaxon.schemas.base import BaseSchemaModel
 
 
 def validate_param_value(value, ref):
@@ -424,11 +425,11 @@ class ParamSpec(
     namedtuple("ParamSpec", "name type param is_flag is_list is_context arg_format")
 ):
     def get_typed_param_value(self):
-        if self.type == types.STR:
+        if self.type == "str":
             if self.is_list:
                 value = self.param.value or []  # Handles the case of None
-                return [parser.parse_string(v) for v in value]
-            return parser.parse_string(self.param.value)
+                return [to_string(v) for v in value]
+            return to_string(self.param.value)
         return self.param.value
 
     def get_display_value(self):
@@ -440,7 +441,7 @@ class ParamSpec(
         value = self.get_display_value()
         if value is None:
             return ""
-        return parser.parse_string(value)
+        return to_string(value)
 
     def as_str(self):
         return str(self)

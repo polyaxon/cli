@@ -169,12 +169,12 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                         },
                         {
                             "name": "input2",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
@@ -237,12 +237,12 @@ class TestWorkflowV1Dags(BaseTestCase):
                             {
                                 "name": "input1",
                                 "description": "some text",
-                                "type": types.FLOAT,
+                                "type": "float",
                             },
                             {
                                 "name": "input2",
                                 "description": "some text",
-                                "type": types.BOOL,
+                                "type": "bool",
                                 "isOptional": True,
                                 "value": True,
                             },
@@ -1769,7 +1769,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                             {
                                 "name": "input1",
                                 "description": "some text",
-                                "type": types.FLOAT,
+                                "type": "float",
                             }
                         ],
                         "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -1795,7 +1795,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                         }
                     ],
                     "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -1820,7 +1820,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                             {
                                 "name": "input1",
                                 "description": "some text",
-                                "type": types.FLOAT,
+                                "type": "float",
                                 "isOptional": True,
                                 "value": 12.2,
                             }
@@ -1847,7 +1847,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                             "isOptional": True,
                             "value": 12.2,
                         }
@@ -1874,7 +1874,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                             {
                                 "name": "input1",
                                 "description": "some text",
-                                "type": types.FLOAT,
+                                "type": "float",
                                 "isOptional": True,
                                 "value": 12.2,
                             }
@@ -1910,7 +1910,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                             {
                                 "name": "input1",
                                 "description": "some text",
-                                "type": types.FLOAT,
+                                "type": "float",
                                 "isOptional": True,
                                 "value": 12.2,
                             }
@@ -1946,7 +1946,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                             "isOptional": True,
                             "value": 12.2,
                         }
@@ -1981,7 +1981,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                             "isOptional": True,
                             "value": 12.2,
                         }
@@ -2027,17 +2027,17 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.STR,
+                            "type": "str",
                         },
                         {
                             "name": "input2",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                         },
                         {
                             "name": "input3",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2102,17 +2102,17 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.STR,
+                            "type": "str",
                         },
                         {
                             "name": "input2",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                         },
                         {
                             "name": "input3",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2162,7 +2162,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.INT,
+                            "type": "int",
                         },
                         {
                             "name": "input2",
@@ -2172,12 +2172,12 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input3",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
-                        {"name": "input4", "description": "status", "type": types.STR},
-                        {"name": "input5", "description": "dict", "type": types.DICT},
+                        {"name": "input4", "description": "status", "type": "str"},
+                        {"name": "input5", "description": "dict", "type": "dict"},
                         {
                             "name": "input6",
                             "description": "dict",
@@ -2188,7 +2188,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "output1",
                             "description": "some text",
-                            "type": types.INT,
+                            "type": "int",
                             "isOptional": True,
                             "value": 123,
                         }
@@ -2222,7 +2222,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                             {
                                 "name": "input1",
                                 "description": "some text",
-                                "type": types.FLOAT,
+                                "type": "float",
                                 "isList": True,
                             }
                         ],
@@ -2301,7 +2301,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.INT,
+                            "type": "int",
                         },
                         {
                             "name": "input2",
@@ -2311,7 +2311,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input3",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2320,7 +2320,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "output1",
                             "description": "some text",
-                            "type": types.INT,
+                            "type": "int",
                         }
                     ],
                     "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -2516,19 +2516,19 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input1",
                             "description": "some text",
-                            "type": types.FLOAT,
+                            "type": "float",
                         },
                         {
                             "name": "input2",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
                         {
                             "name": "input3",
                             "description": "some text",
-                            "type": types.INT,
+                            "type": "int",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2542,7 +2542,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "output2",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2575,7 +2575,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {
                             "name": "input2",
                             "description": "some text",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2871,16 +2871,16 @@ class TestWorkflowV1Dags(BaseTestCase):
                     "kind": "component",
                     "name": "A",
                     "inputs": [
-                        {"name": "input1", "type": types.FLOAT},
+                        {"name": "input1", "type": "float"},
                         {
                             "name": "input2",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
                         {
                             "name": "input3",
-                            "type": types.INT,
+                            "type": "int",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2890,7 +2890,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                         {"name": "output1", "type": types.S3},
                         {
                             "name": "output2",
-                            "type": types.BOOL,
+                            "type": "bool",
                             "isOptional": True,
                             "value": True,
                         },
@@ -2903,8 +2903,8 @@ class TestWorkflowV1Dags(BaseTestCase):
                     "inputs": [
                         {"name": "input1", "type": types.S3},
                         {"name": "input2", "type": types.S3},
-                        {"name": "input3", "type": types.STR},
-                        {"name": "input4", "type": types.DICT},
+                        {"name": "input3", "type": "str"},
+                        {"name": "input4", "type": "dict"},
                     ],
                     "outputs": [{"name": "output1", "type": types.S3}],
                     "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -2913,7 +2913,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                     "kind": "component",
                     "name": "C",
                     "inputs": [
-                        {"name": "input3", "type": types.STR, "isList": True},
+                        {"name": "input3", "type": "str", "isList": True},
                     ],
                     "outputs": [{"name": "output1", "type": types.S3}],
                     "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},

@@ -15,13 +15,13 @@
 # limitations under the License.
 from typing import List, Union
 
+from clipped.types.ref_or_obj import RefField
 from clipped.utils.enums import PEnum
 from pydantic import StrictStr
 
 from polyaxon.contexts import refs as ctx_refs
 from polyaxon.lifecycle import V1Statuses
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
 class V1EventKind(str, PEnum):

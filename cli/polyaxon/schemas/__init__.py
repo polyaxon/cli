@@ -13,6 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from clipped.config.patch_strategy import PatchStrategy as V1PatchStrategy
 
-from polyaxon.schemas.patch_strategy import V1PatchStrategy
 from polyaxon.schemas.pending import V1RunPending

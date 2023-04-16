@@ -16,6 +16,7 @@
 from typing import List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 from pydantic import Field, StrictInt, StrictStr, validator
 
 from polyaxon.k8s import k8s_schemas, k8s_validation
@@ -25,7 +26,6 @@ from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin
-from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 
 class V1Service(BaseRun, DestinationImageMixin):

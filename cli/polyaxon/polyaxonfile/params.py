@@ -87,9 +87,9 @@ def parse_hparams(hparams: Union[List[str], Dict], is_cli: bool = True):
                 raise PolyaxonfileError(message)
         kind = values[0]
         try:
-            from polyaxon.config_reader.spec import _read_from_stream  # noqa
+            from polyaxon.config.spec import ConfigSpec
 
-            value = _read_from_stream(":".join(values[1:]))
+            value = ConfigSpec.read_from_stream(":".join(values[1:]))
         except Exception as e:
             message = (
                 "Hyper-parameter: `{}` with kind `{}` received an incorrect value `{}`. "

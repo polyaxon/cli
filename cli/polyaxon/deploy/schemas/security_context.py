@@ -16,9 +16,10 @@
 
 from typing import Optional
 
+from clipped.config.schema import skip_partial
 from pydantic import Field, StrictInt, StrictStr, root_validator
 
-from polyaxon.schemas.base import BaseSchemaModel, skip_partial
+from polyaxon.schemas.base import BaseSchemaModel
 
 
 def validate_security_context(user, group):

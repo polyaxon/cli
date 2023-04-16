@@ -13,10 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from polyaxon.schemas.base import BaseDiscriminatedModel
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class BaseRun(BaseDiscriminatedModel):
+class BaseRun(BaseSchemaModel):
+    _USE_DISCRIMINATOR = True
+
     def get_resources(self):
         raise NotImplementedError
 

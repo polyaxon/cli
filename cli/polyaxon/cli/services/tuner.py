@@ -16,7 +16,8 @@
 import time
 
 import click
-import orjson
+
+from clipped.utils.json import orjson_loads
 
 from polyaxon.logger import logger
 
@@ -52,9 +53,9 @@ def bayes(matrix, configs, metrics, iteration):
 
     matrix = V1Bayes.read(matrix)
     if configs:
-        configs = orjson.loads(configs)
+        configs = orjson_loads(configs)
     if metrics:
-        metrics = orjson.loads(metrics)
+        metrics = orjson_loads(metrics)
 
     client = RunClient()
 
@@ -114,9 +115,9 @@ def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
     matrix = V1Hyperband.read(matrix)
     matrix.set_tuning_params()
     if configs:
-        configs = orjson.loads(configs)
+        configs = orjson_loads(configs)
     if metrics:
-        metrics = orjson.loads(metrics)
+        metrics = orjson_loads(metrics)
 
     client = RunClient()
 
@@ -171,9 +172,9 @@ def hyperopt(matrix, configs, metrics, iteration):
 
     matrix = V1Hyperopt.read(matrix)
     if configs:
-        configs = orjson.loads(configs)
+        configs = orjson_loads(configs)
     if metrics:
-        metrics = orjson.loads(metrics)
+        metrics = orjson_loads(metrics)
 
     client = RunClient()
 

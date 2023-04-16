@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import os
 import sys
 
 from typing import List
 
 from clipped.formatting import Printer
+from clipped.utils.json import orjson_dumps
 
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.contexts import paths as ctx_paths
@@ -45,7 +45,7 @@ def _get_env_vars(project, experiment_id, params, data_paths=None):
         ("POLYAXON_IS_LOCAL", "true"),
         (
             "POLYAXON_EXPERIMENT_INFO",
-            json.dumps(
+            orjson_dumps(
                 {
                     "project_name": project,
                     "experiment_name": "{}.{}".format(project, experiment_id),
@@ -63,8 +63,8 @@ def _get_env_vars(project, experiment_id, params, data_paths=None):
     if data_paths:
         paths.update(data_paths)
 
-    env_vars += [("POLYAXON_PARAMS", json.dumps(params))]
-    env_vars += [("POLYAXON_RUN_DATA_PATHS", json.dumps(paths))]
+    env_vars += [("POLYAXON_PARAMS", orjson_dumps(params))]
+    env_vars += [("POLYAXON_RUN_DATA_PATHS", orjson_dumps(paths))]
     env_vars += [("POLYAXON_RUN_OUTPUTS_PATH", "/tmp/artifacts")]
 
     return env_vars

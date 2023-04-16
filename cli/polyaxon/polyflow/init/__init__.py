@@ -15,11 +15,12 @@
 # limitations under the License.
 from typing import List, Optional, Union
 
+from clipped.config.schema import skip_partial
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon.k8s import k8s_schemas, k8s_validation
-from polyaxon.schemas.base import BaseSchemaModel, skip_partial
-from polyaxon.schemas.fields.ref_or_obj import RefField
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,

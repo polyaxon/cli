@@ -13,12 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import pytest
 import uuid
 
 from collections import OrderedDict
 
+from clipped.utils.json import orjson_dumps
 from pydantic import ValidationError
 
 from polyaxon import types
@@ -35,13 +35,13 @@ class TestV1IOs(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1IO.from_dict({})
 
-    def test_unsupported_io_config_type(self):
-        with self.assertRaises(ValidationError):
-            V1IO.from_dict({"name": "input1", "type": "something"})
+    def test_unsupported_config_type_does_not_until_type_check(self):
+        io = V1IO.from_dict({"name": "input1", "type": "something"})
+        assert io.type == "something"
 
     def test_wrong_io_config_default(self):
         with self.assertRaises(ValidationError):
-            V1IO.from_dict({"name": "input1", "type": types.FLOAT, "value": "foo"})
+            V1IO.from_dict({"name": "input1", "type": "float", "value": "foo"})
 
         with self.assertRaises(ValidationError):
             V1IO.from_dict({"name": "input1", "type": types.GCS, "value": 234})
@@ -51,7 +51,7 @@ class TestV1IOs(BaseTestCase):
             V1IO.from_dict({"name": "input1", "type": types.S3, "isFlag": True})
 
         with self.assertRaises(ValidationError):
-            V1IO.from_dict({"name": "input1", "type": types.FLOAT, "isFlag": True})
+            V1IO.from_dict({"name": "input1", "type": "float", "isFlag": True})
 
     def test_io_name_blacklist(self):
         config_dict = {"name": "params"}
@@ -79,12 +79,12 @@ class TestV1IOs(BaseTestCase):
 
     def test_iotype_backwards_compatibility(self):
         with self.assertRaises(ValidationError):
-            V1IO(name="test", iotype=types.BOOL)
-        config1 = V1IO(name="test", type=types.BOOL)
+            V1IO(name="test", iotype="bool")
+        config1 = V1IO(name="test", type="bool")
         assert config1.to_dict() == {"name": "test", "type": "bool"}
 
     def test_io_config_types(self):
-        config_dict = {"name": "input1", "description": "some text", "type": types.INT}
+        config_dict = {"name": "input1", "description": "some text", "type": "int"}
         config = V1IO.from_dict(config_dict)
         assert_equal_dict(config.to_dict(), config_dict)
         expected_repr = OrderedDict((("name", "input1"), ("type", "int"), ("value", 3)))
@@ -106,7 +106,7 @@ class TestV1IOs(BaseTestCase):
         config_dict = {
             "name": "input1",
             "description": "some text",
-            "type": types.BOOL,
+            "type": "bool",
             "isOptional": True,
             "value": True,
         }
@@ -121,7 +121,7 @@ class TestV1IOs(BaseTestCase):
         config_dict = {
             "name": "input1",
             "description": "some text",
-            "type": types.FLOAT,
+            "type": "float",
             "isOptional": True,
             "value": 3.4,
         }
@@ -137,7 +137,7 @@ class TestV1IOs(BaseTestCase):
         # config_dict = {
         #     "name": "input1",
         #     "description": "some text",
-        #     "type": types.BOOL,
+        #     "type": 'bool',
         #     "value": True,
         #     "isOptional": True,
         # }
@@ -147,7 +147,7 @@ class TestV1IOs(BaseTestCase):
         config_dict = {
             "name": "input1",
             "description": "some text",
-            "type": types.STR,
+            "type": "str",
             "value": "foo",
         }
         with self.assertRaises(ValidationError):
@@ -172,7 +172,7 @@ class TestV1IOs(BaseTestCase):
         config_dict = {
             "name": "input1",
             "description": "some text",
-            "type": types.BOOL,
+            "type": "bool",
             "isFlag": True,
         }
         config = V1IO.from_dict(config_dict)
@@ -194,21 +194,21 @@ class TestV1IOs(BaseTestCase):
         assert config.get_repr() == OrderedDict(name="input1")
 
     def test_value_typed_input(self):
-        config_dict = {"name": "input1", "type": types.BOOL}
+        config_dict = {"name": "input1", "type": "bool"}
         config = V1IO.from_dict(config_dict)
         with self.assertRaises(PolyaxonValidationError):
             config.validate_value("foo")
         with self.assertRaises(PolyaxonValidationError):
-            config.validate_value(1)
-        with self.assertRaises(PolyaxonValidationError):
             config.validate_value(None)
 
+        assert config.validate_value(1) is True
+        assert config.validate_value("1") is True
         assert config.validate_value(True) is True
 
     def test_value_typed_input_with_default(self):
         config_dict = {
             "name": "input1",
-            "type": types.INT,
+            "type": "int",
             "value": 12,
             "isOptional": True,
         }
@@ -231,14 +231,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value=1)
         assert param.get_spec(
             name="foo",
-            iotype=types.INT,
+            iotype="int",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.INT,
+            type="int",
             param=param,
             is_flag=False,
             is_list=False,
@@ -250,14 +250,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="1")
         assert param.get_spec(
             name="foo",
-            iotype=types.INT,
+            iotype="int",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.INT,
+            type="int",
             param=param,
             is_flag=False,
             is_list=False,
@@ -268,14 +268,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="SDfd")
         assert param.get_spec(
             name="foo",
-            iotype=types.STR,
+            iotype="str",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.STR,
+            type="str",
             param=param,
             is_flag=False,
             is_list=False,
@@ -287,14 +287,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="inputs.foo", ref="dag")
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=True,
             is_list=False,
@@ -305,14 +305,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="{{ inputs }}", ref="dag")
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=True,
             is_list=False,
@@ -324,7 +324,7 @@ class TestV1IOs(BaseTestCase):
             param = V1Param(value="{{ outputs }}", ref="dag")
             param.get_spec(
                 name="foo",
-                iotype=types.BOOL,
+                iotype="bool",
                 is_flag=True,
                 is_list=False,
                 is_context=False,
@@ -335,7 +335,7 @@ class TestV1IOs(BaseTestCase):
             param = V1Param(value="inputs.foo", ref="dag.1")
             param.get_spec(
                 name="foo",
-                iotype=types.BOOL,
+                iotype="bool",
                 is_flag=True,
                 is_list=False,
                 is_context=False,
@@ -346,14 +346,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="{{ outputs.foo }}", ref="ops.foo-bar")
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=True,
             is_list=False,
@@ -364,14 +364,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="inputs.foo", ref="ops.foo-bar")
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=True,
             is_list=False,
@@ -382,14 +382,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="inputs", ref="ops.foo-bar")
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=True,
             is_list=False,
@@ -402,7 +402,7 @@ class TestV1IOs(BaseTestCase):
             param = V1Param(value="status.foo", ref="ops.foo-bar")
             param.get_spec(
                 name="foo",
-                iotype=types.BOOL,
+                iotype="bool",
                 is_flag=True,
                 is_list=False,
                 is_context=False,
@@ -414,14 +414,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="outputs.foo", ref="runs.{}".format(uid))
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=True,
             is_list=False,
@@ -433,14 +433,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="inputs.foo", ref="runs.{}".format(uid))
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format=None,
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=True,
             is_list=False,
@@ -452,14 +452,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="SDfd")
         assert param.get_spec(
             name="foo",
-            iotype=types.STR,
+            iotype="str",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format="--sdf={{ foo }}",
         ) == ParamSpec(
             name="foo",
-            type=types.STR,
+            type="str",
             param=param,
             is_flag=False,
             is_list=False,
@@ -469,7 +469,7 @@ class TestV1IOs(BaseTestCase):
         assert (
             ParamSpec(
                 name="foo",
-                type=types.STR,
+                type="str",
                 param=param,
                 is_flag=False,
                 is_list=False,
@@ -483,14 +483,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value=None)
         assert param.get_spec(
             name="foo",
-            iotype=types.STR,
+            iotype="str",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format="--sdf={{ foo }}",
         ) == ParamSpec(
             name="foo",
-            type=types.STR,
+            type="str",
             param=param,
             is_flag=False,
             is_list=False,
@@ -500,7 +500,7 @@ class TestV1IOs(BaseTestCase):
         assert (
             ParamSpec(
                 name="foo",
-                type=types.STR,
+                type="str",
                 param=param,
                 is_flag=False,
                 is_list=False,
@@ -514,14 +514,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value=0)
         assert param.get_spec(
             name="foo",
-            iotype=types.INT,
+            iotype="int",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format="--sdf={{ foo }}",
         ) == ParamSpec(
             name="foo",
-            type=types.INT,
+            type="int",
             param=param,
             is_flag=False,
             is_list=False,
@@ -531,7 +531,7 @@ class TestV1IOs(BaseTestCase):
         assert (
             ParamSpec(
                 name="foo",
-                type=types.INT,
+                type="int",
                 param=param,
                 is_flag=False,
                 is_list=False,
@@ -545,14 +545,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value=True)
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format="{{'true-var' if foo else 'false-var'}}",
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=False,
             is_list=False,
@@ -562,7 +562,7 @@ class TestV1IOs(BaseTestCase):
         assert (
             ParamSpec(
                 name="foo",
-                type=types.BOOL,
+                type="bool",
                 param=param,
                 is_flag=False,
                 is_list=False,
@@ -575,14 +575,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value=False)
         assert param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=False,
             is_list=False,
             is_context=False,
             arg_format="{{'true-var' if foo else 'false-var'}}",
         ) == ParamSpec(
             name="foo",
-            type=types.BOOL,
+            type="bool",
             param=param,
             is_flag=False,
             is_list=False,
@@ -592,7 +592,7 @@ class TestV1IOs(BaseTestCase):
         assert (
             ParamSpec(
                 name="foo",
-                type=types.BOOL,
+                type="bool",
                 param=param,
                 is_flag=False,
                 is_list=False,
@@ -606,14 +606,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value=True)
         assert param.get_spec(
             name="foo",
-            iotype=types.STR,
+            iotype="str",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format="{{foo}}",
         ) == ParamSpec(
             name="foo",
-            type=types.STR,
+            type="str",
             param=param,
             is_flag=True,
             is_list=False,
@@ -624,7 +624,7 @@ class TestV1IOs(BaseTestCase):
             str(
                 ParamSpec(
                     name="foo",
-                    type=types.STR,
+                    type="str",
                     param=param,
                     is_flag=True,
                     is_list=False,
@@ -639,14 +639,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value=None)
         assert param.get_spec(
             name="foo",
-            iotype=types.STR,
+            iotype="str",
             is_flag=True,
             is_list=False,
             is_context=False,
             arg_format="{{foo}}",
         ) == ParamSpec(
             name="foo",
-            type=types.STR,
+            type="str",
             param=param,
             is_flag=True,
             is_list=False,
@@ -657,7 +657,7 @@ class TestV1IOs(BaseTestCase):
             str(
                 ParamSpec(
                     name="foo",
-                    type=types.STR,
+                    type="str",
                     param=param,
                     is_flag=True,
                     is_list=False,
@@ -672,14 +672,14 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value={"key": "value"})
         assert param.get_spec(
             name="foo",
-            iotype=types.STR,
+            iotype="str",
             is_flag=False,
             is_list=False,
             is_context=True,
             arg_format="{{foo}}",
         ) == ParamSpec(
             name="foo",
-            type=types.STR,
+            type="str",
             param=param,
             is_flag=False,
             is_list=False,
@@ -688,7 +688,7 @@ class TestV1IOs(BaseTestCase):
         )
         assert ParamSpec(
             name="foo",
-            type=types.STR,
+            type="str",
             param=param,
             is_flag=False,
             is_list=False,
@@ -698,21 +698,21 @@ class TestV1IOs(BaseTestCase):
         assert str(
             ParamSpec(
                 name="foo",
-                type=types.STR,
+                type="str",
                 param=param,
                 is_flag=False,
                 is_list=False,
                 is_context=True,
                 arg_format=None,
             )
-        ) == json.dumps({"key": "value"})
+        ) == orjson_dumps({"key": "value"})
 
         # Regex validation runs: invalid params
         with self.assertRaises(PolyaxonValidationError):
             param = V1Param(value="outputs.foo", ref="run.foo-bar")
             param.get_spec(
                 name="foo",
-                iotype=types.BOOL,
+                iotype="bool",
                 is_flag=True,
                 is_list=False,
                 is_context=False,
@@ -723,7 +723,7 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="test")
         spec = param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
@@ -763,7 +763,7 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="test", connection="connection")
         spec = param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
@@ -774,7 +774,7 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="test", to_init=True)
         spec = param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,
@@ -785,7 +785,7 @@ class TestV1IOs(BaseTestCase):
         param = V1Param(value="test", connection="connection", to_init=True)
         spec = param.get_spec(
             name="foo",
-            iotype=types.BOOL,
+            iotype="bool",
             is_flag=True,
             is_list=False,
             is_context=False,

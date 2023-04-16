@@ -15,11 +15,11 @@
 # limitations under the License.
 from typing import List, Optional, Union
 
+from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 from clipped.utils.enums import PEnum
 from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 
 class V1Cache(BaseSchemaModel):

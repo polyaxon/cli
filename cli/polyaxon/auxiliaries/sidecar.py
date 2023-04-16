@@ -15,13 +15,13 @@
 # limitations under the License.
 from typing import Any, Dict, Optional, Union
 
+from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 from pydantic import Field, StrictStr
 
 from polyaxon import pkg
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s import k8s_schemas
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import BoolOrRef, IntOrRef, RefField
 
 
 def get_sidecar_resources() -> k8s_schemas.V1ResourceRequirements:

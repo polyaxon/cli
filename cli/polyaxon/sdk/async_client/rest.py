@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import io
-import json
 import logging
 import re
 import ssl
@@ -23,6 +22,8 @@ import ssl
 from urllib.parse import urlencode
 
 import aiohttp
+
+from clipped.utils.json import orjson_dumps
 
 from polyaxon.sdk.exceptions import ApiException, ApiValueError
 
@@ -132,7 +133,7 @@ class RESTClientObject(object):
         if method in ["POST", "PUT", "PATCH", "OPTIONS", "DELETE"]:
             if re.search("json", headers["Content-Type"], re.IGNORECASE):
                 if body is not None:
-                    body = json.dumps(body)
+                    body = orjson_dumps(body)
                 args["data"] = body
             elif (
                 headers["Content-Type"] == "application/x-www-form-urlencoded"

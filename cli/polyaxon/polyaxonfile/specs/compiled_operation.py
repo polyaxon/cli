@@ -17,7 +17,6 @@ import copy
 
 from typing import Dict, List, Optional, Set, Type, Union
 
-from polyaxon import types
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyaxonfile.specs.base import BaseSpecification
@@ -48,7 +47,7 @@ class CompiledOperationSpecification(BaseSpecification):
             k: ParamSpec(
                 name=k,
                 param=V1Param(value=v),
-                type=types.ANY,
+                type="Any",
                 is_flag=False,
                 is_list=None,
                 is_context=is_context,

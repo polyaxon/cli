@@ -112,7 +112,7 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
                 {"kind": "compiled_operation"},
             ]
         )
-        with patch("polyaxon.config_reader.spec.ConfigSpec.read") as config_read:
+        with patch("polyaxon.config.spec.ConfigSpec.read") as config_read:
             config_read.return_value = V1Component(
                 kind="component",
                 version=" 1.1",

@@ -99,8 +99,8 @@ class TestSpecifications(BaseTestCase):
             "version": 1.1,
             "kind": "component",
             "inputs": [
-                {"name": "lr", "type": types.FLOAT},
-                {"name": "num_steps", "type": types.INT},
+                {"name": "lr", "type": "float"},
+                {"name": "num_steps", "type": "int"},
             ],
             "run": {
                 "kind": V1RunKind.JOB,
@@ -118,8 +118,8 @@ class TestSpecifications(BaseTestCase):
             "version": 1.1,
             "kind": "compiled_operation",
             "inputs": [
-                {"name": "lr", "type": types.FLOAT},
-                {"name": "num_steps", "type": types.INT},
+                {"name": "lr", "type": "float"},
+                {"name": "num_steps", "type": "int"},
             ],
             "run": {
                 "kind": V1RunKind.JOB,
@@ -150,8 +150,8 @@ class TestSpecifications(BaseTestCase):
             "version": 1.1,
             "kind": "component",
             "inputs": [
-                {"name": "lr", "type": types.FLOAT},
-                {"name": "num_steps", "type": types.INT},
+                {"name": "lr", "type": "float"},
+                {"name": "num_steps", "type": "int"},
             ],
             "run": {
                 "kind": V1RunKind.JOB,
@@ -169,8 +169,8 @@ class TestSpecifications(BaseTestCase):
             "version": 1.1,
             "kind": "compiled_operation",
             "inputs": [
-                {"name": "lr", "type": types.FLOAT},
-                {"name": "num_steps", "type": types.INT},
+                {"name": "lr", "type": "float"},
+                {"name": "num_steps", "type": "int"},
             ],
             "run": {
                 "kind": V1RunKind.JOB,
@@ -206,10 +206,10 @@ class TestSpecifications(BaseTestCase):
             "version": 1.1,
             "kind": "compiled_operation",
             "inputs": [
-                {"name": "lr", "type": types.FLOAT, "isOptional": True, "value": 0.1},
+                {"name": "lr", "type": "float", "isOptional": True, "value": 0.1},
                 {
                     "name": "num_steps",
-                    "type": types.INT,
+                    "type": "int",
                     "isOptional": True,
                     "value": 100,
                 },
@@ -289,10 +289,10 @@ class TestSpecifications(BaseTestCase):
             "version": 1.1,
             "kind": "compiled_operation",
             "inputs": [
-                {"name": "lr", "type": types.FLOAT, "value": 0.6, "isOptional": True},
+                {"name": "lr", "type": "float", "value": 0.6, "isOptional": True},
                 {
                     "name": "num_steps",
-                    "type": types.INT,
+                    "type": "int",
                     "value": 16,
                     "isOptional": True,
                 },

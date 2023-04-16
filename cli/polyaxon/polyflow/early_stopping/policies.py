@@ -16,15 +16,16 @@
 from typing import Optional, Union
 from typing_extensions import Annotated, Literal
 
+from clipped.types.ref_or_obj import BoolOrRef, FloatOrRef, IntOrRef
 from pydantic import Field, StrictFloat, StrictStr
 
 from polyaxon.polyflow.optimization import V1Optimization
-from polyaxon.schemas.base import BaseDiscriminatedModel
-from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, FloatOrRef, IntOrRef
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class V1MedianStoppingPolicy(BaseDiscriminatedModel):
+class V1MedianStoppingPolicy(BaseSchemaModel):
     _IDENTIFIER = "median"
+    _USE_DISCRIMINATOR = True
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
@@ -32,7 +33,7 @@ class V1MedianStoppingPolicy(BaseDiscriminatedModel):
     min_samples: Optional[IntOrRef] = Field(alias="minSamples")
 
 
-class V1TruncationStoppingPolicy(BaseDiscriminatedModel):
+class V1TruncationStoppingPolicy(BaseSchemaModel):
     _IDENTIFIER = "truncation"
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
@@ -43,7 +44,7 @@ class V1TruncationStoppingPolicy(BaseDiscriminatedModel):
     include_succeeded: Optional[BoolOrRef] = Field(alias="includeSucceeded")
 
 
-class V1DiffStoppingPolicy(BaseDiscriminatedModel):
+class V1DiffStoppingPolicy(BaseSchemaModel):
     _IDENTIFIER = "diff"
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
@@ -59,7 +60,7 @@ V1EarlyStoppingPolicy = Annotated[
 ]
 
 
-class V1MetricEarlyStopping(BaseDiscriminatedModel):
+class V1MetricEarlyStopping(BaseSchemaModel):
     """Metric early stopping is an early stopping strategy based on metrics of runs,
     it allows to terminate a dag, a mapping, or hyperparameter tuning when a run's metric(s)
     meet(s) one or multiple conditions.
@@ -167,7 +168,7 @@ class V1MetricEarlyStopping(BaseDiscriminatedModel):
     policy: Optional[V1EarlyStoppingPolicy]
 
 
-class V1FailureEarlyStopping(BaseDiscriminatedModel):
+class V1FailureEarlyStopping(BaseSchemaModel):
     """Failure early stopping is an early stopping strategy based on statuses of runs that allows
     to terminate a dag, a mapping, or hyperparameter tuning group
     when they reach a certain level of failures.

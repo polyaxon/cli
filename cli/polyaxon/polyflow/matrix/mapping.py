@@ -16,12 +16,12 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, PositiveInt, validator
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
 class V1Mapping(BaseSearchConfig):

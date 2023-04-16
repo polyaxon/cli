@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import os
 
 from collections.abc import Mapping
@@ -23,6 +22,7 @@ from typing import Any, Dict, List, Optional, Union
 import google.auth
 import google.oauth2.service_account
 
+from clipped.utils.json import orjson_loads
 from google.oauth2.service_account import Credentials
 
 from polyaxon.connections.reader import read_keys
@@ -126,7 +126,7 @@ def get_gc_credentials(
         # Get credentials from JSON data.
         try:
             if not isinstance(keyfile_dict, Mapping):
-                keyfile_dict = json.loads(keyfile_dict)  # type: ignore
+                keyfile_dict = orjson_loads(keyfile_dict)  # type: ignore
 
             # Convert escaped newlines to actual newlines if any.
             keyfile_dict["private_key"] = keyfile_dict["private_key"].replace(

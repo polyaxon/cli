@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 
 from typing import Optional
 
@@ -24,7 +25,6 @@ from kubernetes_asyncio.client.models import V1Pod
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s.async_manager import AsyncK8SManager
 from polyaxon.k8s.logging.async_monitor import query_k8s_pod_logs
-from polyaxon.types import AwareDT
 from traceml.logging import V1Logs
 
 
@@ -32,7 +32,7 @@ async def sync_logs(
     run_uuid: str,
     k8s_manager: AsyncK8SManager,
     pod: V1Pod,
-    last_time: Optional[AwareDT],
+    last_time: Optional[datetime.datetime],
     stream: bool = False,
     is_running: bool = True,
 ):

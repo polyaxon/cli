@@ -14,63 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+from clipped.types import FORWARDING as CLIPPED_FORWARDING
+from clipped.types import MAPPING as CLIPPED_MAPPING
+from clipped.types import *
 
-GenericDT = NaiveDT = AwareDT = datetime.datetime
+from polyaxon.schemas.types import (
+    V1ArtifactsType,
+    V1DockerfileType,
+    V1EventType,
+    V1FileType,
+    V1GcsType,
+    V1GitType,
+    V1S3Type,
+    V1TensorboardType,
+    V1UriType,
+    V1WasbType,
+)
 
-ANY = "any"
-INT = "int"
-FLOAT = "float"
-BOOL = "bool"
-STR = "str"
-DICT = "dict"
-DICT_OF_DICTS = "dict_of_dicts"
-URI = "uri"
-AUTH = "auth"
-LIST = "list"
-GCS = "gcs"
-S3 = "s3"
-WASB = "wasb"
+EVENT = "event"
 DOCKERFILE = "dockerfile"
 FILE = "file"
 TENSORBOARD = "tensorboard"
 GIT = "git"
-IMAGE = "image"
-EVENT = "event"
 ARTIFACTS = "artifacts"
-PATH = "path"
-METRIC = "metric"
-METADATA = "metadata"
-DATE = "date"
-DATETIME = "datetime"
-UUID = "uuid"
-
-VALUES = {
-    ANY,
-    INT,
-    FLOAT,
-    BOOL,
-    STR,
-    DICT,
-    DICT_OF_DICTS,
-    URI,
-    AUTH,
-    LIST,
-    GCS,
-    S3,
-    WASB,
-    DOCKERFILE,
-    GIT,
-    IMAGE,
-    EVENT,
-    ARTIFACTS,
-    PATH,
-    METRIC,
-    METADATA,
-    DATE,
-    DATETIME,
-    UUID,
-}
 
 LINEAGE_VALUES = {
     GCS,
@@ -86,21 +52,24 @@ LINEAGE_VALUES = {
     METADATA,
 }
 
-COMPATIBLE_TYPES = [
-    [STR, PATH, S3, GCS, WASB],
-    [FLOAT, METRIC],
-]
+MAPPING = {
+    **CLIPPED_MAPPING,
+    FILE: V1FileType,
+    TENSORBOARD: V1TensorboardType,
+    DOCKERFILE: V1DockerfileType,
+    GIT: V1GitType,
+    IMAGE: ImageStr,
+    EVENT: V1EventType,
+    ARTIFACTS: V1ArtifactsType,
+}
 
-
-def are_compatible(type1: str, type2: str) -> bool:
-    if type1 == type2:
-        return True
-
-    if type1 == ANY and type2 == ANY:
-        return True
-    # Compatible types
-    for compatible_type in COMPATIBLE_TYPES:
-        if type1 in compatible_type and type2 in compatible_type:
-            return True
-
-    return False
+FORWARDING = {
+    **CLIPPED_FORWARDING,
+    "V1FileType": V1FileType,
+    "V1DockerfileType": V1DockerfileType,
+    "V1TensorboardType": V1TensorboardType,
+    "V1GitType": V1GitType,
+    "ImageStr": ImageStr,
+    "V1EventType": V1EventType,
+    "V1ArtifactsType": V1ArtifactsType,
+}

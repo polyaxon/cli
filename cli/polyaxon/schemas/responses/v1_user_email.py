@@ -15,8 +15,9 @@
 # limitations under the License.
 from typing import Optional
 
+from clipped.types.email import EmailStr
+
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import EmailStr
 
 
 class V1UserEmail(BaseSchemaModel):

@@ -15,9 +15,9 @@
 # limitations under the License.
 from typing import List, Optional, Union
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import StrictInt
 
-from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
@@ -103,7 +103,6 @@ class V1ArtifactsType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1IO
     >>> inputs = [
     >>>     V1IO(
@@ -125,7 +124,6 @@ class V1ArtifactsType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1Param
     >>> params = {
     >>>     "test1": V1Param(value=types.V1ArtifactsType(files=["file1", "/path/to/file2"])),

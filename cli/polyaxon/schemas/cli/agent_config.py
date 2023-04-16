@@ -17,6 +17,7 @@ import os
 
 from typing import Dict, List, Optional
 
+from clipped.config.schema import skip_partial, to_partial
 from pydantic import Extra, Field, PrivateAttr, StrictStr, validator
 
 from polyaxon.auxiliaries import (
@@ -26,6 +27,7 @@ from polyaxon.auxiliaries import (
     V1PolyaxonNotifier,
     V1PolyaxonSidecarContainer,
 )
+from polyaxon.config.parser import Parser
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_ARTIFACTS_STORE,
@@ -47,8 +49,7 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.lifecycle import V1ProjectFeature
-from polyaxon.parser import parser
-from polyaxon.schemas.base import BaseSchemaModel, skip_partial, to_partial
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
@@ -110,7 +111,7 @@ class BaseAgentConfig(BaseSchemaModel):
         if not isinstance(v, str):
             return v
         try:
-            return parser.get_dict(
+            return Parser.parse(Dict)(
                 key=EV_KEYS_AGENT_CONNECTIONS,
                 value=v,
                 is_list=True,
@@ -124,7 +125,7 @@ class BaseAgentConfig(BaseSchemaModel):
         if not isinstance(v, str):
             return v
         try:
-            return parser.get_dict(
+            return Parser.parse(Dict)(
                 key=EV_KEYS_AGENT_ARTIFACTS_STORE,
                 value=v,
                 is_optional=True,
@@ -292,7 +293,7 @@ class AgentConfig(BaseAgentConfig):
         if not isinstance(v, str):
             return v
         try:
-            return parser.get_dict(
+            return Parser.parse(Dict)(
                 key=field.name,
                 value=v,
                 is_optional=True,
@@ -305,7 +306,7 @@ class AgentConfig(BaseAgentConfig):
     @validator("default_image_pull_secrets", pre=True)
     def validate_str_list(cls, v, field):
         try:
-            return parser.get_string(
+            return Parser.parse(str)(
                 key=field.alias,
                 value=v,
                 is_optional=True,

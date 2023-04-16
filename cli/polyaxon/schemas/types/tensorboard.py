@@ -15,9 +15,11 @@
 # limitations under the License.
 from typing import List, Optional, Union
 
+from clipped.types.ref_or_obj import RefField
+from clipped.types.uuids import UUIDStr
+from clipped.utils.lists import to_list
 from pydantic import Field, StrictInt, StrictStr, validator
 
-from polyaxon.schemas.fields import RefField, UUIDStr
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 
@@ -81,7 +83,6 @@ class V1TensorboardType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1IO
     >>> inputs = [
     >>>     V1IO(
@@ -95,7 +96,6 @@ class V1TensorboardType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1Param
     >>>
     >>> params = {
@@ -151,8 +151,6 @@ class V1TensorboardType(BaseTypeConfig):
 
     @validator("uuids", "plugins", pre=True)
     def validate_str_list(cls, v, field):
-        from polyaxon.parser import parser
-
         if isinstance(v, str):
-            return parser.get_string(field, v, is_list=True)
+            return to_list(v, check_str=True)
         return v

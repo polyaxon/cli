@@ -16,6 +16,8 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.config.schema import skip_partial
+from clipped.types.ref_or_obj import RefField
 from clipped.utils.enums import PEnum
 from pydantic import Field, PositiveInt, StrictInt, root_validator, validator
 
@@ -25,8 +27,7 @@ from polyaxon.polyflow.matrix.kinds import V1MatrixKind
 from polyaxon.polyflow.matrix.params import V1HpParam
 from polyaxon.polyflow.matrix.tuner import V1Tuner
 from polyaxon.polyflow.optimization import V1OptimizationMetric
-from polyaxon.schemas.base import BaseSchemaModel, skip_partial
-from polyaxon.schemas.fields import RefField
+from polyaxon.schemas.base import BaseSchemaModel
 
 
 class AcquisitionFunctions(str, PEnum):

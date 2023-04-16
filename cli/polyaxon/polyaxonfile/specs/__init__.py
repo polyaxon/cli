@@ -16,7 +16,7 @@
 
 from collections.abc import Mapping
 
-from polyaxon.config_reader.spec import ConfigSpec
+from polyaxon.config.spec import ConfigSpec
 from polyaxon.polyaxonfile.specs import kinds as spec_kinds
 from polyaxon.polyaxonfile.specs.base import BaseSpecification
 from polyaxon.polyaxonfile.specs.compiled_operation import (

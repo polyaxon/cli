@@ -20,7 +20,7 @@ from collections.abc import Mapping
 
 from clipped.utils.lists import to_list
 
-from polyaxon.config_reader.spec import ConfigSpec
+from polyaxon.config.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 from polyaxon.pkg import SCHEMA_VERSION
 from polyaxon.polyaxonfile.specs import kinds

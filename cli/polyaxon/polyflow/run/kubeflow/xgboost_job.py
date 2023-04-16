@@ -16,6 +16,7 @@
 from typing import Optional, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field
 
 from polyaxon.k8s.k8s_schemas import V1Container
@@ -26,7 +27,6 @@ from polyaxon.polyflow.run.kubeflow.replica import V1KFReplica
 from polyaxon.polyflow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin
-from polyaxon.schemas.fields import RefField
 
 
 class V1XGBoostJob(BaseRun, DestinationImageMixin):
@@ -53,9 +53,9 @@ class V1XGBoostJob(BaseRun, DestinationImageMixin):
     ## Python usage
 
     ```python
-    >>> from polyaxon.polyflow import V1KFReplica, V1XGBoost
+    >>> from polyaxon.polyflow import V1KFReplica, V1XGBoostJob
     >>> from polyaxon.k8s import k8s_schemas
-    >>> xgb_job = V1XGBoost(
+    >>> xgb_job = V1XGBoostJob(
     >>>     clean_pod_policy='All',
     >>>     master=V1KFReplica(...),
     >>>     worker=V1KFReplica(...),

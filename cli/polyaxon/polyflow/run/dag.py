@@ -18,6 +18,7 @@ from collections.abc import Mapping
 from typing import Any, Dict, ForwardRef, List, Optional, Set, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, PositiveInt, PrivateAttr, StrictStr, validator
 
 from polyaxon import types
@@ -32,7 +33,6 @@ from polyaxon.polyflow.io import V1IO
 from polyaxon.polyflow.params import ops_params
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.schemas.fields.ref_or_obj import RefField
 
 V1Operation = ForwardRef("V1Operation")
 V1Component = ForwardRef("V1Component")
@@ -451,18 +451,16 @@ class V1Dag(BaseRun):
         for g_context in ctx_sections.GLOBALS_CONTEXTS:
             self._context[
                 "dag.{}.{}".format(ctx_sections.GLOBALS, g_context)
-            ] = V1IO.construct(
-                name=g_context, type=types.STR, value="", is_optional=True
-            )
+            ] = V1IO.construct(name=g_context, type="str", value="", is_optional=True)
 
         self._context["dag.{}".format(ctx_sections.INPUTS)] = V1IO.construct(
-            name="inputs", type=types.DICT, value={}, is_optional=True
+            name="inputs", type="dict", value={}, is_optional=True
         )
         self._context["dag.{}".format(ctx_sections.GLOBALS)] = V1IO.construct(
-            name="globals", type=types.STR, value="", is_optional=True
+            name="globals", type="str", value="", is_optional=True
         )
         self._context["dag.{}".format(ctx_sections.ARTIFACTS)] = V1IO.construct(
-            name="artifacts", type=types.STR, value="", is_optional=True
+            name="artifacts", type="str", value="", is_optional=True
         )
 
         for _input in inputs:
@@ -544,33 +542,25 @@ class V1Dag(BaseRun):
                 self._context[
                     "ops.{}.{}.{}".format(op_name, ctx_sections.GLOBALS, g_context)
                 ] = V1IO.construct(
-                    name=g_context, type=types.STR, value="", is_optional=True
+                    name=g_context, type="str", value="", is_optional=True
                 )
 
             # We allow to resolve name, status, project, all outputs/inputs, iteration
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.INPUTS)
-            ] = V1IO.construct(
-                name="inputs", type=types.DICT, value={}, is_optional=True
-            )
+            ] = V1IO.construct(name="inputs", type="dict", value={}, is_optional=True)
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.OUTPUTS)
-            ] = V1IO.construct(
-                name="outputs", type=types.DICT, value={}, is_optional=True
-            )
+            ] = V1IO.construct(name="outputs", type="dict", value={}, is_optional=True)
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.GLOBALS)
-            ] = V1IO.construct(
-                name="globals", type=types.STR, value="", is_optional=True
-            )
+            ] = V1IO.construct(name="globals", type="str", value="", is_optional=True)
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.ARTIFACTS)
-            ] = V1IO.construct(
-                name="artifacts", type=types.STR, value="", is_optional=True
-            )
+            ] = V1IO.construct(name="artifacts", type="str", value="", is_optional=True)
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.INPUTS_OUTPUTS)
-            ] = V1IO.construct(name="io", type=types.STR, value={}, is_optional=True)
+            ] = V1IO.construct(name="io", type="str", value={}, is_optional=True)
 
         for op in self.operations:
             if op.has_component_reference:

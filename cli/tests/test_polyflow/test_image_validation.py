@@ -16,7 +16,8 @@
 
 import pytest
 
-from polyaxon.schemas.fields.docker_image import validate_image
+from clipped.types.docker_image import validate_image
+
 from polyaxon.utils.test_utils import BaseTestCase
 
 

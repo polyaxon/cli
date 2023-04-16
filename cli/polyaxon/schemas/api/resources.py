@@ -15,10 +15,11 @@
 # limitations under the License.
 from typing import Dict, List, Optional
 
+from clipped.types.numbers import StrictIntOrFloat
+from clipped.types.uuids import UUIDStr
 from pydantic import StrictInt, StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import StrictIntOrFloat, UUIDStr
 
 
 class ContainerGPUResourcesConfig(BaseSchemaModel):

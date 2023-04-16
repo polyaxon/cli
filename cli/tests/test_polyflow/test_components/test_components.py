@@ -51,12 +51,12 @@ class TestComponentsConfigs(BaseTestCase):
     def test_param_validation_with_inputs(self):
         config_dict = {
             "inputs": [
-                {"name": "param1", "type": types.STR},
-                {"name": "param2", "type": types.INT},
-                {"name": "param3", "type": types.FLOAT},
-                {"name": "param4", "type": types.BOOL},
-                {"name": "param5", "type": types.DICT},
-                {"name": "param6", "type": types.LIST},
+                {"name": "param1", "type": "str"},
+                {"name": "param2", "type": "int"},
+                {"name": "param3", "type": "float"},
+                {"name": "param4", "type": "bool"},
+                {"name": "param5", "type": "dict"},
+                {"name": "param6", "type": "list"},
                 {"name": "param7", "type": types.GCS},
                 {"name": "param8", "type": types.S3},
                 {"name": "param9", "type": types.WASB},
@@ -94,12 +94,12 @@ class TestComponentsConfigs(BaseTestCase):
     def test_param_validation_with_outputs(self):
         config_dict = {
             "outputs": [
-                {"name": "param1", "type": types.STR},
-                {"name": "param2", "type": types.INT},
-                {"name": "param3", "type": types.FLOAT},
-                {"name": "param4", "type": types.BOOL},
-                {"name": "param5", "type": types.DICT},
-                {"name": "param6", "type": types.LIST},
+                {"name": "param1", "type": "str"},
+                {"name": "param2", "type": "int"},
+                {"name": "param3", "type": "float"},
+                {"name": "param4", "type": "bool"},
+                {"name": "param5", "type": "dict"},
+                {"name": "param6", "type": "list"},
                 {"name": "param7", "type": types.GCS},
                 {"name": "param8", "type": types.S3},
                 {"name": "param9", "type": types.WASB},
@@ -147,7 +147,7 @@ class TestComponentsConfigs(BaseTestCase):
         # Inputs
         config_dict = {
             "inputs": [
-                {"name": "param1", "type": types.STR},
+                {"name": "param1", "type": "str"},
                 {"name": "param10", "type": types.PATH},
             ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -164,7 +164,7 @@ class TestComponentsConfigs(BaseTestCase):
         # Outputs
         config_dict = {
             "outputs": [
-                {"name": "param1", "type": types.STR},
+                {"name": "param1", "type": "str"},
                 {"name": "param10", "type": types.PATH},
             ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -180,7 +180,7 @@ class TestComponentsConfigs(BaseTestCase):
 
         # IO
         config_dict = {
-            "inputs": [{"name": "param1", "type": types.STR}],
+            "inputs": [{"name": "param1", "type": "str"}],
             "outputs": [{"name": "param10", "type": types.PATH}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
@@ -195,8 +195,8 @@ class TestComponentsConfigs(BaseTestCase):
     def test_incomplete_params(self):
         config_dict = {
             "inputs": [
-                {"name": "param1", "type": types.INT},
-                {"name": "param2", "type": types.INT},
+                {"name": "param1", "type": "int"},
+                {"name": "param2", "type": "int"},
             ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
@@ -211,8 +211,8 @@ class TestComponentsConfigs(BaseTestCase):
 
         config_dict = {
             "outputs": [
-                {"name": "param1", "type": types.INT, "value": 12, "isOptional": True},
-                {"name": "param2", "type": types.INT},
+                {"name": "param1", "type": "int", "value": 12, "isOptional": True},
+                {"name": "param2", "type": "int"},
             ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
@@ -227,7 +227,7 @@ class TestComponentsConfigs(BaseTestCase):
     def test_extra_params(self):
         # inputs
         config_dict = {
-            "inputs": [{"name": "param1", "type": types.INT}],
+            "inputs": [{"name": "param1", "type": "int"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1Component.from_dict(config_dict)
@@ -241,7 +241,7 @@ class TestComponentsConfigs(BaseTestCase):
 
         # outputs
         config_dict = {
-            "outputs": [{"name": "param1", "type": types.INT}],
+            "outputs": [{"name": "param1", "type": "int"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1Component.from_dict(config_dict)
@@ -255,10 +255,16 @@ class TestComponentsConfigs(BaseTestCase):
 
     def test_param_validation_with_mismatched_inputs(self):
         config_dict = {
-            "inputs": [{"name": "param1", "type": types.INT}],
+            "inputs": [{"name": "param1", "type": "int"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
+        strict_config_dict = {
+            "inputs": [{"name": "param1", "type": "StrictInt"}],
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+
         config = V1Component.from_dict(config_dict)
+        strict_config = V1Component.from_dict(strict_config_dict)
         # Passing correct param
         ops_params.validate_params(
             params={"param1": {"value": 1}},
@@ -278,24 +284,48 @@ class TestComponentsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
-        ops_params.validate_params(
-            params={"param1": {"value": "12."}},
-            inputs=config.inputs,
-            outputs=config.outputs,
-            is_template=False,
-        )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": {"value": 12.0}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
+                is_template=False,
+            )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": {"value": "12."}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
+
         ops_params.validate_params(
             params={"param1": {"value": 12.0}},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
         )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": {"value": 12.0}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
+                is_template=False,
+            )
+
         ops_params.validate_params(
             params={"param1": {"value": "12.0"}},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
         )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": {"value": "12.0"}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
+                is_template=False,
+            )
         # Passing wrong type
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
@@ -305,19 +335,31 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
+        ops_params.validate_params(
+            params={"param1": {"value": 12.1}},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
-                inputs=config.inputs,
-                outputs=config.outputs,
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
                 is_template=False,
             )
 
+        ops_params.validate_params(
+            params={"param1": {"value": "12.1"}},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "12.1"}},
-                inputs=config.inputs,
-                outputs=config.outputs,
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
                 is_template=False,
             )
 
@@ -338,7 +380,7 @@ class TestComponentsConfigs(BaseTestCase):
             )
 
         config_dict = {
-            "inputs": [{"name": "param2", "type": types.FLOAT}],
+            "inputs": [{"name": "param2", "type": "float"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1Component.from_dict(config_dict)
@@ -422,10 +464,15 @@ class TestComponentsConfigs(BaseTestCase):
 
     def test_param_validation_with_mismatched_outputs(self):
         config_dict = {
-            "outputs": [{"name": "param1", "type": types.INT}],
+            "outputs": [{"name": "param1", "type": "int"}],
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        strict_config_dict = {
+            "outputs": [{"name": "param1", "type": "StrictInt"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1Component.from_dict(config_dict)
+        strict_config = V1Component.from_dict(strict_config_dict)
         # Passing correct param
         ops_params.validate_params(
             params={"param1": {"value": 1}},
@@ -439,6 +486,13 @@ class TestComponentsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": {"value": 12.0}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
+                is_template=False,
+            )
 
         # Passing wrong type
         with self.assertRaises(PolyaxonValidationError):
@@ -449,11 +503,17 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
+        ops_params.validate_params(
+            params={"param1": {"value": 12.1}},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
-                inputs=config.inputs,
-                outputs=config.outputs,
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
                 is_template=False,
             )
 
@@ -474,7 +534,7 @@ class TestComponentsConfigs(BaseTestCase):
             )
 
         config_dict = {
-            "outputs": [{"name": "param2", "type": types.FLOAT}],
+            "outputs": [{"name": "param2", "type": "float"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1Component.from_dict(config_dict)
@@ -558,8 +618,8 @@ class TestComponentsConfigs(BaseTestCase):
     def test_experiment_and_job_refs_params(self):
         config_dict = {
             "inputs": [
-                {"name": "param1", "type": types.INT},
-                {"name": "param2", "type": types.FLOAT},
+                {"name": "param1", "type": "int"},
+                {"name": "param2", "type": "float"},
                 {"name": "param9", "type": types.WASB},
                 {"name": "param11", "type": types.METRIC},
             ],
@@ -603,8 +663,8 @@ class TestComponentsConfigs(BaseTestCase):
     def test_job_refs_params(self):
         config_dict = {
             "inputs": [
-                {"name": "param1", "type": types.INT},
-                {"name": "param9", "type": types.FLOAT},
+                {"name": "param1", "type": "int"},
+                {"name": "param9", "type": "float"},
             ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }

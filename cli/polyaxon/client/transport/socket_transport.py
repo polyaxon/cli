@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import websocket
+
+from clipped.utils.json import orjson_loads
 
 from polyaxon.logger import logger
 
@@ -41,7 +42,7 @@ class SocketTransportMixin:
         if message_handler and message:
             if not isinstance(message, str):
                 message = message.decode("utf-8")
-            message_handler(json.loads(message))
+            message_handler(orjson_loads(message))
 
     @staticmethod
     def _on_error(ws, error):

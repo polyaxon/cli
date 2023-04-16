@@ -15,15 +15,20 @@
 # limitations under the License.
 
 from datetime import date, datetime, timedelta
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 from typing_extensions import Annotated, Literal
 
+from clipped.config.schema import skip_partial
+from clipped.types.numbers import StrictIntOrFloat
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon import types
 from polyaxon.polyflow.matrix.kinds import V1HPKind
-from polyaxon.schemas.base import BaseDiscriminatedModel, BaseSchemaModel, skip_partial
-from polyaxon.schemas.fields import RefField, StrictIntOrFloat
+from polyaxon.schemas.base import BaseSchemaModel
+
+if TYPE_CHECKING:
+    from pydantic.typing import CallableGenerator
 
 try:
     import numpy as np
@@ -351,10 +356,12 @@ def validate_matrix(values):
         )
 
 
-class BaseHpParamConfig(BaseDiscriminatedModel):
+class BaseHpParamConfig(BaseSchemaModel):
+    _USE_DISCRIMINATOR = True
+
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
-        if io.type not in [types.INT, types.FLOAT]:
+        if io.type not in ["int", "float"]:
             raise ValueError(
                 "Param `{}` has a an input type `{}` "
                 "and it does not correspond to hyper-param type `int or float`.".format(

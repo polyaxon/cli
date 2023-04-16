@@ -17,10 +17,10 @@ import datetime
 
 from typing import Optional
 
+from clipped.types.email import EmailStr
 from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import EmailStr
 
 
 class V1OrganizationMember(BaseSchemaModel):

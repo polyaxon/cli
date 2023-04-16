@@ -15,7 +15,6 @@
 # limitations under the License.
 from typing import Dict, Union
 
-from polyaxon import types
 from polyaxon.auxiliaries import get_default_notification_container
 from polyaxon.polyflow import (
     V1IO,
@@ -59,13 +58,13 @@ def get_notifier_operation(
                 external_host=True,
             ),
             inputs=[
-                V1IO.construct(name="backend", type=types.STR, is_optional=False),
-                V1IO.construct(name="owner", type=types.STR, is_optional=False),
-                V1IO.construct(name="project", type=types.STR, is_optional=False),
-                V1IO.construct(name="uuid", type=types.STR, is_optional=False),
-                V1IO.construct(name="name", type=types.STR, is_optional=True),
-                V1IO.construct(name="condition", type=types.DICT, is_optional=True),
-                V1IO.construct(name="connection", type=types.STR, is_optional=True),
+                V1IO.construct(name="backend", type="str", is_optional=False),
+                V1IO.construct(name="owner", type="str", is_optional=False),
+                V1IO.construct(name="project", type="str", is_optional=False),
+                V1IO.construct(name="uuid", type="str", is_optional=False),
+                V1IO.construct(name="name", type="str", is_optional=True),
+                V1IO.construct(name="condition", type="dict", is_optional=True),
+                V1IO.construct(name="connection", type="str", is_optional=True),
             ],
             run=V1NotifierJob.construct(
                 connections=[connection],

@@ -16,6 +16,7 @@
 from typing import List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import IntOrRef, RefField
 from pydantic import Field, StrictStr, validator
 
 from polyaxon.k8s import k8s_schemas, k8s_validation
@@ -23,7 +24,6 @@ from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.init import V1Init
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.schemas.fields import IntOrRef, RefField
 
 
 class V1Dask(BaseRun):

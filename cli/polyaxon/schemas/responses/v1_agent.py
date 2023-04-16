@@ -18,11 +18,11 @@ import datetime
 
 from typing import Any, Dict, List, Optional
 
+from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.lifecycle import V1Statuses
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import UUIDStr
 
 
 class V1Agent(BaseSchemaModel):

@@ -19,10 +19,8 @@ import os
 from collections.abc import Mapping
 from typing import Any, Dict, Optional, Type
 
-import orjson
-
 from clipped.utils.enums import PEnum
-from clipped.utils.json import orjson_dumps
+from clipped.utils.json import orjson_dumps, orjson_loads
 from clipped.utils.paths import check_or_create_path
 
 from polyaxon.contexts import paths as ctx_paths
@@ -208,7 +206,7 @@ class BaseConfigManager:
             return cls.CONFIG.read(config_filepath)
         with open(config_filepath, "r") as config_file:
             config_str = config_file.read()
-        return cls.CONFIG(**orjson.loads(config_str))
+        return cls.CONFIG(**orjson_loads(config_str))
 
     @classmethod
     def get_config_defaults(cls) -> Dict:

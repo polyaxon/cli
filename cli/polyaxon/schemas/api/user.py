@@ -15,10 +15,10 @@
 # limitations under the License.
 from typing import Optional
 
+from clipped.types.email import EmailStr
 from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import EmailStr
 
 
 class UserConfig(BaseSchemaModel):

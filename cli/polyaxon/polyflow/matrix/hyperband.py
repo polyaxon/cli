@@ -18,6 +18,7 @@ import math
 from typing import Dict, List, Optional, Tuple, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 from pydantic import Field, NonNegativeFloat, PositiveInt, PrivateAttr
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
@@ -26,7 +27,6 @@ from polyaxon.polyflow.matrix.kinds import V1MatrixKind
 from polyaxon.polyflow.matrix.params import V1HpParam
 from polyaxon.polyflow.matrix.tuner import V1Tuner
 from polyaxon.polyflow.optimization import V1OptimizationMetric, V1OptimizationResource
-from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 
 class V1Hyperband(BaseSearchConfig):
@@ -86,7 +86,6 @@ class V1Hyperband(BaseSearchConfig):
     ## Python usage
 
     ```python
-    >>> from polyaxon import types
     >>> from polyaxon.polyflow import (
     >>>     V1Hyperband, V1HpLogSpace, V1HpChoice, V1FailureEarlyStopping, V1MetricEarlyStopping,
     >>>     V1OptimizationMetric, V1Optimization, V1OptimizationResource,
@@ -96,7 +95,7 @@ class V1Hyperband(BaseSearchConfig):
     >>>   params={"param1": V1HpLogSpace(...), "param2": V1HpChoice(...), ... },
     >>>   resume=True,
     >>>   metric=V1OptimizationMetric(name="loss", optimization=V1Optimization.MINIMIZE),
-    >>>   resource=V1OptimizationResource(name="num_steps", type=types.INT),
+    >>>   resource=V1OptimizationResource(name="num_steps", type='int'),
     >>>   early_stopping=[V1FailureEarlyStopping(...), V1MetricEarlyStopping(...)]
     >>> )
     ```

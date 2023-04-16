@@ -18,6 +18,7 @@ import copy
 from collections.abc import Mapping
 from typing import Dict, List, Optional, Union
 
+from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.bools import to_bool
 
 from polyaxon import pkg
@@ -30,7 +31,6 @@ from polyaxon.polyaxonfile.specs import (
     kinds,
 )
 from polyaxon.polyflow import V1Component, V1Init, V1Matrix, V1MatrixKind, V1Operation
-from polyaxon.schemas import V1PatchStrategy
 
 
 def get_op_specification(
@@ -114,7 +114,7 @@ def get_op_specification(
         git_preset = V1Operation(
             run_patch={"init": [git_init.to_dict()]}, is_preset=True
         )
-        config = config.patch(git_preset, strategy=V1PatchStrategy.PRE_MERGE)
+        config = config.patch(git_preset, strategy=PatchStrategy.PRE_MERGE)
 
     # Sanity check if params were passed and we are not dealing with a hub component
     params = copy.deepcopy(config.params)

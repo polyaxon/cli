@@ -13,20 +13,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import json
 import logging
 import time
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
+import orjson
+
+from clipped.utils.json import orjson_loads
 from clipped.utils.logging import LogLevels
 from docker import APIClient
 from docker.errors import APIError, BuildError
 from urllib3.exceptions import ReadTimeoutError
 
-from polyaxon.exceptions import PolyaxonBuildException
-from polyaxon.schemas.types import V1UriType
+from polyaxon.exceptions import PolyaxonBuildException, PolyaxonSchemaError
+from polyaxon.schemas.types import Uri
 
 _logger = logging.getLogger("polyaxon.dockerizer")
 
@@ -41,7 +42,7 @@ class DockerMixin:
         status = True
         for raw_line in raw_lines:
             try:
-                json_line = json.loads(raw_line)
+                json_line = orjson_loads(raw_line)
 
                 if json_line.get("error"):
                     log_lines.append(
@@ -65,7 +66,7 @@ class DockerMixin:
                         )
                     else:
                         log_lines.append(str(json_line))
-            except json.JSONDecodeError:
+            except orjson.JSONDecodeError:
                 log_lines.append("JSON decode error: {}".format(raw_line))
         return log_lines, status
 
@@ -107,29 +108,25 @@ class DockerBuilder(DockerMixin):
         context: str,
         destination: str,
         credstore_env: Optional[Dict] = None,
-        registries: Optional[List[V1UriType]] = None,
+        registries: Optional[List[Union[Uri, str]]] = None,
         docker: Optional[APIClient] = None,
     ):
+        from polyaxon.config.parser import Parser
+
+        get_uri = Parser.parse(Uri)
         self.destination = destination
 
         self.context = context
-        self._validate_registries(registries)
-        self.registries = registries
+        self.registries = []
+        for r in registries or []:
+            try:
+                self.registries.append(get_uri(value=r, key="DockerBuilder"))
+            except PolyaxonSchemaError:
+                raise PolyaxonBuildException(
+                    "Registry `{}` is not valid Uri.".format(r)
+                )
         self.docker = docker or APIClient(version="auto", credstore_env=credstore_env)
         self.is_pushing = False
-
-    @staticmethod
-    def _validate_registries(registries: Optional[List[V1UriType]]):
-        if not registries or isinstance(registries, V1UriType):
-            return True
-
-        for registry in registries:
-            if not isinstance(registry, V1UriType):
-                raise PolyaxonBuildException(
-                    "A registry `{}` is not valid Urispec.".format(registry)
-                )
-
-        return True
 
     def check_image(self):
         return self.docker.images(self.destination)
@@ -141,7 +138,7 @@ class DockerBuilder(DockerMixin):
             self.docker.login(
                 username=registry.user,
                 password=registry.password,
-                registry=registry.host,
+                registry=registry.host_port,
                 reauth=True,
             )
 
@@ -189,7 +186,7 @@ def _build(
     nocache: bool,
     docker: Optional[APIClient] = None,
     credstore_env: Optional[Dict] = None,
-    registries: Optional[List[V1UriType]] = None,
+    registries: Optional[List[Union[Uri, str]]] = None,
 ):
     """Build necessary code for a job to run"""
     _logger.info("Starting build ...")
@@ -217,7 +214,7 @@ def build(
     nocache: bool,
     docker: Optional[APIClient] = None,
     credstore_env: Optional[Dict] = None,
-    registries: Optional[List[V1UriType]] = None,
+    registries: Optional[List[Union[Uri, str]]] = None,
     max_retries: int = 3,
     sleep_interval: int = 1,
 ):
@@ -277,7 +274,7 @@ def build_and_push(
     destination: str,
     nocache: bool,
     credstore_env: Optional[Dict] = None,
-    registries: Optional[List[V1UriType]] = None,
+    registries: Optional[List[Union[Uri, str]]] = None,
     max_retries: int = 3,
     sleep_interval: int = 1,
 ):

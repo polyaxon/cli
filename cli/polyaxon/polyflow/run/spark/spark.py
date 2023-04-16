@@ -16,6 +16,7 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import RefField
 from clipped.utils.enums import PEnum
 from pydantic import Field, StrictStr
 
@@ -23,7 +24,6 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.spark.replica import V1SparkReplica
-from polyaxon.schemas.fields import RefField
 
 
 class V1SparkType(str, PEnum):

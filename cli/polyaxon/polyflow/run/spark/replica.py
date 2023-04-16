@@ -15,13 +15,13 @@
 # limitations under the License.
 from typing import List, Optional, Union
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import StrictInt, validator
 
 from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.init import V1Init
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import RefField
 
 
 class V1SparkReplica(BaseSchemaModel):

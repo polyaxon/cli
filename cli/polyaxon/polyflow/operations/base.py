@@ -15,6 +15,7 @@
 # limitations under the License.
 from typing import Dict, List, Optional, Set, Union
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, StrictStr
 
 from polyaxon.contexts import refs as ctx_refs
@@ -25,7 +26,6 @@ from polyaxon.polyflow.joins import V1Join
 from polyaxon.polyflow.matrix import MatrixMixin, V1Matrix
 from polyaxon.polyflow.schedules import ScheduleMixin, V1Schedule
 from polyaxon.polyflow.trigger_policies import V1TriggerPolicy
-from polyaxon.schemas.fields import RefField
 
 
 class BaseOp(BaseComponent, MatrixMixin, ScheduleMixin):

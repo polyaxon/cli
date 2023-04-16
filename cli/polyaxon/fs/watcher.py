@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import os
 
 from collections import namedtuple
@@ -21,6 +20,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set
 
 from clipped.utils.dates import path_last_modified
+from clipped.utils.json import orjson_dumps
 from clipped.utils.paths import get_files_and_dirs_in_path
 
 from polyaxon.contexts import paths as ctx_paths
@@ -45,7 +45,7 @@ class FSWatcherConfig(BaseSchemaModel):
 
     @classmethod
     def _dump(cls, obj_dict: Dict) -> str:
-        return json.dumps(obj_dict, default=cls._datetime_handler)
+        return orjson_dumps(obj_dict, default=cls._datetime_handler)
 
     @staticmethod
     def _parse_mapping(mapping: Optional[Dict]) -> Optional[Dict]:

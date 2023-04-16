@@ -16,6 +16,7 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import IntOrRef, RefField
 from clipped.utils.enums import PEnum
 from pydantic import Field, PositiveInt, validator
 
@@ -25,7 +26,6 @@ from polyaxon.polyflow.matrix.kinds import V1MatrixKind
 from polyaxon.polyflow.matrix.params import V1HpParam
 from polyaxon.polyflow.matrix.tuner import V1Tuner
 from polyaxon.polyflow.optimization import V1OptimizationMetric
-from polyaxon.schemas.fields.ref_or_obj import IntOrRef, RefField
 
 
 class V1HyperoptAlgorithms(str, PEnum):

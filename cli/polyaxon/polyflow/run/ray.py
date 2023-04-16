@@ -16,9 +16,10 @@
 from typing import Dict, Union
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import RefField
+
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
 class V1Ray(BaseRun):

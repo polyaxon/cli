@@ -17,6 +17,7 @@ import datetime
 
 from typing import Any, Dict, List, Optional
 
+from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
@@ -24,7 +25,6 @@ from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.schemas import V1RunPending
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import UUIDStr
 from polyaxon.schemas.responses.v1_cloning import V1Cloning
 from polyaxon.schemas.responses.v1_pipeline import V1Pipeline
 from polyaxon.schemas.responses.v1_run_settings import V1RunSettings

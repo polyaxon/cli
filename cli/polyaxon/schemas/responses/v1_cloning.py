@@ -15,11 +15,11 @@
 # limitations under the License.
 from typing import Optional
 
+from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.polyflow import V1CloningKind
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import UUIDStr
 
 
 class V1Cloning(BaseSchemaModel):

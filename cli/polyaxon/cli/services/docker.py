@@ -18,16 +18,16 @@ import sys
 import click
 
 from clipped.formatting import Printer
+from clipped.types.docker_image import validate_image
 from clipped.utils.paths import copy_file
 from pydantic import ValidationError
 
 from polyaxon.builds.generator import DockerFileGenerator
 from polyaxon.cli.check import check_polyaxonfile
 from polyaxon.cli.errors import handle_cli_error
-from polyaxon.config_reader.spec import ConfigSpec
+from polyaxon.config.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonBuildException, PolyaxonSchemaError
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
-from polyaxon.schemas.fields.docker_image import validate_image
 from polyaxon.schemas.types import V1DockerfileType
 
 

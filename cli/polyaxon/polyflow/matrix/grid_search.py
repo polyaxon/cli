@@ -16,14 +16,14 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.config.schema import skip_partial
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, PositiveInt, validator
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
 from polyaxon.polyflow.matrix.params import V1HpParam
-from polyaxon.schemas.base import skip_partial
-from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
 def validate_matrix(matrix):

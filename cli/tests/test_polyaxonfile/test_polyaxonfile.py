@@ -93,7 +93,9 @@ class TestPolyaxonfiles(BaseTestCase):
 
     def test_from_git_hub(self):
         os.environ[EV_KEYS_USE_GIT_REGISTRY] = "true"
-        with patch("polyaxon.config_reader.spec._read_from_public_hub") as request_mock:
+        with patch(
+            "polyaxon.config.spec.ConfigSpec.read_from_public_hub"
+        ) as request_mock:
             request_mock.return_value = os.path.abspath(
                 "tests/fixtures/plain/simple_job.yml"
             )

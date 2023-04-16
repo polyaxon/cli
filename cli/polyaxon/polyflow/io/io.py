@@ -15,12 +15,12 @@
 # limitations under the License.
 from typing import Any, List, Optional
 
+from clipped.config.schema import skip_partial
 from pydantic import Field, StrictStr, root_validator, validator
 
-from polyaxon import types
+from polyaxon.config.parser import Parser
 from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
-from polyaxon.parser import parser
-from polyaxon.schemas.base import BaseSchemaModel, skip_partial
+from polyaxon.schemas.base import BaseSchemaModel
 
 IO_NAME_BLACK_LIST = ["globals", "params", "connections"]
 IO_NAME_ERROR = (
@@ -41,7 +41,7 @@ def validate_io_value(
     parse: bool = True,
 ):
     try:
-        parsed_value = parser.TYPE_MAPPING[type](
+        parsed_value = Parser.parse(type)(
             key=name,
             value=value,
             is_list=is_list,
@@ -84,10 +84,10 @@ def validate_io(name, type, value, is_optional, is_list, is_flag, options):
             )
         )
 
-    if is_flag and type != types.BOOL:
+    if is_flag and type != "bool":
         raise TypeError(
             "IO type `{}` cannot be a flag, it must be of type `{}`".format(
-                type, types.BOOL
+                type, "bool"
             )
         )
 
@@ -127,7 +127,7 @@ class V1IO(BaseSchemaModel):
     Args:
         name: str
         description: str, optional
-        type: str, one of: [any, int, float, bool, str, dict, dict_of_dicts, uri, auth, list, gcs, s3, wasb, dockerfile, git, image, event, artifacts, path, metric, metadata, date, datetime]  # noqa
+        type: str, any python type hint, pydantic built-in types, and gcs, s3, wasb, dockerfile, git, image, event, artifacts, path, metric, metadata, date, datetime.
         value: any, optional
         is_optional: bool, optional
         is_list: bool, optional
@@ -164,21 +164,21 @@ class V1IO(BaseSchemaModel):
     >>> inputs = [
     >>>     V1IO(
     >>>         name="loss",
-    >>>         type=types.STR,
+    >>>         type='str',
     >>>         description="Loss to use for training my model",
     >>>         is_optional=True,
     >>>         value="MeanSquaredError"
     >>>     ),
     >>>     V1IO(
     >>>         name="preprocess",
-    >>>         type=types.BOOL,
+    >>>         type='bool',
     >>>         description="A flag to preprocess data before training",
     >>>     )
     >>> ]
     >>> outputs = [
     >>>     V1IO(
     >>>         name="accuracy",
-    >>>         type=types.FLOAT,
+    >>>         type='float',
     >>>     ),
     >>>     V1IO(
     >>>         name="outputs-path",
@@ -227,16 +227,8 @@ class V1IO(BaseSchemaModel):
 
     for more details about composite type validation and schema,
     please check the [types section](/docs/core/specification/types/),
-    possible types:
-        * ANY: "any"
-        * INT: "int"
-        * FLOAT: "float"
-        * BOOL: "bool"
-        * STR: "str"
-        * DICT: "dict"
-        * DICT_OF_DICTS: "dict_of_dicts"
+    possible types include any python type hint, pydantic built-in types, and:
         * URI: "uri"
-        * AUTH: "auth"
         * LIST: "list"
         * GCS: "gcs"
         * S3: "s3"
@@ -249,8 +241,6 @@ class V1IO(BaseSchemaModel):
         * PATH: "path"
         * METRIC: "metric"
         * METADATA: "metadata"
-        * DATE: "date"
-        * DATETIME: "datetime"
 
     ### value
 
@@ -514,15 +504,6 @@ class V1IO(BaseSchemaModel):
     def validate_name(cls, v):
         if v in IO_NAME_BLACK_LIST:
             raise ValueError(IO_NAME_ERROR)
-        return v
-
-    @validator("type", always=True)
-    def validate_type(cls, v):
-        if v and v not in types.VALUES:
-            raise ValueError(
-                "Received an input/output with an invalid type `{}`, "
-                "please use one of the following types: {}".format(v, types.VALUES)
-            )
         return v
 
     @root_validator

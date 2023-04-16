@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
 from collections import defaultdict, namedtuple
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
+from clipped.utils.json import orjson_loads
 from clipped.utils.units import to_cpu_value, to_memory_bytes
 
 from polyaxon.exceptions import PQLException
@@ -31,7 +30,7 @@ class QueryOpSpec(namedtuple("QueryOpSpec", "op negation params")):
 
 def parse_operation_value(value: Any):
     try:
-        return json.loads(value)
+        return orjson_loads(value)
     except ValueError:
         return value
 

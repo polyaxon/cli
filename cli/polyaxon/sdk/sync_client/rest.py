@@ -16,12 +16,13 @@
 
 
 import io
-import json
 import logging
 import re
 import ssl
 
 import urllib3
+
+from clipped.utils.json import orjson_dumps
 
 from polyaxon.sdk.exceptions import (
     ApiException,
@@ -168,7 +169,7 @@ class RESTClientObject(object):
                 ):
                     request_body = None
                     if body is not None:
-                        request_body = json.dumps(body)
+                        request_body = orjson_dumps(body)
                     r = self.pool_manager.request(
                         method,
                         url,

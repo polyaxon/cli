@@ -15,8 +15,9 @@
 # limitations under the License.
 from typing import List, Optional
 
+from clipped.types.uuids import UUIDStr
+
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import UUIDStr
 
 
 class V1Uuids(BaseSchemaModel):

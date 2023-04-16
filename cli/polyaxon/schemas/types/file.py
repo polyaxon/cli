@@ -15,9 +15,9 @@
 # limitations under the License.
 from typing import Optional, Union
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import StrictStr
 
-from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.base import BaseTypeConfig
 from traceml.artifacts import V1ArtifactKind
 
@@ -101,7 +101,6 @@ class V1FileType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1IO
     >>> inputs = [
     >>>     V1IO(
@@ -115,7 +114,6 @@ class V1FileType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1Param
     >>>
     >>> params = {

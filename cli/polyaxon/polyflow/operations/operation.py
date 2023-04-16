@@ -17,6 +17,8 @@ from copy import copy
 from typing import Dict, Optional
 from typing_extensions import Literal
 
+from clipped.config.patch_strategy import PatchStrategy
+from clipped.config.schema import skip_partial, to_partial
 from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon.polyflow.builds import V1Build
@@ -27,8 +29,6 @@ from polyaxon.polyflow.params import V1Param
 from polyaxon.polyflow.references import V1DagRef, V1HubRef, V1PathRef, V1UrlRef
 from polyaxon.polyflow.run.patch import validate_run_patch
 from polyaxon.polyflow.templates import TemplateMixinConfig, V1Template
-from polyaxon.schemas.base import skip_partial, to_partial
-from polyaxon.schemas.patch_strategy import V1PatchStrategy
 
 
 class V1Operation(BaseOp, TemplateMixinConfig):
@@ -514,7 +514,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     url_ref: Optional[StrictStr] = Field(alias="urlRef")
     path_ref: Optional[StrictStr] = Field(alias="pathRef")
     component: Optional[V1Component]
-    patch_strategy: Optional[V1PatchStrategy] = Field(alias="patchStrategy")
+    patch_strategy: Optional[PatchStrategy] = Field(alias="patchStrategy")
     is_preset: Optional[bool] = Field(alias="isPreset")
     run_patch: Optional[Dict] = Field(alias="runPatch")
     template: Optional[V1Template]
@@ -612,8 +612,8 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         self.component = value
 
     @classmethod
-    def patch_obj(cls, config, values, strategy: V1PatchStrategy = None):
-        strategy = strategy or V1PatchStrategy.POST_MERGE
+    def patch_obj(cls, config, values, strategy: PatchStrategy = None):
+        strategy = strategy or PatchStrategy.POST_MERGE
 
         result = super().patch_obj(config, values, strategy)
         value = getattr(values, "run_patch", None)
@@ -631,9 +631,9 @@ class V1Operation(BaseOp, TemplateMixinConfig):
             or not config.component.run.kind
         ):
             # We don't have a kind, we don't do anything
-            if V1PatchStrategy.is_null(strategy):
+            if PatchStrategy.is_null(strategy):
                 return result
-            if V1PatchStrategy.is_replace(strategy):
+            if PatchStrategy.is_replace(strategy):
                 setattr(result, "run_patch", value)
                 return result
             return result

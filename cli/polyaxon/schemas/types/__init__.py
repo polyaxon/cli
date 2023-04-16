@@ -14,16 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from clipped.types.gcs import GcsPath
+from clipped.types.s3 import S3Path
+from clipped.types.uri import Uri
+from clipped.types.wasb import WasbPath
+
 from polyaxon.schemas.types.artifacts import V1ArtifactsType
-from polyaxon.schemas.types.auth import V1AuthType
 from polyaxon.schemas.types.connections import V1ConnectionType
 from polyaxon.schemas.types.dockerfile import V1DockerfileType
 from polyaxon.schemas.types.event import V1EventType
 from polyaxon.schemas.types.file import V1FileType
-from polyaxon.schemas.types.gcs import V1GcsType
 from polyaxon.schemas.types.git import V1GitType
 from polyaxon.schemas.types.k8s_resources import V1K8sResourceType
-from polyaxon.schemas.types.s3 import V1S3Type
 from polyaxon.schemas.types.tensorboard import V1TensorboardType
-from polyaxon.schemas.types.uri import V1UriType
-from polyaxon.schemas.types.wasb import V1WasbType
+
+V1GcsType = GcsPath
+V1S3Type = S3Path
+V1UriType = Uri
+V1WasbType = WasbPath

@@ -20,10 +20,11 @@ import sys
 import click
 
 from clipped.formatting import Printer
+from clipped.utils.lists import to_list
 from clipped.utils.paths import check_or_create_path, copy_file
 from pydantic import ValidationError
 
-from polyaxon.config_reader.spec import ConfigSpec
+from polyaxon.config.spec import ConfigSpec
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.schemas.types import V1FileType
@@ -98,10 +99,9 @@ def file(file_context, filepath, copy_path, track):
 def git(url, repo_path, revision, connection, flags):
     """Create auth context."""
     from polyaxon.init.git import create_code_repo
-    from polyaxon.parser import parser
 
     if flags:
-        flags = parser.get_string("flags", flags, is_list=True)
+        flags = to_list(flags, check_str=True)
 
     create_code_repo(
         repo_path=repo_path,

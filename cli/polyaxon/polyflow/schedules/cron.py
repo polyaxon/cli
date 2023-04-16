@@ -16,14 +16,14 @@
 from typing import Optional
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import BoolOrRef, DatetimeOrRef, IntOrRef
 from pydantic import Field, StrictStr
 
 from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
-from polyaxon.schemas.base import BaseDiscriminatedModel
-from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, DatetimeOrRef, IntOrRef
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class V1CronSchedule(BaseDiscriminatedModel):
+class V1CronSchedule(BaseSchemaModel):
     """Cron schedules is an interface to trigger components repeatedly using a cron definition.
 
     Args:
@@ -125,6 +125,7 @@ class V1CronSchedule(BaseDiscriminatedModel):
     """
 
     _IDENTIFIER = V1ScheduleKind.CRON
+    _USE_DISCRIMINATOR = True
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     cron: StrictStr

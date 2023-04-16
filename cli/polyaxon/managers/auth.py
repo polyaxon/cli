@@ -17,8 +17,8 @@ import os
 
 from typing import Type
 
-from polyaxon.config_reader.manager import ConfigManager
-from polyaxon.config_reader.spec import ConfigSpec
+from polyaxon.config.manager import ConfigManager
+from polyaxon.config.spec import ConfigSpec
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.api.authentication import AccessTokenConfig

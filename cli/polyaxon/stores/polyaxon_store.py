@@ -13,13 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import os
 import requests
 
 from typing import Dict, List
 
 from clipped.formatting import Printer
+from clipped.utils.json import orjson_dumps
 from clipped.utils.lists import to_list
 from clipped.utils.paths import (
     check_or_create_path,
@@ -126,7 +126,7 @@ class PolyaxonStore:
 
         files = to_list(files)
         if json_data:
-            files.append(("json", json.dumps(json_data)))
+            files.append(("json", orjson_dumps(json_data)))
 
         multipart_encoder = MultipartEncoder(fields=files)
         request_headers = self._client.client.config.get_full_headers(headers=headers)

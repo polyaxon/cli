@@ -15,11 +15,11 @@
 # limitations under the License.
 from typing import Dict, List, Optional, Union
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, StrictStr
 
 from polyaxon.polyflow.params import V1Param
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
 class V1Tuner(BaseSchemaModel):

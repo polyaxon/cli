@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import os
 
 from typing import Any, Iterable, List, Optional
 
 from clipped.utils.enums import get_enum_value
+from clipped.utils.json import orjson_dumps
 from clipped.utils.lists import to_list
 
 from polyaxon.connections.reader import (
@@ -52,7 +52,7 @@ from polyaxon.services.headers import PolyaxonServiceHeaders
 def get_str_var(value: Any) -> str:
     if value is not None and not isinstance(value, str):
         try:
-            value = json.dumps(value)
+            value = orjson_dumps(value)
         except (ValueError, TypeError) as e:
             raise PolypodException(e)
     return value or ""
@@ -61,7 +61,7 @@ def get_str_var(value: Any) -> str:
 def get_env_var(name: str, value: Any) -> k8s_schemas.V1EnvVar:
     if not isinstance(value, str):
         try:
-            value = json.dumps(value)
+            value = orjson_dumps(value)
         except (ValueError, TypeError) as e:
             raise PolypodException(e)
 

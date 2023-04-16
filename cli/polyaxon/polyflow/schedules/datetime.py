@@ -15,14 +15,14 @@
 # limitations under the License.
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import DatetimeOrRef
 from pydantic import Field
 
 from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
-from polyaxon.schemas.base import BaseDiscriminatedModel
-from polyaxon.schemas.fields.ref_or_obj import DatetimeOrRef
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class V1DateTimeSchedule(BaseDiscriminatedModel):
+class V1DateTimeSchedule(BaseSchemaModel):
     """Date schedule is an interface to kick a component execution at a specific time.
 
     Args:
@@ -74,6 +74,7 @@ class V1DateTimeSchedule(BaseDiscriminatedModel):
     """
 
     _IDENTIFIER = V1ScheduleKind.DATETIME
+    _USE_DISCRIMINATOR = True
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     start_at: DatetimeOrRef = Field(alias="startAt")

@@ -13,3 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from clipped.config.parser import Parser as _Parser
+from clipped.decorators.memoization import memoize
+
+from polyaxon.exceptions import PolyaxonSchemaError
+
+
+class Parser(_Parser):
+    _SCHEMA_EXCEPTION = PolyaxonSchemaError
+
+    @staticmethod
+    @memoize
+    def type_mapping():
+        from polyaxon import types
+
+        return types.MAPPING
+
+    @staticmethod
+    @memoize
+    def type_forwarding():
+        from polyaxon import types
+
+        return types.FORWARDING

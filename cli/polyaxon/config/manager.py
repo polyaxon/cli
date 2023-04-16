@@ -13,5 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from clipped.config.manager import ConfigManager as _ConfigManager
 
-NO_VALUE_FOUND = "_NO_VALUE_FOUND"
+from polyaxon.config.spec import ConfigSpec
+
+
+class ConfigManager(_ConfigManager):
+    _CONFIG_SPEC = ConfigSpec

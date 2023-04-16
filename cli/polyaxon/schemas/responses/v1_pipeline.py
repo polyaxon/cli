@@ -15,11 +15,11 @@
 # limitations under the License.
 from typing import Optional
 
+from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.polyflow.run.kinds import V1PipelineKind
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import UUIDStr
 
 
 class V1Pipeline(BaseSchemaModel):

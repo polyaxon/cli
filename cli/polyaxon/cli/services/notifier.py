@@ -16,6 +16,8 @@
 
 import click
 
+from clipped.utils.json import orjson_loads
+
 from polyaxon.cli.options import OPTIONS_NAME
 
 
@@ -78,12 +80,11 @@ def notify(
     outputs,
 ):
     """Notifier command."""
-    import orjson
 
     from polyaxon.lifecycle import V1StatusCondition
     from polyaxon.notifiers import NOTIFIERS, NotificationSpec
 
-    condition = orjson.loads(condition)
+    condition = orjson_loads(condition)
     condition = V1StatusCondition.get_condition(**condition)
     status = status or condition.type
     notification = NotificationSpec(

@@ -23,7 +23,6 @@
 
 import errno
 import fcntl
-import json
 import os
 import pty
 import select
@@ -32,6 +31,7 @@ import struct
 import termios
 import tty
 
+from clipped.utils.json import orjson_dumps
 from polyaxon.client.transport import ws_client
 
 
@@ -105,7 +105,7 @@ class PseudoTerminal:
         )
         rows, cols, h_pixels, v_pixels = struct.unpack("HHHH", packed)
         self.client_shell.write_channel(
-            ws_client.RESIZE_CHANNEL, json.dumps({"Height": rows, "Width": cols})
+            ws_client.RESIZE_CHANNEL, orjson_dumps({"Height": rows, "Width": cols})
         )
 
     def _loop(self):

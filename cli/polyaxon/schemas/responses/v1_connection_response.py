@@ -17,11 +17,11 @@ import datetime
 
 from typing import List, Optional
 
+from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields import UUIDStr
 
 
 class V1ConnectionResponse(BaseSchemaModel):

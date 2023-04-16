@@ -41,19 +41,19 @@ class TestDockerBuilder(BaseTestCase):
 
     def test_validate_registries(self):
         with self.assertRaises(PolyaxonBuildException):
-            DockerBuilder(context=".", destination="image:tag", registries="foo")
+            DockerBuilder(context=".", destination="image:tag", registries=["foo"])
 
         with self.assertRaises(PolyaxonBuildException):
             DockerBuilder(
                 context=".",
                 destination="image:tag",
-                registries=["foo", V1UriType(user="user", password="pwd", host="host")],
+                registries=["https://user@pwd:host"],
             )
 
         builder = DockerBuilder(
             context=".",
             destination="image:tag",
-            registries=[V1UriType(user="user", password="pwd", host="host")],
+            registries=["https://user:pwd@host.ca"],
         )
 
         assert builder.registries is not None
@@ -64,8 +64,8 @@ class TestDockerBuilder(BaseTestCase):
             context=".",
             destination="image:tag",
             registries=[
-                V1UriType(user="user", password="pwd", host="host"),
-                V1UriType(user="user", password="pwd", host="host"),
+                "https://user:pass@siteweb.ca",
+                V1UriType(url="https://user@pwd:host", scheme="https"),
             ],
         )
         builder.login_private_registries()
@@ -106,8 +106,8 @@ class TestBuilder(BaseTestCase):
             destination="image_name:image_tag",
             nocache=True,
             registries=[
-                V1UriType(user="user", password="pwd", host="host"),
-                V1UriType(user="user", password="pwd", host="host"),
+                "https://user:pass@siteweb.ca",
+                "https://user:pass@siteweb.ca",
             ],
         )
         assert login_mock.call_count == 2
@@ -122,8 +122,8 @@ class TestBuilder(BaseTestCase):
             destination="image_name:image_tag",
             nocache=True,
             registries=[
-                V1UriType(user="user", password="pwd", host="host"),
-                V1UriType(user="user", password="pwd", host="host"),
+                "https://user:pass@siteweb.ca",
+                "https://user:pass@siteweb.ca",
             ],
         )
         assert login_mock.call_count == 2

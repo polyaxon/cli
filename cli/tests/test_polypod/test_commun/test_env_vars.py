@@ -67,7 +67,7 @@ class TestEnvVars(BaseTestCase):
         assert var == "1"
         # Dict value
         var = get_str_var(value={"moo": "bar"})
-        assert var == '{"moo": "bar"}'
+        assert var == '{"moo":"bar"}'
         # Empty value
         var = get_str_var(value=None)
         assert var == ""
@@ -87,7 +87,7 @@ class TestEnvVars(BaseTestCase):
         # Dict value
         env_var = get_env_var(name="foo", value={"moo": "bar"})
         assert env_var.name == "foo"
-        assert env_var.value == '{"moo": "bar"}'
+        assert env_var.value == '{"moo":"bar"}'
 
     def test_get_kv_env_var(self):
         # Empty value
@@ -102,7 +102,7 @@ class TestEnvVars(BaseTestCase):
             [["foo", {"moo": "bar"}], ("foo", "bar"), ["foo", 1]]
         )
         assert env_vars[0].name == "foo"
-        assert env_vars[0].value == '{"moo": "bar"}'
+        assert env_vars[0].value == '{"moo":"bar"}'
         assert env_vars[1].name == "foo"
         assert env_vars[1].value == "bar"
         assert env_vars[2].name == "foo"

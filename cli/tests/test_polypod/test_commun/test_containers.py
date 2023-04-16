@@ -81,7 +81,7 @@ class TestSanitizeContainerEnv(BaseTestCase):
         )
         assert sanitize_container_env(value).env[0] == {
             "name": "secret-name",
-            "value": '{"foo": "bar"}',
+            "value": '{"foo":"bar"}',
         }
 
         value = MagicMock(env=[{"foo": {"key": "value"}}])
@@ -137,7 +137,7 @@ class TestSanitizeContainerEnv(BaseTestCase):
         )
         assert sanitize_container_env(value).env[0] == k8s_schemas.V1EnvVar(
             name="secret-name",
-            value='{"foo": "bar"}',
+            value='{"foo":"bar"}',
         )
 
     def test_sanitize_container_env_value_from(self):

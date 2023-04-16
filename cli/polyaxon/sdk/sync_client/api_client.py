@@ -16,7 +16,6 @@
 
 import atexit
 import datetime
-import json
 import mimetypes
 import os
 import re
@@ -25,6 +24,7 @@ import tempfile
 from multiprocessing.pool import ThreadPool
 from urllib.parse import quote
 
+from clipped.utils.json import orjson_dumps, orjson_loads
 from dateutil.parser import parse
 
 import polyaxon.sdk.models
@@ -336,7 +336,7 @@ class ApiClient(object):
 
         # fetch data from response object
         try:
-            data = json.loads(response.data)
+            data = orjson_loads(response.data)
         except ValueError:
             data = response.data
 
@@ -613,7 +613,7 @@ class ApiClient(object):
             if isinstance(v, bool):
                 v = str(v).lower()
             if isinstance(v, dict):
-                v = json.dumps(v)
+                v = orjson_dumps(v)
 
             if k in collection_formats:
                 collection_format = collection_formats[k]

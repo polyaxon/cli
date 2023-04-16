@@ -15,16 +15,16 @@
 # limitations under the License.
 from typing import List, Optional, Union
 
+from clipped.types.ref_or_obj import BoolOrRef, FloatOrRef, RefField
+from clipped.utils.lists import to_list
 from pydantic import Field, StrictStr, constr, validator
 
-from polyaxon.parser import parser
 from polyaxon.polyflow.builds import V1Build
 from polyaxon.polyflow.cache import V1Cache
 from polyaxon.polyflow.hooks import V1Hook
 from polyaxon.polyflow.plugins import V1Plugins
 from polyaxon.polyflow.termination import V1Termination
 from polyaxon.schemas.base import NAME_REGEX, BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, FloatOrRef, RefField
 
 
 class BaseComponent(BaseSchemaModel):
@@ -44,7 +44,7 @@ class BaseComponent(BaseSchemaModel):
     cost: Optional[FloatOrRef]
 
     @validator("tags", "presets", pre=True)
-    def validate_str_list(cls, v, field):
+    def validate_str_list(cls, v):
         if isinstance(v, str):
-            return parser.get_string(field, v, is_list=True)
+            return to_list(v, check_str=True)
         return v

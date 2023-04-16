@@ -23,7 +23,7 @@ from clipped.formatting import Printer
 from clipped.utils.lists import to_list
 
 from polyaxon.cli.errors import handle_cli_error
-from polyaxon.config_reader.spec import ConfigSpec
+from polyaxon.config.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 from polyaxon.polyaxonfile.manager import (
     get_op_specification,

@@ -15,11 +15,11 @@
 # limitations under the License.
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from clipped.config.schema import skip_partial
+from clipped.types.docker_image import validate_image
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, StrictStr, validator
 
-from polyaxon.schemas.base import skip_partial
-from polyaxon.schemas.fields.docker_image import validate_image
-from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.base import BaseTypeConfig
 
 POLYAXON_DOCKERFILE_NAME = "Dockerfile"
@@ -97,7 +97,6 @@ class V1DockerfileType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1IO
     >>> inputs = [
     >>>     V1IO(
@@ -111,7 +110,6 @@ class V1DockerfileType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import types
     >>> from polyaxon.polyflow import V1Param
     >>> params = {
     >>>     "test1": V1Param(

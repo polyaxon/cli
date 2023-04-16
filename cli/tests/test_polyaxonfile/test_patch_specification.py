@@ -16,14 +16,13 @@
 
 import pytest
 
+from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.dicts import deep_update
 from clipped.utils.tz import now
 
 from polyaxon import pkg, types
-from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.polyflow import V1Component, V1EventKind, V1Operation, V1RunKind
-from polyaxon.schemas.patch_strategy import V1PatchStrategy
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -179,7 +178,7 @@ class TestPatchSpecifications(BaseTestCase):
     def get_full_operation_with_component(self):
         operation = self.get_full_operation()
         config_dict = {
-            "inputs": [{"name": "param1", "type": types.INT}],
+            "inputs": [{"name": "param1", "type": "int"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         operation.component = V1Component.from_dict(config_dict)
@@ -355,13 +354,13 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.REPLACE
+            V1Operation(is_preset=True), strategy=PatchStrategy.REPLACE
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_empty_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.REPLACE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.REPLACE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -372,7 +371,7 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         preset = self.get_full_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.REPLACE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.REPLACE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -383,13 +382,13 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_full_operation()
         tmp_operation = self.get_full_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.REPLACE
+            V1Operation(is_preset=True), strategy=PatchStrategy.REPLACE
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_full_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.REPLACE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.REPLACE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         assert operation.name is not None
@@ -419,7 +418,7 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_full_operation()
         tmp_operation = self.get_full_operation()
         preset = self.get_full_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.REPLACE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.REPLACE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -430,13 +429,13 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.ISNULL
+            V1Operation(is_preset=True), strategy=PatchStrategy.ISNULL
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_empty_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.ISNULL)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.ISNULL)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -447,13 +446,13 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.ISNULL
+            V1Operation(is_preset=True), strategy=PatchStrategy.ISNULL
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_empty_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.ISNULL)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.ISNULL)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -464,33 +463,33 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_full_operation()
         tmp_operation = self.get_full_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.ISNULL
+            V1Operation(is_preset=True), strategy=PatchStrategy.ISNULL
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_full_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.ISNULL)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.ISNULL)
         assert result.to_dict() == operation.to_dict()
 
     def test_patch_isnull_full_values_with_full_preset(self):
         operation = self.get_full_operation()
         tmp_operation = self.get_full_operation()
         preset = self.get_full_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.ISNULL)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.ISNULL)
         assert result.to_dict() == operation.to_dict()
 
     def test_patch_post_merge_empty_values_with_empty_preset(self):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.POST_MERGE
+            V1Operation(is_preset=True), strategy=PatchStrategy.POST_MERGE
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_empty_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.POST_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.POST_MERGE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -501,7 +500,7 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         preset = self.get_full_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.POST_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.POST_MERGE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -512,13 +511,13 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_full_operation()
         tmp_operation = self.get_full_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.POST_MERGE
+            V1Operation(is_preset=True), strategy=PatchStrategy.POST_MERGE
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_full_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.POST_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.POST_MERGE)
         result_dict = result.to_dict()
         assert result_dict["description"] == ""
         assert result_dict["queue"] == ""
@@ -558,7 +557,7 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_full_operation_with_component()
         tmp_operation = self.get_full_operation_with_component()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.POST_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.POST_MERGE)
         result_dict = result.to_dict()
         assert result_dict["description"] == ""
         result_dict["description"] = self.DEFAULT_STR_VALUE
@@ -591,7 +590,7 @@ class TestPatchSpecifications(BaseTestCase):
         tmp_operation = self.get_full_operation()
         preset = self.get_full_preset()
         expected = preset.to_dict()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.POST_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.POST_MERGE)
         result_dict = result.to_dict()
         expected.pop("isPreset")
         expected["tags"] = operation.tags + expected["tags"]
@@ -614,7 +613,7 @@ class TestPatchSpecifications(BaseTestCase):
         tmp_operation = self.get_full_operation_with_component()
         preset = self.get_full_preset()
         expected = preset.to_dict()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.POST_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.POST_MERGE)
         result_dict = result.to_dict()
         expected.pop("isPreset")
         expected["tags"] = operation.tags + expected["tags"]
@@ -665,13 +664,13 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.PRE_MERGE
+            V1Operation(is_preset=True), strategy=PatchStrategy.PRE_MERGE
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_empty_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.PRE_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.PRE_MERGE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -682,7 +681,7 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_empty_operation()
         tmp_operation = self.get_empty_operation()
         preset = self.get_full_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.PRE_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.PRE_MERGE)
         result_dict = result.to_dict()
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
@@ -693,13 +692,13 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_full_operation()
         tmp_operation = self.get_full_operation()
         result = tmp_operation.patch(
-            V1Operation(is_preset=True), strategy=V1PatchStrategy.PRE_MERGE
+            V1Operation(is_preset=True), strategy=PatchStrategy.PRE_MERGE
         )
         assert result.to_dict() == operation.to_dict()
 
         tmp_operation = self.get_full_operation()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.PRE_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.PRE_MERGE)
         result_dict = result.to_dict()
         # Since there's no component to validate the runPatch section it stays the same
         assert result_dict == operation.to_dict()
@@ -707,7 +706,7 @@ class TestPatchSpecifications(BaseTestCase):
         operation = self.get_full_operation_with_component()
         tmp_operation = self.get_full_operation_with_component()
         preset = self.get_empty_preset()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.PRE_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.PRE_MERGE)
         result_dict = result.to_dict()
         # Run patch was validated and merged
         assert result_dict == operation.to_dict()
@@ -718,7 +717,7 @@ class TestPatchSpecifications(BaseTestCase):
         preset = self.get_full_preset()
         preset_dict = preset.to_dict()
         expected = operation.to_dict()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.PRE_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.PRE_MERGE)
         result_dict = result.to_dict()
         expected["tags"] = preset_dict["tags"] + operation.tags
         expected["presets"] = preset_dict["presets"] + operation.presets
@@ -742,7 +741,7 @@ class TestPatchSpecifications(BaseTestCase):
         preset = self.get_full_preset()
         preset_dict = preset.to_dict()
         expected = operation.to_dict()
-        result = tmp_operation.patch(preset, strategy=V1PatchStrategy.PRE_MERGE)
+        result = tmp_operation.patch(preset, strategy=PatchStrategy.PRE_MERGE)
         result_dict = result.to_dict()
         expected["tags"] = preset_dict["tags"] + operation.tags
         expected["presets"] = preset_dict["presets"] + operation.presets
@@ -821,7 +820,7 @@ class BaseTestApplyPreset(BaseTestCase):
             }
         )
         self.compiled_operation = OperationSpecification.compile_operation(op_spec)
-        self.preset = {"runPatch": {}, "patchStrategy": V1PatchStrategy.POST_MERGE}
+        self.preset = {"runPatch": {}, "patchStrategy": PatchStrategy.POST_MERGE}
 
 
 @pytest.mark.polyaxonfile_mark
@@ -841,7 +840,7 @@ class TestApplyPresetEnvironment(BaseTestApplyPreset):
         assert env == environment1
 
         # Updating the preset
-        self.preset["patchStrategy"] = V1PatchStrategy.REPLACE
+        self.preset["patchStrategy"] = PatchStrategy.REPLACE
         self.preset["runPatch"]["environment"] = environment2
         assert (
             CompiledOperationSpecification.apply_preset(
@@ -1103,7 +1102,7 @@ class TestApplyPreset(BaseTestApplyPreset):
         self.preset["termination"] = termination2
         self.preset["runPatch"]["environment"] = environment2
         self.preset["plugins"] = plugins2
-        self.preset["patchStrategy"] = V1PatchStrategy.REPLACE
+        self.preset["patchStrategy"] = PatchStrategy.REPLACE
 
         assert (
             CompiledOperationSpecification.apply_preset(
@@ -1135,7 +1134,7 @@ class TestApplyPreset(BaseTestApplyPreset):
         # Updating the preset
         self.preset["termination"] = termination3
         self.preset["runPatch"]["environment"] = environment3
-        self.preset["patchStrategy"] = V1PatchStrategy.REPLACE
+        self.preset["patchStrategy"] = PatchStrategy.REPLACE
         assert (
             CompiledOperationSpecification.apply_preset(
                 config=self.compiled_operation,

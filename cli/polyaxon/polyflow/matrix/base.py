@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.schemas.base import BaseDiscriminatedModel
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class BaseSearchConfig(BaseDiscriminatedModel):
+class BaseSearchConfig(BaseSchemaModel):
+    _USE_DISCRIMINATOR = True
+
     def create_iteration(self, **kwargs) -> int:
         return 0
 

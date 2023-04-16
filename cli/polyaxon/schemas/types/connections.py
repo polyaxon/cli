@@ -15,13 +15,13 @@
 # limitations under the License.
 from typing import Dict, List, Optional, Union
 
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, StrictStr
 
 from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.schemas import V1K8sResourceSchema
 from polyaxon.connections.schemas.connections import V1Connection
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import RefField
 from polyaxon.schemas.types.k8s_resources import V1K8sResourceType
 
 
@@ -321,9 +321,12 @@ class V1ConnectionType(BaseSchemaModel):
         if self.is_bucket:
             bucket = self.schema_.bucket.rstrip("/")
             if self.is_wasb:
-                from polyaxon.parser.parser import parse_wasbs_path
+                from polyaxon import types
+                from polyaxon.config.parser import Parser
 
-                return parse_wasbs_path(bucket).get_container_path()
+                return Parser.parse(types.WASB)(
+                    key="schema", value=bucket
+                ).get_container_path()
             return bucket
 
     @property

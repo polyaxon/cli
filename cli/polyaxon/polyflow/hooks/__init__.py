@@ -15,12 +15,12 @@
 # limitations under the License.
 from typing import Dict, List, Optional, Union
 
+from clipped.types.ref_or_obj import BoolOrRef, RefField
 from pydantic import Field, StrictStr, validator
 
 from polyaxon.lifecycle import V1Statuses
 from polyaxon.polyflow.params import V1Param
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import BoolOrRef, RefField
 
 
 class V1Hook(BaseSchemaModel):

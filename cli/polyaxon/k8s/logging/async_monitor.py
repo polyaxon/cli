@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 
 from typing import List, Optional, Tuple
 
@@ -21,7 +22,6 @@ from kubernetes_asyncio.client.models import V1Pod
 from kubernetes_asyncio.client.rest import ApiException
 
 from polyaxon.k8s.async_manager import AsyncK8SManager
-from polyaxon.types import AwareDT
 from traceml.logging import V1Log, V1Logs
 
 
@@ -74,9 +74,9 @@ async def handle_pod_logs(
 async def query_k8s_operation_logs(
     k8s_manager: AsyncK8SManager,
     instance: str,
-    last_time: Optional[AwareDT],
+    last_time: Optional[datetime.datetime],
     stream: bool = False,
-) -> Tuple[List[V1Log], Optional[AwareDT]]:
+) -> Tuple[List[V1Log], Optional[datetime.datetime]]:
     new_time = now()
     params = {}
     if last_time:
@@ -103,9 +103,9 @@ async def query_k8s_operation_logs(
 async def query_k8s_pod_logs(
     k8s_manager: AsyncK8SManager,
     pod: V1Pod,
-    last_time: Optional[AwareDT],
+    last_time: Optional[datetime.datetime],
     stream: bool = False,
-) -> Tuple[List[V1Log], Optional[AwareDT]]:
+) -> Tuple[List[V1Log], Optional[datetime.datetime]]:
     new_time = now()
     params = {}
     if last_time:

@@ -15,13 +15,13 @@
 # limitations under the License.
 from typing import Any, Dict, List, Optional, Union
 
+from clipped.config.patch_strategy import PatchStrategy
+from clipped.types.ref_or_obj import RefField
 from pydantic import Field, StrictStr
 
 from polyaxon.polyflow.cache import V1Cache
 from polyaxon.polyflow.params import V1Param
-from polyaxon.schemas import V1PatchStrategy
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import RefField
 
 
 class V1Build(BaseSchemaModel):
@@ -232,6 +232,6 @@ class V1Build(BaseSchemaModel):
     cache: Optional[Union[V1Cache, RefField]]
     params: Optional[Dict[str, Union[V1Param, RefField]]]
     run_patch: Optional[Dict[str, Any]] = Field(alias="runPatch")
-    patch_strategy: Optional[Union[V1PatchStrategy, RefField]] = Field(
+    patch_strategy: Optional[Union[PatchStrategy, RefField]] = Field(
         alias="patchStrategy"
     )

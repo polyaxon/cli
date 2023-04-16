@@ -50,7 +50,7 @@ class TestLineageResolver(BaseTestCase):
                 "inputs": [
                     {
                         "name": "param1",
-                        "type": types.STR,
+                        "type": "str",
                         "value": "test",
                         "isOptional": "true",
                     },

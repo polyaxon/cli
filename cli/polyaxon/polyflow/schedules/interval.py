@@ -16,19 +16,14 @@
 from typing import Optional
 from typing_extensions import Literal
 
+from clipped.types.ref_or_obj import BoolOrRef, DatetimeOrRef, IntOrRef, TimeDeltaOrRef
 from pydantic import Field
 
 from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
-from polyaxon.schemas.base import BaseDiscriminatedModel
-from polyaxon.schemas.fields.ref_or_obj import (
-    BoolOrRef,
-    DatetimeOrRef,
-    IntOrRef,
-    TimeDeltaOrRef,
-)
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class V1IntervalSchedule(BaseDiscriminatedModel):
+class V1IntervalSchedule(BaseSchemaModel):
     """Interval schedules is an interface to trigger components following a frequency.
 
     Args:
@@ -134,6 +129,7 @@ class V1IntervalSchedule(BaseDiscriminatedModel):
     """
 
     _IDENTIFIER = V1ScheduleKind.INTERVAL
+    _USE_DISCRIMINATOR = True
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     start_at: Optional[DatetimeOrRef] = Field(alias="startAt")

@@ -15,10 +15,10 @@
 # limitations under the License.
 from typing import Optional
 
+from clipped.types.ref_or_obj import IntOrRef
 from pydantic import Field
 
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.fields.ref_or_obj import IntOrRef
 
 
 class V1Termination(BaseSchemaModel):
