@@ -135,5 +135,5 @@ class FSWatcher(BaseSchemaModel):
 
     def get_dirs_to_rm(self) -> Set:
         results = self._get_mapping_by_op(self.dirs_mp, self._RM)
-        self.file_mapping = self._clean_by_op(self.dirs_mp, self._RM)
+        self.dir_mapping = self._clean_by_op(self.dirs_mp, self._RM)
         return results
