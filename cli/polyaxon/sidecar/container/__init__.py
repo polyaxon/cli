@@ -67,7 +67,10 @@ async def start_sidecar(
     pod = await k8s_manager.get_pod(pod_id, reraise=True)
     connection_type = get_artifacts_connection_type()
     fs = await get_async_fs_from_type(connection_type=connection_type)
-    fw = FSWatcher.read(ctx_paths.CONTEXT_MOUNT_FILE_WATCHER)
+    if os.path.exists(ctx_paths.CONTEXT_MOUNT_FILE_WATCHER):
+        fw = FSWatcher.read(ctx_paths.CONTEXT_MOUNT_FILE_WATCHER)
+    else:
+        fw = FSWatcher()
 
     retry = 0
     is_running = True
