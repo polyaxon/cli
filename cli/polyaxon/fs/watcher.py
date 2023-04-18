@@ -38,7 +38,11 @@ class PathData(BaseSchemaModel):
     @property
     def ts(self) -> datetime:
         if isinstance(self.__root__[1], str):
-            self.__root__ = (self.__root__[0], datetime.fromisoformat(self.__root__[1]), self.__root__[1])
+            self.__root__ = (
+                self.__root__[0],
+                datetime.fromisoformat(self.__root__[1]),
+                self.__root__[1],
+            )
         return self.__root__[1]
 
     @property
@@ -82,11 +86,17 @@ class FSWatcher(BaseSchemaModel):
         data = mapping.get(rel_path)
         if data:
             if current_ts > data.ts:
-                mapping[rel_path] = PathData.construct(__root__=(base_path, current_ts, self._PUT))
+                mapping[rel_path] = PathData.construct(
+                    __root__=(base_path, current_ts, self._PUT)
+                )
             else:
-                mapping[rel_path] = PathData.construct(__root__=(base_path, data.ts, self._NOOP))
+                mapping[rel_path] = PathData.construct(
+                    __root__=(base_path, data.ts, self._NOOP)
+                )
         else:
-            mapping[rel_path] = PathData.construct(__root__=(base_path, current_ts, self._PUT))
+            mapping[rel_path] = PathData.construct(
+                __root__=(base_path, current_ts, self._PUT)
+            )
         return mapping
 
     def sync_file(self, path: str, base_path: str):
