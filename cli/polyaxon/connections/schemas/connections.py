@@ -25,6 +25,7 @@ from polyaxon.schemas.base import BaseSchemaModel
 class V1BucketConnection(BaseSchemaModel):
     _IDENTIFIER = "bucket"
 
+    kind: Optional[StrictStr]  # TODO: Remove once the kind is not set in the compiler, because the schema is converted to a `dict`
     bucket: StrictStr
 
     def patch(self, schema: "V1BucketConnection"):  # type: ignore
@@ -34,6 +35,7 @@ class V1BucketConnection(BaseSchemaModel):
 class V1ClaimConnection(BaseSchemaModel):
     _IDENTIFIER = "volume_claim"
 
+    kind: Optional[StrictStr]  # TODO: Remove once the kind is not set in the compiler, because the schema is converted to a `dict`
     volume_claim: StrictStr = Field(alias="volumeClaim")
     mount_path: StrictStr = Field(alias="mountPath")
     read_only: Optional[bool] = Field(alias="readOnly")
@@ -60,6 +62,7 @@ class V1HostPathConnection(BaseSchemaModel):
 class V1HostConnection(BaseSchemaModel):
     _IDENTIFIER = "host"
 
+    kind: Optional[StrictStr]  # TODO: Remove once the kind is not set in the compiler, because the schema is converted to a `dict`
     url: StrictStr
     insecure: Optional[bool]
 
@@ -71,6 +74,7 @@ class V1HostConnection(BaseSchemaModel):
 class V1GitConnection(BaseSchemaModel):
     _IDENTIFIER = "git"
 
+    kind: Optional[StrictStr]  # TODO: Remove once the kind is not set in the compiler, because the schema is converted to a `dict`
     url: Optional[StrictStr]
     revision: Optional[StrictStr]
     flags: Optional[List[StrictStr]]

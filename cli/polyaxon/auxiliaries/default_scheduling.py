@@ -28,7 +28,7 @@ class V1DefaultScheduling(BaseSchemaModel):
     _IDENTIFIER = "default_scheduling"
     _SWAGGER_FIELDS = ["affinity", "tolerations"]
 
-    node_selector: Optional[Dict[StrictStr, StrictStr]]
+    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(alias="nodeSelector")
     affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
     tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
     image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
