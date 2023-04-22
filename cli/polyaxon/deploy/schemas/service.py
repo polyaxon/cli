@@ -28,6 +28,7 @@ class DeploymentService(BaseServiceConfig):
     enabled: Optional[bool]
     replicas: Optional[StrictInt]
     concurrency: Optional[StrictInt]
+    scheme: Optional[StrictStr]
 
 
 class WorkerServiceConfig(DeploymentService):

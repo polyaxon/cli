@@ -43,6 +43,7 @@ dns: {}
 # Otherwise you should set it to ClusterIP (default)
 gateway:
   image: polyaxon/polyaxon-api
+  scheme: https
   imageTag: 1.0.9
   imagePullPolicy: Always
   replicas: 1
