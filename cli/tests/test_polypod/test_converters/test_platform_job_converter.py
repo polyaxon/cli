@@ -21,7 +21,6 @@ from polyaxon.connections.kinds import V1ConnectionKind
 from polyaxon.connections.schemas import (
     V1BucketConnection,
     V1ClaimConnection,
-    V1GitConnection,
     V1K8sResourceSchema,
 )
 from polyaxon.k8s import k8s_schemas
@@ -43,6 +42,7 @@ from polyaxon.schemas.types import (
     V1ConnectionType,
     V1DockerfileType,
     V1FileType,
+    V1GitType,
     V1K8sResourceType,
     V1TensorboardType,
 )
@@ -417,8 +417,8 @@ class TestJobConverter(BaseTestCase):
         self.assert_containers(expected_containers, containers)
 
     def test_get_init_containers_with_git_without_connection(self):
-        git1 = V1GitConnection(revision="test", url="https://test.com")
-        git2 = V1GitConnection(
+        git1 = V1GitType(revision="test", url="https://test.com")
+        git2 = V1GitType(
             revision="test",
             url="https://test.com",
             flags=["--falg1", "--flag2=test", "k=v"],
