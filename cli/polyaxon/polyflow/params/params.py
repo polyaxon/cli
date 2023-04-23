@@ -401,7 +401,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
     _IDENTIFIER = "param"
 
-    value: Any = ""
+    value: Any = "__NONE__"
     ref: Optional[StrictStr]
     context_only: Optional[bool] = Field(alias="contextOnly")
     connection: Optional[StrictStr]
@@ -410,7 +410,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
     @validator("value", always=True, pre=True)
     def check_value(cls, value):
-        if value == "":
+        if value == "__NONE__":
             raise ValueError("Param value cannot be empty.")
         return value
 
