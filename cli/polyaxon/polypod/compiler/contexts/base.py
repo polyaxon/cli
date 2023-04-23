@@ -50,9 +50,13 @@ class BaseContextsManager:
         connections = to_list(connections, check_none=True)
         for connection in connections:
             if connection_by_names[connection].schema_:
-                contexts[key][connection] = connection_by_names[
+                schema_ = connection_by_names[
                     connection
-                ].schema_.to_dict()
+                ].schema_
+                if hasattr(schema_, "to_dict"):
+                    contexts[key][connection] = schema_.to_dict()
+                else:
+                    contexts[key][connection] = schema_
             else:
                 contexts[key][connection] = {}
         return contexts
