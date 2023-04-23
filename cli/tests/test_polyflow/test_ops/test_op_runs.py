@@ -666,7 +666,9 @@ class TestCompiledOperationsConfigs(BaseTestCase):
 
     def test_param_validation_with_optional_definition(self):
         config_dict = {
-            "inputs": [{"name": "param1", "type": "int", "isOptional": True, "value": 1}],
+            "inputs": [
+                {"name": "param1", "type": "int", "isOptional": True, "value": 1}
+            ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
@@ -691,7 +693,15 @@ class TestCompiledOperationsConfigs(BaseTestCase):
         )
 
         config_dict = {
-            "inputs": [{"name": "param1", "type": "int", "isOptional": True, "isList": True, "value": [1]}],
+            "inputs": [
+                {
+                    "name": "param1",
+                    "type": "int",
+                    "isOptional": True,
+                    "isList": True,
+                    "value": [1],
+                }
+            ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
@@ -716,7 +726,9 @@ class TestCompiledOperationsConfigs(BaseTestCase):
         )
 
         config_dict = {
-            "inputs": [{"name": "param2", "type": "str", "isOptional": True, "value": "text"}],
+            "inputs": [
+                {"name": "param2", "type": "str", "isOptional": True, "value": "text"}
+            ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
@@ -741,7 +753,15 @@ class TestCompiledOperationsConfigs(BaseTestCase):
         )
 
         config_dict = {
-            "inputs": [{"name": "param2", "type": "str", "isOptional": True, "isList": True, "value": ["text"]}],
+            "inputs": [
+                {
+                    "name": "param2",
+                    "type": "str",
+                    "isOptional": True,
+                    "isList": True,
+                    "value": ["text"],
+                }
+            ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
@@ -771,7 +791,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
         ops_params.validate_params(
-            params={"param2": {"value": '[]'}},
+            params={"param2": {"value": "[]"}},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
@@ -782,7 +802,6 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
-
 
     def test_experiment_and_job_refs_params(self):
         config_dict = {
