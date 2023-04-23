@@ -392,7 +392,12 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             "inputs": [{"name": "param2", "type": "str"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
+        strict_config_dict = {
+            "inputs": [{"name": "param2", "type": "StrictStr"}],
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
         config = V1CompiledOperation.from_dict(config_dict)
+        strict_config = V1CompiledOperation.from_dict(strict_config_dict)
         # Passing correct param
         ops_params.validate_params(
             params={"param2": {"value": "text"}},
@@ -407,6 +412,13 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param2": {"value": 1}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
+                is_template=False,
+            )
         ops_params.validate_params(
             params={"param2": {"value": False}},
             inputs=config.inputs,
@@ -415,12 +427,24 @@ class TestCompiledOperationsConfigs(BaseTestCase):
         )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
-                params={"param2": {"value": {"foo": "bar"}}},
-                inputs=config.inputs,
-                outputs=config.outputs,
+                params={"param2": {"value": False}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
                 is_template=False,
             )
-
+        ops_params.validate_params(
+            params={"param2": {"value": {"foo": "bar"}}},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param2": {"value": {"foo": "bar"}}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
+                is_template=False,
+            )
         ops_params.validate_params(
             params={"param2": {"value": "gs://bucket/path/to/blob/"}},
             inputs=config.inputs,
@@ -428,11 +452,17 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
 
+        ops_params.validate_params(
+            params={"param2": {"value": ["test"]}},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param2": {"value": ["test"]}},
-                inputs=config.inputs,
-                outputs=config.outputs,
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
                 is_template=False,
             )
 
