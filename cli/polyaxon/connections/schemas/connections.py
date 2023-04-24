@@ -53,6 +53,9 @@ class V1ClaimConnection(BaseSchemaModel):
 class V1HostPathConnection(BaseSchemaModel):
     _IDENTIFIER = "host_path"
 
+    kind: Optional[
+        StrictStr
+    ]  # TODO: Remove once the kind is not set in the compiler, because the schema is converted to a `dict`
     host_path: StrictStr = Field(alias="hostPath")
     mount_path: StrictStr = Field(alias="mountPath")
     read_only: Optional[bool] = Field(alias="readOnly")
