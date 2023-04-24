@@ -18,12 +18,13 @@ import pytest
 from copy import copy
 from datetime import datetime, timedelta
 
+from clipped.utils.assertions import assert_equal_dict
 from pydantic import ValidationError
 
 from polyaxon.polyflow import V1RunKind
 from polyaxon.polyflow.matrix.grid_search import V1GridSearch
 from polyaxon.polyflow.operations import V1CompiledOperation
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.workflow_mark

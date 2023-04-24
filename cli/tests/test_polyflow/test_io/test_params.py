@@ -16,10 +16,11 @@
 
 import pytest
 
+from clipped.utils.assertions import assert_equal_dict
 from pydantic import ValidationError
 
 from polyaxon.polyflow.params import V1Param
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyflow_mark

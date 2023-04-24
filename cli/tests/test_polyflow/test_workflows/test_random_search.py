@@ -16,12 +16,13 @@
 
 import pytest
 
+from clipped.utils.assertions import assert_equal_dict
 from pydantic import ValidationError
 
 from polyaxon.polyflow import V1RunKind
 from polyaxon.polyflow.matrix.random_search import V1RandomSearch
 from polyaxon.polyflow.operations import V1CompiledOperation
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.workflow_mark

@@ -18,6 +18,7 @@ import uuid
 
 from collections import OrderedDict
 
+from clipped.utils.assertions import assert_equal_dict
 from clipped.utils.json import orjson_dumps
 from pydantic import ValidationError
 
@@ -25,7 +26,7 @@ from polyaxon import types
 from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow.io import V1IO
 from polyaxon.polyflow.params import ParamSpec, V1Param
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyflow_mark

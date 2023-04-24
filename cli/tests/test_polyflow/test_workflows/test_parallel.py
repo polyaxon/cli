@@ -16,6 +16,7 @@
 
 import pytest
 
+from clipped.utils.assertions import assert_equal_dict
 from pydantic import ValidationError
 
 from polyaxon.polyflow import V1MatrixKind
@@ -26,7 +27,7 @@ from polyaxon.polyflow.matrix.bayes import (
 from polyaxon.polyflow.operations import V1CompiledOperation
 from polyaxon.polyflow.optimization import V1Optimization, V1OptimizationMetric
 from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.workflow_mark

@@ -16,12 +16,14 @@
 
 import pytest
 
+from clipped.utils.assertions import assert_equal_dict
+
 from polyaxon.polyflow.early_stopping import (
     V1FailureEarlyStopping,
     V1MetricEarlyStopping,
 )
 from polyaxon.polyflow.optimization import V1Optimization
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.workflow_mark

@@ -16,11 +16,12 @@
 
 import pytest
 
+from clipped.utils.assertions import assert_equal_dict
 from pydantic import ValidationError
 
 from polyaxon.connections.schemas import V1K8sResourceSchema
 from polyaxon.schemas.types import V1K8sResourceType
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.parser_mark

@@ -16,8 +16,10 @@
 
 import pytest
 
+from clipped.utils.assertions import assert_equal_dict
+
 from polyaxon.polyflow import V1Join
-from polyaxon.utils.test_utils import BaseTestCase, assert_equal_dict
+from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.hooks_mark
