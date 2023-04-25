@@ -21,7 +21,7 @@ from clipped.utils.http import add_notification_referrer_param, clean_host
 from clipped.utils.lists import to_list
 
 from polyaxon import settings
-from polyaxon.config.parser import Parser
+from polyaxon.config.parser import ConfigParser
 from polyaxon.exceptions import PolyaxonNotificationException
 from polyaxon.logger import logger
 from polyaxon.notifiers.spec import NotificationSpec
@@ -112,7 +112,7 @@ class BaseNotifier:
                 "Could not validate config for notifier {}".format(cls.name)
             )
 
-        return Parser.parse(Dict)(key=cls.config_key, value=value, is_list=True)
+        return ConfigParser.parse(Dict)(key=cls.config_key, value=value, is_list=True)
 
     @classmethod
     def get_config(cls, config: ConfigType = None) -> ConfigType:

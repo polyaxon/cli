@@ -16,7 +16,7 @@
 #
 # import pytest
 #
-# from polyaxon.polyaxonfile.specs.libs.parser import Parser
+# from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
 # from polyaxon.polyflow.operators import ForConfig, IfConfig
 # from polyaxon.utils.test_utils import BaseTestCase
 #
@@ -35,7 +35,7 @@
 #             "Value at 3",
 #             "Value at 4",
 #         ]
-#         assert expected == config.parse(Parser(), {})
+#         assert expected == config.parse(PolyaxonfileParser(), {})
 #
 #         config_dict = {
 #             "len": 5,
@@ -61,7 +61,7 @@
 #             {"Conv2D": {"strides": [4, 4]}},
 #             {"Pooling2D": {"strides": [4, 4]}},
 #         ]
-#         assert expected == config.parse(Parser(), {})
+#         assert expected == config.parse(PolyaxonfileParser(), {})
 #
 #     def test_if_operator_config(self):
 #         config_dict = {
@@ -71,5 +71,5 @@
 #         }
 #         config = IfConfig.from_dict(config_dict)
 #         assert config.to_dict() == config_dict
-#         assert "It was True" == config.parse(Parser(), {"i": 5})
-#         assert "It was False" == config.parse(Parser(), {"i": 3})
+#         assert "It was True" == config.parse(PolyaxonfileParser(), {"i": 5})
+#         assert "It was False" == config.parse(PolyaxonfileParser(), {"i": 3})

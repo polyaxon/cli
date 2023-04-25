@@ -24,8 +24,8 @@ from typing import List, Optional
 from clipped.utils.lists import to_list
 from clipped.utils.paths import unix_style_path
 
+from polyaxon.config.manager import ConfigManager
 from polyaxon.logger import logger
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.utils import cli_constants
 
 
@@ -109,10 +109,10 @@ def translate(pat: str) -> str:
     return res + "\\Z"
 
 
-class IgnoreConfigManager(BaseConfigManager):
+class IgnoreConfigManager(ConfigManager):
     """Manages .polyaxonignore file in the current directory"""
 
-    VISIBILITY = ManagerVisibility.LOCAL
+    VISIBILITY = ConfigManager.Visibility.LOCAL
     CONFIG_FILE_NAME = ".polyaxonignore"
 
     @staticmethod

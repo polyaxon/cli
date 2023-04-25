@@ -25,6 +25,6 @@ from polyaxon.utils.test_utils import BaseTestCase
 class TestProjectConfigManager(BaseTestCase):
     def test_default_props(self):
         assert ProjectConfigManager.is_all_visibility() is True
-        assert ProjectConfigManager.IN_POLYAXON_DIR is True
+        assert ProjectConfigManager.IN_PROJECT_DIR is True
         assert ProjectConfigManager.CONFIG_FILE_NAME == ".project"
         assert ProjectConfigManager.CONFIG == V1Project

@@ -41,7 +41,7 @@ except (ImportError, ModuleNotFoundError):
     np = None
 
 
-class Parser:
+class PolyaxonfileParser:
     """Parses the Polyaxonfile."""
 
     engine = get_engine()

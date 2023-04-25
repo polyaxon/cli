@@ -27,7 +27,7 @@ from polyaxon.auxiliaries import (
     V1PolyaxonNotifier,
     V1PolyaxonSidecarContainer,
 )
-from polyaxon.config.parser import Parser
+from polyaxon.config.parser import ConfigParser
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_ARTIFACTS_STORE,
@@ -111,7 +111,7 @@ class BaseAgentConfig(BaseSchemaModel):
         if not isinstance(v, str):
             return v
         try:
-            return Parser.parse(Dict)(
+            return ConfigParser.parse(Dict)(
                 key=EV_KEYS_AGENT_CONNECTIONS,
                 value=v,
                 is_list=True,
@@ -125,7 +125,7 @@ class BaseAgentConfig(BaseSchemaModel):
         if not isinstance(v, str):
             return v
         try:
-            return Parser.parse(Dict)(
+            return ConfigParser.parse(Dict)(
                 key=EV_KEYS_AGENT_ARTIFACTS_STORE,
                 value=v,
                 is_optional=True,
@@ -293,7 +293,7 @@ class AgentConfig(BaseAgentConfig):
         if not isinstance(v, str):
             return v
         try:
-            return Parser.parse(Dict)(
+            return ConfigParser.parse(Dict)(
                 key=field.name,
                 value=v,
                 is_optional=True,
@@ -306,7 +306,7 @@ class AgentConfig(BaseAgentConfig):
     @validator("default_image_pull_secrets", pre=True)
     def validate_str_list(cls, v, field):
         try:
-            return Parser.parse(str)(
+            return ConfigParser.parse(str)(
                 key=field.alias,
                 value=v,
                 is_optional=True,

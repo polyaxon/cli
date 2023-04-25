@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Optional, Type
 
 from clipped.utils.tz import now
 
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
+from polyaxon.config.manager import ConfigManager
 from polyaxon.schemas.cli.cli_config import CliConfig
 
 if TYPE_CHECKING:
@@ -28,10 +28,10 @@ if TYPE_CHECKING:
     from polyaxon.schemas.api.log_handler import V1LogHandler
 
 
-class CliConfigManager(BaseConfigManager):
+class CliConfigManager(ConfigManager):
     """Manages access cli configuration .cli file."""
 
-    VISIBILITY = ManagerVisibility.GLOBAL
+    VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".cli"
     CONFIG: Type[CliConfig] = CliConfig
 

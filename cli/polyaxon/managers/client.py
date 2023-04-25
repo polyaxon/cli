@@ -19,14 +19,13 @@ from typing import Type
 
 from polyaxon.config.manager import ConfigManager
 from polyaxon.config.spec import ConfigSpec
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.cli.client_config import ClientConfig
 
 
-class ClientConfigManager(BaseConfigManager):
+class ClientConfigManager(ConfigManager):
     """Manages client configuration .client file."""
 
-    VISIBILITY = ManagerVisibility.GLOBAL
+    VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".client"
     CONFIG: Type[ClientConfig] = ClientConfig
 
@@ -35,7 +34,7 @@ class ClientConfigManager(BaseConfigManager):
         tmp_path = cls.get_tmp_config_path()
         glob_path = cls.get_global_config_path()
 
-        config = ConfigManager.read_configs(
+        config = cls._CONFIG_READER.read_configs(
             [
                 ConfigSpec(tmp_path, config_type=".json", check_if_exists=False),
                 ConfigSpec(glob_path, config_type=".json", check_if_exists=False),

@@ -322,9 +322,9 @@ class V1ConnectionType(BaseSchemaModel):
             bucket = self.schema_.bucket.rstrip("/")
             if self.is_wasb:
                 from polyaxon import types
-                from polyaxon.config.parser import Parser
+                from polyaxon.config.parser import ConfigParser
 
-                return Parser.parse(types.WASB)(
+                return ConfigParser.parse(types.WASB)(
                     key="schema", value=bucket
                 ).get_container_path()
             return bucket

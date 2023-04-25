@@ -15,15 +15,15 @@
 # limitations under the License.
 from typing import Type
 
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
+from polyaxon.config.manager import ConfigManager
 from polyaxon.polyflow import V1Init
 from polyaxon.schemas.types import V1GitType
 
 
-class GitConfigManager(BaseConfigManager):
+class GitConfigManager(ConfigManager):
     """Manages access token configuration .auth file."""
 
-    VISIBILITY = ManagerVisibility.LOCAL
+    VISIBILITY = ConfigManager.Visibility.LOCAL
     CONFIG_FILE_NAME = "polyaxongit.yaml"
     CONFIG: Type[V1Init] = V1Init
 

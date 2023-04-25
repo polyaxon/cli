@@ -17,15 +17,15 @@ from typing import Type
 
 from clipped.formatting import Printer
 
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
+from polyaxon.config.manager import ConfigManager
 from polyaxon.schemas.responses.v1_user import V1User
 
 
-class UserConfigManager(BaseConfigManager):
+class UserConfigManager(ConfigManager):
     """Manages user configuration .user file."""
 
-    VISIBILITY = ManagerVisibility.GLOBAL
-    IN_POLYAXON_DIR = True
+    VISIBILITY = ConfigManager.Visibility.GLOBAL
+    IN_PROJECT_DIR = True
     CONFIG_FILE_NAME = ".user"
     CONFIG: Type[V1User] = V1User
 

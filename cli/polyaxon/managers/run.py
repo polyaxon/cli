@@ -17,15 +17,15 @@ from typing import Type
 
 from clipped.formatting import Printer
 
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
+from polyaxon.config.manager import ConfigManager
 from polyaxon.schemas.responses.v1_run import V1Run
 
 
-class RunConfigManager(BaseConfigManager):
+class RunConfigManager(ConfigManager):
     """Manages run configuration .run file."""
 
-    VISIBILITY = ManagerVisibility.ALL
-    IN_POLYAXON_DIR = True
+    VISIBILITY = ConfigManager.Visibility.ALL
+    IN_PROJECT_DIR = True
     CONFIG_FILE_NAME = ".run"
     CONFIG: Type[V1Run] = V1Run
 

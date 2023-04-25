@@ -13,19 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from clipped.config.reader import ConfigReader as _ConfigReader
 
-import pytest
-
-from polyaxon.managers.git import GitConfigManager
-from polyaxon.polyflow import V1Init
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon.config.parser import ConfigParser
+from polyaxon.config.spec import ConfigSpec
 
 
-@pytest.mark.managers_mark
-class TestGitConfigManager(BaseTestCase):
-    def test_default_props(self):
-        assert GitConfigManager.is_global() is False
-        assert GitConfigManager.is_local() is True
-        assert GitConfigManager.IN_PROJECT_DIR is False
-        assert GitConfigManager.CONFIG_FILE_NAME == "polyaxongit.yaml"
-        assert GitConfigManager.CONFIG == V1Init
+class ConfigReader(_ConfigReader):
+    _CONFIG_SPEC = ConfigSpec
+    _CONFIG_PARSER = ConfigParser

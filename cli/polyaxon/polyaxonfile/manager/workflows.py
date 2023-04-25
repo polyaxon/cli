@@ -20,7 +20,7 @@ from typing import Dict, List, Union
 from clipped.formatting import Printer
 
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.polyaxonfile.specs.libs.parser import Parser
+from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
 from polyaxon.polyflow import V1CompiledOperation, V1MatrixKind, V1Operation, V1Param
 
 
@@ -59,7 +59,10 @@ def get_ops_from_suggestions(
     op_content = V1Operation.read(content)  # TODO: Use construct
     for suggestion in suggestions:
         params = {
-            k: V1Param(value=Parser.parse_expression(v, {}), context_only=has_param(k))
+            k: V1Param(
+                value=PolyaxonfileParser.parse_expression(v, {}),
+                context_only=has_param(k),
+            )
             for (k, v) in suggestion.items()
         }
         op_spec = copy.deepcopy(op_content)

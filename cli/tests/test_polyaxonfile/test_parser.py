@@ -16,12 +16,12 @@
 
 import pytest
 
-from polyaxon.polyaxonfile.specs.libs.parser import Parser
+from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyaxonfile_mark
-class TestParser(BaseTestCase):
+class TestPolyaxonfileParser(BaseTestCase):
     def test_parse_base_expressions(self):
         data = [
             1,
@@ -33,11 +33,11 @@ class TestParser(BaseTestCase):
             {1: 2, "a": "a", "dict": {1: 1}},
         ]
 
-        parser = Parser()
+        parser = PolyaxonfileParser()
         for d in data:
             assert d == parser.parse_expression(d, {})
 
     def test_parse_context_expression(self):
-        parser = Parser()
+        parser = PolyaxonfileParser()
         assert parser.parse_expression("{{ something }}", {}) == ""
         assert parser.parse_expression("{{ something }}", {"something": 1}) == 1

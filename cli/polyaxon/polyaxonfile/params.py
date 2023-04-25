@@ -20,12 +20,15 @@ from typing import Dict, List, Union
 from clipped.formatting import Printer
 
 from polyaxon.exceptions import PolyaxonfileError
-from polyaxon.polyaxonfile.specs.libs.parser import Parser
+from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
 
 
 def parse_params(params: Union[List[str], Dict], is_cli: bool = True):
     if isinstance(params, Mapping):
-        return {k: {"value": Parser.parse_expression(v, {})} for k, v in params.items()}
+        return {
+            k: {"value": PolyaxonfileParser.parse_expression(v, {})}
+            for k, v in params.items()
+        }
 
     parsed_params = {}
     for param in params:

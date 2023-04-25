@@ -18,6 +18,7 @@ import os
 
 from typing import Optional
 
+from clipped.config.contexts import get_project_path, get_temp_path
 from clipped.utils.enums import get_enum_value
 
 from polyaxon.env_vars.keys import (
@@ -27,15 +28,6 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_OFFLINE_ROOT,
     EV_KEYS_SANDBOX_ROOT,
 )
-
-
-def polyaxon_user_path():
-    base_path = os.path.expanduser("~")
-    if not os.access(base_path, os.W_OK):
-        base_path = "/tmp"
-
-    return os.path.join(base_path, ".polyaxon")
-
 
 CONTEXT_RELATED_RUNS = "_related_runs"
 
@@ -70,8 +62,9 @@ CONTEXT_MOUNT_RUN_SYSTEM_RESOURCES_EVENTS_FORMAT = "{}/resources".format(
 CONTEXT_MOUNT_SHM = "/dev/shm"
 CONTEXT_MOUNT_DOCKER = "/var/run/docker.sock"
 
-CONTEXT_TMP_POLYAXON_PATH = "/tmp/.polyaxon/"
-CONTEXT_USER_POLYAXON_PATH = polyaxon_user_path()
+CONTEXT_TMP_POLYAXON_PATH = get_temp_path(".polyaxon")
+CONTEXT_USER_POLYAXON_PATH = get_project_path(".polyaxon")
+
 CONTEXT_ARCHIVES_ROOT = os.environ.get(EV_KEYS_ARCHIVES_ROOT, "/tmp/plx/archives")
 CONTEXT_ARTIFACTS_ROOT = os.environ.get(EV_KEYS_ARTIFACTS_ROOT, "/tmp/plx/artifacts")
 CONTEXT_SANDBOX_ROOT = None

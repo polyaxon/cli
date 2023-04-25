@@ -18,7 +18,7 @@ from typing import Any, List, Optional
 from clipped.config.schema import skip_partial
 from pydantic import Field, StrictStr, root_validator, validator
 
-from polyaxon.config.parser import Parser
+from polyaxon.config.parser import ConfigParser
 from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
 from polyaxon.schemas.base import BaseSchemaModel
 
@@ -41,7 +41,7 @@ def validate_io_value(
     parse: bool = True,
 ):
     try:
-        parsed_value = Parser.parse(type)(
+        parsed_value = ConfigParser.parse(type)(
             key=name,
             value=value,
             is_list=is_list,

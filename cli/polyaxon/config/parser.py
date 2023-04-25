@@ -13,13 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from clipped.config.parser import Parser as _Parser
+from clipped.config.parser import ConfigParser as _ConfigParser
 from clipped.decorators.memoization import memoize
 
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
-class Parser(_Parser):
+class ConfigParser(_ConfigParser):
     _SCHEMA_EXCEPTION = PolyaxonSchemaError
 
     @staticmethod

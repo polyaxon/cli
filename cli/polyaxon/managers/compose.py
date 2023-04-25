@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
+from polyaxon.config.manager import ConfigManager
 
 
-class ComposeConfigManager(BaseConfigManager):
+class ComposeConfigManager(ConfigManager):
     """Manages access cli configuration .compose file."""
 
-    VISIBILITY = ManagerVisibility.GLOBAL
+    VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".compose/.env"
     FREQUENCY = 3
 

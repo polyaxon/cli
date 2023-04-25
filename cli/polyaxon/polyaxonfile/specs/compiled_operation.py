@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Set, Type, Union
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyaxonfile.specs.base import BaseSpecification
-from polyaxon.polyaxonfile.specs.libs.parser import Parser
+from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
 from polyaxon.polyaxonfile.specs.operation import OperationSpecification
 from polyaxon.polyflow import (
     ParamSpec,
@@ -92,7 +92,7 @@ class CompiledOperationSpecification(BaseSpecification):
         if not param_spec:
             param_spec = cls.calculate_context_spec(config=config, contexts=contexts)
 
-        parsed_data = Parser.parse_operation(config, param_spec or {})
+        parsed_data = PolyaxonfileParser.parse_operation(config, param_spec or {})
         return cls.CONFIG.read(parsed_data)
 
     @staticmethod
@@ -126,7 +126,7 @@ class CompiledOperationSpecification(BaseSpecification):
         param_spec: Dict[str, ParamSpec] = None,
     ):
         if connections:
-            connections = Parser.parse_section(
+            connections = PolyaxonfileParser.parse_section(
                 connections, param_spec=param_spec, parse_params=True
             )
         _init = []
@@ -135,11 +135,11 @@ class CompiledOperationSpecification(BaseSpecification):
                 if (i.artifacts or i.paths) and not i.connection:
                     i.connection = artifact_store
                 if i.connection:
-                    i.connection = Parser.parse_section(
+                    i.connection = PolyaxonfileParser.parse_section(
                         i.connection, param_spec=param_spec, parse_params=True
                     )
                 # resolved_i = V1Init.from_dict(
-                #     Parser.parse_section(
+                #     PolyaxonfileParser.parse_section(
                 #         i.to_dict(), param_spec=param_spec, parse_params=True
                 #     )
                 # )
@@ -243,7 +243,7 @@ class CompiledOperationSpecification(BaseSpecification):
         if not param_spec:
             param_spec = cls.calculate_context_spec(config=config, contexts=contexts)
 
-        return Parser.parse_section(section, param_spec)
+        return PolyaxonfileParser.parse_section(section, param_spec)
 
     @classmethod
     def _apply_runtime_contexts(
@@ -256,7 +256,7 @@ class CompiledOperationSpecification(BaseSpecification):
             param_spec = cls.calculate_context_spec(
                 config=config, contexts=contexts, should_be_resolved=True
             )
-        parsed_data = Parser.parse_runtime(config.to_dict(), param_spec)
+        parsed_data = PolyaxonfileParser.parse_runtime(config.to_dict(), param_spec)
         return cls.CONFIG.read(parsed_data)
 
     @classmethod
@@ -277,7 +277,9 @@ class CompiledOperationSpecification(BaseSpecification):
                 param_spec[k].update(
                     cls.dict_to_param_spec(contexts=contexts[k], is_context=True)
                 )
-        parsed_data = Parser.parse_distributed_runtime(config.to_dict(), param_spec)
+        parsed_data = PolyaxonfileParser.parse_distributed_runtime(
+            config.to_dict(), param_spec
+        )
         return cls.CONFIG.read(parsed_data)
 
     @classmethod
@@ -315,7 +317,7 @@ class CompiledOperationSpecification(BaseSpecification):
             param_spec = cls.calculate_context_spec(
                 config=config, contexts=contexts, should_be_resolved=True
             )
-        hooks = Parser.parse_hooks(config, param_spec)
+        hooks = PolyaxonfileParser.parse_hooks(config, param_spec)
         return [V1Hook.read(hook) for hook in hooks]
 
     @classmethod

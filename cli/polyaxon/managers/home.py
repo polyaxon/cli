@@ -19,14 +19,13 @@ from typing import Dict, Type
 
 from polyaxon.config.manager import ConfigManager
 from polyaxon.config.spec import ConfigSpec
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.api.home import HomeConfig
 
 
-class HomeConfigManager(BaseConfigManager):
+class HomeConfigManager(ConfigManager):
     """Manages home configuration .home file."""
 
-    VISIBILITY = ManagerVisibility.GLOBAL
+    VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".home"
     CONFIG: Type[HomeConfig] = HomeConfig
 
@@ -37,7 +36,7 @@ class HomeConfigManager(BaseConfigManager):
     @classmethod
     def get_config_from_env(cls) -> HomeConfig:
         glob_path = cls.get_global_config_path()
-        home_config = ConfigManager.read_configs(
+        home_config = cls._CONFIG_READER.read_configs(
             [
                 ConfigSpec(glob_path, config_type=".json", check_if_exists=False),
                 os.environ,

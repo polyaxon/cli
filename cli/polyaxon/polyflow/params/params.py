@@ -448,10 +448,10 @@ class ParamSpec(
 
     def as_arg(self):
         if self.arg_format:
-            from polyaxon.polyaxonfile.specs.libs.parser import Parser
+            from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
 
             return (
-                Parser.parse_expression(
+                PolyaxonfileParser.parse_expression(
                     self.arg_format, {self.name: self.get_typed_param_value()}
                 )
                 if self.param.value is not None

@@ -111,9 +111,9 @@ class DockerBuilder(DockerMixin):
         registries: Optional[List[Union[Uri, str]]] = None,
         docker: Optional[APIClient] = None,
     ):
-        from polyaxon.config.parser import Parser
+        from polyaxon.config.parser import ConfigParser
 
-        get_uri = Parser.parse(Uri)
+        get_uri = ConfigParser.parse(Uri)
         self.destination = destination
 
         self.context = context

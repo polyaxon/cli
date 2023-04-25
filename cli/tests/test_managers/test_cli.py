@@ -32,7 +32,7 @@ from polyaxon.utils.test_utils import BaseTestCase
 class TestCliConfigManager(BaseTestCase):
     def test_default_props(self):
         assert CliConfigManager.is_global() is True
-        assert CliConfigManager.IN_POLYAXON_DIR is False
+        assert CliConfigManager.IN_PROJECT_DIR is False
         assert CliConfigManager.CONFIG_FILE_NAME == ".cli"
         assert CliConfigManager.CONFIG == CliConfig
 

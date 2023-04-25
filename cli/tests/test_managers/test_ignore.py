@@ -30,7 +30,7 @@ class TestIgnoreConfigManager(BaseTestCase):
     def test_default_props(self):
         assert IgnoreConfigManager.is_global() is False
         assert IgnoreConfigManager.is_local() is True
-        assert IgnoreConfigManager.IN_POLYAXON_DIR is False
+        assert IgnoreConfigManager.IN_PROJECT_DIR is False
         assert IgnoreConfigManager.CONFIG_FILE_NAME == ".polyaxonignore"
         assert IgnoreConfigManager.CONFIG is None
 

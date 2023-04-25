@@ -20,14 +20,13 @@ from typing import Type
 from polyaxon.config.manager import ConfigManager
 from polyaxon.config.spec import ConfigSpec
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
 from polyaxon.schemas.api.authentication import AccessTokenConfig
 
 
-class AuthConfigManager(BaseConfigManager):
+class AuthConfigManager(ConfigManager):
     """Manages access token configuration .auth file."""
 
-    VISIBILITY = ManagerVisibility.GLOBAL
+    VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".auth"
     CONFIG: Type[AccessTokenConfig] = AccessTokenConfig
 
@@ -36,7 +35,7 @@ class AuthConfigManager(BaseConfigManager):
         tmp_path = cls.get_tmp_config_path()
         user_path = cls.get_global_config_path()
 
-        auth_config = ConfigManager.read_configs(
+        auth_config = cls._CONFIG_READER.read_configs(
             [
                 ConfigSpec(tmp_path, config_type=".json", check_if_exists=False),
                 ConfigSpec(user_path, config_type=".json", check_if_exists=False),

@@ -18,7 +18,7 @@ import uuid
 
 from clipped.config.constants import NO_VALUE_FOUND
 
-from polyaxon.config.parser import Parser
+from polyaxon.config.parser import ConfigParser
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.types import (
     V1ArtifactsType,
@@ -30,9 +30,9 @@ from polyaxon.types import (
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-class TestParser(BaseTestCase):
+class TestConfigParser(BaseTestCase):
     def test_get_dockerfile_init(self):
-        get_dockerfile_init = Parser.parse(V1DockerfileType)
+        get_dockerfile_init = ConfigParser.parse(V1DockerfileType)
         value = get_dockerfile_init(
             key="dict_key_1", value={"image": "foo", "env": {"key1": 2, "key2": 21}}
         )
@@ -134,7 +134,7 @@ class TestParser(BaseTestCase):
         )
 
     def test_get_file_init(self):
-        get_file_init = Parser.parse(V1FileType)
+        get_file_init = ConfigParser.parse(V1FileType)
         value = get_file_init(
             key="dict_key_1", value={"filename": "foo.yaml", "content": "test"}
         )
@@ -224,7 +224,7 @@ class TestParser(BaseTestCase):
         )
 
     def test_get_git_init(self):
-        get_git_init = Parser.parse(V1GitType)
+        get_git_init = ConfigParser.parse(V1GitType)
         value = get_git_init(key="dict_key_1", value={"revision": "foo"})
         self.assertEqual(value, V1GitType(revision="foo"))
 
@@ -338,7 +338,7 @@ class TestParser(BaseTestCase):
         )
 
     def test_get_tensorboard_init(self):
-        get_tensorboard_init = Parser.parse(V1TensorboardType)
+        get_tensorboard_init = ConfigParser.parse(V1TensorboardType)
         value = get_tensorboard_init(key="dict_key_1", value={"port": 8000})
         self.assertEqual(value, V1TensorboardType(port=8000))
 
@@ -474,7 +474,7 @@ class TestParser(BaseTestCase):
         )
 
     def test_get_artifacts_init(self):
-        get_artifacts_init = Parser.parse(V1ArtifactsType)
+        get_artifacts_init = ConfigParser.parse(V1ArtifactsType)
         value = get_artifacts_init(key="dict_key_1", value={"files": ["foo", "bar"]})
         self.assertEqual(value, V1ArtifactsType(files=["foo", "bar"]))
 

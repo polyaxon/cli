@@ -20,16 +20,16 @@ from typing import Type
 
 from clipped.formatting import Printer
 
-from polyaxon.managers.base import BaseConfigManager, ManagerVisibility
+from polyaxon.config.manager import ConfigManager
 from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.utils import cli_constants
 
 
-class ProjectConfigManager(BaseConfigManager):
+class ProjectConfigManager(ConfigManager):
     """Manages project configuration .project file."""
 
-    VISIBILITY = ManagerVisibility.ALL
-    IN_POLYAXON_DIR = True
+    VISIBILITY = ConfigManager.Visibility.ALL
+    IN_PROJECT_DIR = True
     CONFIG_FILE_NAME = ".project"
     CONFIG: Type[V1Project] = V1Project
 
