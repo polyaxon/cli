@@ -20,11 +20,11 @@ from typing import List, Optional
 from clipped.utils.enums import get_enum_value
 
 from polyaxon import pkg
+from polyaxon.connections import V1Connection
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s import k8s_schemas
 from polyaxon.schemas.services import BaseServiceConfig
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def get_cleaner_resources() -> k8s_schemas.V1ResourceRequirements:
@@ -181,7 +181,7 @@ class V1PolyaxonCleaner(BaseServiceConfig):
 
 
 def get_default_cleaner_container(
-    store: V1ConnectionType,
+    store: V1Connection,
     run_uuid: str,
     run_kind: str,
     cleaner: Optional[V1PolyaxonCleaner] = None,
@@ -214,7 +214,7 @@ def get_default_cleaner_container(
 
 
 def get_batch_cleaner_container(
-    store: V1ConnectionType,
+    store: V1Connection,
     paths: List[str],
     cleaner: Optional[V1PolyaxonCleaner] = None,
 ) -> k8s_schemas.V1Container:

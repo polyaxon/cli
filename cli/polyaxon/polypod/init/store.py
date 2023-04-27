@@ -22,6 +22,7 @@ from clipped.utils.enums import get_enum_value
 from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
+from polyaxon.connections import V1Connection
 from polyaxon.containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
     generate_container_name,
@@ -44,7 +45,7 @@ from polyaxon.polypod.common.mounts import (
     get_mount_from_store,
 )
 from polyaxon.polypod.common.volumes import get_volume_name
-from polyaxon.schemas.types import V1ArtifactsType, V1ConnectionType
+from polyaxon.schemas.types import V1ArtifactsType
 
 
 def get_or_create_args(path):
@@ -92,7 +93,7 @@ def cp_store_args(
 
 
 def get_volume_args(
-    store: V1ConnectionType,
+    store: V1Connection,
     mount_path: str,
     artifacts: V1ArtifactsType,
     paths: Union[List[str], List[Tuple[str, str]]],
@@ -205,7 +206,7 @@ def get_base_store_container(
     container: Optional[k8s_schemas.V1Container],
     container_name: str,
     polyaxon_init: V1PolyaxonInitContainer,
-    store: V1ConnectionType,
+    store: V1Connection,
     env: List[k8s_schemas.V1EnvVar],
     env_from: List[k8s_schemas.V1EnvFromSource],
     volume_mounts: List[k8s_schemas.V1VolumeMount],
@@ -221,7 +222,7 @@ def get_base_store_container(
         raise PolypodException("Init store container requires a store")
     secret = None
     if store.is_bucket:
-        secret = store.get_secret()
+        secret = store.secret
         volume_mounts = volume_mounts + to_list(
             get_mount_from_resource(resource=secret), check_none=True
         )
@@ -233,7 +234,7 @@ def get_base_store_container(
             get_connection_env_var(connection=store, secret=secret), check_none=True
         )
 
-        config_map = store.get_config_map()
+        config_map = store.config_map
         volume_mounts = volume_mounts + to_list(
             get_mount_from_resource(resource=config_map), check_none=True
         )
@@ -267,7 +268,7 @@ def get_base_store_container(
 
 def get_store_container(
     polyaxon_init: V1PolyaxonInitContainer,
-    connection: V1ConnectionType,
+    connection: V1Connection,
     artifacts: V1ArtifactsType,
     paths: Union[List[str], List[Tuple[str, str]]],
     container: Optional[k8s_schemas.V1Container] = None,

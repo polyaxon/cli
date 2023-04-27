@@ -13,19 +13,45 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List, Optional, Union
+from vents.connections import (
+    BucketConnection,
+    ClaimConnection,
+    Connection,
+    GitConnection,
+    HostConnection,
+    HostPathConnection,
+    K8sResource,
+)
 
-from clipped.types.ref_or_obj import RefField
-from pydantic import Field, StrictStr
-
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import V1K8sResourceSchema
-from polyaxon.connections.schemas.connections import V1Connection
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.types.k8s_resources import V1K8sResourceType
+from polyaxon.schemas.types.base import BaseTypeConfig
 
 
-class V1ConnectionType(BaseSchemaModel):
+class V1BucketConnection(BucketConnection, BaseSchemaModel):
+    pass
+
+
+class V1ClaimConnection(ClaimConnection, BaseSchemaModel):
+    pass
+
+
+class V1GitConnection(GitConnection, BaseSchemaModel):
+    pass
+
+
+class V1HostConnection(HostConnection, BaseSchemaModel):
+    pass
+
+
+class V1HostPathConnection(HostPathConnection, BaseSchemaModel):
+    pass
+
+
+class V1K8sResource(K8sResource, BaseSchemaModel):
+    pass
+
+
+class V1Connection(Connection, BaseTypeConfig):
     """Connections are how Polyaxon connects several
     types of external systems and resources to your operations.
 
@@ -254,119 +280,7 @@ class V1ConnectionType(BaseSchemaModel):
     >>>   key2: "value2"
     """
 
-    _IDENTIFIER = "connection"
 
-    name: StrictStr
-    kind: V1ConnectionKind
-    description: Optional[StrictStr]
-    tags: Optional[Union[List[StrictStr], RefField]]
-    schema_: Optional[V1Connection] = Field(alias="schema")
-    secret: Optional[Union[V1K8sResourceSchema, RefField]]
-    config_map: Optional[Union[V1K8sResourceSchema, RefField]] = Field(
-        alias="configMap"
-    )
-    env: Optional[Union[List[Dict], RefField]]
-    annotations: Optional[Union[Dict, RefField]]
-
-    # @validator("schema_", pre=True)
-    # def pre_make(cls, schema, values):
-    #     if not schema or not isinstance(schema, dict):
-    #         return schema
-    #     kind = values.get("kind")
-    #     if kind:
-    #         if kind in V1ConnectionKind.blob_values():
-    #             return V1BucketConnection.from_dict(schema)
-    #
-    #         if kind == V1ConnectionKind.VOLUME_CLAIM:
-    #             return V1ClaimConnection.from_dict(schema)
-    #
-    #         if kind == V1ConnectionKind.HOST_PATH:
-    #             return V1HostPathConnection.from_dict(schema)
-    #
-    #         if kind == V1ConnectionKind.REGISTRY:
-    #             return V1HostConnection.from_dict(schema)
-    #
-    #         if kind == V1ConnectionKind.GIT:
-    #             return V1GitConnection.from_dict(schema)
-    #         return V1CustomConnection.from_dict(schema)
-    #     return schema
-
-    @classmethod
-    def from_model(cls, model) -> "V1ConnectionType":
-        schema = model.schema_
-        secret = model.secret
-        config_map = model.config_map
-        if hasattr(schema, "to_dict"):
-            schema = schema.to_dict()
-        if hasattr(secret, "to_dict"):
-            secret = secret.to_dict()
-        if hasattr(config_map, "to_dict"):
-            config_map = config_map.to_dict()
-        return V1ConnectionType.from_dict(
-            {
-                "name": model.name,
-                "kind": model.kind,
-                "schema": schema,
-                "secret": secret,
-                "configMap": config_map,
-                "env": model.env,
-                "annotations": model.annotations,
-            }
-        )
-
-    @property
-    def store_path(self) -> str:
-        if self.is_mount:
-            return self.schema_.mount_path.rstrip("/")
-        if self.is_bucket:
-            bucket = self.schema_.bucket.rstrip("/")
-            if self.is_wasb:
-                from polyaxon import types
-                from polyaxon.config.parser import ConfigParser
-
-                return ConfigParser.parse(types.WASB)(
-                    key="schema", value=bucket
-                ).get_container_path()
-            return bucket
-
-    @property
-    def is_mount(self) -> bool:
-        return V1ConnectionKind.is_mount(self.kind)
-
-    @property
-    def is_artifact(self) -> bool:
-        return V1ConnectionKind.is_artifact(self.kind)
-
-    @property
-    def is_host_path(self) -> bool:
-        return V1ConnectionKind.is_host_path(self.kind)
-
-    @property
-    def is_volume_claim(self) -> bool:
-        return V1ConnectionKind.is_volume_claim(self.kind)
-
-    @property
-    def is_bucket(self) -> bool:
-        return V1ConnectionKind.is_bucket(self.kind)
-
-    @property
-    def is_gcs(self) -> bool:
-        return self.kind == V1ConnectionKind.GCS
-
-    @property
-    def is_s3(self) -> bool:
-        return self.kind == V1ConnectionKind.S3
-
-    @property
-    def is_wasb(self) -> bool:
-        return V1ConnectionKind.is_wasb(self.kind)
-
-    def get_secret(self) -> Optional[V1K8sResourceType]:
-        if self.secret:
-            return V1K8sResourceType(name=self.secret.name, schema_=self.secret)
-        return None
-
-    def get_config_map(self) -> Optional[V1K8sResourceType]:
-        if self.config_map:
-            return V1K8sResourceType(name=self.config_map.name, schema_=self.config_map)
-        return None
+# Backwards compatibility
+V1ConnectionType = V1Connection
+V1K8sResourceType = V1K8sResource

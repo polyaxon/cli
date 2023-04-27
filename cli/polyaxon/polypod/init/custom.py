@@ -18,6 +18,7 @@ from typing import List, Optional
 
 from clipped.utils.lists import to_list
 
+from polyaxon.connections import V1Connection
 from polyaxon.containers.names import (
     INIT_CUSTOM_CONTAINER_PREFIX,
     generate_container_name,
@@ -41,11 +42,10 @@ from polyaxon.polypod.common.mounts import (
 )
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def get_custom_init_container(
-    connection: V1ConnectionType,
+    connection: V1Connection,
     contexts: PluginsContextsSpec,
     container: Optional[k8s_schemas.V1Container],
     env: List[k8s_schemas.V1EnvVar] = None,
@@ -67,7 +67,7 @@ def get_custom_init_container(
 
     env = to_list(env, check_none=True)
     env_from = []
-    secret = connection.get_secret()
+    secret = connection.secret
     if secret:
         volume_mounts += to_list(
             get_mount_from_resource(resource=secret), check_none=True
@@ -77,7 +77,7 @@ def get_custom_init_container(
     env += to_list(
         get_connection_env_var(connection=connection, secret=secret), check_none=True
     )
-    config_map = connection.get_config_map()
+    config_map = connection.config_map
     if config_map:
         volume_mounts += to_list(
             get_mount_from_resource(resource=config_map), check_none=True

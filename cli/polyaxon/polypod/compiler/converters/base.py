@@ -22,12 +22,12 @@ from clipped.utils.http import clean_host
 from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
+from vents.connections.connection_schema import patch_git
 
 from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas.connections import patch_git
+from polyaxon.connections import V1Connection, V1ConnectionKind, V1K8sResource
 from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolypodException
@@ -55,7 +55,6 @@ from polyaxon.polypod.pod.volumes import get_pod_volumes
 from polyaxon.polypod.sidecar.container import get_sidecar_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
@@ -186,10 +185,10 @@ class BaseConverter(ConverterAbstract):
     def get_annotations(
         self,
         annotations: Dict,
-        artifacts_store: Optional[V1ConnectionType],
+        artifacts_store: Optional[V1Connection],
         init_connections: Optional[List[V1Init]],
         connections: List[str],
-        connection_by_names: Optional[Dict[str, V1ConnectionType]],
+        connection_by_names: Optional[Dict[str, V1Connection]],
     ):
         annotations = annotations or {}
         annotations = copy.copy(annotations)
@@ -264,13 +263,13 @@ class BaseConverter(ConverterAbstract):
         self,
         main_container: k8s_schemas.V1Container,
         contexts: PluginsContextsSpec,
-        artifacts_store: V1ConnectionType,
+        artifacts_store: V1Connection,
         connections: List[str],
         init_connections: Optional[List[V1Init]],
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
         log_level: str,
-        secrets: Optional[Iterable[V1K8sResourceType]],
-        config_maps: Optional[Iterable[V1K8sResourceType]],
+        secrets: Optional[Iterable[V1K8sResource]],
+        config_maps: Optional[Iterable[V1K8sResource]],
         kv_env_vars: List[List] = None,
         ports: List[int] = None,
     ) -> k8s_schemas.V1Container:
@@ -306,7 +305,7 @@ class BaseConverter(ConverterAbstract):
         self,
         polyaxon_sidecar: V1PolyaxonSidecarContainer,
         contexts: PluginsContextsSpec,
-        artifacts_store: V1ConnectionType,
+        artifacts_store: V1Connection,
         sidecar_containers: List[k8s_schemas.V1Container],
         log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1Container]:
@@ -332,9 +331,9 @@ class BaseConverter(ConverterAbstract):
     def handle_init_connections(
         self,
         polyaxon_init: V1PolyaxonInitContainer,
-        artifacts_store: V1ConnectionType,
+        artifacts_store: V1Connection,
         init_connections: List[V1Init],
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
         contexts: PluginsContextsSpec,
         log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1Container]:
@@ -436,7 +435,7 @@ class BaseConverter(ConverterAbstract):
                     containers.append(
                         get_git_init_container(
                             polyaxon_init=polyaxon_init,
-                            connection=V1ConnectionType(
+                            connection=V1Connection(
                                 name=git_name,
                                 kind=V1ConnectionKind.GIT,
                                 schema_=init_connection.git,
@@ -510,10 +509,10 @@ class BaseConverter(ConverterAbstract):
         self,
         polyaxon_init: V1PolyaxonInitContainer,
         contexts: PluginsContextsSpec,
-        artifacts_store: V1ConnectionType,
+        artifacts_store: V1Connection,
         init_connections: List[V1Init],
         init_containers: List[k8s_schemas.V1Container],
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
         log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1Container]:
         init_containers = [
@@ -577,11 +576,11 @@ class BaseConverter(ConverterAbstract):
         init: List[V1Init],
         sidecars: List[k8s_schemas.V1Container],
         container: k8s_schemas.V1Container,
-        artifacts_store: V1ConnectionType,
+        artifacts_store: V1Connection,
         connections: List[str],
-        connection_by_names: Dict[str, V1ConnectionType],
-        secrets: Optional[Iterable[V1K8sResourceType]],
-        config_maps: Optional[Iterable[V1K8sResourceType]],
+        connection_by_names: Dict[str, V1Connection],
+        secrets: Optional[Iterable[V1K8sResource]],
+        config_maps: Optional[Iterable[V1K8sResource]],
         kv_env_vars: List[List],
         default_sa: Optional[str] = None,
         ports: List[int] = None,

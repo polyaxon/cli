@@ -23,14 +23,12 @@ from clipped.utils.json import orjson_dumps
 from clipped.utils.paths import delete_path
 
 from polyaxon import dist, settings
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import V1HostPathConnection
+from polyaxon.connections import V1Connection, V1ConnectionKind, V1HostPathConnection
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.schemas.api.authentication import AccessTokenConfig
 from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.schemas.cli.cli_config import CliConfig
 from polyaxon.schemas.cli.client_config import ClientConfig
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def assert_equal_feature_processors(fp1, fp2):
@@ -156,7 +154,7 @@ class AsyncMock(mock.MagicMock):
 def set_store():
     store_root = tempfile.mkdtemp()
     settings.AGENT_CONFIG = AgentConfig(
-        artifacts_store=V1ConnectionType(
+        artifacts_store=V1Connection(
             name="test",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(host_path=store_root, mount_path=store_root),

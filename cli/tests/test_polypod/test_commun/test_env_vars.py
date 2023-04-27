@@ -16,7 +16,7 @@
 
 import pytest
 
-from polyaxon.connections.schemas import V1K8sResourceSchema
+from polyaxon.connections import V1K8sResource
 from polyaxon.env_vars.keys import (
     EV_KEYS_API_VERSION,
     EV_KEYS_AUTH_TOKEN,
@@ -52,7 +52,6 @@ from polyaxon.polypod.common.env_vars import (
     get_service_env_vars,
     get_str_var,
 )
-from polyaxon.schemas.types import V1K8sResourceType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -153,60 +152,52 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_items_from_secret(None) == []
         # Secret without items
-        secret = V1K8sResourceType(
-            name="test", schema_=V1K8sResourceSchema(name="test"), is_requested=True
-        )
+        secret = V1K8sResource(name="test", is_requested=True)
         assert get_items_from_secret(secret) == []
-        secret = V1K8sResourceType(
+        secret = V1K8sResource(
             name="test",
-            schema_=V1K8sResourceSchema(name="test", items=[]),
+            items=[],
             is_requested=True,
         )
         assert get_items_from_secret(secret) == []
         # Secret with items
-        secret = V1K8sResourceType(
+        secret = V1K8sResource(
             name="test",
-            schema_=V1K8sResourceSchema(name="test", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
         assert get_items_from_secret(secret) == [
-            get_from_secret("item1", "item1", secret.schema_.name),
-            get_from_secret("item2", "item2", secret.schema_.name),
+            get_from_secret("item1", "item1", secret.name),
+            get_from_secret("item2", "item2", secret.name),
         ]
 
     def get_items_from_config_map(self):
         # None
         assert get_items_from_secret(None) == []
         # Secret without items
-        secret = V1K8sResourceType(
-            name="test", schema_=V1K8sResourceSchema(name="test"), is_requested=True
-        )
+        secret = V1K8sResource(name="test", is_requested=True)
         assert get_items_from_secret(secret) == []
-        secret = V1K8sResourceType(
+        secret = V1K8sResource(
             name="test",
-            schema_=V1K8sResourceSchema(name="test", items=[]),
+            items=[],
             is_requested=True,
         )
         assert get_items_from_secret(secret) == []
         # Secret with items
-        secret = V1K8sResourceType(
+        secret = V1K8sResource(
             name="test",
-            schema_=V1K8sResourceSchema(name="test", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
         assert get_items_from_secret(secret) == [
-            get_from_config_map("item1", "item1", secret.schema_.name),
-            get_from_config_map("item2", "item2", secret.schema_.name),
+            get_from_config_map("item1", "item1", secret.name),
+            get_from_config_map("item2", "item2", secret.name),
         ]
 
     def test_get_env_vars_from_k8s_resources(self):
         assert get_env_vars_from_k8s_resources(secrets=[], config_maps=[]) == []
-        res1 = V1K8sResourceType(
-            name="test", schema_=V1K8sResourceSchema(name="test"), is_requested=True
-        )
-        res2 = V1K8sResourceType(
-            name="test2", schema_=V1K8sResourceSchema(name="test2"), is_requested=True
-        )
+        res1 = V1K8sResource(name="test", is_requested=True)
+        res2 = V1K8sResource(name="test2", is_requested=True)
         assert (
             get_env_vars_from_k8s_resources(secrets=[res1, res2], config_maps=[]) == []
         )
@@ -215,14 +206,14 @@ class TestEnvVars(BaseTestCase):
             get_env_vars_from_k8s_resources(secrets=[], config_maps=[res1, res2]) == []
         )
 
-        res1 = V1K8sResourceType(
+        res1 = V1K8sResource(
             name="test",
-            schema_=V1K8sResourceSchema(name="test", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
-        res2 = V1K8sResourceType(
+        res2 = V1K8sResource(
             name="test2",
-            schema_=V1K8sResourceSchema(name="test2", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
         expected = get_items_from_secret(res1) + get_items_from_secret(res2)
@@ -250,17 +241,15 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_secret(secret=None) is None
         # Secret with items
-        secret = V1K8sResourceType(
+        secret = V1K8sResource(
             name="test",
-            schema_=V1K8sResourceSchema(name="test", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
         assert get_env_from_secret(secret=secret) is None
 
         # Secret
-        secret = V1K8sResourceType(
-            name="test", schema_=V1K8sResourceSchema(name="test_ref"), is_requested=True
-        )
+        secret = V1K8sResource(name="test_ref", is_requested=True)
 
         assert get_env_from_secret(secret=secret).secret_ref == {"name": "test_ref"}
 
@@ -268,17 +257,15 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_config_map(config_map=None) is None
         # ConfigMap with items
-        config_map = V1K8sResourceType(
+        config_map = V1K8sResource(
             name="test",
-            schema_=V1K8sResourceSchema(name="test", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
         assert get_env_from_config_map(config_map=config_map) is None
 
         # ConfigMap
-        config_map = V1K8sResourceType(
-            name="test", schema_=V1K8sResourceSchema(name="test_ref"), is_requested=True
-        )
+        config_map = V1K8sResource(name="test_ref", is_requested=True)
 
         assert get_env_from_config_map(config_map=config_map).config_map_ref == {
             "name": "test_ref"
@@ -288,15 +275,14 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_secrets(secrets=None) == []
         # Secret with items
-        secret1 = V1K8sResourceType(
+        secret1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="test1", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
         # Secret
-        secret2 = V1K8sResourceType(
-            name="test2",
-            schema_=V1K8sResourceSchema(name="test_ref"),
+        secret2 = V1K8sResource(
+            name="test_ref",
             is_requested=True,
         )
 
@@ -308,15 +294,14 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_config_maps(config_maps=None) == []
         # ConfigMap with items
-        config_map1 = V1K8sResourceType(
+        config_map1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="test1", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
         # ConfigMap
-        config_map2 = V1K8sResourceType(
-            name="test2",
-            schema_=V1K8sResourceSchema(name="test_ref"),
+        config_map2 = V1K8sResource(
+            name="test_ref",
             is_requested=True,
         )
 
@@ -326,12 +311,8 @@ class TestEnvVars(BaseTestCase):
 
     def test_get_env_from_k8s_resources(self):
         assert get_env_from_k8s_resources(secrets=[], config_maps=[]) == []
-        res1 = V1K8sResourceType(
-            name="test", schema_=V1K8sResourceSchema(name="test"), is_requested=True
-        )
-        res2 = V1K8sResourceType(
-            name="test2", schema_=V1K8sResourceSchema(name="test2"), is_requested=True
-        )
+        res1 = V1K8sResource(name="test", is_requested=True)
+        res2 = V1K8sResource(name="test2", is_requested=True)
         expected = get_env_from_secrets(secrets=[res1, res2])
         assert (
             get_env_from_k8s_resources(secrets=[res1, res2], config_maps=[]) == expected

@@ -22,15 +22,18 @@ from polyaxon.auxiliaries import (
     get_default_init_container,
     get_default_sidecar_container,
 )
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import V1BucketConnection, V1K8sResourceSchema
+from polyaxon.connections import (
+    V1BucketConnection,
+    V1Connection,
+    V1ConnectionKind,
+    V1K8sResource,
+)
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.managers.agent import AgentConfigManager
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyflow import V1CompiledOperation, V1RunKind
 from polyaxon.polypod.compiler.resolver import BaseResolver
 from polyaxon.schemas.cli.agent_config import AgentConfig
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -116,33 +119,31 @@ class TestResolver(BaseTestCase):
     def test_resolve_connections_with_invalid_config(self):
         fpath = tempfile.mkdtemp()
         AgentConfigManager.CONFIG_PATH = fpath
-        secret1 = V1K8sResourceType(
+        secret1 = V1K8sResource(
             name="secret1",
-            schema_=V1K8sResourceSchema(name="secret1"),
             is_requested=True,
         )
-        secret2 = V1K8sResourceType(
+        secret2 = V1K8sResource(
             name="secret2",
-            schema_=V1K8sResourceSchema(name="secret2"),
             is_requested=True,
         )
-        connection1 = V1ConnectionType(
+        connection1 = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
-            secret=secret1.schema_,
+            secret=secret1,
         )
-        connection2 = V1ConnectionType(
+        connection2 = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
             schema_=V1BucketConnection(bucket="gcs//:foo"),
-            secret=secret1.schema_,
+            secret=secret1,
         )
-        connection3 = V1ConnectionType(
+        connection3 = V1Connection(
             name="test_wasb",
             kind=V1ConnectionKind.WASB,
             schema_=V1BucketConnection(bucket="wasbs//:foo"),
-            secret=secret2.schema_,
+            secret=secret2,
         )
         settings.AGENT_CONFIG = AgentConfig(
             namespace="foo",
@@ -165,9 +166,9 @@ class TestResolver(BaseTestCase):
         assert resolver.namespace == "foo"
         assert resolver.connection_by_names == {connection1.name: connection1}
         assert resolver.artifacts_store == connection1
-        assert [s.schema_ for s in resolver.secrets] == [
-            secret1.schema_,
-            secret2.schema_,
+        assert resolver.secrets == [
+            secret1,
+            secret2,
         ]
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
@@ -208,10 +209,7 @@ class TestResolver(BaseTestCase):
             connection1.name: connection1,
             connection3.name: connection3,
         }
-        assert [s.schema_ for s in resolver.secrets] == [
-            secret1.schema_,
-            secret2.schema_,
-        ]
+        assert resolver.secrets == [secret1, secret2]
         assert resolver.artifacts_store == connection1
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
@@ -257,9 +255,9 @@ class TestResolver(BaseTestCase):
             connection2.name: connection2,
             connection1.name: connection1,
         }
-        assert [s.schema_ for s in resolver.secrets] == [
-            secret1.schema_,
-            secret2.schema_,
+        assert resolver.secrets == [
+            secret1,
+            secret2,
         ]
         assert resolver.artifacts_store == connection1
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()

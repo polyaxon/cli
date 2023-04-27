@@ -16,9 +16,9 @@
 
 from typing import Dict, List
 
+from polyaxon.connections import V1Connection
 from polyaxon.polyflow import ParamSpec, V1CompiledOperation
 from polyaxon.polypod.compiler.lineage.io_collector import collect_io_artifacts
-from polyaxon.schemas.types import V1ConnectionType
 from traceml.artifacts import V1RunArtifact
 
 
@@ -31,8 +31,8 @@ def resolve_artifacts_lineage(
     run_path: str,
     param_spec: Dict[str, ParamSpec],
     compiled_operation: V1CompiledOperation,
-    artifacts_store: V1ConnectionType,
-    connection_by_names: Dict[str, V1ConnectionType],
+    artifacts_store: V1Connection,
+    connection_by_names: Dict[str, V1Connection],
 ) -> List[V1RunArtifact]:
     return collect_io_artifacts(
         compiled_operation=compiled_operation, connection_by_names=connection_by_names

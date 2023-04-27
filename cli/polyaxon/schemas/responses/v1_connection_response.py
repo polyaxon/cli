@@ -20,7 +20,7 @@ from typing import List, Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.connections.kinds import V1ConnectionKind
+from polyaxon.connections import V1ConnectionKind
 from polyaxon.schemas.base import BaseSchemaModel
 
 

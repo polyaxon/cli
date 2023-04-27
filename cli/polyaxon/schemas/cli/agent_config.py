@@ -18,7 +18,8 @@ import os
 from typing import Dict, List, Optional
 
 from clipped.config.schema import skip_partial, to_partial
-from pydantic import Extra, Field, PrivateAttr, StrictStr, validator
+from pydantic import Extra, Field, StrictStr, validator
+from vents.connections import ConnectionCatalogMixin
 
 from polyaxon.auxiliaries import (
     V1DefaultScheduling,
@@ -28,6 +29,7 @@ from polyaxon.auxiliaries import (
     V1PolyaxonSidecarContainer,
 )
 from polyaxon.config.parser import ConfigParser
+from polyaxon.connections import V1Connection
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_ARTIFACTS_STORE,
@@ -50,7 +52,6 @@ from polyaxon.env_vars.keys import (
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.lifecycle import V1ProjectFeature
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def validate_agent_config(
@@ -76,20 +77,12 @@ def validate_agent_config(
         connection_names.add(c.name)
 
 
-class BaseAgentConfig(BaseSchemaModel):
+class BaseAgentConfig(ConnectionCatalogMixin, BaseSchemaModel):
     _REQUIRED_ARTIFACTS_STORE = True
 
-    artifacts_store: Optional[V1ConnectionType] = Field(
-        alias=EV_KEYS_AGENT_ARTIFACTS_STORE
-    )
-    connections: Optional[List[V1ConnectionType]] = Field(
-        alias=EV_KEYS_AGENT_CONNECTIONS
-    )
+    artifacts_store: Optional[V1Connection] = Field(alias=EV_KEYS_AGENT_ARTIFACTS_STORE)
+    connections: Optional[List[V1Connection]] = Field(alias=EV_KEYS_AGENT_CONNECTIONS)
     namespace: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_NAMESPACE)
-    _all_connections: List[V1ConnectionType] = PrivateAttr()
-    _secrets: Optional[V1K8sResourceType] = PrivateAttr()
-    _config_maps: Optional[V1K8sResourceType] = PrivateAttr()
-    _connections_by_names: Dict[str, V1ConnectionType] = PrivateAttr()
 
     class Config:
         extra = Extra.ignore
@@ -153,44 +146,6 @@ class BaseAgentConfig(BaseSchemaModel):
         if self.artifacts_store:
             self._all_connections.append(self.artifacts_store)
             validate_agent_config(self.artifacts_store, self.connections)
-
-    @property
-    def all_connections(self) -> List[V1ConnectionType]:
-        return self._all_connections
-
-    @property
-    def secrets(self) -> List[V1K8sResourceType]:
-        if self._secrets or not self._all_connections:
-            return self._secrets
-        secret_names = set()
-        secrets = []
-        for c in self._all_connections:
-            if c.secret and c.secret.name not in secret_names:
-                secret_names.add(c.secret.name)
-                secrets.append(c.get_secret())
-        self._secrets = secrets
-        return self._secrets
-
-    @property
-    def config_maps(self) -> List[V1K8sResourceType]:
-        if self._config_maps or not self._all_connections:
-            return self._config_maps
-        config_map_names = set()
-        config_maps = []
-        for c in self._all_connections:
-            if c.config_map and c.config_map.name not in config_map_names:
-                config_map_names.add(c.config_map.name)
-                config_maps.append(c.get_config_map())
-        self._config_maps = config_maps
-        return self._config_maps
-
-    @property
-    def connections_by_names(self) -> Dict[str, V1ConnectionType]:
-        if self._connections_by_names or not self._all_connections:
-            return self._connections_by_names
-
-        self._connections_by_names = {c.name: c for c in self._all_connections}
-        return self._connections_by_names
 
     @property
     def local_root(self) -> str:

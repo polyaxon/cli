@@ -25,6 +25,7 @@ from polyaxon.auxiliaries import (
     V1PolyaxonSidecarContainer,
 )
 from polyaxon.auxiliaries.default_scheduling import V1DefaultScheduling
+from polyaxon.connections import V1Connection
 from polyaxon.deploy.schemas.auth import AuthConfig
 from polyaxon.deploy.schemas.deployment_types import DeploymentCharts, DeploymentTypes
 from polyaxon.deploy.schemas.email import EmailConfig
@@ -51,7 +52,6 @@ from polyaxon.deploy.schemas.ssl import SSLConfig
 from polyaxon.deploy.schemas.ui import UIConfig
 from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def validate_connections(artifacts_store, connections):
@@ -266,8 +266,8 @@ class DeploymentConfig(BaseSchemaModel):
     allowed_hosts: Optional[List[StrictStr]] = Field(alias="allowedHosts")
     include_host_ips: Optional[bool] = Field(alias="includeHostIps")
     intervals: Optional[IntervalsConfig]
-    artifacts_store: Optional[V1ConnectionType] = Field(alias="artifactsStore")
-    connections: Optional[List[V1ConnectionType]]
+    artifacts_store: Optional[V1Connection] = Field(alias="artifactsStore")
+    connections: Optional[List[V1Connection]]
     log_level: Optional[StrictStr] = Field(alias="logLevel")
     security_context: Optional[SecurityContextConfig] = Field(alias="securityContext")
     external_services: Optional[ExternalServicesConfig] = Field(

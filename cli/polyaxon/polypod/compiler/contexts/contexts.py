@@ -19,6 +19,7 @@ import os
 from datetime import datetime
 from typing import Dict, Optional
 
+from polyaxon.connections import V1Connection
 from polyaxon.contexts import keys as ctx_keys
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.contexts import sections as ctx_sections
@@ -35,7 +36,6 @@ from polyaxon.polypod.compiler.contexts.kubeflow import (
 )
 from polyaxon.polypod.compiler.contexts.service import ServiceContextsManager
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.utils.fqn_utils import get_project_instance, get_run_instance
 
 CONTEXTS_MANAGERS = {
@@ -70,7 +70,7 @@ def resolve_globals_contexts(
     finished_at: Optional[datetime] = None,
     duration: Optional[int] = None,
     plugins: Optional[V1Plugins] = None,
-    artifacts_store: V1ConnectionType = None,
+    artifacts_store: V1Connection = None,
     cloning_kind: V1CloningKind = None,
     original_uuid: Optional[str] = None,
     is_independent: bool = True,
@@ -140,8 +140,8 @@ def resolve_contexts(
     run_name: str,
     run_path: str,
     compiled_operation: V1CompiledOperation,
-    artifacts_store: V1ConnectionType,
-    connection_by_names: Dict[str, V1ConnectionType],
+    artifacts_store: V1Connection,
+    connection_by_names: Dict[str, V1Connection],
     iteration: int,
     created_at: datetime,
     compiled_at: datetime,

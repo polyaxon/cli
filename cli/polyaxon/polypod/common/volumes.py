@@ -17,10 +17,10 @@ import uuid
 
 from typing import Optional
 
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common import constants
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def get_volume_name(path: str) -> str:
@@ -29,7 +29,7 @@ def get_volume_name(path: str) -> str:
 
 
 def get_volume_from_connection(
-    connection: V1ConnectionType,
+    connection: V1Connection,
 ) -> Optional[k8s_schemas.V1Volume]:
     if not connection:
         return None
@@ -51,28 +51,28 @@ def get_volume_from_connection(
         )
 
 
-def get_volume_from_secret(secret: V1K8sResourceType) -> Optional[k8s_schemas.V1Volume]:
+def get_volume_from_secret(secret: V1K8sResource) -> Optional[k8s_schemas.V1Volume]:
     if not secret:
         return None
-    if secret.schema_.mount_path:
+    if secret.mount_path:
         secret_volume = k8s_schemas.V1SecretVolumeSource(
             secret_name=secret.name,
-            items=secret.schema_.items,
-            default_mode=secret.schema_.default_mode,
+            items=secret.items,
+            default_mode=secret.default_mode,
         )
         return k8s_schemas.V1Volume(name=secret.name, secret=secret_volume)
 
 
 def get_volume_from_config_map(
-    config_map: V1K8sResourceType,
+    config_map: V1K8sResource,
 ) -> Optional[k8s_schemas.V1Volume]:
     if not config_map:
         return None
-    if config_map.schema_.mount_path:
+    if config_map.mount_path:
         config_map_volume = k8s_schemas.V1ConfigMapVolumeSource(
             name=config_map.name,
-            items=config_map.schema_.items,
-            default_mode=config_map.schema_.default_mode,
+            items=config_map.items,
+            default_mode=config_map.default_mode,
         )
         return k8s_schemas.V1Volume(name=config_map.name, config_map=config_map_volume)
 

@@ -18,6 +18,7 @@ from typing import Iterable, List
 
 from clipped.utils.lists import to_list
 
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARTIFACTS_STORE_NAME,
     EV_KEYS_COLLECT_ARTIFACTS,
@@ -32,16 +33,15 @@ from polyaxon.polypod.common.env_vars import (
     get_kv_env_vars,
 )
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def get_env_vars(
     contexts: PluginsContextsSpec,
     kv_env_vars: List[List],
     artifacts_store_name: str,
-    connections: Iterable[V1ConnectionType],
-    secrets: Iterable[V1K8sResourceType],
-    config_maps: Iterable[V1K8sResourceType],
+    connections: Iterable[V1Connection],
+    secrets: Iterable[V1K8sResource],
+    config_maps: Iterable[V1K8sResource],
 ) -> List[k8s_schemas.V1EnvVar]:
     env_vars = []
     connections = connections or []
@@ -60,7 +60,7 @@ def get_env_vars(
     # Add connection env vars information
     for connection in connections:
         try:
-            secret = connection.get_secret()
+            secret = connection.secret
             env_vars += to_list(
                 get_connection_env_var(connection=connection, secret=secret),
                 check_none=True,

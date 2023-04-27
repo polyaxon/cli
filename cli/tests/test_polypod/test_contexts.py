@@ -18,13 +18,11 @@ import pytest
 
 from clipped.utils.tz import now
 
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import V1ClaimConnection
+from polyaxon.connections import V1ClaimConnection, V1Connection, V1ConnectionKind
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyflow import V1CloningKind, V1CompiledOperation, V1RunKind
 from polyaxon.polypod.compiler.contexts import resolve_contexts
-from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -95,7 +93,7 @@ class TestResolveContexts(BaseTestCase):
 
     def test_resolver_init_and_connections_contexts(self):
         context_root = ctx_paths.CONTEXT_ROOT
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -174,7 +172,7 @@ class TestResolveContexts(BaseTestCase):
 
     def test_resolver_outputs_collections(self):
         context_root = ctx_paths.CONTEXT_ROOT
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -249,7 +247,7 @@ class TestResolveContexts(BaseTestCase):
 
     def test_resolver_mount_artifacts_store(self):
         context_root = ctx_paths.CONTEXT_ROOT
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(

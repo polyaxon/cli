@@ -19,8 +19,12 @@ import uuid
 from pydantic import ValidationError
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import V1BucketConnection, V1ClaimConnection
+from polyaxon.connections import (
+    V1BucketConnection,
+    V1ClaimConnection,
+    V1Connection,
+    V1ConnectionKind,
+)
 from polyaxon.containers.names import INIT_TENSORBOARD_CONTAINER_PREFIX
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
@@ -33,14 +37,14 @@ from polyaxon.polypod.common.mounts import (
 )
 from polyaxon.polypod.init.tensorboard import get_tensorboard_init_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1TensorboardType
+from polyaxon.schemas.types import V1TensorboardType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polypod_mark
 class TestInitTensorboard(BaseTestCase):
     def test_get_tensorboard_init_container(self):
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             tags=["test", "foo"],
@@ -95,7 +99,7 @@ class TestInitTensorboard(BaseTestCase):
             "--plugins=plug1,plug2",
         ]
 
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             tags=["test", "foo"],

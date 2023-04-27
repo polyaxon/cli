@@ -16,15 +16,15 @@
 
 import pytest
 
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
+from polyaxon.connections import (
     V1BucketConnection,
     V1ClaimConnection,
+    V1Connection,
+    V1ConnectionKind,
     V1HostPathConnection,
 )
 from polyaxon.polyflow import V1Init
 from polyaxon.polypod.common.annotations import get_connection_annotations
-from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -52,7 +52,7 @@ class TestAnnotations(BaseTestCase):
         )
 
         # Store
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
@@ -79,13 +79,13 @@ class TestAnnotations(BaseTestCase):
         )
 
         # Add connections
-        init_conn = V1ConnectionType(
+        init_conn = V1Connection(
             name="init",
             kind=V1ConnectionKind.SLACK,
             annotations={"init1_key1": "val1", "init1_key2": "val2"},
         )
         init = V1Init(connection="init")
-        conn1 = V1ConnectionType(
+        conn1 = V1Connection(
             name="conn1",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -93,7 +93,7 @@ class TestAnnotations(BaseTestCase):
             ),
             annotations={"conn1_key1": "val1", "conn1_key2": "val2"},
         )
-        conn2 = V1ConnectionType(
+        conn2 = V1Connection(
             name="conn2",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(

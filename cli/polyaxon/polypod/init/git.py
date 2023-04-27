@@ -21,7 +21,7 @@ from clipped.utils.json import orjson_dumps
 from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
-from polyaxon.connections.kinds import V1ConnectionKind
+from polyaxon.connections import V1Connection, V1ConnectionKind
 from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
@@ -44,7 +44,6 @@ from polyaxon.polypod.common.mounts import (
 )
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def get_repo_context_args(
@@ -79,7 +78,7 @@ def get_repo_context_args(
 
 def get_git_init_container(
     polyaxon_init: V1PolyaxonInitContainer,
-    connection: V1ConnectionType,
+    connection: V1Connection,
     contexts: PluginsContextsSpec,
     container: Optional[k8s_schemas.V1Container] = None,
     env: List[k8s_schemas.V1EnvVar] = None,
@@ -105,7 +104,7 @@ def get_git_init_container(
 
     env = to_list(env, check_none=True)
     env_from = []
-    secret = connection.get_secret()
+    secret = connection.secret
     if secret:
         volume_mounts += to_list(
             get_mount_from_resource(resource=secret), check_none=True
@@ -116,9 +115,9 @@ def get_git_init_container(
         get_connection_env_var(connection=connection, secret=secret), check_none=True
     )
     # Add special handling to auto-inject ssh mount path
-    if connection.kind == V1ConnectionKind.SSH and secret.schema_.mount_path:
-        env += [get_env_var(EV_KEYS_SSH_PATH, secret.schema_.mount_path)]
-    config_map = connection.get_config_map()
+    if connection.kind == V1ConnectionKind.SSH and secret.mount_path:
+        env += [get_env_var(EV_KEYS_SSH_PATH, secret.mount_path)]
+    config_map = connection.config_map
     if config_map:
         volume_mounts += to_list(
             get_mount_from_resource(resource=config_map), check_none=True

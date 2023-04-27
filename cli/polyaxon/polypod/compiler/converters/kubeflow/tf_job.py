@@ -17,6 +17,7 @@
 from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1Plugins, V1TFJob
 from polyaxon.polypod.compiler.converters import BaseConverter
 from polyaxon.polypod.compiler.converters.base import PlatformConverterMixin
@@ -24,17 +25,16 @@ from polyaxon.polypod.custom_resources import get_tf_job_custom_resource
 from polyaxon.polypod.mixins import TFJobMixin
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 class TfJobConverter(TFJobMixin, BaseConverter):
     def get_resource(
         self,
         compiled_operation: V1CompiledOperation,
-        artifacts_store: V1ConnectionType,
-        connection_by_names: Dict[str, V1ConnectionType],
-        secrets: Optional[Iterable[V1K8sResourceType]],
-        config_maps: Optional[Iterable[V1K8sResourceType]],
+        artifacts_store: V1Connection,
+        connection_by_names: Dict[str, V1Connection],
+        secrets: Optional[Iterable[V1K8sResource]],
+        config_maps: Optional[Iterable[V1K8sResource]],
         default_sa: Optional[str] = None,
         default_auth: bool = False,
     ) -> Dict:

@@ -21,6 +21,7 @@ from clipped.utils.lists import to_list
 from clipped.utils.validation import validate_tags
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
+from polyaxon.connections import V1Connection
 from polyaxon.containers.names import (
     INIT_TENSORBOARD_CONTAINER_PREFIX,
     generate_container_name,
@@ -36,7 +37,7 @@ from polyaxon.polypod.common.mounts import (
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.init.store import get_base_store_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1TensorboardType
+from polyaxon.schemas.types import V1TensorboardType
 
 
 def _get_args(tb_args: V1TensorboardType):
@@ -59,7 +60,7 @@ def _get_args(tb_args: V1TensorboardType):
 
 def get_tensorboard_init_container(
     polyaxon_init: V1PolyaxonInitContainer,
-    artifacts_store: V1ConnectionType,
+    artifacts_store: V1Connection,
     tb_args: V1TensorboardType,
     contexts: PluginsContextsSpec,
     run_instance: str,

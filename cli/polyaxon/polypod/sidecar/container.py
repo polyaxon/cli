@@ -19,6 +19,7 @@ from typing import List, Optional
 from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
+from polyaxon.connections import V1Connection
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.containers import patch_container
@@ -36,7 +37,6 @@ from polyaxon.polypod.common.mounts import (
 )
 from polyaxon.polypod.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType
 
 SIDECAR_CONTAINER = "polyaxon-sidecar"
 
@@ -58,7 +58,7 @@ def get_sidecar_container(
     container_id: str,
     polyaxon_sidecar: V1PolyaxonSidecarContainer,
     env: List[k8s_schemas.V1EnvVar],
-    artifacts_store: V1ConnectionType,
+    artifacts_store: V1Connection,
     contexts: PluginsContextsSpec,
     run_path: Optional[str],
 ) -> Optional[k8s_schemas.V1Container]:
@@ -111,14 +111,14 @@ def get_sidecar_container(
 
     secret = None
     if artifacts_store.is_bucket:
-        secret = artifacts_store.get_secret()
+        secret = artifacts_store.secret
         volume_mounts += to_list(
             get_mount_from_resource(resource=secret), check_none=True
         )
         env += to_list(get_items_from_secret(secret=secret), check_none=True)
         env_from += to_list(get_env_from_secret(secret=secret), check_none=True)
 
-        config_map = artifacts_store.get_config_map()
+        config_map = artifacts_store.config_map
         volume_mounts += to_list(
             get_mount_from_resource(resource=config_map), check_none=True
         )

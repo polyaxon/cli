@@ -17,8 +17,12 @@
 import pytest
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import V1BucketConnection, V1ClaimConnection
+from polyaxon.connections import (
+    V1BucketConnection,
+    V1ClaimConnection,
+    V1Connection,
+    V1ConnectionKind,
+)
 from polyaxon.containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
     generate_container_name,
@@ -34,7 +38,7 @@ from polyaxon.polypod.init.artifacts import (
     init_artifact_context_args,
 )
 from polyaxon.polypod.init.store import get_base_store_container, get_volume_args
-from polyaxon.schemas.types import V1ArtifactsType, V1ConnectionType
+from polyaxon.schemas.types import V1ArtifactsType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -57,7 +61,7 @@ class TestInitOutputsStore(BaseTestCase):
             )
 
     def test_get_artifacts_path_container_with_bucket_store(self):
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
             schema_=V1BucketConnection(bucket="gs//:foo"),
@@ -100,7 +104,7 @@ class TestInitOutputsStore(BaseTestCase):
         )
 
     def test_get_artifacts_path_container_with_managed_mount_store(self):
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(mount_path="/claim/path", volume_claim="claim"),
@@ -143,7 +147,7 @@ class TestInitOutputsStore(BaseTestCase):
         )
 
     def test_get_artifacts_path_container_with_non_managed_mount_store(self):
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(mount_path="/claim/path", volume_claim="claim"),

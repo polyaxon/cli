@@ -17,11 +17,12 @@ import uuid
 
 from polyaxon import settings
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
+from polyaxon.connections import (
     V1BucketConnection,
     V1ClaimConnection,
-    V1K8sResourceSchema,
+    V1Connection,
+    V1ConnectionKind,
+    V1K8sResource,
 )
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init, V1Plugins
@@ -39,11 +40,9 @@ from polyaxon.polypod.sidecar.container import get_sidecar_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import (
     V1ArtifactsType,
-    V1ConnectionType,
     V1DockerfileType,
     V1FileType,
     V1GitType,
-    V1K8sResourceType,
     V1TensorboardType,
 )
 from polyaxon.services.values import PolyaxonServices
@@ -117,7 +116,7 @@ class TestJobConverter(BaseTestCase):
         assert containers == []
 
     def test_get_init_containers_with_claim_outputs(self):  # TODO
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -213,7 +212,7 @@ class TestJobConverter(BaseTestCase):
         )
 
         # Add Store
-        store1 = V1ConnectionType(
+        store1 = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3://foo"),
@@ -375,7 +374,7 @@ class TestJobConverter(BaseTestCase):
         self.assert_containers(expected_containers, containers)
 
     def test_get_init_containers_with_tensorboard(self):
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3://foo"),
@@ -436,7 +435,7 @@ class TestJobConverter(BaseTestCase):
         )
         expected_containers = [
             get_git_init_container(
-                connection=V1ConnectionType(
+                connection=V1Connection(
                     name=git1.get_name(), kind=V1ConnectionKind.GIT, schema_=git1
                 ),
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
@@ -445,7 +444,7 @@ class TestJobConverter(BaseTestCase):
             ),
             get_git_init_container(
                 container=k8s_schemas.V1Container(name="test"),
-                connection=V1ConnectionType(
+                connection=V1Connection(
                     name=git2.get_name(), kind=V1ConnectionKind.GIT, schema_=git2
                 ),
                 mount_path="/test",
@@ -457,7 +456,7 @@ class TestJobConverter(BaseTestCase):
         self.assert_containers(expected_containers, containers)
 
     def test_get_init_containers_with_store_outputs(self):
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3://foo"),
@@ -512,7 +511,7 @@ class TestJobConverter(BaseTestCase):
         )
 
         # Store with single path, no secret is passed and not required
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3://foo"),
@@ -540,12 +539,12 @@ class TestJobConverter(BaseTestCase):
             )
         ]
 
-        secret1 = V1K8sResourceType(
+        secret1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
-        store.secret = secret1.schema_
+        store.secret = secret1
 
         polyaxon_sidecar = V1PolyaxonSidecarContainer(
             image="sidecar/sidecar",
@@ -571,7 +570,7 @@ class TestJobConverter(BaseTestCase):
         ]
 
     def test_main_container(self):
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3://foo"),

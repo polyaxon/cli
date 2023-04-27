@@ -14,16 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-from urllib.parse import urljoin, urlparse
-
-
-def validate_url(url: str):
-    if not url.startswith(("http://", "https://")):
-        return False
-    parsed = urlparse(url)
-    if not parsed.hostname:
-        return False
-    return True
+from urllib.parse import urljoin
 
 
 def get_owner_url(owner: str) -> str:

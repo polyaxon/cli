@@ -16,12 +16,12 @@
 
 from typing import Iterable, List
 
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
+from polyaxon.connections import V1Connection, V1K8sResource
 
 
 def get_requested_secrets(
-    secrets: Iterable[V1K8sResourceType], connections: Iterable[V1ConnectionType]
-) -> List[V1K8sResourceType]:
+    secrets: Iterable[V1K8sResource], connections: Iterable[V1Connection]
+) -> List[V1K8sResource]:
     secrets = secrets or []
     connections = connections or []
     # Create a set of all secrets:
@@ -30,7 +30,7 @@ def get_requested_secrets(
     requested_secrets = [secret for secret in secrets if secret.is_requested]
     secret_ids = {s.name for s in requested_secrets}
     for connection in connections:
-        secret = connection.get_secret()
+        secret = connection.secret
         if secret and secret.name not in secret_ids:
             secret_ids.add(secret.name)
             requested_secrets.append(secret)
@@ -39,8 +39,8 @@ def get_requested_secrets(
 
 
 def get_requested_config_maps(
-    config_maps: Iterable[V1K8sResourceType], connections: Iterable[V1ConnectionType]
-) -> List[V1K8sResourceType]:
+    config_maps: Iterable[V1K8sResource], connections: Iterable[V1Connection]
+) -> List[V1K8sResource]:
     config_maps = config_maps or []
     connections = connections or []
     # Create a set of all config_maps:
@@ -51,7 +51,7 @@ def get_requested_config_maps(
     ]
     config_map_ids = {s.name for s in requested_config_maps}
     for connection in connections:
-        config_map = connection.get_config_map()
+        config_map = connection.config_map
         if config_map and config_map.name not in config_map_ids:
             config_map_ids.add(config_map.name)
             requested_config_maps.append(config_map)

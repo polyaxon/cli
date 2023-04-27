@@ -19,6 +19,7 @@ from typing import List, Optional
 from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
+from polyaxon.connections import V1Connection
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
@@ -29,7 +30,7 @@ from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.mounts import get_artifacts_context_mount
 from polyaxon.polypod.init.store import get_base_store_container, get_volume_args
-from polyaxon.schemas.types import V1ArtifactsType, V1ConnectionType
+from polyaxon.schemas.types import V1ArtifactsType
 
 
 def get_artifacts_store_args(artifacts_path: str, clean: bool) -> str:
@@ -58,7 +59,7 @@ def init_artifact_context_args(run_path: str) -> List[str]:
 
 def get_artifacts_path_container(
     polyaxon_init: V1PolyaxonInitContainer,
-    artifacts_store: V1ConnectionType,
+    artifacts_store: V1Connection,
     run_path: str,
     auto_resume: bool,
     env: Optional[List[k8s_schemas.V1EnvVar]] = None,

@@ -18,6 +18,7 @@ from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.lists import to_list
 
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init
 from polyaxon.polypod.common import constants
@@ -37,17 +38,16 @@ from polyaxon.polypod.main.k8s_resources import (
     get_requested_secrets,
 )
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def get_pod_volumes(
     contexts: PluginsContextsSpec,
-    artifacts_store: Optional[V1ConnectionType],
+    artifacts_store: Optional[V1Connection],
     init_connections: Optional[List[V1Init]],
     connections: List[str],
-    connection_by_names: Optional[Dict[str, V1ConnectionType]],
-    secrets: Optional[Iterable[V1K8sResourceType]],
-    config_maps: Optional[Iterable[V1K8sResourceType]],
+    connection_by_names: Optional[Dict[str, V1Connection]],
+    secrets: Optional[Iterable[V1K8sResource]],
+    config_maps: Optional[Iterable[V1K8sResource]],
     volumes: List[k8s_schemas.V1Volume] = None,
 ):
     """Resolve all volumes that need to be mounted"""
@@ -77,12 +77,12 @@ def get_pod_volumes(
         secrets=secrets, connections=requested_connections
     )
 
-    def add_volume_from_connection(connection: V1ConnectionType):
+    def add_volume_from_connection(connection: V1Connection):
         volume = get_volume_from_connection(connection=connection)
         if volume:
             volumes.append(volume)
 
-    def add_volume_from_resource(resource: V1K8sResourceType, is_secret: bool):
+    def add_volume_from_resource(resource: V1K8sResource, is_secret: bool):
         if is_secret:
             volume = get_volume_from_secret(secret=resource)
         else:

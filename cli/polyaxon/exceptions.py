@@ -86,10 +86,6 @@ class PolyaxonPathException(PolyaxonException):
     pass
 
 
-class PolyaxonStoresException(PolyaxonException):
-    pass
-
-
 class PolyaxonSchemaError(PolyaxonException):
     pass
 
@@ -107,10 +103,6 @@ class PolyaxonfileError(PolyaxonSchemaError):
 
 
 class PolyaxonClientException(PolyaxonException):
-    pass
-
-
-class PolyaxonNotificationException(PolyaxonException):
     pass
 
 

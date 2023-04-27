@@ -25,21 +25,21 @@ from polyaxon.auxiliaries import (
     get_default_init_container,
     get_default_sidecar_container,
 )
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.polyflow import V1CompiledOperation, V1Init
 from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.schemas.cli.agent_config import AgentConfig
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 class PolypodConfig(BaseSchemaModel):
     polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer]
     polyaxon_init: Optional[V1PolyaxonInitContainer]
     namespace: Optional[str]
-    secrets: Optional[List[V1K8sResourceType]]
-    config_maps: Optional[List[V1K8sResourceType]]
-    connection_by_names: Optional[Dict[str, V1ConnectionType]]
-    artifacts_store: Optional[V1ConnectionType]
+    secrets: Optional[List[V1K8sResource]]
+    config_maps: Optional[List[V1K8sResource]]
+    connection_by_names: Optional[Dict[str, V1Connection]]
+    artifacts_store: Optional[V1Connection]
     default_sa: Optional[str]
     internal_auth: Optional[bool] = Field(default=False)
 

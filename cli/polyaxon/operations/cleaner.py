@@ -17,6 +17,7 @@ from typing import List, Optional
 
 from polyaxon.auxiliaries import get_default_cleaner_container
 from polyaxon.auxiliaries.cleaner import V1PolyaxonCleaner, get_batch_cleaner_container
+from polyaxon.connections import V1Connection
 from polyaxon.polyflow import (
     V1CleanerJob,
     V1Component,
@@ -25,11 +26,10 @@ from polyaxon.polyflow import (
     V1Plugins,
     V1Termination,
 )
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def get_cleaner_operation(
-    connection: V1ConnectionType,
+    connection: V1Connection,
     run_uuid: str,
     run_kind: str,
     environment: Optional[V1Environment] = None,
@@ -59,7 +59,7 @@ def get_cleaner_operation(
 
 
 def get_batch_cleaner_operation(
-    connection: V1ConnectionType,
+    connection: V1Connection,
     paths: List[str],
     environment: Optional[V1Environment] = None,
     cleaner: Optional[V1PolyaxonCleaner] = None,

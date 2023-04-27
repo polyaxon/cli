@@ -17,12 +17,13 @@
 import pytest
 
 from polyaxon.auxiliaries import V1PolyaxonSidecarContainer, get_sidecar_resources
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
+from polyaxon.connections import (
     V1BucketConnection,
     V1ClaimConnection,
+    V1Connection,
+    V1ConnectionKind,
     V1HostPathConnection,
-    V1K8sResourceSchema,
+    V1K8sResource,
 )
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
@@ -47,7 +48,6 @@ from polyaxon.polypod.sidecar.container import (
 )
 from polyaxon.polypod.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -72,14 +72,14 @@ class TestSidecarContainer(BaseTestCase):
             )
 
     def test_get_main_container_with_logs_store_with_wrong_paths_raises(self):
-        artifacts_store = V1ConnectionType(
+        artifacts_store = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
         )
         self.assert_artifacts_store_raises(store=artifacts_store)
 
-        artifacts_store = V1ConnectionType(
+        artifacts_store = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(volume_claim="foo", mount_path="/foo"),
@@ -107,7 +107,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        mount_non_managed_store = V1ConnectionType(
+        mount_non_managed_store = V1Connection(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -137,7 +137,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        bucket_non_managed_store = V1ConnectionType(
+        bucket_non_managed_store = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
@@ -167,16 +167,16 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResourceType(
+        resource1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=False,
         )
-        bucket_managed_store = V1ConnectionType(
+        bucket_managed_store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
             schema_=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema_,
+            secret=resource1,
         )
 
         # Default auth is included
@@ -233,16 +233,16 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResourceType(
+        resource1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="ref1", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=False,
         )
-        bucket_managed_store = V1ConnectionType(
+        bucket_managed_store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
             schema_=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema_,
+            secret=resource1,
         )
 
         # Both logs/outputs
@@ -375,18 +375,17 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResourceType(
+        resource1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(
-                name="test1", items=["item1", "item2"], mount_path="/path"
-            ),
+            items=["item1", "item2"],
+            mount_path="/path",
             is_requested=False,
         )
-        bucket_managed_store = V1ConnectionType(
+        bucket_managed_store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
             schema_=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema_,
+            secret=resource1,
         )
 
         # Both logs and outputs
@@ -522,14 +521,12 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResourceType(
-            name="test1", schema_=V1K8sResourceSchema(name="ref"), is_requested=False
-        )
-        bucket_managed_store = V1ConnectionType(
+        resource1 = V1K8sResource(name="test1", is_requested=False)
+        bucket_managed_store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
             schema_=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema_,
+            secret=resource1,
         )
 
         # both logs and outputs
@@ -660,7 +657,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        mount_managed_store = V1ConnectionType(
+        mount_managed_store = V1Connection(
             name="test_path",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
@@ -792,14 +789,12 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResourceType(
-            name="test1", schema_=V1K8sResourceSchema(name="ref1"), is_requested=False
-        )
-        blob_managed_store = V1ConnectionType(
+        resource1 = V1K8sResource(name="test1", is_requested=False)
+        blob_managed_store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
             schema_=V1BucketConnection(bucket="gs//:foo"),
-            secret=resource1.schema_,
+            secret=resource1,
         )
 
         # logs and outputs
@@ -841,7 +836,7 @@ class TestSidecarContainer(BaseTestCase):
         ]
 
     def test_get_sidecar_container_host_paths(self):
-        artifacts_store = V1ConnectionType(
+        artifacts_store = V1Connection(
             name="plx-outputs",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(
@@ -884,7 +879,7 @@ class TestSidecarContainer(BaseTestCase):
         ]
 
     def test_get_sidecar_container_override_sync(self):
-        artifacts_store = V1ConnectionType(
+        artifacts_store = V1Connection(
             name="plx-outputs",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(

@@ -22,11 +22,12 @@ from polyaxon.auxiliaries import (
     get_default_init_container,
     get_default_sidecar_container,
 )
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
+from polyaxon.connections import (
     V1BucketConnection,
+    V1Connection,
+    V1ConnectionKind,
     V1HostConnection,
-    V1K8sResourceSchema,
+    V1K8sResource,
 )
 from polyaxon.managers.agent import AgentConfigManager
 from polyaxon.polyaxonfile.specs import kinds
@@ -34,7 +35,6 @@ from polyaxon.polyflow import V1CompiledOperation, V1RunKind
 from polyaxon.polypod.compiler.lineage.io_collector import collect_io_artifacts
 from polyaxon.polypod.compiler.resolver import BaseResolver
 from polyaxon.schemas.cli.agent_config import AgentConfig
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.utils.test_utils import BaseTestCase
 from traceml.artifacts import V1ArtifactKind
 
@@ -101,16 +101,15 @@ class TestLineageResolver(BaseTestCase):
         }
 
     def test_collector_with_connections(self):
-        secret = V1K8sResourceType(
+        secret = V1K8sResource(
             name="secret2",
-            schema_=V1K8sResourceSchema(name="secret2"),
             is_requested=True,
         )
-        connection1 = V1ConnectionType(
+        connection1 = V1Connection(
             name="connection1",
             kind=V1ConnectionKind.REGISTRY,
             schema_=V1HostConnection(url="localhost:5000"),
-            secret=secret.schema_,
+            secret=secret,
         )
         artifacts = collect_io_artifacts(
             compiled_operation=self.compiled_operation,
@@ -129,29 +128,27 @@ class TestLineageResolver(BaseTestCase):
     def test_resolve_connections_with_invalid_config(self):
         fpath = tempfile.mkdtemp()
         AgentConfigManager.CONFIG_PATH = fpath
-        secret1 = V1K8sResourceType(
+        secret1 = V1K8sResource(
             name="secret1",
-            schema_=V1K8sResourceSchema(name="secret1"),
             is_requested=True,
         )
-        secret2 = V1K8sResourceType(
+        secret2 = V1K8sResource(
             name="secret2",
-            schema_=V1K8sResourceSchema(name="secret2"),
             is_requested=True,
         )
-        artifacts_store = V1ConnectionType(
+        artifacts_store = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
-            secret=secret1.schema_,
+            secret=secret1,
         )
-        connection1 = V1ConnectionType(
+        connection1 = V1Connection(
             name="connection1",
             kind=V1ConnectionKind.REGISTRY,
             schema_=V1HostConnection(url="localhost:5000"),
-            secret=secret2.schema_,
+            secret=secret2,
         )
-        connection2 = V1ConnectionType(
+        connection2 = V1Connection(
             name="connection2",
             kind=V1ConnectionKind.REGISTRY,
         )

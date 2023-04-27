@@ -41,7 +41,6 @@ CONTEXT_LOCAL_RUN = "run.plx.json"
 CONTEXT_LOCAL_VERSION = "version.plx.json"
 
 CONTEXT_ROOT = os.environ.get(EV_KEYS_CONTEXT_ROOT, "/plx-context")
-CONTEXT_MOUNT_GC = "{}/.gc/gc-secret.json".format(CONTEXT_ROOT)
 CONTEXT_MOUNT_CONFIGS = "{}/.configs".format(CONTEXT_ROOT)
 CONTEXT_MOUNT_AUTH = "{}/.auth".format(CONTEXT_MOUNT_CONFIGS)
 CONTEXT_MOUNT_ARTIFACTS = "{}/artifacts".format(CONTEXT_ROOT)

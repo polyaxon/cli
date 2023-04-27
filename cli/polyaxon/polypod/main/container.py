@@ -18,6 +18,7 @@ from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.lists import to_list
 
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init
@@ -30,7 +31,6 @@ from polyaxon.polypod.main.k8s_resources import (
 )
 from polyaxon.polypod.main.volumes import get_volume_mounts
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def get_main_container(
@@ -38,12 +38,12 @@ def get_main_container(
     main_container: k8s_schemas.V1Container,
     volume_mounts: List[k8s_schemas.V1VolumeMount],
     contexts: PluginsContextsSpec,
-    artifacts_store: Optional[V1ConnectionType],
+    artifacts_store: Optional[V1Connection],
     init: Optional[List[V1Init]],
     connections: Optional[List[str]],
-    connection_by_names: Dict[str, V1ConnectionType],
-    secrets: Optional[Iterable[V1K8sResourceType]],
-    config_maps: Optional[Iterable[V1K8sResourceType]],
+    connection_by_names: Dict[str, V1Connection],
+    secrets: Optional[Iterable[V1K8sResource]],
+    config_maps: Optional[Iterable[V1K8sResource]],
     run_path: Optional[str],
     kv_env_vars: List[List] = None,
     env: List[k8s_schemas.V1EnvVar] = None,

@@ -19,10 +19,10 @@ from typing import Dict, Iterable, Optional, Type
 from kubernetes import client as k8s_client
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.polyflow import V1CompiledOperation, V1RunKind
 from polyaxon.polypod.compiler.converters import CORE_CONVERTERS, BaseConverter
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def convert(
@@ -33,10 +33,10 @@ def convert(
     run_uuid: str,
     run_path: str,
     compiled_operation: V1CompiledOperation,
-    artifacts_store: Optional[V1ConnectionType],
-    connection_by_names: Optional[Dict[str, V1ConnectionType]],
-    secrets: Optional[Iterable[V1K8sResourceType]],
-    config_maps: Optional[Iterable[V1K8sResourceType]],
+    artifacts_store: Optional[V1Connection],
+    connection_by_names: Optional[Dict[str, V1Connection]],
+    secrets: Optional[Iterable[V1K8sResource]],
+    config_maps: Optional[Iterable[V1K8sResource]],
     polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer] = None,
     polyaxon_init: Optional[V1PolyaxonInitContainer] = None,
     default_sa: Optional[str] = None,

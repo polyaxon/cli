@@ -16,12 +16,13 @@
 
 import pytest
 
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
+from polyaxon.connections import (
     V1BucketConnection,
     V1ClaimConnection,
+    V1Connection,
+    V1ConnectionKind,
     V1HostPathConnection,
-    V1K8sResourceSchema,
+    V1K8sResource,
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
@@ -37,7 +38,6 @@ from polyaxon.polypod.common.volumes import (
     get_volume_from_connection,
     get_volume_from_secret,
 )
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -48,7 +48,7 @@ class TestVolumes(BaseTestCase):
         assert get_volume_from_connection(connection=None) is None
 
         # Bucket store
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
@@ -56,7 +56,7 @@ class TestVolumes(BaseTestCase):
         assert get_volume_from_connection(connection=store) is None
 
         # Claim store
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -69,7 +69,7 @@ class TestVolumes(BaseTestCase):
         assert volume.persistent_volume_claim.read_only == store.schema_.read_only
 
         # Host path
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(
@@ -87,50 +87,48 @@ class TestVolumes(BaseTestCase):
         assert get_volume_from_secret(None) is None
 
         # Store with mount path
-        resource1 = V1K8sResourceType(
+        resource1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=False,
         )
         assert get_volume_from_secret(resource1) is None
 
         # Claim store
-        resource1 = V1K8sResourceType(
+        resource1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(
-                name="ref", items=["item1", "item2"], mount_path="/tmp"
-            ),
+            items=["item1", "item2"],
+            mount_path="/tmp",
             is_requested=False,
         )
         volume = get_volume_from_secret(resource1)
         assert volume.name == resource1.name
         assert volume.secret.secret_name == resource1.name
-        assert volume.secret.items == resource1.schema_.items
+        assert volume.secret.items == resource1.items
 
     def test_get_volume_from_config_map(self):
         # No store
         assert get_volume_from_config_map(None) is None
 
         # Store with mount path
-        resource1 = V1K8sResourceType(
+        resource1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=False,
         )
         assert get_volume_from_config_map(resource1) is None
 
         # Claim store
-        resource1 = V1K8sResourceType(
+        resource1 = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(
-                name="ref", items=["item1", "item2"], mount_path="/tmp"
-            ),
+            items=["item1", "item2"],
+            mount_path="/tmp",
             is_requested=False,
         )
         volume = get_volume_from_config_map(resource1)
         assert volume.name == resource1.name
         assert volume.config_map.name == resource1.name
-        assert volume.config_map.items == resource1.schema_.items
+        assert volume.config_map.items == resource1.items
 
     def test_get_volume(self):
         # Empty dir

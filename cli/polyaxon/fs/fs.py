@@ -16,35 +16,33 @@
 from typing import Optional
 
 from polyaxon import settings
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.reader import get_connection_context_path, get_connection_type
+from polyaxon.connections import CONNECTION_CONFIG, V1Connection, V1ConnectionKind
 from polyaxon.env_vars.getters import get_artifacts_store_name
-from polyaxon.exceptions import PolyaxonStoresException
-from polyaxon.schemas.types import V1ConnectionType
+from polyaxon.exceptions import PolyaxonConnectionError
 
 
-def validate_store(connection_type: V1ConnectionType):
+def validate_store(connection_type: V1Connection):
     if not connection_type or not connection_type.is_artifact:
-        raise PolyaxonStoresException("An artifact store type was not provided.")
+        raise PolyaxonConnectionError("An artifact store type was not provided.")
 
 
-def get_artifacts_connection_type() -> Optional[V1ConnectionType]:
+def get_artifacts_connection_type() -> Optional[V1Connection]:
     store_name = get_artifacts_store_name()
     if store_name:
-        return get_connection_type(store_name)
+        return CONNECTION_CONFIG.get_connection_type(store_name)
     if settings.AGENT_CONFIG:
         return settings.AGENT_CONFIG.artifacts_store
     return None
 
 
 def _get_fs_from_type(
-    connection_type: Optional[V1ConnectionType],
+    connection_type: Optional[V1Connection],
     asynchronous: bool = False,
     use_listings_cache: bool = False,
     **kwargs
 ):
     connection_name = connection_type.name if connection_type else None
-    context_path = get_connection_context_path(name=connection_name)
+    context_path = CONNECTION_CONFIG.get_connection_context_path(name=connection_name)
 
     # We assume that `None` refers to local store as well
     if not connection_type or connection_type.kind in {
@@ -86,19 +84,19 @@ def _get_fs_from_type(
         )
 
 
-async def get_async_fs_from_type(connection_type: V1ConnectionType, **kwargs):
+async def get_async_fs_from_type(connection_type: V1Connection, **kwargs):
     fs = _get_fs_from_type(connection_type=connection_type, asynchronous=True, **kwargs)
     if fs.async_impl and hasattr(fs, "set_session"):
         await fs.set_session()
     return fs
 
 
-def get_sync_fs_from_type(connection_type: V1ConnectionType, **kwargs):
+def get_sync_fs_from_type(connection_type: V1Connection, **kwargs):
     return _get_fs_from_type(connection_type=connection_type, **kwargs)
 
 
 def get_fs_from_name(connection_name: str, asynchronous: bool = False, **kwargs):
-    connection_type = get_connection_type(connection_name)
+    connection_type = CONNECTION_CONFIG.get_connection_type(connection_name)
     return _get_fs_from_type(
         connection_type=connection_type, asynchronous=asynchronous, **kwargs
     )

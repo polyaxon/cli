@@ -16,12 +16,13 @@
 
 import pytest
 
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
+from polyaxon.connections import (
     V1BucketConnection,
     V1ClaimConnection,
+    V1Connection,
+    V1ConnectionKind,
     V1HostPathConnection,
-    V1K8sResourceSchema,
+    V1K8sResource,
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.polypod.common import constants
@@ -35,7 +36,6 @@ from polyaxon.polypod.common.mounts import (
     get_mounts,
     get_shm_context_mount,
 )
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -44,7 +44,7 @@ class TestMounts(BaseTestCase):
     def test_get_mount_from_store(self):
         # Bucket stores
         assert get_mount_from_store(store=None) is None
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             schema_=dict(bucket="s3//:foo"),
@@ -52,7 +52,7 @@ class TestMounts(BaseTestCase):
         assert get_mount_from_store(store=store) is None
 
         assert get_mount_from_store(store=None) is None
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
@@ -60,7 +60,7 @@ class TestMounts(BaseTestCase):
         assert get_mount_from_store(store=store) is None
 
         # Claim store
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=dict(mount_path="/tmp", volume_claim="test", read_only=True),
@@ -70,7 +70,7 @@ class TestMounts(BaseTestCase):
         assert mount.mount_path == store.schema_.mount_path
         assert mount.read_only == store.schema_.read_only
 
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -83,7 +83,7 @@ class TestMounts(BaseTestCase):
         assert mount.read_only == store.schema_.read_only
 
         # Host path
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=dict(mount_path="/tmp", host_path="/tmp", read_only=True),
@@ -93,7 +93,7 @@ class TestMounts(BaseTestCase):
         assert mount.mount_path == store.schema_.mount_path
         assert mount.read_only == store.schema_.read_only
 
-        store = V1ConnectionType(
+        store = V1Connection(
             name="test",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(
@@ -108,42 +108,42 @@ class TestMounts(BaseTestCase):
     def cd(self):
         # Non mouth resource
         assert get_mount_from_resource(None) is None
-        resource = V1K8sResourceType(
+        resource = V1K8sResource(
             name="test1",
-            schema_=dict(name="ref", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=False,
         )
         assert get_mount_from_resource(resource=resource) is None
 
         assert get_mount_from_resource(None) is None
-        resource = V1K8sResourceType(
+        resource = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=False,
         )
         assert get_mount_from_resource(resource=resource) is None
 
         # Resource with mount
-        resource = V1K8sResourceType(
+        resource = V1K8sResource(
             name="test1",
-            schema_=dict(name="ref", items=["item1", "item2"], mount_path="/tmp"),
+            items=["item1", "item2"],
+            mount_path="/tmp",
             is_requested=False,
         )
         mount = get_mount_from_resource(resource=resource)
         assert mount.name == resource.name
-        assert mount.mount_path == resource.schema_.mount_path
+        assert mount.mount_path == resource.mount_path
         assert mount.read_only is True
 
-        resource = V1K8sResourceType(
+        resource = V1K8sResource(
             name="test1",
-            schema_=V1K8sResourceSchema(
-                name="ref", items=["item1", "item2"], mount_path="/tmp"
-            ),
+            items=["item1", "item2"],
+            mount_path="/tmp",
             is_requested=False,
         )
         mount = get_mount_from_resource(resource=resource)
         assert mount.name == resource.name
-        assert mount.mount_path == resource.schema_.mount_path
+        assert mount.mount_path == resource.mount_path
         assert mount.read_only is True
 
     def test_get_docker_context_mount(self):

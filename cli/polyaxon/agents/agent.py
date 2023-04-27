@@ -26,10 +26,10 @@ from urllib3.exceptions import HTTPError
 from polyaxon import pkg, settings
 from polyaxon.agents.base import BaseAgent
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
+from polyaxon.connections import V1Connection
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
-from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.sdk.exceptions import ApiException
 
 
@@ -109,7 +109,7 @@ class Agent(BaseAgent):
             connections = compatible_updates.get("connections")
             if connections:
                 settings.AGENT_CONFIG.connections = [
-                    V1ConnectionType.from_dict(c) for c in connections
+                    V1Connection.from_dict(c) for c in connections
                 ]
 
             self.content = settings.AGENT_CONFIG.to_json()

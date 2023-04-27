@@ -16,11 +16,12 @@
 
 import pytest
 
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import (
+from polyaxon.connections import (
     V1BucketConnection,
     V1ClaimConnection,
-    V1K8sResourceSchema,
+    V1Connection,
+    V1ConnectionKind,
+    V1K8sResource,
 )
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARTIFACTS_STORE_NAME,
@@ -39,7 +40,6 @@ from polyaxon.polypod.common.env_vars import (
 )
 from polyaxon.polypod.main.env_vars import get_env_vars
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -48,47 +48,44 @@ class TestMainEnvVars(BaseTestCase):
     def setUp(self):
         super().setUp()
         # Secrets
-        self.resource1 = V1K8sResourceType(
+        self.resource1 = V1K8sResource(
             name="non_mount_test1",
-            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=False,
         )
-        self.resource2 = V1K8sResourceType(
+        self.resource2 = V1K8sResource(
             name="non_mount_test2",
-            schema_=V1K8sResourceSchema(name="ref"),
             is_requested=False,
         )
 
-        self.resource3 = V1K8sResourceType(
+        self.resource3 = V1K8sResource(
             name="non_mount_test1",
-            schema_=V1K8sResourceSchema(name="ref", items=["item1", "item2"]),
+            items=["item1", "item2"],
             is_requested=True,
         )
-        self.resource4 = V1K8sResourceType(
+        self.resource4 = V1K8sResource(
             name="non_mount_test2",
-            schema_=V1K8sResourceSchema(name="ref"),
             is_requested=True,
         )
 
-        self.resource5 = V1K8sResourceType(
+        self.resource5 = V1K8sResource(
             name="non_mount_test2",
-            schema_=V1K8sResourceSchema(name="ref"),
             is_requested=True,
         )
 
-        self.resource6 = V1K8sResourceType(
+        self.resource6 = V1K8sResource(
             name="mount_test",
-            schema_=V1K8sResourceSchema(name="ref", mount_path="/test"),
+            mount_path="/test",
             is_requested=True,
         )
         # Connections
-        self.bucket_store = V1ConnectionType(
+        self.bucket_store = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
-            secret=self.resource3.schema_,
+            secret=self.resource3,
         )
-        self.mount_store = V1ConnectionType(
+        self.mount_store = V1Connection(
             name="test_claim",
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=V1ClaimConnection(
@@ -283,11 +280,11 @@ class TestMainEnvVars(BaseTestCase):
         )
 
     def test_get_env_vars_with_all(self):
-        connection = V1ConnectionType(
+        connection = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
-            secret=self.resource6.schema_,
+            secret=self.resource6,
         )
 
         env_vars = get_env_vars(

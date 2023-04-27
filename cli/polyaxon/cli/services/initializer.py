@@ -25,7 +25,7 @@ from clipped.utils.paths import check_or_create_path, copy_file
 from pydantic import ValidationError
 
 from polyaxon.config.spec import ConfigSpec
-from polyaxon.connections.kinds import V1ConnectionKind
+from polyaxon.connections import V1ConnectionKind
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.schemas.types import V1FileType
 

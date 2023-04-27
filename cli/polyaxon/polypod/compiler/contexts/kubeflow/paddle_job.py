@@ -18,9 +18,9 @@ import copy
 
 from typing import Dict, Optional
 
+from polyaxon.connections import V1Connection
 from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1PaddleJob
 from polyaxon.polypod.compiler.contexts.base import BaseContextsManager
-from polyaxon.schemas.types import V1ConnectionType
 
 
 class PaddleJobContextsManager(BaseContextsManager):
@@ -33,7 +33,7 @@ class PaddleJobContextsManager(BaseContextsManager):
         run_uuid: str,
         contexts: Dict,
         compiled_operation: V1CompiledOperation,
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
     ) -> Dict:
         contexts["init"] = {}
         contexts["connections"] = {}

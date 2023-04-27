@@ -16,13 +16,13 @@
 
 from typing import Dict, List
 
+from polyaxon.connections import V1Connection
 from polyaxon.polyflow import V1ArtifactsMount
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def override_stores(
-    stores: List[V1ConnectionType], store_refs_by_name: Dict[str, V1ArtifactsMount]
-) -> List[V1ConnectionType]:
+    stores: List[V1Connection], store_refs_by_name: Dict[str, V1ArtifactsMount]
+) -> List[V1Connection]:
     results = []
     if not stores or not store_refs_by_name:
         return results

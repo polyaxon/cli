@@ -18,13 +18,13 @@ from typing import TYPE_CHECKING, Union
 from clipped.formatting import Printer
 from clipped.utils.enums import get_enum_value
 
+from polyaxon.connections import V1Connection
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.fs.watcher import FSWatcher
 from polyaxon.logger import logger
-from polyaxon.schemas.types import V1ConnectionType
 
 if TYPE_CHECKING:
-    from polyaxon.connections.kinds import V1ConnectionKind
+    from polyaxon.connections import V1ConnectionKind
 
 
 def sync_file_watcher(path: str):
@@ -51,9 +51,7 @@ def download_artifact(
     from polyaxon.fs.fs import get_sync_fs_from_type
     from polyaxon.fs.manager import download_file_or_dir
 
-    connection_type = V1ConnectionType.construct(
-        name=connection_name, kind=connection_kind
-    )
+    connection_type = V1Connection.construct(name=connection_name, kind=connection_kind)
     fs = get_sync_fs_from_type(connection_type=connection_type)
 
     try:

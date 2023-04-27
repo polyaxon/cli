@@ -19,8 +19,8 @@ from typing import Dict, List
 
 from clipped.utils.lists import to_list
 
+from polyaxon.connections import V1Connection
 from polyaxon.polyflow import V1CompiledOperation, V1Init
-from polyaxon.schemas.types import V1ConnectionType
 
 
 class BaseContextsManager:
@@ -29,7 +29,7 @@ class BaseContextsManager:
         cls,
         contexts: Dict,
         init: List[V1Init],
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
     ):
         init = to_list(init, check_none=True)
         connections = [i.connection for i in init if i.connection]
@@ -44,7 +44,7 @@ class BaseContextsManager:
     def _resolve_connections_contexts(
         contexts: Dict,
         connections: List[str],
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
         key: str = "connections",
     ) -> Dict:
         connections = to_list(connections, check_none=True)
@@ -65,7 +65,7 @@ class BaseContextsManager:
         contexts: Dict,
         init: List[V1Init],
         connections: List[str],
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
     ) -> Dict:
         contexts["init"] = {}
         contexts["connections"] = {}
@@ -88,6 +88,6 @@ class BaseContextsManager:
         run_uuid: str,
         contexts: Dict,
         compiled_operation: V1CompiledOperation,
-        connection_by_names: Dict[str, V1ConnectionType],
+        connection_by_names: Dict[str, V1Connection],
     ) -> Dict:
         raise NotImplementedError()

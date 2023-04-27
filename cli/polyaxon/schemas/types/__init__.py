@@ -20,12 +20,10 @@ from clipped.types.uri import Uri
 from clipped.types.wasb import WasbPath
 
 from polyaxon.schemas.types.artifacts import V1ArtifactsType
-from polyaxon.schemas.types.connections import V1ConnectionType
 from polyaxon.schemas.types.dockerfile import V1DockerfileType
 from polyaxon.schemas.types.event import V1EventType
 from polyaxon.schemas.types.file import V1FileType
 from polyaxon.schemas.types.git import V1GitType
-from polyaxon.schemas.types.k8s_resources import V1K8sResourceType
 from polyaxon.schemas.types.tensorboard import V1TensorboardType
 
 V1GcsType = GcsPath

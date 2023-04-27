@@ -17,8 +17,7 @@
 import pytest
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.connections.schemas import V1GitConnection
+from polyaxon.connections import V1Connection, V1ConnectionKind, V1GitConnection
 from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
@@ -33,7 +32,6 @@ from polyaxon.polypod.common.mounts import (
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.init.git import get_git_init_container, get_repo_context_args
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -104,7 +102,7 @@ class TestInitGit(BaseTestCase):
             )
 
     def test_get_git_init_container(self):
-        connection = V1ConnectionType(
+        connection = V1Connection(
             name="user/foo",
             kind=V1ConnectionKind.GIT,
             schema_=V1GitConnection(url="foo.com"),
@@ -164,7 +162,7 @@ class TestInitGit(BaseTestCase):
             get_auth_context_mount(read_only=True),
         ]
 
-        connection = V1ConnectionType(
+        connection = V1Connection(
             name="user/foo",
             kind=V1ConnectionKind.GIT,
             schema_=V1GitConnection(
@@ -201,7 +199,7 @@ class TestInitGit(BaseTestCase):
             get_auth_context_mount(read_only=True),
         ]
 
-        connection = V1ConnectionType(
+        connection = V1Connection(
             name="user/foo",
             kind=V1ConnectionKind.GIT,
             schema_=V1GitConnection(

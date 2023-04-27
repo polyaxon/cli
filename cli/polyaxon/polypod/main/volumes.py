@@ -18,6 +18,7 @@ from typing import Iterable, List, Optional
 
 from clipped.utils.lists import to_list
 
+from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Init
@@ -30,15 +31,14 @@ from polyaxon.polypod.common.mounts import (
 )
 from polyaxon.polypod.common.volumes import get_volume_name
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
-from polyaxon.schemas.types import V1ConnectionType, V1K8sResourceType
 
 
 def get_volume_mounts(
     contexts: PluginsContextsSpec,
     init: Optional[List[V1Init]],
-    connections: Iterable[V1ConnectionType],
-    secrets: Iterable[V1K8sResourceType],
-    config_maps: Iterable[V1K8sResourceType] = None,
+    connections: Iterable[V1Connection],
+    secrets: Iterable[V1K8sResource],
+    config_maps: Iterable[V1K8sResource] = None,
 ) -> List[k8s_schemas.V1VolumeMount]:
     init = init or []
     connections = connections or []

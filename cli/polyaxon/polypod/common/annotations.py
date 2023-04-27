@@ -18,15 +18,15 @@ from typing import Dict, List, Optional
 
 from clipped.utils.lists import to_list
 
+from polyaxon.connections import V1Connection
 from polyaxon.polyflow import V1Init
-from polyaxon.schemas.types import V1ConnectionType
 
 
 def get_connection_annotations(
-    artifacts_store: Optional[V1ConnectionType],
+    artifacts_store: Optional[V1Connection],
     init_connections: Optional[List[V1Init]],
     connections: List[str],
-    connection_by_names: Optional[Dict[str, V1ConnectionType]],
+    connection_by_names: Optional[Dict[str, V1Connection]],
 ) -> Dict:
     """Resolve all annotations to inject per replica"""
     connections = to_list(connections, check_none=True)

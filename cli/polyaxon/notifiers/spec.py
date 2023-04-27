@@ -12,56 +12,92 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License
+# limitations under the License.
 
-from collections import namedtuple
-from typing import Optional
+from typing import Dict, Optional
 
+from clipped.utils.dates import to_timestamp
 from clipped.utils.enums import get_enum_value
+from clipped.utils.http import absolute_uri, add_notification_referrer_param
+from vents.notifiers import NotificationSpec as _NotificationSpec
 
-from polyaxon.lifecycle import StatusColor
+from polyaxon import settings
+from polyaxon.connections import CONNECTION_CONFIG
+from polyaxon.lifecycle import StatusColor, V1StatusCondition
+from polyaxon.schemas.base import BaseSchemaModel
 from polyaxon.utils.urls_utils import get_run_url
 
 
-class NotificationSpec(
-    namedtuple(
-        "Notification",
-        "kind owner project uuid name status wait_time duration condition inputs outputs",
-    )
-):
-    def get_details(self) -> str:
-        details = "{} ({})".format(self.name, self.uuid) if self.name else self.uuid
-        details = "Run: {}\n".format(details)
-        if self.kind:
-            details = "Kind: `{}`\n".format(get_enum_value(self.kind))
-        details += "Status: `{}`\n".format(self.status)
-        if self.condition.reason:
-            details += "Reason: `{}`\n".format(self.condition.reason)
-        if self.condition.message:
-            details += "Message: `{}`\n".format(self.condition.message)
-        details += "Transition time: `{}`\n".format(self.condition.last_transition_time)
-        if self.wait_time:
-            details += "Wait time: `{}`\n".format(self.wait_time)
-        if self.duration:
-            details += "Duration: `{}`\n".format(self.duration)
-        if self.inputs:
-            details += "Inputs: `{}`\n".format(self.inputs)
-        if self.outputs:
-            details += "Outputs: `{}`\n".format(self.outputs)
+class NotificationSpec(_NotificationSpec, BaseSchemaModel):
+    @staticmethod
+    def load_from_data(
+        kind: str,
+        owner: str,
+        project: str,
+        uuid: str,
+        name: str,
+        status: str,
+        wait_time: str,
+        duration: str,
+        condition: V1StatusCondition,
+        inputs: Dict,
+        outputs: Dict,
+    ) -> "NotificationSpec":
+        def get_details() -> str:
+            details = "{} ({})".format(name, uuid) if name else uuid
+            details = "Run: {}\n".format(details)
+            if kind:
+                details = "Kind: `{}`\n".format(get_enum_value(kind))
+            details += "Status: `{}`\n".format(status)
+            if condition.reason:
+                details += "Reason: `{}`\n".format(condition.reason)
+            if condition.message:
+                details += "Message: `{}`\n".format(condition.message)
+            details += "Transition time: `{}`\n".format(condition.last_transition_time)
+            if wait_time:
+                details += "Wait time: `{}`\n".format(wait_time)
+            if duration:
+                details += "Duration: `{}`\n".format(duration)
+            if inputs:
+                details += "Inputs: `{}`\n".format(inputs)
+            if outputs:
+                details += "Outputs: `{}`\n".format(outputs)
 
-        return details
+            return details
 
-    def get_title(self) -> str:
-        details = "{} ({})".format(self.name, self.uuid) if self.name else self.uuid
-        details += " Status: {}\n".format(self.status)
-        return details
+        def get_title() -> str:
+            title = "{} ({})".format(name, uuid) if name else uuid
+            title += " Status: {}\n".format(status)
+            return title
 
-    def get_color(self) -> str:
-        return StatusColor.get_color(self.condition.type)
+        def get_color() -> str:
+            return StatusColor.get_color(condition.type)
 
-    def get_url_path(self) -> Optional[str]:
-        if self.owner and self.project and self.uuid:
-            uri = get_run_url(
-                owner=self.owner, project_name=self.project, run_uuid=self.uuid
+        def get_url() -> Optional[str]:
+            if not (owner and project and uuid):
+                return
+            uri = get_run_url(owner=owner, project_name=project, run_uuid=uuid)
+            uri = "ui{}".format(uri)
+            url = absolute_uri(host=settings.CLIENT_CONFIG.host, url=uri)
+            url = add_notification_referrer_param(
+                url,
+                provider=CONNECTION_CONFIG.project_name,
+                is_absolute=False,
             )
-            return "ui{}".format(uri)
+            return url
+
+        return NotificationSpec(
+            context={
+                "owner": owner,
+                "project": project,
+                "uuid": uuid,
+                "name": name,
+            },
+            fallback=condition.type,
+            title=get_title(),
+            details=get_details(),
+            description=condition.reason,
+            url=get_url(),
+            color=get_color(),
+            ts=to_timestamp(condition.last_transition_time),
+        )

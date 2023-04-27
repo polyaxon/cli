@@ -20,8 +20,7 @@ import click
 from clipped.formatting import Printer
 from clipped.utils.lists import to_list
 
-from polyaxon.connections.kinds import V1ConnectionKind
-from polyaxon.schemas.types import V1ConnectionType
+from polyaxon.connections import V1Connection, V1ConnectionKind
 
 
 @click.group()
@@ -39,9 +38,7 @@ def _delete(
     from polyaxon.fs.manager import delete_file_or_dir
 
     subpath = to_list(subpath, check_none=True)
-    connection_type = V1ConnectionType.construct(
-        name=connection_name, kind=connection_kind
-    )
+    connection_type = V1Connection.construct(name=connection_name, kind=connection_kind)
     fs = get_sync_fs_from_type(connection_type=connection_type)
     for sp in subpath:
         delete_file_or_dir(
