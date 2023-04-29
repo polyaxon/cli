@@ -19,7 +19,7 @@ from typing import Dict, List, Optional
 
 from clipped.config.schema import skip_partial, to_partial
 from pydantic import Extra, Field, StrictStr, validator
-from vents.connections import ConnectionCatalogMixin
+from vents.connections import ConnectionCatalog
 
 from polyaxon.auxiliaries import (
     V1DefaultScheduling,
@@ -77,7 +77,7 @@ def validate_agent_config(
         connection_names.add(c.name)
 
 
-class BaseAgentConfig(ConnectionCatalogMixin, BaseSchemaModel):
+class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
     _REQUIRED_ARTIFACTS_STORE = True
 
     artifacts_store: Optional[V1Connection] = Field(alias=EV_KEYS_AGENT_ARTIFACTS_STORE)
@@ -143,6 +143,7 @@ class BaseAgentConfig(ConnectionCatalogMixin, BaseSchemaModel):
 
     def set_all_connections(self) -> None:
         self._all_connections = self.connections[:] if self.connections else []
+        self._connections_by_names = {}
         if self.artifacts_store:
             self._all_connections.append(self.artifacts_store)
             validate_agent_config(self.artifacts_store, self.connections)
