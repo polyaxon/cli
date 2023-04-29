@@ -18,7 +18,7 @@ import os
 from typing import Dict, List, Optional
 
 from clipped.config.schema import skip_partial, to_partial
-from pydantic import Extra, Field, StrictStr, validator, root_validator
+from pydantic import Extra, Field, StrictStr, validator
 from vents.connections import ConnectionCatalog
 
 from polyaxon.auxiliaries import (
@@ -146,7 +146,9 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
         self._connections_by_names = {}
         if self.artifacts_store:
             self._all_connections.append(self.artifacts_store)
-            validate_agent_config(self.artifacts_store, self.connections, self._REQUIRED_ARTIFACTS_STORE)
+            validate_agent_config(
+                self.artifacts_store, self.connections, self._REQUIRED_ARTIFACTS_STORE
+            )
 
     @property
     def local_root(self) -> str:
