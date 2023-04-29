@@ -18,7 +18,7 @@ import os
 from typing import Dict, List, Optional
 
 from clipped.config.schema import skip_partial, to_partial
-from pydantic import Extra, Field, StrictStr, validator
+from pydantic import Extra, Field, StrictStr, validator, root_validator
 from vents.connections import ConnectionCatalog
 
 from polyaxon.auxiliaries import (
@@ -80,8 +80,8 @@ def validate_agent_config(
 class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
     _REQUIRED_ARTIFACTS_STORE = True
 
-    artifacts_store: Optional[V1Connection] = Field(alias=EV_KEYS_AGENT_ARTIFACTS_STORE)
     connections: Optional[List[V1Connection]] = Field(alias=EV_KEYS_AGENT_CONNECTIONS)
+    artifacts_store: Optional[V1Connection] = Field(alias=EV_KEYS_AGENT_ARTIFACTS_STORE)
     namespace: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_NAMESPACE)
 
     class Config:
@@ -114,7 +114,7 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
             raise ValueError("Received an invalid connections") from e
 
     @validator("artifacts_store", pre=True)
-    def validate_json(cls, v):
+    def validate_store_json(cls, v):
         if not isinstance(v, str):
             return v
         try:
@@ -128,25 +128,25 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
                 "Received an invalid artifacts store `{}`".format(v)
             ) from e
 
-    @validator("connections")
+    @validator("artifacts_store")
     @skip_partial
-    def validate_connections(cls, connections, values):
+    def validate_agent_config(cls, artifacts_store, values):
         try:
             validate_agent_config(
-                values.get("artifacts_store"),
-                connections,
+                artifacts_store,
+                values.get("connections"),
                 cls._REQUIRED_ARTIFACTS_STORE,
             )
         except PolyaxonSchemaError as e:
             raise ValueError(e)
-        return connections
+        return artifacts_store
 
     def set_all_connections(self) -> None:
         self._all_connections = self.connections[:] if self.connections else []
         self._connections_by_names = {}
         if self.artifacts_store:
             self._all_connections.append(self.artifacts_store)
-            validate_agent_config(self.artifacts_store, self.connections)
+            validate_agent_config(self.artifacts_store, self.connections, self._REQUIRED_ARTIFACTS_STORE)
 
     @property
     def local_root(self) -> str:
