@@ -26,7 +26,7 @@ def validate_store(connection_type: V1Connection):
         raise PolyaxonConnectionError("An artifact store type was not provided.")
 
 
-def get_artifacts_connection_type() -> Optional[V1Connection]:
+def get_artifacts_connection() -> Optional[V1Connection]:
     store_name = get_artifacts_store_name()
     if store_name:
         return CONNECTION_CONFIG.get_connection_type(store_name)
@@ -35,17 +35,18 @@ def get_artifacts_connection_type() -> Optional[V1Connection]:
     return None
 
 
-def _get_fs_from_type(
-    connection_type: Optional[V1Connection],
+# Backward compatibility
+get_artifacts_connection_type = get_artifacts_connection
+
+
+def _get_fs_from_connection(
+    connection: Optional[V1Connection],
     asynchronous: bool = False,
     use_listings_cache: bool = False,
     **kwargs
 ):
-    connection_name = connection_type.name if connection_type else None
-    context_path = CONNECTION_CONFIG.get_connection_context_path(name=connection_name)
-
     # We assume that `None` refers to local store as well
-    if not connection_type or connection_type.kind in {
+    if not connection or connection.kind in {
         V1ConnectionKind.VOLUME_CLAIM,
         V1ConnectionKind.HOST_PATH,
     }:
@@ -55,57 +56,50 @@ def _get_fs_from_type(
             auto_mkdir=kwargs.get("auto_mkdir", True),
             use_listings_cache=use_listings_cache,
         )
-    if connection_type.kind == V1ConnectionKind.WASB:
-        from polyaxon.fs.azure import get_fs
+    if connection.kind == V1ConnectionKind.WASB:
+        from vents.providers.azure.blob_storage import BlobStorageService
 
-        return get_fs(
-            context_path=context_path,
-            asynchronous=asynchronous,
-            use_listings_cache=use_listings_cache,
-            **kwargs
+        service = BlobStorageService.load_from_connection(connection)
+        return service.get_fs(
+            asynchronous=asynchronous, use_listings_cache=use_listings_cache, **kwargs
         )
-    if connection_type.kind == V1ConnectionKind.S3:
-        from polyaxon.fs.s3 import get_fs
+    if connection.kind == V1ConnectionKind.S3:
+        from vents.providers.aws.s3 import S3Service
 
-        return get_fs(
-            context_path=context_path,
-            asynchronous=asynchronous,
-            use_listings_cache=use_listings_cache,
-            **kwargs
+        service = S3Service.load_from_connection(connection)
+        return service.get_fs(
+            asynchronous=asynchronous, use_listings_cache=use_listings_cache, **kwargs
         )
-    if connection_type.kind == V1ConnectionKind.GCS:
-        from polyaxon.fs.gcs import get_fs
+    if connection.kind == V1ConnectionKind.GCS:
+        from vents.providers.gcp.gcs import GCSService
 
-        return get_fs(
-            context_path=context_path,
-            asynchronous=asynchronous,
-            use_listings_cache=use_listings_cache,
-            **kwargs
+        service = GCSService.load_from_connection(connection)
+        return service.get_fs(
+            asynchronous=asynchronous, use_listings_cache=use_listings_cache, **kwargs
         )
 
 
-async def get_async_fs_from_type(connection_type: V1Connection, **kwargs):
-    fs = _get_fs_from_type(connection_type=connection_type, asynchronous=True, **kwargs)
+async def get_async_fs_from_connection(connection: Optional[V1Connection], **kwargs):
+    fs = _get_fs_from_connection(connection=connection, asynchronous=True, **kwargs)
     if fs.async_impl and hasattr(fs, "set_session"):
         await fs.set_session()
     return fs
 
 
-def get_sync_fs_from_type(connection_type: V1Connection, **kwargs):
-    return _get_fs_from_type(connection_type=connection_type, **kwargs)
+def get_sync_fs_from_type(connection_name: str, **kwargs):
+    return _get_fs_from_connection(connection_name=connection_name, **kwargs)
 
 
 def get_fs_from_name(connection_name: str, asynchronous: bool = False, **kwargs):
-    connection_type = CONNECTION_CONFIG.get_connection_type(connection_name)
-    return _get_fs_from_type(
-        connection_type=connection_type, asynchronous=asynchronous, **kwargs
+    return _get_fs_from_connection(
+        connection_name=connection_name, asynchronous=asynchronous, **kwargs
     )
 
 
 async def get_default_fs(**kwargs):
-    connection_type = get_artifacts_connection_type()
-    return await get_async_fs_from_type(
-        connection_type=connection_type, auto_mkdir=True, **kwargs
+    connection = get_artifacts_connection()
+    return await get_async_fs_from_connection(
+        connection=connection, auto_mkdir=True, **kwargs
     )
 
 

@@ -26,8 +26,8 @@ from polyaxon.env_vars.keys import EV_KEYS_K8S_POD_ID
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonContainerException
 from polyaxon.fs.fs import (
     close_fs,
-    get_artifacts_connection_type,
-    get_async_fs_from_type,
+    get_artifacts_connection,
+    get_async_fs_from_connection,
 )
 from polyaxon.fs.watcher import FSWatcher
 from polyaxon.k8s.async_manager import AsyncK8SManager
@@ -65,8 +65,8 @@ async def start_sidecar(
     k8s_manager = AsyncK8SManager(namespace=CLIENT_CONFIG.namespace, in_cluster=True)
     await k8s_manager.setup()
     pod = await k8s_manager.get_pod(pod_id, reraise=True)
-    connection_type = get_artifacts_connection_type()
-    fs = await get_async_fs_from_type(connection_type=connection_type)
+    connection = get_artifacts_connection()
+    fs = await get_async_fs_from_connection(connection=connection)
     if os.path.exists(ctx_paths.CONTEXT_MOUNT_FILE_WATCHER):
         fw = FSWatcher.read(ctx_paths.CONTEXT_MOUNT_FILE_WATCHER)
     else:
@@ -95,7 +95,7 @@ async def start_sidecar(
             await sync_artifacts(
                 fs=fs,
                 fw=fw,
-                store_path=connection_type.store_path,
+                store_path=connection.store_path,
                 run_uuid=run_uuid,
                 exclude=CONTAINER_IGNORE_FOLDERS,
             )
