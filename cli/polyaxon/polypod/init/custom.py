@@ -30,6 +30,7 @@ from polyaxon.polypod.common import constants
 from polyaxon.polypod.common.containers import patch_container
 from polyaxon.polypod.common.env_vars import (
     get_connection_env_var,
+    get_connections_catalog_env_var,
     get_env_from_config_map,
     get_env_from_secret,
     get_items_from_config_map,
@@ -74,6 +75,12 @@ def get_custom_init_container(
         )
         env += to_list(get_items_from_secret(secret=secret), check_none=True)
         env_from = to_list(get_env_from_secret(secret=secret), check_none=True)
+
+    # Add connections catalog env vars information
+    env += to_list(
+        get_connections_catalog_env_var(connections=[connection]),
+        check_none=True,
+    )
     env += to_list(
         get_connection_env_var(connection=connection, secret=secret), check_none=True
     )

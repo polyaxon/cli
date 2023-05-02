@@ -28,6 +28,7 @@ from polyaxon.exceptions import PolyaxonSchemaError, PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.env_vars import (
     get_connection_env_var,
+    get_connections_catalog_env_var,
     get_env_var,
     get_env_vars_from_k8s_resources,
     get_kv_env_vars,
@@ -57,6 +58,11 @@ def get_env_vars(
             get_env_var(name=EV_KEYS_ARTIFACTS_STORE_NAME, value=artifacts_store_name)
         )
 
+    # Add connections catalog env vars information
+    env_vars += to_list(
+        get_connections_catalog_env_var(connections=connections),
+        check_none=True,
+    )
     # Add connection env vars information
     for connection in connections:
         try:

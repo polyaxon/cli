@@ -396,7 +396,7 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 2 + 1  # One from the artifacts store name env var
+        assert len(container.env) == 2 + 1  # One from the secret key items
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # mount context
@@ -432,7 +432,7 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 2 + 1  # One from the artifacts store name env var
+        assert len(container.env) == 2  # the secret key items are mounted
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # mount resource
@@ -604,9 +604,8 @@ class TestMainContainer(BaseTestCase):
         assert container.args is None
         assert container.ports == []
         # 2 env vars from the secret mount
-        # + 2 for the connection (context_path + spec)
-        # + 1 for the connection spec (non mount)
-        assert len(container.env) == 5
+        # + 1 for the connections catalog
+        assert len(container.env) == 3
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 4

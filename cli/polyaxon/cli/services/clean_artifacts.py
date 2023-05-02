@@ -34,12 +34,11 @@ def _delete(
     connection_kind: str,
     is_file: bool,
 ):
-    from polyaxon.fs.fs import get_sync_fs_from_type
+    from polyaxon.fs.fs import get_fs_from_name
     from polyaxon.fs.manager import delete_file_or_dir
 
     subpath = to_list(subpath, check_none=True)
-    connection_type = V1Connection.construct(name=connection_name, kind=connection_kind)
-    fs = get_sync_fs_from_type(connection_type=connection_type)
+    fs = get_fs_from_name(connection_name=connection_name)
     for sp in subpath:
         delete_file_or_dir(
             fs=fs,

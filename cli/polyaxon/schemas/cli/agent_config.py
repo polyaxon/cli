@@ -87,18 +87,6 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
     class Config:
         extra = Extra.ignore
 
-    def __init__(
-        self,
-        **data,
-    ):
-        super().__init__(**data)
-        # Post init
-        self._all_connections = []
-        self.set_all_connections()
-        self._secrets = None
-        self._config_maps = None
-        self._connections_by_names = {}
-
     @validator("connections", pre=True)
     def validate_json_list(cls, v):
         if not isinstance(v, str):

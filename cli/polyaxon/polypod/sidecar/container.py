@@ -25,6 +25,7 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common.containers import patch_container
 from polyaxon.polypod.common.env_vars import (
     get_connection_env_var,
+    get_connections_catalog_env_var,
     get_env_from_config_map,
     get_env_from_secret,
     get_items_from_config_map,
@@ -132,6 +133,11 @@ def get_sidecar_container(
         volume_mounts += to_list(
             get_mount_from_store(store=artifacts_store), check_none=True
         )
+    # Add connections catalog env vars information
+    env += to_list(
+        get_connections_catalog_env_var(connections=[artifacts_store]),
+        check_none=True,
+    )
     env += to_list(
         get_connection_env_var(connection=artifacts_store, secret=secret),
         check_none=True,

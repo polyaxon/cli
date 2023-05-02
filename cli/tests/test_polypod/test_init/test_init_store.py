@@ -37,6 +37,7 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.polypod.common import constants
 from polyaxon.polypod.common.env_vars import (
     get_connection_env_var,
+    get_connections_catalog_env_var,
     get_env_var,
     get_items_from_secret,
 )
@@ -87,65 +88,70 @@ class TestInitStore(BaseTestCase):
         )
         assert cp_store_args(
             backend="host_path",
+            connection="conn",
             path_from="/foo",
             path_to="/bar",
             is_file=False,
             sync_fw=False,
             check_path=True,
         ) == (
-            "polyaxon initializer path --connection-kind=host_path "
+            "polyaxon initializer path --connection-name=conn --connection-kind=host_path "
             "--path-from=/foo --path-to=/bar --check-path;"
         )
 
     def test_files_cp_gcs_args(self):
         assert cp_store_args(
             backend="gcs",
+            connection="conn",
             path_from="gcs://foo",
             path_to="/local",
             is_file=True,
             sync_fw=False,
             check_path=False,
         ) == (
-            "polyaxon initializer path --connection-kind=gcs "
+            "polyaxon initializer path --connection-name=conn --connection-kind=gcs "
             "--path-from=gcs://foo --path-to=/local --is-file;"
         )
 
     def test_dirs_cp_gcs_args(self):
         assert cp_store_args(
             backend="gcs",
+            connection="conn",
             path_from="gcs://foo",
             path_to="/local",
             is_file=False,
             sync_fw=False,
             check_path=True,
         ) == (
-            "polyaxon initializer path --connection-kind=gcs "
+            "polyaxon initializer path --connection-name=conn --connection-kind=gcs "
             "--path-from=gcs://foo --path-to=/local --check-path;"
         )
 
     def test_files_cp_wasb_args(self):
         assert cp_store_args(
             backend="wasb",
+            connection="conn",
             path_from="wasb://foo",
             path_to="/local",
             is_file=True,
             sync_fw=False,
             check_path=False,
         ) == (
-            "polyaxon initializer path --connection-kind=wasb "
+            "polyaxon initializer path --connection-name=conn --connection-kind=wasb "
             "--path-from=wasb://foo --path-to=/local --is-file;"
         )
 
     def test_cp_wasb_args(self):
         assert cp_store_args(
             backend="wasb",
+            connection="conn",
             path_from="wasb://foo",
             path_to="/local",
             is_file=False,
             sync_fw=False,
             check_path=True,
         ) == (
-            "polyaxon initializer path --connection-kind=wasb "
+            "polyaxon initializer path --connection-name=conn --connection-kind=wasb "
             "--path-from=wasb://foo --path-to=/local --check-path;"
         )
 
@@ -162,6 +168,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=path_to),
                 cp_store_args(
                     backend="s3",
+                    connection=s3_store.name,
                     path_from=path_from,
                     path_to=path_to,
                     is_file=False,
@@ -191,6 +198,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=base_path),
                 cp_store_args(
                     backend="s3",
+                    connection=s3_store.name,
                     path_from=path_from1,
                     path_to=path_to1,
                     is_file=True,
@@ -200,6 +208,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=base_path),
                 cp_store_args(
                     backend="s3",
+                    connection=s3_store.name,
                     path_from=path_from2,
                     path_to=path_to2,
                     is_file=True,
@@ -224,6 +233,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=base_path),
                 cp_store_args(
                     backend="s3",
+                    connection=s3_store.name,
                     path_from=path_from1,
                     path_to=path_to1,
                     is_file=False,
@@ -233,6 +243,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=base_path),
                 cp_store_args(
                     backend="s3",
+                    connection=s3_store.name,
                     path_from=path_from2,
                     path_to=path_to2,
                     is_file=False,
@@ -255,6 +266,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=path_to),
                 cp_store_args(
                     backend="gcs",
+                    connection=gcs_store.name,
                     path_from=path_from,
                     path_to=path_to,
                     is_file=False,
@@ -284,6 +296,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=path_to1),
                 cp_store_args(
                     backend="gcs",
+                    connection=gcs_store.name,
                     path_from=path_from1,
                     path_to=path_to1,
                     is_file=False,
@@ -293,6 +306,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=path_to2),
                 cp_store_args(
                     backend="gcs",
+                    connection=gcs_store.name,
                     path_from=path_from2,
                     path_to=path_to2,
                     is_file=False,
@@ -315,6 +329,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=path_to),
                 cp_store_args(
                     backend="wasb",
+                    connection=az_store.name,
                     path_from=path_from,
                     path_to=path_to,
                     is_file=False,
@@ -344,6 +359,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=base_path),
                 cp_store_args(
                     backend="wasb",
+                    connection=az_store.name,
                     path_from=path_from1,
                     path_to=path_to1,
                     is_file=True,
@@ -353,6 +369,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=path_to2),
                 cp_store_args(
                     backend="wasb",
+                    connection=az_store.name,
                     path_from=path_from2,
                     path_to=path_to2,
                     is_file=False,
@@ -453,6 +470,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=base_path),
                 cp_store_args(
                     backend=V1ConnectionKind.VOLUME_CLAIM,
+                    connection=claim_store.name,
                     path_from=path_from3,
                     path_to=path_to3,
                     is_file=False,
@@ -462,6 +480,7 @@ class TestInitStore(BaseTestCase):
                 get_or_create_args(path=base_path),
                 cp_store_args(
                     backend=V1ConnectionKind.VOLUME_CLAIM,
+                    connection=claim_store.name,
                     path_from=path_from4,
                     path_to=path_to4,
                     is_file=False,
@@ -563,9 +582,13 @@ class TestInitStore(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert container.env == get_connection_env_var(
-            connection=bucket_store_without_secret, secret=None
+        assert (
+            get_connection_env_var(connection=bucket_store_without_secret, secret=None)
+            == []
         )
+        assert container.env == [
+            get_connections_catalog_env_var(connections=[bucket_store_without_secret])
+        ]
         assert container.env_from == []
         assert container.resources is not None
         assert container.volume_mounts == []
@@ -597,12 +620,16 @@ class TestInitStore(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        env = get_items_from_secret(
-            secret=non_mount_resource1
-        ) + get_connection_env_var(
-            connection=bucket_store_with_secret, secret=non_mount_resource1
+
+        assert (
+            get_connection_env_var(
+                connection=bucket_store_with_secret, secret=non_mount_resource1
+            )
+            == []
         )
-        assert container.env == env
+        assert container.env == get_items_from_secret(secret=non_mount_resource1) + [
+            get_connections_catalog_env_var(connections=[bucket_store_with_secret])
+        ]
         assert container.env_from == []
         assert container.resources is not None
         assert container.volume_mounts == []
@@ -629,9 +656,15 @@ class TestInitStore(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert container.env == get_connection_env_var(
-            connection=bucket_store_with_secret, secret=mount_resource1
+        assert (
+            get_connection_env_var(
+                connection=bucket_store_with_secret, secret=mount_resource1
+            )
+            == []
         )
+        assert container.env == [
+            get_connections_catalog_env_var(connections=[bucket_store_with_secret])
+        ]
         assert container.env_from == []
         assert container.resources is not None
         assert container.volume_mounts == [
@@ -662,9 +695,10 @@ class TestInitStore(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert container.env == get_connection_env_var(
-            connection=claim_store, secret=None
-        )
+        assert get_connection_env_var(connection=claim_store, secret=None) == []
+        assert container.env == [
+            get_connections_catalog_env_var(connections=[claim_store])
+        ]
         assert container.env_from == []
         assert container.resources is not None
         assert container.volume_mounts == [get_mount_from_store(store=claim_store)]
@@ -736,7 +770,8 @@ class TestInitStore(BaseTestCase):
                 store=store, mount_path=mount_path, artifacts=None, paths=None
             )
         ]
-        assert container.env == get_connection_env_var(connection=store, secret=None)
+        assert get_connection_env_var(connection=store, secret=None) == []
+        assert container.env == [get_connections_catalog_env_var(connections=[store])]
         assert container.env_from == []
         assert container.resources is not None
         assert container.volume_mounts == [

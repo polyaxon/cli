@@ -29,7 +29,7 @@ def validate_store(connection_type: V1Connection):
 def get_artifacts_connection() -> Optional[V1Connection]:
     store_name = get_artifacts_store_name()
     if store_name:
-        return CONNECTION_CONFIG.get_connection_type(store_name)
+        return CONNECTION_CONFIG.get_connection_for(store_name)
     if settings.AGENT_CONFIG:
         return settings.AGENT_CONFIG.artifacts_store
     return None
@@ -86,21 +86,20 @@ async def get_async_fs_from_connection(connection: Optional[V1Connection], **kwa
     return fs
 
 
-def get_sync_fs_from_type(connection_name: str, **kwargs):
-    return _get_fs_from_connection(connection_name=connection_name, **kwargs)
+def get_sync_fs_from_connection(connection: Optional[V1Connection], **kwargs):
+    return _get_fs_from_connection(connection=connection, **kwargs)
 
 
 def get_fs_from_name(connection_name: str, asynchronous: bool = False, **kwargs):
+    connection = CONNECTION_CONFIG.get_connection_for(connection_name)
     return _get_fs_from_connection(
-        connection_name=connection_name, asynchronous=asynchronous, **kwargs
+        connection=connection, asynchronous=asynchronous, **kwargs
     )
 
 
 async def get_default_fs(**kwargs):
     connection = get_artifacts_connection()
-    return await get_async_fs_from_connection(
-        connection=connection, auto_mkdir=True, **kwargs
-    )
+    return await get_async_fs_from_connection(connection=connection, **kwargs)
 
 
 async def close_fs(fs):

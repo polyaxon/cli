@@ -34,6 +34,7 @@ from polyaxon.polypod.common import constants
 from polyaxon.polypod.common.containers import patch_container
 from polyaxon.polypod.common.env_vars import (
     get_connection_env_var,
+    get_connections_catalog_env_var,
     get_env_from_config_map,
     get_env_from_secret,
     get_items_from_config_map,
@@ -73,6 +74,7 @@ def cp_mount_args(path_from, path_to, is_file: bool, sync_fw: bool) -> str:
 
 
 def cp_store_args(
+    connection: str,
     backend: str,
     path_from: str,
     path_to: str,
@@ -87,8 +89,8 @@ def cp_store_args(
         args.append("--sync-fw")
     if check_path:
         args.append("--check-path")
-    return "polyaxon initializer path --connection-kind={} --path-from={} --path-to={} {};".format(
-        get_enum_value(backend), path_from, path_to, " ".join(args)
+    return "polyaxon initializer path --connection-name={} --connection-kind={} --path-from={} --path-to={} {};".format(
+        connection, get_enum_value(backend), path_from, path_to, " ".join(args)
     )
 
 
@@ -134,6 +136,7 @@ def get_volume_args(
             args.append(
                 cp_store_args(
                     backend="wasb",
+                    connection=store.name,
                     path_from=path_from,
                     path_to=path_to,
                     is_file=is_file,
@@ -145,6 +148,7 @@ def get_volume_args(
             args.append(
                 cp_store_args(
                     backend="s3",
+                    connection=store.name,
                     path_from=path_from,
                     path_to=path_to,
                     is_file=is_file,
@@ -156,6 +160,7 @@ def get_volume_args(
             args.append(
                 cp_store_args(
                     backend="gcs",
+                    connection=store.name,
                     path_from=path_from,
                     path_to=path_to,
                     is_file=is_file,
@@ -168,6 +173,7 @@ def get_volume_args(
                 args.append(
                     cp_store_args(
                         backend=store.kind,
+                        connection=store.name,
                         path_from=path_from,
                         path_to=path_to,
                         is_file=is_file,
@@ -230,10 +236,6 @@ def get_base_store_container(
         env_from = env_from + to_list(
             get_env_from_secret(secret=secret), check_none=True
         )
-        env += to_list(
-            get_connection_env_var(connection=store, secret=secret), check_none=True
-        )
-
         config_map = store.config_map
         volume_mounts = volume_mounts + to_list(
             get_mount_from_resource(resource=config_map), check_none=True
@@ -248,9 +250,14 @@ def get_base_store_container(
         volume_mounts = volume_mounts + to_list(
             get_mount_from_store(store=store), check_none=True
         )
-        env += to_list(
-            get_connection_env_var(connection=store, secret=secret), check_none=True
-        )
+    # Add connections catalog env vars information
+    env += to_list(
+        get_connections_catalog_env_var(connections=[store]),
+        check_none=True,
+    )
+    env += to_list(
+        get_connection_env_var(connection=store, secret=secret), check_none=True
+    )
 
     return patch_container(
         container=container,

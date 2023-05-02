@@ -188,8 +188,8 @@ def get_default_cleaner_container(
 ) -> k8s_schemas.V1Container:
     subpath = os.path.join(store.store_path, run_uuid)
 
-    clean_args = "polyaxon clean-artifacts {} --subpath={}".format(
-        store.kind.replace("_", "-"), subpath
+    clean_args = "polyaxon clean-artifacts {} --connection-name {} --subpath={}".format(
+        store.kind.replace("_", "-"), store.name, subpath
     )
     wait_args = "polyaxon wait --uuid={} --kind={}".format(
         run_uuid, get_enum_value(run_kind)
@@ -221,8 +221,8 @@ def get_batch_cleaner_container(
     subpaths = [os.path.join(store.store_path, subpath) for subpath in paths]
     subpaths = " ".join(["-sp={}".format(sp) for sp in subpaths])
 
-    clean_args = "polyaxon clean-artifacts {} {}".format(
-        store.kind.replace("_", "-"), subpaths
+    clean_args = "polyaxon clean-artifacts {} --connection-name {} {}".format(
+        store.kind.replace("_", "-"), store.name, subpaths
     )
     image = "polyaxon/polyaxon-init"
     image_tag = pkg.VERSION

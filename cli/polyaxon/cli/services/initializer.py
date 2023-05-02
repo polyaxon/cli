@@ -253,7 +253,7 @@ def wasb(
 @initializer.command()
 @click.option("--connection-kind", help="The connection kind.")
 @click.option("--connection-name", help="The connection name.")
-@click.option("--path-from", help="The wasb path to download data from.")
+@click.option("--path-from", help="The path to download data from.")
 @click.option("--path-to", help="The local path to store the data.")
 @click.option(
     "--is-file",

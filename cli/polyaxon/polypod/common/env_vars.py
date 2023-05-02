@@ -313,23 +313,22 @@ def get_connection_env_var(connection: V1Connection, secret: Optional[V1K8sResou
     if not connection:
         return env_vars
 
-    connection_schema_env_name = CONNECTION_CONFIG.get_connection_schema_env_name(
-        connection.name
-    )
-    env_vars = [get_env_var(connection_schema_env_name, connection.to_dict())]
-
     if connection.env:
         env_vars += to_list(connection.env, check_none=True)
 
-    if not secret or not secret.mount_path:
-        return env_vars
-
-    context_secret_env_name = CONNECTION_CONFIG.get_connection_context_path_env_name(
-        connection.name
-    )
-    env_vars += [get_env_var(context_secret_env_name, secret.mount_path)]
-
     return env_vars
+
+
+def get_connections_catalog_env_var(
+    connections: List[V1Connection],
+) -> Optional[k8s_schemas.V1EnvVar]:
+    catalog = CONNECTION_CONFIG.get_connections_catalog(connections)
+    if not catalog:
+        return None
+    return get_env_var(
+        name=CONNECTION_CONFIG.get_connections_catalog_env_name(),
+        value=catalog.to_json(),
+    )
 
 
 def get_proxy_env_var(key: str):

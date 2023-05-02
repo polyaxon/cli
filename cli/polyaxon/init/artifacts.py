@@ -48,12 +48,10 @@ def download_artifact(
     sync_fw: bool,
     check_path: bool,
 ):
-    from polyaxon.fs.fs import get_sync_fs_from_type
+    from polyaxon.fs.fs import get_fs_from_name
     from polyaxon.fs.manager import download_file_or_dir
 
-    connection_type = V1Connection.construct(name=connection_name, kind=connection_kind)
-    fs = get_sync_fs_from_type(connection_type=connection_type)
-
+    fs = get_fs_from_name(connection_name=connection_name)
     try:
         download_file_or_dir(
             fs=fs,

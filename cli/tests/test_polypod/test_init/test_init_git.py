@@ -24,7 +24,10 @@ from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolypodException
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.common import constants
-from polyaxon.polypod.common.env_vars import get_connection_env_var
+from polyaxon.polypod.common.env_vars import (
+    get_connection_env_var,
+    get_connections_catalog_env_var,
+)
 from polyaxon.polypod.common.mounts import (
     get_auth_context_mount,
     get_connections_context_mount,
@@ -119,9 +122,10 @@ class TestInitGit(BaseTestCase):
         assert container.image == "foo"
         assert container.image_pull_policy is None
         assert container.command == ["polyaxon", "initializer", "git"]
-        assert container.env == get_connection_env_var(
-            connection=connection, secret=None
-        )
+        assert get_connection_env_var(connection=connection, secret=None) == []
+        assert container.env == [
+            get_connections_catalog_env_var(connections=[connection])
+        ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
             get_connections_context_mount(
