@@ -26,7 +26,6 @@ from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_
 from polyaxon.k8s.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.init.dockerfile import get_dockerfile_init_container
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types.dockerfile import V1DockerfileType
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -39,7 +38,7 @@ class TestInitDockerfile(BaseTestCase):
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             dockerfile_args=dockerfile_args,
             env=None,
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
             run_instance="foo.bar.runs.uuid",
         )
@@ -84,7 +83,7 @@ class TestInitDockerfile(BaseTestCase):
             env=[],
             dockerfile_args=dockerfile_args,
             mount_path="/somepath",
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
             run_instance="foo.bar.runs.uuid",
         )

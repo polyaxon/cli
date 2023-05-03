@@ -48,7 +48,6 @@ from polyaxon.polypod.sidecar.container import (
     get_sidecar_container,
 )
 from polyaxon.polypod.sidecar.env_vars import get_sidecar_env_vars
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -58,7 +57,7 @@ class TestSidecarContainer(BaseTestCase):
         with self.assertRaises(PolypodException):
             get_sidecar_container(
                 container_id=MAIN_JOB_CONTAINER,
-                contexts=PluginsContextsSpec.from_config(
+                plugins=V1Plugins.get_or_create(
                     V1Plugins(collect_logs=True, collect_artifacts=False)
                 ),
                 env=None,
@@ -98,7 +97,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=213,
             ),
             artifacts_store=None,
-            contexts=PluginsContextsSpec.from_config(None, default_auth=True),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path=None,
         )
         assert sidecar is None
@@ -125,7 +124,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=-1,
             ),
             artifacts_store=mount_non_managed_store,
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_logs=False, collect_artifacts=False, auth=True)
             ),
             run_path=None,
@@ -153,7 +152,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=-1,
             ),
             artifacts_store=bucket_non_managed_store,
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_logs=False, collect_artifacts=False, auth=True)
             ),
             run_path=None,
@@ -192,7 +191,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
         )
 
@@ -217,7 +216,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=-212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=False)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=False)),
             run_path="test",
         )
 
@@ -258,7 +257,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(None, default_auth=True),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
         )
 
@@ -300,7 +299,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=-212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_artifacts=False, auth=True)
             ),
             run_path="test",
@@ -343,9 +342,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(collect_logs=False, auth=True)
-            ),
+            plugins=V1Plugins.get_or_create(V1Plugins(collect_logs=False, auth=True)),
             run_path="test",
         )
 
@@ -407,7 +404,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(None, default_auth=True),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
         )
 
@@ -450,7 +447,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_artifacts=False, auth=True)
             ),
             run_path="test",
@@ -494,9 +491,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(collect_logs=False, auth=True)
-            ),
+            plugins=V1Plugins.get_or_create(V1Plugins(collect_logs=False, auth=True)),
             run_path="test",
         )
 
@@ -554,7 +549,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(None, default_auth=True),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
         )
 
@@ -596,7 +591,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_artifacts=False, auth=True)
             ),
             run_path="test",
@@ -639,9 +634,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=bucket_managed_store,
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(collect_logs=False, auth=True)
-            ),
+            plugins=V1Plugins.get_or_create(V1Plugins(collect_logs=False, auth=True)),
             run_path="test",
         )
 
@@ -695,7 +688,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=mount_managed_store,
-            contexts=PluginsContextsSpec.from_config(None, default_auth=True),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
         )
 
@@ -736,7 +729,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=mount_managed_store,
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_artifacts=False, auth=True)
             ),
             run_path="test",
@@ -778,9 +771,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=mount_managed_store,
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(collect_logs=False, auth=True)
-            ),
+            plugins=V1Plugins.get_or_create(V1Plugins(collect_logs=False, auth=True)),
             run_path="test",
         )
 
@@ -834,7 +825,7 @@ class TestSidecarContainer(BaseTestCase):
                 sync_interval=212,
             ),
             artifacts_store=blob_managed_store,
-            contexts=PluginsContextsSpec.from_config(None, default_auth=True),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_path="test",
         )
 
@@ -871,7 +862,7 @@ class TestSidecarContainer(BaseTestCase):
             ),
         )
 
-        contexts = PluginsContextsSpec(
+        plugins = V1Plugins(
             auth=True,
             docker=False,
             shm=False,
@@ -895,7 +886,7 @@ class TestSidecarContainer(BaseTestCase):
             ),
             env=[],
             artifacts_store=artifacts_store,
-            contexts=contexts,
+            plugins=plugins,
             run_path="test",
         )
 
@@ -914,7 +905,7 @@ class TestSidecarContainer(BaseTestCase):
             ),
         )
 
-        contexts = PluginsContextsSpec(
+        plugins = V1Plugins(
             auth=True,
             docker=False,
             shm=False,
@@ -938,7 +929,7 @@ class TestSidecarContainer(BaseTestCase):
             ),
             env=[],
             artifacts_store=artifacts_store,
-            contexts=contexts,
+            plugins=plugins,
             run_path="test",
         )
 
@@ -948,7 +939,7 @@ class TestSidecarContainer(BaseTestCase):
             "--sync-interval=212",
         ]
 
-        contexts = PluginsContextsSpec(
+        plugins = V1Plugins(
             auth=True,
             docker=False,
             shm=False,
@@ -975,7 +966,7 @@ class TestSidecarContainer(BaseTestCase):
             ),
             env=[],
             artifacts_store=artifacts_store,
-            contexts=contexts,
+            plugins=plugins,
             run_path="test",
         )
 

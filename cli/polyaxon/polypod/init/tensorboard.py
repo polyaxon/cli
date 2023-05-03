@@ -31,8 +31,8 @@ from polyaxon.k8s import constants, k8s_schemas
 from polyaxon.k8s.env_vars import get_run_instance_env_var
 from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_mount
 from polyaxon.k8s.volumes import get_volume_name
+from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.init.store import get_base_store_container
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1TensorboardType
 
 
@@ -58,7 +58,7 @@ def get_tensorboard_init_container(
     polyaxon_init: V1PolyaxonInitContainer,
     artifacts_store: V1Connection,
     tb_args: V1TensorboardType,
-    contexts: PluginsContextsSpec,
+    plugins: V1Plugins,
     run_instance: str,
     container: Optional[k8s_schemas.V1Container] = None,
     env: List[k8s_schemas.V1EnvVar] = None,
@@ -78,7 +78,7 @@ def get_tensorboard_init_container(
     volume_mounts = [
         get_connections_context_mount(name=volume_name, mount_path=mount_path)
     ]
-    if contexts and contexts.auth:
+    if plugins and plugins.auth:
         volume_mounts.append(get_auth_context_mount(read_only=True))
 
     args = [

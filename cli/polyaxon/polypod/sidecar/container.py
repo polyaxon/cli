@@ -36,8 +36,8 @@ from polyaxon.k8s.mounts import (
     get_mount_from_store,
     get_mounts,
 )
+from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.sidecar.env_vars import get_sidecar_env_vars
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 
 SIDECAR_CONTAINER = "polyaxon-sidecar"
 
@@ -60,16 +60,16 @@ def get_sidecar_container(
     polyaxon_sidecar: V1PolyaxonSidecarContainer,
     env: List[k8s_schemas.V1EnvVar],
     artifacts_store: V1Connection,
-    contexts: PluginsContextsSpec,
+    plugins: V1Plugins,
     run_path: Optional[str],
 ) -> Optional[k8s_schemas.V1Container]:
-    if artifacts_store and not contexts:
+    if artifacts_store and not plugins:
         raise PolypodException(
             "Logs/artifacts store was passed and contexts was not passed."
         )
 
-    has_artifacts = artifacts_store and contexts.collect_artifacts
-    has_logs = artifacts_store and contexts.collect_logs
+    has_artifacts = artifacts_store and plugins.collect_artifacts
+    has_logs = artifacts_store and plugins.collect_logs
 
     if not has_logs and not has_artifacts:
         # No sidecar
@@ -85,7 +85,7 @@ def get_sidecar_container(
     )
 
     volume_mounts = get_mounts(
-        use_auth_context=contexts.auth,
+        use_auth_context=plugins.auth,
         use_artifacts_context=has_artifacts,
         use_docker_context=False,
         use_shm_context=False,
@@ -94,13 +94,13 @@ def get_sidecar_container(
     sleep_interval = polyaxon_sidecar.sleep_interval
     sync_interval = polyaxon_sidecar.sync_interval
     monitor_logs = polyaxon_sidecar.monitor_logs
-    if contexts and contexts.sidecar:
-        if contexts.sidecar.sleep_interval:
-            sleep_interval = contexts.sidecar.sleep_interval
-        if contexts.sidecar.sync_interval:
-            sync_interval = contexts.sidecar.sync_interval
-        if contexts.sidecar.monitor_logs:
-            monitor_logs = contexts.sidecar.monitor_logs
+    if plugins and plugins.sidecar:
+        if plugins.sidecar.sleep_interval:
+            sleep_interval = plugins.sidecar.sleep_interval
+        if plugins.sidecar.sync_interval:
+            sync_interval = plugins.sidecar.sync_interval
+        if plugins.sidecar.monitor_logs:
+            monitor_logs = plugins.sidecar.monitor_logs
     sidecar_args = get_sidecar_args(
         container_id=container_id,
         sleep_interval=sleep_interval,

@@ -38,7 +38,6 @@ from polyaxon.k8s.volumes import (
 )
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.polypod.pod.volumes import get_pod_volumes
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -108,7 +107,7 @@ class TestPodVolumes(BaseTestCase):
     def test_default_volumes(self):
         assert (
             get_pod_volumes(
-                contexts=None,
+                plugins=None,
                 artifacts_store=None,
                 init_connections=None,
                 connections=None,
@@ -122,7 +121,7 @@ class TestPodVolumes(BaseTestCase):
 
         assert (
             get_pod_volumes(
-                contexts=None,
+                plugins=None,
                 artifacts_store=None,
                 init_connections=[],
                 connections=[],
@@ -136,14 +135,12 @@ class TestPodVolumes(BaseTestCase):
 
         assert (
             get_pod_volumes(
-                contexts=PluginsContextsSpec.from_config(
-                    V1Plugins(
-                        docker=False,
-                        shm=False,
-                        auth=False,
-                        collect_artifacts=False,
-                        collect_logs=False,
-                    )
+                plugins=V1Plugins(
+                    docker=False,
+                    shm=False,
+                    auth=False,
+                    collect_artifacts=False,
+                    collect_logs=False,
                 ),
                 artifacts_store=None,
                 init_connections=[],
@@ -157,14 +154,12 @@ class TestPodVolumes(BaseTestCase):
         )
 
         assert get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(
-                    docker=True,
-                    shm=True,
-                    auth=True,
-                    collect_artifacts=False,
-                    collect_logs=False,
-                )
+            plugins=V1Plugins(
+                docker=True,
+                shm=True,
+                auth=True,
+                collect_artifacts=False,
+                collect_logs=False,
             ),
             artifacts_store=None,
             init_connections=[],
@@ -181,14 +176,12 @@ class TestPodVolumes(BaseTestCase):
 
     def test_auth_context(self):
         assert get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(
-                    docker=False,
-                    shm=False,
-                    auth=True,
-                    collect_artifacts=False,
-                    collect_logs=False,
-                )
+            plugins=V1Plugins(
+                docker=False,
+                shm=False,
+                auth=True,
+                collect_artifacts=False,
+                collect_logs=False,
             ),
             artifacts_store=None,
             init_connections=[],
@@ -201,14 +194,12 @@ class TestPodVolumes(BaseTestCase):
 
     def test_docker_context(self):
         assert get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(
-                    docker=True,
-                    shm=False,
-                    auth=False,
-                    collect_artifacts=False,
-                    collect_logs=False,
-                )
+            plugins=V1Plugins(
+                docker=True,
+                shm=False,
+                auth=False,
+                collect_artifacts=False,
+                collect_logs=False,
             ),
             artifacts_store=None,
             init_connections=[],
@@ -221,14 +212,12 @@ class TestPodVolumes(BaseTestCase):
 
     def test_shm_context(self):
         assert get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(
-                    docker=False,
-                    shm=True,
-                    auth=False,
-                    collect_artifacts=False,
-                    collect_logs=False,
-                )
+            plugins=V1Plugins(
+                docker=False,
+                shm=True,
+                auth=False,
+                collect_artifacts=False,
+                collect_logs=False,
             ),
             artifacts_store=None,
             init_connections=[],
@@ -241,14 +230,12 @@ class TestPodVolumes(BaseTestCase):
 
     def test_passing_volumes(self):
         assert get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
-                V1Plugins(
-                    docker=False,
-                    shm=False,
-                    auth=False,
-                    collect_artifacts=False,
-                    collect_logs=False,
-                )
+            plugins=V1Plugins(
+                docker=False,
+                shm=False,
+                auth=False,
+                collect_artifacts=False,
+                collect_logs=False,
             ),
             artifacts_store=None,
             init_connections=[],
@@ -263,14 +250,12 @@ class TestPodVolumes(BaseTestCase):
     def assert_artifacts_store(store, results):
         assert (
             get_pod_volumes(
-                contexts=PluginsContextsSpec.from_config(
-                    V1Plugins(
-                        docker=False,
-                        shm=False,
-                        auth=False,
-                        collect_artifacts=True,
-                        collect_logs=False,
-                    )
+                plugins=V1Plugins(
+                    docker=False,
+                    shm=False,
+                    auth=False,
+                    collect_artifacts=True,
+                    collect_logs=False,
                 ),
                 artifacts_store=store,
                 init_connections=[],
@@ -324,7 +309,7 @@ class TestPodVolumes(BaseTestCase):
     def assert_single_artifacts_store(store, results):
         assert (
             get_pod_volumes(
-                contexts=None,
+                plugins=None,
                 artifacts_store=None,
                 init_connections=[],
                 connection_by_names={store.name: store},
@@ -340,7 +325,7 @@ class TestPodVolumes(BaseTestCase):
     def assert_single_init_artifacts_store(store, results):
         assert (
             get_pod_volumes(
-                contexts=None,
+                plugins=None,
                 artifacts_store=None,
                 init_connections=[V1Init(connection=store.name)],
                 connection_by_names={store.name: store},
@@ -421,7 +406,7 @@ class TestPodVolumes(BaseTestCase):
         assert (
             len(
                 get_pod_volumes(
-                    contexts=None,
+                    plugins=None,
                     artifacts_store=None,
                     init_connections=[],
                     connection_by_names=connection_by_names,
@@ -438,7 +423,7 @@ class TestPodVolumes(BaseTestCase):
         assert (
             len(
                 get_pod_volumes(
-                    contexts=None,
+                    plugins=None,
                     artifacts_store=None,
                     init_connections=[
                         V1Init(connection=self.s3_store.name),
@@ -460,7 +445,7 @@ class TestPodVolumes(BaseTestCase):
         assert (
             len(
                 get_pod_volumes(
-                    contexts=None,
+                    plugins=None,
                     artifacts_store=None,
                     init_connections=init_connections,
                     connection_by_names=connection_by_names,
@@ -476,7 +461,7 @@ class TestPodVolumes(BaseTestCase):
         assert (
             len(
                 get_pod_volumes(
-                    contexts=None,
+                    plugins=None,
                     artifacts_store=None,
                     init_connections=init_connections,
                     connection_by_names=connection_by_names,
@@ -492,7 +477,7 @@ class TestPodVolumes(BaseTestCase):
         assert (
             len(
                 get_pod_volumes(
-                    contexts=PluginsContextsSpec.from_config(
+                    plugins=V1Plugins.get_or_create(
                         V1Plugins(
                             docker=True,
                             shm=True,
@@ -516,7 +501,7 @@ class TestPodVolumes(BaseTestCase):
         assert (
             len(
                 get_pod_volumes(
-                    contexts=PluginsContextsSpec.from_config(
+                    plugins=V1Plugins.get_or_create(
                         V1Plugins(
                             docker=True,
                             shm=True,
@@ -553,7 +538,7 @@ class TestPodVolumes(BaseTestCase):
         connections = ["connection"] if connection else []
         assert (
             get_pod_volumes(
-                contexts=None,
+                plugins=None,
                 artifacts_store=None,
                 init_connections=[],
                 connections=connections,
@@ -581,7 +566,7 @@ class TestPodVolumes(BaseTestCase):
         connections = ["connection"] if connection else []
         assert (
             get_pod_volumes(
-                contexts=None,
+                plugins=None,
                 artifacts_store=None,
                 init_connections=[],
                 connections=connections,
@@ -640,7 +625,7 @@ class TestPodVolumes(BaseTestCase):
     def test_multiple_resources(self):
         assert (
             get_pod_volumes(
-                contexts=None,
+                plugins=None,
                 artifacts_store=None,
                 init_connections=[],
                 connection_by_names={},
@@ -668,7 +653,7 @@ class TestPodVolumes(BaseTestCase):
         self.mount_resource1.is_requested = True
         self.mount_resource2.is_requested = True
         assert get_pod_volumes(
-            contexts=None,
+            plugins=None,
             artifacts_store=None,
             init_connections=[],
             connection_by_names={},
@@ -704,7 +689,7 @@ class TestPodVolumes(BaseTestCase):
 
         # Test all init are in the same context
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -746,7 +731,7 @@ class TestPodVolumes(BaseTestCase):
 
         # Test all init are in the same context
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -791,7 +776,7 @@ class TestPodVolumes(BaseTestCase):
         self.mount_resource2.is_requested = True
         # Test all init are in the same context and requested values
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -849,7 +834,7 @@ class TestPodVolumes(BaseTestCase):
         ]
 
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -884,7 +869,7 @@ class TestPodVolumes(BaseTestCase):
         assert len(pod_volumes) == 1 + 3 + 3 + 7 + 1
 
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -921,7 +906,7 @@ class TestPodVolumes(BaseTestCase):
         self.mount_resource1.is_requested = True
         self.mount_resource2.is_requested = True
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -956,7 +941,7 @@ class TestPodVolumes(BaseTestCase):
         assert len(pod_volumes) == 1 + 3 + 3 + 7 + 4
 
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -1008,7 +993,7 @@ class TestPodVolumes(BaseTestCase):
         ]
 
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -1042,7 +1027,7 @@ class TestPodVolumes(BaseTestCase):
         assert len(pod_volumes) == 3 + 3 + 7 + 1
 
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -1075,7 +1060,7 @@ class TestPodVolumes(BaseTestCase):
         assert len(pod_volumes) == 3 + 3 + 7 + 1
 
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,
@@ -1115,7 +1100,7 @@ class TestPodVolumes(BaseTestCase):
         self.mount_resource1.is_requested = True
         self.mount_resource2.is_requested = True
         pod_volumes = get_pod_volumes(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     docker=True,
                     shm=True,

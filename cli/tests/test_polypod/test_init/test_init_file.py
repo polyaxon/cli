@@ -24,7 +24,6 @@ from polyaxon.k8s import constants
 from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_mount
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.init.file import get_file_init_container
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1FileType
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -35,7 +34,7 @@ class TestInitFile(BaseTestCase):
         file_args = V1FileType(content="test")
         container = get_file_init_container(
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             file_args=file_args,
             run_path="test",
             run_instance="foo.bar.runs.uuid",
@@ -69,7 +68,7 @@ class TestInitFile(BaseTestCase):
                 image_tag="",
                 image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             file_args=file_args,
             run_path="test",
             run_instance="foo.bar.runs.uuid",

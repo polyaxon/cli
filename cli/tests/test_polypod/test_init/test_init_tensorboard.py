@@ -36,7 +36,6 @@ from polyaxon.k8s.mounts import (
 )
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.init.tensorboard import get_tensorboard_init_container
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1TensorboardType
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -71,7 +70,7 @@ class TestInitTensorboard(BaseTestCase):
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             tb_args=tb_args,
             artifacts_store=store,
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             run_instance="foo.bar.runs.uuid",
             env=None,
         )
@@ -118,7 +117,7 @@ class TestInitTensorboard(BaseTestCase):
             ),
             tb_args=tb_args,
             artifacts_store=store,
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=False)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=False)),
             run_instance="foo.bar.runs.uuid",
             env=None,
         )

@@ -53,7 +53,6 @@ from polyaxon.polypod.init.tensorboard import get_tensorboard_init_container
 from polyaxon.polypod.main.container import get_main_container
 from polyaxon.polypod.pod.volumes import get_pod_volumes
 from polyaxon.polypod.sidecar.container import get_sidecar_container
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
@@ -262,7 +261,7 @@ class BaseConverter(ConverterAbstract):
     def get_main_container(
         self,
         main_container: k8s_schemas.V1Container,
-        contexts: PluginsContextsSpec,
+        plugins: V1Plugins,
         artifacts_store: V1Connection,
         connections: List[str],
         init_connections: Optional[List[V1Init]],
@@ -274,21 +273,21 @@ class BaseConverter(ConverterAbstract):
         ports: List[int] = None,
     ) -> k8s_schemas.V1Container:
         env = self.get_main_env_vars(
-            external_host=contexts.external_host if contexts else False,
+            external_host=plugins.external_host if plugins else False,
             log_level=log_level,
         )
         volume_mounts = get_mounts(
-            use_auth_context=contexts.auth,
+            use_auth_context=plugins.auth,
             use_artifacts_context=False,  # Main container has a check and handling for this
-            use_docker_context=contexts.docker,
-            use_shm_context=contexts.shm,
+            use_docker_context=plugins.docker,
+            use_shm_context=plugins.shm,
         )
 
         return get_main_container(
             container_id=self.MAIN_CONTAINER_ID,
             main_container=main_container,
             volume_mounts=volume_mounts,
-            contexts=contexts,
+            plugins=plugins,
             artifacts_store=artifacts_store,
             connections=connections,
             init=init_connections,
@@ -304,7 +303,7 @@ class BaseConverter(ConverterAbstract):
     def get_sidecar_containers(
         self,
         polyaxon_sidecar: V1PolyaxonSidecarContainer,
-        contexts: PluginsContextsSpec,
+        plugins: V1Plugins,
         artifacts_store: V1Connection,
         sidecar_containers: List[k8s_schemas.V1Container],
         log_level: Optional[str] = None,
@@ -317,11 +316,11 @@ class BaseConverter(ConverterAbstract):
             container_id=self.MAIN_CONTAINER_ID,
             polyaxon_sidecar=polyaxon_sidecar,
             env=self.get_polyaxon_sidecar_service_env_vars(
-                external_host=contexts.external_host if contexts else False,
+                external_host=plugins.external_host if plugins else False,
                 log_level=log_level,
             ),
             artifacts_store=artifacts_store,
-            contexts=contexts,
+            plugins=plugins,
             run_path=self.run_path,
         )
         containers = to_list(polyaxon_sidecar_container, check_none=True)
@@ -334,11 +333,11 @@ class BaseConverter(ConverterAbstract):
         artifacts_store: V1Connection,
         init_connections: List[V1Init],
         connection_by_names: Dict[str, V1Connection],
-        contexts: PluginsContextsSpec,
+        plugins: V1Plugins,
         log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1Container]:
         containers = []
-        external_host = contexts.external_host if contexts else False
+        external_host = plugins.external_host if plugins else False
 
         # Prepare connections that Polyaxon can init automatically
         for init_connection in init_connections:
@@ -360,7 +359,7 @@ class BaseConverter(ConverterAbstract):
                                 log_level=log_level,
                             ),
                             mount_path=init_connection.path,
-                            contexts=contexts,
+                            plugins=plugins,
                             track=True,
                         )
                     )
@@ -377,7 +376,7 @@ class BaseConverter(ConverterAbstract):
                                 log_level=log_level,
                             ),
                             mount_path=init_connection.path,
-                            contexts=contexts,
+                            plugins=plugins,
                             track=True,
                         )
                     )
@@ -408,7 +407,7 @@ class BaseConverter(ConverterAbstract):
                                 log_level=log_level,
                             ),
                             mount_path=init_connection.path,
-                            contexts=contexts,
+                            plugins=plugins,
                         )
                     )
             else:
@@ -447,7 +446,7 @@ class BaseConverter(ConverterAbstract):
                                 log_level=log_level,
                             ),
                             mount_path=init_connection.path,
-                            contexts=contexts,
+                            plugins=plugins,
                             track=False,
                         )
                     )
@@ -463,7 +462,7 @@ class BaseConverter(ConverterAbstract):
                             ),
                             mount_path=init_connection.path,
                             container=init_connection.container,
-                            contexts=contexts,
+                            plugins=plugins,
                             run_path=self.run_path,
                             run_instance=self.run_instance,
                         )
@@ -480,7 +479,7 @@ class BaseConverter(ConverterAbstract):
                             ),
                             mount_path=init_connection.path,
                             container=init_connection.container,
-                            contexts=contexts,
+                            plugins=plugins,
                             run_path=self.run_path,
                             run_instance=self.run_instance,
                         )
@@ -498,7 +497,7 @@ class BaseConverter(ConverterAbstract):
                             ),
                             mount_path=init_connection.path,
                             container=init_connection.container,
-                            contexts=contexts,
+                            plugins=plugins,
                             run_instance=self.run_instance,
                         )
                     )
@@ -508,7 +507,7 @@ class BaseConverter(ConverterAbstract):
     def get_init_containers(
         self,
         polyaxon_init: V1PolyaxonInitContainer,
-        contexts: PluginsContextsSpec,
+        plugins: V1Plugins,
         artifacts_store: V1Connection,
         init_connections: List[V1Init],
         init_containers: List[k8s_schemas.V1Container],
@@ -523,24 +522,24 @@ class BaseConverter(ConverterAbstract):
         containers = []
 
         # Add auth context
-        if contexts and contexts.auth:
+        if plugins and plugins.auth:
             containers.append(
                 get_auth_context_container(
                     polyaxon_init=polyaxon_init,
                     env=self.get_auth_service_env_vars(
-                        external_host=contexts.external_host
+                        external_host=plugins.external_host
                     ),
                 )
             )
 
         # Add outputs
-        if contexts and contexts.collect_artifacts:
+        if plugins and plugins.collect_artifacts:
             containers += to_list(
                 get_artifacts_path_container(
                     polyaxon_init=polyaxon_init,
                     artifacts_store=artifacts_store,
                     run_path=self.run_path,
-                    auto_resume=contexts.auto_resume,
+                    auto_resume=plugins.auto_resume,
                     env=get_proxy_env_vars(
                         settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops
                     ),
@@ -553,7 +552,7 @@ class BaseConverter(ConverterAbstract):
             artifacts_store=artifacts_store,
             init_connections=init_connections,
             connection_by_names=connection_by_names,
-            contexts=contexts,
+            plugins=plugins,
             log_level=log_level,
         )
         init_containers = containers + init_containers
@@ -571,7 +570,6 @@ class BaseConverter(ConverterAbstract):
         self,
         environment: V1Environment,
         plugins: V1Plugins,
-        contexts: PluginsContextsSpec,
         volumes: List[k8s_schemas.V1Volume],
         init: List[V1Init],
         sidecars: List[k8s_schemas.V1Container],
@@ -600,7 +598,7 @@ class BaseConverter(ConverterAbstract):
         init_connections = self.filter_connections_from_init(init=init)
 
         volumes = get_pod_volumes(
-            contexts=contexts,
+            plugins=plugins,
             artifacts_store=artifacts_store,
             init_connections=init_connections,
             connections=connections,
@@ -612,7 +610,7 @@ class BaseConverter(ConverterAbstract):
 
         init_containers = self.get_init_containers(
             polyaxon_init=self.polyaxon_init,
-            contexts=contexts,
+            plugins=plugins,
             artifacts_store=artifacts_store,
             init_connections=init_connections,
             init_containers=self.filter_containers_from_init(init=init),
@@ -622,7 +620,7 @@ class BaseConverter(ConverterAbstract):
 
         sidecar_containers = self.get_sidecar_containers(
             polyaxon_sidecar=self.polyaxon_sidecar,
-            contexts=contexts,
+            plugins=plugins,
             artifacts_store=artifacts_store,
             sidecar_containers=sidecars,
             log_level=plugins.log_level,
@@ -630,7 +628,7 @@ class BaseConverter(ConverterAbstract):
 
         main_container = self.get_main_container(
             main_container=container,
-            contexts=contexts,
+            plugins=plugins,
             artifacts_store=artifacts_store,
             connections=connections,
             init_connections=init_connections,

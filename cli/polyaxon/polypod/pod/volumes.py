@@ -31,16 +31,15 @@ from polyaxon.k8s.volumes import (
     get_volume_from_secret,
     get_volume_name,
 )
-from polyaxon.polyflow import V1Init
+from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.polypod.main.k8s_resources import (
     get_requested_config_maps,
     get_requested_secrets,
 )
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 
 
 def get_pod_volumes(
-    contexts: PluginsContextsSpec,
+    plugins: Optional[V1Plugins],
     artifacts_store: Optional[V1Connection],
     init_connections: Optional[List[V1Init]],
     connections: List[str],
@@ -116,7 +115,7 @@ def get_pod_volumes(
         add_volume_from_resource(resource=config_map, is_secret=False)
 
     # Add logs/outputs stores
-    if contexts and (contexts.collect_artifacts or contexts.collect_logs):
+    if plugins and (plugins.collect_artifacts or plugins.collect_logs):
         if constants.VOLUME_MOUNT_ARTIFACTS not in volume_names:
             volumes.append(get_artifacts_context_volume())
             volume_names.add(constants.VOLUME_MOUNT_ARTIFACTS)
@@ -125,10 +124,10 @@ def get_pod_volumes(
             add_volume_from_connection(connection=artifacts_store)
 
     # Add utils contexts
-    if contexts and contexts.shm:
+    if plugins and plugins.shm:
         volumes.append(get_shm_context_volume())
-    if contexts and contexts.auth:
+    if plugins and plugins.auth:
         volumes.append(get_configs_context_volume())
-    if contexts and contexts.docker:
+    if plugins and plugins.docker:
         volumes.append(get_docker_context_volume())
     return volumes

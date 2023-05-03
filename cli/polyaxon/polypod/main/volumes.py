@@ -28,12 +28,11 @@ from polyaxon.k8s.mounts import (
     get_mount_from_store,
 )
 from polyaxon.k8s.volumes import get_volume_name
-from polyaxon.polyflow import V1Init
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
+from polyaxon.polyflow import V1Init, V1Plugins
 
 
 def get_volume_mounts(
-    contexts: PluginsContextsSpec,
+    plugins: V1Plugins,
     init: Optional[List[V1Init]],
     connections: Iterable[V1Connection],
     secrets: Iterable[V1K8sResource],
@@ -46,7 +45,7 @@ def get_volume_mounts(
 
     volume_mounts = []
     volume_names = set()
-    if contexts and contexts.collect_artifacts:
+    if plugins and plugins.collect_artifacts:
         volume_mounts += to_list(
             get_artifacts_context_mount(read_only=False), check_none=True
         )

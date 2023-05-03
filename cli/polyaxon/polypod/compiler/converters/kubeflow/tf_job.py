@@ -23,7 +23,6 @@ from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1Plugins, V1TFJ
 from polyaxon.polypod.compiler.converters import BaseConverter
 from polyaxon.polypod.compiler.converters.base import PlatformConverterMixin
 from polyaxon.polypod.mixins import TFJobMixin
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec
 
 
@@ -45,7 +44,6 @@ class TfJobConverter(TFJobMixin, BaseConverter):
                 return None
             return self.get_replica_resource(
                 plugins=plugins,
-                contexts=contexts,
                 environment=replica.environment,
                 volumes=replica.volumes or [],
                 init=replica.init or [],
@@ -62,8 +60,9 @@ class TfJobConverter(TFJobMixin, BaseConverter):
             )
 
         kv_env_vars = compiled_operation.get_env_io()
-        plugins = compiled_operation.plugins or V1Plugins()
-        contexts = PluginsContextsSpec.from_config(plugins, default_auth=default_auth)
+        plugins = V1Plugins.get_or_create(
+            config=compiled_operation.plugins, auth=default_auth
+        )
         chief = _get_replica(job.chief)
         worker = _get_replica(job.worker)
         ps = _get_replica(job.ps)
@@ -78,11 +77,11 @@ class TfJobConverter(TFJobMixin, BaseConverter):
             ps=ps,
             evaluator=evaluator,
             termination=compiled_operation.termination,
-            collect_logs=contexts.collect_logs,
+            collect_logs=plugins.collect_logs,
             clean_pod_policy=job.clean_pod_policy,
             scheduling_policy=job.scheduling_policy,
             enable_dynamic_worker=job.enable_dynamic_worker,
-            sync_statuses=contexts.sync_statuses,
+            sync_statuses=plugins.sync_statuses,
             notifications=plugins.notifications,
             labels=labels,
             annotations=self.annotations,

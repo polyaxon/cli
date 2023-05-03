@@ -33,11 +33,11 @@ from polyaxon.k8s.env_vars import (
     get_env_vars_from_k8s_resources,
     get_kv_env_vars,
 )
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
+from polyaxon.polyflow import V1Plugins
 
 
 def get_env_vars(
-    contexts: PluginsContextsSpec,
+    plugins: V1Plugins,
     kv_env_vars: List[List],
     artifacts_store_name: str,
     connections: Iterable[V1Connection],
@@ -47,10 +47,10 @@ def get_env_vars(
     env_vars = []
     connections = connections or []
 
-    if contexts and contexts.collect_artifacts:
+    if plugins and plugins.collect_artifacts:
         env_vars.append(get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True))
 
-    if contexts and contexts.collect_resources:
+    if plugins and plugins.collect_resources:
         env_vars.append(get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True))
 
     if artifacts_store_name:

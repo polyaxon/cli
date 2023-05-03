@@ -287,3 +287,79 @@ class V1Plugins(BaseSchemaModel):
     external_host: Optional[BoolOrRef] = Field(alias="externalHost")
     sidecar: Optional[Union[V1PolyaxonSidecarContainer, RefField]]
     notifications: Optional[Union[List[V1Notification], RefField]]
+
+    @classmethod
+    def get_or_create(
+        cls, config: Optional["V1Plugins"], auth: bool = False
+    ) -> "V1Plugins":
+        if not config:
+            config = cls(auth=auth)
+        config.set_auth(default=auth)
+        config.set_docker()
+        config.set_shm()
+        config.set_mount_artifacts_store()
+        config.set_collect_artifacts()
+        config.set_collect_logs()
+        config.set_collect_resources()
+        config.set_sync_statuses()
+        config.set_auto_resume()
+        config.set_external_host()
+        return config
+
+    @staticmethod
+    def no_api():
+        from polyaxon import settings
+
+        return settings.CLIENT_CONFIG.no_api
+
+    def set_auth(self, default: bool = False):
+        if self.no_api():
+            self.auth = False
+        elif self.auth is None:
+            self.auth = default
+
+    def set_docker(self, default: bool = False):
+        if self.docker is None:
+            self.docker = default
+
+    def set_shm(self, default: bool = True):
+        if self.shm is None:
+            self.shm = default
+
+    def set_mount_artifacts_store(self, default: bool = False):
+        if self.mount_artifacts_store is None:
+            self.mount_artifacts_store = default
+
+    def set_collect_artifacts(self, default: bool = True):
+        if self.no_api():
+            self.collect_artifacts = False
+        elif self.collect_artifacts is None:
+            self.collect_artifacts = default
+
+    def set_collect_logs(self, default: bool = True):
+        if self.no_api():
+            self.collect_logs = False
+        elif self.collect_logs is None:
+            self.collect_logs = default
+
+    def set_collect_resources(self, default: bool = True):
+        if self.no_api():
+            self.collect_resources = False
+        elif self.collect_resources is None:
+            self.collect_resources = default
+
+    def set_sync_statuses(self, default: bool = True):
+        if self.no_api():
+            self.sync_statuses = False
+        elif self.sync_statuses is None:
+            self.sync_statuses = default
+
+    def set_auto_resume(self, default: bool = True):
+        if self.no_api():
+            self.auto_resume = False
+        elif self.auto_resume is None:
+            self.auto_resume = default
+
+    def set_external_host(self, default: bool = False):
+        if self.external_host is None:
+            self.external_host = default

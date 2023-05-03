@@ -25,7 +25,6 @@ from polyaxon.polypod.compiler.converters.base import (
     PlatformConverterMixin,
 )
 from polyaxon.polypod.mixins import MPIJobMixin
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec
 
 
@@ -47,7 +46,6 @@ class MPIJobConverter(MPIJobMixin, BaseConverter):
                 return None
             return self.get_replica_resource(
                 plugins=plugins,
-                contexts=contexts,
                 environment=replica.environment,
                 volumes=replica.volumes or [],
                 init=replica.init or [],
@@ -64,8 +62,9 @@ class MPIJobConverter(MPIJobMixin, BaseConverter):
             )
 
         kv_env_vars = compiled_operation.get_env_io()
-        plugins = compiled_operation.plugins or V1Plugins()
-        contexts = PluginsContextsSpec.from_config(plugins, default_auth=default_auth)
+        plugins = V1Plugins.get_or_create(
+            config=compiled_operation.plugins, auth=default_auth
+        )
         launcher = _get_replica(job.launcher)
         worker = _get_replica(job.worker)
         labels = self.get_labels(version=pkg.VERSION, labels={})
@@ -79,8 +78,8 @@ class MPIJobConverter(MPIJobMixin, BaseConverter):
             scheduling_policy=job.scheduling_policy,
             slots_per_worker=job.slots_per_worker,
             termination=compiled_operation.termination,
-            collect_logs=contexts.collect_logs,
-            sync_statuses=contexts.sync_statuses,
+            collect_logs=plugins.collect_logs,
+            sync_statuses=plugins.sync_statuses,
             notifications=plugins.notifications,
             labels=labels,
             annotations=self.annotations,

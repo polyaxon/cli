@@ -41,12 +41,12 @@ from polyaxon.k8s.mounts import (
     get_mount_from_resource,
 )
 from polyaxon.k8s.volumes import get_volume_name
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
+from polyaxon.polyflow import V1Plugins
 
 
 def get_custom_init_container(
     connection: V1Connection,
-    contexts: PluginsContextsSpec,
+    plugins: V1Plugins,
     container: Optional[k8s_schemas.V1Container],
     env: List[k8s_schemas.V1EnvVar] = None,
     mount_path: Optional[str] = None,
@@ -62,7 +62,7 @@ def get_custom_init_container(
         get_connections_context_mount(name=volume_name, mount_path=mount_path)
     ]
 
-    if contexts and contexts.auth:
+    if plugins and plugins.auth:
         volume_mounts.append(get_auth_context_mount(read_only=True))
 
     env = to_list(env, check_none=True)

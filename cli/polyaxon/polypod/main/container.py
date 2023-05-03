@@ -23,21 +23,20 @@ from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.containers import patch_container
 from polyaxon.k8s.env_vars import get_env_from_k8s_resources
-from polyaxon.polyflow import V1Init
+from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.polypod.main.env_vars import get_env_vars
 from polyaxon.polypod.main.k8s_resources import (
     get_requested_config_maps,
     get_requested_secrets,
 )
 from polyaxon.polypod.main.volumes import get_volume_mounts
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 
 
 def get_main_container(
     container_id: str,
     main_container: k8s_schemas.V1Container,
     volume_mounts: List[k8s_schemas.V1VolumeMount],
-    contexts: PluginsContextsSpec,
+    plugins: V1Plugins,
     artifacts_store: Optional[V1Connection],
     init: Optional[List[V1Init]],
     connections: Optional[List[str]],
@@ -59,7 +58,7 @@ def get_main_container(
         raise PolypodException("Run path is required for main container.")
 
     if artifacts_store and (
-        not contexts.collect_artifacts or contexts.mount_artifacts_store
+        not plugins.collect_artifacts or plugins.mount_artifacts_store
     ):
         if artifacts_store.name not in connection_by_names:
             connection_by_names[artifacts_store.name] = artifacts_store
@@ -77,7 +76,7 @@ def get_main_container(
     # Mounts
     volume_mounts = to_list(volume_mounts, check_none=True)
     volume_mounts = volume_mounts + get_volume_mounts(
-        contexts=contexts,
+        plugins=plugins,
         init=init,
         connections=requested_connections,
         secrets=requested_secrets,
@@ -87,7 +86,7 @@ def get_main_container(
     # Env vars
     env = to_list(env, check_none=True)
     env = env + get_env_vars(
-        contexts=contexts,
+        plugins=plugins,
         kv_env_vars=kv_env_vars,
         artifacts_store_name=artifacts_store.name if artifacts_store else None,
         connections=requested_connections,

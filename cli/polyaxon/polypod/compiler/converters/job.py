@@ -24,7 +24,6 @@ from polyaxon.polypod.compiler.converters.base import (
     PlatformConverterMixin,
 )
 from polyaxon.polypod.mixins import JobMixin
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 
 
 class JobConverter(JobMixin, BaseConverter):
@@ -39,12 +38,12 @@ class JobConverter(JobMixin, BaseConverter):
         default_auth: bool = False,
     ) -> Dict:
         job = compiled_operation.run  # type: V1Job
-        plugins = compiled_operation.plugins or V1Plugins()
-        contexts = PluginsContextsSpec.from_config(plugins, default_auth=default_auth)
+        plugins = V1Plugins.get_or_create(
+            config=compiled_operation.plugins, auth=default_auth
+        )
         kv_env_vars = compiled_operation.get_env_io()
         replica_spec = self.get_replica_resource(
             plugins=plugins,
-            contexts=contexts,
             environment=job.environment,
             volumes=job.volumes or [],
             init=job.init or [],
@@ -67,8 +66,8 @@ class JobConverter(JobMixin, BaseConverter):
             volumes=replica_spec.volumes,
             environment=replica_spec.environment,
             termination=compiled_operation.termination,
-            collect_logs=contexts.collect_logs,
-            sync_statuses=contexts.sync_statuses,
+            collect_logs=plugins.collect_logs,
+            sync_statuses=plugins.sync_statuses,
             notifications=plugins.notifications,
             labels=replica_spec.labels,
             annotations=replica_spec.annotations,

@@ -29,14 +29,14 @@ from polyaxon.k8s.containers import patch_container
 from polyaxon.k8s.env_vars import get_run_instance_env_var
 from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_mount
 from polyaxon.k8s.volumes import get_volume_name
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
+from polyaxon.polyflow import V1Plugins
 from polyaxon.schemas.types import V1DockerfileType
 
 
 def get_dockerfile_init_container(
     polyaxon_init: V1PolyaxonInitContainer,
     dockerfile_args: V1DockerfileType,
-    contexts: PluginsContextsSpec,
+    plugins: V1Plugins,
     run_path: str,
     run_instance: str,
     container: Optional[k8s_schemas.V1Container] = None,
@@ -57,7 +57,7 @@ def get_dockerfile_init_container(
     volume_mounts = [
         get_connections_context_mount(name=volume_name, mount_path=mount_path)
     ]
-    if contexts and contexts.auth:
+    if plugins and plugins.auth:
         volume_mounts.append(get_auth_context_mount(read_only=True))
 
     return patch_container(

@@ -31,7 +31,6 @@ from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_
 from polyaxon.k8s.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.init.git import get_git_init_container, get_repo_context_args
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -90,7 +89,7 @@ class TestInitGit(BaseTestCase):
     def test_get_git_init_container_raises_for_missing_info(self):
         with self.assertRaises(PolypodException):
             get_git_init_container(
-                polyaxon_init=V1PolyaxonInitContainer(), connection=None, contexts=None
+                polyaxon_init=V1PolyaxonInitContainer(), connection=None, plugins=None
             )
 
         with self.assertRaises(PolypodException):
@@ -98,7 +97,7 @@ class TestInitGit(BaseTestCase):
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/test"),
                 connection=None,
                 mount_path=None,
-                contexts=None,
+                plugins=None,
             )
 
     def test_get_git_init_container(self):
@@ -110,7 +109,7 @@ class TestInitGit(BaseTestCase):
         container = get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             connection=connection,
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)
@@ -139,7 +138,7 @@ class TestInitGit(BaseTestCase):
                 image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
             connection=connection,
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)
@@ -178,7 +177,7 @@ class TestInitGit(BaseTestCase):
             ),
             connection=connection,
             mount_path="/somepath",
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)
@@ -217,7 +216,7 @@ class TestInitGit(BaseTestCase):
             ),
             connection=connection,
             mount_path="/somepath",
-            contexts=PluginsContextsSpec.from_config(V1Plugins(auth=True)),
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)

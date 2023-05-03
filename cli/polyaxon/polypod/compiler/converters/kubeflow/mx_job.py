@@ -23,7 +23,6 @@ from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1MXJob, V1Plugi
 from polyaxon.polypod.compiler.converters import BaseConverter
 from polyaxon.polypod.compiler.converters.base import PlatformConverterMixin
 from polyaxon.polypod.mixins import MXJobMixin
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec
 
 
@@ -45,7 +44,6 @@ class MXJobConverter(MXJobMixin, BaseConverter):
                 return None
             return self.get_replica_resource(
                 plugins=plugins,
-                contexts=contexts,
                 environment=replica.environment,
                 volumes=replica.volumes or [],
                 init=replica.init or [],
@@ -62,8 +60,9 @@ class MXJobConverter(MXJobMixin, BaseConverter):
             )
 
         kv_env_vars = compiled_operation.get_env_io()
-        plugins = compiled_operation.plugins or V1Plugins()
-        contexts = PluginsContextsSpec.from_config(plugins, default_auth=default_auth)
+        plugins = V1Plugins.get_or_create(
+            config=compiled_operation.plugins, auth=default_auth
+        )
         scheduler = _get_replica(job.scheduler)
         server = _get_replica(job.server)
         worker = _get_replica(job.worker)
@@ -83,10 +82,10 @@ class MXJobConverter(MXJobMixin, BaseConverter):
             tuner_server=tuner_server,
             mode=job.mode,
             termination=compiled_operation.termination,
-            collect_logs=contexts.collect_logs,
+            collect_logs=plugins.collect_logs,
             clean_pod_policy=job.clean_pod_policy,
             scheduling_policy=job.scheduling_policy,
-            sync_statuses=contexts.sync_statuses,
+            sync_statuses=plugins.sync_statuses,
             notifications=plugins.notifications,
             labels=labels,
             annotations=self.annotations,

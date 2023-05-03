@@ -35,7 +35,6 @@ from polyaxon.polypod.compiler.contexts.kubeflow import (
     XGBoostJobContextsManager,
 )
 from polyaxon.polypod.compiler.contexts.service import ServiceContextsManager
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.fqn_utils import get_project_instance, get_run_instance
 
 CONTEXTS_MANAGERS = {
@@ -103,9 +102,8 @@ def resolve_globals_contexts(
         },
     }
 
-    contexts_spec = PluginsContextsSpec.from_config(plugins)
-
-    if contexts_spec.collect_artifacts:
+    plugins = V1Plugins.get_or_create(plugins)
+    if plugins.collect_artifacts:
         run_artifacts_path = ctx_paths.CONTEXT_MOUNT_ARTIFACTS_FORMAT.format(run_path)
         run_outputs_path = ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)
         resolved_contexts[ctx_sections.GLOBALS][
@@ -124,7 +122,7 @@ def resolve_globals_contexts(
             ctx_keys.RUN_OUTPUTS_PATH
         ] = run_outputs_path
 
-    if contexts_spec.mount_artifacts_store and artifacts_store:
+    if plugins.mount_artifacts_store and artifacts_store:
         resolved_contexts[ctx_sections.GLOBALS][
             ctx_keys.STORE_PATH
         ] = artifacts_store.store_path

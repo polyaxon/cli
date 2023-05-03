@@ -34,7 +34,6 @@ from polyaxon.k8s.mounts import (
 )
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.polypod.main.container import get_main_container
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -105,9 +104,7 @@ class TestMainContainer(BaseTestCase):
             get_main_container(
                 container_id="test",
                 main_container=None,
-                contexts=PluginsContextsSpec.from_config(
-                    V1Plugins(collect_artifacts=True, collect_logs=False)
-                ),
+                plugins=V1Plugins(collect_artifacts=True, collect_logs=False),
                 volume_mounts=None,
                 artifacts_store=store,
                 init=None,
@@ -140,7 +137,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=None,
+            plugins=None,
             volume_mounts=None,
             artifacts_store=None,
             init=None,
@@ -185,7 +182,7 @@ class TestMainContainer(BaseTestCase):
                 args=["arg1", "arg2"],
                 resources=resources,
             ),
-            contexts=None,
+            plugins=None,
             volume_mounts=initial_mounts,
             artifacts_store=None,
             init=None,
@@ -213,7 +210,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=None,
+            plugins=None,
             volume_mounts=None,
             artifacts_store=None,
             init=[V1Init(connection=self.claim_store.name)],
@@ -241,7 +238,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     mount_artifacts_store=True,
                     collect_artifacts=True,
@@ -275,7 +272,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=None,
+            plugins=None,
             volume_mounts=None,
             artifacts_store=None,
             init=[V1Init(connection=self.claim_store.name)],
@@ -302,7 +299,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="main-job",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_artifacts=True, collect_logs=True, collect_resources=True
                 )
@@ -335,7 +332,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="main-job",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     mount_artifacts_store=True,
                     collect_artifacts=True,
@@ -372,7 +369,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="main",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_artifacts=True, collect_logs=True, collect_resources=True
                 )
@@ -405,7 +402,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="main",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     mount_artifacts_store=True,
                     collect_artifacts=False,
@@ -440,7 +437,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="main1",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_artifacts=True,
                     collect_logs=True,
@@ -476,7 +473,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="main1",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_artifacts=True, collect_logs=True, collect_resources=True
                 )
@@ -509,7 +506,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="tensorflow",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_artifacts=True, collect_logs=True, collect_resources=False
                 )
@@ -541,7 +538,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="pytorch",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_artifacts=True, collect_logs=True, collect_resources=True
                 )
@@ -575,7 +572,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=None,
+            plugins=None,
             volume_mounts=None,
             artifacts_store=None,
             init=[
@@ -611,7 +608,7 @@ class TestMainContainer(BaseTestCase):
         assert len(container.volume_mounts) == 4
 
     def test_get_main_container_host_paths(self):
-        contexts = PluginsContextsSpec(
+        contexts = V1Plugins(
             auth=True,
             docker=False,
             shm=False,
@@ -643,7 +640,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_artifacts=True, collect_logs=True)
             ),
             volume_mounts=volume_mounts,

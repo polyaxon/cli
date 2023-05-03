@@ -40,7 +40,6 @@ from polyaxon.k8s.env_vars import (
 )
 from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.main.env_vars import get_env_vars
-from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -97,7 +96,7 @@ class TestMainEnvVars(BaseTestCase):
     def test_get_env_vars(self):
         assert (
             get_env_vars(
-                contexts=None,
+                plugins=None,
                 kv_env_vars=None,
                 artifacts_store_name=None,
                 connections=None,
@@ -111,7 +110,7 @@ class TestMainEnvVars(BaseTestCase):
         # Check wrong kv env vars
         with self.assertRaises(PolypodException):
             get_env_vars(
-                contexts=None,
+                plugins=None,
                 kv_env_vars=["x", "y", "z"],
                 artifacts_store_name=None,
                 connections=None,
@@ -120,7 +119,7 @@ class TestMainEnvVars(BaseTestCase):
             )
         with self.assertRaises(PolypodException):
             get_env_vars(
-                contexts=None,
+                plugins=None,
                 kv_env_vars={"x": "y"},
                 artifacts_store_name=None,
                 connections=None,
@@ -130,7 +129,7 @@ class TestMainEnvVars(BaseTestCase):
 
         # Valid kv env vars
         assert get_env_vars(
-            contexts=None,
+            plugins=None,
             kv_env_vars=[["key1", "val1"], ["key2", "val2"]],
             artifacts_store_name=None,
             connections=None,
@@ -141,7 +140,7 @@ class TestMainEnvVars(BaseTestCase):
     def test_get_env_vars_with_artifacts_store(self):
         assert (
             get_env_vars(
-                contexts=None,
+                plugins=None,
                 kv_env_vars=None,
                 artifacts_store_name=None,
                 connections=None,
@@ -152,7 +151,7 @@ class TestMainEnvVars(BaseTestCase):
         )
 
         assert get_env_vars(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_logs=False, collect_artifacts=True, collect_resources=True
                 )
@@ -169,7 +168,7 @@ class TestMainEnvVars(BaseTestCase):
 
         assert (
             get_env_vars(
-                contexts=PluginsContextsSpec.from_config(
+                plugins=V1Plugins.get_or_create(
                     V1Plugins(
                         collect_logs=False,
                         collect_artifacts=False,
@@ -187,7 +186,7 @@ class TestMainEnvVars(BaseTestCase):
 
         assert (
             get_env_vars(
-                contexts=None,
+                plugins=None,
                 kv_env_vars=None,
                 artifacts_store_name=None,
                 connections=None,
@@ -198,7 +197,7 @@ class TestMainEnvVars(BaseTestCase):
         )
 
         assert get_env_vars(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_logs=False,
                     collect_artifacts=True,
@@ -214,7 +213,7 @@ class TestMainEnvVars(BaseTestCase):
 
     def test_get_env_vars_with_secrets(self):
         assert get_env_vars(
-            contexts=None,
+            plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
             connections=None,
@@ -225,7 +224,7 @@ class TestMainEnvVars(BaseTestCase):
         )
 
         assert get_env_vars(
-            contexts=None,
+            plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
             connections=None,
@@ -246,7 +245,7 @@ class TestMainEnvVars(BaseTestCase):
 
     def test_get_env_vars_with_config_maps(self):
         assert get_env_vars(
-            contexts=None,
+            plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
             connections=None,
@@ -259,7 +258,7 @@ class TestMainEnvVars(BaseTestCase):
         )
 
         assert get_env_vars(
-            contexts=None,
+            plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
             connections=None,
@@ -289,7 +288,7 @@ class TestMainEnvVars(BaseTestCase):
         )
 
         env_vars = get_env_vars(
-            contexts=PluginsContextsSpec.from_config(
+            plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_logs=False, collect_artifacts=True, collect_resources=True
                 )
