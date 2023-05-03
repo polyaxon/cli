@@ -262,3 +262,4 @@ class TestResolver(BaseTestCase):
         assert resolver.artifacts_store == connection1
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
+        AgentConfigManager.CONFIG_PATH = None

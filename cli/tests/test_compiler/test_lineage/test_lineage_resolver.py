@@ -181,3 +181,4 @@ class TestLineageResolver(BaseTestCase):
         assert resolver.polyaxon_init == get_default_init_container()
         resolver.resolve_artifacts_lineage()
         assert len(resolver.artifacts) == 3
+        AgentConfigManager.CONFIG_PATH = None
