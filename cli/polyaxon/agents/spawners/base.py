@@ -20,7 +20,7 @@ from kubernetes.client import Configuration
 
 from polyaxon import settings
 from polyaxon.exceptions import PolyaxonAgentError
-from polyaxon.polypod.mixins import MIXIN_MAPPING, BaseMixin
+from polyaxon.converter.mixins import MIXIN_MAPPING, BaseMixin
 
 
 class BaseSpawner:

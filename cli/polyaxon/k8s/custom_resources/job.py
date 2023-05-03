@@ -25,7 +25,7 @@ from polyaxon.k8s.custom_resources.setter import (
     set_termination,
 )
 from polyaxon.polyflow import V1Environment, V1Notification, V1Termination
-from polyaxon.polypod.pod.spec import get_pod_spec, get_pod_template_spec
+from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 
 
 def get_job_custom_resource(

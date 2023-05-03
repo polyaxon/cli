@@ -31,7 +31,7 @@ from polyaxon.exceptions import (
 )
 from polyaxon.polyaxonfile.specs import OperationSpecification
 from polyaxon.polyflow import V1Operation
-from polyaxon.polypod import compiler
+from polyaxon import converter
 from polyaxon.utils.fqn_utils import get_resource_name
 
 
@@ -45,7 +45,7 @@ def run(
     op_spec: V1Operation,
     log: bool,
 ):
-    if not settings.CLIENT_CONFIG.set_polypod:
+    if not settings.SET_AGENT:
         Printer.warning("Polypod not configured!")
         return
 
@@ -54,7 +54,7 @@ def run(
         try:
             compiled_operation = OperationSpecification.compile_operation(op_spec)
             run_name = compiled_operation.name or name
-            resource = compiler.make(
+            resource = converter.make(
                 owner_name=owner,
                 project_name=project_name,
                 project_uuid=project_name,

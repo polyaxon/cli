@@ -17,7 +17,7 @@
 from typing import Dict, Optional
 
 from polyaxon.k8s.replica import ReplicaSpec
-from polyaxon.polypod.pod.spec import get_pod_spec, get_pod_template_spec
+from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 
 
 def get_kf_replicas_template(

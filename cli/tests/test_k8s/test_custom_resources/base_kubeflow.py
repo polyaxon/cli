@@ -15,7 +15,7 @@
 # limitations under the License.
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.replica import ReplicaSpec
-from polyaxon.polypod.pod.spec import get_pod_spec, get_pod_template_spec
+from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.utils.test_utils import BaseTestCase
 
 

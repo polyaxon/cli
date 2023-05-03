@@ -16,9 +16,9 @@
 from typing import Dict, Optional
 
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
-from polyaxon.polypod.compiler import converter, make
-from polyaxon.polypod.compiler.config import PolypodConfig
-from polyaxon.polypod.compiler.converters import PLATFORM_CONVERTERS
+from polyaxon.converter import converter, make
+from polyaxon.converter.converters import PLATFORM_CONVERTERS
+from polyaxon.compiler.resolver import AgentResolver
 from polyaxon.schemas.cli.agent_config import AgentConfig
 
 
@@ -31,10 +31,10 @@ def convert(
     default_auth: bool,
     agent_content: Optional[str] = None,
 ) -> Dict:
-    polypod_config = PolypodConfig.construct()
+    agent_env = AgentResolver.construct()
     compiled_operation = CompiledOperationSpecification.read(content)
 
-    polypod_config.resolve(
+    agent_env.resolve(
         compiled_operation=compiled_operation,
         agent_config=AgentConfig.read(agent_content) if agent_content else None,
     )
@@ -44,15 +44,15 @@ def convert(
         project_name=project_name,
         run_name=run_name,
         run_uuid=run_uuid,
-        namespace=polypod_config.namespace,
-        polyaxon_init=polypod_config.polyaxon_init,
-        polyaxon_sidecar=polypod_config.polyaxon_sidecar,
+        namespace=agent_env.namespace,
+        polyaxon_init=agent_env.polyaxon_init,
+        polyaxon_sidecar=agent_env.polyaxon_sidecar,
         run_path=run_uuid,
-        artifacts_store=polypod_config.artifacts_store,
-        connection_by_names=polypod_config.connection_by_names,
-        secrets=polypod_config.secrets,
-        config_maps=polypod_config.config_maps,
-        default_sa=polypod_config.default_sa,
+        artifacts_store=agent_env.artifacts_store,
+        connection_by_names=agent_env.connection_by_names,
+        secrets=agent_env.secrets,
+        config_maps=agent_env.config_maps,
+        default_sa=agent_env.default_sa,
         converters=PLATFORM_CONVERTERS,
         default_auth=default_auth,
     )

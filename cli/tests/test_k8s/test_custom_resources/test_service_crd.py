@@ -20,7 +20,7 @@ from polyaxon.lifecycle import V1Statuses
 from polyaxon.polyflow import V1Notification
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.termination import V1Termination
-from polyaxon.polypod.pod.spec import get_pod_spec, get_pod_template_spec
+from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.utils.test_utils import BaseTestCase
 
 

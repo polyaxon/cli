@@ -39,6 +39,7 @@ if TYPE_CHECKING:
 MIN_TIMEOUT = 1
 LONG_REQUEST_TIMEOUT = 3600
 HEALTH_CHECK_INTERVAL = 60
+SET_AGENT = to_bool(os.environ.get(EV_KEYS_SET_AGENT, False))
 
 HOME_CONFIG: "HomeConfig" = HomeConfigManager.get_config_from_env()
 AUTH_CONFIG: Optional["AccessTokenConfig"] = None
@@ -116,7 +117,7 @@ def set_auth_config():
 if not to_bool(os.environ.get(EV_KEYS_NO_CONFIG, False)):
     set_auth_config()
     set_client_config()
-    if PolyaxonServices.is_agent() or to_bool(os.environ.get(EV_KEYS_SET_AGENT, False)):
+    if PolyaxonServices.is_agent() or SET_AGENT:
         set_agent_config()
 else:
     # Patch the config with correct home path if available
