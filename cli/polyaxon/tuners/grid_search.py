@@ -14,6 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# To keep backwards compatibility
-
-from hypertune.search_managers.random_search.manager import RandomSearchManager
+from hypertune.search_managers.grid_search.manager import GridSearchManager
