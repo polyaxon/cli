@@ -37,7 +37,7 @@ from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.compiler_mark
 class TestResolver(BaseTestCase):
     def setUp(self):
         super().setUp()

@@ -28,7 +28,7 @@ from polyaxon.converter.main.k8s_resources import get_requested_secrets
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestMainSecrets(BaseTestCase):
     def setUp(self):
         super().setUp()

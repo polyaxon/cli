@@ -58,7 +58,7 @@ from polyaxon.schemas.types import V1ArtifactsType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestInitStore(BaseTestCase):
     def test_get_or_create_args(self):
         assert (

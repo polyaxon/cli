@@ -30,7 +30,7 @@ from polyaxon.schemas.types.dockerfile import V1DockerfileType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestInitDockerfile(BaseTestCase):
     def test_get_dockerfile_init_container(self):
         dockerfile_args = V1DockerfileType(image="test/test")

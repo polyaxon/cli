@@ -41,7 +41,7 @@ from polyaxon.converter.pod.volumes import get_pod_volumes
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestPodVolumes(BaseTestCase):
     def setUp(self):
         super().setUp()

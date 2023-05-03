@@ -34,7 +34,7 @@ from polyaxon.converter.init.git import get_git_init_container, get_repo_context
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestInitGit(BaseTestCase):
     def test_get_repo_context_args_requires_from_image(self):
         with self.assertRaises(PolypodException):

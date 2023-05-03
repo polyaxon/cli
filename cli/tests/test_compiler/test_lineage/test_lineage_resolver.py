@@ -39,7 +39,7 @@ from polyaxon.utils.test_utils import BaseTestCase
 from traceml.artifacts import V1ArtifactKind
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.compiler_mark
 class TestLineageResolver(BaseTestCase):
     def setUp(self):
         super().setUp()

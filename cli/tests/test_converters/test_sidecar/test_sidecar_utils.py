@@ -25,7 +25,7 @@ from polyaxon.converter.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestSidecarUtils(BaseTestCase):
     def test_get_sidecar_env_vars(self):
         sidecar_env_vars = get_sidecar_env_vars(

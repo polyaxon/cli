@@ -23,7 +23,7 @@ from polyaxon.converter.pod.spec import get_pod_spec
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestPodSpec(BaseTestCase):
     def test_get_pod_spec(self):
         init_container = k8s_schemas.V1Container(name="init")

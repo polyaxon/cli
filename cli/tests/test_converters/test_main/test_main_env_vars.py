@@ -43,7 +43,7 @@ from polyaxon.converter.main.env_vars import get_env_vars
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestMainEnvVars(BaseTestCase):
     def setUp(self):
         super().setUp()

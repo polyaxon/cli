@@ -22,7 +22,7 @@ from polyaxon.k8s.accelerators import has_tpu_annotation, requests_gpu, requests
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.k8s_mark
 class TestTPUs(BaseTestCase):
     def test_has_tpu_annotation(self):
         assert has_tpu_annotation(None) is False

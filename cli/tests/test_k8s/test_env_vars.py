@@ -55,7 +55,7 @@ from polyaxon.k8s.env_vars import (
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.k8s_mark
 class TestEnvVars(BaseTestCase):
     def test_get_str_var(self):
         # String value

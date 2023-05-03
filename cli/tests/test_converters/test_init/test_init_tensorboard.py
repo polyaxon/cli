@@ -40,7 +40,7 @@ from polyaxon.schemas.types import V1TensorboardType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestInitTensorboard(BaseTestCase):
     def test_get_tensorboard_init_container(self):
         store = V1Connection(

@@ -40,7 +40,7 @@ from polyaxon.k8s.volumes import (
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.k8s_mark
 class TestVolumes(BaseTestCase):
     def test_get_volume_from_connection(self):
         # No store

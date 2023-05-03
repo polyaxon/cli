@@ -21,7 +21,7 @@ from polyaxon.converter.converters.base import BaseConverter
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestConverter(BaseTestCase):
     def setUp(self):
         class DummyConverter(BaseConverter):

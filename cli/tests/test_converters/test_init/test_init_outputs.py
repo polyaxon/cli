@@ -42,7 +42,7 @@ from polyaxon.schemas.types import V1ArtifactsType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestInitOutputsStore(BaseTestCase):
     def test_get_artifacts_store_args(self):
         assert get_artifacts_store_args(artifacts_path="/some/path", clean=True) == (

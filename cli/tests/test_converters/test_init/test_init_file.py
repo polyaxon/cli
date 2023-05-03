@@ -28,7 +28,7 @@ from polyaxon.schemas.types import V1FileType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestInitFile(BaseTestCase):
     def test_get_file_init_container(self):
         file_args = V1FileType(content="test")

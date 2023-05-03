@@ -20,7 +20,7 @@ from polyaxon.k8s.container_resources import sanitize_resources
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.k8s_mark
 class TestResourceRequirements(BaseTestCase):
     def test_empty_sanitize_resources(self):
         resources = sanitize_resources(None)

@@ -28,7 +28,7 @@ from polyaxon.polyflow import V1Init
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.k8s_mark
 class TestAnnotations(BaseTestCase):
     def test_get_annotations_from_connection(self):
         # No connections

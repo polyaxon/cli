@@ -51,7 +51,7 @@ from polyaxon.converter.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestSidecarContainer(BaseTestCase):
     def assert_artifacts_store_raises(self, store, run_path=None):
         with self.assertRaises(PolypodException):

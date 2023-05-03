@@ -24,7 +24,7 @@ from polyaxon.converter.init.auth import get_auth_context_container
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestInitAuth(BaseTestCase):
     def test_get_auth_context_container(self):
         container = get_auth_context_container(

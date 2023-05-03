@@ -36,7 +36,7 @@ from polyaxon.converter.main.volumes import get_volume_mounts
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestMainMounts(BaseTestCase):
     def setUp(self):
         super().setUp()

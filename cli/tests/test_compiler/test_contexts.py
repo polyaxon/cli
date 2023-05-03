@@ -30,7 +30,7 @@ class V1CloningKin(object):
     pass
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.compiler_mark
 class TestResolveContexts(BaseTestCase):
     def test_resolver_default_contexts(self):
         context_root = ctx_paths.CONTEXT_ROOT

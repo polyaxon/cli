@@ -23,7 +23,7 @@ from polyaxon.k8s.containers import sanitize_container_env
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.k8s_mark
 class TestSanitizeContainerEnv(BaseTestCase):
     def test_sanitize_container_env_value(self):
         value = MagicMock(env=[{"foo": "bar"}])

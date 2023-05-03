@@ -37,7 +37,7 @@ from polyaxon.converter.main.container import get_main_container
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.polypod_mark
+@pytest.mark.converter_mark
 class TestMainContainer(BaseTestCase):
     def setUp(self):
         super().setUp()
