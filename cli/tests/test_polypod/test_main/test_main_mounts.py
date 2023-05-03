@@ -24,14 +24,14 @@ from polyaxon.connections import (
     V1HostPathConnection,
     V1K8sResource,
 )
-from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.polypod.common.mounts import (
+from polyaxon.k8s.mounts import (
     get_artifacts_context_mount,
     get_connections_context_mount,
     get_mount_from_resource,
     get_mount_from_store,
 )
-from polyaxon.polypod.common.volumes import get_volume, get_volume_name
+from polyaxon.k8s.volumes import get_volume, get_volume_name
+from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.polypod.main.volumes import get_volume_mounts
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.test_utils import BaseTestCase

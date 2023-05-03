@@ -17,12 +17,12 @@
 from typing import Dict, Iterable, Optional
 
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.k8s.custom_resources.service import get_service_custom_resource
 from polyaxon.polyflow import V1CompiledOperation, V1Plugins, V1Service
 from polyaxon.polypod.compiler.converters.base import (
     BaseConverter,
     PlatformConverterMixin,
 )
-from polyaxon.polypod.custom_resources import get_service_custom_resource
 from polyaxon.polypod.mixins import ServiceMixin
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 

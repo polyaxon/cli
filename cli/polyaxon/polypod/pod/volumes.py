@@ -19,10 +19,8 @@ from typing import Dict, Iterable, List, Optional
 from clipped.utils.lists import to_list
 
 from polyaxon.connections import V1Connection, V1K8sResource
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow import V1Init
-from polyaxon.polypod.common import constants
-from polyaxon.polypod.common.volumes import (
+from polyaxon.k8s import constants, k8s_schemas
+from polyaxon.k8s.volumes import (
     get_artifacts_context_volume,
     get_configs_context_volume,
     get_connections_context_volume,
@@ -33,6 +31,7 @@ from polyaxon.polypod.common.volumes import (
     get_volume_from_secret,
     get_volume_name,
 )
+from polyaxon.polyflow import V1Init
 from polyaxon.polypod.main.k8s_resources import (
     get_requested_config_maps,
     get_requested_secrets,
@@ -49,7 +48,7 @@ def get_pod_volumes(
     secrets: Optional[Iterable[V1K8sResource]],
     config_maps: Optional[Iterable[V1K8sResource]],
     volumes: List[k8s_schemas.V1Volume] = None,
-):
+) -> List[k8s_schemas.V1Volume]:
     """Resolve all volumes that need to be mounted"""
     connections = to_list(connections, check_none=True)
     init_connections = to_list(init_connections, check_none=True)

@@ -22,8 +22,8 @@ from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.polypod.common.containers import patch_container
-from polyaxon.polypod.common.env_vars import (
+from polyaxon.k8s.containers import patch_container
+from polyaxon.k8s.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_from_config_map,
@@ -31,7 +31,7 @@ from polyaxon.polypod.common.env_vars import (
     get_items_from_config_map,
     get_items_from_secret,
 )
-from polyaxon.polypod.common.mounts import (
+from polyaxon.k8s.mounts import (
     get_mount_from_resource,
     get_mount_from_store,
     get_mounts,
@@ -110,7 +110,6 @@ def get_sidecar_container(
 
     env_from = []
 
-    secret = None
     if artifacts_store.is_bucket:
         secret = artifacts_store.secret
         volume_mounts += to_list(
@@ -139,7 +138,7 @@ def get_sidecar_container(
         check_none=True,
     )
     env += to_list(
-        get_connection_env_var(connection=artifacts_store, secret=secret),
+        get_connection_env_var(connection=artifacts_store),
         check_none=True,
     )
 

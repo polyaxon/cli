@@ -31,7 +31,7 @@ from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.polypod.common.mounts import get_artifacts_context_mount
+from polyaxon.k8s.mounts import get_artifacts_context_mount
 from polyaxon.polypod.init.artifacts import (
     get_artifacts_path_container,
     get_artifacts_store_args,

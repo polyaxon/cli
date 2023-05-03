@@ -29,8 +29,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_COLLECT_RESOURCES,
 )
 from polyaxon.exceptions import PolypodException
-from polyaxon.polyflow import V1Plugins
-from polyaxon.polypod.common.env_vars import (
+from polyaxon.k8s.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_var,
@@ -39,6 +38,7 @@ from polyaxon.polypod.common.env_vars import (
     get_items_from_secret,
     get_kv_env_vars,
 )
+from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.main.env_vars import get_env_vars
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.utils.test_utils import BaseTestCase
@@ -316,7 +316,7 @@ class TestMainEnvVars(BaseTestCase):
             get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
             get_env_var(name=EV_KEYS_ARTIFACTS_STORE_NAME, value="test"),
         ]
-        expected += get_connection_env_var(connection=connection, secret=self.resource6)
+        expected += get_connection_env_var(connection=connection)
         expected += [get_connections_catalog_env_var(connections=[connection])]
         expected += get_kv_env_vars([["key1", "val1"], ["key2", "val2"]])
         expected += get_env_vars_from_k8s_resources(

@@ -18,12 +18,12 @@ from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.k8s.custom_resources.kubeflow import get_paddle_job_custom_resource
 from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1PaddleJob, V1Plugins
 from polyaxon.polypod.compiler.converters.base import (
     BaseConverter,
     PlatformConverterMixin,
 )
-from polyaxon.polypod.custom_resources import get_paddle_job_custom_resource
 from polyaxon.polypod.mixins import PaddleJobMixin
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.polypod.specs.replica import ReplicaSpec

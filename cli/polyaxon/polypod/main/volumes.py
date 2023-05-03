@@ -20,16 +20,15 @@ from clipped.utils.lists import to_list
 
 from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow import V1Init
-from polyaxon.polypod.common import constants
-from polyaxon.polypod.common.mounts import (
+from polyaxon.k8s import constants, k8s_schemas
+from polyaxon.k8s.mounts import (
     get_artifacts_context_mount,
     get_connections_context_mount,
     get_mount_from_resource,
     get_mount_from_store,
 )
-from polyaxon.polypod.common.volumes import get_volume_name
+from polyaxon.k8s.volumes import get_volume_name
+from polyaxon.polyflow import V1Init
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 
 

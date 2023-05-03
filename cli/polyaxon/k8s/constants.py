@@ -29,3 +29,15 @@ K8S_DEPLOYMENT_KIND = "Deployment"
 K8S_SERVICE_KIND = "Service"
 K8S_INGRESS_KIND = "Ingress"
 K8S_JOB_KIND = "Job"
+
+DEFAULT_PORT = 2222
+ENV_VAR_TEMPLATE = '{name: "{var_name}", value: "{var_value}"}'
+VOLUME_CLAIM_NAME = "plx-pvc-{vol_name}"
+CONFIG_MAP_NAME = "plx-config-{uuid}"
+SECRET_NAME = "plx-secret-{uuid}"  # noqa, secret
+
+VOLUME_MOUNT_DOCKER = "docker"
+VOLUME_MOUNT_SHM = "shm"
+VOLUME_MOUNT_CONFIGS = "configs-context"
+VOLUME_MOUNT_ARTIFACTS = "artifacts-context"
+VOLUME_MOUNT_CONNECTIONS_FORMAT = "connections-context-{}"

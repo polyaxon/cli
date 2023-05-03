@@ -26,10 +26,9 @@ from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_contai
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
 from polyaxon.exceptions import PolypodException
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polypod.common import constants
-from polyaxon.polypod.common.containers import patch_container
-from polyaxon.polypod.common.env_vars import (
+from polyaxon.k8s import constants, k8s_schemas
+from polyaxon.k8s.containers import patch_container
+from polyaxon.k8s.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_from_config_map,
@@ -38,12 +37,12 @@ from polyaxon.polypod.common.env_vars import (
     get_items_from_config_map,
     get_items_from_secret,
 )
-from polyaxon.polypod.common.mounts import (
+from polyaxon.k8s.mounts import (
     get_auth_context_mount,
     get_connections_context_mount,
     get_mount_from_resource,
 )
-from polyaxon.polypod.common.volumes import get_volume_name
+from polyaxon.k8s.volumes import get_volume_name
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 
 
@@ -118,9 +117,7 @@ def get_git_init_container(
         get_connections_catalog_env_var(connections=[connection]),
         check_none=True,
     )
-    env += to_list(
-        get_connection_env_var(connection=connection, secret=secret), check_none=True
-    )
+    env += to_list(get_connection_env_var(connection=connection), check_none=True)
     # Add special handling to auto-inject ssh mount path
     if connection.kind == V1ConnectionKind.SSH and secret.mount_path:
         env += [get_env_var(EV_KEYS_SSH_PATH, secret.mount_path)]

@@ -33,20 +33,19 @@ from polyaxon.containers.names import (
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolypodException
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polypod.common import constants
-from polyaxon.polypod.common.env_vars import (
+from polyaxon.k8s import constants, k8s_schemas
+from polyaxon.k8s.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_var,
     get_items_from_secret,
 )
-from polyaxon.polypod.common.mounts import (
+from polyaxon.k8s.mounts import (
     get_connections_context_mount,
     get_mount_from_resource,
     get_mount_from_store,
 )
-from polyaxon.polypod.common.volumes import get_volume_name
+from polyaxon.k8s.volumes import get_volume_name
 from polyaxon.polypod.init.store import (
     cp_mount_args,
     cp_store_args,
@@ -582,10 +581,7 @@ class TestInitStore(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert (
-            get_connection_env_var(connection=bucket_store_without_secret, secret=None)
-            == []
-        )
+        assert get_connection_env_var(connection=bucket_store_without_secret) == []
         assert container.env == [
             get_connections_catalog_env_var(connections=[bucket_store_without_secret])
         ]
@@ -621,12 +617,7 @@ class TestInitStore(BaseTestCase):
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
 
-        assert (
-            get_connection_env_var(
-                connection=bucket_store_with_secret, secret=non_mount_resource1
-            )
-            == []
-        )
+        assert get_connection_env_var(connection=bucket_store_with_secret) == []
         assert container.env == get_items_from_secret(secret=non_mount_resource1) + [
             get_connections_catalog_env_var(connections=[bucket_store_with_secret])
         ]
@@ -656,12 +647,7 @@ class TestInitStore(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert (
-            get_connection_env_var(
-                connection=bucket_store_with_secret, secret=mount_resource1
-            )
-            == []
-        )
+        assert get_connection_env_var(connection=bucket_store_with_secret) == []
         assert container.env == [
             get_connections_catalog_env_var(connections=[bucket_store_with_secret])
         ]
@@ -695,7 +681,7 @@ class TestInitStore(BaseTestCase):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert get_connection_env_var(connection=claim_store, secret=None) == []
+        assert get_connection_env_var(connection=claim_store) == []
         assert container.env == [
             get_connections_catalog_env_var(connections=[claim_store])
         ]
@@ -770,7 +756,7 @@ class TestInitStore(BaseTestCase):
                 store=store, mount_path=mount_path, artifacts=None, paths=None
             )
         ]
-        assert get_connection_env_var(connection=store, secret=None) == []
+        assert get_connection_env_var(connection=store) == []
         assert container.env == [get_connections_catalog_env_var(connections=[store])]
         assert container.env_from == []
         assert container.resources is not None

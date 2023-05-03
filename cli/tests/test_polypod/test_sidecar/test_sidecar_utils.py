@@ -19,7 +19,7 @@ import pytest
 from polyaxon.auxiliaries import get_sidecar_resources
 from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
 from polyaxon.k8s import k8s_schemas
-from polyaxon.polypod.common.env_vars import get_env_var
+from polyaxon.k8s.env_vars import get_env_var
 from polyaxon.polypod.sidecar.container import get_sidecar_args
 from polyaxon.polypod.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.utils.test_utils import BaseTestCase

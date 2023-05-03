@@ -28,20 +28,20 @@ from polyaxon.connections import (
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.exceptions import PolypodException
-from polyaxon.polyflow import V1Plugins
-from polyaxon.polypod.common.env_vars import (
+from polyaxon.k8s.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_from_secret,
     get_env_var,
     get_items_from_secret,
 )
-from polyaxon.polypod.common.mounts import (
+from polyaxon.k8s.mounts import (
     get_artifacts_context_mount,
     get_auth_context_mount,
     get_mount_from_resource,
     get_mount_from_store,
 )
+from polyaxon.polyflow import V1Plugins
 from polyaxon.polypod.sidecar.container import (
     SIDECAR_CONTAINER,
     get_sidecar_args,
@@ -277,7 +277,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -321,7 +321,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -364,7 +364,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id="test",
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -426,7 +426,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -471,7 +471,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -515,7 +515,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -573,7 +573,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -617,7 +617,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -660,7 +660,7 @@ class TestSidecarContainer(BaseTestCase):
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
         ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
-            connection=bucket_managed_store, secret=resource1
+            connection=bucket_managed_store
         ) + [
             get_connections_catalog_env_var(connections=[bucket_managed_store])
         ]
@@ -713,7 +713,7 @@ class TestSidecarContainer(BaseTestCase):
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=mount_managed_store.name,
-        ) + get_connection_env_var(connection=mount_managed_store, secret=None) + [
+        ) + get_connection_env_var(connection=mount_managed_store) + [
             get_connections_catalog_env_var(connections=[mount_managed_store])
         ]
         assert sidecar.env_from == []
@@ -756,7 +756,7 @@ class TestSidecarContainer(BaseTestCase):
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=mount_managed_store.name,
-        ) + get_connection_env_var(connection=mount_managed_store, secret=None) + [
+        ) + get_connection_env_var(connection=mount_managed_store) + [
             get_connections_catalog_env_var(connections=[mount_managed_store])
         ]
         assert sidecar.env_from == []
@@ -798,7 +798,7 @@ class TestSidecarContainer(BaseTestCase):
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=mount_managed_store.name,
-        ) + get_connection_env_var(connection=mount_managed_store, secret=None) + [
+        ) + get_connection_env_var(connection=mount_managed_store) + [
             get_connections_catalog_env_var(connections=[mount_managed_store])
         ]
         assert sidecar.env_from == []
@@ -852,7 +852,7 @@ class TestSidecarContainer(BaseTestCase):
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=blob_managed_store.name,
-        ) + get_connection_env_var(connection=blob_managed_store, secret=resource1) + [
+        ) + get_connection_env_var(connection=blob_managed_store) + [
             get_connections_catalog_env_var(connections=[blob_managed_store])
         ]
         assert sidecar.env_from == [get_env_from_secret(secret=resource1)]

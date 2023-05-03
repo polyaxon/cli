@@ -32,16 +32,16 @@ from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
-from polyaxon.polypod.common.annotations import get_connection_annotations
-from polyaxon.polypod.common.containers import ensure_container_name, sanitize_container
-from polyaxon.polypod.common.env_vars import (
+from polyaxon.k8s.annotations import get_connection_annotations
+from polyaxon.k8s.containers import ensure_container_name, sanitize_container
+from polyaxon.k8s.env_vars import (
     get_base_env_vars,
     get_env_var,
     get_proxy_env_vars,
     get_service_env_vars,
 )
-from polyaxon.polypod.common.mounts import get_mounts
+from polyaxon.k8s.mounts import get_mounts
+from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.polypod.init.artifacts import get_artifacts_path_container
 from polyaxon.polypod.init.auth import get_auth_context_container
 from polyaxon.polypod.init.custom import get_custom_init_container

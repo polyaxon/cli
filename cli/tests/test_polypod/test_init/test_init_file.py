@@ -20,12 +20,9 @@ from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_FILE_CONTAINER_PREFIX
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
+from polyaxon.k8s import constants
+from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_mount
 from polyaxon.polyflow import V1Plugins
-from polyaxon.polypod.common import constants
-from polyaxon.polypod.common.mounts import (
-    get_auth_context_mount,
-    get_connections_context_mount,
-)
 from polyaxon.polypod.init.file import get_file_init_container
 from polyaxon.polypod.specs.contexts import PluginsContextsSpec
 from polyaxon.schemas.types import V1FileType

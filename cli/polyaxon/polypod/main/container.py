@@ -21,9 +21,9 @@ from clipped.utils.lists import to_list
 from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.containers import patch_container
+from polyaxon.k8s.env_vars import get_env_from_k8s_resources
 from polyaxon.polyflow import V1Init
-from polyaxon.polypod.common.containers import patch_container
-from polyaxon.polypod.common.env_vars import get_env_from_k8s_resources
 from polyaxon.polypod.main.env_vars import get_env_vars
 from polyaxon.polypod.main.k8s_resources import (
     get_requested_config_maps,

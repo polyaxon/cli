@@ -26,7 +26,7 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolyaxonSchemaError, PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.polypod.common.env_vars import (
+from polyaxon.k8s.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_var,
@@ -68,7 +68,7 @@ def get_env_vars(
         try:
             secret = connection.secret
             env_vars += to_list(
-                get_connection_env_var(connection=connection, secret=secret),
+                get_connection_env_var(connection=connection),
                 check_none=True,
             )
         except PolyaxonSchemaError as e:
