@@ -26,8 +26,8 @@ from polyaxon.k8s.custom_resources.setter import (
     set_sync_statuses,
     set_termination,
 )
+from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Notification, V1SchedulingPolicy, V1Termination
-from polyaxon.polypod.specs.replica import ReplicaSpec
 
 
 def get_xgb_job_custom_resource(

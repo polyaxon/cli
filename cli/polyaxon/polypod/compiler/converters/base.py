@@ -41,6 +41,7 @@ from polyaxon.k8s.env_vars import (
     get_service_env_vars,
 )
 from polyaxon.k8s.mounts import get_mounts
+from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.polypod.init.artifacts import get_artifacts_path_container
 from polyaxon.polypod.init.auth import get_auth_context_container
@@ -53,7 +54,6 @@ from polyaxon.polypod.init.tensorboard import get_tensorboard_init_container
 from polyaxon.polypod.main.container import get_main_container
 from polyaxon.polypod.pod.volumes import get_pod_volumes
 from polyaxon.polypod.sidecar.container import get_sidecar_container
-from polyaxon.polypod.specs.replica import ReplicaSpec
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices

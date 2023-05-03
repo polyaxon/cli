@@ -19,13 +19,13 @@ from typing import Dict, Iterable, Optional
 from polyaxon import pkg
 from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.k8s.custom_resources.kubeflow import get_pytorch_job_custom_resource
+from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1Plugins, V1PytorchJob
 from polyaxon.polypod.compiler.converters.base import (
     BaseConverter,
     PlatformConverterMixin,
 )
 from polyaxon.polypod.mixins import PytorchJobMixin
-from polyaxon.polypod.specs.replica import ReplicaSpec
 
 
 class PytorchJobConverter(PytorchJobMixin, BaseConverter):
