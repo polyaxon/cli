@@ -13,8 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.utils.test_utils import BaseTestCase
 

@@ -16,7 +16,7 @@
 from typing import Dict, Optional
 
 from polyaxon.compiler.resolver import AgentResolver
-from polyaxon import converter
+from polyaxon.k8s import converter
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.schemas.cli.agent_config import AgentConfig
 

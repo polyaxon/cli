@@ -19,8 +19,8 @@ from clipped.utils.enums import get_enum_value
 from kubernetes.client import Configuration
 
 from polyaxon import settings
-from polyaxon.converter.mixins import MIXIN_MAPPING, BaseMixin
 from polyaxon.exceptions import PolyaxonAgentError
+from polyaxon.k8s.converter.mixins import MIXIN_MAPPING, BaseMixin
 
 
 class BaseSpawner:

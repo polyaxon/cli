@@ -16,8 +16,8 @@
 
 from typing import Dict, List, Optional
 
-from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.k8s.custom_resources.operation import get_operation_custom_object
 from polyaxon.k8s.custom_resources.setter import (
     set_collect_logs,
