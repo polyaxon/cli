@@ -61,15 +61,6 @@ from polyaxon.utils.fqn_utils import get_resource_name, get_run_instance
 from polyaxon.utils.host_utils import get_api_host
 
 
-class ConverterAbstract:
-    def get_init_service_env_vars(
-        self,
-        external_host: bool = False,
-        log_level: Optional[str] = None,
-    ) -> Optional[List[k8s_schemas.V1EnvVar]]:
-        raise NotImplementedError
-
-
 class BaseConverter:
     SPEC_KIND = None
     GROUP = None

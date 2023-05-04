@@ -24,7 +24,6 @@ from clipped.utils.versions import clean_version_for_check
 from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg, settings
-from polyaxon.agents.base import BaseAgent
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.compiler.resolver import AgentResolver
 from polyaxon.connections import V1Connection
@@ -32,6 +31,7 @@ from polyaxon.k8s import converter
 from polyaxon.k8s.executor.executor import Executor
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
+from polyaxon.runner.agent import BaseAgent
 from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse

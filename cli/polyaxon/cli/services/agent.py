@@ -47,13 +47,12 @@ def agent():
 )
 def start(kind, max_retries, sleep_interval):
     from polyaxon import settings
-    from polyaxon.agents.base import BaseAgent
-    from polyaxon.agents.kinds import V1AgentKind
     from polyaxon.env_vars.getters import get_agent_info
+    from polyaxon.runner.agent import AgentKind, BaseAgent
 
-    kind = kind or V1AgentKind.K8S
+    kind = kind or AgentKind.K8S
 
-    if kind == V1AgentKind.K8S:
+    if kind == AgentKind.K8S:
         from polyaxon.k8s.agent import Agent
     else:
         logger.error("Received an unsupported agent kind: `{}`".format(kind))
@@ -93,7 +92,7 @@ def start(kind, max_retries, sleep_interval):
     help="Health interval between checks.",
 )
 def healthz(health_interval):
-    from polyaxon.agents.base import BaseAgent
+    from polyaxon.runner.agent import BaseAgent
 
     if not BaseAgent.pong(interval=health_interval):
         logger.warning("Polyaxon agent is not healthy!")

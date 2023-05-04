@@ -16,10 +16,8 @@
 
 import pytest
 
-from mock import MagicMock, patch
-
-from polyaxon.agents.base import BaseAgent
 from polyaxon.client import PolyaxonClient
+from polyaxon.runner.agent import BaseAgent
 from polyaxon.utils.test_utils import BaseTestCase
 
 
