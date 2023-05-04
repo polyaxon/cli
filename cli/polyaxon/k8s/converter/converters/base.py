@@ -54,22 +54,19 @@ from polyaxon.k8s.env_vars import (
 from polyaxon.k8s.mounts import get_mounts
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
+from polyaxon.runner.converter import BaseConverter as _BaseConverter
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
-from polyaxon.utils.fqn_utils import get_resource_name, get_run_instance
-from polyaxon.utils.host_utils import get_api_host
 
 
-class BaseConverter:
-    SPEC_KIND = None
+class BaseConverter(_BaseConverter):
     GROUP = None
     API_VERSION = None
     PLURAL = None
     K8S_ANNOTATIONS_KIND = None
     K8S_LABELS_COMPONENT = None
     K8S_LABELS_PART_OF = None
-    MAIN_CONTAINER_ID = None
 
     def __init__(
         self,
@@ -84,56 +81,44 @@ class BaseConverter:
         polyaxon_init: V1PolyaxonInitContainer = None,
         base_env_vars: bool = False,
     ):
-        self.is_valid()
-        self.owner_name = owner_name
-        self.project_name = project_name
-        self.run_name = run_name
-        self.run_uuid = run_uuid
-        self.run_path = run_path or self.run_uuid
-        self.resource_name = self.get_resource_name()
-        self.run_instance = self.get_instance()
-        self.namespace = namespace
-        self.internal_auth = internal_auth
+        super().__init__(
+            owner_name=owner_name,
+            project_name=project_name,
+            run_name=run_name,
+            run_uuid=run_uuid,
+            run_path=run_path,
+            namespace=namespace,
+            internal_auth=internal_auth,
+            base_env_vars=base_env_vars,
+        )
         self.polyaxon_sidecar = polyaxon_sidecar
         self.polyaxon_init = polyaxon_init
-        self.base_env_vars = base_env_vars
-
-    def get_instance(self):
-        return get_run_instance(
-            owner=self.owner_name, project=self.project_name, run_uuid=self.run_uuid
-        )
-
-    def get_resource_name(self):
-        return get_resource_name(self.run_uuid)
 
     def is_valid(self):
-        if not self.SPEC_KIND:
-            raise PolypodException(
-                "Please make sure that an executor subclass has a valid SPEC_KIND"
-            )
+        super().is_valid()
         if not self.GROUP:
             raise PolypodException(
-                "Please make sure that an executor subclass has a valid GROUP"
+                "Please make sure that a converter subclass has a valid GROUP"
             )
         if not self.API_VERSION:
             raise PolypodException(
-                "Please make sure that an executor subclass has a valid API_VERSION"
+                "Please make sure that a converter subclass has a valid API_VERSION"
             )
         if not self.PLURAL:
             raise PolypodException(
-                "Please make sure that an executor subclass has a valid PLURAL"
+                "Please make sure that a converter subclass has a valid PLURAL"
             )
         if not self.K8S_ANNOTATIONS_KIND:
             raise PolypodException(
-                "Please make sure that an executor subclass has a valid K8S_ANNOTATIONS_KIND"
+                "Please make sure that a converter subclass has a valid K8S_ANNOTATIONS_KIND"
             )
         if not self.K8S_LABELS_COMPONENT:
             raise PolypodException(
-                "Please make sure that an executor subclass has a valid K8S_LABELS_COMPONENT"
+                "Please make sure that a converter subclass has a valid K8S_LABELS_COMPONENT"
             )
         if not self.K8S_LABELS_PART_OF:
             raise PolypodException(
-                "Please make sure that an executor subclass has a valid K8S_LABELS_PART_OF"
+                "Please make sure that a converter subclass has a valid K8S_LABELS_PART_OF"
             )
 
     def get_recommended_labels(self, version: str):
@@ -183,16 +168,6 @@ class BaseConverter:
         labels = copy.copy(labels)
         labels.update(self.get_recommended_labels(version=version))
         return sanitize_string_dict(labels)
-
-    @staticmethod
-    def get_by_name(values: List[Any]):
-        return {c.name: c for c in values}
-
-    def get_api_host(self, external_host: bool = False):
-        if external_host:
-            return get_api_host(default=settings.CLIENT_CONFIG.host)
-        else:
-            return clean_host(settings.CLIENT_CONFIG.host)
 
     def get_service_env_vars(
         self,
