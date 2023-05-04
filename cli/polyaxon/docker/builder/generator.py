@@ -20,7 +20,7 @@ from typing import List, Tuple, Union
 
 from clipped.utils.lists import to_list
 
-from polyaxon.docker.builds.dockerfile import POLYAXON_DOCKER_TEMPLATE
+from polyaxon.docker.builder.dockerfile import POLYAXON_DOCKER_TEMPLATE
 from polyaxon.schemas.types import V1DockerfileType
 
 

@@ -25,7 +25,6 @@ from pydantic import ValidationError
 from polyaxon.cli.check import check_polyaxonfile
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.config.spec import ConfigSpec
-from polyaxon.docker.builds.generator import DockerFileGenerator
 from polyaxon.exceptions import PolyaxonBuildException, PolyaxonSchemaError
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.schemas.types import V1DockerfileType
@@ -79,6 +78,7 @@ def generate(
     """Generate a dockerfile given the polyaxonfile."""
     from clipped.utils.hashing import hash_value
 
+    from polyaxon.docker.builder import DockerFileGenerator
     from polyaxon.init.dockerfile import create_dockerfile_lineage
 
     if all([polyaxonfile, build_context]):

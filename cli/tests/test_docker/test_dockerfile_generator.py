@@ -18,7 +18,7 @@ import os
 import pytest
 import tempfile
 
-from polyaxon.docker.builds.generator import DockerFileGenerator
+from polyaxon.docker.builder.generator import DockerFileGenerator
 from polyaxon.schemas.types.dockerfile import (
     POLYAXON_DOCKER_WORKDIR,
     POLYAXON_DOCKERFILE_NAME,

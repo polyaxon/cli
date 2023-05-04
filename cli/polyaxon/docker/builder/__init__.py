@@ -14,4 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.docker.builds.generator import DockerFileGenerator
+from polyaxon.docker.builder.builder import (
+    DockerBuilder,
+    DockerPusher,
+    build,
+    build_and_push,
+    push,
+)
+from polyaxon.docker.builder.generator import DockerFileGenerator
