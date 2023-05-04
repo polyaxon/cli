@@ -17,13 +17,13 @@
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
-from polyaxon.exceptions import PolyaxonK8SError
+from polyaxon.exceptions import PolyaxonK8sError
 from polyaxon.k8s import constants
 from polyaxon.k8s.monitor import is_pod_running
 from polyaxon.logger import logger
 
 
-class K8SManager:
+class K8sManager:
     def __init__(self, k8s_config=None, namespace="default", in_cluster=False):
         if not k8s_config:
             if in_cluster:
@@ -88,7 +88,7 @@ class K8SManager:
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
 
     def _list_namespace_resource(self, resource_api, reraise=False, **kwargs):
         try:
@@ -101,7 +101,7 @@ class K8SManager:
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return []
 
     def list_nodes(self, reraise=False):
@@ -111,7 +111,7 @@ class K8SManager:
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return []
 
     def list_pods(self, include_uninitialized=True, reraise=False, **kwargs):
@@ -166,7 +166,7 @@ class K8SManager:
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
 
     def create_config_map(self, name, body):
         resp = self.k8s_api.create_namespaced_config_map(
@@ -190,7 +190,7 @@ class K8SManager:
                 return self.update_config_map(name=name, body=body)
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -216,7 +216,7 @@ class K8SManager:
                 return self.update_secret(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -242,7 +242,7 @@ class K8SManager:
                 return self.update_service(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -266,7 +266,7 @@ class K8SManager:
                 return self.update_pod(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -292,7 +292,7 @@ class K8SManager:
                 return self.update_job(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -344,7 +344,7 @@ class K8SManager:
                 )
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError(
+                    raise PolyaxonK8sError(
                         "Connection error: creation %s - update %s" % (e_create, e)
                     ) from e
                 else:
@@ -372,7 +372,7 @@ class K8SManager:
                 return self.update_deployment(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -394,7 +394,7 @@ class K8SManager:
                 return self.update_service(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -420,7 +420,7 @@ class K8SManager:
                 return self.update_volume_claim(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -446,7 +446,7 @@ class K8SManager:
                 return self.update_ingress(name=name, body=body), False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError("Connection error: %s" % e) from e
+                    raise PolyaxonK8sError("Connection error: %s" % e) from e
                 else:
                     logger.error("K8S error: {}".format(e))
 
@@ -457,7 +457,7 @@ class K8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_secret(self, name, reraise=False):
@@ -467,7 +467,7 @@ class K8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_service(self, name, reraise=False):
@@ -477,7 +477,7 @@ class K8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_pod(self, name, reraise=False):
@@ -485,7 +485,7 @@ class K8SManager:
             return self.k8s_api.read_namespaced_pod(name=name, namespace=self.namespace)
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_job(self, name, reraise=False):
@@ -495,7 +495,7 @@ class K8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_custom_object(self, name, group, version, plural):
@@ -514,7 +514,7 @@ class K8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_volume(self, name, reraise=False):
@@ -522,7 +522,7 @@ class K8SManager:
             return self.k8s_api.read_persistent_volume(name=name)
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_volume_claim(self, name, reraise=False):
@@ -532,7 +532,7 @@ class K8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def get_ingress(self, name, reraise=False):
@@ -542,7 +542,7 @@ class K8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     def delete_config_map(self, name, reraise=False):
@@ -555,7 +555,7 @@ class K8SManager:
             logger.debug("Config map `{}` Deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Config map `{}` was not found".format(name))
 
@@ -569,7 +569,7 @@ class K8SManager:
             logger.debug("secret `{}` Deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("secret `{}` was not found".format(name))
 
@@ -583,7 +583,7 @@ class K8SManager:
             logger.debug("Service `{}` deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Service `{}` was not found".format(name))
 
@@ -597,7 +597,7 @@ class K8SManager:
             logger.debug("Pod `{}` deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Pod `{}` was not found".format(name))
 
@@ -611,7 +611,7 @@ class K8SManager:
             logger.debug("Pod `{}` deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Pod `{}` was not found".format(name))
 
@@ -639,7 +639,7 @@ class K8SManager:
             logger.debug("Deployment `{}` deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Deployment `{}` was not found".format(name))
 
@@ -652,7 +652,7 @@ class K8SManager:
             logger.debug("Volume `{}` Deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Volume `{}` was not found".format(name))
 
@@ -666,7 +666,7 @@ class K8SManager:
             logger.debug("Volume claim `{}` Deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Volume claim `{}` was not found".format(name))
 
@@ -683,7 +683,7 @@ class K8SManager:
             logger.debug("Ingress `{}` deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Ingress `{}` was not found".format(name))
 

@@ -22,7 +22,7 @@ from tests.test_k8s.fixtures import (
 )
 
 
-class TestK8SMonitor(BaseTestCase):
+class TestK8sMonitor(BaseTestCase):
     def test_is_container_terminated_no_status(self):
         status = {"container_statuses": []}
         assert is_container_terminated(status, container_id="test") is None

@@ -26,7 +26,7 @@ from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.operations import logs as run_logs
 from polyaxon.exceptions import (
     PolyaxonCompilerError,
-    PolyaxonK8SError,
+    PolyaxonK8sError,
     PolypodException,
 )
 from polyaxon.k8s import converter
@@ -73,7 +73,7 @@ def run(
             # cache.cache(config_manager=RunConfigManager, response=response)
             run_job_uid = get_resource_name(run_name)
             Printer.success("A new run `{}` was created".format(run_job_uid))
-        except (PolyaxonCompilerError, PolyaxonK8SError, PolypodException) as e:
+        except (PolyaxonCompilerError, PolyaxonK8sError, PolypodException) as e:
             handle_cli_error(e, message="Could not create a run.")
             sys.exit(1)
 

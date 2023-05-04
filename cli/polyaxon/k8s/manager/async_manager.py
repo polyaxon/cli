@@ -21,12 +21,12 @@ from kubernetes_asyncio import client, config
 from kubernetes_asyncio.client import Configuration
 from kubernetes_asyncio.client.rest import ApiException
 
-from polyaxon.exceptions import PolyaxonK8SError
+from polyaxon.exceptions import PolyaxonK8sError
 from polyaxon.k8s.monitor import is_pod_running
 from polyaxon.logger import logger
 
 
-class AsyncK8SManager:
+class AsyncK8sManager:
     def __init__(self, namespace: str = "default", in_cluster: bool = False):
         self.namespace = namespace
         self.in_cluster = in_cluster
@@ -101,7 +101,7 @@ class AsyncK8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     async def is_pod_running(self, pod_id: str, container_id: str) -> bool:
@@ -117,7 +117,7 @@ class AsyncK8SManager:
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return []
 
     async def list_pods(self, reraise=False, **kwargs) -> List[client.V1Pod]:
@@ -214,7 +214,7 @@ class AsyncK8SManager:
                 return update, False
             except ApiException as e:
                 if reraise:
-                    raise PolyaxonK8SError(
+                    raise PolyaxonK8sError(
                         "Connection error: creation %s - update %s" % (e_create, e)
                     ) from e
                 else:
@@ -234,7 +234,7 @@ class AsyncK8SManager:
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             return None
 
     async def delete_custom_object(
@@ -252,6 +252,6 @@ class AsyncK8SManager:
             logger.debug("Custom object `{}` deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8SError("Connection error: %s" % e) from e
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Custom object `{}` was not found".format(name))

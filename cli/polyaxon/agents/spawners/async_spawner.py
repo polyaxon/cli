@@ -17,7 +17,7 @@
 from typing import Dict
 
 from polyaxon.agents.spawners.base import BaseSpawner
-from polyaxon.k8s.manager.async_manager import AsyncK8SManager
+from polyaxon.k8s.manager.async_manager import AsyncK8sManager
 from polyaxon.utils.fqn_utils import get_resource_name
 
 
@@ -25,7 +25,7 @@ class AsyncSpawner(BaseSpawner):
     @property
     def k8s_manager(self):
         if not self._k8s_manager:
-            self._k8s_manager = AsyncK8SManager(
+            self._k8s_manager = AsyncK8sManager(
                 namespace=self.namespace,
                 in_cluster=self.in_cluster,
             )

@@ -21,12 +21,12 @@ from clipped.utils.tz import now
 from kubernetes_asyncio.client.models import V1Pod
 from kubernetes_asyncio.client.rest import ApiException
 
-from polyaxon.k8s.manager.async_manager import AsyncK8SManager
+from polyaxon.k8s.manager.async_manager import AsyncK8sManager
 from traceml.logging import V1Log, V1Logs
 
 
 async def handle_container_logs(
-    k8s_manager: AsyncK8SManager, pod: V1Pod, container_name: str, **params
+    k8s_manager: AsyncK8sManager, pod: V1Pod, container_name: str, **params
 ) -> List[V1Log]:
     resp = None
     try:
@@ -57,7 +57,7 @@ async def handle_container_logs(
 
 
 async def handle_pod_logs(
-    k8s_manager: AsyncK8SManager, pod: V1Pod, **params
+    k8s_manager: AsyncK8sManager, pod: V1Pod, **params
 ) -> List[V1Log]:
     logs = []
     for container in pod.spec.init_containers or []:
@@ -72,7 +72,7 @@ async def handle_pod_logs(
 
 
 async def query_k8s_operation_logs(
-    k8s_manager: AsyncK8SManager,
+    k8s_manager: AsyncK8sManager,
     instance: str,
     last_time: Optional[datetime.datetime],
     stream: bool = False,
@@ -101,7 +101,7 @@ async def query_k8s_operation_logs(
 
 
 async def query_k8s_pod_logs(
-    k8s_manager: AsyncK8SManager,
+    k8s_manager: AsyncK8sManager,
     pod: V1Pod,
     last_time: Optional[datetime.datetime],
     stream: bool = False,

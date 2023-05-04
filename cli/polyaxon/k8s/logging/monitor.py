@@ -21,13 +21,13 @@ from clipped.utils.tz import now
 from kubernetes.client.rest import ApiException
 
 from polyaxon.client import RunClient
-from polyaxon.exceptions import PolyaxonK8SError
-from polyaxon.k8s.manager.manager import K8SManager
+from polyaxon.exceptions import PolyaxonK8sError
+from polyaxon.k8s.manager.manager import K8sManager
 from traceml.logging import V1Log
 
 
 def query_logs(
-    k8s_manager: K8SManager,
+    k8s_manager: K8sManager,
     pod_id: str,
     container_id: str,
     stream: bool = False,
@@ -54,7 +54,7 @@ def process_log_line(log_line: str):
 
 
 def stream_logs(
-    k8s_manager: K8SManager, pod_id: str, container_id: str
+    k8s_manager: K8sManager, pod_id: str, container_id: str
 ) -> Iterable[str]:
     raw = None
     retries = 0
@@ -68,7 +68,7 @@ def stream_logs(
                 container_id=container_id,
                 stream=True,
             )
-        except (PolyaxonK8SError, ApiException):
+        except (PolyaxonK8sError, ApiException):
             retries += 1
 
     if not raw:
@@ -80,7 +80,7 @@ def stream_logs(
 
 
 def process_logs(
-    k8s_manager: K8SManager,
+    k8s_manager: K8sManager,
     pod_id: str,
     container_id: str,
     filepath: str,
@@ -98,7 +98,7 @@ def process_logs(
                 since_seconds=since_seconds,
             )
             no_logs = False
-        except (PolyaxonK8SError, ApiException):
+        except (PolyaxonK8sError, ApiException):
             retries += 1
 
     if not logs:
@@ -120,7 +120,7 @@ def process_logs(
 
 
 def sync_logs(
-    k8s_manager: K8SManager,
+    k8s_manager: K8sManager,
     client: RunClient,
     last_check: Optional[datetime],
     pod_id: str,

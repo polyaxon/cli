@@ -62,7 +62,7 @@ class PolyaxonConfigException(PolyaxonException):
     pass
 
 
-class PolyaxonK8SError(PolyaxonException):
+class PolyaxonK8sError(PolyaxonException):
     pass
 
 

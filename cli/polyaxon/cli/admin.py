@@ -263,12 +263,12 @@ def dashboard(yes, url):
 def clean_ops(namespace, in_cluster, delete, uuids):
     """clean-ops command."""
     from polyaxon.k8s.custom_resources import operation
-    from polyaxon.k8s.manager.manager import K8SManager
+    from polyaxon.k8s.manager.manager import K8sManager
 
     if not namespace:
         raise Printer.error("The argument `--namespace` is required!", sys_exit=True)
 
-    manager = K8SManager(namespace=namespace, in_cluster=in_cluster)
+    manager = K8sManager(namespace=namespace, in_cluster=in_cluster)
 
     def _patch_op():
         retry = 0

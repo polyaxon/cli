@@ -30,7 +30,7 @@ from polyaxon.fs.fs import (
     get_async_fs_from_connection,
 )
 from polyaxon.fs.watcher import FSWatcher
-from polyaxon.k8s.manager.async_manager import AsyncK8SManager
+from polyaxon.k8s.manager.async_manager import AsyncK8sManager
 from polyaxon.logger import logger
 from polyaxon.settings import CLIENT_CONFIG
 from polyaxon.sidecar.container.intervals import get_sync_interval
@@ -62,7 +62,7 @@ async def start_sidecar(
         raise PolyaxonContainerException(e)
 
     client = RunClient(owner=owner, project=project, run_uuid=run_uuid)
-    k8s_manager = AsyncK8SManager(namespace=CLIENT_CONFIG.namespace, in_cluster=True)
+    k8s_manager = AsyncK8sManager(namespace=CLIENT_CONFIG.namespace, in_cluster=True)
     await k8s_manager.setup()
     pod = await k8s_manager.get_pod(pod_id, reraise=True)
     connection = get_artifacts_connection()
