@@ -18,14 +18,11 @@ from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.converter.converters.base import BaseConverter
+from polyaxon.converter.mixins import MPIJobMixin
 from polyaxon.k8s.custom_resources.kubeflow import get_mpi_job_custom_resource
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1MPIJob, V1Plugins
-from polyaxon.converter.converters.base import (
-    BaseConverter,
-    PlatformConverterMixin,
-)
-from polyaxon.converter.mixins import MPIJobMixin
 
 
 class MPIJobConverter(MPIJobMixin, BaseConverter):
@@ -84,7 +81,3 @@ class MPIJobConverter(MPIJobMixin, BaseConverter):
             labels=labels,
             annotations=self.annotations,
         )
-
-
-class PlatformMPIJobConverter(PlatformConverterMixin, MPIJobConverter):
-    pass

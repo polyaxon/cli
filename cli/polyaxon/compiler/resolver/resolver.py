@@ -16,8 +16,8 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from polyaxon.polyflow import V1IO, V1CloningKind, V1CompiledOperation, V1Operation
 from polyaxon.compiler.resolver.runtime import BaseResolver
+from polyaxon.polyflow import V1IO, V1CloningKind, V1CompiledOperation, V1Operation
 
 
 def resolve(

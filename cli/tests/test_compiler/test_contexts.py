@@ -18,11 +18,11 @@ import pytest
 
 from clipped.utils.tz import now
 
+from polyaxon.compiler.contexts import resolve_contexts
 from polyaxon.connections import V1ClaimConnection, V1Connection, V1ConnectionKind
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyflow import V1CloningKind, V1CompiledOperation, V1RunKind
-from polyaxon.compiler.contexts import resolve_contexts
 from polyaxon.utils.test_utils import BaseTestCase
 
 

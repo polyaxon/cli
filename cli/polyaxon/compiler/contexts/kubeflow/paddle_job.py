@@ -18,9 +18,9 @@ import copy
 
 from typing import Dict, Optional
 
+from polyaxon.compiler.contexts.base import BaseContextsManager
 from polyaxon.connections import V1Connection
 from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1PaddleJob
-from polyaxon.compiler.contexts.base import BaseContextsManager
 
 
 class PaddleJobContextsManager(BaseContextsManager):

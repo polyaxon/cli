@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.converter.converters.base import PlatformConverterMixin
 from polyaxon.converter.converters.job import JobConverter
 from polyaxon.converter.mixins import CleanerMixin, NotifierMixin, TunerMixin
 from polyaxon.utils.fqn_utils import get_cleaner_instance, get_cleaner_resource_name
@@ -24,15 +23,7 @@ class NotifierConverter(NotifierMixin, JobConverter):
     pass
 
 
-class PlatformNotifierConverter(PlatformConverterMixin, NotifierConverter):
-    pass
-
-
 class TunerConverter(TunerMixin, JobConverter):
-    pass
-
-
-class PlatformTunerConverter(PlatformConverterMixin, TunerConverter):
     pass
 
 
@@ -44,7 +35,3 @@ class CleanerConverter(CleanerMixin, JobConverter):
 
     def get_resource_name(self):
         return get_cleaner_resource_name(self.run_uuid)
-
-
-class PlatformCleanerConverter(PlatformConverterMixin, CleanerConverter):
-    pass

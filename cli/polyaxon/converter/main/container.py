@@ -19,17 +19,17 @@ from typing import Dict, Iterable, List, Optional
 from clipped.utils.lists import to_list
 
 from polyaxon.connections import V1Connection, V1K8sResource
-from polyaxon.exceptions import PolypodException
-from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.containers import patch_container
-from polyaxon.k8s.env_vars import get_env_from_k8s_resources
-from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.converter.main.env_vars import get_env_vars
 from polyaxon.converter.main.k8s_resources import (
     get_requested_config_maps,
     get_requested_secrets,
 )
 from polyaxon.converter.main.volumes import get_volume_mounts
+from polyaxon.exceptions import PolypodException
+from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.containers import patch_container
+from polyaxon.k8s.env_vars import get_env_from_k8s_resources
+from polyaxon.polyflow import V1Init, V1Plugins
 
 
 def get_main_container(

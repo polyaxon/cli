@@ -23,6 +23,7 @@ from polyaxon.connections import (
     V1ConnectionKind,
     V1K8sResource,
 )
+from polyaxon.converter.main.env_vars import get_env_vars
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARTIFACTS_STORE_NAME,
     EV_KEYS_COLLECT_ARTIFACTS,
@@ -39,7 +40,6 @@ from polyaxon.k8s.env_vars import (
     get_kv_env_vars,
 )
 from polyaxon.polyflow import V1Plugins
-from polyaxon.converter.main.env_vars import get_env_vars
 from polyaxon.utils.test_utils import BaseTestCase
 
 

@@ -16,9 +16,9 @@
 
 from typing import Dict
 
+from polyaxon.compiler.contexts.base import BaseContextsManager
 from polyaxon.connections import V1Connection
 from polyaxon.polyflow import V1CompiledOperation
-from polyaxon.compiler.contexts.base import BaseContextsManager
 
 
 class JobContextsManager(BaseContextsManager):

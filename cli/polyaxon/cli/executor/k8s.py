@@ -20,7 +20,7 @@ from typing import List
 
 from clipped.formatting import Printer
 
-from polyaxon import settings
+from polyaxon import converter, settings
 from polyaxon.agents.spawners.spawner import Spawner
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.operations import logs as run_logs
@@ -31,7 +31,6 @@ from polyaxon.exceptions import (
 )
 from polyaxon.polyaxonfile.specs import OperationSpecification
 from polyaxon.polyflow import V1Operation
-from polyaxon import converter
 from polyaxon.utils.fqn_utils import get_resource_name
 
 

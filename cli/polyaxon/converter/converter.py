@@ -20,9 +20,9 @@ from kubernetes import client as k8s_client
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.converter.converters import CONVERTERS
 from polyaxon.exceptions import PolyaxonCompilerError
-from polyaxon.polyflow import V1CompiledOperation, V1RunKind
-from polyaxon.converter.converters import CORE_CONVERTERS, BaseConverter
+from polyaxon.polyflow import V1CompiledOperation
 
 
 def convert(
@@ -40,7 +40,6 @@ def convert(
     polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer] = None,
     polyaxon_init: Optional[V1PolyaxonInitContainer] = None,
     default_sa: Optional[str] = None,
-    converters: Dict[V1RunKind, Type[BaseConverter]] = CORE_CONVERTERS,
     internal_auth: bool = False,
     default_auth: bool = False,
 ) -> Dict:
@@ -56,7 +55,7 @@ def convert(
         )
 
     run_kind = compiled_operation.get_run_kind()
-    if run_kind not in converters:
+    if run_kind not in CONVERTERS:
         raise PolyaxonCompilerError(
             "Converter Error. "
             "Specification with run kind: {} is not supported in this deployment version.".format(
@@ -64,7 +63,7 @@ def convert(
             )
         )
 
-    converter = converters[run_kind](
+    converter = CONVERTERS[run_kind](
         owner_name=owner_name,
         project_name=project_name,
         run_name=run_name,

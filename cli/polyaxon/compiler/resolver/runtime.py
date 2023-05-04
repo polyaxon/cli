@@ -17,15 +17,12 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from polyaxon import settings
+from polyaxon.compiler.contexts import resolve_contexts, resolve_globals_contexts
+from polyaxon.compiler.lineage import resolve_artifacts_lineage
+from polyaxon.compiler.resolver import AgentResolver
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.polyaxonfile import CompiledOperationSpecification
 from polyaxon.polyflow import V1CloningKind, V1CompiledOperation, V1Operation, V1RunKind
-from polyaxon.compiler.resolver import AgentResolver
-from polyaxon.compiler.contexts import (
-    resolve_contexts,
-    resolve_globals_contexts,
-)
-from polyaxon.compiler.lineage import resolve_artifacts_lineage
 
 
 class BaseResolver:

@@ -29,6 +29,17 @@ from polyaxon.api import VERSION_V1
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection, V1ConnectionKind, V1K8sResource
 from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
+from polyaxon.converter.init.artifacts import get_artifacts_path_container
+from polyaxon.converter.init.auth import get_auth_context_container
+from polyaxon.converter.init.custom import get_custom_init_container
+from polyaxon.converter.init.dockerfile import get_dockerfile_init_container
+from polyaxon.converter.init.file import get_file_init_container
+from polyaxon.converter.init.git import get_git_init_container
+from polyaxon.converter.init.store import get_store_container
+from polyaxon.converter.init.tensorboard import get_tensorboard_init_container
+from polyaxon.converter.main.container import get_main_container
+from polyaxon.converter.pod.volumes import get_pod_volumes
+from polyaxon.converter.sidecar.container import get_sidecar_container
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
@@ -43,17 +54,6 @@ from polyaxon.k8s.env_vars import (
 from polyaxon.k8s.mounts import get_mounts
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
-from polyaxon.converter.init.artifacts import get_artifacts_path_container
-from polyaxon.converter.init.auth import get_auth_context_container
-from polyaxon.converter.init.custom import get_custom_init_container
-from polyaxon.converter.init.dockerfile import get_dockerfile_init_container
-from polyaxon.converter.init.file import get_file_init_container
-from polyaxon.converter.init.git import get_git_init_container
-from polyaxon.converter.init.store import get_store_container
-from polyaxon.converter.init.tensorboard import get_tensorboard_init_container
-from polyaxon.converter.main.container import get_main_container
-from polyaxon.converter.pod.volumes import get_pod_volumes
-from polyaxon.converter.sidecar.container import get_sidecar_container
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
@@ -62,23 +62,6 @@ from polyaxon.utils.host_utils import get_api_host
 
 
 class ConverterAbstract:
-    def get_main_env_vars(
-        self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
-    ) -> Optional[List[k8s_schemas.V1EnvVar]]:
-        raise NotImplementedError
-
-    def get_polyaxon_sidecar_service_env_vars(
-        self,
-        external_host: bool = False,
-        log_level: Optional[str] = None,
-    ) -> Optional[List[k8s_schemas.V1EnvVar]]:
-        raise NotImplementedError
-
-    def get_auth_service_env_vars(
-        self, external_host: bool = False
-    ) -> Optional[List[k8s_schemas.V1EnvVar]]:
-        raise NotImplementedError
-
     def get_init_service_env_vars(
         self,
         external_host: bool = False,
@@ -87,7 +70,7 @@ class ConverterAbstract:
         raise NotImplementedError
 
 
-class BaseConverter(ConverterAbstract):
+class BaseConverter:
     SPEC_KIND = None
     GROUP = None
     API_VERSION = None
@@ -108,6 +91,7 @@ class BaseConverter(ConverterAbstract):
         internal_auth: bool = False,
         polyaxon_sidecar: V1PolyaxonSidecarContainer = None,
         polyaxon_init: V1PolyaxonInitContainer = None,
+        base_env_vars: bool = False,
     ):
         self.is_valid()
         self.owner_name = owner_name
@@ -121,6 +105,7 @@ class BaseConverter(ConverterAbstract):
         self.internal_auth = internal_auth
         self.polyaxon_sidecar = polyaxon_sidecar
         self.polyaxon_init = polyaxon_init
+        self.base_env_vars = base_env_vars
 
     def get_instance(self):
         return get_run_instance(
@@ -212,11 +197,51 @@ class BaseConverter(ConverterAbstract):
     def get_by_name(values: List[Any]):
         return {c.name: c for c in values}
 
+    def get_api_host(self, external_host: bool = False):
+        if external_host:
+            return get_api_host(default=settings.CLIENT_CONFIG.host)
+        else:
+            return clean_host(settings.CLIENT_CONFIG.host)
+
+    def get_service_env_vars(
+        self,
+        service_header: str,
+        header: Optional[str] = None,
+        include_secret_key: bool = False,
+        include_internal_token: bool = False,
+        include_agent_token: bool = False,
+        authentication_type: Optional[str] = None,
+        external_host: bool = False,
+        log_level: Optional[str] = None,
+    ) -> List[k8s_schemas.V1EnvVar]:
+        header = header or PolyaxonServiceHeaders.SERVICE
+        return get_service_env_vars(
+            header=header,
+            service_header=service_header,
+            authentication_type=authentication_type,
+            include_secret_key=include_secret_key,
+            include_internal_token=include_internal_token,
+            include_agent_token=include_agent_token,
+            polyaxon_default_secret_ref=settings.AGENT_CONFIG.app_secret_name,
+            polyaxon_agent_secret_ref=settings.AGENT_CONFIG.agent_secret_name,
+            api_host=self.get_api_host(external_host),
+            log_level=log_level,
+            api_version=VERSION_V1,
+            run_instance=self.run_instance,
+            use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
+        )
+
     def get_main_env_vars(
         self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
-        return get_base_env_vars(
-            settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops, log_level=log_level
+        if self.base_env_vars:
+            return get_base_env_vars(
+                settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops, log_level=log_level
+            )
+        return self.get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=external_host,
+            log_level=log_level,
         )
 
     def get_polyaxon_sidecar_service_env_vars(
@@ -224,6 +249,14 @@ class BaseConverter(ConverterAbstract):
         external_host: bool = False,
         log_level: Optional[str] = None,
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
+        if not self.base_env_vars:
+            return self.get_service_env_vars(
+                service_header=PolyaxonServices.SIDECAR,
+                authentication_type=AuthenticationTypes.TOKEN,
+                header=PolyaxonServiceHeaders.SERVICE,
+                external_host=external_host,
+                log_level=log_level,
+            )
         env = []
         if settings.CLIENT_CONFIG.no_api:
             env += [get_env_var(name=EV_KEYS_NO_API, value=True)]
@@ -237,15 +270,43 @@ class BaseConverter(ConverterAbstract):
         return env
 
     def get_auth_service_env_vars(
-        self, external_host: bool = False
+        self,
+        external_host: bool = False,
+        log_level: Optional[str] = None,
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
-        return None
+        if self.base_env_vars:
+            return None
+        return self.get_service_env_vars(
+            service_header=PolyaxonServices.INITIALIZER,
+            include_internal_token=self.internal_auth,
+            include_agent_token=not self.internal_auth,
+            authentication_type=(
+                AuthenticationTypes.INTERNAL_TOKEN
+                if self.internal_auth
+                else AuthenticationTypes.TOKEN
+            ),
+            header=(
+                PolyaxonServiceHeaders.INTERNAL
+                if self.internal_auth
+                else PolyaxonServiceHeaders.SERVICE
+            ),
+            external_host=external_host,
+            log_level=log_level,
+        )
 
     def get_init_service_env_vars(
         self,
         external_host: bool = False,
         log_level: Optional[str] = None,
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
+        if not self.base_env_vars:
+            return self.get_service_env_vars(
+                service_header=PolyaxonServices.INITIALIZER,
+                authentication_type=AuthenticationTypes.TOKEN,
+                header=PolyaxonServiceHeaders.SERVICE,
+                external_host=external_host,
+                log_level=log_level,
+            )
         env = []
         if settings.CLIENT_CONFIG.no_api:
             env.append(get_env_var(name=EV_KEYS_NO_API, value=True))
@@ -661,95 +722,3 @@ class BaseConverter(ConverterAbstract):
 
     def get_resource(self, **kwargs) -> Dict:
         raise NotImplementedError
-
-
-class PlatformConverterMixin(ConverterAbstract):
-    def get_api_host(self, external_host: bool = False):
-        if external_host:
-            return get_api_host(default=settings.CLIENT_CONFIG.host)
-        else:
-            return clean_host(settings.CLIENT_CONFIG.host)
-
-    def get_service_env_vars(
-        self,
-        service_header: str,
-        header: Optional[str] = None,
-        include_secret_key: bool = False,
-        include_internal_token: bool = False,
-        include_agent_token: bool = False,
-        authentication_type: Optional[str] = None,
-        external_host: bool = False,
-        log_level: Optional[str] = None,
-    ) -> List[k8s_schemas.V1EnvVar]:
-        header = header or PolyaxonServiceHeaders.SERVICE
-        return get_service_env_vars(
-            header=header,
-            service_header=service_header,
-            authentication_type=authentication_type,
-            include_secret_key=include_secret_key,
-            include_internal_token=include_internal_token,
-            include_agent_token=include_agent_token,
-            polyaxon_default_secret_ref=settings.AGENT_CONFIG.app_secret_name,
-            polyaxon_agent_secret_ref=settings.AGENT_CONFIG.agent_secret_name,
-            api_host=self.get_api_host(external_host),
-            log_level=log_level,
-            api_version=VERSION_V1,
-            run_instance=self.run_instance,
-            use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
-        )
-
-    def get_main_env_vars(
-        self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
-    ):
-        return self.get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER,
-            external_host=external_host,
-            log_level=log_level,
-        )
-
-    def get_auth_service_env_vars(
-        self,
-        external_host: bool = False,
-        log_level: Optional[str] = None,
-    ) -> List[k8s_schemas.V1EnvVar]:
-        return self.get_service_env_vars(
-            service_header=PolyaxonServices.INITIALIZER,
-            include_internal_token=self.internal_auth,
-            include_agent_token=not self.internal_auth,
-            authentication_type=(
-                AuthenticationTypes.INTERNAL_TOKEN
-                if self.internal_auth
-                else AuthenticationTypes.TOKEN
-            ),
-            header=(
-                PolyaxonServiceHeaders.INTERNAL
-                if self.internal_auth
-                else PolyaxonServiceHeaders.SERVICE
-            ),
-            external_host=external_host,
-            log_level=log_level,
-        )
-
-    def get_polyaxon_sidecar_service_env_vars(
-        self, external_host: bool = False, log_level: Optional[str] = None
-    ) -> List[k8s_schemas.V1EnvVar]:
-        return self.get_service_env_vars(
-            service_header=PolyaxonServices.SIDECAR,
-            authentication_type=AuthenticationTypes.TOKEN,
-            header=PolyaxonServiceHeaders.SERVICE,
-            external_host=external_host,
-            log_level=log_level,
-        )
-
-    def get_init_service_env_vars(
-        self,
-        external_host: bool = False,
-        log_level: Optional[str] = None,
-    ) -> List[k8s_schemas.V1EnvVar]:
-        return self.get_service_env_vars(
-            service_header=PolyaxonServices.INITIALIZER,
-            authentication_type=AuthenticationTypes.TOKEN,
-            header=PolyaxonServiceHeaders.SERVICE,
-            external_host=external_host,
-            log_level=log_level,
-        )

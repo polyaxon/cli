@@ -15,10 +15,9 @@
 # limitations under the License.
 from typing import Dict, Optional
 
-from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
-from polyaxon.converter import converter, make
-from polyaxon.converter.converters import PLATFORM_CONVERTERS
 from polyaxon.compiler.resolver import AgentResolver
+from polyaxon import converter
+from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.schemas.cli.agent_config import AgentConfig
 
 
@@ -53,7 +52,6 @@ def convert(
         secrets=agent_env.secrets,
         config_maps=agent_env.config_maps,
         default_sa=agent_env.default_sa,
-        converters=PLATFORM_CONVERTERS,
         default_auth=default_auth,
     )
 
@@ -68,7 +66,7 @@ def make_and_convert(
 ):
     operation = OperationSpecification.read(content)
     compiled_operation = OperationSpecification.compile_operation(operation)
-    return make(
+    return converter.make(
         owner_name=owner_name,
         project_name=project_name,
         project_uuid=project_name,
@@ -77,6 +75,5 @@ def make_and_convert(
         run_path=run_uuid,
         compiled_operation=compiled_operation,
         params=operation.params,
-        converters=PLATFORM_CONVERTERS,
         default_auth=default_auth,
     )

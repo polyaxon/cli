@@ -17,17 +17,17 @@ import os
 
 from polyaxon import settings
 from polyaxon.api import VERSION_V1
+from polyaxon.converter.converters.base import BaseConverter
 from polyaxon.env_vars.keys import EV_KEYS_PLATFORM_HOST
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s.env_vars import get_service_env_vars
-from polyaxon.converter.converters.base import BaseConverter, PlatformConverterMixin
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-class DummyConverter(PlatformConverterMixin, BaseConverter):
+class DummyConverter(BaseConverter):
     SPEC_KIND = "dummy"
     API_VERSION = "v1alpha1"
     PLURAL = "dummies"

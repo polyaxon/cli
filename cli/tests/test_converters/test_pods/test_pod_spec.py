@@ -16,10 +16,10 @@
 
 import pytest
 
+from polyaxon.converter.pod.spec import get_pod_spec
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow.environment import V1Environment
-from polyaxon.converter.pod.spec import get_pod_spec
 from polyaxon.utils.test_utils import BaseTestCase
 
 

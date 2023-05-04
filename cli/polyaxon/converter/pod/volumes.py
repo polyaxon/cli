@@ -19,6 +19,10 @@ from typing import Dict, Iterable, List, Optional
 from clipped.utils.lists import to_list
 
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.converter.main.k8s_resources import (
+    get_requested_config_maps,
+    get_requested_secrets,
+)
 from polyaxon.k8s import constants, k8s_schemas
 from polyaxon.k8s.volumes import (
     get_artifacts_context_volume,
@@ -32,10 +36,6 @@ from polyaxon.k8s.volumes import (
     get_volume_name,
 )
 from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.converter.main.k8s_resources import (
-    get_requested_config_maps,
-    get_requested_secrets,
-)
 
 
 def get_pod_volumes(

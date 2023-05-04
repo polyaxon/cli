@@ -13,11 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, Dict, Optional, Type
+from typing import TYPE_CHECKING, Dict, Optional
 
 from polyaxon.compiler import resolver
-from polyaxon.converter import converter
-from polyaxon.polyflow import V1CompiledOperation, V1RunKind
+from polyaxon.converter.converter import convert
+from polyaxon.polyflow import V1CompiledOperation
 
 if TYPE_CHECKING:
     from polyaxon.converter.converters import BaseConverter
@@ -35,7 +35,6 @@ def make(
     default_sa: Optional[str] = None,
     internal_auth: bool = False,
     default_auth: bool = False,
-    converters: Dict[V1RunKind, Type["BaseConverter"]] = converter.CORE_CONVERTERS,
 ):
     resolver_obj, compiled_operation = resolver.resolve(
         compiled_operation=compiled_operation,
@@ -47,7 +46,7 @@ def make(
         run_uuid=run_uuid,
         params=params,
     )
-    return converter.convert(
+    return convert(
         namespace=resolver_obj.namespace,
         owner_name=resolver_obj.owner_name,
         project_name=resolver_obj.project_name,
@@ -63,6 +62,5 @@ def make(
         polyaxon_sidecar=resolver_obj.polyaxon_sidecar,
         polyaxon_init=resolver_obj.polyaxon_init,
         default_sa=default_sa,
-        converters=converters,
         default_auth=default_auth,
     )

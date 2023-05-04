@@ -25,6 +25,7 @@ from polyaxon.connections import (
     V1K8sResource,
 )
 from polyaxon.containers.pull_policy import PullPolicy
+from polyaxon.converter.main.container import get_main_container
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.mounts import (
@@ -33,7 +34,6 @@ from polyaxon.k8s.mounts import (
     get_mounts,
 )
 from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.converter.main.container import get_main_container
 from polyaxon.utils.test_utils import BaseTestCase
 
 

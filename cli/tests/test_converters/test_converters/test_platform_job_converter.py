@@ -24,7 +24,7 @@ from polyaxon.connections import (
     V1ConnectionKind,
     V1K8sResource,
 )
-from polyaxon.converter.converters.job import PlatformJobConverter
+from polyaxon.converter.converters.job import JobConverter
 from polyaxon.converter.init.artifacts import get_artifacts_path_container
 from polyaxon.converter.init.auth import get_auth_context_container
 from polyaxon.converter.init.dockerfile import get_dockerfile_init_container
@@ -49,7 +49,7 @@ from polyaxon.utils.test_utils import BaseTestCase
 from traceml.artifacts import V1ArtifactKind
 
 
-class DummyConverter(PlatformJobConverter):
+class DummyConverter(JobConverter):
     SPEC_KIND = "dumy"
     K8S_ANNOTATIONS_KIND = "dummy-name"
     MAIN_CONTAINER_ID = "dummy"

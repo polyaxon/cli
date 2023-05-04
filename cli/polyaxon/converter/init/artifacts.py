@@ -26,10 +26,10 @@ from polyaxon.containers.names import (
     generate_container_name,
 )
 from polyaxon.contexts import paths as ctx_paths
+from polyaxon.converter.init.store import get_base_store_container, get_volume_args
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.mounts import get_artifacts_context_mount
-from polyaxon.converter.init.store import get_base_store_container, get_volume_args
 from polyaxon.schemas.types import V1ArtifactsType
 
 

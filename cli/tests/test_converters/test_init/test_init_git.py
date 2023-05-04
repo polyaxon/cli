@@ -21,6 +21,7 @@ from polyaxon.connections import V1Connection, V1ConnectionKind, V1GitConnection
 from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
+from polyaxon.converter.init.git import get_git_init_container, get_repo_context_args
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import constants
 from polyaxon.k8s.env_vars import (
@@ -30,7 +31,6 @@ from polyaxon.k8s.env_vars import (
 from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_mount
 from polyaxon.k8s.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
-from polyaxon.converter.init.git import get_git_init_container, get_repo_context_args
 from polyaxon.utils.test_utils import BaseTestCase
 
 

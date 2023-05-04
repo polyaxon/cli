@@ -16,9 +16,9 @@
 
 from typing import Dict, List
 
+from polyaxon.compiler.lineage.io_collector import collect_io_artifacts
 from polyaxon.connections import V1Connection
 from polyaxon.polyflow import ParamSpec, V1CompiledOperation
-from polyaxon.compiler.lineage.io_collector import collect_io_artifacts
 from traceml.artifacts import V1RunArtifact
 
 

@@ -17,13 +17,10 @@
 from typing import Dict, Iterable, Optional
 
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.converter.converters.base import BaseConverter
+from polyaxon.converter.mixins import JobMixin
 from polyaxon.k8s.custom_resources.job import get_job_custom_resource
 from polyaxon.polyflow import V1CompiledOperation, V1Job, V1Plugins
-from polyaxon.converter.converters.base import (
-    BaseConverter,
-    PlatformConverterMixin,
-)
-from polyaxon.converter.mixins import JobMixin
 
 
 class JobConverter(JobMixin, BaseConverter):
@@ -72,7 +69,3 @@ class JobConverter(JobMixin, BaseConverter):
             labels=replica_spec.labels,
             annotations=replica_spec.annotations,
         )
-
-
-class PlatformJobConverter(PlatformConverterMixin, JobConverter):
-    pass

@@ -16,8 +16,8 @@
 
 import pytest
 
-from polyaxon.exceptions import PolypodException
 from polyaxon.converter.converters.base import BaseConverter
+from polyaxon.exceptions import PolypodException
 from polyaxon.utils.test_utils import BaseTestCase
 
 

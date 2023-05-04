@@ -20,12 +20,12 @@ from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_DOCKERFILE_CONTAINER_PREFIX
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
+from polyaxon.converter.init.dockerfile import get_dockerfile_init_container
 from polyaxon.k8s import constants
 from polyaxon.k8s.env_vars import get_run_instance_env_var
 from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_mount
 from polyaxon.k8s.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
-from polyaxon.converter.init.dockerfile import get_dockerfile_init_container
 from polyaxon.schemas.types.dockerfile import V1DockerfileType
 from polyaxon.utils.test_utils import BaseTestCase
 

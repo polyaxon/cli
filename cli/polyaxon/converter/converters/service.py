@@ -17,13 +17,10 @@
 from typing import Dict, Iterable, Optional
 
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.converter.converters.base import BaseConverter
+from polyaxon.converter.mixins import ServiceMixin
 from polyaxon.k8s.custom_resources.service import get_service_custom_resource
 from polyaxon.polyflow import V1CompiledOperation, V1Plugins, V1Service
-from polyaxon.converter.converters.base import (
-    BaseConverter,
-    PlatformConverterMixin,
-)
-from polyaxon.converter.mixins import ServiceMixin
 
 
 class ServiceConverter(ServiceMixin, BaseConverter):
@@ -76,7 +73,3 @@ class ServiceConverter(ServiceMixin, BaseConverter):
             is_external=service.is_external,
             replicas=service.replicas,
         )
-
-
-class PlatformServiceConverter(PlatformConverterMixin, ServiceConverter):
-    pass

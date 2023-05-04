@@ -20,6 +20,7 @@ from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection
+from polyaxon.converter.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.containers import patch_container
@@ -37,7 +38,6 @@ from polyaxon.k8s.mounts import (
     get_mounts,
 )
 from polyaxon.polyflow import V1Plugins
-from polyaxon.converter.sidecar.env_vars import get_sidecar_env_vars
 
 SIDECAR_CONTAINER = "polyaxon-sidecar"
 

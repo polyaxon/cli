@@ -22,6 +22,7 @@ from polyaxon.auxiliaries import (
     get_default_init_container,
     get_default_sidecar_container,
 )
+from polyaxon.compiler.resolver import BaseResolver
 from polyaxon.connections import (
     V1BucketConnection,
     V1Connection,
@@ -32,7 +33,6 @@ from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.managers.agent import AgentConfigManager
 from polyaxon.polyaxonfile.specs import kinds
 from polyaxon.polyflow import V1CompiledOperation, V1RunKind
-from polyaxon.compiler.resolver import BaseResolver
 from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.utils.test_utils import BaseTestCase
 

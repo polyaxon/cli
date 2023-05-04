@@ -27,6 +27,12 @@ from polyaxon.connections import (
 )
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
+from polyaxon.converter.sidecar.container import (
+    SIDECAR_CONTAINER,
+    get_sidecar_args,
+    get_sidecar_container,
+)
+from polyaxon.converter.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s.env_vars import (
     get_connection_env_var,
@@ -42,12 +48,6 @@ from polyaxon.k8s.mounts import (
     get_mount_from_store,
 )
 from polyaxon.polyflow import V1Plugins
-from polyaxon.converter.sidecar.container import (
-    SIDECAR_CONTAINER,
-    get_sidecar_args,
-    get_sidecar_container,
-)
-from polyaxon.converter.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.utils.test_utils import BaseTestCase
 
 

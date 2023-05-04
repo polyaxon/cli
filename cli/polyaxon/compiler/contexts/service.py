@@ -22,9 +22,9 @@ from polyaxon.api import (
     REWRITE_SERVICES_V1_LOCATION,
     SERVICES_V1_LOCATION,
 )
+from polyaxon.compiler.contexts.base import BaseContextsManager
 from polyaxon.connections import V1Connection
 from polyaxon.polyflow import V1CompiledOperation
-from polyaxon.compiler.contexts.base import BaseContextsManager
 from polyaxon.utils.urls_utils import get_proxy_run_url
 
 

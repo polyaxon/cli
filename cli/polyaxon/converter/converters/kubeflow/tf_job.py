@@ -18,12 +18,11 @@ from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
 from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.converter.converters import BaseConverter
+from polyaxon.converter.mixins import TFJobMixin
 from polyaxon.k8s.custom_resources.kubeflow import get_tf_job_custom_resource
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1CompiledOperation, V1KFReplica, V1Plugins, V1TFJob
-from polyaxon.converter.converters import BaseConverter
-from polyaxon.converter.converters.base import PlatformConverterMixin
-from polyaxon.converter.mixins import TFJobMixin
 
 
 class TfJobConverter(TFJobMixin, BaseConverter):
@@ -86,7 +85,3 @@ class TfJobConverter(TFJobMixin, BaseConverter):
             labels=labels,
             annotations=self.annotations,
         )
-
-
-class PlatformTfJobConverter(PlatformConverterMixin, TfJobConverter):
-    pass

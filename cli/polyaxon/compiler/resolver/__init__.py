@@ -14,5 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from polyaxon.compiler.resolver.agent import AgentResolver
-from polyaxon.compiler.resolver.runtime import BaseResolver
 from polyaxon.compiler.resolver.resolver import resolve, resolve_hooks
+from polyaxon.compiler.resolver.runtime import BaseResolver

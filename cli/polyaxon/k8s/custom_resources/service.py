@@ -16,6 +16,7 @@
 
 from typing import Dict, List, Optional
 
+from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.custom_resources.operation import get_operation_custom_object
 from polyaxon.k8s.custom_resources.setter import (
@@ -25,7 +26,6 @@ from polyaxon.k8s.custom_resources.setter import (
     set_termination,
 )
 from polyaxon.polyflow import V1Environment, V1Notification, V1Termination
-from polyaxon.converter.pod.spec import get_pod_spec, get_pod_template_spec
 
 
 def get_service_custom_resource(

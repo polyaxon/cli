@@ -14,17 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.polyflow import V1RunKind
 from polyaxon.converter.converters.base import BaseConverter, ConverterAbstract
 from polyaxon.converter.converters.helpers import (
     CleanerConverter,
     NotifierConverter,
-    PlatformCleanerConverter,
-    PlatformNotifierConverter,
-    PlatformTunerConverter,
     TunerConverter,
 )
-from polyaxon.converter.converters.job import JobConverter, PlatformJobConverter
+from polyaxon.converter.converters.job import JobConverter
 from polyaxon.converter.converters.kubeflow import (
     MPIJobConverter,
     MXJobConverter,
@@ -33,26 +29,10 @@ from polyaxon.converter.converters.kubeflow import (
     TfJobConverter,
     XGBoostJobConverter,
 )
-from polyaxon.converter.converters.kubeflow.mpi_job import (
-    PlatformMPIJobConverter,
-)
-from polyaxon.converter.converters.kubeflow.mx_job import PlatformMXJobConverter
-from polyaxon.converter.converters.kubeflow.paddle_job import (
-    PlatformPaddleJobConverter,
-)
-from polyaxon.converter.converters.kubeflow.pytroch_job import (
-    PlatformPytorchJobConverter,
-)
-from polyaxon.converter.converters.kubeflow.tf_job import PlatformTfJobConverter
-from polyaxon.converter.converters.kubeflow.xgboost_job import (
-    PlatformXGBoostJobConverter,
-)
-from polyaxon.converter.converters.service import (
-    PlatformServiceConverter,
-    ServiceConverter,
-)
+from polyaxon.converter.converters.service import ServiceConverter
+from polyaxon.polyflow import V1RunKind
 
-CORE_CONVERTERS = {
+CONVERTERS = {
     V1RunKind.CLEANER: CleanerConverter,
     V1RunKind.NOTIFIER: NotifierConverter,
     V1RunKind.TUNER: TunerConverter,
@@ -60,21 +40,8 @@ CORE_CONVERTERS = {
     V1RunKind.SERVICE: ServiceConverter,
     V1RunKind.MPIJOB: MPIJobConverter,
     V1RunKind.TFJOB: TfJobConverter,
-    V1RunKind.XGBJOB: XGBoostJobConverter,
-    V1RunKind.MXJOB: MXJobConverter,
+    V1RunKind.PADDLEJOB: PaddleJobConverter,
     V1RunKind.PYTORCHJOB: PytorchJobConverter,
-}
-
-PLATFORM_CONVERTERS = {
-    V1RunKind.CLEANER: PlatformCleanerConverter,
-    V1RunKind.NOTIFIER: PlatformNotifierConverter,
-    V1RunKind.TUNER: PlatformTunerConverter,
-    V1RunKind.JOB: PlatformJobConverter,
-    V1RunKind.SERVICE: PlatformServiceConverter,
-    V1RunKind.MPIJOB: PlatformMPIJobConverter,
-    V1RunKind.TFJOB: PlatformTfJobConverter,
-    V1RunKind.PADDLEJOB: PlatformPaddleJobConverter,
-    V1RunKind.PYTORCHJOB: PlatformPytorchJobConverter,
-    V1RunKind.MXJOB: PlatformMXJobConverter,
-    V1RunKind.XGBJOB: PlatformXGBoostJobConverter,
+    V1RunKind.MXJOB: MXJobConverter,
+    V1RunKind.XGBJOB: XGBoostJobConverter,
 }
