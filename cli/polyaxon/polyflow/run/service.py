@@ -228,11 +228,11 @@ class V1Service(BaseRun, DestinationImageMixin):
     ```yaml
     >>> run:
     >>>   kind: service
+    >>>   init:
+    >>>     - connection: my-code-repo
     >>>   container:
     >>>     name: tensorflow:2.1
-    >>>     init:
-    >>>       - connection: my-tf-code-repo
-    >>>     command: ["python", "/plx-context/artifacts/my-tf-code-repo/model.py"]
+    >>>     command: ["python", "/plx-context/artifacts/my-code-repo/service.py"]
     ```
 
     ### ports

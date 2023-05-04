@@ -207,11 +207,11 @@ class V1KFReplica(BaseSchemaModel):
 
     ```yaml
     >>> worker:
+    >>>   init:
+    >>>     - connection: my-code-repo
     >>>   container:
     >>>     name: tensorflow:2.1
-    >>>     init:
-    >>>       - connection: my-tf-code-repo
-    >>>     command: ["python", "/plx-context/artifacts/my-tf-code-repo/model.py"]
+    >>>     command: ["python", "/plx-context/artifacts/my-code-repo/model.py"]
     ```
     """
 
