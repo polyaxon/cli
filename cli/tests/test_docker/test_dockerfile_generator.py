@@ -18,7 +18,7 @@ import os
 import pytest
 import tempfile
 
-from polyaxon.builds.generator.generator import DockerFileGenerator
+from polyaxon.docker.builds.generator import DockerFileGenerator
 from polyaxon.schemas.types.dockerfile import (
     POLYAXON_DOCKER_WORKDIR,
     POLYAXON_DOCKERFILE_NAME,
@@ -27,7 +27,7 @@ from polyaxon.schemas.types.dockerfile import (
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.api_builds
+@pytest.mark.docker_mark
 class TestDockerfileGenerator(BaseTestCase):
     @staticmethod
     def touch(path):
@@ -204,7 +204,7 @@ class TestDockerfileGenerator(BaseTestCase):
         builder.clean()
 
 
-@pytest.mark.api_builds
+@pytest.mark.docker_mark
 class TestGenerate(BaseTestCase):
     def test_generate(self):
         # Create a repo folder

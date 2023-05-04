@@ -25,7 +25,7 @@ from tests.test_cli.utils import BaseCommandTestCase
 
 @pytest.mark.cli_mark
 class TestCliDocker(BaseCommandTestCase):
-    @patch("polyaxon.builds.generator.generator.DockerFileGenerator.create")
+    @patch("polyaxon.docker.builds.generator.DockerFileGenerator.create")
     def test_docker_build_context(self, generate_create):
         build_context = V1DockerfileType(image="foo")
         self.runner.invoke(

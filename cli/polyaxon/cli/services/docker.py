@@ -22,10 +22,10 @@ from clipped.types.docker_image import validate_image
 from clipped.utils.paths import copy_file
 from pydantic import ValidationError
 
-from polyaxon.builds.generator import DockerFileGenerator
 from polyaxon.cli.check import check_polyaxonfile
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.config.spec import ConfigSpec
+from polyaxon.docker.builds.generator import DockerFileGenerator
 from polyaxon.exceptions import PolyaxonBuildException, PolyaxonSchemaError
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.schemas.types import V1DockerfileType
@@ -175,7 +175,7 @@ def generate(
 )
 def build(context, destination, nocache, max_retries, sleep_interval, reraise):
     """Build a dockerfile, this command required Docker to be installed."""
-    from polyaxon.builds.builder import build
+    from polyaxon.docker.builder import build
 
     try:
         validate_image(destination)
@@ -223,7 +223,7 @@ def build(context, destination, nocache, max_retries, sleep_interval, reraise):
 )
 def push(destination, max_retries, sleep_interval, reraise):
     """Push an image, this command required Docker to be installed."""
-    from polyaxon.builds.builder import push
+    from polyaxon.docker.builder import push
 
     try:
         push(
@@ -282,7 +282,7 @@ def build_and_push(context, destination, nocache, max_retries, sleep_interval, r
     this command required Docker to be installed.
     """
 
-    from polyaxon.builds.builder import build_and_push
+    from polyaxon.docker.builder import build_and_push
 
     try:
         build_and_push(

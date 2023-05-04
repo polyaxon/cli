@@ -19,13 +19,13 @@ import pytest
 
 from urllib3.exceptions import ReadTimeoutError
 
-from polyaxon.builds.builder import DockerBuilder, DockerPusher, build, build_and_push
+from polyaxon.docker.builder import DockerBuilder, DockerPusher, build, build_and_push
 from polyaxon.exceptions import PolyaxonBuildException
 from polyaxon.schemas.types import V1UriType
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-@pytest.mark.api_builds
+@pytest.mark.docker_mark
 class TestDockerBuilder(BaseTestCase):
     @staticmethod
     def touch(path):
@@ -84,7 +84,7 @@ class TestDockerBuilder(BaseTestCase):
         assert push_mock.call_count == 1
 
 
-@pytest.mark.api_builds
+@pytest.mark.docker_mark
 class TestBuilder(BaseTestCase):
     @mock.patch("docker.APIClient.build")
     @mock.patch("docker.APIClient.login")
