@@ -26,8 +26,13 @@ from urllib3.exceptions import HTTPError
 from polyaxon import pkg, settings
 from polyaxon.agents.base import BaseAgent
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
+from polyaxon.compiler.resolver import AgentResolver
 from polyaxon.connections import V1Connection
+from polyaxon.k8s import converter
+from polyaxon.k8s.executor.executor import Executor
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
+from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
+from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
 from polyaxon.sdk.exceptions import ApiException
@@ -39,6 +44,7 @@ class Agent(BaseAgent):
 
         self.owner = owner
         self.agent_uuid = agent_uuid
+        self.executor = Executor()
         self._register()
 
     def _register(self):
@@ -60,6 +66,64 @@ class Agent(BaseAgent):
         if not self._graceful_shutdown:
             self.log_agent_warning()
         time.sleep(1)
+
+    def _make_and_convert(
+        self,
+        owner_name: str,
+        project_name: str,
+        run_uuid: str,
+        run_name: str,
+        content: str,
+        default_auth: bool = False,
+    ):
+        operation = OperationSpecification.read(content)
+        compiled_operation = OperationSpecification.compile_operation(operation)
+        return converter.make(
+            owner_name=owner_name,
+            project_name=project_name,
+            project_uuid=project_name,
+            run_uuid=run_uuid,
+            run_name=run_name,
+            run_path=run_uuid,
+            compiled_operation=compiled_operation,
+            params=operation.params,
+            default_auth=default_auth,
+        )
+
+    def _convert(
+        self,
+        owner_name: str,
+        project_name: str,
+        run_name: str,
+        run_uuid: str,
+        content: str,
+        default_auth: bool,
+        agent_content: Optional[str] = None,
+    ):
+        agent_env = AgentResolver.construct()
+        compiled_operation = CompiledOperationSpecification.read(content)
+
+        agent_env.resolve(
+            compiled_operation=compiled_operation,
+            agent_config=AgentConfig.read(agent_content) if agent_content else None,
+        )
+        return converter.convert(
+            compiled_operation=compiled_operation,
+            owner_name=owner_name,
+            project_name=project_name,
+            run_name=run_name,
+            run_uuid=run_uuid,
+            namespace=agent_env.namespace,
+            polyaxon_init=agent_env.polyaxon_init,
+            polyaxon_sidecar=agent_env.polyaxon_sidecar,
+            run_path=run_uuid,
+            artifacts_store=agent_env.artifacts_store,
+            connection_by_names=agent_env.connection_by_names,
+            secrets=agent_env.secrets,
+            config_maps=agent_env.config_maps,
+            default_sa=agent_env.default_sa,
+            default_auth=default_auth,
+        )
 
     def get_info(self) -> V1Agent:
         return self.client.agents_v1.get_agent(owner=self.owner, uuid=self.agent_uuid)

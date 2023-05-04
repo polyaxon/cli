@@ -29,6 +29,12 @@ def agent():
 
 @agent.command()
 @click.option(
+    "--kind",
+    type=str,
+    default="k8s",
+    help="The agent executor backend to use.",
+)
+@click.option(
     "--sleep-interval",
     type=int,
     help="Sleep interval between fetches (Applied only to base agent).",
@@ -39,11 +45,18 @@ def agent():
     default=3,
     help="Number of times to retry the process.",
 )
-def start(max_retries, sleep_interval):
+def start(kind, max_retries, sleep_interval):
     from polyaxon import settings
-    from polyaxon.agents.agent import Agent
     from polyaxon.agents.base import BaseAgent
+    from polyaxon.agents.kinds import V1AgentKind
     from polyaxon.env_vars.getters import get_agent_info
+
+    kind = kind or V1AgentKind.K8S
+
+    if kind == V1AgentKind.K8S:
+        from polyaxon.k8s.agent import Agent
+    else:
+        logger.error("Received an unsupported agent kind: `{}`".format(kind))
 
     settings.CLIENT_CONFIG.set_agent_header()
     owner, agent_uuid = None, None

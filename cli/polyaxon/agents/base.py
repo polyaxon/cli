@@ -24,8 +24,6 @@ from clipped.utils.workers import exit_context, get_pool_workers, get_wait
 from kubernetes.client.rest import ApiException
 
 from polyaxon import live_state, settings
-from polyaxon.agents import converter
-from polyaxon.k8s.executor.executor import Executor
 from polyaxon.client import PolyaxonClient
 from polyaxon.env_vars.getters import get_run_info
 from polyaxon.exceptions import PolypodException
@@ -43,7 +41,7 @@ class BaseAgent:
 
     def __init__(self, sleep_interval=None):
         self.sleep_interval = sleep_interval
-        self.executor = Executor()
+        self.executor = None
         self._executor_refreshed_at = now()
         self.client = PolyaxonClient()
         self._graceful_shutdown = False
@@ -261,6 +259,17 @@ class BaseAgent:
                 )
             )
 
+    def _make_and_convert(
+        self,
+        owner_name: str,
+        project_name: str,
+        run_uuid: str,
+        run_name: str,
+        content: str,
+        default_auth: bool = False,
+    ):
+        return None
+
     def make_run_resource(
         self,
         owner_name: str,
@@ -271,11 +280,11 @@ class BaseAgent:
         default_auth=False,
     ) -> Optional[Dict]:
         try:
-            return converter.make_and_convert(
+            return self._make_and_convert(
                 owner_name=owner_name,
                 project_name=project_name,
-                run_name=run_name,
                 run_uuid=run_uuid,
+                run_name=run_name,
                 content=content,
                 default_auth=default_auth,
             )
@@ -293,6 +302,18 @@ class BaseAgent:
             )
         return None
 
+    def _convert(
+        self,
+        owner_name: str,
+        project_name: str,
+        run_name: str,
+        run_uuid: str,
+        content: str,
+        default_auth: bool,
+        agent_content: Optional[str] = None,
+    ):
+        return None
+
     def prepare_run_resource(
         self,
         owner_name: str,
@@ -302,7 +323,7 @@ class BaseAgent:
         content: str,
     ) -> Optional[Dict]:
         try:
-            return converter.convert(
+            return self._convert(
                 owner_name=owner_name,
                 project_name=project_name,
                 run_name=run_name,

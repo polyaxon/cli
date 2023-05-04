@@ -16,8 +16,8 @@
 
 import pytest
 
-from polyaxon.k8s.executor.async_executor import AsyncExecutor
 from polyaxon.exceptions import PolyaxonAgentError
+from polyaxon.k8s.executor.async_executor import AsyncExecutor
 from polyaxon.polyflow import V1RunKind
 from polyaxon.utils.test_utils import AsyncMock
 

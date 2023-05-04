@@ -21,7 +21,6 @@ from typing import List
 from clipped.formatting import Printer
 
 from polyaxon import settings
-from polyaxon.k8s.executor.executor import Executor
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.operations import logs as run_logs
 from polyaxon.exceptions import (
@@ -30,6 +29,7 @@ from polyaxon.exceptions import (
     PolypodException,
 )
 from polyaxon.k8s import converter
+from polyaxon.k8s.executor.executor import Executor
 from polyaxon.polyaxonfile.specs import OperationSpecification
 from polyaxon.polyflow import V1Operation
 from polyaxon.utils.fqn_utils import get_resource_name
