@@ -25,7 +25,7 @@ from kubernetes.client.rest import ApiException
 
 from polyaxon import live_state, settings
 from polyaxon.agents import converter
-from polyaxon.agents.spawners.spawner import Spawner
+from polyaxon.k8s.executor.executor import Executor
 from polyaxon.client import PolyaxonClient
 from polyaxon.env_vars.getters import get_run_info
 from polyaxon.exceptions import PolypodException
@@ -43,8 +43,8 @@ class BaseAgent:
 
     def __init__(self, sleep_interval=None):
         self.sleep_interval = sleep_interval
-        self.spawner = Spawner()
-        self._spawner_refreshed_at = now()
+        self.executor = Executor()
+        self._executor_refreshed_at = now()
         self.client = PolyaxonClient()
         self._graceful_shutdown = False
         self.content = settings.AGENT_CONFIG.to_json()
@@ -80,13 +80,13 @@ class BaseAgent:
             return False
         return not config.should_check(interval=interval)
 
-    def refresh_spawner(self):
+    def refresh_executor(self):
         if (
-            now() - self._spawner_refreshed_at
-        ).total_seconds() > settings.AGENT_CONFIG.get_spawner_refresh_interval():
-            logger.debug("Refreshing spawner ... ")
-            self.spawner.refresh()
-            self._spawner_refreshed_at = now()
+            now() - self._executor_refreshed_at
+        ).total_seconds() > settings.AGENT_CONFIG.get_executor_refresh_interval():
+            logger.debug("Refreshing executor ... ")
+            self.executor.refresh()
+            self._executor_refreshed_at = now()
 
     def start(self):
         try:
@@ -99,7 +99,7 @@ class BaseAgent:
                     timeout = self.sleep_interval or get_wait(index)
                     while not exit_event.wait(timeout=timeout):
                         index += 1
-                        self.refresh_spawner()
+                        self.refresh_executor()
                         agent_state = self.process(pool)
                         self._check_status(agent_state)
                         if agent_state.state.full:
@@ -249,8 +249,8 @@ class BaseAgent:
 
     def clean_run(self, run_uuid: str, run_kind: str):
         try:
-            self.spawner.clean(run_uuid=run_uuid, run_kind=run_kind)
-            self.spawner.stop(run_uuid=run_uuid, run_kind=run_kind)
+            self.executor.clean(run_uuid=run_uuid, run_kind=run_kind)
+            self.executor.stop(run_uuid=run_uuid, run_kind=run_kind)
         except ApiException as e:
             if e.status == 404:
                 logger.info("Run does not exist.")
@@ -342,7 +342,7 @@ class BaseAgent:
             return
 
         try:
-            self.spawner.create(
+            self.executor.create(
                 run_uuid=run_uuid, run_kind=run_data[1], resource=resource
             )
         except ApiException as e:
@@ -381,7 +381,7 @@ class BaseAgent:
             return
 
         try:
-            self.spawner.create(
+            self.executor.create(
                 run_uuid=run_uuid, run_kind=run_data[1], resource=resource
             )
         except ApiException as e:
@@ -409,7 +409,7 @@ class BaseAgent:
             return
 
         try:
-            self.spawner.apply(
+            self.executor.apply(
                 run_uuid=run_uuid, run_kind=run_data[1], resource=resource
             )
             self.log_run_running(
@@ -424,7 +424,7 @@ class BaseAgent:
     def check_run(self, run_data: Tuple[str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
-            self.spawner.get(run_uuid=run_uuid, run_kind=run_data[1])
+            self.executor.get(run_uuid=run_uuid, run_kind=run_data[1])
         except ApiException as e:
             if e.status == 404:
                 logger.info(
@@ -437,7 +437,7 @@ class BaseAgent:
     def stop_run(self, run_data: Tuple[str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
-            self.spawner.stop(run_uuid=run_uuid, run_kind=run_data[1])
+            self.executor.stop(run_uuid=run_uuid, run_kind=run_data[1])
         except ApiException as e:
             if e.status == 404:
                 logger.info("Run does not exist anymore, it could have been stopped.")

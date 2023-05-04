@@ -118,31 +118,31 @@ class BaseConverter:
     def is_valid(self):
         if not self.SPEC_KIND:
             raise PolypodException(
-                "Please make sure that a spawner subclass has a valid SPEC_KIND"
+                "Please make sure that an executor subclass has a valid SPEC_KIND"
             )
         if not self.GROUP:
             raise PolypodException(
-                "Please make sure that a spawner subclass has a valid GROUP"
+                "Please make sure that an executor subclass has a valid GROUP"
             )
         if not self.API_VERSION:
             raise PolypodException(
-                "Please make sure that a spawner subclass has a valid API_VERSION"
+                "Please make sure that an executor subclass has a valid API_VERSION"
             )
         if not self.PLURAL:
             raise PolypodException(
-                "Please make sure that a spawner subclass has a valid PLURAL"
+                "Please make sure that an executor subclass has a valid PLURAL"
             )
         if not self.K8S_ANNOTATIONS_KIND:
             raise PolypodException(
-                "Please make sure that a spawner subclass has a valid K8S_ANNOTATIONS_KIND"
+                "Please make sure that an executor subclass has a valid K8S_ANNOTATIONS_KIND"
             )
         if not self.K8S_LABELS_COMPONENT:
             raise PolypodException(
-                "Please make sure that a spawner subclass has a valid K8S_LABELS_COMPONENT"
+                "Please make sure that an executor subclass has a valid K8S_LABELS_COMPONENT"
             )
         if not self.K8S_LABELS_PART_OF:
             raise PolypodException(
-                "Please make sure that a spawner subclass has a valid K8S_LABELS_PART_OF"
+                "Please make sure that an executor subclass has a valid K8S_LABELS_PART_OF"
             )
 
     def get_recommended_labels(self, version: str):

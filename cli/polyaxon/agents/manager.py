@@ -16,7 +16,7 @@
 from typing import Optional
 
 from polyaxon.agents import converter
-from polyaxon.agents.spawners.spawner import Spawner
+from polyaxon.k8s.executor.executor import Executor
 
 
 def start(
@@ -38,7 +38,7 @@ def start(
         content=content,
         default_auth=default_auth,
     )
-    Spawner(namespace=namespace, in_cluster=in_cluster).create(
+    Executor(namespace=namespace, in_cluster=in_cluster).create(
         run_uuid=run_uuid, run_kind=run_kind, resource=resource
     )
 
@@ -62,7 +62,7 @@ def apply(
         content=content,
         default_auth=default_auth,
     )
-    Spawner(namespace=namespace, in_cluster=in_cluster).apply(
+    Executor(namespace=namespace, in_cluster=in_cluster).apply(
         run_uuid=run_uuid, run_kind=run_kind, resource=resource
     )
 
@@ -70,7 +70,7 @@ def apply(
 def stop(
     run_kind: str, run_uuid: str, namespace: str, in_cluster: Optional[bool] = None
 ):
-    Spawner(namespace=namespace, in_cluster=in_cluster).stop(
+    Executor(namespace=namespace, in_cluster=in_cluster).stop(
         run_uuid=run_uuid, run_kind=run_kind
     )
 
@@ -78,7 +78,7 @@ def stop(
 def clean(
     run_kind: str, run_uuid: str, namespace: str, in_cluster: Optional[bool] = None
 ):
-    Spawner(namespace=namespace, in_cluster=in_cluster).clean(
+    Executor(namespace=namespace, in_cluster=in_cluster).clean(
         run_uuid=run_uuid, run_kind=run_kind
     )
 
@@ -101,6 +101,6 @@ def make_and_create(
         content=content,
     )
 
-    Spawner(namespace=namespace, in_cluster=in_cluster).create(
+    Executor(namespace=namespace, in_cluster=in_cluster).create(
         run_uuid=run_uuid, run_kind=run_kind, resource=resource
     )

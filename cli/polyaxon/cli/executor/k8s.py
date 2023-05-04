@@ -21,7 +21,7 @@ from typing import List
 from clipped.formatting import Printer
 
 from polyaxon import settings
-from polyaxon.agents.spawners.spawner import Spawner
+from polyaxon.k8s.executor.executor import Executor
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.operations import logs as run_logs
 from polyaxon.exceptions import (
@@ -65,7 +65,7 @@ def run(
                 params=op_spec.params,
                 default_sa=settings.AGENT_CONFIG.runs_sa,
             )
-            Spawner(namespace=settings.AGENT_CONFIG.namespace).create(
+            Executor(namespace=settings.AGENT_CONFIG.namespace).create(
                 run_uuid=run_name,
                 run_kind=compiled_operation.get_run_kind(),
                 resource=resource,

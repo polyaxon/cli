@@ -16,12 +16,12 @@
 
 from typing import Dict
 
-from polyaxon.agents.spawners.base import BaseSpawner
+from polyaxon.k8s.executor.base import BaseExecutor
 from polyaxon.k8s.manager.async_manager import AsyncK8sManager
 from polyaxon.utils.fqn_utils import get_resource_name
 
 
-class AsyncSpawner(BaseSpawner):
+class AsyncExecutor(BaseExecutor):
     @property
     def k8s_manager(self):
         if not self._k8s_manager:

@@ -23,7 +23,7 @@ from polyaxon.exceptions import PolyaxonAgentError
 from polyaxon.k8s.converter.mixins import MIXIN_MAPPING, BaseMixin
 
 
-class BaseSpawner:
+class BaseExecutor:
     def __init__(
         self,
         namespace: Optional[str] = None,

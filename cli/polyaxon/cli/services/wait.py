@@ -35,15 +35,15 @@ import click
 def wait(uuid: str, kind: str, max_retries: int):
     """Delete an s3 subpath."""
     from polyaxon import settings
-    from polyaxon.agents.spawners.spawner import Spawner
+    from polyaxon.k8s.executor.executor import Executor
 
-    spawner = Spawner(namespace=settings.CLIENT_CONFIG.namespace, in_cluster=True)
+    executor = Executor(namespace=settings.CLIENT_CONFIG.namespace, in_cluster=True)
     retry = 0
     while retry < max_retries:
         if retry:
             time.sleep(retry**2)
         try:
-            k8s_operation = spawner.get(run_uuid=uuid, run_kind=kind)
+            k8s_operation = executor.get(run_uuid=uuid, run_kind=kind)
         except Exception:  # noqa
             k8s_operation = None
         if k8s_operation:

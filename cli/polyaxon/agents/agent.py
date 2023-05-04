@@ -89,7 +89,7 @@ class Agent(BaseAgent):
             body=V1Agent(
                 content=settings.AGENT_CONFIG.to_json(),
                 version=clean_version_for_check(pkg.VERSION),
-                version_api=self.spawner.k8s_manager.get_version(),
+                version_api=self.executor.k8s_manager.get_version(),
             ),
         )
 

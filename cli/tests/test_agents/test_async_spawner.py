@@ -16,7 +16,7 @@
 
 import pytest
 
-from polyaxon.agents.spawners.async_spawner import AsyncSpawner
+from polyaxon.k8s.executor.async_executor import AsyncExecutor
 from polyaxon.exceptions import PolyaxonAgentError
 from polyaxon.polyflow import V1RunKind
 from polyaxon.utils.test_utils import AsyncMock
@@ -25,25 +25,25 @@ from polyaxon.utils.test_utils import AsyncMock
 @pytest.mark.asyncio
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 async def test_start_apply_stop_get_raises_for_non_recognized_kinds():
-    spawner = AsyncSpawner()
+    executor = AsyncExecutor()
 
     try:
-        await spawner.create(run_uuid="", run_kind="foo", resource={})
+        await executor.create(run_uuid="", run_kind="foo", resource={})
     except PolyaxonAgentError:
         assert True
 
     try:
-        await spawner.apply(run_uuid="", run_kind="foo", resource={})
+        await executor.apply(run_uuid="", run_kind="foo", resource={})
     except PolyaxonAgentError:
         assert True
 
     try:
-        await spawner.stop(run_uuid="", run_kind="foo")
+        await executor.stop(run_uuid="", run_kind="foo")
     except PolyaxonAgentError:
         assert True
 
     try:
-        await spawner.get(run_uuid="", run_kind="foo")
+        await executor.get(run_uuid="", run_kind="foo")
     except PolyaxonAgentError:
         assert True
 
@@ -57,18 +57,18 @@ async def test_start_apply_stop_get():
         get_custom_object = AsyncMock()
         delete_custom_object = AsyncMock()
 
-    spawner = AsyncSpawner()
+    executor = AsyncExecutor()
     k8s_manager.create_custom_object.return_value = ("", "")
-    spawner._k8s_manager = k8s_manager
+    executor._k8s_manager = k8s_manager
 
-    await spawner.create(run_uuid="", run_kind=V1RunKind.JOB, resource={})
+    await executor.create(run_uuid="", run_kind=V1RunKind.JOB, resource={})
     assert k8s_manager.create_custom_object.call_count == 1
 
-    await spawner.apply(run_uuid="", run_kind=V1RunKind.JOB, resource={})
+    await executor.apply(run_uuid="", run_kind=V1RunKind.JOB, resource={})
     assert k8s_manager.update_custom_object.call_count == 1
 
-    await spawner.stop(run_uuid="", run_kind=V1RunKind.JOB)
+    await executor.stop(run_uuid="", run_kind=V1RunKind.JOB)
     assert k8s_manager.delete_custom_object.call_count == 1
 
-    await spawner.get(run_uuid="", run_kind=V1RunKind.JOB)
+    await executor.get(run_uuid="", run_kind=V1RunKind.JOB)
     assert k8s_manager.get_custom_object.call_count == 1

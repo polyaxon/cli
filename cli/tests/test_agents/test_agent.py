@@ -20,7 +20,7 @@ from mock import MagicMock, patch
 
 from polyaxon.agents.agent import Agent
 from polyaxon.agents.base import BaseAgent
-from polyaxon.agents.spawners.spawner import Spawner
+from polyaxon.k8s.executor.executor import Executor
 from polyaxon.client import PolyaxonClient
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -32,14 +32,14 @@ class TestAgents(BaseTestCase):
     def test_init_base_agent(self):
         agent = BaseAgent()
         assert agent.sleep_interval is None
-        assert isinstance(agent.spawner, Spawner)
+        assert isinstance(agent.executor, Executor)
         assert isinstance(agent.client, PolyaxonClient)
 
     @patch("polyaxon.sdk.api.AgentsV1Api.sync_agent")
     @patch("polyaxon.sdk.api.AgentsV1Api.create_agent_status")
     @patch("polyaxon.sdk.api.AgentsV1Api.get_agent_state")
     @patch("polyaxon.sdk.api.AgentsV1Api.get_agent")
-    @patch("polyaxon.agents.base.Spawner")
+    @patch("polyaxon.agents.base.Executor")
     def test_init_agent(
         self, _, get_agent, get_agent_state, create_agent_status, sync_agent
     ):
@@ -47,10 +47,10 @@ class TestAgents(BaseTestCase):
         get_agent_state.return_value = MagicMock(status=None, live_state=1)
         agent = Agent(owner="foo", agent_uuid="uuid")
         assert agent.sleep_interval is None
-        assert agent.spawner is not None
+        assert agent.executor is not None
         assert isinstance(agent.client, PolyaxonClient)
         assert get_agent.call_count == 1
         assert get_agent_state.call_count == 0
         assert create_agent_status.call_count == 1
         assert sync_agent.call_count == 1
-        assert agent.spawner.k8s_manager.get_version.call_count == 1
+        assert agent.executor.k8s_manager.get_version.call_count == 1

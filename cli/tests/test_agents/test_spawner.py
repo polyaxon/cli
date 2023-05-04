@@ -17,44 +17,44 @@
 import mock
 import pytest
 
-from polyaxon.agents.spawners.spawner import Spawner
+from polyaxon.k8s.executor.executor import Executor
 from polyaxon.exceptions import PolyaxonAgentError
 from polyaxon.polyflow import V1RunKind
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.agent_mark
-class TestSpawner(BaseTestCase):
+class TestExecutor(BaseTestCase):
     def setUp(self):
-        self.spawner = Spawner()
+        self.executor = Executor()
         super().setUp()
 
     def test_start_apply_stop_get(self):
         k8s_manager = mock.MagicMock()
         k8s_manager.create_custom_object.return_value = ("", "")
-        self.spawner._k8s_manager = k8s_manager
+        self.executor._k8s_manager = k8s_manager
 
-        self.spawner.create(run_uuid="", run_kind=V1RunKind.JOB, resource={})
+        self.executor.create(run_uuid="", run_kind=V1RunKind.JOB, resource={})
         assert k8s_manager.create_custom_object.call_count == 1
 
-        self.spawner.apply(run_uuid="", run_kind=V1RunKind.JOB, resource={})
+        self.executor.apply(run_uuid="", run_kind=V1RunKind.JOB, resource={})
         assert k8s_manager.update_custom_object.call_count == 1
 
-        self.spawner.stop(run_uuid="", run_kind=V1RunKind.JOB)
+        self.executor.stop(run_uuid="", run_kind=V1RunKind.JOB)
         assert k8s_manager.delete_custom_object.call_count == 1
 
-        self.spawner.get(run_uuid="", run_kind=V1RunKind.JOB)
+        self.executor.get(run_uuid="", run_kind=V1RunKind.JOB)
         assert k8s_manager.get_custom_object.call_count == 1
 
     def test_start_apply_stop_get_raises_for_non_recognized_kinds(self):
         with self.assertRaises(PolyaxonAgentError):
-            self.spawner.create(run_uuid="", run_kind="foo", resource={})
+            self.executor.create(run_uuid="", run_kind="foo", resource={})
 
         with self.assertRaises(PolyaxonAgentError):
-            self.spawner.apply(run_uuid="", run_kind="foo", resource={})
+            self.executor.apply(run_uuid="", run_kind="foo", resource={})
 
         with self.assertRaises(PolyaxonAgentError):
-            self.spawner.stop(run_uuid="", run_kind="foo")
+            self.executor.stop(run_uuid="", run_kind="foo")
 
         with self.assertRaises(PolyaxonAgentError):
-            self.spawner.get(run_uuid="", run_kind="foo")
+            self.executor.get(run_uuid="", run_kind="foo")

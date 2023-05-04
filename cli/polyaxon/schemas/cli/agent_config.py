@@ -44,7 +44,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_RUNS_SA,
     EV_KEYS_AGENT_SECRET_NAME,
     EV_KEYS_AGENT_SIDECAR,
-    EV_KEYS_AGENT_SPAWNER_REFRESH_INTERVAL,
+    EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL,
     EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS,
     EV_KEYS_K8S_APP_SECRET_NAME,
     EV_KEYS_K8S_NAMESPACE,
@@ -206,8 +206,8 @@ class AgentConfig(BaseAgentConfig):
     agent_secret_name: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_SECRET_NAME)
     runs_sa: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_RUNS_SA)
     # This refresh logic will mitigate several issues with AKS's numerous networking problems
-    spawner_refresh_interval: Optional[int] = Field(
-        alias=EV_KEYS_AGENT_SPAWNER_REFRESH_INTERVAL
+    executor_refresh_interval: Optional[int] = Field(
+        alias=EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL
     )
 
     def __init__(
@@ -263,8 +263,8 @@ class AgentConfig(BaseAgentConfig):
                 "Received an invalid {} `{}`".format(field.alias, v)
             ) from e
 
-    def get_spawner_refresh_interval(self) -> int:
-        return self.spawner_refresh_interval or 60 * 5
+    def get_executor_refresh_interval(self) -> int:
+        return self.executor_refresh_interval or 60 * 5
 
 
 PartialAgentConfig = to_partial(AgentConfig)
