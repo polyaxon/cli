@@ -21,7 +21,7 @@ from clipped.utils.tz import now
 from kubernetes_asyncio.client.models import V1Pod
 from kubernetes_asyncio.client.rest import ApiException
 
-from polyaxon.k8s.async_manager import AsyncK8SManager
+from polyaxon.k8s.manager.async_manager import AsyncK8SManager
 from traceml.logging import V1Log, V1Logs
 
 

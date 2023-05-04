@@ -17,7 +17,7 @@
 from typing import Dict
 
 from polyaxon.agents.spawners.base import BaseSpawner
-from polyaxon.k8s.async_manager import AsyncK8SManager
+from polyaxon.k8s.manager.async_manager import AsyncK8SManager
 from polyaxon.utils.fqn_utils import get_resource_name
 
 

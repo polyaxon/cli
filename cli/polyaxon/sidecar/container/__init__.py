@@ -30,7 +30,7 @@ from polyaxon.fs.fs import (
     get_async_fs_from_connection,
 )
 from polyaxon.fs.watcher import FSWatcher
-from polyaxon.k8s.async_manager import AsyncK8SManager
+from polyaxon.k8s.manager.async_manager import AsyncK8SManager
 from polyaxon.logger import logger
 from polyaxon.settings import CLIENT_CONFIG
 from polyaxon.sidecar.container.intervals import get_sync_interval

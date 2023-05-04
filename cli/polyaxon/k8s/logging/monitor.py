@@ -22,7 +22,7 @@ from kubernetes.client.rest import ApiException
 
 from polyaxon.client import RunClient
 from polyaxon.exceptions import PolyaxonK8SError
-from polyaxon.k8s.manager import K8SManager
+from polyaxon.k8s.manager.manager import K8SManager
 from traceml.logging import V1Log
 
 

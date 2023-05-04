@@ -23,8 +23,8 @@ from clipped.utils.paths import check_or_create_path, delete_path
 from kubernetes_asyncio.client.models import V1Pod
 
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.async_manager import AsyncK8SManager
 from polyaxon.k8s.logging.async_monitor import query_k8s_pod_logs
+from polyaxon.k8s.manager.async_manager import AsyncK8SManager
 from traceml.logging import V1Logs
 
 
