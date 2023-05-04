@@ -25,8 +25,9 @@ from polyaxon.connections import (
     V1K8sResource,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s import constants, k8s_schemas
-from polyaxon.k8s.volumes import (
+from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.common import constants
+from polyaxon.k8s.converter.common.volumes import (
     get_artifacts_context_volume,
     get_configs_context_volume,
     get_connections_context_volume,

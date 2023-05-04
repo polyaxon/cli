@@ -18,7 +18,8 @@ from typing import List, Optional
 
 from polyaxon.connections import V1Connection, V1K8sResource
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s import constants, k8s_schemas
+from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.common import constants
 
 
 def get_mount_from_store(

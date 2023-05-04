@@ -19,8 +19,8 @@ from polyaxon import settings
 from polyaxon.api import VERSION_V1
 from polyaxon.env_vars.keys import EV_KEYS_PLATFORM_HOST
 from polyaxon.exceptions import PolypodException
+from polyaxon.k8s.converter.common.env_vars import get_service_env_vars
 from polyaxon.k8s.converter.converters.base import BaseConverter
-from polyaxon.k8s.env_vars import get_service_env_vars
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices
@@ -35,6 +35,7 @@ class DummyConverter(BaseConverter):
     K8S_ANNOTATIONS_KIND = "dummies_name"
     K8S_LABELS_COMPONENT = "dummies_component"
     K8S_LABELS_PART_OF = "dummies_part_of"
+    MAIN_CONTAINER_ID = "dummy"
 
     def get_main_env_vars(self, external_host: bool = False, **kwargs):
         pass

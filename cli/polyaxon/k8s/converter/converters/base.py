@@ -16,9 +16,8 @@
 
 import copy
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional
 
-from clipped.utils.http import clean_host
 from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
@@ -32,8 +31,18 @@ from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.annotations import get_connection_annotations
-from polyaxon.k8s.containers import ensure_container_name, sanitize_container
+from polyaxon.k8s.converter.common.annotations import get_connection_annotations
+from polyaxon.k8s.converter.common.containers import (
+    ensure_container_name,
+    sanitize_container,
+)
+from polyaxon.k8s.converter.common.env_vars import (
+    get_base_env_vars,
+    get_env_var,
+    get_proxy_env_vars,
+    get_service_env_vars,
+)
+from polyaxon.k8s.converter.common.mounts import get_mounts
 from polyaxon.k8s.converter.init.artifacts import get_artifacts_path_container
 from polyaxon.k8s.converter.init.auth import get_auth_context_container
 from polyaxon.k8s.converter.init.custom import get_custom_init_container
@@ -45,13 +54,6 @@ from polyaxon.k8s.converter.init.tensorboard import get_tensorboard_init_contain
 from polyaxon.k8s.converter.main.container import get_main_container
 from polyaxon.k8s.converter.pod.volumes import get_pod_volumes
 from polyaxon.k8s.converter.sidecar.container import get_sidecar_container
-from polyaxon.k8s.env_vars import (
-    get_base_env_vars,
-    get_env_var,
-    get_proxy_env_vars,
-    get_service_env_vars,
-)
-from polyaxon.k8s.mounts import get_mounts
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter

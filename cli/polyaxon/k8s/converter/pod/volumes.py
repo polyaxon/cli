@@ -19,12 +19,9 @@ from typing import Dict, Iterable, List, Optional
 from clipped.utils.lists import to_list
 
 from polyaxon.connections import V1Connection, V1K8sResource
-from polyaxon.k8s import constants, k8s_schemas
-from polyaxon.k8s.converter.main.k8s_resources import (
-    get_requested_config_maps,
-    get_requested_secrets,
-)
-from polyaxon.k8s.volumes import (
+from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.common import constants
+from polyaxon.k8s.converter.common.volumes import (
     get_artifacts_context_volume,
     get_configs_context_volume,
     get_connections_context_volume,
@@ -34,6 +31,10 @@ from polyaxon.k8s.volumes import (
     get_volume_from_connection,
     get_volume_from_secret,
     get_volume_name,
+)
+from polyaxon.k8s.converter.main.k8s_resources import (
+    get_requested_config_maps,
+    get_requested_secrets,
 )
 from polyaxon.polyflow import V1Init, V1Plugins
 

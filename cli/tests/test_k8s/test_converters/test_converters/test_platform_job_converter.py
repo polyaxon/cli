@@ -25,6 +25,7 @@ from polyaxon.connections import (
     V1K8sResource,
 )
 from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.common.mounts import get_mounts
 from polyaxon.k8s.converter.converters.job import JobConverter
 from polyaxon.k8s.converter.init.artifacts import get_artifacts_path_container
 from polyaxon.k8s.converter.init.auth import get_auth_context_container
@@ -35,7 +36,6 @@ from polyaxon.k8s.converter.init.store import get_store_container
 from polyaxon.k8s.converter.init.tensorboard import get_tensorboard_init_container
 from polyaxon.k8s.converter.main.container import get_main_container
 from polyaxon.k8s.converter.sidecar.container import get_sidecar_container
-from polyaxon.k8s.mounts import get_mounts
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.schemas.types import (
     V1ArtifactsType,

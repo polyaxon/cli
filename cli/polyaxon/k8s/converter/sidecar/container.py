@@ -22,9 +22,8 @@ from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.containers import patch_container
-from polyaxon.k8s.converter.sidecar.env_vars import get_sidecar_env_vars
-from polyaxon.k8s.env_vars import (
+from polyaxon.k8s.converter.common.containers import patch_container
+from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_from_config_map,
@@ -32,11 +31,12 @@ from polyaxon.k8s.env_vars import (
     get_items_from_config_map,
     get_items_from_secret,
 )
-from polyaxon.k8s.mounts import (
+from polyaxon.k8s.converter.common.mounts import (
     get_mount_from_resource,
     get_mount_from_store,
     get_mounts,
 )
+from polyaxon.k8s.converter.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.polyflow import V1Plugins
 
 SIDECAR_CONTAINER = "polyaxon-sidecar"

@@ -18,7 +18,11 @@
 import pytest
 
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.accelerators import has_tpu_annotation, requests_gpu, requests_tpu
+from polyaxon.k8s.converter.common.accelerators import (
+    has_tpu_annotation,
+    requests_gpu,
+    requests_tpu,
+)
 from polyaxon.utils.test_utils import BaseTestCase
 
 

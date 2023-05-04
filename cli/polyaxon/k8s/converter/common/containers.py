@@ -22,7 +22,7 @@ from clipped.utils.sanitizers import sanitize_value
 
 from polyaxon.containers.names import generate_container_name
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.container_resources import sanitize_resources
+from polyaxon.k8s.converter.common.container_resources import sanitize_resources
 
 
 def patch_container(

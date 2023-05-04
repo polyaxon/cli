@@ -32,6 +32,7 @@ class TestConverter(BaseTestCase):
             K8S_ANNOTATIONS_KIND = "dummies_name"
             K8S_LABELS_COMPONENT = "dummies_component"
             K8S_LABELS_PART_OF = "dummies_part_of"
+            MAIN_CONTAINER_ID = "dummy"
 
         self.converter = DummyConverter(
             owner_name="foo", project_name="p1", run_name="j1", run_uuid="uuid"

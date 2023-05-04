@@ -33,7 +33,7 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.env_vars import (
+from polyaxon.k8s.converter.common.env_vars import (
     get_env_from_config_map,
     get_env_from_config_maps,
     get_env_from_k8s_resources,

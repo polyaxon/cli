@@ -41,7 +41,7 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.accelerators import requests_gpu
+from polyaxon.k8s.converter.common.accelerators import requests_gpu
 from polyaxon.services.headers import PolyaxonServiceHeaders
 
 

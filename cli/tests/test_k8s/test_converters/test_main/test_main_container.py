@@ -27,12 +27,12 @@ from polyaxon.connections import (
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.main.container import get_main_container
-from polyaxon.k8s.mounts import (
+from polyaxon.k8s.converter.common.mounts import (
     get_artifacts_context_mount,
     get_auth_context_mount,
     get_mounts,
 )
+from polyaxon.k8s.converter.main.container import get_main_container
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.utils.test_utils import BaseTestCase
 

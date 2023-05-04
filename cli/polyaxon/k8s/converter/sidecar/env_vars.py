@@ -20,7 +20,7 @@ from clipped.utils.lists import to_list
 
 from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.env_vars import get_env_var
+from polyaxon.k8s.converter.common.env_vars import get_env_var
 
 
 def get_sidecar_env_vars(

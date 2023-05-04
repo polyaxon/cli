@@ -21,8 +21,8 @@ from clipped.utils.lists import to_list
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.containers.names import INIT_AUTH_CONTAINER
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.containers import patch_container
-from polyaxon.k8s.mounts import get_auth_context_mount
+from polyaxon.k8s.converter.common.containers import patch_container
+from polyaxon.k8s.converter.common.mounts import get_auth_context_mount
 
 
 def get_auth_context_container(

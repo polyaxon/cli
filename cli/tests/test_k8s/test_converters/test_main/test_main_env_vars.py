@@ -29,8 +29,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_COLLECT_RESOURCES,
 )
 from polyaxon.exceptions import PolypodException
-from polyaxon.k8s.converter.main.env_vars import get_env_vars
-from polyaxon.k8s.env_vars import (
+from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
     get_env_var,
@@ -39,6 +38,7 @@ from polyaxon.k8s.env_vars import (
     get_items_from_secret,
     get_kv_env_vars,
 )
+from polyaxon.k8s.converter.main.env_vars import get_env_vars
 from polyaxon.polyflow import V1Plugins
 from polyaxon.utils.test_utils import BaseTestCase
 

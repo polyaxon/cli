@@ -28,13 +28,13 @@ from polyaxon.connections import (
 from polyaxon.containers.names import INIT_TENSORBOARD_CONTAINER_PREFIX
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s import constants
-from polyaxon.k8s.converter.init.tensorboard import get_tensorboard_init_container
-from polyaxon.k8s.mounts import (
+from polyaxon.k8s.converter.common import constants
+from polyaxon.k8s.converter.common.mounts import (
     get_auth_context_mount,
     get_connections_context_mount,
     get_mount_from_store,
 )
+from polyaxon.k8s.converter.init.tensorboard import get_tensorboard_init_container
 from polyaxon.polyflow import V1Plugins
 from polyaxon.schemas.types import V1TensorboardType
 from polyaxon.utils.test_utils import BaseTestCase

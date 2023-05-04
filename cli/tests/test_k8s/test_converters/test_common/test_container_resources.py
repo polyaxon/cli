@@ -16,7 +16,7 @@
 
 import pytest
 
-from polyaxon.k8s.container_resources import sanitize_resources
+from polyaxon.k8s.converter.common.container_resources import sanitize_resources
 from polyaxon.utils.test_utils import BaseTestCase
 
 

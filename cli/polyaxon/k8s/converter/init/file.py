@@ -24,11 +24,15 @@ from polyaxon.containers.names import (
     generate_container_name,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s import constants, k8s_schemas
-from polyaxon.k8s.containers import patch_container
-from polyaxon.k8s.env_vars import get_run_instance_env_var
-from polyaxon.k8s.mounts import get_auth_context_mount, get_connections_context_mount
-from polyaxon.k8s.volumes import get_volume_name
+from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.common import constants
+from polyaxon.k8s.converter.common.containers import patch_container
+from polyaxon.k8s.converter.common.env_vars import get_run_instance_env_var
+from polyaxon.k8s.converter.common.mounts import (
+    get_auth_context_mount,
+    get_connections_context_mount,
+)
+from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
 from polyaxon.schemas.types import V1FileType
 

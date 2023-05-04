@@ -25,8 +25,8 @@ from polyaxon.connections import (
     V1K8sResource,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s import constants
-from polyaxon.k8s.mounts import (
+from polyaxon.k8s.converter.common import constants
+from polyaxon.k8s.converter.common.mounts import (
     get_artifacts_context_mount,
     get_auth_context_mount,
     get_connections_context_mount,

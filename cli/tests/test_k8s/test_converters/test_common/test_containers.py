@@ -19,7 +19,7 @@ import pytest
 from mock import MagicMock
 
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.containers import sanitize_container_env
+from polyaxon.k8s.converter.common.containers import sanitize_container_env
 from polyaxon.utils.test_utils import BaseTestCase
 
 

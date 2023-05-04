@@ -24,9 +24,8 @@ from polyaxon.connections import (
     V1HostPathConnection,
     V1K8sResource,
 )
-from polyaxon.k8s import constants
-from polyaxon.k8s.converter.pod.volumes import get_pod_volumes
-from polyaxon.k8s.volumes import (
+from polyaxon.k8s.converter.common import constants
+from polyaxon.k8s.converter.common.volumes import (
     get_artifacts_context_volume,
     get_configs_context_volume,
     get_connections_context_volume,
@@ -37,6 +36,7 @@ from polyaxon.k8s.volumes import (
     get_volume_from_connection,
     get_volume_from_secret,
 )
+from polyaxon.k8s.converter.pod.volumes import get_pod_volumes
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.utils.test_utils import BaseTestCase
 

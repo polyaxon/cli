@@ -23,7 +23,7 @@ from polyaxon.connections import (
     V1ConnectionKind,
     V1HostPathConnection,
 )
-from polyaxon.k8s.annotations import get_connection_annotations
+from polyaxon.k8s.converter.common.annotations import get_connection_annotations
 from polyaxon.polyflow import V1Init
 from polyaxon.utils.test_utils import BaseTestCase
 
