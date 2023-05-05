@@ -69,10 +69,13 @@ def get_kv_env_vars(kv_env_vars: List[List]) -> List[Tuple[str, str]]:
     return env_vars
 
 
-def get_from_json_env_var(resource_ref_name: str) -> Optional[List[Tuple[str, str]]]:
-    secret = os.environ.get(resource_ref_name)
+def get_from_json_env_var(resource: V1ConnectionResource) -> List[Tuple[str, str]]:
+    if not resource or resource.items or resource.mount_path:
+        return []
+
+    secret = os.environ.get(resource.name)
     if not secret:
-        return None
+        return []
     try:
         secret_value = orjson_loads(secret)
     except Exception as e:
@@ -96,44 +99,24 @@ def get_item_from_json_env_var(
     return key, value
 
 
-def get_from_config_map(key_name: str, config_map_ref_name: str) -> Tuple[str, str]:
-    return get_item_from_json_env_var(key_name, config_map_ref_name)
-
-
-def get_from_secret(key_name: str, secret_ref_name: str) -> Tuple[str, str]:
-    return get_item_from_json_env_var(key_name, secret_ref_name)
-
-
-def get_items_from_secret(secret: V1ConnectionResource) -> List[Tuple[str, str]]:
-    items_from = []
-    if not secret or not secret.items or secret.mount_path:
-        return items_from
-
-    for item in secret.items:
-        value = get_from_secret(key_name=item, secret_ref_name=secret.name)
-        if value:
-            items_from.append(value)
-    return items_from
-
-
-def get_items_from_config_map(
-    config_map: V1ConnectionResource,
+def get_items_from_json_env_var(
+    resource: V1ConnectionResource,
 ) -> List[Tuple[str, str]]:
     items_from = []
-    if not config_map or not config_map.items:
+    if not resource or not resource.items:
         return items_from
 
-    for item in config_map.items:
-        value = get_from_config_map(
-            key_name=item,
-            config_map_ref_name=config_map.name,
+    for item in resource.items:
+        value = get_item_from_json_env_var(
+            key=item,
+            resource_ref_name=resource.name,
         )
         if value:
             items_from.append(value)
     return items_from
 
 
-def get_env_vars_from_k8s_resources(
+def get_env_vars_from_resources(
     secrets: Iterable[V1ConnectionResource], config_maps: Iterable[V1ConnectionResource]
 ) -> List[Tuple[str, str]]:
     secrets = secrets or []
@@ -141,46 +124,20 @@ def get_env_vars_from_k8s_resources(
 
     env_vars = []
     for secret in secrets:
-        env_vars += get_items_from_secret(secret=secret)
+        env_vars += get_items_from_json_env_var(resource=secret)
     for config_map in config_maps:
-        env_vars += get_items_from_config_map(config_map=config_map)
+        env_vars += get_items_from_json_env_var(resource=config_map)
 
     return env_vars
 
 
-def get_env_from_secret(
-    secret: V1ConnectionResource,
-) -> Optional[Tuple[str, str]]:
-    if not secret or secret.items or secret.mount_path:
-        return None
-
-    return get_from_json_env_var(secret.name)
-
-
-def get_env_from_secrets(
-    secrets: Iterable[V1ConnectionResource],
+def get_env_from_resource(
+    resources: Iterable[V1ConnectionResource],
 ) -> List[Tuple[str, str]]:
-    secrets = secrets or []
-    results = [get_env_from_secret(secret=secret) for secret in secrets]
-    return [r for r in results if r]
-
-
-def get_env_from_config_map(
-    config_map: V1ConnectionResource,
-) -> Optional[Tuple[str, str]]:
-    if not config_map or config_map.items or config_map.mount_path:
-        return None
-
-    return get_from_json_env_var(config_map.name)
-
-
-def get_env_from_config_maps(
-    config_maps: Iterable[V1ConnectionResource],
-) -> List[Tuple[str, str]]:
-    config_maps = config_maps or []
-    results = [
-        get_env_from_config_map(config_map=config_map) for config_map in config_maps
-    ]
+    resources = resources or []
+    results = []
+    for resource in resources:
+        results += get_from_json_env_var(resource=resource)
     return [r for r in results if r]
 
 
@@ -191,8 +148,8 @@ def get_env_from_k8s_resources(
     config_maps = config_maps or []
 
     env_vars = []
-    env_vars += get_env_from_secrets(secrets=secrets)
-    env_vars += get_env_from_config_maps(config_maps=config_maps)
+    env_vars += get_env_from_resource(resources=secrets)
+    env_vars += get_env_from_resource(resources=config_maps)
     return env_vars
 
 
@@ -257,20 +214,18 @@ def get_service_env_vars(
         )
     if include_secret_key:
         env_vars.append(
-            get_from_secret(
-                key_name=EV_KEYS_SECRET_KEY,
-                secret_key_name=EV_KEYS_SECRET_KEY,
-                secret_ref_name=polyaxon_default_secret_ref,
+            get_item_from_json_env_var(
+                key=EV_KEYS_SECRET_KEY,
+                resource_ref_name=polyaxon_default_secret_ref,
             )
         )
     internal = False
     if include_internal_token and polyaxon_default_secret_ref:
         internal = True
         env_vars.append(
-            get_from_secret(
-                EV_KEYS_SECRET_INTERNAL_TOKEN,
-                EV_KEYS_SECRET_INTERNAL_TOKEN,
-                secret_ref_name=polyaxon_default_secret_ref,
+            get_item_from_json_env_var(
+                key=EV_KEYS_SECRET_INTERNAL_TOKEN,
+                resource_ref_name=polyaxon_default_secret_ref,
             )
         )
     if include_agent_token and polyaxon_agent_secret_ref:
@@ -279,10 +234,9 @@ def get_service_env_vars(
                 "A service cannot have internal token and agent token."
             )
         env_vars.append(
-            get_from_secret(
-                EV_KEYS_AUTH_TOKEN,
-                EV_KEYS_AUTH_TOKEN,
-                secret_ref_name=polyaxon_agent_secret_ref,
+            get_item_from_json_env_var(
+                key=EV_KEYS_AUTH_TOKEN,
+                resource_ref_name=polyaxon_agent_secret_ref,
             )
         )
     if authentication_type:
