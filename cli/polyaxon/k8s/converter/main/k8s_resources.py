@@ -16,12 +16,12 @@
 
 from typing import Iterable, List
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 
 
 def get_requested_secrets(
-    secrets: Iterable[V1K8sResource], connections: Iterable[V1Connection]
-) -> List[V1K8sResource]:
+    secrets: Iterable[V1ConnectionResource], connections: Iterable[V1Connection]
+) -> List[V1ConnectionResource]:
     secrets = secrets or []
     connections = connections or []
     # Create a set of all secrets:
@@ -39,8 +39,8 @@ def get_requested_secrets(
 
 
 def get_requested_config_maps(
-    config_maps: Iterable[V1K8sResource], connections: Iterable[V1Connection]
-) -> List[V1K8sResource]:
+    config_maps: Iterable[V1ConnectionResource], connections: Iterable[V1Connection]
+) -> List[V1ConnectionResource]:
     config_maps = config_maps or []
     connections = connections or []
     # Create a set of all config_maps:

@@ -19,7 +19,7 @@ from typing import Dict, Iterable, Optional
 from kubernetes import client as k8s_client
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.k8s.converter.converters import CONVERTERS
 from polyaxon.polyflow import V1CompiledOperation
@@ -35,8 +35,8 @@ def convert(
     compiled_operation: V1CompiledOperation,
     artifacts_store: Optional[V1Connection],
     connection_by_names: Optional[Dict[str, V1Connection]],
-    secrets: Optional[Iterable[V1K8sResource]],
-    config_maps: Optional[Iterable[V1K8sResource]],
+    secrets: Optional[Iterable[V1ConnectionResource]],
+    config_maps: Optional[Iterable[V1ConnectionResource]],
     polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer] = None,
     polyaxon_init: Optional[V1PolyaxonInitContainer] = None,
     default_sa: Optional[str] = None,

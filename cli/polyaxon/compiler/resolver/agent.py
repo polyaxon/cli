@@ -25,7 +25,7 @@ from polyaxon.auxiliaries import (
     get_default_init_container,
     get_default_sidecar_container,
 )
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.polyflow import V1CompiledOperation, V1Init
 from polyaxon.schemas.base import BaseSchemaModel
@@ -36,8 +36,8 @@ class AgentResolver(BaseSchemaModel):
     polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer]
     polyaxon_init: Optional[V1PolyaxonInitContainer]
     namespace: Optional[str]
-    secrets: Optional[List[V1K8sResource]]
-    config_maps: Optional[List[V1K8sResource]]
+    secrets: Optional[List[V1ConnectionResource]]
+    config_maps: Optional[List[V1ConnectionResource]]
     connection_by_names: Optional[Dict[str, V1Connection]]
     artifacts_store: Optional[V1Connection]
     default_sa: Optional[str]

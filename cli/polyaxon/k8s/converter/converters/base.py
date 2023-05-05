@@ -26,7 +26,7 @@ from vents.connections.connection_schema import patch_git
 from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
-from polyaxon.connections import V1Connection, V1ConnectionKind, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionKind, V1ConnectionResource
 from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolypodException
@@ -296,8 +296,8 @@ class BaseConverter(_BaseConverter):
         init_connections: Optional[List[V1Init]],
         connection_by_names: Dict[str, V1Connection],
         log_level: str,
-        secrets: Optional[Iterable[V1K8sResource]],
-        config_maps: Optional[Iterable[V1K8sResource]],
+        secrets: Optional[Iterable[V1ConnectionResource]],
+        config_maps: Optional[Iterable[V1ConnectionResource]],
         kv_env_vars: List[List] = None,
         ports: List[int] = None,
     ) -> k8s_schemas.V1Container:
@@ -606,8 +606,8 @@ class BaseConverter(_BaseConverter):
         artifacts_store: V1Connection,
         connections: List[str],
         connection_by_names: Dict[str, V1Connection],
-        secrets: Optional[Iterable[V1K8sResource]],
-        config_maps: Optional[Iterable[V1K8sResource]],
+        secrets: Optional[Iterable[V1ConnectionResource]],
+        config_maps: Optional[Iterable[V1ConnectionResource]],
         kv_env_vars: List[List],
         default_sa: Optional[str] = None,
         ports: List[int] = None,

@@ -17,10 +17,10 @@ from vents.connections import (
     BucketConnection,
     ClaimConnection,
     Connection,
+    ConnectionResource,
     GitConnection,
     HostConnection,
     HostPathConnection,
-    K8sResource,
 )
 
 from polyaxon.schemas.base import BaseSchemaModel
@@ -47,7 +47,7 @@ class V1HostPathConnection(HostPathConnection, BaseSchemaModel):
     pass
 
 
-class V1K8sResource(K8sResource, BaseSchemaModel):
+class V1ConnectionResource(ConnectionResource, BaseSchemaModel):
     pass
 
 
@@ -283,4 +283,4 @@ class V1Connection(Connection, BaseTypeConfig):
 
 # Backwards compatibility
 V1ConnectionType = V1Connection
-V1K8sResourceType = V1K8sResource
+V1ConnectionResourceType = V1ConnectionResource

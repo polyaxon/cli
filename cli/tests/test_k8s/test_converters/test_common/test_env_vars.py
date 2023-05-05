@@ -16,7 +16,7 @@
 
 import pytest
 
-from polyaxon.connections import V1K8sResource
+from polyaxon.connections import V1ConnectionResource
 from polyaxon.env_vars.keys import (
     EV_KEYS_API_VERSION,
     EV_KEYS_AUTH_TOKEN,
@@ -152,16 +152,16 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_items_from_secret(None) == []
         # Secret without items
-        secret = V1K8sResource(name="test", is_requested=True)
+        secret = V1ConnectionResource(name="test", is_requested=True)
         assert get_items_from_secret(secret) == []
-        secret = V1K8sResource(
+        secret = V1ConnectionResource(
             name="test",
             items=[],
             is_requested=True,
         )
         assert get_items_from_secret(secret) == []
         # Secret with items
-        secret = V1K8sResource(
+        secret = V1ConnectionResource(
             name="test",
             items=["item1", "item2"],
             is_requested=True,
@@ -175,16 +175,16 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_items_from_secret(None) == []
         # Secret without items
-        secret = V1K8sResource(name="test", is_requested=True)
+        secret = V1ConnectionResource(name="test", is_requested=True)
         assert get_items_from_secret(secret) == []
-        secret = V1K8sResource(
+        secret = V1ConnectionResource(
             name="test",
             items=[],
             is_requested=True,
         )
         assert get_items_from_secret(secret) == []
         # Secret with items
-        secret = V1K8sResource(
+        secret = V1ConnectionResource(
             name="test",
             items=["item1", "item2"],
             is_requested=True,
@@ -196,8 +196,8 @@ class TestEnvVars(BaseTestCase):
 
     def test_get_env_vars_from_k8s_resources(self):
         assert get_env_vars_from_k8s_resources(secrets=[], config_maps=[]) == []
-        res1 = V1K8sResource(name="test", is_requested=True)
-        res2 = V1K8sResource(name="test2", is_requested=True)
+        res1 = V1ConnectionResource(name="test", is_requested=True)
+        res2 = V1ConnectionResource(name="test2", is_requested=True)
         assert (
             get_env_vars_from_k8s_resources(secrets=[res1, res2], config_maps=[]) == []
         )
@@ -206,12 +206,12 @@ class TestEnvVars(BaseTestCase):
             get_env_vars_from_k8s_resources(secrets=[], config_maps=[res1, res2]) == []
         )
 
-        res1 = V1K8sResource(
+        res1 = V1ConnectionResource(
             name="test",
             items=["item1", "item2"],
             is_requested=True,
         )
-        res2 = V1K8sResource(
+        res2 = V1ConnectionResource(
             name="test2",
             items=["item1", "item2"],
             is_requested=True,
@@ -241,7 +241,7 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_secret(secret=None) is None
         # Secret with items
-        secret = V1K8sResource(
+        secret = V1ConnectionResource(
             name="test",
             items=["item1", "item2"],
             is_requested=True,
@@ -249,7 +249,7 @@ class TestEnvVars(BaseTestCase):
         assert get_env_from_secret(secret=secret) is None
 
         # Secret
-        secret = V1K8sResource(name="test_ref", is_requested=True)
+        secret = V1ConnectionResource(name="test_ref", is_requested=True)
 
         assert get_env_from_secret(secret=secret).secret_ref == {"name": "test_ref"}
 
@@ -257,7 +257,7 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_config_map(config_map=None) is None
         # ConfigMap with items
-        config_map = V1K8sResource(
+        config_map = V1ConnectionResource(
             name="test",
             items=["item1", "item2"],
             is_requested=True,
@@ -265,7 +265,7 @@ class TestEnvVars(BaseTestCase):
         assert get_env_from_config_map(config_map=config_map) is None
 
         # ConfigMap
-        config_map = V1K8sResource(name="test_ref", is_requested=True)
+        config_map = V1ConnectionResource(name="test_ref", is_requested=True)
 
         assert get_env_from_config_map(config_map=config_map).config_map_ref == {
             "name": "test_ref"
@@ -275,13 +275,13 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_secrets(secrets=None) == []
         # Secret with items
-        secret1 = V1K8sResource(
+        secret1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=True,
         )
         # Secret
-        secret2 = V1K8sResource(
+        secret2 = V1ConnectionResource(
             name="test_ref",
             is_requested=True,
         )
@@ -294,13 +294,13 @@ class TestEnvVars(BaseTestCase):
         # None
         assert get_env_from_config_maps(config_maps=None) == []
         # ConfigMap with items
-        config_map1 = V1K8sResource(
+        config_map1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=True,
         )
         # ConfigMap
-        config_map2 = V1K8sResource(
+        config_map2 = V1ConnectionResource(
             name="test_ref",
             is_requested=True,
         )
@@ -311,8 +311,8 @@ class TestEnvVars(BaseTestCase):
 
     def test_get_env_from_k8s_resources(self):
         assert get_env_from_k8s_resources(secrets=[], config_maps=[]) == []
-        res1 = V1K8sResource(name="test", is_requested=True)
-        res2 = V1K8sResource(name="test2", is_requested=True)
+        res1 = V1ConnectionResource(name="test", is_requested=True)
+        res2 = V1ConnectionResource(name="test2", is_requested=True)
         expected = get_env_from_secrets(secrets=[res1, res2])
         assert (
             get_env_from_k8s_resources(secrets=[res1, res2], config_maps=[]) == expected

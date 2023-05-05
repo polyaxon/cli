@@ -39,8 +39,8 @@ from polyaxon.connections.schemas import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
+    V1ConnectionResource,
     V1GitConnection,
     V1HostConnection,
     V1HostPathConnection,
-    V1K8sResource,
 )

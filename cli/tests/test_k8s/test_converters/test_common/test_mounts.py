@@ -21,8 +21,8 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostPathConnection,
-    V1K8sResource,
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s.converter.common import constants
@@ -108,7 +108,7 @@ class TestMounts(BaseTestCase):
     def cd(self):
         # Non mouth resource
         assert get_mount_from_resource(None) is None
-        resource = V1K8sResource(
+        resource = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
@@ -116,7 +116,7 @@ class TestMounts(BaseTestCase):
         assert get_mount_from_resource(resource=resource) is None
 
         assert get_mount_from_resource(None) is None
-        resource = V1K8sResource(
+        resource = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
@@ -124,7 +124,7 @@ class TestMounts(BaseTestCase):
         assert get_mount_from_resource(resource=resource) is None
 
         # Resource with mount
-        resource = V1K8sResource(
+        resource = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             mount_path="/tmp",
@@ -135,7 +135,7 @@ class TestMounts(BaseTestCase):
         assert mount.mount_path == resource.mount_path
         assert mount.read_only is True
 
-        resource = V1K8sResource(
+        resource = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             mount_path="/tmp",

@@ -23,8 +23,8 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostPathConnection,
-    V1K8sResource,
 )
 from polyaxon.containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
@@ -591,7 +591,7 @@ class TestInitStore(BaseTestCase):
         assert container.volume_mounts == []
 
     def test_get_base_store_container_with_store_with_secret(self):
-        non_mount_resource1 = V1K8sResource(
+        non_mount_resource1 = V1ConnectionResource(
             name="ref",
             items=["item1", "item2"],
             is_requested=False,
@@ -626,7 +626,7 @@ class TestInitStore(BaseTestCase):
         assert container.resources is not None
         assert container.volume_mounts == []
 
-        mount_resource1 = V1K8sResource(
+        mount_resource1 = V1ConnectionResource(
             name="resource",
             items=["item1", "item2"],
             mount_path="/tmp1",
@@ -771,7 +771,7 @@ class TestInitStore(BaseTestCase):
 
     def test_get_store_container_bucket_stores(self):
         mount_path = "/test-path"
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="ref",
             items=["item1", "item2"],
             is_requested=False,

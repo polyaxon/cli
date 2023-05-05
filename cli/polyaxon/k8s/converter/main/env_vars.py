@@ -18,7 +18,7 @@ from typing import Iterable, List
 
 from clipped.utils.lists import to_list
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARTIFACTS_STORE_NAME,
     EV_KEYS_COLLECT_ARTIFACTS,
@@ -41,8 +41,8 @@ def get_env_vars(
     kv_env_vars: List[List],
     artifacts_store_name: str,
     connections: Iterable[V1Connection],
-    secrets: Iterable[V1K8sResource],
-    config_maps: Iterable[V1K8sResource],
+    secrets: Iterable[V1ConnectionResource],
+    config_maps: Iterable[V1ConnectionResource],
 ) -> List[k8s_schemas.V1EnvVar]:
     env_vars = []
     connections = connections or []

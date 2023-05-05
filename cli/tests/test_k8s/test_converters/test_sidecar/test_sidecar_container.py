@@ -22,8 +22,8 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostPathConnection,
-    V1K8sResource,
 )
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
@@ -167,7 +167,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
@@ -233,7 +233,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
@@ -379,7 +379,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             mount_path="/path",
@@ -529,7 +529,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResource(name="test1", is_requested=False)
+        resource1 = V1ConnectionResource(name="test1", is_requested=False)
         bucket_managed_store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,
@@ -805,7 +805,7 @@ class TestSidecarContainer(BaseTestCase):
             get_env_var(name="key1", value="value1"),
             get_env_var(name="key2", value="value2"),
         ]
-        resource1 = V1K8sResource(name="test1", is_requested=False)
+        resource1 = V1ConnectionResource(name="test1", is_requested=False)
         blob_managed_store = V1Connection(
             name="test_gcs",
             kind=V1ConnectionKind.GCS,

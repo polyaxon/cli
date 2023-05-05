@@ -21,8 +21,8 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostPathConnection,
-    V1K8sResource,
 )
 from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.volumes import (
@@ -47,22 +47,22 @@ class TestPodVolumes(BaseTestCase):
         super().setUp()
 
         # Secrets and config maps
-        self.non_mount_resource1 = V1K8sResource(
+        self.non_mount_resource1 = V1ConnectionResource(
             name="non_mount_test1",
             items=["item1", "item2"],
             is_requested=False,
         )
-        self.non_mount_resource2 = V1K8sResource(
+        self.non_mount_resource2 = V1ConnectionResource(
             name="non_mount_test2",
             is_requested=False,
         )
-        self.mount_resource1 = V1K8sResource(
+        self.mount_resource1 = V1ConnectionResource(
             name="mount_test1",
             items=["item1", "item2"],
             mount_path="/tmp1",
             is_requested=False,
         )
-        self.mount_resource2 = V1K8sResource(
+        self.mount_resource2 = V1ConnectionResource(
             name="mount_test1",
             items=["item1", "item2"],
             mount_path="/tmp2",
@@ -523,7 +523,7 @@ class TestPodVolumes(BaseTestCase):
         )
 
     @staticmethod
-    def assert_secret(secret: V1K8sResource, connection, results):
+    def assert_secret(secret: V1ConnectionResource, connection, results):
         dummy_connection = (
             V1Connection(
                 name="connection",
@@ -551,7 +551,7 @@ class TestPodVolumes(BaseTestCase):
         )
 
     @staticmethod
-    def assert_config_map(config_map: V1K8sResource, connection, results):
+    def assert_config_map(config_map: V1ConnectionResource, connection, results):
         dummy_connection = (
             V1Connection(
                 name="connection",

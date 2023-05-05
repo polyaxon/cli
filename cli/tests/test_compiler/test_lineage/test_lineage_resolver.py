@@ -28,8 +28,8 @@ from polyaxon.connections import (
     V1BucketConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostConnection,
-    V1K8sResource,
 )
 from polyaxon.managers.agent import AgentConfigManager
 from polyaxon.polyaxonfile.specs import kinds
@@ -101,7 +101,7 @@ class TestLineageResolver(BaseTestCase):
         }
 
     def test_collector_with_connections(self):
-        secret = V1K8sResource(
+        secret = V1ConnectionResource(
             name="secret2",
             is_requested=True,
         )
@@ -128,11 +128,11 @@ class TestLineageResolver(BaseTestCase):
     def test_resolve_connections_with_invalid_config(self):
         fpath = tempfile.mkdtemp()
         AgentConfigManager.CONFIG_PATH = fpath
-        secret1 = V1K8sResource(
+        secret1 = V1ConnectionResource(
             name="secret1",
             is_requested=True,
         )
-        secret2 = V1K8sResource(
+        secret2 = V1ConnectionResource(
             name="secret2",
             is_requested=True,
         )

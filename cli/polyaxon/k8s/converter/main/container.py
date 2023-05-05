@@ -18,7 +18,7 @@ from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.lists import to_list
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.exceptions import PolypodException
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.containers import patch_container
@@ -41,8 +41,8 @@ def get_main_container(
     init: Optional[List[V1Init]],
     connections: Optional[List[str]],
     connection_by_names: Dict[str, V1Connection],
-    secrets: Optional[Iterable[V1K8sResource]],
-    config_maps: Optional[Iterable[V1K8sResource]],
+    secrets: Optional[Iterable[V1ConnectionResource]],
+    config_maps: Optional[Iterable[V1ConnectionResource]],
     run_path: Optional[str],
     kv_env_vars: List[List] = None,
     env: List[k8s_schemas.V1EnvVar] = None,

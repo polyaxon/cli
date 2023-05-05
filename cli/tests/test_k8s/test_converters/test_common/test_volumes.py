@@ -21,8 +21,8 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostPathConnection,
-    V1K8sResource,
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
@@ -87,7 +87,7 @@ class TestVolumes(BaseTestCase):
         assert get_volume_from_secret(None) is None
 
         # Store with mount path
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
@@ -95,7 +95,7 @@ class TestVolumes(BaseTestCase):
         assert get_volume_from_secret(resource1) is None
 
         # Claim store
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             mount_path="/tmp",
@@ -111,7 +111,7 @@ class TestVolumes(BaseTestCase):
         assert get_volume_from_config_map(None) is None
 
         # Store with mount path
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
@@ -119,7 +119,7 @@ class TestVolumes(BaseTestCase):
         assert get_volume_from_config_map(resource1) is None
 
         # Claim store
-        resource1 = V1K8sResource(
+        resource1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             mount_path="/tmp",

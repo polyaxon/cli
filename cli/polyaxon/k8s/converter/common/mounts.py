@@ -16,7 +16,7 @@
 
 from typing import List, Optional
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
@@ -36,7 +36,7 @@ def get_mount_from_store(
 
 
 def get_mount_from_resource(
-    resource: V1K8sResource,
+    resource: V1ConnectionResource,
 ) -> Optional[k8s_schemas.V1VolumeMount]:
     if not resource or not resource.mount_path:
         return None

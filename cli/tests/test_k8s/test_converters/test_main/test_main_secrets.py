@@ -21,8 +21,8 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostPathConnection,
-    V1K8sResource,
 )
 from polyaxon.k8s.converter.main.k8s_resources import get_requested_secrets
 from polyaxon.utils.test_utils import BaseTestCase
@@ -33,25 +33,25 @@ class TestMainSecrets(BaseTestCase):
     def setUp(self):
         super().setUp()
         # Secrets
-        self.resource1 = V1K8sResource(
+        self.resource1 = V1ConnectionResource(
             name="non_mount_test1",
             items=["item1", "item2"],
             is_requested=False,
         )
-        self.resource2 = V1K8sResource(
+        self.resource2 = V1ConnectionResource(
             name="non_mount_test2",
             is_requested=False,
         )
-        self.resource3 = V1K8sResource(
+        self.resource3 = V1ConnectionResource(
             name="non_mount_test3",
             items=["item1", "item2"],
             is_requested=True,
         )
-        self.resource4 = V1K8sResource(
+        self.resource4 = V1ConnectionResource(
             name="non_mount_test4",
             is_requested=True,
         )
-        self.resource5 = V1K8sResource(
+        self.resource5 = V1ConnectionResource(
             name="non_mount_test1",
             is_requested=True,
         )

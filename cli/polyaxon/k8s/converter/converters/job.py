@@ -16,7 +16,7 @@
 
 from typing import Dict, Iterable, Optional
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.k8s.converter.converters.base import BaseConverter
 from polyaxon.k8s.converter.mixins import JobMixin
 from polyaxon.k8s.custom_resources.job import get_job_custom_resource
@@ -29,8 +29,8 @@ class JobConverter(JobMixin, BaseConverter):
         compiled_operation: V1CompiledOperation,
         artifacts_store: V1Connection,
         connection_by_names: Dict[str, V1Connection],
-        secrets: Optional[Iterable[V1K8sResource]],
-        config_maps: Optional[Iterable[V1K8sResource]],
+        secrets: Optional[Iterable[V1ConnectionResource]],
+        config_maps: Optional[Iterable[V1ConnectionResource]],
         default_sa: Optional[str] = None,
         default_auth: bool = False,
     ) -> Dict:

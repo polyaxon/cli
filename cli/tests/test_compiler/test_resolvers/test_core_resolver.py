@@ -27,7 +27,7 @@ from polyaxon.connections import (
     V1BucketConnection,
     V1Connection,
     V1ConnectionKind,
-    V1K8sResource,
+    V1ConnectionResource,
 )
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.managers.agent import AgentConfigManager
@@ -119,11 +119,11 @@ class TestResolver(BaseTestCase):
     def test_resolve_connections_with_invalid_config(self):
         fpath = tempfile.mkdtemp()
         AgentConfigManager.CONFIG_PATH = fpath
-        secret1 = V1K8sResource(
+        secret1 = V1ConnectionResource(
             name="secret1",
             is_requested=True,
         )
-        secret2 = V1K8sResource(
+        secret2 = V1ConnectionResource(
             name="secret2",
             is_requested=True,
         )

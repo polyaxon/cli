@@ -18,7 +18,7 @@ from typing import Iterable, List, Optional
 
 from clipped.utils.lists import to_list
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
@@ -36,8 +36,8 @@ def get_volume_mounts(
     plugins: V1Plugins,
     init: Optional[List[V1Init]],
     connections: Iterable[V1Connection],
-    secrets: Iterable[V1K8sResource],
-    config_maps: Iterable[V1K8sResource] = None,
+    secrets: Iterable[V1ConnectionResource],
+    config_maps: Iterable[V1ConnectionResource] = None,
 ) -> List[k8s_schemas.V1VolumeMount]:
     init = init or []
     connections = connections or []

@@ -19,7 +19,11 @@ import pytest
 from clipped.utils.json import orjson_dumps
 from pydantic import ValidationError
 
-from polyaxon.connections import V1BucketConnection, V1ConnectionKind, V1K8sResource
+from polyaxon.connections import (
+    V1BucketConnection,
+    V1ConnectionKind,
+    V1ConnectionResource,
+)
 from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_ARTIFACTS_STORE,
     EV_KEYS_AGENT_CONNECTIONS,
@@ -72,19 +76,19 @@ class TestAgentConfig(BaseTestCase):
                 "name": "test",
                 "kind": V1ConnectionKind.GCS,
                 "schema": V1BucketConnection(bucket="gs://test").to_dict(),
-                "secret": V1K8sResource(name="some").to_dict(),
+                "secret": V1ConnectionResource(name="some").to_dict(),
             },
             EV_KEYS_AGENT_CONNECTIONS: [
                 {
                     "name": "some",
                     "kind": V1ConnectionKind.GCS,
                     "schema": V1BucketConnection(bucket="gs://test").to_dict(),
-                    "secret": V1K8sResource(name="some").to_dict(),
+                    "secret": V1ConnectionResource(name="some").to_dict(),
                 },
                 {
                     "name": "slack",
                     "kind": V1ConnectionKind.SLACK,
-                    "secret": V1K8sResource(name="some").to_dict(),
+                    "secret": V1ConnectionResource(name="some").to_dict(),
                 },
             ],
         }
@@ -99,7 +103,7 @@ class TestAgentConfig(BaseTestCase):
                     "name": "test1",
                     "kind": V1ConnectionKind.GCS,
                     "schema": V1BucketConnection(bucket="gs://test").to_dict(),
-                    "secret": V1K8sResource(name="some").to_dict(),
+                    "secret": V1ConnectionResource(name="some").to_dict(),
                 }
             ),
             EV_KEYS_AGENT_CONNECTIONS: orjson_dumps(
@@ -108,12 +112,12 @@ class TestAgentConfig(BaseTestCase):
                         "name": "test2",
                         "kind": V1ConnectionKind.GCS,
                         "schema": V1BucketConnection(bucket="gs://test").to_dict(),
-                        "secret": V1K8sResource(name="some").to_dict(),
+                        "secret": V1ConnectionResource(name="some").to_dict(),
                     },
                     {
                         "name": "slack",
                         "kind": V1ConnectionKind.SLACK,
-                        "secret": V1K8sResource(name="some").to_dict(),
+                        "secret": V1ConnectionResource(name="some").to_dict(),
                     },
                 ]
             ),

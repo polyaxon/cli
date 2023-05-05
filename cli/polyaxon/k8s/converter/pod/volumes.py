@@ -18,7 +18,7 @@ from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.lists import to_list
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.volumes import (
@@ -45,8 +45,8 @@ def get_pod_volumes(
     init_connections: Optional[List[V1Init]],
     connections: List[str],
     connection_by_names: Optional[Dict[str, V1Connection]],
-    secrets: Optional[Iterable[V1K8sResource]],
-    config_maps: Optional[Iterable[V1K8sResource]],
+    secrets: Optional[Iterable[V1ConnectionResource]],
+    config_maps: Optional[Iterable[V1ConnectionResource]],
     volumes: List[k8s_schemas.V1Volume] = None,
 ) -> List[k8s_schemas.V1Volume]:
     """Resolve all volumes that need to be mounted"""
@@ -81,7 +81,7 @@ def get_pod_volumes(
         if volume:
             volumes.append(volume)
 
-    def add_volume_from_resource(resource: V1K8sResource, is_secret: bool):
+    def add_volume_from_resource(resource: V1ConnectionResource, is_secret: bool):
         if is_secret:
             volume = get_volume_from_secret(secret=resource)
         else:

@@ -22,7 +22,7 @@ from clipped.utils.enums import get_enum_value
 from clipped.utils.json import orjson_dumps
 from clipped.utils.lists import to_list
 
-from polyaxon.connections import CONNECTION_CONFIG, V1Connection, V1K8sResource
+from polyaxon.connections import CONNECTION_CONFIG, V1Connection, V1ConnectionResource
 from polyaxon.env_vars.keys import (
     EV_KEYS_API_VERSION,
     EV_KEYS_AUTH_TOKEN,
@@ -118,7 +118,7 @@ def get_from_secret(
     return k8s_schemas.V1EnvVar(name=key_name, value_from=value_from)
 
 
-def get_items_from_secret(secret: V1K8sResource) -> List[k8s_schemas.V1EnvVar]:
+def get_items_from_secret(secret: V1ConnectionResource) -> List[k8s_schemas.V1EnvVar]:
     items_from = []
     if not secret or not secret.items or secret.mount_path:
         return items_from
@@ -132,7 +132,9 @@ def get_items_from_secret(secret: V1K8sResource) -> List[k8s_schemas.V1EnvVar]:
     return items_from
 
 
-def get_items_from_config_map(config_map: V1K8sResource) -> List[k8s_schemas.V1EnvVar]:
+def get_items_from_config_map(
+    config_map: V1ConnectionResource,
+) -> List[k8s_schemas.V1EnvVar]:
     items_from = []
     if not config_map or not config_map.items:
         return items_from
@@ -155,7 +157,7 @@ def get_from_field_ref(name: str, field_path: str) -> k8s_schemas.V1EnvVar:
 
 
 def get_env_vars_from_k8s_resources(
-    secrets: Iterable[V1K8sResource], config_maps: Iterable[V1K8sResource]
+    secrets: Iterable[V1ConnectionResource], config_maps: Iterable[V1ConnectionResource]
 ) -> List[k8s_schemas.V1EnvVar]:
     secrets = secrets or []
     config_maps = config_maps or []
@@ -170,7 +172,7 @@ def get_env_vars_from_k8s_resources(
 
 
 def get_env_from_secret(
-    secret: V1K8sResource,
+    secret: V1ConnectionResource,
 ) -> Optional[k8s_schemas.V1EnvFromSource]:
     if not secret or secret.items or secret.mount_path:
         return None
@@ -179,7 +181,7 @@ def get_env_from_secret(
 
 
 def get_env_from_secrets(
-    secrets: Iterable[V1K8sResource],
+    secrets: Iterable[V1ConnectionResource],
 ) -> List[k8s_schemas.V1EnvFromSource]:
     secrets = secrets or []
     results = [get_env_from_secret(secret=secret) for secret in secrets]
@@ -187,7 +189,7 @@ def get_env_from_secrets(
 
 
 def get_env_from_config_map(
-    config_map: V1K8sResource,
+    config_map: V1ConnectionResource,
 ) -> Optional[k8s_schemas.V1EnvFromSource]:
     if not config_map or config_map.items or config_map.mount_path:
         return None
@@ -196,7 +198,7 @@ def get_env_from_config_map(
 
 
 def get_env_from_config_maps(
-    config_maps: Iterable[V1K8sResource],
+    config_maps: Iterable[V1ConnectionResource],
 ) -> List[k8s_schemas.V1EnvFromSource]:
     config_maps = config_maps or []
     results = [
@@ -206,7 +208,7 @@ def get_env_from_config_maps(
 
 
 def get_env_from_k8s_resources(
-    secrets: Iterable[V1K8sResource], config_maps: Iterable[V1K8sResource]
+    secrets: Iterable[V1ConnectionResource], config_maps: Iterable[V1ConnectionResource]
 ) -> List[k8s_schemas.V1EnvFromSource]:
     secrets = secrets or []
     config_maps = config_maps or []

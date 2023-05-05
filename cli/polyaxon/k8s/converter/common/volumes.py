@@ -17,7 +17,7 @@ import uuid
 
 from typing import Optional
 
-from polyaxon.connections import V1Connection, V1K8sResource
+from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
@@ -51,7 +51,9 @@ def get_volume_from_connection(
         )
 
 
-def get_volume_from_secret(secret: V1K8sResource) -> Optional[k8s_schemas.V1Volume]:
+def get_volume_from_secret(
+    secret: V1ConnectionResource,
+) -> Optional[k8s_schemas.V1Volume]:
     if not secret:
         return None
     if secret.mount_path:
@@ -64,7 +66,7 @@ def get_volume_from_secret(secret: V1K8sResource) -> Optional[k8s_schemas.V1Volu
 
 
 def get_volume_from_config_map(
-    config_map: V1K8sResource,
+    config_map: V1ConnectionResource,
 ) -> Optional[k8s_schemas.V1Volume]:
     if not config_map:
         return None

@@ -21,8 +21,8 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
+    V1ConnectionResource,
     V1HostPathConnection,
-    V1K8sResource,
 )
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.exceptions import PolypodException
@@ -42,27 +42,27 @@ class TestMainContainer(BaseTestCase):
     def setUp(self):
         super().setUp()
         # Secrets and config maps
-        self.non_mount_resource1 = V1K8sResource(
+        self.non_mount_resource1 = V1ConnectionResource(
             name="non_mount_test1",
             items=["item1", "item2"],
             is_requested=False,
         )
-        self.request_non_mount_resource1 = V1K8sResource(
+        self.request_non_mount_resource1 = V1ConnectionResource(
             name="request_non_mount_resource1",
             items=["item1", "item2"],
             is_requested=True,
         )
-        self.non_mount_resource2 = V1K8sResource(
+        self.non_mount_resource2 = V1ConnectionResource(
             name="non_mount_test2",
             is_requested=False,
         )
-        self.mount_resource1 = V1K8sResource(
+        self.mount_resource1 = V1ConnectionResource(
             name="mount_test1",
             items=["item1", "item2"],
             mount_path="/tmp1",
             is_requested=False,
         )
-        self.request_mount_resource2 = V1K8sResource(
+        self.request_mount_resource2 = V1ConnectionResource(
             name="mount_test1",
             mount_path="/tmp2",
             is_requested=True,

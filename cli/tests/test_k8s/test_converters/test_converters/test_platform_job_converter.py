@@ -22,7 +22,7 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
-    V1K8sResource,
+    V1ConnectionResource,
 )
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.mounts import get_mounts
@@ -538,7 +538,7 @@ class TestJobConverter(BaseTestCase):
             )
         ]
 
-        secret1 = V1K8sResource(
+        secret1 = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=True,

@@ -21,7 +21,7 @@ from polyaxon.connections import (
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
-    V1K8sResource,
+    V1ConnectionResource,
 )
 from polyaxon.env_vars.keys import (
     EV_KEYS_ARTIFACTS_STORE_NAME,
@@ -48,32 +48,32 @@ class TestMainEnvVars(BaseTestCase):
     def setUp(self):
         super().setUp()
         # Secrets
-        self.resource1 = V1K8sResource(
+        self.resource1 = V1ConnectionResource(
             name="non_mount_test1",
             items=["item1", "item2"],
             is_requested=False,
         )
-        self.resource2 = V1K8sResource(
+        self.resource2 = V1ConnectionResource(
             name="non_mount_test2",
             is_requested=False,
         )
 
-        self.resource3 = V1K8sResource(
+        self.resource3 = V1ConnectionResource(
             name="non_mount_test1",
             items=["item1", "item2"],
             is_requested=True,
         )
-        self.resource4 = V1K8sResource(
+        self.resource4 = V1ConnectionResource(
             name="non_mount_test2",
             is_requested=True,
         )
 
-        self.resource5 = V1K8sResource(
+        self.resource5 = V1ConnectionResource(
             name="non_mount_test2",
             is_requested=True,
         )
 
-        self.resource6 = V1K8sResource(
+        self.resource6 = V1ConnectionResource(
             name="mount_test",
             mount_path="/test",
             is_requested=True,
