@@ -32,7 +32,7 @@ from polyaxon.containers.names import (
 )
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.env_vars import (
@@ -548,7 +548,7 @@ class TestInitStore(BaseTestCase):
         )
 
     def test_get_base_store_container_with_none_values(self):
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_base_store_container(
                 container=k8s_schemas.V1Container(name="init"),
                 container_name=None,

@@ -24,7 +24,7 @@ from polyaxon.containers.names import (
     generate_container_name,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.containers import patch_container
@@ -53,7 +53,9 @@ def get_custom_init_container(
     mount_path: Optional[str] = None,
 ) -> k8s_schemas.V1Container:
     if not connection:
-        raise PolypodException("A connection is required to create a repo context.")
+        raise PolyaxonConverterError(
+            "A connection is required to create a repo context."
+        )
 
     volume_name = (
         get_volume_name(mount_path) if mount_path else constants.VOLUME_MOUNT_ARTIFACTS

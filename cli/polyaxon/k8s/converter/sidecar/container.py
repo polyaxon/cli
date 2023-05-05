@@ -20,7 +20,7 @@ from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.k8s.converter.common.env_vars import (
@@ -64,7 +64,7 @@ def get_sidecar_container(
     run_path: Optional[str],
 ) -> Optional[k8s_schemas.V1Container]:
     if artifacts_store and not plugins:
-        raise PolypodException(
+        raise PolyaxonConverterError(
             "Logs/artifacts store was passed and contexts was not passed."
         )
 
@@ -76,7 +76,7 @@ def get_sidecar_container(
         return None
 
     if (has_artifacts or has_logs) and not run_path:
-        raise PolypodException("Logs store/outputs store must have a run_path.")
+        raise PolyaxonConverterError("Logs store/outputs store must have a run_path.")
 
     env = get_sidecar_env_vars(
         env_vars=env,

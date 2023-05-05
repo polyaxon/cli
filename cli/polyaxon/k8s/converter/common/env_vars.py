@@ -39,7 +39,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_SECRET_INTERNAL_TOKEN,
     EV_KEYS_SECRET_KEY,
 )
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.accelerators import requests_gpu
 from polyaxon.services.headers import PolyaxonServiceHeaders
@@ -50,7 +50,7 @@ def get_env_var(name: str, value: Any) -> k8s_schemas.V1EnvVar:
         try:
             value = orjson_dumps(value)
         except (ValueError, TypeError) as e:
-            raise PolypodException(e)
+            raise PolyaxonConverterError(e)
 
     return k8s_schemas.V1EnvVar(name=name, value=value)
 
@@ -62,7 +62,7 @@ def get_kv_env_vars(kv_env_vars: List[List]) -> List[k8s_schemas.V1EnvVar]:
 
     for kv_env_var in kv_env_vars:
         if not kv_env_var or not len(kv_env_var) == 2:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Received a wrong a key value env var `{}`".format(kv_env_var)
             )
         env_vars.append(get_env_var(name=kv_env_var[0], value=kv_env_var[1]))
@@ -287,7 +287,7 @@ def get_service_env_vars(
         )
     if include_agent_token and polyaxon_agent_secret_ref:
         if internal:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "A service cannot have internal token and agent token."
             )
         env_vars.append(

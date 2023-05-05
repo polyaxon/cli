@@ -29,7 +29,7 @@ from polyaxon.containers.names import (
 )
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.mounts import get_artifacts_context_mount
 from polyaxon.k8s.converter.init.artifacts import (
@@ -52,7 +52,7 @@ class TestInitOutputsStore(BaseTestCase):
         )
 
     def test_get_artifacts_path_container_with_none_values(self):
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_artifacts_path_container(
                 polyaxon_init=V1PolyaxonInitContainer(),
                 artifacts_store=None,

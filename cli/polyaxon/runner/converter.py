@@ -20,7 +20,7 @@ from clipped.utils.http import clean_host
 
 from polyaxon import settings
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.polyflow import V1Init
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
@@ -66,11 +66,11 @@ class BaseConverter:
 
     def is_valid(self):
         if not self.SPEC_KIND:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid SPEC_KIND"
             )
         if not self.MAIN_CONTAINER_ID:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid MAIN_CONTAINER_ID"
             )
 

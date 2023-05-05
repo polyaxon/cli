@@ -16,7 +16,7 @@
 
 import pytest
 
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s.converter.converters.base import BaseConverter
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -43,7 +43,7 @@ class TestConverter(BaseTestCase):
         class Converter(BaseConverter):
             pass
 
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             Converter(
                 owner_name="foo", project_name="test", run_name="test", run_uuid="uuid"
             )

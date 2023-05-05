@@ -21,7 +21,7 @@ from polyaxon.connections import V1Connection, V1ConnectionKind, V1GitConnection
 from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
@@ -43,7 +43,7 @@ from polyaxon.utils.test_utils import BaseTestCase
 @pytest.mark.converter_mark
 class TestInitGit(BaseTestCase):
     def test_get_repo_context_args_requires_from_image(self):
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_repo_context_args(name=None, url=None, revision=None, mount_path=None)
 
     def test_get_repo_context_args_with_none_values(self):
@@ -93,12 +93,12 @@ class TestInitGit(BaseTestCase):
         ]
 
     def test_get_git_init_container_raises_for_missing_info(self):
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_git_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(), connection=None, plugins=None
             )
 
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_git_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/test"),
                 connection=None,

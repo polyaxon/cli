@@ -16,7 +16,7 @@
 
 import pytest
 
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.pod.spec import get_pod_spec
 from polyaxon.polyflow.environment import V1Environment
@@ -68,7 +68,7 @@ class TestPodSpec(BaseTestCase):
         }
         restart_policy = "Never"
 
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_pod_spec(
                 namespace="default",
                 main_container=None,

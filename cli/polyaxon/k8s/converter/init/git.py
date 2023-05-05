@@ -25,7 +25,7 @@ from polyaxon.connections import V1Connection, V1ConnectionKind
 from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.containers import patch_container
@@ -56,9 +56,11 @@ def get_repo_context_args(
     flags: Optional[List[str]] = None,
 ) -> List[str]:
     if not name:
-        raise PolypodException("A repo name is required to create a repo context.")
+        raise PolyaxonConverterError(
+            "A repo name is required to create a repo context."
+        )
     if not url:
-        raise PolypodException("A repo url is required to create a repo context.")
+        raise PolyaxonConverterError("A repo url is required to create a repo context.")
 
     args = [
         "--repo-path={}".format(os.path.join(mount_path, name)),
@@ -87,7 +89,9 @@ def get_git_init_container(
     track: bool = False,
 ) -> k8s_schemas.V1Container:
     if not connection:
-        raise PolypodException("A connection is required to create a repo context.")
+        raise PolyaxonConverterError(
+            "A connection is required to create a repo context."
+        )
     container_name = generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name)
     if not container:
         container = k8s_schemas.V1Container(name=container_name)

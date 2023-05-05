@@ -28,7 +28,7 @@ from polyaxon.containers.names import (
     generate_container_name,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.containers import patch_container
@@ -225,7 +225,7 @@ def get_base_store_container(
 
     # Artifact store needs to allow init the contexts as well, so the store is not required
     if not store:
-        raise PolypodException("Init store container requires a store")
+        raise PolyaxonConverterError("Init store container requires a store")
     secret = None
     if store.is_bucket:
         secret = store.secret

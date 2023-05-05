@@ -18,7 +18,7 @@ import os
 from polyaxon import settings
 from polyaxon.api import VERSION_V1
 from polyaxon.env_vars.keys import EV_KEYS_PLATFORM_HOST
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s.converter.common.env_vars import get_service_env_vars
 from polyaxon.k8s.converter.converters.base import BaseConverter
 from polyaxon.services.auth import AuthenticationTypes
@@ -195,7 +195,7 @@ class TestBaseConverter(BaseTestCase):
         else:
             del os.environ[EV_KEYS_PLATFORM_HOST]
 
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             self.converter._get_service_env_vars(
                 service_header="sa-foo",
                 header="header-foo",

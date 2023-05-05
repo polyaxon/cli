@@ -25,7 +25,7 @@ from polyaxon.connections import (
     V1HostPathConnection,
 )
 from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.mounts import (
     get_artifacts_context_mount,
@@ -100,7 +100,7 @@ class TestMainContainer(BaseTestCase):
         )
 
     def assert_artifacts_store_raises(self, store, run_path):
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_main_container(
                 container_id="test",
                 main_container=None,

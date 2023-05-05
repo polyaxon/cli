@@ -19,7 +19,7 @@ from typing import Dict, Iterable, List, Optional
 from clipped.utils.lists import to_list
 
 from polyaxon.connections import V1Connection, V1ConnectionResource
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.k8s.converter.common.env_vars import get_env_from_k8s_resources
@@ -55,7 +55,7 @@ def get_main_container(
     config_maps = config_maps or []
 
     if artifacts_store and not run_path:
-        raise PolypodException("Run path is required for main container.")
+        raise PolyaxonConverterError("Run path is required for main container.")
 
     if artifacts_store and (
         not plugins.collect_artifacts or plugins.mount_artifacts_store

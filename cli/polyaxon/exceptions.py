@@ -46,7 +46,7 @@ class PolyaxonOperatorException(PolyaxonException):
         super().__init__(message=message)
 
 
-class PolypodException(PolyaxonException):
+class PolyaxonConverterError(PolyaxonException):
     pass
 
 

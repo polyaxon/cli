@@ -50,7 +50,7 @@ class AgentResolver(BaseSchemaModel):
             agent_config = settings.AGENT_CONFIG.clone()
         if not agent_config:
             raise PolyaxonCompilerError(
-                "Polypod configuration not found or agent not configured."
+                "Agent configuration not found or agent not configured."
             )
 
         self.default_sa = agent_config.runs_sa

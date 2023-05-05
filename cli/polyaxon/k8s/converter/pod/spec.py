@@ -19,7 +19,7 @@ from typing import Dict, List, Optional, Tuple
 from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_string_dict
 
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Environment
 
@@ -36,7 +36,7 @@ def get_pod_spec(
     volumes: Optional[List[k8s_schemas.V1Volume]],
 ) -> Tuple[k8s_schemas.V1ObjectMeta, k8s_schemas.V1PodSpec]:
     if not main_container:
-        raise PolypodException("A main container is required")
+        raise PolyaxonConverterError("A main container is required")
     environment = environment or V1Environment()
 
     metadata = k8s_schemas.V1ObjectMeta(

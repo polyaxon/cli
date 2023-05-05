@@ -28,7 +28,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_COLLECT_ARTIFACTS,
     EV_KEYS_COLLECT_RESOURCES,
 )
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
@@ -108,7 +108,7 @@ class TestMainEnvVars(BaseTestCase):
 
     def test_get_env_vars_with_kv_env_vars(self):
         # Check wrong kv env vars
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_env_vars(
                 plugins=None,
                 kv_env_vars=["x", "y", "z"],
@@ -117,7 +117,7 @@ class TestMainEnvVars(BaseTestCase):
                 secrets=None,
                 config_maps=None,
             )
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_env_vars(
                 plugins=None,
                 kv_env_vars={"x": "y"},

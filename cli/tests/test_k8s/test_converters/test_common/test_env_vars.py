@@ -31,7 +31,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_SECRET_INTERNAL_TOKEN,
     EV_KEYS_SECRET_KEY,
 )
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.env_vars import (
     get_env_from_config_map,
@@ -74,9 +74,9 @@ class TestEnvVars(BaseTestCase):
         # Empty value
         assert get_kv_env_vars([]) == []
         # Non valid value
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_kv_env_vars([[123, "foo", "bar"]])
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_kv_env_vars([[123]])
         # Valid value
         env_vars = get_kv_env_vars(
@@ -316,7 +316,7 @@ class TestEnvVars(BaseTestCase):
         )
 
     def test_get_service_env_vars_raises_for_internal_and_agent_token(self):
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_service_env_vars(
                 header=None,
                 service_header=None,

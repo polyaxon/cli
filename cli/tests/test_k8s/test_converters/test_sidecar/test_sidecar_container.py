@@ -27,7 +27,7 @@ from polyaxon.connections import (
 )
 from polyaxon.containers.names import MAIN_JOB_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
@@ -54,7 +54,7 @@ from polyaxon.utils.test_utils import BaseTestCase
 @pytest.mark.converter_mark
 class TestSidecarContainer(BaseTestCase):
     def assert_artifacts_store_raises(self, store, run_path=None):
-        with self.assertRaises(PolypodException):
+        with self.assertRaises(PolyaxonConverterError):
             get_sidecar_container(
                 container_id=MAIN_JOB_CONTAINER,
                 plugins=V1Plugins.get_or_create(

@@ -26,7 +26,7 @@ from polyaxon.containers.names import (
     generate_container_name,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.mounts import get_artifacts_context_mount
 from polyaxon.k8s.converter.init.store import get_base_store_container, get_volume_args
@@ -65,7 +65,7 @@ def get_artifacts_path_container(
     env: Optional[List[k8s_schemas.V1EnvVar]] = None,
 ) -> Optional[k8s_schemas.V1Container]:
     if not artifacts_store:
-        raise PolypodException("Init artifacts container requires a store.")
+        raise PolyaxonConverterError("Init artifacts container requires a store.")
 
     env = to_list(env, check_none=True)
     init_args = init_artifact_context_args(run_path=run_path)

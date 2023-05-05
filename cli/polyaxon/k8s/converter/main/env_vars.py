@@ -24,7 +24,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_COLLECT_ARTIFACTS,
     EV_KEYS_COLLECT_RESOURCES,
 )
-from polyaxon.exceptions import PolyaxonSchemaError, PolypodException
+from polyaxon.exceptions import PolyaxonConverterError, PolyaxonSchemaError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
@@ -72,7 +72,7 @@ def get_env_vars(
                 check_none=True,
             )
         except PolyaxonSchemaError as e:
-            raise PolypodException("Error resolving secrets: %s" % e) from e
+            raise PolyaxonConverterError("Error resolving secrets: %s" % e) from e
 
     env_vars += get_kv_env_vars(kv_env_vars)
     env_vars += get_env_vars_from_k8s_resources(

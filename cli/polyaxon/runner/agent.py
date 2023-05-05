@@ -27,7 +27,7 @@ from kubernetes.client.rest import ApiException
 from polyaxon import live_state, settings
 from polyaxon.client import PolyaxonClient
 from polyaxon.env_vars.getters import get_run_info
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon.logger import logger
 from polyaxon.schemas.cli.checks_config import ChecksConfig
@@ -295,7 +295,7 @@ class BaseAgent:
                 content=content,
                 default_auth=default_auth,
             )
-        except PolypodException as e:
+        except PolyaxonConverterError as e:
             logger.info(
                 "Run could not be cleaned. Agent failed converting run manifest: {}\n{}".format(
                     repr(e), traceback.format_exc()
@@ -339,7 +339,7 @@ class BaseAgent:
                 default_auth=True,
                 agent_content=self.content,
             )
-        except PolypodException as e:
+        except PolyaxonConverterError as e:
             self.log_run_failed(
                 run_owner=owner_name,
                 run_project=project_name,

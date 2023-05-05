@@ -40,7 +40,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_SECRET_INTERNAL_TOKEN,
     EV_KEYS_SECRET_KEY,
 )
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.services.headers import PolyaxonServiceHeaders
 
 
@@ -49,7 +49,7 @@ def get_env_var(name: str, value: Any) -> Tuple[str, str]:
         try:
             value = orjson_dumps(value)
         except (ValueError, TypeError) as e:
-            raise PolypodException(e)
+            raise PolyaxonConverterError(e)
 
     return name, value
 
@@ -61,7 +61,7 @@ def get_kv_env_vars(kv_env_vars: List[List]) -> List[Tuple[str, str]]:
 
     for kv_env_var in kv_env_vars:
         if not kv_env_var or not len(kv_env_var) == 2:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Received a wrong a key value env var `{}`".format(kv_env_var)
             )
         env_vars.append(get_env_var(name=kv_env_var[0], value=kv_env_var[1]))
@@ -76,7 +76,7 @@ def get_from_json_env_var(resource_ref_name: str) -> Optional[List[Tuple[str, st
     try:
         secret_value = orjson_loads(secret)
     except Exception as e:
-        raise PolypodException from e
+        raise PolyaxonConverterError from e
 
     return list(secret_value.items())
 
@@ -90,7 +90,7 @@ def get_item_from_json_env_var(
     try:
         secret_value = orjson_loads(secret)
     except Exception as e:
-        raise PolypodException from e
+        raise PolyaxonConverterError from e
 
     value = secret_value.get(key)
     return key, value
@@ -275,7 +275,7 @@ def get_service_env_vars(
         )
     if include_agent_token and polyaxon_agent_secret_ref:
         if internal:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "A service cannot have internal token and agent token."
             )
         env_vars.append(

@@ -29,7 +29,7 @@ from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarConta
 from polyaxon.connections import V1Connection, V1ConnectionKind, V1ConnectionResource
 from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.env_vars.keys import EV_KEYS_NO_API
-from polyaxon.exceptions import PolypodException
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.annotations import get_connection_annotations
 from polyaxon.k8s.converter.common.containers import (
@@ -97,27 +97,27 @@ class BaseConverter(_BaseConverter):
     def is_valid(self):
         super().is_valid()
         if not self.GROUP:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid GROUP"
             )
         if not self.API_VERSION:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid API_VERSION"
             )
         if not self.PLURAL:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid PLURAL"
             )
         if not self.K8S_ANNOTATIONS_KIND:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid K8S_ANNOTATIONS_KIND"
             )
         if not self.K8S_LABELS_COMPONENT:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid K8S_LABELS_COMPONENT"
             )
         if not self.K8S_LABELS_PART_OF:
-            raise PolypodException(
+            raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid K8S_LABELS_PART_OF"
             )
 
