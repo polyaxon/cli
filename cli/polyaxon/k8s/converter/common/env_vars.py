@@ -90,7 +90,6 @@ def get_resources_env_vars(
 def get_from_config_map(
     key_name: str, config_map_key_name: str, config_map_ref_name: str
 ) -> k8s_schemas.V1EnvVar:
-    config_map_ref_name = config_map_ref_name
     config_map_key_ref = k8s_schemas.V1ConfigMapKeySelector(
         name=config_map_ref_name, key=config_map_key_name
     )
@@ -101,7 +100,6 @@ def get_from_config_map(
 def get_from_secret(
     key_name: str, secret_key_name: str, secret_ref_name: str
 ) -> k8s_schemas.V1EnvVar:
-    secret_ref_name = secret_ref_name
     secret_key_ref = k8s_schemas.V1SecretKeySelector(
         name=secret_ref_name, key=secret_key_name
     )
@@ -310,7 +308,7 @@ def get_run_instance_env_var(run_instance: str) -> k8s_schemas.V1EnvVar:
     return get_env_var(name=EV_KEYS_RUN_INSTANCE, value=run_instance)
 
 
-def get_connection_env_var(connection: V1Connection):
+def get_connection_env_var(connection: V1Connection) -> List[k8s_schemas.V1EnvVar]:
     env_vars = []
     if not connection:
         return env_vars

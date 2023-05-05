@@ -310,10 +310,9 @@ class TestEnvVars(BaseTestCase):
             get_env_from_k8s_resources(secrets=[], config_maps=[res1, res2]) == expected
         )
 
-    def get_run_instance_env_var(self):
-        assert get_run_instance_env_var() == get_from_field_ref(
-            name=EV_KEYS_RUN_INSTANCE,
-            field_path="metadata.labels['run_instance']",
+    def test_get_run_instance_env_var(self):
+        assert get_run_instance_env_var("run_instance") == get_env_var(
+            name=EV_KEYS_RUN_INSTANCE, value="run_instance"
         )
 
     def test_get_service_env_vars_raises_for_internal_and_agent_token(self):

@@ -81,7 +81,7 @@ class TestJobConverter(BaseTestCase):
 
     def test_get_main_env_vars(self):
         env_vars = self.converter.get_main_env_vars()
-        assert env_vars == self.converter.get_service_env_vars(
+        assert env_vars == self.converter._get_service_env_vars(
             service_header=PolyaxonServices.RUNNER
         )
 

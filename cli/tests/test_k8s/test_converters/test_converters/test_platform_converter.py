@@ -61,7 +61,7 @@ class TestBaseConverter(BaseTestCase):
 
     def test_get_service_env_vars(self):
         # Call with default
-        env_vars = self.converter.get_service_env_vars(service_header=None)
+        env_vars = self.converter._get_service_env_vars(service_header=None)
         assert env_vars == get_service_env_vars(
             header=PolyaxonServiceHeaders.SERVICE,
             service_header=None,
@@ -81,7 +81,7 @@ class TestBaseConverter(BaseTestCase):
         )
 
         self.converter.internal_auth = True
-        env_vars = self.converter.get_service_env_vars(
+        env_vars = self.converter._get_service_env_vars(
             service_header="sa-foo",
             header="header-foo",
             include_secret_key=True,
@@ -108,7 +108,7 @@ class TestBaseConverter(BaseTestCase):
         )
 
         self.converter.internal_auth = False
-        env_vars = self.converter.get_service_env_vars(
+        env_vars = self.converter._get_service_env_vars(
             service_header="sa-foo",
             header="header-foo",
             authentication_type="internal",
@@ -133,7 +133,7 @@ class TestBaseConverter(BaseTestCase):
             resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
-        env_vars = self.converter.get_service_env_vars(
+        env_vars = self.converter._get_service_env_vars(
             service_header="sa-foo",
             header="header-foo",
             authentication_type="internal",
@@ -163,7 +163,7 @@ class TestBaseConverter(BaseTestCase):
         # Setting an env var for the EV_KEYS_PLATFORM_HOST and LOG_LEVEL
         current = os.environ.get(EV_KEYS_PLATFORM_HOST)
         os.environ[EV_KEYS_PLATFORM_HOST] = "foo"
-        env_vars = self.converter.get_service_env_vars(
+        env_vars = self.converter._get_service_env_vars(
             service_header="sa-foo",
             header="header-foo",
             authentication_type="internal",
@@ -196,7 +196,7 @@ class TestBaseConverter(BaseTestCase):
             del os.environ[EV_KEYS_PLATFORM_HOST]
 
         with self.assertRaises(PolypodException):
-            self.converter.get_service_env_vars(
+            self.converter._get_service_env_vars(
                 service_header="sa-foo",
                 header="header-foo",
                 include_secret_key=False,

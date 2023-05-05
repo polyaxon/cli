@@ -19,8 +19,12 @@ from typing import Any, Dict, List, Optional
 from clipped.utils.http import clean_host
 
 from polyaxon import settings
+from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolypodException
 from polyaxon.polyflow import V1Init
+from polyaxon.services.auth import AuthenticationTypes
+from polyaxon.services.headers import PolyaxonServiceHeaders
+from polyaxon.services.values import PolyaxonServices
 from polyaxon.utils.fqn_utils import get_resource_name, get_run_instance
 from polyaxon.utils.host_utils import get_api_host
 
@@ -82,6 +86,121 @@ class BaseConverter:
 
     def filter_connections_from_init(self, init: List[V1Init]) -> List[V1Init]:
         return [i for i in init if i.has_connection()]
+
+    def _get_service_env_vars(
+        self,
+        service_header: str,
+        header: Optional[str] = None,
+        include_secret_key: bool = False,
+        include_internal_token: bool = False,
+        include_agent_token: bool = False,
+        authentication_type: Optional[str] = None,
+        external_host: bool = False,
+        log_level: Optional[str] = None,
+    ) -> List[Any]:
+        raise NotImplementedError
+
+    def _get_base_env_vars(
+        self,
+        namespace: str,
+        resource_name: str,
+        use_proxy_env_vars_use_in_ops: bool,
+        log_level: Optional[str] = None,
+    ) -> List[Any]:
+        raise NotImplementedError
+
+    def _get_env_var(self, name: str, value: Any) -> Any:
+        raise NotImplementedError
+
+    def _get_proxy_env_vars(self) -> List[Any]:
+        raise NotImplementedError
+
+    def get_main_env_vars(
+        self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
+    ) -> Optional[Any]:
+        if self.base_env_vars:
+            return self._get_base_env_vars(
+                namespace=self.namespace,
+                resource_name=self.resource_name,
+                use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
+                log_level=log_level,
+            )
+        return self._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=external_host,
+            log_level=log_level,
+        )
+
+    def get_polyaxon_sidecar_service_env_vars(
+        self,
+        external_host: bool = False,
+        log_level: Optional[str] = None,
+    ) -> Optional[List[Any]]:
+        if not self.base_env_vars:
+            return self._get_service_env_vars(
+                service_header=PolyaxonServices.SIDECAR,
+                authentication_type=AuthenticationTypes.TOKEN,
+                header=PolyaxonServiceHeaders.SERVICE,
+                external_host=external_host,
+                log_level=log_level,
+            )
+        env = []
+        if settings.CLIENT_CONFIG.no_api:
+            env += [self._get_env_var(name=EV_KEYS_NO_API, value=True)]
+        if log_level:
+            env += [self._get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level)]
+        proxy_env = self._get_proxy_env_vars()
+        if proxy_env:
+            env += proxy_env
+        return env
+
+    def get_auth_service_env_vars(
+        self,
+        external_host: bool = False,
+        log_level: Optional[str] = None,
+    ) -> Optional[List[Any]]:
+        if self.base_env_vars:
+            return None
+        return self._get_service_env_vars(
+            service_header=PolyaxonServices.INITIALIZER,
+            include_internal_token=self.internal_auth,
+            include_agent_token=not self.internal_auth,
+            authentication_type=(
+                AuthenticationTypes.INTERNAL_TOKEN
+                if self.internal_auth
+                else AuthenticationTypes.TOKEN
+            ),
+            header=(
+                PolyaxonServiceHeaders.INTERNAL
+                if self.internal_auth
+                else PolyaxonServiceHeaders.SERVICE
+            ),
+            external_host=external_host,
+            log_level=log_level,
+        )
+
+    def get_init_service_env_vars(
+        self,
+        external_host: bool = False,
+        log_level: Optional[str] = None,
+    ) -> Optional[List[Any]]:
+        if not self.base_env_vars:
+            return self._get_service_env_vars(
+                service_header=PolyaxonServices.INITIALIZER,
+                authentication_type=AuthenticationTypes.TOKEN,
+                header=PolyaxonServiceHeaders.SERVICE,
+                external_host=external_host,
+                log_level=log_level,
+            )
+        env = []
+        if settings.CLIENT_CONFIG.no_api:
+            env.append(self._get_env_var(name=EV_KEYS_NO_API, value=True))
+        if log_level:
+            env.append(self._get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level))
+        proxy_env = self._get_proxy_env_vars()
+        if proxy_env:
+            env += proxy_env
+        return env
 
     def get_resource(self, **kwargs) -> Dict:
         raise NotImplementedError
