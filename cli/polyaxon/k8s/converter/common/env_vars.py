@@ -45,15 +45,6 @@ from polyaxon.k8s.converter.common.accelerators import requests_gpu
 from polyaxon.services.headers import PolyaxonServiceHeaders
 
 
-def get_str_var(value: Any) -> str:
-    if value is not None and not isinstance(value, str):
-        try:
-            value = orjson_dumps(value)
-        except (ValueError, TypeError) as e:
-            raise PolypodException(e)
-    return value or ""
-
-
 def get_env_var(name: str, value: Any) -> k8s_schemas.V1EnvVar:
     if not isinstance(value, str):
         try:
@@ -220,12 +211,15 @@ def get_env_from_k8s_resources(
 
 
 def get_base_env_vars(
-    use_proxy_env_vars_use_in_ops: bool, log_level: Optional[str] = None
+    namespace: str,
+    resource_name: str,
+    use_proxy_env_vars_use_in_ops: bool,
+    log_level: Optional[str] = None,
 ):
     env = [
         get_from_field_ref(name=EV_KEYS_K8S_NODE_NAME, field_path="spec.nodeName"),
-        get_from_field_ref(name=EV_KEYS_K8S_NAMESPACE, field_path="metadata.namespace"),
-        get_from_field_ref(name=EV_KEYS_K8S_POD_ID, field_path="metadata.name"),
+        get_env_var(name=EV_KEYS_K8S_NAMESPACE, value=namespace),
+        get_env_var(name=EV_KEYS_K8S_POD_ID, value=resource_name),
     ]
     if log_level:
         env.append(get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level))
@@ -245,10 +239,16 @@ def get_service_env_vars(
     api_host: str,
     api_version: str,
     run_instance: str,
+    namespace: str,
+    resource_name: str,
     use_proxy_env_vars_use_in_ops: bool,
     log_level: str,
 ) -> List[k8s_schemas.V1EnvVar]:
-    env_vars = get_base_env_vars(use_proxy_env_vars_use_in_ops) + [
+    env_vars = get_base_env_vars(
+        namespace=namespace,
+        resource_name=resource_name,
+        use_proxy_env_vars_use_in_ops=use_proxy_env_vars_use_in_ops,
+    ) + [
         get_env_var(name=EV_KEYS_HOST, value=api_host),
         get_env_var(name=EV_KEYS_IS_MANAGED, value=True),
         get_env_var(name=EV_KEYS_API_VERSION, value=api_version),

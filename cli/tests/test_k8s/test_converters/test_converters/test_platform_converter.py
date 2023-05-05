@@ -75,6 +75,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
 
@@ -100,6 +102,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
 
@@ -125,6 +129,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         env_vars = self.converter.get_service_env_vars(
@@ -150,6 +156,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         # Setting an env var for the EV_KEYS_PLATFORM_HOST and LOG_LEVEL
@@ -178,6 +186,8 @@ class TestBaseConverter(BaseTestCase):
             api_host="foo",
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         if current:
@@ -212,6 +222,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
 
@@ -230,6 +242,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         env_vars = self.converter.get_auth_service_env_vars(external_host=True)
@@ -247,6 +261,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         # Setting an env var for the EV_KEYS_PLATFORM_HOST
@@ -266,6 +282,8 @@ class TestBaseConverter(BaseTestCase):
             api_host="foo",
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         if current:
@@ -289,6 +307,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
 
@@ -309,6 +329,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         env_vars = self.converter.get_polyaxon_sidecar_service_env_vars(
@@ -328,6 +350,8 @@ class TestBaseConverter(BaseTestCase):
             api_host=settings.CLIENT_CONFIG.host,
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         # Setting an env var for the EV_KEYS_PLATFORM_HOST
@@ -350,6 +374,8 @@ class TestBaseConverter(BaseTestCase):
             api_host="foo",
             api_version=VERSION_V1,
             run_instance=self.converter.run_instance,
+            namespace=self.converter.namespace,
+            resource_name=self.converter.get_resource_name(),
             use_proxy_env_vars_use_in_ops=False,
         )
         if current:

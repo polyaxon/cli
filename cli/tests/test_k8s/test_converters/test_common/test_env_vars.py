@@ -50,30 +50,12 @@ from polyaxon.k8s.converter.common.env_vars import (
     get_resources_env_vars,
     get_run_instance_env_var,
     get_service_env_vars,
-    get_str_var,
 )
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.k8s_mark
 class TestEnvVars(BaseTestCase):
-    def test_get_str_var(self):
-        # String value
-        var = get_str_var(value="bar")
-        assert var == "bar"
-        # Int value
-        var = get_str_var(value=1)
-        assert var == "1"
-        # Dict value
-        var = get_str_var(value={"moo": "bar"})
-        assert var == '{"moo":"bar"}'
-        # Empty value
-        var = get_str_var(value=None)
-        assert var == ""
-        # 0 value
-        var = get_str_var(value=0)
-        assert var == "0"
-
     def test_get_env_vars(self):
         # String value
         env_var = get_env_var(name="foo", value="bar")
@@ -349,6 +331,8 @@ class TestEnvVars(BaseTestCase):
                 api_host="localhost",
                 api_version="v1",
                 run_instance="foo.bar.runs.run_uuid",
+                namespace="namespace",
+                resource_name="resource_name",
                 use_proxy_env_vars_use_in_ops=False,
             )
 
@@ -366,6 +350,8 @@ class TestEnvVars(BaseTestCase):
             api_host="localhost",
             api_version="v1",
             run_instance="foo.bar.runs.run_uuid",
+            namespace="namespace",
+            resource_name="resource_name",
             use_proxy_env_vars_use_in_ops=False,
         )
         assert len(env_vars) == 7
@@ -375,7 +361,6 @@ class TestEnvVars(BaseTestCase):
         assert EV_KEYS_HOST in env_var_names
         assert EV_KEYS_IS_MANAGED in env_var_names
         assert EV_KEYS_API_VERSION in env_var_names
-        assert EV_KEYS_K8S_POD_ID in env_var_names
         assert EV_KEYS_RUN_INSTANCE in env_var_names
 
         env_vars = get_service_env_vars(
@@ -391,6 +376,8 @@ class TestEnvVars(BaseTestCase):
             api_host="localhost",
             api_version="v1",
             run_instance="foo.bar.runs.run_uuid",
+            namespace="namespace",
+            resource_name="resource_name",
             use_proxy_env_vars_use_in_ops=False,
         )
         assert len(env_vars) == 12
@@ -405,7 +392,6 @@ class TestEnvVars(BaseTestCase):
         assert EV_KEYS_SECRET_KEY in env_var_names
         assert EV_KEYS_SECRET_INTERNAL_TOKEN in env_var_names
         assert EV_KEYS_AUTHENTICATION_TYPE in env_var_names
-        assert EV_KEYS_K8S_POD_ID in env_var_names
         assert EV_KEYS_RUN_INSTANCE in env_var_names
 
         env_vars = get_service_env_vars(
@@ -421,6 +407,8 @@ class TestEnvVars(BaseTestCase):
             api_host="localhost",
             api_version="v1",
             run_instance="foo.bar.runs.run_uuid",
+            namespace="namespace",
+            resource_name="resource_name",
             use_proxy_env_vars_use_in_ops=False,
         )
         assert len(env_vars) == 12
@@ -435,5 +423,4 @@ class TestEnvVars(BaseTestCase):
         assert EV_KEYS_SECRET_KEY in env_var_names
         assert EV_KEYS_AUTH_TOKEN in env_var_names
         assert EV_KEYS_AUTHENTICATION_TYPE in env_var_names
-        assert EV_KEYS_K8S_POD_ID in env_var_names
         assert EV_KEYS_RUN_INSTANCE in env_var_names

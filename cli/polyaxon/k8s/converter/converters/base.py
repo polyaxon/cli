@@ -196,6 +196,8 @@ class BaseConverter(_BaseConverter):
             log_level=log_level,
             api_version=VERSION_V1,
             run_instance=self.run_instance,
+            namespace=self.namespace,
+            resource_name=self.resource_name,
             use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
         )
 
@@ -204,7 +206,10 @@ class BaseConverter(_BaseConverter):
     ) -> Optional[List[k8s_schemas.V1EnvVar]]:
         if self.base_env_vars:
             return get_base_env_vars(
-                settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops, log_level=log_level
+                namespace=self.namespace,
+                resource_name=self.resource_name,
+                use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
+                log_level=log_level,
             )
         return self.get_service_env_vars(
             service_header=PolyaxonServices.RUNNER,
