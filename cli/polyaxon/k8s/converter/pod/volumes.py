@@ -32,10 +32,6 @@ from polyaxon.k8s.converter.common.volumes import (
     get_volume_from_secret,
     get_volume_name,
 )
-from polyaxon.k8s.converter.main.k8s_resources import (
-    get_requested_config_maps,
-    get_requested_secrets,
-)
 from polyaxon.polyflow import V1Init, V1Plugins
 
 
@@ -69,11 +65,13 @@ def get_pod_volumes(
 
     requested_connections = [connection_by_names[c] for c in requested_connection_names]
 
-    requested_config_maps = get_requested_config_maps(
-        config_maps=config_maps, connections=requested_connections
+    requested_config_maps = V1Connection.get_requested_resources(
+        resources=config_maps,
+        connections=requested_connections,
+        resource_key="config_map",
     )
-    requested_secrets = get_requested_secrets(
-        secrets=secrets, connections=requested_connections
+    requested_secrets = V1Connection.get_requested_resources(
+        resources=secrets, connections=requested_connections, resource_key="secret"
     )
 
     def add_volume_from_connection(connection: V1Connection):

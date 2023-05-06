@@ -24,10 +24,6 @@ from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.k8s.converter.common.env_vars import get_env_from_k8s_resources
 from polyaxon.k8s.converter.main.env_vars import get_env_vars
-from polyaxon.k8s.converter.main.k8s_resources import (
-    get_requested_config_maps,
-    get_requested_secrets,
-)
 from polyaxon.k8s.converter.main.volumes import get_volume_mounts
 from polyaxon.polyflow import V1Init, V1Plugins
 
@@ -66,11 +62,13 @@ def get_main_container(
             connections.append(artifacts_store.name)
 
     requested_connections = [connection_by_names[c] for c in connections]
-    requested_config_maps = get_requested_config_maps(
-        config_maps=config_maps, connections=requested_connections
+    requested_config_maps = V1Connection.get_requested_resources(
+        resources=config_maps,
+        connections=requested_connections,
+        resource_key="config_map",
     )
-    requested_secrets = get_requested_secrets(
-        secrets=secrets, connections=requested_connections
+    requested_secrets = V1Connection.get_requested_resources(
+        resources=secrets, connections=requested_connections, resource_key="secret"
     )
 
     # Mounts

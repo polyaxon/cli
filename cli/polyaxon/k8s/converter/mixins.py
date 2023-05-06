@@ -102,11 +102,14 @@ class MPIJobMixin(BaseMixin):
 
 
 MIXIN_MAPPING: Dict = {
-    V1RunKind.NOTIFIER: NotifierMixin,
     V1RunKind.JOB: JobMixin,
+    V1RunKind.NOTIFIER: NotifierMixin,
+    V1RunKind.CLEANER: CleanerMixin,
+    V1RunKind.TUNER: TunerMixin,
     V1RunKind.SERVICE: ServiceMixin,
     V1RunKind.TFJOB: TFJobMixin,
     V1RunKind.PYTORCHJOB: PytorchJobMixin,
+    V1RunKind.PADDLEJOB: PaddleJobMixin,
     V1RunKind.MXJOB: MXJobMixin,
     V1RunKind.XGBJOB: XGBoostJobMixin,
     V1RunKind.MPIJOB: MPIJobMixin,

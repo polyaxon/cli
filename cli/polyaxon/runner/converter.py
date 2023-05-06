@@ -202,5 +202,5 @@ class BaseConverter:
             env += proxy_env
         return env
 
-    def get_resource(self, **kwargs) -> Dict:
+    def get_resource(self, **kwargs) -> Any:
         raise NotImplementedError
