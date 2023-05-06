@@ -186,7 +186,7 @@ class BaseConverter(_BaseConverter):
         return get_base_env_vars(
             namespace=namespace,
             resource_name=resource_name,
-            use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
+            use_proxy_env_vars_use_in_ops=use_proxy_env_vars_use_in_ops,
             log_level=log_level,
         )
 

@@ -107,7 +107,8 @@ class BaseConverter:
         else:
             return clean_host(settings.CLIENT_CONFIG.host)
 
-    def filter_connections_from_init(self, init: List[V1Init]) -> List[V1Init]:
+    @staticmethod
+    def filter_connections_from_init(init: List[V1Init]) -> List[V1Init]:
         return [i for i in init if i.has_connection()]
 
     def _get_service_env_vars(
