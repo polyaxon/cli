@@ -17,13 +17,14 @@
 
 import os
 
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.json import orjson_dumps, orjson_loads
 from clipped.utils.lists import to_list
 
 from polyaxon.connections import CONNECTION_CONFIG, V1Connection, V1ConnectionResource
+from polyaxon.docker import docker_types
 from polyaxon.env_vars.keys import (
     EV_KEYS_API_VERSION,
     EV_KEYS_AUTH_TOKEN,
@@ -44,7 +45,7 @@ from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.services.headers import PolyaxonServiceHeaders
 
 
-def get_env_var(name: str, value: Any) -> Tuple[str, str]:
+def get_env_var(name: str, value: Any) -> docker_types.V1EnvVar:
     if not isinstance(value, str):
         try:
             value = orjson_dumps(value)
@@ -54,7 +55,7 @@ def get_env_var(name: str, value: Any) -> Tuple[str, str]:
     return name, value
 
 
-def get_kv_env_vars(kv_env_vars: List[List]) -> List[Tuple[str, str]]:
+def get_kv_env_vars(kv_env_vars: List[List]) -> List[docker_types.V1EnvVar]:
     env_vars = []
     if not kv_env_vars:
         return env_vars
@@ -69,7 +70,9 @@ def get_kv_env_vars(kv_env_vars: List[List]) -> List[Tuple[str, str]]:
     return env_vars
 
 
-def get_from_json_env_var(resource: V1ConnectionResource) -> List[Tuple[str, str]]:
+def get_from_json_env_var(
+    resource: V1ConnectionResource,
+) -> List[docker_types.V1EnvVar]:
     if not resource or resource.items or resource.mount_path:
         return []
 
@@ -86,7 +89,7 @@ def get_from_json_env_var(resource: V1ConnectionResource) -> List[Tuple[str, str
 
 def get_item_from_json_env_var(
     key: str, resource_ref_name: str
-) -> Optional[Tuple[str, str]]:
+) -> Optional[docker_types.V1EnvVar]:
     secret = os.environ.get(resource_ref_name)
     if not secret:
         return None
@@ -101,7 +104,7 @@ def get_item_from_json_env_var(
 
 def get_items_from_json_env_var(
     resource: V1ConnectionResource,
-) -> List[Tuple[str, str]]:
+) -> List[docker_types.V1EnvVar]:
     items_from = []
     if not resource or not resource.items:
         return items_from
@@ -118,7 +121,7 @@ def get_items_from_json_env_var(
 
 def get_env_vars_from_resources(
     secrets: Iterable[V1ConnectionResource], config_maps: Iterable[V1ConnectionResource]
-) -> List[Tuple[str, str]]:
+) -> List[docker_types.V1EnvVar]:
     secrets = secrets or []
     config_maps = config_maps or []
 
@@ -133,7 +136,7 @@ def get_env_vars_from_resources(
 
 def get_env_from_resource(
     resources: Iterable[V1ConnectionResource],
-) -> List[Tuple[str, str]]:
+) -> List[docker_types.V1EnvVar]:
     resources = resources or []
     results = []
     for resource in resources:
@@ -143,7 +146,7 @@ def get_env_from_resource(
 
 def get_env_from_k8s_resources(
     secrets: Iterable[V1ConnectionResource], config_maps: Iterable[V1ConnectionResource]
-) -> List[Tuple[str, str]]:
+) -> List[docker_types.V1EnvVar]:
     secrets = secrets or []
     config_maps = config_maps or []
 
@@ -186,7 +189,7 @@ def get_service_env_vars(
     resource_name: str,
     use_proxy_env_vars_use_in_ops: bool,
     log_level: str,
-) -> List[Tuple[str, str]]:
+) -> List[docker_types.V1EnvVar]:
     env_vars = get_base_env_vars(
         namespace=namespace,
         resource_name=resource_name,
@@ -246,11 +249,11 @@ def get_service_env_vars(
     return env_vars
 
 
-def get_run_instance_env_var(run_instance: str) -> Tuple[str, str]:
+def get_run_instance_env_var(run_instance: str) -> docker_types.V1EnvVar:
     return get_env_var(name=EV_KEYS_RUN_INSTANCE, value=run_instance)
 
 
-def get_connection_env_var(connection: V1Connection) -> List[Tuple[str, str]]:
+def get_connection_env_var(connection: V1Connection) -> List[docker_types.V1EnvVar]:
     env_vars = []
     if not connection:
         return env_vars
@@ -263,7 +266,7 @@ def get_connection_env_var(connection: V1Connection) -> List[Tuple[str, str]]:
 
 def get_connections_catalog_env_var(
     connections: List[V1Connection],
-) -> Optional[Tuple[str, str]]:
+) -> Optional[docker_types.V1EnvVar]:
     catalog = CONNECTION_CONFIG.get_connections_catalog(connections)
     if not catalog:
         return None
@@ -283,7 +286,7 @@ def get_proxy_env_var(key: str) -> Optional[str]:
     return value
 
 
-def add_proxy_env_var(name: str, value: str) -> List[Tuple[str, str]]:
+def add_proxy_env_var(name: str, value: str) -> List[docker_types.V1EnvVar]:
     return [
         get_env_var(name.upper(), value),
         get_env_var(name, value),
@@ -292,7 +295,7 @@ def add_proxy_env_var(name: str, value: str) -> List[Tuple[str, str]]:
 
 def get_proxy_env_vars(
     use_proxy_env_vars_use_in_ops: bool,
-) -> List[Tuple[str, str]]:
+) -> List[docker_types.V1EnvVar]:
     if use_proxy_env_vars_use_in_ops:
         env_vars = []
         https_proxy = get_proxy_env_var("HTTPS_PROXY")

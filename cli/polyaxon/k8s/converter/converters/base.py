@@ -16,19 +16,17 @@
 
 import copy
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
-from vents.connections.connection_schema import patch_git
 
 from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
-from polyaxon.connections import V1Connection, V1ConnectionKind, V1ConnectionResource
-from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
-from polyaxon.env_vars.keys import EV_KEYS_NO_API
+from polyaxon.connections import V1Connection, V1ConnectionResource
+from polyaxon.containers.names import SIDECAR_PREFIX
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.annotations import get_connection_annotations
@@ -42,7 +40,6 @@ from polyaxon.k8s.converter.common.env_vars import (
     get_proxy_env_vars,
     get_service_env_vars,
 )
-from polyaxon.k8s.converter.common.mounts import get_mounts
 from polyaxon.k8s.converter.init.artifacts import get_artifacts_path_container
 from polyaxon.k8s.converter.init.auth import get_auth_context_container
 from polyaxon.k8s.converter.init.custom import get_custom_init_container
@@ -57,42 +54,22 @@ from polyaxon.k8s.converter.sidecar.container import get_sidecar_container
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
+from polyaxon.schemas.types import (
+    V1ArtifactsType,
+    V1DockerfileType,
+    V1FileType,
+    V1TensorboardType,
+)
 from polyaxon.services.headers import PolyaxonServiceHeaders
 
 
 class BaseConverter(_BaseConverter):
-    GROUP = None
-    API_VERSION = None
-    PLURAL = None
-    K8S_ANNOTATIONS_KIND = None
-    K8S_LABELS_COMPONENT = None
-    K8S_LABELS_PART_OF = None
-
-    def __init__(
-        self,
-        owner_name: str,
-        project_name: str,
-        run_name: str,
-        run_uuid: str,
-        run_path: Optional[str] = None,
-        namespace: str = "default",
-        internal_auth: bool = False,
-        polyaxon_sidecar: V1PolyaxonSidecarContainer = None,
-        polyaxon_init: V1PolyaxonInitContainer = None,
-        base_env_vars: bool = False,
-    ):
-        super().__init__(
-            owner_name=owner_name,
-            project_name=project_name,
-            run_name=run_name,
-            run_uuid=run_uuid,
-            run_path=run_path,
-            namespace=namespace,
-            internal_auth=internal_auth,
-            base_env_vars=base_env_vars,
-        )
-        self.polyaxon_sidecar = polyaxon_sidecar
-        self.polyaxon_init = polyaxon_init
+    GROUP: Optional[str] = None
+    API_VERSION: Optional[str] = None
+    PLURAL: Optional[str] = None
+    K8S_ANNOTATIONS_KIND: Optional[str] = None
+    K8S_LABELS_COMPONENT: Optional[str] = None
+    K8S_LABELS_PART_OF: Optional[str] = None
 
     def is_valid(self):
         super().is_valid()
@@ -149,7 +126,7 @@ class BaseConverter(_BaseConverter):
         init_connections: Optional[List[V1Init]],
         connections: List[str],
         connection_by_names: Optional[Dict[str, V1Connection]],
-    ):
+    ) -> Dict:
         annotations = annotations or {}
         annotations = copy.copy(annotations)
         connections_annotations = get_connection_annotations(
@@ -163,7 +140,7 @@ class BaseConverter(_BaseConverter):
         annotations.update(self.annotations)
         return sanitize_string_dict(annotations)
 
-    def get_labels(self, version: str, labels: Dict):
+    def get_labels(self, version: str, labels: Dict) -> Dict:
         labels = labels or {}
         labels = copy.copy(labels)
         labels.update(self.get_recommended_labels(version=version))
@@ -199,66 +176,209 @@ class BaseConverter(_BaseConverter):
             use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
         )
 
+    @staticmethod
     def _get_base_env_vars(
-        self,
         namespace: str,
         resource_name: str,
         use_proxy_env_vars_use_in_ops: bool,
         log_level: Optional[str] = None,
     ) -> List[k8s_schemas.V1EnvVar]:
         return get_base_env_vars(
-            namespace=self.namespace,
-            resource_name=self.resource_name,
+            namespace=namespace,
+            resource_name=resource_name,
             use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
             log_level=log_level,
         )
 
-    def _get_env_var(self, name: str, value: Any) -> k8s_schemas.V1EnvVar:
-        raise get_env_var(name=EV_KEYS_NO_API, value=True)
+    @staticmethod
+    def _get_env_var(name: str, value: Any) -> k8s_schemas.V1EnvVar:
+        raise get_env_var(name=name, value=value)
 
-    def _get_proxy_env_vars(self) -> List[k8s_schemas.V1EnvVar]:
-        return get_proxy_env_vars(settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops)
+    @staticmethod
+    def _get_proxy_env_vars(
+        use_proxy_env_vars_use_in_ops: bool,
+    ) -> List[k8s_schemas.V1EnvVar]:
+        return get_proxy_env_vars(
+            use_proxy_env_vars_use_in_ops=use_proxy_env_vars_use_in_ops
+        )
 
-    def get_main_container(
-        self,
+    @staticmethod
+    def _get_main_container(
+        container_id: str,
         main_container: k8s_schemas.V1Container,
         plugins: V1Plugins,
-        artifacts_store: V1Connection,
-        connections: List[str],
-        init_connections: Optional[List[V1Init]],
+        artifacts_store: Optional[V1Connection],
+        init: Optional[List[V1Init]],
+        connections: Optional[List[str]],
         connection_by_names: Dict[str, V1Connection],
-        log_level: str,
         secrets: Optional[Iterable[V1ConnectionResource]],
         config_maps: Optional[Iterable[V1ConnectionResource]],
+        run_path: Optional[str],
         kv_env_vars: List[List] = None,
+        env: List[k8s_schemas.V1EnvVar] = None,
         ports: List[int] = None,
     ) -> k8s_schemas.V1Container:
-        env = self.get_main_env_vars(
-            external_host=plugins.external_host if plugins else False,
-            log_level=log_level,
-        )
-        volume_mounts = get_mounts(
-            use_auth_context=plugins.auth,
-            use_artifacts_context=False,  # Main container has a check and handling for this
-            use_docker_context=plugins.docker,
-            use_shm_context=plugins.shm,
-        )
-
         return get_main_container(
-            container_id=self.MAIN_CONTAINER_ID,
+            container_id=container_id,
             main_container=main_container,
-            volume_mounts=volume_mounts,
             plugins=plugins,
             artifacts_store=artifacts_store,
+            init=init,
             connections=connections,
-            init=init_connections,
             connection_by_names=connection_by_names,
             secrets=secrets,
             config_maps=config_maps,
+            run_path=run_path,
             kv_env_vars=kv_env_vars,
             env=env,
             ports=ports,
-            run_path=self.run_path,
+        )
+
+    @staticmethod
+    def _get_custom_init_container(
+        connection: V1Connection,
+        plugins: V1Plugins,
+        container: Optional[k8s_schemas.V1Container],
+        env: List[k8s_schemas.V1EnvVar] = None,
+        mount_path: Optional[str] = None,
+    ):
+        return get_custom_init_container(
+            connection=connection,
+            plugins=plugins,
+            container=container,
+            env=env,
+            mount_path=mount_path,
+        )
+
+    @staticmethod
+    def _get_dockerfile_init_container(
+        polyaxon_init: V1PolyaxonInitContainer,
+        dockerfile_args: V1DockerfileType,
+        plugins: V1Plugins,
+        run_path: str,
+        run_instance: str,
+        container: Optional[k8s_schemas.V1Container] = None,
+        env: List[k8s_schemas.V1EnvVar] = None,
+        mount_path: Optional[str] = None,
+    ):
+        return get_dockerfile_init_container(
+            polyaxon_init=polyaxon_init,
+            dockerfile_args=dockerfile_args,
+            plugins=plugins,
+            run_path=run_path,
+            run_instance=run_instance,
+            container=container,
+            env=env,
+            mount_path=mount_path,
+        )
+
+    @staticmethod
+    def _get_file_init_container(
+        polyaxon_init: V1PolyaxonInitContainer,
+        file_args: V1FileType,
+        plugins: V1Plugins,
+        run_path: str,
+        run_instance: str,
+        container: Optional[k8s_schemas.V1Container] = None,
+        env: List[k8s_schemas.V1EnvVar] = None,
+        mount_path: Optional[str] = None,
+    ):
+        return get_file_init_container(
+            polyaxon_init=polyaxon_init,
+            file_args=file_args,
+            plugins=plugins,
+            run_path=run_path,
+            run_instance=run_instance,
+            container=container,
+            env=env,
+            mount_path=mount_path,
+        )
+
+    @staticmethod
+    def _get_git_init_container(
+        polyaxon_init: V1PolyaxonInitContainer,
+        connection: V1Connection,
+        plugins: V1Plugins,
+        container: Optional[k8s_schemas.V1Container] = None,
+        env: List[k8s_schemas.V1EnvVar] = None,
+        mount_path: Optional[str] = None,
+        track: bool = False,
+    ):
+        return get_git_init_container(
+            polyaxon_init=polyaxon_init,
+            connection=connection,
+            plugins=plugins,
+            container=container,
+            env=env,
+            mount_path=mount_path,
+            track=track,
+        )
+
+    @staticmethod
+    def _get_store_container(
+        polyaxon_init: V1PolyaxonInitContainer,
+        connection: V1Connection,
+        artifacts: V1ArtifactsType,
+        paths: Union[List[str], List[Tuple[str, str]]],
+        container: Optional[k8s_schemas.V1Container] = None,
+        env: List[k8s_schemas.V1EnvVar] = None,
+        mount_path: Optional[str] = None,
+        is_default_artifacts_store: bool = False,
+    ):
+        return get_store_container(
+            polyaxon_init=polyaxon_init,
+            connection=connection,
+            artifacts=artifacts,
+            paths=paths,
+            container=container,
+            env=env,
+            mount_path=mount_path,
+            is_default_artifacts_store=is_default_artifacts_store,
+        )
+
+    @staticmethod
+    def _get_tensorboard_init_container(
+        polyaxon_init: V1PolyaxonInitContainer,
+        artifacts_store: V1Connection,
+        tb_args: V1TensorboardType,
+        plugins: V1Plugins,
+        run_instance: str,
+        container: Optional[k8s_schemas.V1Container] = None,
+        env: List[k8s_schemas.V1EnvVar] = None,
+        mount_path: Optional[str] = None,
+    ):
+        return get_tensorboard_init_container(
+            polyaxon_init=polyaxon_init,
+            artifacts_store=artifacts_store,
+            tb_args=tb_args,
+            plugins=plugins,
+            run_instance=run_instance,
+            container=container,
+            env=env,
+            mount_path=mount_path,
+        )
+
+    @staticmethod
+    def _get_auth_context_container(
+        polyaxon_init: V1PolyaxonInitContainer,
+        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
+    ) -> k8s_schemas.V1Container:
+        return get_auth_context_container(polyaxon_init=polyaxon_init, env=env)
+
+    @staticmethod
+    def _get_artifacts_path_container(
+        polyaxon_init: V1PolyaxonInitContainer,
+        artifacts_store: V1Connection,
+        run_path: str,
+        auto_resume: bool,
+        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
+    ) -> k8s_schemas.V1Container:
+        return get_artifacts_path_container(
+            polyaxon_init=polyaxon_init,
+            artifacts_store=artifacts_store,
+            run_path=run_path,
+            auto_resume=auto_resume,
+            env=env,
         )
 
     def get_sidecar_containers(
@@ -286,246 +406,7 @@ class BaseConverter(_BaseConverter):
         )
         containers = to_list(polyaxon_sidecar_container, check_none=True)
         containers += sidecar_containers
-        return [sanitize_container(c) for c in containers]
-
-    def handle_init_connections(
-        self,
-        polyaxon_init: V1PolyaxonInitContainer,
-        artifacts_store: V1Connection,
-        init_connections: List[V1Init],
-        connection_by_names: Dict[str, V1Connection],
-        plugins: V1Plugins,
-        log_level: Optional[str] = None,
-    ) -> List[k8s_schemas.V1Container]:
-        containers = []
-        external_host = plugins.external_host if plugins else False
-
-        # Prepare connections that Polyaxon can init automatically
-        for init_connection in init_connections:
-            if init_connection.connection:
-                connection_spec = connection_by_names.get(init_connection.connection)
-                # Handling ssh with git
-                if (
-                    V1ConnectionKind.is_ssh(connection_spec.kind)
-                    and init_connection.git
-                ):
-                    patch_git(connection_spec.schema_, init_connection.git)
-                    containers.append(
-                        get_git_init_container(
-                            polyaxon_init=polyaxon_init,
-                            connection=connection_spec,
-                            container=init_connection.container,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            plugins=plugins,
-                            track=True,
-                        )
-                    )
-                elif V1ConnectionKind.is_git(connection_spec.kind):
-                    if init_connection.git:  # Update the default schema
-                        connection_spec.schema_.patch(init_connection.git)
-                    containers.append(
-                        get_git_init_container(
-                            polyaxon_init=polyaxon_init,
-                            connection=connection_spec,
-                            container=init_connection.container,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            plugins=plugins,
-                            track=True,
-                        )
-                    )
-                elif V1ConnectionKind.is_artifact(connection_spec.kind):
-                    containers.append(
-                        get_store_container(
-                            polyaxon_init=polyaxon_init,
-                            connection=connection_spec,
-                            artifacts=init_connection.artifacts,
-                            paths=init_connection.paths,
-                            container=init_connection.container,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            is_default_artifacts_store=artifacts_store
-                            and init_connection.connection == artifacts_store.name,
-                        )
-                    )
-                else:
-                    containers.append(
-                        get_custom_init_container(
-                            connection=connection_spec,
-                            container=init_connection.container,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            plugins=plugins,
-                        )
-                    )
-            else:
-                # artifacts init without connection should default to the artifactsStore
-                if init_connection.artifacts or init_connection.paths:
-                    containers.append(
-                        get_store_container(
-                            polyaxon_init=polyaxon_init,
-                            connection=artifacts_store,
-                            artifacts=init_connection.artifacts,
-                            paths=init_connection.paths,
-                            container=init_connection.container,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            is_default_artifacts_store=True,
-                        )
-                    )
-                # git init without connection
-                if init_connection.git:
-                    git_name = init_connection.git.get_name()
-                    containers.append(
-                        get_git_init_container(
-                            polyaxon_init=polyaxon_init,
-                            connection=V1Connection(
-                                name=git_name,
-                                kind=V1ConnectionKind.GIT,
-                                schema_=init_connection.git,
-                                secret=None,
-                            ),
-                            container=init_connection.container,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            plugins=plugins,
-                            track=False,
-                        )
-                    )
-                # Dockerfile initialization
-                if init_connection.dockerfile:
-                    containers.append(
-                        get_dockerfile_init_container(
-                            polyaxon_init=polyaxon_init,
-                            dockerfile_args=init_connection.dockerfile,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            container=init_connection.container,
-                            plugins=plugins,
-                            run_path=self.run_path,
-                            run_instance=self.run_instance,
-                        )
-                    )
-                # File initialization
-                if init_connection.file:
-                    containers.append(
-                        get_file_init_container(
-                            polyaxon_init=polyaxon_init,
-                            file_args=init_connection.file,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            container=init_connection.container,
-                            plugins=plugins,
-                            run_path=self.run_path,
-                            run_instance=self.run_instance,
-                        )
-                    )
-                # Tensorboard initialization
-                if init_connection.tensorboard:
-                    containers.append(
-                        get_tensorboard_init_container(
-                            polyaxon_init=polyaxon_init,
-                            artifacts_store=artifacts_store,
-                            tb_args=init_connection.tensorboard,
-                            env=self.get_init_service_env_vars(
-                                external_host=external_host,
-                                log_level=log_level,
-                            ),
-                            mount_path=init_connection.path,
-                            container=init_connection.container,
-                            plugins=plugins,
-                            run_instance=self.run_instance,
-                        )
-                    )
-
         return containers
-
-    def get_init_containers(
-        self,
-        polyaxon_init: V1PolyaxonInitContainer,
-        plugins: V1Plugins,
-        artifacts_store: V1Connection,
-        init_connections: List[V1Init],
-        init_containers: List[k8s_schemas.V1Container],
-        connection_by_names: Dict[str, V1Connection],
-        log_level: Optional[str] = None,
-    ) -> List[k8s_schemas.V1Container]:
-        init_containers = [
-            ensure_container_name(container=c, prefix=INIT_PREFIX)
-            for c in to_list(init_containers, check_none=True)
-        ]
-        init_connections = to_list(init_connections, check_none=True)
-        containers = []
-
-        # Add auth context
-        if plugins and plugins.auth:
-            containers.append(
-                get_auth_context_container(
-                    polyaxon_init=polyaxon_init,
-                    env=self.get_auth_service_env_vars(
-                        external_host=plugins.external_host
-                    ),
-                )
-            )
-
-        # Add outputs
-        if plugins and plugins.collect_artifacts:
-            containers += to_list(
-                get_artifacts_path_container(
-                    polyaxon_init=polyaxon_init,
-                    artifacts_store=artifacts_store,
-                    run_path=self.run_path,
-                    auto_resume=plugins.auto_resume,
-                    env=get_proxy_env_vars(
-                        settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops
-                    ),
-                ),
-                check_none=True,
-            )
-
-        containers += self.handle_init_connections(
-            polyaxon_init=polyaxon_init,
-            artifacts_store=artifacts_store,
-            init_connections=init_connections,
-            connection_by_names=connection_by_names,
-            plugins=plugins,
-            log_level=log_level,
-        )
-        init_containers = containers + init_containers
-        return [sanitize_container(c) for c in init_containers]
-
-    def filter_containers_from_init(
-        self, init: List[V1Init]
-    ) -> List[k8s_schemas.V1Container]:
-        return [i.container for i in init if not i.has_connection()]
-
-    def filter_connections_from_init(self, init: List[V1Init]) -> List[V1Init]:
-        return [i for i in init if i.has_connection()]
 
     def get_replica_resource(
         self,
@@ -578,6 +459,7 @@ class BaseConverter(_BaseConverter):
             connection_by_names=connection_by_names,
             log_level=plugins.log_level,
         )
+        init_containers = [sanitize_container(c) for c in init_containers]
 
         sidecar_containers = self.get_sidecar_containers(
             polyaxon_sidecar=self.polyaxon_sidecar,
@@ -586,6 +468,7 @@ class BaseConverter(_BaseConverter):
             sidecar_containers=sidecars,
             log_level=plugins.log_level,
         )
+        sidecar_containers = [sanitize_container(c) for c in sidecar_containers]
 
         main_container = self.get_main_container(
             main_container=container,
