@@ -23,6 +23,7 @@ from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.k8s.converter.common.env_vars import get_env_from_k8s_resources
+from polyaxon.k8s.converter.common.mounts import get_mounts
 from polyaxon.k8s.converter.main.env_vars import get_env_vars
 from polyaxon.k8s.converter.main.volumes import get_volume_mounts
 from polyaxon.polyflow import V1Init, V1Plugins
@@ -31,7 +32,6 @@ from polyaxon.polyflow import V1Init, V1Plugins
 def get_main_container(
     container_id: str,
     main_container: k8s_schemas.V1Container,
-    volume_mounts: List[k8s_schemas.V1VolumeMount],
     plugins: V1Plugins,
     artifacts_store: Optional[V1Connection],
     init: Optional[List[V1Init]],
@@ -72,7 +72,16 @@ def get_main_container(
     )
 
     # Mounts
-    volume_mounts = to_list(volume_mounts, check_none=True)
+    volume_mounts = (
+        get_mounts(
+            use_auth_context=plugins.auth,
+            use_artifacts_context=False,  # Main container has a check and handling for this
+            use_docker_context=plugins.docker,
+            use_shm_context=plugins.shm,
+        )
+        if plugins
+        else []
+    )
     volume_mounts = volume_mounts + get_volume_mounts(
         plugins=plugins,
         init=init,

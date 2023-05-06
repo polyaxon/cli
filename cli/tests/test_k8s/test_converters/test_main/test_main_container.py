@@ -105,7 +105,6 @@ class TestMainContainer(BaseTestCase):
                 container_id="test",
                 main_container=None,
                 plugins=V1Plugins(collect_artifacts=True, collect_logs=False),
-                volume_mounts=None,
                 artifacts_store=store,
                 init=None,
                 connection_by_names=None,
@@ -138,7 +137,6 @@ class TestMainContainer(BaseTestCase):
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
-            volume_mounts=None,
             artifacts_store=None,
             init=None,
             connection_by_names=None,
@@ -163,11 +161,6 @@ class TestMainContainer(BaseTestCase):
         assert container.volume_mounts == []
 
     def test_get_main_container_simple_params(self):
-        initial_mounts = [
-            k8s_schemas.V1VolumeMount(
-                name="test", mount_path="/mount_test", read_only=True
-            )
-        ]
         resources = k8s_schemas.V1ResourceRequirements(
             requests={"cpu": "1", "memory": "256Mi"},
             limits={"cpu": "1", "memory": "256Mi"},
@@ -183,7 +176,6 @@ class TestMainContainer(BaseTestCase):
                 resources=resources,
             ),
             plugins=None,
-            volume_mounts=initial_mounts,
             artifacts_store=None,
             init=None,
             connection_by_names=None,
@@ -204,14 +196,13 @@ class TestMainContainer(BaseTestCase):
         assert container.ports == [k8s_schemas.V1ContainerPort(container_port=23)]
         assert container.env_from == []
         assert container.resources == resources
-        assert container.volume_mounts == initial_mounts
+        assert container.volume_mounts == []
 
     def test_get_main_container_with_mounted_artifacts_store(self):
         container = get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
-            volume_mounts=None,
             artifacts_store=None,
             init=[V1Init(connection=self.claim_store.name)],
             connections=None,
@@ -244,9 +235,9 @@ class TestMainContainer(BaseTestCase):
                     collect_artifacts=True,
                     collect_logs=True,
                     collect_resources=True,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=None,
             init=[V1Init(connection=self.claim_store.name)],
             connections=None,
@@ -273,7 +264,6 @@ class TestMainContainer(BaseTestCase):
             container_id="",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
-            volume_mounts=None,
             artifacts_store=None,
             init=[V1Init(connection=self.claim_store.name)],
             connections=[self.claim_store.name],
@@ -301,10 +291,12 @@ class TestMainContainer(BaseTestCase):
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
-                    collect_artifacts=True, collect_logs=True, collect_resources=True
+                    collect_artifacts=True,
+                    collect_logs=True,
+                    collect_resources=True,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.claim_store,
             init=None,
             connections=[],
@@ -338,9 +330,9 @@ class TestMainContainer(BaseTestCase):
                     collect_artifacts=True,
                     collect_logs=True,
                     collect_resources=True,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.claim_store,
             init=None,
             connections=[],
@@ -371,10 +363,12 @@ class TestMainContainer(BaseTestCase):
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
-                    collect_artifacts=True, collect_logs=True, collect_resources=True
+                    collect_artifacts=True,
+                    collect_logs=True,
+                    collect_resources=True,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.s3_store,
             init=None,
             connections=None,
@@ -408,9 +402,9 @@ class TestMainContainer(BaseTestCase):
                     collect_artifacts=False,
                     collect_logs=False,
                     collect_resources=False,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.gcs_store,
             init=None,
             connections=None,
@@ -443,9 +437,9 @@ class TestMainContainer(BaseTestCase):
                     collect_logs=True,
                     collect_resources=True,
                     sync_statuses=True,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.s3_store,
             init=None,
             connections=None,
@@ -475,10 +469,12 @@ class TestMainContainer(BaseTestCase):
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
-                    collect_artifacts=True, collect_logs=True, collect_resources=True
+                    collect_artifacts=True,
+                    collect_logs=True,
+                    collect_resources=True,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.s3_store,
             init=None,
             connections=None,
@@ -508,10 +504,12 @@ class TestMainContainer(BaseTestCase):
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
-                    collect_artifacts=True, collect_logs=True, collect_resources=False
+                    collect_artifacts=True,
+                    collect_logs=True,
+                    collect_resources=False,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.s3_store,
             init=None,
             connections=None,
@@ -540,10 +538,12 @@ class TestMainContainer(BaseTestCase):
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
-                    collect_artifacts=True, collect_logs=True, collect_resources=True
+                    collect_artifacts=True,
+                    collect_logs=True,
+                    collect_resources=True,
+                    shm=False,
                 )
             ),
-            volume_mounts=None,
             artifacts_store=self.s3_store,
             init=None,
             connections=None,
@@ -573,7 +573,6 @@ class TestMainContainer(BaseTestCase):
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
-            volume_mounts=None,
             artifacts_store=None,
             init=[
                 V1Init(connection=self.claim_store.name),
@@ -608,7 +607,7 @@ class TestMainContainer(BaseTestCase):
         assert len(container.volume_mounts) == 4
 
     def test_get_main_container_host_paths(self):
-        contexts = V1Plugins(
+        plugins = V1Plugins(
             auth=True,
             docker=False,
             shm=False,
@@ -622,13 +621,6 @@ class TestMainContainer(BaseTestCase):
             sidecar=None,
         )
 
-        volume_mounts = get_mounts(
-            use_auth_context=contexts.auth,
-            use_artifacts_context=False,
-            use_docker_context=contexts.docker,
-            use_shm_context=contexts.shm,
-        )
-
         artifacts_store = V1Connection(
             name="plx-outputs",
             kind=V1ConnectionKind.HOST_PATH,
@@ -640,10 +632,7 @@ class TestMainContainer(BaseTestCase):
         container = get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
-            plugins=V1Plugins.get_or_create(
-                V1Plugins(collect_artifacts=True, collect_logs=True)
-            ),
-            volume_mounts=volume_mounts,
+            plugins=V1Plugins.get_or_create(plugins),
             artifacts_store=artifacts_store,
             init=[],
             connections=[],

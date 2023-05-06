@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+from typing import List, Optional
 
 from clipped.utils.lists import to_list
 
@@ -26,7 +26,8 @@ from polyaxon.k8s.converter.common.mounts import get_auth_context_mount
 
 
 def get_auth_context_container(
-    polyaxon_init: V1PolyaxonInitContainer, env: List[k8s_schemas.V1EnvVar] = None
+    polyaxon_init: V1PolyaxonInitContainer,
+    env: Optional[List[k8s_schemas.V1EnvVar]] = None,
 ) -> k8s_schemas.V1Container:
     env = to_list(env, check_none=True)
     container = k8s_schemas.V1Container(

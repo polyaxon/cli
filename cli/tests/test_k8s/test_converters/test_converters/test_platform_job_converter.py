@@ -575,7 +575,9 @@ class TestJobConverter(BaseTestCase):
             schema_=V1BucketConnection(bucket="s3://foo"),
             secret=None,
         )
-        plugins = V1Plugins.get_or_create(V1Plugins(), auth=True)
+        plugins = V1Plugins.get_or_create(
+            V1Plugins(collect_artifacts=False, docker=False, shm=False), auth=True
+        )
         main_container = k8s_schemas.V1Container(
             name="main",
             image="foo/test",
@@ -600,12 +602,6 @@ class TestJobConverter(BaseTestCase):
             container_id="dummy",
             main_container=main_container,
             plugins=plugins,
-            volume_mounts=get_mounts(
-                use_auth_context=True,
-                use_artifacts_context=False,
-                use_docker_context=False,
-                use_shm_context=False,
-            ),
             artifacts_store=store,
             connections=[],
             init=[],
