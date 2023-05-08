@@ -40,7 +40,7 @@ class DummyConverter(BaseConverter):
     def get_main_env_vars(self, external_host: bool = False, **kwargs):
         pass
 
-    def get_resource(self):
+    def get_resource(self, **kwargs):
         pass
 
 

@@ -34,7 +34,6 @@ from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
     get_connections_catalog_env_var,
@@ -48,12 +47,15 @@ from polyaxon.k8s.converter.common.mounts import (
 )
 from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.k8s.converter.init.store import (
-    cp_mount_args,
-    cp_store_args,
     get_base_store_container,
-    get_or_create_args,
     get_store_container,
     get_volume_args,
+)
+from polyaxon.runner.converter.common import constants
+from polyaxon.runner.converter.init.store import (
+    cp_mount_args,
+    cp_store_args,
+    get_or_create_args,
 )
 from polyaxon.schemas.types import V1ArtifactsType
 from polyaxon.utils.test_utils import BaseTestCase

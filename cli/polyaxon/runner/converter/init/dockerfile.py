@@ -36,49 +36,19 @@ from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
 from polyaxon.schemas.types import V1DockerfileType
 
+INIT_DOCKERFILE_COMMAND = ["polyaxon", "docker", "generate"]
+
 
 def get_dockerfile_init_container(
-    polyaxon_init: V1PolyaxonInitContainer,
     dockerfile_args: V1DockerfileType,
-    plugins: V1Plugins,
     run_path: str,
-    run_instance: str,
-    container: Optional[k8s_schemas.V1Container] = None,
-    env: List[k8s_schemas.V1EnvVar] = None,
     mount_path: Optional[str] = None,
-) -> k8s_schemas.V1Container:
-    env = to_list(env, check_none=True)
-    env = env + [get_run_instance_env_var(run_instance)]
-
-    container_name = generate_container_name(INIT_DOCKERFILE_CONTAINER_PREFIX)
-    if not container:
-        container = k8s_schemas.V1Container(name=container_name)
-
-    volume_name = (
-        get_volume_name(mount_path) if mount_path else constants.VOLUME_MOUNT_ARTIFACTS
-    )
-    mount_path = mount_path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
-    volume_mounts = [
-        get_connections_context_mount(name=volume_name, mount_path=mount_path)
+) -> List[str]:
+    return [
+        "--build-context={}".format(dockerfile_args.to_json()),
+        "--destination={}".format(mount_path),
+        "--copy-path={}".format(
+            ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)
+        ),
+        "--track",
     ]
-    if plugins and plugins.auth:
-        volume_mounts.append(get_auth_context_mount(read_only=True))
-
-    return patch_container(
-        container=container,
-        name=container_name,
-        image=polyaxon_init.get_image(),
-        image_pull_policy=polyaxon_init.image_pull_policy,
-        command=["polyaxon", "docker", "generate"],
-        args=[
-            "--build-context={}".format(dockerfile_args.to_json()),
-            "--destination={}".format(mount_path),
-            "--copy-path={}".format(
-                ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)
-            ),
-            "--track",
-        ],
-        env=env,
-        volume_mounts=volume_mounts,
-        resources=polyaxon_init.get_resources(),
-    )

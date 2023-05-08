@@ -48,11 +48,12 @@ def agent():
 def start(kind, max_retries, sleep_interval):
     from polyaxon import settings
     from polyaxon.env_vars.getters import get_agent_info
-    from polyaxon.runner.agent import AgentKind, BaseAgent
+    from polyaxon.runner.agent import BaseAgent
+    from polyaxon.runner.kind import RunnerKind
 
-    kind = kind or AgentKind.K8S
+    kind = kind or RunnerKind.K8S
 
-    if kind == AgentKind.K8S:
+    if kind == RunnerKind.K8S:
         from polyaxon.k8s.agent import Agent
     else:
         logger.error("Received an unsupported agent kind: `{}`".format(kind))

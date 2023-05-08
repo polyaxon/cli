@@ -57,3 +57,8 @@ def generate_container_name(
     else:
         suffix = unique_value
     return "{}-{}".format(prefix, suffix)
+
+
+def sanitize_container_name(name: str) -> str:
+    name = name.replace("_", "-")
+    return name.lower()

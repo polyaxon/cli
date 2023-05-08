@@ -25,7 +25,6 @@ from polyaxon.connections import (
     V1HostPathConnection,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.mounts import (
     get_artifacts_context_mount,
     get_auth_context_mount,
@@ -36,6 +35,7 @@ from polyaxon.k8s.converter.common.mounts import (
     get_mounts,
     get_shm_context_mount,
 )
+from polyaxon.runner.converter.common import constants
 from polyaxon.utils.test_utils import BaseTestCase
 
 

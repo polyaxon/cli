@@ -14,8 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
-V1EnvVar = Tuple[str, str]
-V1VolumeMount = Tuple[str, str]
-V1Container = List[str]
+from pydantic import Field
+
+from polyaxon.schemas.base import BaseSchemaModel
+
+V1EnvVar = Union[Tuple[str, str], Dict[str, str]]
+V1VolumeMount = Union[Tuple[str, str], Dict[str, str]]
+V1ContainerPort = Union[Tuple[str, str], Dict[str, str]]
+
+
+class V1ResourceRequirements(BaseSchemaModel):
+    cpus: Optional[float]
+    memory: Optional[float]
+    gpus: Optional[str]
+
+
+class V1Container(BaseSchemaModel):
+    image: str
+    name: Optional[str]
+    command: Optional[List[str]]
+    args: Optional[List[str]]
+    env: Optional[List[V1EnvVar]]
+    volume_mounts: Optional[List[V1VolumeMount]] = Field(alias="volumeMounts")
+    resources: Optional[V1ResourceRequirements]
+    working_dir: Optional[str] = Field(alias="workingDir")

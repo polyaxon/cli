@@ -14,9 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Iterable, Optional
+from typing import Dict, Iterable, List, Optional
 
 from polyaxon.connections import V1Connection, V1ConnectionResource
+from polyaxon.docker import docker_types
 from polyaxon.docker.converter.converters.base import BaseConverter
 from polyaxon.docker.converter.mixins import ServiceMixin
 from polyaxon.polyflow import V1CompiledOperation, V1Plugins, V1Service
@@ -32,13 +33,13 @@ class ServiceConverter(ServiceMixin, BaseConverter):
         config_maps: Optional[Iterable[V1ConnectionResource]],
         default_sa: Optional[str] = None,
         default_auth: bool = False,
-    ) -> str:
+    ) -> List[docker_types.V1Container]:
         service = compiled_operation.run  # type: V1Service
         plugins = V1Plugins.get_or_create(
             config=compiled_operation.plugins, auth=default_auth
         )
         kv_env_vars = compiled_operation.get_env_io()
-        return self.get_container_cmd(
+        return self.get_replica_resource(
             plugins=plugins,
             environment=service.environment,
             volumes=service.volumes,

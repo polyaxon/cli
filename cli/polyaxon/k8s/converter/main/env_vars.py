@@ -66,7 +66,6 @@ def get_env_vars(
     # Add connection env vars information
     for connection in connections:
         try:
-            secret = connection.secret
             env_vars += to_list(
                 get_connection_env_var(connection=connection),
                 check_none=True,

@@ -21,7 +21,6 @@ from clipped.utils.lists import to_list
 from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.mounts import (
     get_artifacts_context_mount,
     get_connections_context_mount,
@@ -30,6 +29,7 @@ from polyaxon.k8s.converter.common.mounts import (
 )
 from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.polyflow import V1Init, V1Plugins
+from polyaxon.runner.converter.common import constants
 
 
 def get_volume_mounts(

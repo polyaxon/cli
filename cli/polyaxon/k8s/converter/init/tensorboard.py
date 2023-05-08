@@ -18,7 +18,6 @@ from typing import List, Optional
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.lists import to_list
-from clipped.utils.validation import validate_tags
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
 from polyaxon.connections import V1Connection
@@ -28,7 +27,6 @@ from polyaxon.containers.names import (
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.env_vars import get_run_instance_env_var
 from polyaxon.k8s.converter.common.mounts import (
     get_auth_context_mount,
@@ -37,25 +35,9 @@ from polyaxon.k8s.converter.common.mounts import (
 from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.k8s.converter.init.store import get_base_store_container
 from polyaxon.polyflow import V1Plugins
+from polyaxon.runner.converter.common import constants
+from polyaxon.runner.converter.init.tensorboard import get_tensorboard_args
 from polyaxon.schemas.types import V1TensorboardType
-
-
-def _get_args(tb_args: V1TensorboardType):
-    args = []
-    if tb_args.port:
-        args.append("--port={}".format(tb_args.port))
-    if tb_args.uuids:
-        uuids = validate_tags(tb_args.uuids, validate_yaml=True)
-        args.append("--uuids={}".format(",".join(uuids)))
-    if tb_args.use_names:
-        args.append("--use-names")
-    if tb_args.path_prefix:
-        args.append("--path-prefix={}".format(tb_args.path_prefix)),
-    if tb_args.plugins:
-        plugins = validate_tags(tb_args.plugins, validate_yaml=True)
-        args.append("--plugins={}".format(",".join(plugins)))
-
-    return args
 
 
 def get_tensorboard_init_container(
@@ -90,7 +72,7 @@ def get_tensorboard_init_container(
         "--context-to={}".format(mount_path),
         "--connection-kind={}".format(get_enum_value(artifacts_store.kind)),
     ]
-    args += _get_args(tb_args)
+    args += get_tensorboard_args(tb_args)
 
     return get_base_store_container(
         container=container,

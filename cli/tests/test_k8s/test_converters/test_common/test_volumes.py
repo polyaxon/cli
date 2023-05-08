@@ -26,7 +26,6 @@ from polyaxon.connections import (
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.volumes import (
     get_artifacts_context_volume,
     get_configs_context_volume,
@@ -38,6 +37,7 @@ from polyaxon.k8s.converter.common.volumes import (
     get_volume_from_connection,
     get_volume_from_secret,
 )
+from polyaxon.runner.converter.common import constants
 from polyaxon.utils.test_utils import BaseTestCase
 
 

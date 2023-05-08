@@ -19,7 +19,6 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional, Tuple
 
-from clipped.utils.enums import PEnum
 from clipped.utils.tz import now
 from clipped.utils.workers import exit_context, get_pool_workers, get_wait
 from kubernetes.client.rest import ApiException
@@ -33,12 +32,6 @@ from polyaxon.logger import logger
 from polyaxon.schemas.cli.checks_config import ChecksConfig
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
-
-
-class AgentKind(str, PEnum):
-    K8S = "k8s"
-    PROCESS = "process"
-    DOCKER = "docker"
 
 
 class BaseAgent:

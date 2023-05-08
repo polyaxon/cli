@@ -25,7 +25,6 @@ from polyaxon.containers.names import (
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.k8s.converter.common.env_vars import get_run_instance_env_var
 from polyaxon.k8s.converter.common.mounts import (
@@ -34,6 +33,7 @@ from polyaxon.k8s.converter.common.mounts import (
 )
 from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
+from polyaxon.runner.converter.common import constants
 from polyaxon.schemas.types import V1FileType
 
 

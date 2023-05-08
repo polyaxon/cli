@@ -23,13 +23,15 @@ from vents.connections.connection_schema import patch_git
 from polyaxon import settings
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection, V1ConnectionKind, V1ConnectionResource
-from polyaxon.containers.names import INIT_PREFIX
+from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.docker import docker_types
 from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.containers import ensure_container_name
-from polyaxon.polyflow import V1Init, V1Plugins
+from polyaxon.polyflow import V1CompiledOperation, V1Init, V1Plugins
+from polyaxon.runner.converter.common.containers import ensure_container_name
+from polyaxon.runner.converter.types import Container, EnvVar, Resource
+from polyaxon.runner.kind import RunnerKind
 from polyaxon.schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,
@@ -42,12 +44,9 @@ from polyaxon.services.values import PolyaxonServices
 from polyaxon.utils.fqn_utils import get_resource_name, get_run_instance
 from polyaxon.utils.host_utils import get_api_host
 
-EnvVar = Union[k8s_schemas.V1EnvVar, docker_types.V1EnvVar]
-Container = Union[k8s_schemas.V1Container, docker_types.V1Container]
-ResourceSpec = Union[Dict, List[str]]
-
 
 class BaseConverter:
+    RUNNER_KIND: RunnerKind = None
     SPEC_KIND: Optional[str] = None
     MAIN_CONTAINER_ID: Optional[str] = None
 
@@ -87,6 +86,10 @@ class BaseConverter:
         return get_resource_name(self.run_uuid)
 
     def is_valid(self):
+        if not self.RUNNER_KIND:
+            raise PolyaxonConverterError(
+                "Please make sure that a converter subclass has a valid RUNNER_KIND"
+            )
         if not self.SPEC_KIND:
             raise PolyaxonConverterError(
                 "Please make sure that a converter subclass has a valid SPEC_KIND"
@@ -111,6 +114,10 @@ class BaseConverter:
     def filter_connections_from_init(init: List[V1Init]) -> List[V1Init]:
         return [i for i in init if i.has_connection()]
 
+    @staticmethod
+    def filter_containers_from_init(init: List[V1Init]) -> List[Container]:
+        return [i.container for i in init if not i.has_connection()]
+
     def _get_service_env_vars(
         self,
         service_header: str,
@@ -121,7 +128,7 @@ class BaseConverter:
         authentication_type: Optional[str] = None,
         external_host: bool = False,
         log_level: Optional[str] = None,
-    ) -> List[Union[k8s_schemas.V1EnvVar, docker_types.V1EnvVar]]:
+    ) -> List[EnvVar]:
         raise NotImplementedError
 
     def get_main_env_vars(
@@ -215,11 +222,6 @@ class BaseConverter:
             env += proxy_env
         return env
 
-    def filter_containers_from_init(
-        self, init: List[V1Init]
-    ) -> List[k8s_schemas.V1Container]:
-        return [i.container for i in init if not i.has_connection()]
-
     @staticmethod
     def _get_env_var(name: str, value: Any) -> EnvVar:
         raise NotImplementedError
@@ -238,9 +240,26 @@ class BaseConverter:
         raise NotImplementedError
 
     @staticmethod
+    def _get_sidecar_container(
+        container_id: str,
+        polyaxon_sidecar: V1PolyaxonSidecarContainer,
+        env: List[EnvVar],
+        artifacts_store: V1Connection,
+        plugins: V1Plugins,
+        run_path: Optional[str],
+    ) -> Optional[Container]:
+        raise NotImplementedError
+
+    @classmethod
+    def _ensure_container(
+        cls, container: Container, volumes: List[k8s_schemas.V1Volume]
+    ) -> docker_types.V1Container:
+        raise NotImplementedError
+
+    @staticmethod
     def _get_main_container(
         container_id: str,
-        main_container: k8s_schemas.V1Container,
+        main_container: Container,
         plugins: V1Plugins,
         artifacts_store: Optional[V1Connection],
         init: Optional[List[V1Init]],
@@ -250,7 +269,7 @@ class BaseConverter:
         config_maps: Optional[Iterable[V1ConnectionResource]],
         run_path: Optional[str],
         kv_env_vars: List[List] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        env: List[EnvVar] = None,
         ports: List[int] = None,
     ) -> Container:
         raise NotImplementedError
@@ -259,8 +278,8 @@ class BaseConverter:
     def _get_custom_init_container(
         connection: V1Connection,
         plugins: V1Plugins,
-        container: Optional[k8s_schemas.V1Container],
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[Container],
+        env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
     ) -> Container:
         raise NotImplementedError
@@ -272,8 +291,8 @@ class BaseConverter:
         plugins: V1Plugins,
         run_path: str,
         run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[Container] = None,
+        env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
     ) -> Container:
         raise NotImplementedError
@@ -285,8 +304,8 @@ class BaseConverter:
         plugins: V1Plugins,
         run_path: str,
         run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[Container] = None,
+        env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
     ) -> Container:
         raise NotImplementedError
@@ -296,8 +315,8 @@ class BaseConverter:
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         plugins: V1Plugins,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[Container] = None,
+        env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
         track: bool = False,
     ) -> Container:
@@ -309,8 +328,8 @@ class BaseConverter:
         connection: V1Connection,
         artifacts: V1ArtifactsType,
         paths: Union[List[str], List[Tuple[str, str]]],
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[Container] = None,
+        env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
         is_default_artifacts_store: bool = False,
     ) -> Container:
@@ -323,8 +342,8 @@ class BaseConverter:
         tb_args: V1TensorboardType,
         plugins: V1Plugins,
         run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[Container] = None,
+        env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
     ) -> Container:
         raise NotImplementedError
@@ -332,7 +351,7 @@ class BaseConverter:
     @staticmethod
     def _get_auth_context_container(
         polyaxon_init: V1PolyaxonInitContainer,
-        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
+        env: Optional[List[EnvVar]] = None,
     ) -> Container:
         raise NotImplementedError
 
@@ -342,7 +361,7 @@ class BaseConverter:
         artifacts_store: V1Connection,
         run_path: str,
         auto_resume: bool,
-        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
+        env: Optional[List[EnvVar]] = None,
     ) -> Container:
         raise NotImplementedError
 
@@ -354,6 +373,7 @@ class BaseConverter:
         connection_by_names: Dict[str, V1Connection],
         plugins: V1Plugins,
         log_level: Optional[str] = None,
+        volumes: Optional[List[k8s_schemas.V1Volume]] = None,
     ) -> List[Container]:
         containers = []
         external_host = plugins.external_host if plugins else False
@@ -372,7 +392,9 @@ class BaseConverter:
                         self._get_git_init_container(
                             polyaxon_init=polyaxon_init,
                             connection=connection_spec,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             env=self.get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
@@ -389,7 +411,9 @@ class BaseConverter:
                         self._get_git_init_container(
                             polyaxon_init=polyaxon_init,
                             connection=connection_spec,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             env=self.get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
@@ -406,7 +430,9 @@ class BaseConverter:
                             connection=connection_spec,
                             artifacts=init_connection.artifacts,
                             paths=init_connection.paths,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             env=self.get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
@@ -420,7 +446,9 @@ class BaseConverter:
                     containers.append(
                         self._get_custom_init_container(
                             connection=connection_spec,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             env=self.get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
@@ -438,7 +466,9 @@ class BaseConverter:
                             connection=artifacts_store,
                             artifacts=init_connection.artifacts,
                             paths=init_connection.paths,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             env=self.get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
@@ -459,7 +489,9 @@ class BaseConverter:
                                 schema_=init_connection.git,
                                 secret=None,
                             ),
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             env=self.get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
@@ -480,7 +512,9 @@ class BaseConverter:
                                 log_level=log_level,
                             ),
                             mount_path=init_connection.path,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             plugins=plugins,
                             run_path=self.run_path,
                             run_instance=self.run_instance,
@@ -497,7 +531,9 @@ class BaseConverter:
                                 log_level=log_level,
                             ),
                             mount_path=init_connection.path,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             plugins=plugins,
                             run_path=self.run_path,
                             run_instance=self.run_instance,
@@ -515,7 +551,9 @@ class BaseConverter:
                                 log_level=log_level,
                             ),
                             mount_path=init_connection.path,
-                            container=init_connection.container,
+                            container=self._ensure_container(
+                                init_connection.container, volumes=volumes
+                            ),
                             plugins=plugins,
                             run_instance=self.run_instance,
                         )
@@ -529,12 +567,15 @@ class BaseConverter:
         plugins: V1Plugins,
         artifacts_store: V1Connection,
         init_connections: List[V1Init],
-        init_containers: List[k8s_schemas.V1Container],
+        init_containers: List[Container],
         connection_by_names: Dict[str, V1Connection],
         log_level: Optional[str] = None,
-    ) -> List[k8s_schemas.V1Container]:
+        volumes: Optional[List[k8s_schemas.V1Volume]] = None,
+    ) -> List[Container]:
         init_containers = [
-            ensure_container_name(container=c, prefix=INIT_PREFIX)
+            self._ensure_container(
+                ensure_container_name(container=c, prefix=INIT_PREFIX), volumes=volumes
+            )
             for c in to_list(init_containers, check_none=True)
         ]
         init_connections = to_list(init_connections, check_none=True)
@@ -573,12 +614,41 @@ class BaseConverter:
             connection_by_names=connection_by_names,
             plugins=plugins,
             log_level=log_level,
+            volumes=volumes,
         )
         return containers + init_containers
 
+    def get_sidecar_containers(
+        self,
+        polyaxon_sidecar: V1PolyaxonSidecarContainer,
+        plugins: V1Plugins,
+        artifacts_store: V1Connection,
+        sidecar_containers: List[Container],
+        log_level: Optional[str] = None,
+        volumes: Optional[List[k8s_schemas.V1Volume]] = None,
+    ) -> List[Container]:
+        sidecar_containers = [
+            ensure_container_name(container=c, prefix=SIDECAR_PREFIX)
+            for c in to_list(sidecar_containers, check_none=True)
+        ]
+        polyaxon_sidecar_container = self._get_sidecar_container(
+            container_id=self.MAIN_CONTAINER_ID,
+            polyaxon_sidecar=polyaxon_sidecar,
+            env=self.get_polyaxon_sidecar_service_env_vars(
+                external_host=plugins.external_host if plugins else False,
+                log_level=log_level,
+            ),
+            artifacts_store=artifacts_store,
+            plugins=plugins,
+            run_path=self.run_path,
+        )
+        containers = to_list(polyaxon_sidecar_container, check_none=True)
+        containers += sidecar_containers
+        return [self._ensure_container(c, volumes) for c in containers]
+
     def get_main_container(
         self,
-        main_container: k8s_schemas.V1Container,
+        main_container: Container,
         plugins: V1Plugins,
         artifacts_store: V1Connection,
         connections: List[str],
@@ -587,8 +657,8 @@ class BaseConverter:
         log_level: str,
         secrets: Optional[Iterable[V1ConnectionResource]],
         config_maps: Optional[Iterable[V1ConnectionResource]],
-        kv_env_vars: List[List] = None,
-        ports: List[int] = None,
+        kv_env_vars: Optional[List[List]] = None,
+        ports: Optional[List[int]] = None,
     ) -> Container:
         env = self.get_main_env_vars(
             external_host=plugins.external_host if plugins else False,
@@ -610,5 +680,14 @@ class BaseConverter:
             run_path=self.run_path,
         )
 
-    def get_resource(self, **kwargs) -> ResourceSpec:
+    def get_resource(
+        self,
+        compiled_operation: V1CompiledOperation,
+        artifacts_store: V1Connection,
+        connection_by_names: Dict[str, V1Connection],
+        secrets: Optional[Iterable[V1ConnectionResource]],
+        config_maps: Optional[Iterable[V1ConnectionResource]],
+        default_sa: Optional[str] = None,
+        default_auth: bool = False,
+    ) -> Resource:
         raise NotImplementedError

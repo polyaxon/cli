@@ -20,9 +20,10 @@ from typing import Dict, List, Optional
 from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_value
 
-from polyaxon.containers.names import generate_container_name
+from polyaxon.containers.names import sanitize_container_name
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.container_resources import sanitize_resources
+from polyaxon.runner.converter.common.containers import sanitize_container_command_args
 
 
 def patch_container(
@@ -60,37 +61,6 @@ def patch_container(
         container.args = args
 
     return sanitize_container(container)
-
-
-def sanitize_container_name(name: str) -> str:
-    name = name.replace("_", "-")
-    return name.lower()
-
-
-def ensure_container_name(
-    container: k8s_schemas.V1Container, prefix: Optional[str] = None
-) -> k8s_schemas.V1Container:
-    if not container:
-        return container
-
-    name = container.name
-    if not name:
-        container.name = generate_container_name(prefix=prefix)
-    return container
-
-
-def sanitize_container_command_args(
-    container: k8s_schemas.V1Container,
-) -> k8s_schemas.V1Container:
-    # Sanitize container command/args
-    if container.command:
-        container.command = [
-            str(c) for c in to_list(container.command, check_none=True) if c
-        ]
-    if container.args:
-        container.args = [str(c) for c in to_list(container.args, check_none=True) if c]
-
-    return container
 
 
 def sanitize_container_env(

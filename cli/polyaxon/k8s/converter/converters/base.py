@@ -18,7 +18,6 @@ import copy
 
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
 
@@ -26,14 +25,10 @@ from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection, V1ConnectionResource
-from polyaxon.containers.names import SIDECAR_PREFIX
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.annotations import get_connection_annotations
-from polyaxon.k8s.converter.common.containers import (
-    ensure_container_name,
-    sanitize_container,
-)
+from polyaxon.k8s.converter.common.containers import sanitize_container
 from polyaxon.k8s.converter.common.env_vars import (
     get_base_env_vars,
     get_env_var,
@@ -54,6 +49,7 @@ from polyaxon.k8s.converter.sidecar.container import get_sidecar_container
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
+from polyaxon.runner.kind import RunnerKind
 from polyaxon.schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,
@@ -64,6 +60,7 @@ from polyaxon.services.headers import PolyaxonServiceHeaders
 
 
 class BaseConverter(_BaseConverter):
+    RUNNER_KIND = RunnerKind.K8S
     GROUP: Optional[str] = None
     API_VERSION: Optional[str] = None
     PLURAL: Optional[str] = None
@@ -98,7 +95,7 @@ class BaseConverter(_BaseConverter):
                 "Please make sure that a converter subclass has a valid K8S_LABELS_PART_OF"
             )
 
-    def get_recommended_labels(self, version: str):
+    def get_recommended_labels(self, version: str) -> Dict:
         return {
             "app.kubernetes.io/name": slugify(
                 self.run_name[:63] if self.run_name else self.run_name
@@ -111,7 +108,7 @@ class BaseConverter(_BaseConverter):
         }
 
     @property
-    def annotations(self):
+    def annotations(self) -> Dict:
         return {
             "operation.polyaxon.com/name": self.run_name,
             "operation.polyaxon.com/owner": self.owner_name,
@@ -241,7 +238,7 @@ class BaseConverter(_BaseConverter):
         container: Optional[k8s_schemas.V1Container],
         env: List[k8s_schemas.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ):
+    ) -> k8s_schemas.V1Container:
         return get_custom_init_container(
             connection=connection,
             plugins=plugins,
@@ -260,7 +257,7 @@ class BaseConverter(_BaseConverter):
         container: Optional[k8s_schemas.V1Container] = None,
         env: List[k8s_schemas.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ):
+    ) -> k8s_schemas.V1Container:
         return get_dockerfile_init_container(
             polyaxon_init=polyaxon_init,
             dockerfile_args=dockerfile_args,
@@ -282,7 +279,7 @@ class BaseConverter(_BaseConverter):
         container: Optional[k8s_schemas.V1Container] = None,
         env: List[k8s_schemas.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ):
+    ) -> k8s_schemas.V1Container:
         return get_file_init_container(
             polyaxon_init=polyaxon_init,
             file_args=file_args,
@@ -303,7 +300,7 @@ class BaseConverter(_BaseConverter):
         env: List[k8s_schemas.V1EnvVar] = None,
         mount_path: Optional[str] = None,
         track: bool = False,
-    ):
+    ) -> k8s_schemas.V1Container:
         return get_git_init_container(
             polyaxon_init=polyaxon_init,
             connection=connection,
@@ -324,7 +321,7 @@ class BaseConverter(_BaseConverter):
         env: List[k8s_schemas.V1EnvVar] = None,
         mount_path: Optional[str] = None,
         is_default_artifacts_store: bool = False,
-    ):
+    ) -> k8s_schemas.V1Container:
         return get_store_container(
             polyaxon_init=polyaxon_init,
             connection=connection,
@@ -346,7 +343,7 @@ class BaseConverter(_BaseConverter):
         container: Optional[k8s_schemas.V1Container] = None,
         env: List[k8s_schemas.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ):
+    ) -> k8s_schemas.V1Container:
         return get_tensorboard_init_container(
             polyaxon_init=polyaxon_init,
             artifacts_store=artifacts_store,
@@ -381,32 +378,29 @@ class BaseConverter(_BaseConverter):
             env=env,
         )
 
-    def get_sidecar_containers(
-        self,
+    @staticmethod
+    def _get_sidecar_container(
+        container_id: str,
         polyaxon_sidecar: V1PolyaxonSidecarContainer,
-        plugins: V1Plugins,
+        env: List[k8s_schemas.V1EnvVar],
         artifacts_store: V1Connection,
-        sidecar_containers: List[k8s_schemas.V1Container],
-        log_level: Optional[str] = None,
-    ) -> List[k8s_schemas.V1Container]:
-        sidecar_containers = [
-            ensure_container_name(container=c, prefix=SIDECAR_PREFIX)
-            for c in to_list(sidecar_containers, check_none=True)
-        ]
-        polyaxon_sidecar_container = get_sidecar_container(
-            container_id=self.MAIN_CONTAINER_ID,
+        plugins: V1Plugins,
+        run_path: Optional[str],
+    ) -> Optional[k8s_schemas.V1Container]:
+        return get_sidecar_container(
+            container_id=container_id,
             polyaxon_sidecar=polyaxon_sidecar,
-            env=self.get_polyaxon_sidecar_service_env_vars(
-                external_host=plugins.external_host if plugins else False,
-                log_level=log_level,
-            ),
+            env=env,
             artifacts_store=artifacts_store,
             plugins=plugins,
-            run_path=self.run_path,
+            run_path=run_path,
         )
-        containers = to_list(polyaxon_sidecar_container, check_none=True)
-        containers += sidecar_containers
-        return containers
+
+    @classmethod
+    def _ensure_container(
+        cls, container: k8s_schemas, volumes: List[k8s_schemas.V1Volume]
+    ) -> k8s_schemas.V1Container:
+        return container
 
     def get_replica_resource(
         self,
@@ -459,7 +453,6 @@ class BaseConverter(_BaseConverter):
             connection_by_names=connection_by_names,
             log_level=plugins.log_level,
         )
-        init_containers = [sanitize_container(c) for c in init_containers]
 
         sidecar_containers = self.get_sidecar_containers(
             polyaxon_sidecar=self.polyaxon_sidecar,
@@ -468,7 +461,6 @@ class BaseConverter(_BaseConverter):
             sidecar_containers=sidecars,
             log_level=plugins.log_level,
         )
-        sidecar_containers = [sanitize_container(c) for c in sidecar_containers]
 
         main_container = self.get_main_container(
             main_container=container,
@@ -494,14 +486,11 @@ class BaseConverter(_BaseConverter):
         )
         return ReplicaSpec(
             volumes=volumes,
-            init_containers=init_containers,
-            sidecar_containers=sidecar_containers,
+            init_containers=[sanitize_container(c) for c in init_containers],
+            sidecar_containers=[sanitize_container(c) for c in sidecar_containers],
             main_container=main_container,
             labels=labels,
             annotations=annotations,
             environment=environment,
             num_replicas=num_replicas,
         )
-
-    def get_resource(self, **kwargs) -> Dict:
-        raise NotImplementedError

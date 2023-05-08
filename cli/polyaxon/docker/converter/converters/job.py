@@ -14,9 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Iterable, Optional
+from typing import Dict, Iterable, List, Optional
 
 from polyaxon.connections import V1Connection, V1ConnectionResource
+from polyaxon.docker import docker_types
 from polyaxon.docker.converter.converters.base import BaseConverter
 from polyaxon.k8s.converter.mixins import JobMixin
 from polyaxon.polyflow import V1CompiledOperation, V1Job, V1Plugins
@@ -32,15 +33,15 @@ class JobConverter(JobMixin, BaseConverter):
         config_maps: Optional[Iterable[V1ConnectionResource]],
         default_sa: Optional[str] = None,
         default_auth: bool = False,
-    ) -> str:
+    ) -> List[docker_types.V1Container]:
         job = compiled_operation.run  # type: V1Job
         plugins = V1Plugins.get_or_create(
             config=compiled_operation.plugins, auth=default_auth
         )
         kv_env_vars = compiled_operation.get_env_io()
-        return self.get_container_cmd(
-            plugins=plugins,
+        return self.get_replica_resource(
             environment=job.environment,
+            plugins=plugins,
             volumes=job.volumes,
             init=job.init,
             sidecars=job.sidecars,

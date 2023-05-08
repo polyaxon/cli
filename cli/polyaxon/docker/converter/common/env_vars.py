@@ -70,7 +70,7 @@ def get_kv_env_vars(kv_env_vars: List[List]) -> List[docker_types.V1EnvVar]:
     return env_vars
 
 
-def get_from_json_env_var(
+def get_from_json_resource(
     resource: V1ConnectionResource,
 ) -> List[docker_types.V1EnvVar]:
     if not resource or resource.items or resource.mount_path:
@@ -120,40 +120,23 @@ def get_items_from_json_env_var(
 
 
 def get_env_vars_from_resources(
-    secrets: Iterable[V1ConnectionResource], config_maps: Iterable[V1ConnectionResource]
+    resources: Iterable[V1ConnectionResource],
 ) -> List[docker_types.V1EnvVar]:
-    secrets = secrets or []
-    config_maps = config_maps or []
-
+    resources = resources or []
     env_vars = []
-    for secret in secrets:
+    for secret in resources:
         env_vars += get_items_from_json_env_var(resource=secret)
-    for config_map in config_maps:
-        env_vars += get_items_from_json_env_var(resource=config_map)
-
     return env_vars
 
 
-def get_env_from_resource(
+def get_env_from_json_resources(
     resources: Iterable[V1ConnectionResource],
 ) -> List[docker_types.V1EnvVar]:
     resources = resources or []
     results = []
     for resource in resources:
-        results += get_from_json_env_var(resource=resource)
+        results += get_from_json_resource(resource=resource)
     return [r for r in results if r]
-
-
-def get_env_from_k8s_resources(
-    secrets: Iterable[V1ConnectionResource], config_maps: Iterable[V1ConnectionResource]
-) -> List[docker_types.V1EnvVar]:
-    secrets = secrets or []
-    config_maps = config_maps or []
-
-    env_vars = []
-    env_vars += get_env_from_resource(resources=secrets)
-    env_vars += get_env_from_resource(resources=config_maps)
-    return env_vars
 
 
 def get_base_env_vars(

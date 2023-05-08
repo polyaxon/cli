@@ -13,11 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-
 from typing import List, Optional
 
-from clipped.utils.json import orjson_dumps
 from clipped.utils.lists import to_list
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer
@@ -27,7 +24,6 @@ from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.k8s.converter.common.env_vars import (
     get_connection_env_var,
@@ -45,38 +41,8 @@ from polyaxon.k8s.converter.common.mounts import (
 )
 from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
-
-
-def get_repo_context_args(
-    name: str,
-    url: str,
-    revision: str,
-    mount_path: str,
-    connection: Optional[str] = None,
-    flags: Optional[List[str]] = None,
-) -> List[str]:
-    if not name:
-        raise PolyaxonConverterError(
-            "A repo name is required to create a repo context."
-        )
-    if not url:
-        raise PolyaxonConverterError("A repo url is required to create a repo context.")
-
-    args = [
-        "--repo-path={}".format(os.path.join(mount_path, name)),
-        "--url={}".format(url),
-    ]
-
-    if revision:
-        args.append("--revision={}".format(revision))
-
-    if connection:
-        args.append("--connection={}".format(connection))
-
-    flags = to_list(flags, check_none=True)
-    if flags:
-        args.append("--flags={}".format(orjson_dumps(flags)))
-    return args
+from polyaxon.runner.converter.common import constants
+from polyaxon.runner.converter.init.git import get_repo_context_args
 
 
 def get_git_init_container(

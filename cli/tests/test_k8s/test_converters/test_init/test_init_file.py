@@ -20,13 +20,13 @@ from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_FILE_CONTAINER_PREFIX
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.converter.common import constants
 from polyaxon.k8s.converter.common.mounts import (
     get_auth_context_mount,
     get_connections_context_mount,
 )
 from polyaxon.k8s.converter.init.file import get_file_init_container
 from polyaxon.polyflow import V1Plugins
+from polyaxon.runner.converter.common import constants
 from polyaxon.schemas.types import V1FileType
 from polyaxon.utils.test_utils import BaseTestCase
 
