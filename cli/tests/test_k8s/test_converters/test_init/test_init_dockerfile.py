@@ -26,18 +26,17 @@ from polyaxon.k8s.converter.common.mounts import (
     get_connections_context_mount,
 )
 from polyaxon.k8s.converter.common.volumes import get_volume_name
-from polyaxon.k8s.converter.init.dockerfile import get_dockerfile_init_container
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
 from polyaxon.schemas.types.dockerfile import V1DockerfileType
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.test_init.base import BaseTestInit
 
 
 @pytest.mark.converter_mark
-class TestInitDockerfile(BaseTestCase):
+class TestInitDockerfile(BaseTestInit):
     def test_get_dockerfile_init_container(self):
         dockerfile_args = V1DockerfileType(image="test/test")
-        container = get_dockerfile_init_container(
+        container = self.converter._get_dockerfile_init_container(
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             dockerfile_args=dockerfile_args,
             env=None,
@@ -77,7 +76,7 @@ class TestInitDockerfile(BaseTestCase):
             uid=2222,
             gid=2222,
         )
-        container = get_dockerfile_init_container(
+        container = self.converter._get_dockerfile_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="init/init",
                 image_tag="",

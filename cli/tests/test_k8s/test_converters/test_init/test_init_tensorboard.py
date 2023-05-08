@@ -33,15 +33,14 @@ from polyaxon.k8s.converter.common.mounts import (
     get_connections_context_mount,
     get_mount_from_store,
 )
-from polyaxon.k8s.converter.init.tensorboard import get_tensorboard_init_container
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
 from polyaxon.schemas.types import V1TensorboardType
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.test_init.base import BaseTestInit
 
 
 @pytest.mark.converter_mark
-class TestInitTensorboard(BaseTestCase):
+class TestInitTensorboard(BaseTestInit):
     def test_get_tensorboard_init_container(self):
         store = V1Connection(
             name="test",
@@ -66,7 +65,7 @@ class TestInitTensorboard(BaseTestCase):
             path_prefix="/path/prefix",
             plugins="plug1, plug2",
         )
-        container = get_tensorboard_init_container(
+        container = self.converter._get_tensorboard_init_container(
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             tb_args=tb_args,
             artifacts_store=store,
@@ -109,7 +108,7 @@ class TestInitTensorboard(BaseTestCase):
         tb_args = V1TensorboardType(
             port=2222, uuids=uuids[0].hex, use_names=False, plugins="plug1"
         )
-        container = get_tensorboard_init_container(
+        container = self.converter._get_tensorboard_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="init/init",
                 image_tag="",

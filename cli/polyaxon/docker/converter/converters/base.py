@@ -151,8 +151,9 @@ class BaseConverter(_BaseConverter):
             ports=ports,
         )
 
-    @staticmethod
+    @classmethod
     def _get_custom_init_container(
+        cls,
         connection: V1Connection,
         plugins: V1Plugins,
         container: Optional[docker_types.V1Container],
@@ -167,8 +168,9 @@ class BaseConverter(_BaseConverter):
             mount_path=mount_path,
         )
 
-    @staticmethod
+    @classmethod
     def _get_dockerfile_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         dockerfile_args: V1DockerfileType,
         plugins: V1Plugins,
@@ -189,8 +191,9 @@ class BaseConverter(_BaseConverter):
             mount_path=mount_path,
         )
 
-    @staticmethod
+    @classmethod
     def _get_file_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         file_args: V1FileType,
         plugins: V1Plugins,
@@ -211,8 +214,9 @@ class BaseConverter(_BaseConverter):
             mount_path=mount_path,
         )
 
-    @staticmethod
+    @classmethod
     def _get_git_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         plugins: V1Plugins,
@@ -231,8 +235,9 @@ class BaseConverter(_BaseConverter):
             track=track,
         )
 
-    @staticmethod
-    def _get_store_container(
+    @classmethod
+    def _get_store_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         artifacts: V1ArtifactsType,
@@ -253,8 +258,9 @@ class BaseConverter(_BaseConverter):
             is_default_artifacts_store=is_default_artifacts_store,
         )
 
-    @staticmethod
+    @classmethod
     def _get_tensorboard_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         artifacts_store: V1Connection,
         tb_args: V1TensorboardType,
@@ -275,15 +281,17 @@ class BaseConverter(_BaseConverter):
             mount_path=mount_path,
         )
 
-    @staticmethod
-    def _get_auth_context_container(
+    @classmethod
+    def _get_auth_context_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         env: Optional[List[docker_types.V1EnvVar]] = None,
     ) -> docker_types.V1Container:
         return get_auth_context_container(polyaxon_init=polyaxon_init, env=env)
 
-    @staticmethod
-    def _get_artifacts_path_container(
+    @classmethod
+    def _get_artifacts_path_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         artifacts_store: V1Connection,
         run_path: str,

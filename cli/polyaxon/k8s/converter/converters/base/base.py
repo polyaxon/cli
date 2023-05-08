@@ -16,14 +16,14 @@
 
 import copy
 
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional
 
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
 
 from polyaxon import pkg, settings
 from polyaxon.api import VERSION_V1
-from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
+from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
@@ -35,14 +35,7 @@ from polyaxon.k8s.converter.common.env_vars import (
     get_proxy_env_vars,
     get_service_env_vars,
 )
-from polyaxon.k8s.converter.init.artifacts import get_artifacts_path_container
-from polyaxon.k8s.converter.init.auth import get_auth_context_container
-from polyaxon.k8s.converter.init.custom import get_custom_init_container
-from polyaxon.k8s.converter.init.dockerfile import get_dockerfile_init_container
-from polyaxon.k8s.converter.init.file import get_file_init_container
-from polyaxon.k8s.converter.init.git import get_git_init_container
-from polyaxon.k8s.converter.init.store import get_store_container
-from polyaxon.k8s.converter.init.tensorboard import get_tensorboard_init_container
+from polyaxon.k8s.converter.converters.base.init import InitConverter
 from polyaxon.k8s.converter.main.container import get_main_container
 from polyaxon.k8s.converter.pod.volumes import get_pod_volumes
 from polyaxon.k8s.converter.sidecar.container import get_sidecar_container
@@ -50,16 +43,10 @@ from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
 from polyaxon.runner.kind import RunnerKind
-from polyaxon.schemas.types import (
-    V1ArtifactsType,
-    V1DockerfileType,
-    V1FileType,
-    V1TensorboardType,
-)
 from polyaxon.services.headers import PolyaxonServiceHeaders
 
 
-class BaseConverter(_BaseConverter):
+class BaseConverter(InitConverter, _BaseConverter):
     RUNNER_KIND = RunnerKind.K8S
     GROUP: Optional[str] = None
     API_VERSION: Optional[str] = None
@@ -229,153 +216,6 @@ class BaseConverter(_BaseConverter):
             kv_env_vars=kv_env_vars,
             env=env,
             ports=ports,
-        )
-
-    @staticmethod
-    def _get_custom_init_container(
-        connection: V1Connection,
-        plugins: V1Plugins,
-        container: Optional[k8s_schemas.V1Container],
-        env: List[k8s_schemas.V1EnvVar] = None,
-        mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
-        return get_custom_init_container(
-            connection=connection,
-            plugins=plugins,
-            container=container,
-            env=env,
-            mount_path=mount_path,
-        )
-
-    @staticmethod
-    def _get_dockerfile_init_container(
-        polyaxon_init: V1PolyaxonInitContainer,
-        dockerfile_args: V1DockerfileType,
-        plugins: V1Plugins,
-        run_path: str,
-        run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
-        mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
-        return get_dockerfile_init_container(
-            polyaxon_init=polyaxon_init,
-            dockerfile_args=dockerfile_args,
-            plugins=plugins,
-            run_path=run_path,
-            run_instance=run_instance,
-            container=container,
-            env=env,
-            mount_path=mount_path,
-        )
-
-    @staticmethod
-    def _get_file_init_container(
-        polyaxon_init: V1PolyaxonInitContainer,
-        file_args: V1FileType,
-        plugins: V1Plugins,
-        run_path: str,
-        run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
-        mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
-        return get_file_init_container(
-            polyaxon_init=polyaxon_init,
-            file_args=file_args,
-            plugins=plugins,
-            run_path=run_path,
-            run_instance=run_instance,
-            container=container,
-            env=env,
-            mount_path=mount_path,
-        )
-
-    @staticmethod
-    def _get_git_init_container(
-        polyaxon_init: V1PolyaxonInitContainer,
-        connection: V1Connection,
-        plugins: V1Plugins,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
-        mount_path: Optional[str] = None,
-        track: bool = False,
-    ) -> k8s_schemas.V1Container:
-        return get_git_init_container(
-            polyaxon_init=polyaxon_init,
-            connection=connection,
-            plugins=plugins,
-            container=container,
-            env=env,
-            mount_path=mount_path,
-            track=track,
-        )
-
-    @staticmethod
-    def _get_store_container(
-        polyaxon_init: V1PolyaxonInitContainer,
-        connection: V1Connection,
-        artifacts: V1ArtifactsType,
-        paths: Union[List[str], List[Tuple[str, str]]],
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
-        mount_path: Optional[str] = None,
-        is_default_artifacts_store: bool = False,
-    ) -> k8s_schemas.V1Container:
-        return get_store_container(
-            polyaxon_init=polyaxon_init,
-            connection=connection,
-            artifacts=artifacts,
-            paths=paths,
-            container=container,
-            env=env,
-            mount_path=mount_path,
-            is_default_artifacts_store=is_default_artifacts_store,
-        )
-
-    @staticmethod
-    def _get_tensorboard_init_container(
-        polyaxon_init: V1PolyaxonInitContainer,
-        artifacts_store: V1Connection,
-        tb_args: V1TensorboardType,
-        plugins: V1Plugins,
-        run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
-        mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
-        return get_tensorboard_init_container(
-            polyaxon_init=polyaxon_init,
-            artifacts_store=artifacts_store,
-            tb_args=tb_args,
-            plugins=plugins,
-            run_instance=run_instance,
-            container=container,
-            env=env,
-            mount_path=mount_path,
-        )
-
-    @staticmethod
-    def _get_auth_context_container(
-        polyaxon_init: V1PolyaxonInitContainer,
-        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
-    ) -> k8s_schemas.V1Container:
-        return get_auth_context_container(polyaxon_init=polyaxon_init, env=env)
-
-    @staticmethod
-    def _get_artifacts_path_container(
-        polyaxon_init: V1PolyaxonInitContainer,
-        artifacts_store: V1Connection,
-        run_path: str,
-        auto_resume: bool,
-        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
-    ) -> k8s_schemas.V1Container:
-        return get_artifacts_path_container(
-            polyaxon_init=polyaxon_init,
-            artifacts_store=artifacts_store,
-            run_path=run_path,
-            auto_resume=auto_resume,
-            env=env,
         )
 
     @staticmethod

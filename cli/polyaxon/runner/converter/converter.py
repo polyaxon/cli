@@ -274,8 +274,9 @@ class BaseConverter:
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
+    @classmethod
     def _get_custom_init_container(
+        cls,
         connection: V1Connection,
         plugins: V1Plugins,
         container: Optional[Container],
@@ -284,8 +285,9 @@ class BaseConverter:
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
+    @classmethod
     def _get_dockerfile_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         dockerfile_args: V1DockerfileType,
         plugins: V1Plugins,
@@ -297,8 +299,9 @@ class BaseConverter:
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
+    @classmethod
     def _get_file_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         file_args: V1FileType,
         plugins: V1Plugins,
@@ -310,8 +313,9 @@ class BaseConverter:
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
+    @classmethod
     def _get_git_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         plugins: V1Plugins,
@@ -322,8 +326,9 @@ class BaseConverter:
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
-    def _get_store_container(
+    @classmethod
+    def _get_store_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         artifacts: V1ArtifactsType,
@@ -335,8 +340,9 @@ class BaseConverter:
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
+    @classmethod
     def _get_tensorboard_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         artifacts_store: V1Connection,
         tb_args: V1TensorboardType,
@@ -348,15 +354,17 @@ class BaseConverter:
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
-    def _get_auth_context_container(
+    @classmethod
+    def _get_auth_context_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         env: Optional[List[EnvVar]] = None,
     ) -> Container:
         raise NotImplementedError
 
-    @staticmethod
-    def _get_artifacts_path_container(
+    @classmethod
+    def _get_artifacts_path_init_container(
+        cls,
         polyaxon_init: V1PolyaxonInitContainer,
         artifacts_store: V1Connection,
         run_path: str,
@@ -425,7 +433,7 @@ class BaseConverter:
                     )
                 elif V1ConnectionKind.is_artifact(connection_spec.kind):
                     containers.append(
-                        self._get_store_container(
+                        self._get_store_init_container(
                             polyaxon_init=polyaxon_init,
                             connection=connection_spec,
                             artifacts=init_connection.artifacts,
@@ -461,7 +469,7 @@ class BaseConverter:
                 # artifacts init without connection should default to the artifactsStore
                 if init_connection.artifacts or init_connection.paths:
                     containers.append(
-                        self._get_store_container(
+                        self._get_store_init_container(
                             polyaxon_init=polyaxon_init,
                             connection=artifacts_store,
                             artifacts=init_connection.artifacts,
@@ -584,7 +592,7 @@ class BaseConverter:
         # Add auth context
         if plugins and plugins.auth:
             containers.append(
-                self._get_auth_context_container(
+                self._get_auth_context_init_container(
                     polyaxon_init=polyaxon_init,
                     env=self.get_auth_service_env_vars(
                         external_host=plugins.external_host
@@ -595,7 +603,7 @@ class BaseConverter:
         # Add outputs
         if plugins and plugins.collect_artifacts:
             containers += to_list(
-                self._get_artifacts_path_container(
+                self._get_artifacts_path_init_container(
                     polyaxon_init=polyaxon_init,
                     artifacts_store=artifacts_store,
                     run_path=self.run_path,

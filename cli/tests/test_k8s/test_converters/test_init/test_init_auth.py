@@ -20,14 +20,13 @@ from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_AUTH_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s.converter.common.mounts import get_auth_context_mount
-from polyaxon.k8s.converter.init.auth import get_auth_context_container
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.test_init.base import BaseTestInit
 
 
 @pytest.mark.converter_mark
-class TestInitAuth(BaseTestCase):
-    def test_get_auth_context_container(self):
-        container = get_auth_context_container(
+class TestInitAuth(BaseTestInit):
+    def test_get_auth_context_init_container(self):
+        container = self.converter._get_auth_context_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="foo/foo",
                 image_tag="",

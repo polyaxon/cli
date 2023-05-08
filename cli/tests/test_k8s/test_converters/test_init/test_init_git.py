@@ -31,75 +31,21 @@ from polyaxon.k8s.converter.common.mounts import (
     get_connections_context_mount,
 )
 from polyaxon.k8s.converter.common.volumes import get_volume_name
-from polyaxon.k8s.converter.init.git import (
-    get_git_init_container,
-    get_repo_context_args,
-)
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.test_init.base import BaseTestInit
 
 
 @pytest.mark.converter_mark
-class TestInitGit(BaseTestCase):
-    def test_get_repo_context_args_requires_from_image(self):
-        with self.assertRaises(PolyaxonConverterError):
-            get_repo_context_args(name=None, url=None, revision=None, mount_path=None)
-
-    def test_get_repo_context_args_with_none_values(self):
-        args = get_repo_context_args(
-            name="user/repo1",
-            url="http://foo.com",
-            revision=None,
-            mount_path="/somepath",
-        )
-        assert args == ["--repo-path=/somepath/user/repo1", "--url=http://foo.com"]
-
-    def test_get_repo_context_args(self):
-        args = get_repo_context_args(
-            name="user/repo1",
-            url="http://foo.com",
-            revision="00b9d2ea01c40f58d6b4051319f9375675a43c02",
-            mount_path="/somepath",
-        )
-        assert args == [
-            "--repo-path=/somepath/user/repo1",
-            "--url=http://foo.com",
-            "--revision=00b9d2ea01c40f58d6b4051319f9375675a43c02",
-        ]
-
-        args = get_repo_context_args(
-            name="user/repo1",
-            url="http://foo.com",
-            revision="dev",
-            mount_path="/somepath",
-        )
-        assert args == [
-            "--repo-path=/somepath/user/repo1",
-            "--url=http://foo.com",
-            "--revision=dev",
-        ]
-
-        args = get_repo_context_args(
-            name="user/repo1",
-            url="http://foo.com",
-            revision="00b9d2ea01c40f58d6b4051319f9375675a43c02",
-            mount_path="/somepath",
-        )
-        assert args == [
-            "--repo-path=/somepath/user/repo1",
-            "--url=http://foo.com",
-            "--revision=00b9d2ea01c40f58d6b4051319f9375675a43c02",
-        ]
-
+class TestInitGit(BaseTestInit):
     def test_get_git_init_container_raises_for_missing_info(self):
         with self.assertRaises(PolyaxonConverterError):
-            get_git_init_container(
+            self.converter._get_git_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(), connection=None, plugins=None
             )
 
         with self.assertRaises(PolyaxonConverterError):
-            get_git_init_container(
+            self.converter._get_git_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/test"),
                 connection=None,
                 mount_path=None,
@@ -112,7 +58,7 @@ class TestInitGit(BaseTestCase):
             kind=V1ConnectionKind.GIT,
             schema_=V1GitConnection(url="foo.com"),
         )
-        container = get_git_init_container(
+        container = self.converter._get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             connection=connection,
             plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
@@ -137,7 +83,7 @@ class TestInitGit(BaseTestCase):
             get_auth_context_mount(read_only=True),
         ]
 
-        container = get_git_init_container(
+        container = self.converter._get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="init/init",
                 image_tag="",
@@ -175,7 +121,7 @@ class TestInitGit(BaseTestCase):
                 url="foo.com", revision="00b9d2ea01c40f58d6b4051319f9375675a43c02"
             ),
         )
-        container = get_git_init_container(
+        container = self.converter._get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="init/init",
                 image_tag="",
@@ -214,7 +160,7 @@ class TestInitGit(BaseTestCase):
                 flags=["--falg1", "--flag2=test", "k=v"],
             ),
         )
-        container = get_git_init_container(
+        container = self.converter._get_git_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="init/init",
                 image_tag="",

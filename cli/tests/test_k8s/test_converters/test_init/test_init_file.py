@@ -24,18 +24,17 @@ from polyaxon.k8s.converter.common.mounts import (
     get_auth_context_mount,
     get_connections_context_mount,
 )
-from polyaxon.k8s.converter.init.file import get_file_init_container
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
 from polyaxon.schemas.types import V1FileType
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.test_init.base import BaseTestInit
 
 
 @pytest.mark.converter_mark
-class TestInitFile(BaseTestCase):
+class TestInitFile(BaseTestInit):
     def test_get_file_init_container(self):
         file_args = V1FileType(content="test")
-        container = get_file_init_container(
+        container = self.converter._get_file_init_container(
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
             file_args=file_args,
@@ -65,7 +64,7 @@ class TestInitFile(BaseTestCase):
         ]
 
         file_args = V1FileType(filename="test", content="test")
-        container = get_file_init_container(
+        container = self.converter._get_file_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
                 image="init/init",
                 image_tag="",

@@ -13,3 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import pytest
+
+from polyaxon.k8s.converter.converters.job import JobConverter
+from polyaxon.utils.test_utils import BaseTestCase
+
+
+class DummyConverter(JobConverter):
+    SPEC_KIND = "dumy"
+    K8S_ANNOTATIONS_KIND = "dummy-name"
+    MAIN_CONTAINER_ID = "dummy"
+
+
+@pytest.mark.converter_mark
+class BaseTestInit(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.converter = DummyConverter(
+            owner_name="owner-name",
+            project_name="project-name",
+            run_name="run-name",
+            run_uuid="run_uuid",
+        )
