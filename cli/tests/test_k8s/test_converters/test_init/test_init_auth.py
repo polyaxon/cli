@@ -19,12 +19,11 @@ import pytest
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_AUTH_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.k8s.converter.common.mounts import get_auth_context_mount
-from tests.test_k8s.test_converters.test_init.base import BaseTestInit
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestInitAuth(BaseTestInit):
+class TestInitAuth(BaseConverterTest):
     def test_get_auth_context_init_container(self):
         container = self.converter._get_auth_context_init_container(
             polyaxon_init=V1PolyaxonInitContainer(
@@ -42,4 +41,6 @@ class TestInitAuth(BaseTestInit):
         assert container.args is None
         assert container.env == []
         assert container.resources == get_init_resources()
-        assert container.volume_mounts == [get_auth_context_mount(read_only=False)]
+        assert container.volume_mounts == [
+            self.converter._get_auth_context_mount(read_only=False)
+        ]

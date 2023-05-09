@@ -31,15 +31,14 @@ from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.mounts import get_artifacts_context_mount
 from polyaxon.runner.converter.init.artifacts import init_artifact_context_args
 from polyaxon.runner.converter.init.store import get_volume_args
 from polyaxon.schemas.types import V1ArtifactsType
-from tests.test_k8s.test_converters.test_init.base import BaseTestInit
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestInitOutputsStore(BaseTestInit):
+class TestInitOutputsStore(BaseConverterTest):
     def test_get_artifacts_path_container_with_none_values(self):
         with self.assertRaises(PolyaxonConverterError):
             self.converter._get_artifacts_path_init_container(
@@ -88,7 +87,7 @@ class TestInitOutputsStore(BaseTestInit):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[get_artifacts_context_mount()],
+            volume_mounts=[self.converter._get_artifacts_context_mount()],
             args=[" ".join(init_args)],
         )
 
@@ -131,7 +130,7 @@ class TestInitOutputsStore(BaseTestInit):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[get_artifacts_context_mount()],
+            volume_mounts=[self.converter._get_artifacts_context_mount()],
             args=[" ".join(init_args)],
         )
 
@@ -174,7 +173,7 @@ class TestInitOutputsStore(BaseTestInit):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[get_artifacts_context_mount()],
+            volume_mounts=[self.converter._get_artifacts_context_mount()],
             args=[" ".join(init_args)],
         )
 
@@ -201,6 +200,6 @@ class TestInitOutputsStore(BaseTestInit):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[get_artifacts_context_mount()],
+            volume_mounts=[self.converter._get_artifacts_context_mount()],
             args=[" ".join(init_args)],
         )

@@ -29,10 +29,10 @@ from polyaxon.k8s.converter.common.volumes import (
     get_volume_from_config_map,
     get_volume_from_connection,
     get_volume_from_secret,
-    get_volume_name,
 )
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.runner.converter.common import constants
+from polyaxon.runner.converter.common.volumes import get_volume_name
 
 
 def get_pod_volumes(

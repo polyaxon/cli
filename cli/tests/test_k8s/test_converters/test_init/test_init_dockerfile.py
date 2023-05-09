@@ -20,20 +20,15 @@ from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.containers.names import INIT_DOCKERFILE_CONTAINER_PREFIX
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.converter.common.env_vars import get_run_instance_env_var
-from polyaxon.k8s.converter.common.mounts import (
-    get_auth_context_mount,
-    get_connections_context_mount,
-)
-from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
+from polyaxon.runner.converter.common.volumes import get_volume_name
 from polyaxon.schemas.types.dockerfile import V1DockerfileType
-from tests.test_k8s.test_converters.test_init.base import BaseTestInit
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestInitDockerfile(BaseTestInit):
+class TestInitDockerfile(BaseConverterTest):
     def test_get_dockerfile_init_container(self):
         dockerfile_args = V1DockerfileType(image="test/test")
         container = self.converter._get_dockerfile_init_container(
@@ -57,15 +52,15 @@ class TestInitDockerfile(BaseTestInit):
             "--track",
         ]
         assert container.env == [
-            get_run_instance_env_var(run_instance="foo.bar.runs.uuid")
+            self.converter._get_run_instance_env_var(run_instance="foo.bar.runs.uuid")
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]
 
         dockerfile_args = V1DockerfileType(
@@ -102,12 +97,12 @@ class TestInitDockerfile(BaseTestInit):
             "--track",
         ]
         assert container.env == [
-            get_run_instance_env_var(run_instance="foo.bar.runs.uuid")
+            self.converter._get_run_instance_env_var(run_instance="foo.bar.runs.uuid")
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=get_volume_name("/somepath"), mount_path="/somepath"
             ),
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]

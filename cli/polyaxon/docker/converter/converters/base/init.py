@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.lists import to_list
@@ -33,10 +33,20 @@ from polyaxon.containers.names import (
     generate_container_name,
 )
 from polyaxon.contexts import paths as ctx_paths
+from polyaxon.docker import docker_types
+from polyaxon.docker.converter.common.containers import patch_container
+from polyaxon.docker.converter.common.env_vars import (
+    get_connection_env_var,
+    get_connections_catalog_env_var,
+    get_env_from_config_map,
+    get_env_from_secret,
+    get_env_var,
+    get_items_from_config_map,
+    get_items_from_secret,
+    get_run_instance_env_var,
+)
 from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
 from polyaxon.runner.converter.common import constants
@@ -57,16 +67,16 @@ class InitConverter(_BaseConverter):
     @classmethod
     def _get_base_store_container(
         cls,
-        container: Optional[k8s_schemas.V1Container],
+        container: Optional[docker_types.V1Container],
         container_name: str,
         polyaxon_init: V1PolyaxonInitContainer,
         store: V1Connection,
-        env: List[k8s_schemas.V1EnvVar],
-        env_from: List[k8s_schemas.V1EnvFromSource],
-        volume_mounts: List[k8s_schemas.V1VolumeMount],
+        env: List[docker_types.V1EnvVar],
+        env_from: List[Any],
+        volume_mounts: List[docker_types.V1VolumeMount],
         args: List[str],
         command: Optional[List[str]] = None,
-    ) -> Optional[k8s_schemas.V1Container]:
+    ) -> Optional[docker_types.V1Container]:
         env = env or []
         env_from = env_from or []
         volume_mounts = volume_mounts or []
@@ -80,21 +90,19 @@ class InitConverter(_BaseConverter):
             volume_mounts = volume_mounts + to_list(
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
-            env = env + to_list(
-                cls._get_items_from_secret(secret=secret), check_none=True
-            )
+            env = env + to_list(get_items_from_secret(secret=secret), check_none=True)
             env_from = env_from + to_list(
-                cls._get_env_from_secret(secret=secret), check_none=True
+                get_env_from_secret(secret=secret), check_none=True
             )
             config_map = store.config_map
             volume_mounts = volume_mounts + to_list(
                 cls._get_mount_from_resource(resource=config_map), check_none=True
             )
             env = env + to_list(
-                cls._get_items_from_config_map(config_map=config_map), check_none=True
+                get_items_from_config_map(config_map=config_map), check_none=True
             )
             env_from = env_from + to_list(
-                cls._get_env_from_config_map(config_map=config_map), check_none=True
+                get_env_from_config_map(config_map=config_map), check_none=True
             )
         else:
             volume_mounts = volume_mounts + to_list(
@@ -102,10 +110,10 @@ class InitConverter(_BaseConverter):
             )
         # Add connections catalog env vars information
         env += to_list(
-            cls._get_connections_catalog_env_var(connections=[store]),
+            get_connections_catalog_env_var(connections=[store]),
             check_none=True,
         )
-        env += to_list(cls._get_connection_env_var(connection=store), check_none=True)
+        env += to_list(get_connection_env_var(connection=store), check_none=True)
 
         return patch_container(
             container=container,
@@ -125,10 +133,10 @@ class InitConverter(_BaseConverter):
         cls,
         connection: V1Connection,
         plugins: V1Plugins,
-        container: Optional[k8s_schemas.V1Container],
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[docker_types.V1Container],
+        env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
+    ) -> docker_types.V1Container:
         if not connection:
             raise PolyaxonConverterError(
                 "A connection is required to create a repo context."
@@ -154,27 +162,25 @@ class InitConverter(_BaseConverter):
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
-            env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
+            env += to_list(get_items_from_secret(secret=secret), check_none=True)
+            env_from = to_list(get_env_from_secret(secret=secret), check_none=True)
 
         # Add connections catalog env vars information
         env += to_list(
-            cls._get_connections_catalog_env_var(connections=[connection]),
+            get_connections_catalog_env_var(connections=[connection]),
             check_none=True,
         )
-        env += to_list(
-            cls._get_connection_env_var(connection=connection), check_none=True
-        )
+        env += to_list(get_connection_env_var(connection=connection), check_none=True)
         config_map = connection.config_map
         if config_map:
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=config_map), check_none=True
             )
             env += to_list(
-                cls._get_items_from_config_map(config_map=config_map), check_none=True
+                get_items_from_config_map(config_map=config_map), check_none=True
             )
             env_from = to_list(
-                cls._get_env_from_config_map(config_map=config_map), check_none=True
+                get_env_from_config_map(config_map=config_map), check_none=True
             )
         container_name = container.name or generate_container_name(
             INIT_CUSTOM_CONTAINER_PREFIX, connection.name
@@ -195,16 +201,16 @@ class InitConverter(_BaseConverter):
         plugins: V1Plugins,
         run_path: str,
         run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[docker_types.V1Container] = None,
+        env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
+    ) -> docker_types.V1Container:
         env = to_list(env, check_none=True)
-        env = env + [cls._get_run_instance_env_var(run_instance)]
+        env = env + [get_run_instance_env_var(run_instance)]
 
         container_name = generate_container_name(INIT_DOCKERFILE_CONTAINER_PREFIX)
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = docker_types.V1Container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -245,16 +251,16 @@ class InitConverter(_BaseConverter):
         plugins: V1Plugins,
         run_path: str,
         run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[docker_types.V1Container] = None,
+        env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
+    ) -> docker_types.V1Container:
         env = to_list(env, check_none=True)
-        env = env + [cls._get_run_instance_env_var(run_instance)]
+        env = env + [get_run_instance_env_var(run_instance)]
 
         container_name = generate_container_name(INIT_FILE_CONTAINER_PREFIX)
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = docker_types.V1Container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -294,11 +300,11 @@ class InitConverter(_BaseConverter):
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         plugins: V1Plugins,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[docker_types.V1Container] = None,
+        env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
         track: bool = False,
-    ) -> k8s_schemas.V1Container:
+    ) -> docker_types.V1Container:
         if not connection:
             raise PolyaxonConverterError(
                 "A connection is required to create a repo context."
@@ -307,7 +313,7 @@ class InitConverter(_BaseConverter):
             INIT_GIT_CONTAINER_PREFIX, connection.name
         )
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = docker_types.V1Container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -329,30 +335,28 @@ class InitConverter(_BaseConverter):
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
-            env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
+            env += to_list(get_items_from_secret(secret=secret), check_none=True)
+            env_from = to_list(get_env_from_secret(secret=secret), check_none=True)
 
         # Add connections catalog env vars information
         env += to_list(
-            cls._get_connections_catalog_env_var(connections=[connection]),
+            get_connections_catalog_env_var(connections=[connection]),
             check_none=True,
         )
-        env += to_list(
-            cls._get_connection_env_var(connection=connection), check_none=True
-        )
+        env += to_list(get_connection_env_var(connection=connection), check_none=True)
         # Add special handling to auto-inject ssh mount path
         if connection.kind == V1ConnectionKind.SSH and secret.mount_path:
-            env += [cls._get_env_var(EV_KEYS_SSH_PATH, secret.mount_path)]
+            env += [get_env_var(EV_KEYS_SSH_PATH, secret.mount_path)]
         config_map = connection.config_map
         if config_map:
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=config_map), check_none=True
             )
             env += to_list(
-                cls._get_items_from_config_map(config_map=config_map), check_none=True
+                get_items_from_config_map(config_map=config_map), check_none=True
             )
             env_from = to_list(
-                cls._get_env_from_config_map(config_map=config_map), check_none=True
+                get_env_from_config_map(config_map=config_map), check_none=True
             )
         args = get_repo_context_args(
             name=connection.name,
@@ -383,16 +387,16 @@ class InitConverter(_BaseConverter):
         connection: V1Connection,
         artifacts: V1ArtifactsType,
         paths: Union[List[str], List[Tuple[str, str]]],
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[docker_types.V1Container] = None,
+        env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
         is_default_artifacts_store: bool = False,
-    ) -> k8s_schemas.V1Container:
+    ) -> docker_types.V1Container:
         container_name = generate_container_name(
             INIT_ARTIFACTS_CONTAINER_PREFIX, connection.name
         )
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = docker_types.V1Container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -437,16 +441,16 @@ class InitConverter(_BaseConverter):
         tb_args: V1TensorboardType,
         plugins: V1Plugins,
         run_instance: str,
-        container: Optional[k8s_schemas.V1Container] = None,
-        env: List[k8s_schemas.V1EnvVar] = None,
+        container: Optional[docker_types.V1Container] = None,
+        env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
-    ) -> k8s_schemas.V1Container:
+    ) -> docker_types.V1Container:
         env = to_list(env, check_none=True)
-        env = env + [cls._get_run_instance_env_var(run_instance)]
+        env = env + [get_run_instance_env_var(run_instance)]
 
         container_name = generate_container_name(INIT_TENSORBOARD_CONTAINER_PREFIX)
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = docker_types.V1Container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -483,10 +487,10 @@ class InitConverter(_BaseConverter):
     def _get_auth_context_init_container(
         cls,
         polyaxon_init: V1PolyaxonInitContainer,
-        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
-    ) -> k8s_schemas.V1Container:
+        env: Optional[List[docker_types.V1EnvVar]] = None,
+    ) -> docker_types.V1Container:
         env = to_list(env, check_none=True)
-        container = k8s_schemas.V1Container(
+        container = docker_types.V1Container(
             name=INIT_AUTH_CONTAINER,
             image=polyaxon_init.get_image(),
             image_pull_policy=polyaxon_init.image_pull_policy,
@@ -504,8 +508,8 @@ class InitConverter(_BaseConverter):
         artifacts_store: V1Connection,
         run_path: str,
         auto_resume: bool,
-        env: Optional[List[k8s_schemas.V1EnvVar]] = None,
-    ) -> k8s_schemas.V1Container:
+        env: Optional[List[docker_types.V1EnvVar]] = None,
+    ) -> docker_types.V1Container:
         if not artifacts_store:
             raise PolyaxonConverterError("Init artifacts container requires a store.")
 
@@ -525,7 +529,7 @@ class InitConverter(_BaseConverter):
         container_name = generate_container_name(
             INIT_ARTIFACTS_CONTAINER_PREFIX, DEFAULT, False
         )
-        container = k8s_schemas.V1Container(name=container_name)
+        container = docker_types.V1Container(name=container_name)
 
         return cls._get_base_store_container(
             container_name=container_name,

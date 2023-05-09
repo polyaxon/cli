@@ -27,18 +27,13 @@ from polyaxon.connections import (
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.mounts import (
-    get_artifacts_context_mount,
-    get_auth_context_mount,
-    get_mounts,
-)
-from polyaxon.k8s.converter.main.container import get_main_container
 from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon.services.values import PolyaxonServices
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestMainContainer(BaseTestCase):
+class TestMainContainer(BaseConverterTest):
     def setUp(self):
         super().setUp()
         # Secrets and config maps
@@ -101,7 +96,7 @@ class TestMainContainer(BaseTestCase):
 
     def assert_artifacts_store_raises(self, store, run_path):
         with self.assertRaises(PolyaxonConverterError):
-            get_main_container(
+            self.converter._get_main_container(
                 container_id="test",
                 main_container=None,
                 plugins=V1Plugins(collect_artifacts=True, collect_logs=False),
@@ -112,7 +107,6 @@ class TestMainContainer(BaseTestCase):
                 secrets=None,
                 config_maps=None,
                 kv_env_vars=None,
-                env=None,
                 ports=None,
                 run_path=run_path,
             )
@@ -133,7 +127,7 @@ class TestMainContainer(BaseTestCase):
         self.assert_artifacts_store_raises(store=artifacts_store, run_path=[])
 
     def test_get_main_container_with_none_values(self):
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
@@ -144,7 +138,6 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path=None,
         )
@@ -155,7 +148,11 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert container.env == []
+        assert container.env == self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
+        )
         assert container.env_from == []
         assert container.resources is None
         assert container.volume_mounts == []
@@ -165,7 +162,7 @@ class TestMainContainer(BaseTestCase):
             requests={"cpu": "1", "memory": "256Mi"},
             limits={"cpu": "1", "memory": "256Mi"},
         )
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="new-name",
             main_container=k8s_schemas.V1Container(
                 name="main",
@@ -183,7 +180,6 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=23,
             run_path=None,
         )
@@ -199,7 +195,7 @@ class TestMainContainer(BaseTestCase):
         assert container.volume_mounts == []
 
     def test_get_main_container_with_mounted_artifacts_store(self):
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
@@ -210,9 +206,13 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
+        )
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
         )
 
         assert container.name == "test"
@@ -226,7 +226,7 @@ class TestMainContainer(BaseTestCase):
         assert len(container.volume_mounts) == 1
 
         # Mount store
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -245,7 +245,6 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -260,7 +259,7 @@ class TestMainContainer(BaseTestCase):
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # store not passed
 
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
@@ -271,7 +270,6 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -286,7 +284,7 @@ class TestMainContainer(BaseTestCase):
         assert container.resources is None
         assert len(container.volume_mounts) == 2
 
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="main-job",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -304,7 +302,6 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -315,13 +312,14 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 2 + 1  # One from the artifacts store name env var
+        # One from the artifacts store name env var + base envs
+        assert len(container.env) == 2 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1
 
         # Mount store
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="main-job",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -340,7 +338,6 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -351,14 +348,14 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # One from the artifacts store name env var and the schema
-        assert len(container.env) == 2 + 1 + 1
+        # One from the artifacts store name env var and the schema + base envs
+        assert len(container.env) == 2 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 2
 
     def test_get_main_container_with_bucket_artifacts_store(self):
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="main",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -376,9 +373,13 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
+        )
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
         )
 
         assert container.name == "main"
@@ -387,13 +388,14 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 2 + 1  # One from the secret key items
+        # One from the secret key items + base envs
+        assert len(container.env) == 2 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # mount context
 
         # Mount store
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="main",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -412,7 +414,6 @@ class TestMainContainer(BaseTestCase):
             secrets=None,
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -423,12 +424,13 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 2  # the secret key items are mounted
+        # the secret key items are mounted + base envs
+        assert len(container.env) == 2 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # mount resource
 
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="main1",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -447,7 +449,6 @@ class TestMainContainer(BaseTestCase):
             secrets=[self.mount_resource1],
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -458,13 +459,14 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 2 + 1  # One from the artifacts store name env var
+        # One from the artifacts store name env var + base envs
+        assert len(container.env) == 2 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         # The mount resource1 is not requested
         assert len(container.volume_mounts) == 1  # one mount resource
 
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="main1",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -482,7 +484,6 @@ class TestMainContainer(BaseTestCase):
             secrets=[self.request_mount_resource2],
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -493,13 +494,14 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 2 + 1  # One from the artifacts store name env var
+        # One from the artifacts store name env var + base envs
+        assert len(container.env) == 2 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         # The mount resource2 is requested
         assert len(container.volume_mounts) == 2  # one mount resource
 
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="tensorflow",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -517,7 +519,6 @@ class TestMainContainer(BaseTestCase):
             secrets=[self.non_mount_resource1],
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -528,12 +529,13 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert len(container.env) == 1 + 1  # One from the artifacts store name env var
+        # One from the artifacts store name env var + base envs
+        assert len(container.env) == 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # outputs context
 
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="pytorch",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(
@@ -551,7 +553,6 @@ class TestMainContainer(BaseTestCase):
             secrets=[self.request_non_mount_resource1],
             config_maps=None,
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
@@ -562,14 +563,14 @@ class TestMainContainer(BaseTestCase):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # 2 + 2 env vars from the secret mount + 1 from the artifacts store name env var
-        assert len(container.env) == 2 + 2 + 1
+        # 2 + 2 env vars from the secret mount + 1 from the artifacts store name env var + base envs
+        assert len(container.env) == 2 + 2 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1
 
     def test_get_main_container(self):
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=None,
@@ -588,9 +589,13 @@ class TestMainContainer(BaseTestCase):
             secrets=[self.mount_resource1, self.request_non_mount_resource1],
             config_maps=[self.non_mount_resource1, self.request_mount_resource2],
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
+        )
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
         )
 
         assert container.name == "test"
@@ -601,7 +606,8 @@ class TestMainContainer(BaseTestCase):
         assert container.ports == []
         # 2 env vars from the secret mount
         # + 1 for the connections catalog
-        assert len(container.env) == 3
+        # + all base env vars
+        assert len(container.env) == 3 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 4
@@ -629,7 +635,7 @@ class TestMainContainer(BaseTestCase):
             ),
         )
 
-        container = get_main_container(
+        container = self.converter._get_main_container(
             container_id="test",
             main_container=k8s_schemas.V1Container(name="main"),
             plugins=V1Plugins.get_or_create(plugins),
@@ -640,12 +646,11 @@ class TestMainContainer(BaseTestCase):
             secrets=[],
             config_maps=[],
             kv_env_vars=None,
-            env=None,
             ports=None,
             run_path="run_path",
         )
 
         assert container.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
         ]

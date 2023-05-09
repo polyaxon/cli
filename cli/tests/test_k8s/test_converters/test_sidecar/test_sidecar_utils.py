@@ -19,46 +19,49 @@ import pytest
 from polyaxon.auxiliaries import get_sidecar_resources
 from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.env_vars import get_env_var
-from polyaxon.k8s.converter.sidecar.container import get_sidecar_args
-from polyaxon.k8s.converter.sidecar.env_vars import get_sidecar_env_vars
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestSidecarUtils(BaseTestCase):
+class TestSidecarContainer(BaseConverterTest):
     def test_get_sidecar_env_vars(self):
-        sidecar_env_vars = get_sidecar_env_vars(
+        sidecar_env_vars = self.converter._get_sidecar_env_vars(
             env_vars=None, container_id="foo", artifacts_store_name="name"
         )
 
         assert sidecar_env_vars == [
-            get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
-            get_env_var(name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"),
+            self.converter._get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
+            self.converter._get_env_var(
+                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"
+            ),
         ]
 
         # Initial env vars
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
-        sidecar_env_vars = get_sidecar_env_vars(
+        sidecar_env_vars = self.converter._get_sidecar_env_vars(
             env_vars=env_vars, container_id="foo", artifacts_store_name="name"
         )
 
         assert sidecar_env_vars == env_vars + [
-            get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
-            get_env_var(name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"),
+            self.converter._get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
+            self.converter._get_env_var(
+                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"
+            ),
         ]
 
         # Outputs Path
-        sidecar_env_vars = get_sidecar_env_vars(
+        sidecar_env_vars = self.converter._get_sidecar_env_vars(
             env_vars=None, container_id="foo", artifacts_store_name="name"
         )
 
         assert sidecar_env_vars == [
-            get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
-            get_env_var(name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"),
+            self.converter._get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
+            self.converter._get_env_var(
+                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"
+            ),
         ]
 
     def test_get_sidecar_resources(self):
@@ -68,13 +71,13 @@ class TestSidecarUtils(BaseTestCase):
         )
 
     def test_get_sidecar_args(self):
-        assert get_sidecar_args(
+        assert self.converter._get_sidecar_args(
             container_id="job.2", sleep_interval=23, sync_interval=2, monitor_logs=None
         ) == ["--container-id=job.2", "--sleep-interval=23", "--sync-interval=2"]
-        assert get_sidecar_args(
+        assert self.converter._get_sidecar_args(
             container_id="job.2", sleep_interval=23, sync_interval=2, monitor_logs=False
         ) == ["--container-id=job.2", "--sleep-interval=23", "--sync-interval=2"]
-        assert get_sidecar_args(
+        assert self.converter._get_sidecar_args(
             container_id="job.2", sleep_interval=23, sync_interval=2, monitor_logs=True
         ) == [
             "--container-id=job.2",

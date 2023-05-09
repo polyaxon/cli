@@ -25,9 +25,6 @@ from polyaxon.connections import (
     V1ConnectionResource,
 )
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.converters.job import JobConverter
-from polyaxon.k8s.converter.main.container import get_main_container
-from polyaxon.k8s.converter.sidecar.container import get_sidecar_container
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.schemas.types import (
     V1ArtifactsType,
@@ -37,30 +34,16 @@ from polyaxon.schemas.types import (
     V1TensorboardType,
 )
 from polyaxon.services.values import PolyaxonServices
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.base import BaseConverterTest
 from traceml.artifacts import V1ArtifactKind
 
 
-class DummyConverter(JobConverter):
-    SPEC_KIND = "dumy"
-    K8S_ANNOTATIONS_KIND = "dummy-name"
-    MAIN_CONTAINER_ID = "dummy"
-
-
-class TestJobConverter(BaseTestCase):
-    SET_AGENT_SETTINGS = True
-
+class TestJobConverter(BaseConverterTest):
     def setUp(self):
         super().setUp()
         settings.AGENT_CONFIG.app_secret_name = "polyaxon"
         settings.AGENT_CONFIG.agent_secret_name = "agent"
         settings.CLIENT_CONFIG.host = "https://polyaxon.com"
-        self.converter = DummyConverter(
-            owner_name="owner-name",
-            project_name="project-name",
-            run_name="run-name",
-            run_uuid="run_uuid",
-        )
 
     def assert_containers(self, results, expected):
         for c in results:
@@ -518,7 +501,7 @@ class TestJobConverter(BaseTestCase):
                 image="sidecar/sidecar", sleep_interval=12, sync_interval=12
             ),
         ) == [
-            get_sidecar_container(
+            self.converter._get_sidecar_container(
                 container_id="dummy",
                 plugins=plugins,
                 env=self.converter.get_polyaxon_sidecar_service_env_vars(),
@@ -550,7 +533,7 @@ class TestJobConverter(BaseTestCase):
             polyaxon_sidecar=polyaxon_sidecar,
             sidecar_containers=[],
         ) == [
-            get_sidecar_container(
+            self.converter._get_sidecar_container(
                 container_id="dummy",
                 plugins=plugins,
                 env=self.converter.get_polyaxon_sidecar_service_env_vars(),
@@ -584,13 +567,12 @@ class TestJobConverter(BaseTestCase):
             init_connections=[],
             connections=[],
             connection_by_names={},
-            log_level="info",
             secrets=[],
             config_maps=[],
             kv_env_vars=[],
             ports=None,
         )
-        expected_container = get_main_container(
+        expected_container = self.converter._get_main_container(
             container_id="dummy",
             main_container=main_container,
             plugins=plugins,
@@ -601,7 +583,6 @@ class TestJobConverter(BaseTestCase):
             secrets=[],
             config_maps=[],
             kv_env_vars=[],
-            env=self.converter.get_main_env_vars(log_level="info"),
             ports=None,
             run_path="/test",
         )

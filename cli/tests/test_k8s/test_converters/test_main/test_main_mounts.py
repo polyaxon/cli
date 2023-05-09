@@ -24,20 +24,14 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.k8s.converter.common.mounts import (
-    get_artifacts_context_mount,
-    get_connections_context_mount,
-    get_mount_from_resource,
-    get_mount_from_store,
-)
-from polyaxon.k8s.converter.common.volumes import get_volume, get_volume_name
-from polyaxon.k8s.converter.main.volumes import get_volume_mounts
+from polyaxon.k8s.converter.common.volumes import get_volume
 from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon.runner.converter.common.volumes import get_volume_name
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestMainMounts(BaseTestCase):
+class TestMainMounts(BaseConverterTest):
     def setUp(self):
         super().setUp()
         # Secrets and config maps
@@ -101,7 +95,7 @@ class TestMainMounts(BaseTestCase):
 
     def test_get_volume_mounts(self):
         assert (
-            get_volume_mounts(
+            self.converter._get_main_volume_mounts(
                 plugins=None,
                 init=None,
                 connections=None,
@@ -111,16 +105,15 @@ class TestMainMounts(BaseTestCase):
             == []
         )
         assert (
-            get_volume_mounts(
+            self.converter._get_main_volume_mounts(
                 plugins=None, init=[], connections=[], secrets=[], config_maps=[]
             )
             == []
         )
 
-    @staticmethod
-    def assert_contexts_store(plugins, results):
+    def assert_contexts_store(self, plugins, results):
         assert (
-            get_volume_mounts(
+            self.converter._get_main_volume_mounts(
                 plugins=plugins, init=[], connections=[], secrets=[], config_maps=[]
             )
             == results
@@ -132,7 +125,7 @@ class TestMainMounts(BaseTestCase):
             plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_logs=False, collect_artifacts=True)
             ),
-            results=[get_artifacts_context_mount(read_only=False)],
+            results=[self.converter._get_artifacts_context_mount(read_only=False)],
         )
         self.assert_contexts_store(
             plugins=V1Plugins.get_or_create(
@@ -144,22 +137,20 @@ class TestMainMounts(BaseTestCase):
             plugins=V1Plugins.get_or_create(
                 V1Plugins(collect_logs=True, collect_artifacts=True)
             ),
-            results=[get_artifacts_context_mount(read_only=False)],
+            results=[self.converter._get_artifacts_context_mount(read_only=False)],
         )
 
-    @staticmethod
-    def assert_single_store(store, results):
+    def assert_single_store(self, store, results):
         assert (
-            get_volume_mounts(
+            self.converter._get_main_volume_mounts(
                 plugins=None, init=[], connections=[store], secrets=[], config_maps=[]
             )
             == results
         )
 
-    @staticmethod
-    def assert_single_init_store(store, results):
+    def assert_single_init_store(self, store, results):
         assert (
-            get_volume_mounts(
+            self.converter._get_main_volume_mounts(
                 plugins=None,
                 init=[V1Init(connection=store.name, path="/test")],
                 connections=[],
@@ -175,11 +166,11 @@ class TestMainMounts(BaseTestCase):
         self.assert_single_store(store=self.az_store, results=[])
         self.assert_single_store(
             store=self.claim_store,
-            results=[get_mount_from_store(store=self.claim_store)],
+            results=[self.converter._get_mount_from_store(store=self.claim_store)],
         )
         self.assert_single_store(
             store=self.host_path_store,
-            results=[get_mount_from_store(store=self.host_path_store)],
+            results=[self.converter._get_mount_from_store(store=self.host_path_store)],
         )
 
         # Managed versions
@@ -187,38 +178,48 @@ class TestMainMounts(BaseTestCase):
         self.assert_single_init_store(
             store=self.s3_store,
             results=[
-                get_connections_context_mount(name=volume_name, mount_path="/test")
+                self.converter._get_connections_context_mount(
+                    name=volume_name, mount_path="/test"
+                )
             ],
         )
         self.assert_single_init_store(
             store=self.gcs_store,
             results=[
-                get_connections_context_mount(name=volume_name, mount_path="/test")
+                self.converter._get_connections_context_mount(
+                    name=volume_name, mount_path="/test"
+                )
             ],
         )
         self.assert_single_init_store(
             store=self.az_store,
             results=[
-                get_connections_context_mount(name=volume_name, mount_path="/test")
+                self.converter._get_connections_context_mount(
+                    name=volume_name, mount_path="/test"
+                )
             ],
         )
         self.assert_single_init_store(
             store=self.claim_store,
             results=[
-                get_connections_context_mount(name=volume_name, mount_path="/test")
+                self.converter._get_connections_context_mount(
+                    name=volume_name, mount_path="/test"
+                )
             ],
         )
         self.assert_single_init_store(
             store=self.host_path_store,
             results=[
-                get_connections_context_mount(name=volume_name, mount_path="/test")
+                self.converter._get_connections_context_mount(
+                    name=volume_name, mount_path="/test"
+                )
             ],
         )
 
     def test_multi_connections(self):
         assert (
             len(
-                get_volume_mounts(
+                self.converter._get_main_volume_mounts(
                     plugins=None,
                     init=[],
                     connections=[
@@ -237,7 +238,7 @@ class TestMainMounts(BaseTestCase):
 
         assert (
             len(
-                get_volume_mounts(
+                self.converter._get_main_volume_mounts(
                     plugins=None,
                     init=[
                         V1Init(connection=self.s3_store.name, path="/test-1"),
@@ -256,7 +257,7 @@ class TestMainMounts(BaseTestCase):
 
         assert (
             len(
-                get_volume_mounts(
+                self.converter._get_main_volume_mounts(
                     plugins=None,
                     init=[
                         V1Init(connection=self.s3_store.name, path="/test-1"),
@@ -279,19 +280,17 @@ class TestMainMounts(BaseTestCase):
             == 7
         )
 
-    @staticmethod
-    def assert_secret(secret, results):
+    def assert_secret(self, secret, results):
         assert (
-            get_volume_mounts(
+            self.converter._get_main_volume_mounts(
                 plugins=None, init=[], connections=[], secrets=[secret], config_maps=[]
             )
             == results
         )
 
-    @staticmethod
-    def assert_config_map(config_map, results):
+    def assert_config_map(self, config_map, results):
         assert (
-            get_volume_mounts(
+            self.converter._get_main_volume_mounts(
                 plugins=None,
                 init=[],
                 connections=[],
@@ -306,11 +305,15 @@ class TestMainMounts(BaseTestCase):
         self.assert_secret(secret=self.non_mount_resource2, results=[])
         self.assert_secret(
             secret=self.mount_resource1,
-            results=[get_mount_from_resource(resource=self.mount_resource1)],
+            results=[
+                self.converter._get_mount_from_resource(resource=self.mount_resource1)
+            ],
         )
         self.assert_secret(
             secret=self.mount_resource2,
-            results=[get_mount_from_resource(resource=self.mount_resource2)],
+            results=[
+                self.converter._get_mount_from_resource(resource=self.mount_resource2)
+            ],
         )
 
     def test_config_map_volumes(self):
@@ -318,15 +321,19 @@ class TestMainMounts(BaseTestCase):
         self.assert_config_map(config_map=self.non_mount_resource2, results=[])
         self.assert_config_map(
             config_map=self.mount_resource1,
-            results=[get_mount_from_resource(resource=self.mount_resource1)],
+            results=[
+                self.converter._get_mount_from_resource(resource=self.mount_resource1)
+            ],
         )
         self.assert_config_map(
             config_map=self.mount_resource2,
-            results=[get_mount_from_resource(resource=self.mount_resource2)],
+            results=[
+                self.converter._get_mount_from_resource(resource=self.mount_resource2)
+            ],
         )
 
     def test_multiple_resources(self):
-        assert get_volume_mounts(
+        assert self.converter._get_main_volume_mounts(
             plugins=None,
             init=[],
             connections=[],
@@ -343,16 +350,16 @@ class TestMainMounts(BaseTestCase):
                 self.mount_resource2,
             ],
         ) == [
-            get_mount_from_resource(resource=self.mount_resource1),
-            get_mount_from_resource(resource=self.mount_resource2),
-            get_mount_from_resource(resource=self.mount_resource1),
-            get_mount_from_resource(resource=self.mount_resource2),
+            self.converter._get_mount_from_resource(resource=self.mount_resource1),
+            self.converter._get_mount_from_resource(resource=self.mount_resource2),
+            self.converter._get_mount_from_resource(resource=self.mount_resource1),
+            self.converter._get_mount_from_resource(resource=self.mount_resource2),
         ]
 
     def test_all_volumes(self):
         assert (
             len(
-                get_volume_mounts(
+                self.converter._get_main_volume_mounts(
                     plugins=V1Plugins.get_or_create(
                         V1Plugins(collect_logs=False, collect_artifacts=True)
                     ),
@@ -391,7 +398,7 @@ class TestMainMounts(BaseTestCase):
         )
         assert (
             len(
-                get_volume_mounts(
+                self.converter._get_main_volume_mounts(
                     plugins=None,
                     init=[
                         V1Init(connection=self.s3_store.name, path="/test-1"),
@@ -428,7 +435,7 @@ class TestMainMounts(BaseTestCase):
 
         assert (
             len(
-                get_volume_mounts(
+                self.converter._get_main_volume_mounts(
                     plugins=V1Plugins.get_or_create(
                         V1Plugins(collect_logs=True, collect_artifacts=True)
                     ),
@@ -467,7 +474,7 @@ class TestMainMounts(BaseTestCase):
         )
         assert (
             len(
-                get_volume_mounts(
+                self.converter._get_main_volume_mounts(
                     plugins=V1Plugins.get_or_create(
                         V1Plugins(collect_logs=True, collect_artifacts=False)
                     ),

@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import pytest
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
@@ -33,25 +32,14 @@ from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.env_vars import (
-    get_connection_env_var,
-    get_connections_catalog_env_var,
-    get_env_var,
-    get_items_from_secret,
-)
-from polyaxon.k8s.converter.common.mounts import (
-    get_connections_context_mount,
-    get_mount_from_resource,
-    get_mount_from_store,
-)
-from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.runner.converter.common import constants
+from polyaxon.runner.converter.common.volumes import get_volume_name
 from polyaxon.runner.converter.init.store import get_volume_args
-from tests.test_k8s.test_converters.test_init.base import BaseTestInit
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestInitStore(BaseTestInit):
+class TestInitStore(BaseConverterTest):
     def test_get_base_store_container_with_none_values(self):
         with self.assertRaises(PolyaxonConverterError):
             self.converter._get_base_store_container(
@@ -87,9 +75,16 @@ class TestInitStore(BaseTestInit):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert get_connection_env_var(connection=bucket_store_without_secret) == []
+        assert (
+            self.converter._get_connection_env_var(
+                connection=bucket_store_without_secret
+            )
+            == []
+        )
         assert container.env == [
-            get_connections_catalog_env_var(connections=[bucket_store_without_secret])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_store_without_secret]
+            )
         ]
         assert container.env_from == []
         assert container.resources is not None
@@ -123,9 +118,16 @@ class TestInitStore(BaseTestInit):
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
 
-        assert get_connection_env_var(connection=bucket_store_with_secret) == []
-        assert container.env == get_items_from_secret(secret=non_mount_resource1) + [
-            get_connections_catalog_env_var(connections=[bucket_store_with_secret])
+        assert (
+            self.converter._get_connection_env_var(connection=bucket_store_with_secret)
+            == []
+        )
+        assert container.env == self.converter._get_items_from_secret(
+            secret=non_mount_resource1
+        ) + [
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_store_with_secret]
+            )
         ]
         assert container.env_from == []
         assert container.resources is not None
@@ -153,14 +155,19 @@ class TestInitStore(BaseTestInit):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert get_connection_env_var(connection=bucket_store_with_secret) == []
+        assert (
+            self.converter._get_connection_env_var(connection=bucket_store_with_secret)
+            == []
+        )
         assert container.env == [
-            get_connections_catalog_env_var(connections=[bucket_store_with_secret])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_store_with_secret]
+            )
         ]
         assert container.env_from == []
         assert container.resources is not None
         assert container.volume_mounts == [
-            get_mount_from_resource(resource=mount_resource1)
+            self.converter._get_mount_from_resource(resource=mount_resource1)
         ]
 
     def test_get_base_store_container_with_mount_store(self):
@@ -187,13 +194,15 @@ class TestInitStore(BaseTestInit):
         assert container.image_pull_policy is None
         assert container.command == ["/bin/sh", "-c"]
         assert container.args is None
-        assert get_connection_env_var(connection=claim_store) == []
+        assert self.converter._get_connection_env_var(connection=claim_store) == []
         assert container.env == [
-            get_connections_catalog_env_var(connections=[claim_store])
+            self.converter._get_connections_catalog_env_var(connections=[claim_store])
         ]
         assert container.env_from == []
         assert container.resources is not None
-        assert container.volume_mounts == [get_mount_from_store(store=claim_store)]
+        assert container.volume_mounts == [
+            self.converter._get_mount_from_store(store=claim_store)
+        ]
 
     def test_get_base_container(self):
         store = V1Connection(
@@ -203,7 +212,7 @@ class TestInitStore(BaseTestInit):
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
-        env = [get_env_var(name="key", value="value")]
+        env = [self.converter._get_env_var(name="key", value="value")]
         env_from = [k8s_schemas.V1EnvFromSource(secret_ref={"name": "ref"})]
         mounts = [k8s_schemas.V1VolumeMount(name="test", mount_path="/test")]
         container = self.converter._get_base_store_container(
@@ -228,7 +237,9 @@ class TestInitStore(BaseTestInit):
         assert container.env == env
         assert container.env_from == env_from
         assert container.resources is not None
-        assert container.volume_mounts == mounts + [get_mount_from_store(store=store)]
+        assert container.volume_mounts == mounts + [
+            self.converter._get_mount_from_store(store=store)
+        ]
 
     def test_get_store_container_mount_stores(self):
         # Managed store
@@ -262,16 +273,18 @@ class TestInitStore(BaseTestInit):
                 store=store, mount_path=mount_path, artifacts=None, paths=None
             )
         ]
-        assert get_connection_env_var(connection=store) == []
-        assert container.env == [get_connections_catalog_env_var(connections=[store])]
+        assert self.converter._get_connection_env_var(connection=store) == []
+        assert container.env == [
+            self.converter._get_connections_catalog_env_var(connections=[store])
+        ]
         assert container.env_from == []
         assert container.resources is not None
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
-            get_mount_from_store(store=store),
+            self.converter._get_mount_from_store(store=store),
         ]
 
     def test_get_store_container_bucket_stores(self):
@@ -317,7 +330,7 @@ class TestInitStore(BaseTestInit):
         assert container.env_from == []
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=get_volume_name(mount_path), mount_path=mount_path
             )
         ]

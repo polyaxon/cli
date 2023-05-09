@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import uuid
 
 from typing import Optional
 
@@ -21,11 +20,6 @@ from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s import k8s_schemas
 from polyaxon.runner.converter.common import constants
-
-
-def get_volume_name(path: str) -> str:
-    name = uuid.uuid5(namespace=uuid.NAMESPACE_DNS, name=path).hex
-    return constants.VOLUME_MOUNT_CONNECTIONS_FORMAT.format(name)
 
 
 def get_volume_from_connection(

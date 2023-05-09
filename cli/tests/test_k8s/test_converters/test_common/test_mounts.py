@@ -25,16 +25,7 @@ from polyaxon.connections import (
     V1HostPathConnection,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.converter.common.mounts import (
-    get_artifacts_context_mount,
-    get_auth_context_mount,
-    get_connections_context_mount,
-    get_docker_context_mount,
-    get_mount_from_resource,
-    get_mount_from_store,
-    get_mounts,
-    get_shm_context_mount,
-)
+from polyaxon.k8s.converter.common.mounts import MountsMixin
 from polyaxon.runner.converter.common import constants
 from polyaxon.utils.test_utils import BaseTestCase
 
@@ -43,21 +34,21 @@ from polyaxon.utils.test_utils import BaseTestCase
 class TestMounts(BaseTestCase):
     def test_get_mount_from_store(self):
         # Bucket stores
-        assert get_mount_from_store(store=None) is None
+        assert MountsMixin._get_mount_from_store(store=None) is None
         store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             schema_=dict(bucket="s3//:foo"),
         )
-        assert get_mount_from_store(store=store) is None
+        assert MountsMixin._get_mount_from_store(store=store) is None
 
-        assert get_mount_from_store(store=None) is None
+        assert MountsMixin._get_mount_from_store(store=None) is None
         store = V1Connection(
             name="test",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
         )
-        assert get_mount_from_store(store=store) is None
+        assert MountsMixin._get_mount_from_store(store=store) is None
 
         # Claim store
         store = V1Connection(
@@ -65,7 +56,7 @@ class TestMounts(BaseTestCase):
             kind=V1ConnectionKind.VOLUME_CLAIM,
             schema_=dict(mount_path="/tmp", volume_claim="test", read_only=True),
         )
-        mount = get_mount_from_store(store=store)
+        mount = MountsMixin._get_mount_from_store(store=store)
         assert mount.name == store.name
         assert mount.mount_path == store.schema_.mount_path
         assert mount.read_only == store.schema_.read_only
@@ -77,7 +68,7 @@ class TestMounts(BaseTestCase):
                 mount_path="/tmp", volume_claim="test", read_only=True
             ),
         )
-        mount = get_mount_from_store(store=store)
+        mount = MountsMixin._get_mount_from_store(store=store)
         assert mount.name == store.name
         assert mount.mount_path == store.schema_.mount_path
         assert mount.read_only == store.schema_.read_only
@@ -88,7 +79,7 @@ class TestMounts(BaseTestCase):
             kind=V1ConnectionKind.HOST_PATH,
             schema_=dict(mount_path="/tmp", host_path="/tmp", read_only=True),
         )
-        mount = get_mount_from_store(store=store)
+        mount = MountsMixin._get_mount_from_store(store=store)
         assert mount.name == store.name
         assert mount.mount_path == store.schema_.mount_path
         assert mount.read_only == store.schema_.read_only
@@ -100,28 +91,28 @@ class TestMounts(BaseTestCase):
                 mount_path="/tmp", host_path="/tmp", read_only=True
             ),
         )
-        mount = get_mount_from_store(store=store)
+        mount = MountsMixin._get_mount_from_store(store=store)
         assert mount.name == store.name
         assert mount.mount_path == store.schema_.mount_path
         assert mount.read_only == store.schema_.read_only
 
     def cd(self):
         # Non mouth resource
-        assert get_mount_from_resource(None) is None
+        assert MountsMixin._get_mount_from_resource(None) is None
         resource = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
         )
-        assert get_mount_from_resource(resource=resource) is None
+        assert MountsMixin._get_mount_from_resource(resource=resource) is None
 
-        assert get_mount_from_resource(None) is None
+        assert MountsMixin._get_mount_from_resource(None) is None
         resource = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             is_requested=False,
         )
-        assert get_mount_from_resource(resource=resource) is None
+        assert MountsMixin._get_mount_from_resource(resource=resource) is None
 
         # Resource with mount
         resource = V1ConnectionResource(
@@ -130,7 +121,7 @@ class TestMounts(BaseTestCase):
             mount_path="/tmp",
             is_requested=False,
         )
-        mount = get_mount_from_resource(resource=resource)
+        mount = MountsMixin._get_mount_from_resource(resource=resource)
         assert mount.name == resource.name
         assert mount.mount_path == resource.mount_path
         assert mount.read_only is True
@@ -141,47 +132,49 @@ class TestMounts(BaseTestCase):
             mount_path="/tmp",
             is_requested=False,
         )
-        mount = get_mount_from_resource(resource=resource)
+        mount = MountsMixin._get_mount_from_resource(resource=resource)
         assert mount.name == resource.name
         assert mount.mount_path == resource.mount_path
         assert mount.read_only is True
 
     def test_get_docker_context_mount(self):
-        mount = get_docker_context_mount()
+        mount = MountsMixin._get_docker_context_mount()
         assert mount.name == constants.VOLUME_MOUNT_DOCKER
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_DOCKER
 
     def test_get_auth_context_mount(self):
-        mount = get_auth_context_mount()
+        mount = MountsMixin._get_auth_context_mount()
         assert mount.name == constants.VOLUME_MOUNT_CONFIGS
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_CONFIGS
         assert mount.read_only is None
-        mount = get_auth_context_mount(read_only=True)
+        mount = MountsMixin._get_auth_context_mount(read_only=True)
         assert mount.read_only is True
 
     def test_get_artifacts_context_mount(self):
-        mount = get_artifacts_context_mount()
+        mount = MountsMixin._get_artifacts_context_mount()
         assert mount.name == constants.VOLUME_MOUNT_ARTIFACTS
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_ARTIFACTS
         assert mount.read_only is None
-        mount = get_artifacts_context_mount(read_only=True)
+        mount = MountsMixin._get_artifacts_context_mount(read_only=True)
         assert mount.read_only is True
 
     def test_get_connections_context_mount(self):
-        mount = get_connections_context_mount(name="test", mount_path="/test")
+        mount = MountsMixin._get_connections_context_mount(
+            name="test", mount_path="/test"
+        )
         assert mount.name == "test"
         assert mount.mount_path == "/test"
         assert mount.read_only is None
 
     def test_get_shm_context_mount(self):
-        mount = get_shm_context_mount()
+        mount = MountsMixin._get_shm_context_mount()
         assert mount.name == constants.VOLUME_MOUNT_SHM
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_SHM
         assert mount.read_only is None
 
     def test_get_mounts(self):
         assert (
-            get_mounts(
+            MountsMixin._get_mounts(
                 use_auth_context=False,
                 use_artifacts_context=False,
                 use_docker_context=False,
@@ -189,14 +182,14 @@ class TestMounts(BaseTestCase):
             )
             == []
         )
-        assert get_mounts(
+        assert MountsMixin._get_mounts(
             use_auth_context=True,
             use_artifacts_context=True,
             use_docker_context=True,
             use_shm_context=True,
         ) == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
-            get_docker_context_mount(),
-            get_shm_context_mount(),
+            MountsMixin._get_auth_context_mount(read_only=True),
+            MountsMixin._get_artifacts_context_mount(read_only=False),
+            MountsMixin._get_docker_context_mount(),
+            MountsMixin._get_shm_context_mount(),
         ]

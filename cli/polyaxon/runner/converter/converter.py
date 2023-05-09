@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
@@ -22,15 +23,30 @@ from vents.connections.connection_schema import patch_git
 
 from polyaxon import settings
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
-from polyaxon.connections import V1Connection, V1ConnectionKind, V1ConnectionResource
+from polyaxon.connections import (
+    CONNECTION_CONFIG,
+    V1Connection,
+    V1ConnectionKind,
+    V1ConnectionResource,
+)
 from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
+from polyaxon.contexts import paths as ctx_paths
 from polyaxon.docker import docker_types
-from polyaxon.env_vars.keys import EV_KEYS_LOG_LEVEL, EV_KEYS_NO_API
-from polyaxon.exceptions import PolyaxonConverterError
+from polyaxon.env_vars.keys import (
+    EV_KEYS_ARTIFACTS_STORE_NAME,
+    EV_KEYS_COLLECT_ARTIFACTS,
+    EV_KEYS_COLLECT_RESOURCES,
+    EV_KEYS_LOG_LEVEL,
+    EV_KEYS_NO_API,
+    EV_KEYS_RUN_INSTANCE,
+)
+from polyaxon.exceptions import PolyaxonConverterError, PolyaxonSchemaError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1CompiledOperation, V1Init, V1Plugins
+from polyaxon.runner.converter.common import constants
 from polyaxon.runner.converter.common.containers import ensure_container_name
-from polyaxon.runner.converter.types import Container, EnvVar, Resource
+from polyaxon.runner.converter.common.volumes import get_volume_name
+from polyaxon.runner.converter.types import Container, EnvVar, Resource, VolumeMount
 from polyaxon.runner.kind import RunnerKind
 from polyaxon.schemas.types import (
     V1ArtifactsType,
@@ -222,12 +238,108 @@ class BaseConverter:
             env += proxy_env
         return env
 
+    @classmethod
+    def _get_run_instance_env_var(cls, run_instance: str) -> EnvVar:
+        return cls._get_env_var(name=EV_KEYS_RUN_INSTANCE, value=run_instance)
+
     @staticmethod
     def _get_env_var(name: str, value: Any) -> EnvVar:
         raise NotImplementedError
 
+    @classmethod
+    def _get_connections_catalog_env_var(
+        cls,
+        connections: List[V1Connection],
+    ) -> Optional[EnvVar]:
+        catalog = CONNECTION_CONFIG.get_connections_catalog(connections)
+        if not catalog:
+            return None
+        return cls._get_env_var(
+            name=CONNECTION_CONFIG.get_connections_catalog_env_name(),
+            value=catalog.to_json(),
+        )
+
     @staticmethod
-    def _get_proxy_env_vars(use_proxy_env_vars_use_in_ops: bool) -> List[EnvVar]:
+    def _get_connection_env_var(connection: V1Connection) -> List[EnvVar]:
+        env_vars = []
+        if not connection:
+            return env_vars
+
+        if connection.env:
+            env_vars += to_list(connection.env, check_none=True)
+
+        return env_vars
+
+    @staticmethod
+    def _get_proxy_env_var(key: str) -> Optional[str]:
+        value = os.environ.get(key)
+        if not value:
+            value = os.environ.get(key.lower())
+        if not value:
+            value = os.environ.get(key.upper())
+
+        return value
+
+    @classmethod
+    def _add_proxy_env_var(cls, name: str, value: str) -> List[EnvVar]:
+        return [
+            cls._get_env_var(name.upper(), value),
+            cls._get_env_var(name, value),
+        ]
+
+    @classmethod
+    def _get_proxy_env_vars(
+        cls,
+        use_proxy_env_vars_use_in_ops: bool,
+    ) -> List[docker_types.V1EnvVar]:
+        if use_proxy_env_vars_use_in_ops:
+            env_vars = []
+            https_proxy = cls._get_proxy_env_var("HTTPS_PROXY")
+            if not https_proxy:
+                https_proxy = cls._get_proxy_env_var("https_proxy")
+            if https_proxy:
+                env_vars += cls._add_proxy_env_var(
+                    name="HTTPS_PROXY", value=https_proxy
+                )
+                env_vars += cls._add_proxy_env_var(
+                    name="https_proxy", value=https_proxy
+                )
+            http_proxy = cls._get_proxy_env_var("HTTP_PROXY")
+            if not http_proxy:
+                http_proxy = cls._get_proxy_env_var("http_proxy")
+            if http_proxy:
+                env_vars += cls._add_proxy_env_var(name="HTTP_PROXY", value=http_proxy)
+                env_vars += cls._add_proxy_env_var(name="http_proxy", value=http_proxy)
+            no_proxy = cls._get_proxy_env_var("NO_PROXY")
+            if not no_proxy:
+                no_proxy = cls._get_proxy_env_var("no_proxy")
+            if no_proxy:
+                env_vars += cls._add_proxy_env_var(name="NO_PROXY", value=no_proxy)
+                env_vars += cls._add_proxy_env_var(name="no_proxy", value=no_proxy)
+            return env_vars
+        return []
+
+    @classmethod
+    def _get_kv_env_vars(cls, kv_env_vars: List[List]) -> List[EnvVar]:
+        env_vars = []
+        if not kv_env_vars:
+            return env_vars
+
+        for kv_env_var in kv_env_vars:
+            if not kv_env_var or not len(kv_env_var) == 2:
+                raise PolyaxonConverterError(
+                    "Received a wrong a key value env var `{}`".format(kv_env_var)
+                )
+            env_vars.append(cls._get_env_var(name=kv_env_var[0], value=kv_env_var[1]))
+
+        return env_vars
+
+    @classmethod
+    def _get_env_vars_from_k8s_resources(
+        cls,
+        secrets: Iterable[V1ConnectionResource],
+        config_maps: Iterable[V1ConnectionResource],
+    ) -> List[EnvVar]:
         raise NotImplementedError
 
     @staticmethod
@@ -239,8 +351,9 @@ class BaseConverter:
     ) -> List[EnvVar]:
         raise NotImplementedError
 
-    @staticmethod
+    @classmethod
     def _get_sidecar_container(
+        cls,
         container_id: str,
         polyaxon_sidecar: V1PolyaxonSidecarContainer,
         env: List[EnvVar],
@@ -256,8 +369,165 @@ class BaseConverter:
     ) -> docker_types.V1Container:
         raise NotImplementedError
 
+    def _get_main_env_vars(
+        self,
+        plugins: V1Plugins,
+        kv_env_vars: List[List],
+        artifacts_store_name: str,
+        connections: Iterable[V1Connection],
+        secrets: Iterable[V1ConnectionResource],
+        config_maps: Iterable[V1ConnectionResource],
+    ) -> List[EnvVar]:
+        if self.base_env_vars:
+            env = self._get_base_env_vars(
+                namespace=self.namespace,
+                resource_name=self.resource_name,
+                use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
+                log_level=plugins.log_level if plugins else None,
+            )
+        else:
+            env = self._get_service_env_vars(
+                service_header=PolyaxonServices.RUNNER,
+                external_host=plugins.external_host if plugins else False,
+                log_level=plugins.log_level if plugins else None,
+            )
+        env = to_list(env)
+        connections = connections or []
+
+        if plugins and plugins.collect_artifacts:
+            env.append(self._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True))
+
+        if plugins and plugins.collect_resources:
+            env.append(self._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True))
+
+        if artifacts_store_name:
+            env.append(
+                self._get_env_var(
+                    name=EV_KEYS_ARTIFACTS_STORE_NAME, value=artifacts_store_name
+                )
+            )
+
+        # Add connections catalog env vars information
+        env += to_list(
+            self._get_connections_catalog_env_var(connections=connections),
+            check_none=True,
+        )
+        # Add connection env vars information
+        for connection in connections:
+            try:
+                env += to_list(
+                    self._get_connection_env_var(connection=connection),
+                    check_none=True,
+                )
+            except PolyaxonSchemaError as e:
+                raise PolyaxonConverterError("Error resolving secrets: %s" % e) from e
+
+        env += self._get_kv_env_vars(kv_env_vars)
+        env += self._get_env_vars_from_k8s_resources(
+            secrets=secrets, config_maps=config_maps
+        )
+        return env
+
+    @classmethod
+    def _get_docker_context_mount(cls) -> VolumeMount:
+        raise NotImplementedError
+
     @staticmethod
+    def _get_auth_context_mount(read_only: bool = False) -> VolumeMount:
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_artifacts_context_mount(read_only: Optional[bool] = None) -> VolumeMount:
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_connections_context_mount(name: str, mount_path: str) -> VolumeMount:
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_shm_context_mount() -> VolumeMount:
+        raise NotImplementedError
+
+    @classmethod
+    def _get_mount_from_store(cls, store: V1Connection) -> Optional[VolumeMount]:
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_mount_from_resource(
+        resource: V1ConnectionResource,
+    ) -> Optional[VolumeMount]:
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_volume(host_path: str, mount_path: str, read_only: bool) -> VolumeMount:
+        raise NotImplementedError
+
+    @classmethod
+    def _get_mounts(
+        cls,
+        use_auth_context: bool,
+        use_docker_context: bool,
+        use_shm_context: bool,
+        use_artifacts_context: bool,
+    ) -> List[VolumeMount]:
+        raise NotImplementedError
+
+    @classmethod
+    def _get_main_volume_mounts(
+        cls,
+        plugins: V1Plugins,
+        init: Optional[List[V1Init]],
+        connections: Iterable[V1Connection],
+        secrets: Iterable[V1ConnectionResource],
+        config_maps: Iterable[V1ConnectionResource] = None,
+    ) -> List[VolumeMount]:
+        init = init or []
+        connections = connections or []
+        secrets = secrets or []
+        config_maps = config_maps or []
+
+        volume_mounts = []
+        volume_names = set()
+        if plugins and plugins.collect_artifacts:
+            volume_mounts += to_list(
+                cls._get_artifacts_context_mount(read_only=False), check_none=True
+            )
+            volume_names.add(constants.VOLUME_MOUNT_ARTIFACTS)
+        for init_connection in init:
+            volume_name = (
+                get_volume_name(init_connection.path)
+                if init_connection.path
+                else constants.VOLUME_MOUNT_ARTIFACTS
+            )
+            mount_path = init_connection.path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
+            if volume_name in volume_names:
+                continue
+            volume_names.add(volume_name)
+            volume_mounts += to_list(
+                cls._get_connections_context_mount(
+                    name=volume_name, mount_path=mount_path
+                ),
+                check_none=True,
+            )
+        for store in connections:
+            volume_mounts += to_list(
+                cls._get_mount_from_store(store=store), check_none=True
+            )
+
+        for secret in secrets:
+            volume_mounts += to_list(
+                cls._get_mount_from_resource(resource=secret), check_none=True
+            )
+
+        for config_map in config_maps:
+            volume_mounts += to_list(
+                cls._get_mount_from_resource(resource=config_map), check_none=True
+            )
+
+        return volume_mounts
+
     def _get_main_container(
+        self,
         container_id: str,
         main_container: Container,
         plugins: V1Plugins,
@@ -269,9 +539,23 @@ class BaseConverter:
         config_maps: Optional[Iterable[V1ConnectionResource]],
         run_path: Optional[str],
         kv_env_vars: List[List] = None,
-        env: List[EnvVar] = None,
         ports: List[int] = None,
     ) -> Container:
+        raise NotImplementedError
+
+    @classmethod
+    def _get_base_store_container(
+        cls,
+        container: Optional[docker_types.V1Container],
+        container_name: str,
+        polyaxon_init: V1PolyaxonInitContainer,
+        store: V1Connection,
+        env: List[docker_types.V1EnvVar],
+        env_from: List[k8s_schemas.V1EnvFromSource],
+        volume_mounts: List[docker_types.V1VolumeMount],
+        args: List[str],
+        command: Optional[List[str]] = None,
+    ) -> Optional[docker_types.V1Container]:
         raise NotImplementedError
 
     @classmethod
@@ -662,16 +946,11 @@ class BaseConverter:
         connections: List[str],
         init_connections: Optional[List[V1Init]],
         connection_by_names: Dict[str, V1Connection],
-        log_level: str,
         secrets: Optional[Iterable[V1ConnectionResource]],
         config_maps: Optional[Iterable[V1ConnectionResource]],
         kv_env_vars: Optional[List[List]] = None,
         ports: Optional[List[int]] = None,
     ) -> Container:
-        env = self.get_main_env_vars(
-            external_host=plugins.external_host if plugins else False,
-            log_level=log_level,
-        )
         return self._get_main_container(
             container_id=self.MAIN_CONTAINER_ID,
             main_container=main_container,
@@ -683,7 +962,6 @@ class BaseConverter:
             secrets=secrets,
             config_maps=config_maps,
             kv_env_vars=kv_env_vars,
-            env=env,
             ports=ports,
             run_path=self.run_path,
         )

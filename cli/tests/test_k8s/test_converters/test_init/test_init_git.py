@@ -22,22 +22,14 @@ from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_contai
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s.converter.common.env_vars import (
-    get_connection_env_var,
-    get_connections_catalog_env_var,
-)
-from polyaxon.k8s.converter.common.mounts import (
-    get_auth_context_mount,
-    get_connections_context_mount,
-)
-from polyaxon.k8s.converter.common.volumes import get_volume_name
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
-from tests.test_k8s.test_converters.test_init.base import BaseTestInit
+from polyaxon.runner.converter.common.volumes import get_volume_name
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestInitGit(BaseTestInit):
+class TestInitGit(BaseConverterTest):
     def test_get_git_init_container_raises_for_missing_info(self):
         with self.assertRaises(PolyaxonConverterError):
             self.converter._get_git_init_container(
@@ -70,17 +62,17 @@ class TestInitGit(BaseTestInit):
         assert container.image == "foo"
         assert container.image_pull_policy is None
         assert container.command == ["polyaxon", "initializer", "git"]
-        assert get_connection_env_var(connection=connection) == []
+        assert self.converter._get_connection_env_var(connection=connection) == []
         assert container.env == [
-            get_connections_catalog_env_var(connections=[connection])
+            self.converter._get_connections_catalog_env_var(connections=[connection])
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]
 
         container = self.converter._get_git_init_container(
@@ -107,11 +99,11 @@ class TestInitGit(BaseTestInit):
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]
 
         connection = V1Connection(
@@ -145,10 +137,10 @@ class TestInitGit(BaseTestInit):
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=get_volume_name("/somepath"), mount_path="/somepath"
             ),
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]
 
         connection = V1Connection(
@@ -185,8 +177,8 @@ class TestInitGit(BaseTestInit):
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=get_volume_name("/somepath"), mount_path="/somepath"
             ),
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]

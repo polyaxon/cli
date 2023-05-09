@@ -29,22 +29,13 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_COLLECT_RESOURCES,
 )
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s.converter.common.env_vars import (
-    get_connection_env_var,
-    get_connections_catalog_env_var,
-    get_env_var,
-    get_env_vars_from_k8s_resources,
-    get_items_from_config_map,
-    get_items_from_secret,
-    get_kv_env_vars,
-)
-from polyaxon.k8s.converter.main.env_vars import get_env_vars
 from polyaxon.polyflow import V1Plugins
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon.services.values import PolyaxonServices
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestMainEnvVars(BaseTestCase):
+class TestMainEnvVars(BaseConverterTest):
     def setUp(self):
         super().setUp()
         # Secrets
@@ -94,22 +85,23 @@ class TestMainEnvVars(BaseTestCase):
         )
 
     def test_get_env_vars(self):
-        assert (
-            get_env_vars(
-                plugins=None,
-                kv_env_vars=None,
-                artifacts_store_name=None,
-                connections=None,
-                secrets=None,
-                config_maps=None,
-            )
-            == []
+        assert self.converter._get_main_env_vars(
+            plugins=None,
+            kv_env_vars=None,
+            artifacts_store_name=None,
+            connections=None,
+            secrets=None,
+            config_maps=None,
+        ) == self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
         )
 
     def test_get_env_vars_with_kv_env_vars(self):
         # Check wrong kv env vars
         with self.assertRaises(PolyaxonConverterError):
-            get_env_vars(
+            self.converter._get_main_env_vars(
                 plugins=None,
                 kv_env_vars=["x", "y", "z"],
                 artifacts_store_name=None,
@@ -118,7 +110,7 @@ class TestMainEnvVars(BaseTestCase):
                 config_maps=None,
             )
         with self.assertRaises(PolyaxonConverterError):
-            get_env_vars(
+            self.converter._get_main_env_vars(
                 plugins=None,
                 kv_env_vars={"x": "y"},
                 artifacts_store_name=None,
@@ -128,18 +120,30 @@ class TestMainEnvVars(BaseTestCase):
             )
 
         # Valid kv env vars
-        assert get_env_vars(
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
+        )
+        assert self.converter._get_main_env_vars(
             plugins=None,
             kv_env_vars=[["key1", "val1"], ["key2", "val2"]],
             artifacts_store_name=None,
             connections=None,
             secrets=None,
             config_maps=None,
-        ) == get_kv_env_vars([["key1", "val1"], ["key2", "val2"]])
+        ) == base_env + self.converter._get_kv_env_vars(
+            [["key1", "val1"], ["key2", "val2"]]
+        )
 
     def test_get_env_vars_with_artifacts_store(self):
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
+        )
         assert (
-            get_env_vars(
+            self.converter._get_main_env_vars(
                 plugins=None,
                 kv_env_vars=None,
                 artifacts_store_name=None,
@@ -147,10 +151,10 @@ class TestMainEnvVars(BaseTestCase):
                 secrets=None,
                 config_maps=None,
             )
-            == []
+            == base_env
         )
 
-        assert get_env_vars(
+        assert self.converter._get_main_env_vars(
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_logs=False, collect_artifacts=True, collect_resources=True
@@ -161,13 +165,13 @@ class TestMainEnvVars(BaseTestCase):
             connections=None,
             secrets=None,
             config_maps=None,
-        ) == [
-            get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
-            get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
+        ) == base_env + [
+            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
+            self.converter._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
         ]
 
         assert (
-            get_env_vars(
+            self.converter._get_main_env_vars(
                 plugins=V1Plugins.get_or_create(
                     V1Plugins(
                         collect_logs=False,
@@ -181,11 +185,11 @@ class TestMainEnvVars(BaseTestCase):
                 secrets=None,
                 config_maps=None,
             )
-            == []
+            == base_env
         )
 
         assert (
-            get_env_vars(
+            self.converter._get_main_env_vars(
                 plugins=None,
                 kv_env_vars=None,
                 artifacts_store_name=None,
@@ -193,10 +197,10 @@ class TestMainEnvVars(BaseTestCase):
                 secrets=None,
                 config_maps=None,
             )
-            == []
+            == base_env
         )
 
-        assert get_env_vars(
+        assert self.converter._get_main_env_vars(
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_logs=False,
@@ -209,21 +213,30 @@ class TestMainEnvVars(BaseTestCase):
             connections=None,
             secrets=None,
             config_maps=None,
-        ) == [get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True)]
+        ) == base_env + [
+            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True)
+        ]
 
     def test_get_env_vars_with_secrets(self):
-        assert get_env_vars(
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
+        )
+        assert self.converter._get_main_env_vars(
             plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
             connections=None,
             secrets=[self.resource1, self.resource2],
             config_maps=None,
-        ) == get_items_from_secret(secret=self.resource1) + get_items_from_secret(
+        ) == base_env + self.converter._get_items_from_secret(
+            secret=self.resource1
+        ) + self.converter._get_items_from_secret(
             secret=self.resource2
         )
 
-        assert get_env_vars(
+        assert self.converter._get_main_env_vars(
             plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
@@ -235,29 +248,36 @@ class TestMainEnvVars(BaseTestCase):
                 self.resource4,
             ],
             config_maps=None,
-        ) == get_items_from_secret(secret=self.resource1) + get_items_from_secret(
+        ) == base_env + self.converter._get_items_from_secret(
+            secret=self.resource1
+        ) + self.converter._get_items_from_secret(
             secret=self.resource2
-        ) + get_items_from_secret(
+        ) + self.converter._get_items_from_secret(
             secret=self.resource3
-        ) + get_items_from_secret(
+        ) + self.converter._get_items_from_secret(
             secret=self.resource4
         )
 
     def test_get_env_vars_with_config_maps(self):
-        assert get_env_vars(
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
+        )
+        assert self.converter._get_main_env_vars(
             plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
             connections=None,
             secrets=None,
             config_maps=[self.resource1, self.resource2],
-        ) == get_items_from_config_map(
+        ) == base_env + self.converter._get_items_from_config_map(
             config_map=self.resource1
-        ) + get_items_from_config_map(
+        ) + self.converter._get_items_from_config_map(
             config_map=self.resource2
         )
 
-        assert get_env_vars(
+        assert self.converter._get_main_env_vars(
             plugins=None,
             kv_env_vars=None,
             artifacts_store_name=None,
@@ -269,13 +289,13 @@ class TestMainEnvVars(BaseTestCase):
                 self.resource3,
                 self.resource4,
             ],
-        ) == get_items_from_config_map(
+        ) == base_env + self.converter._get_items_from_config_map(
             config_map=self.resource1
-        ) + get_items_from_config_map(
+        ) + self.converter._get_items_from_config_map(
             config_map=self.resource2
-        ) + get_items_from_config_map(
+        ) + self.converter._get_items_from_config_map(
             config_map=self.resource3
-        ) + get_items_from_config_map(
+        ) + self.converter._get_items_from_config_map(
             config_map=self.resource4
         )
 
@@ -287,7 +307,7 @@ class TestMainEnvVars(BaseTestCase):
             secret=self.resource6,
         )
 
-        env_vars = get_env_vars(
+        env_vars = self.converter._get_main_env_vars(
             plugins=V1Plugins.get_or_create(
                 V1Plugins(
                     collect_logs=False, collect_artifacts=True, collect_resources=True
@@ -310,15 +330,26 @@ class TestMainEnvVars(BaseTestCase):
                 self.resource4,
             ],
         )
-        expected = [
-            get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
-            get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
-            get_env_var(name=EV_KEYS_ARTIFACTS_STORE_NAME, value="test"),
+        expected = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
+        )
+        expected += [
+            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
+            self.converter._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
+            self.converter._get_env_var(
+                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="test"
+            ),
         ]
-        expected += get_connection_env_var(connection=connection)
-        expected += [get_connections_catalog_env_var(connections=[connection])]
-        expected += get_kv_env_vars([["key1", "val1"], ["key2", "val2"]])
-        expected += get_env_vars_from_k8s_resources(
+        expected += self.converter._get_connection_env_var(connection=connection)
+        expected += [
+            self.converter._get_connections_catalog_env_var(connections=[connection])
+        ]
+        expected += self.converter._get_kv_env_vars(
+            [["key1", "val1"], ["key2", "val2"]]
+        )
+        expected += self.converter._get_env_vars_from_k8s_resources(
             secrets=[
                 self.resource1,
                 self.resource2,

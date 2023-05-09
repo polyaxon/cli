@@ -25,37 +25,18 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.containers.names import MAIN_JOB_CONTAINER
+from polyaxon.containers.names import MAIN_JOB_CONTAINER, SIDECAR_CONTAINER
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s.converter.common.env_vars import (
-    get_connection_env_var,
-    get_connections_catalog_env_var,
-    get_env_from_secret,
-    get_env_var,
-    get_items_from_secret,
-)
-from polyaxon.k8s.converter.common.mounts import (
-    get_artifacts_context_mount,
-    get_auth_context_mount,
-    get_mount_from_resource,
-    get_mount_from_store,
-)
-from polyaxon.k8s.converter.sidecar.container import (
-    SIDECAR_CONTAINER,
-    get_sidecar_args,
-    get_sidecar_container,
-)
-from polyaxon.k8s.converter.sidecar.env_vars import get_sidecar_env_vars
 from polyaxon.polyflow import V1Plugins
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestSidecarContainer(BaseTestCase):
+class TestSidecarContainer(BaseConverterTest):
     def assert_artifacts_store_raises(self, store, run_path=None):
         with self.assertRaises(PolyaxonConverterError):
-            get_sidecar_container(
+            self.converter._get_sidecar_container(
                 container_id=MAIN_JOB_CONTAINER,
                 plugins=V1Plugins.get_or_create(
                     V1Plugins(collect_logs=True, collect_artifacts=False)
@@ -87,7 +68,7 @@ class TestSidecarContainer(BaseTestCase):
         self.assert_artifacts_store_raises(store=artifacts_store)
 
     def test_get_sidecar_container_without_an_artifacts_store(self):
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=None,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -104,8 +85,8 @@ class TestSidecarContainer(BaseTestCase):
 
     def test_get_sidecar_container_with_non_managed_mount_outputs_logs_store(self):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         mount_non_managed_store = V1Connection(
             name="test_claim",
@@ -114,7 +95,7 @@ class TestSidecarContainer(BaseTestCase):
                 volume_claim="test", mount_path="/tmp", read_only=True
             ),
         )
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -134,15 +115,15 @@ class TestSidecarContainer(BaseTestCase):
 
     def test_get_sidecar_container_with_non_managed_bucket_artifacts_logs_store(self):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         bucket_non_managed_store = V1Connection(
             name="test_s3",
             kind=V1ConnectionKind.S3,
             schema_=V1BucketConnection(bucket="s3//:foo"),
         )
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -164,8 +145,8 @@ class TestSidecarContainer(BaseTestCase):
         self,
     ):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         resource1 = V1ConnectionResource(
             name="test1",
@@ -180,7 +161,7 @@ class TestSidecarContainer(BaseTestCase):
         )
 
         # Default auth is included
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -200,12 +181,12 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
         ]
 
         # Nno auth
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -224,14 +205,16 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.volume_mounts == [get_artifacts_context_mount(read_only=False)]
+        assert sidecar.volume_mounts == [
+            self.converter._get_artifacts_context_mount(read_only=False)
+        ]
 
     def test_get_sidecar_container_with_managed_bucket_outputs_logs_store_and_env_secret(
         self,
     ):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         resource1 = V1ConnectionResource(
             name="test1",
@@ -246,7 +229,7 @@ class TestSidecarContainer(BaseTestCase):
         )
 
         # Both logs/outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -265,30 +248,34 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
         ]
 
         # logs and no outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -309,29 +296,33 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=-212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]
 
         # outputs and no logs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id="test",
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -350,34 +341,38 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id="test",
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id="test",
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
         ]
 
     def test_get_sidecar_container_with_managed_bucket_outputs_logs_store_and_mount_secret(
         self,
     ):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         resource1 = V1ConnectionResource(
             name="test1",
@@ -393,7 +388,7 @@ class TestSidecarContainer(BaseTestCase):
         )
 
         # Both logs and outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -412,31 +407,35 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
-            get_mount_from_resource(resource=resource1),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
+            self.converter._get_mount_from_resource(resource=resource1),
         ]
 
         # logs and no outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -457,30 +456,34 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_mount_from_resource(resource=resource1),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_mount_from_resource(resource=resource1),
         ]
 
         # outputs and no logs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -499,35 +502,39 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
-            get_mount_from_resource(resource=resource1),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
+            self.converter._get_mount_from_resource(resource=resource1),
         ]
 
     def test_get_sidecar_container_with_managed_bucket_outputs_logs_store_and_env_from(
         self,
     ):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         resource1 = V1ConnectionResource(name="test1", is_requested=False)
         bucket_managed_store = V1Connection(
@@ -538,7 +545,7 @@ class TestSidecarContainer(BaseTestCase):
         )
 
         # both logs and outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -557,30 +564,36 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
-        assert sidecar.env_from == [get_env_from_secret(secret=resource1)]
+        assert sidecar.env_from == [
+            self.converter._get_env_from_secret(secret=resource1)
+        ]
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
         ]
 
         # logs and no outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -601,29 +614,35 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
-        assert sidecar.env_from == [get_env_from_secret(secret=resource1)]
+        assert sidecar.env_from == [
+            self.converter._get_env_from_secret(secret=resource1)
+        ]
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]
 
         # outputs and no logs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -642,32 +661,38 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=bucket_managed_store.name,
-        ) + get_items_from_secret(secret=resource1) + get_connection_env_var(
+        ) + self.converter._get_items_from_secret(
+            secret=resource1
+        ) + self.converter._get_connection_env_var(
             connection=bucket_managed_store
         ) + [
-            get_connections_catalog_env_var(connections=[bucket_managed_store])
+            self.converter._get_connections_catalog_env_var(
+                connections=[bucket_managed_store]
+            )
         ]
-        assert sidecar.env_from == [get_env_from_secret(secret=resource1)]
+        assert sidecar.env_from == [
+            self.converter._get_env_from_secret(secret=resource1)
+        ]
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
         ]
 
     def test_get_sidecar_container_with_managed_mount_outputs_logs_store(self):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         mount_managed_store = V1Connection(
             name="test_path",
@@ -677,7 +702,7 @@ class TestSidecarContainer(BaseTestCase):
         )
 
         # logs and outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -696,29 +721,31 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=mount_managed_store.name,
-        ) + get_connection_env_var(connection=mount_managed_store) + [
-            get_connections_catalog_env_var(connections=[mount_managed_store])
+        ) + self.converter._get_connection_env_var(connection=mount_managed_store) + [
+            self.converter._get_connections_catalog_env_var(
+                connections=[mount_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
-            get_mount_from_store(store=mount_managed_store),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
+            self.converter._get_mount_from_store(store=mount_managed_store),
         ]
 
         # logs and no outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -739,28 +766,30 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=mount_managed_store.name,
-        ) + get_connection_env_var(connection=mount_managed_store) + [
-            get_connections_catalog_env_var(connections=[mount_managed_store])
+        ) + self.converter._get_connection_env_var(connection=mount_managed_store) + [
+            self.converter._get_connections_catalog_env_var(
+                connections=[mount_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_mount_from_store(store=mount_managed_store),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_mount_from_store(store=mount_managed_store),
         ]
 
         # outputs and no logs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -779,31 +808,33 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=mount_managed_store.name,
-        ) + get_connection_env_var(connection=mount_managed_store) + [
-            get_connections_catalog_env_var(connections=[mount_managed_store])
+        ) + self.converter._get_connection_env_var(connection=mount_managed_store) + [
+            self.converter._get_connections_catalog_env_var(
+                connections=[mount_managed_store]
+            )
         ]
         assert sidecar.env_from == []
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
-            get_mount_from_store(store=mount_managed_store),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
+            self.converter._get_mount_from_store(store=mount_managed_store),
         ]
 
     def test_get_sidecar_container_with_managed_mount_outputs_and_blob_logs_store(self):
         env_vars = [
-            get_env_var(name="key1", value="value1"),
-            get_env_var(name="key2", value="value2"),
+            self.converter._get_env_var(name="key1", value="value1"),
+            self.converter._get_env_var(name="key2", value="value2"),
         ]
         resource1 = V1ConnectionResource(name="test1", is_requested=False)
         blob_managed_store = V1Connection(
@@ -814,7 +845,7 @@ class TestSidecarContainer(BaseTestCase):
         )
 
         # logs and outputs
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             env=env_vars,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
@@ -833,24 +864,28 @@ class TestSidecarContainer(BaseTestCase):
         assert sidecar.image == "sidecar/sidecar"
         assert sidecar.image_pull_policy == "IfNotPresent"
         assert sidecar.command == ["polyaxon", "sidecar"]
-        assert sidecar.args == get_sidecar_args(
+        assert sidecar.args == self.converter._get_sidecar_args(
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
             monitor_logs=False,
         )
-        assert sidecar.env == get_sidecar_env_vars(
+        assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
             container_id=MAIN_JOB_CONTAINER,
             artifacts_store_name=blob_managed_store.name,
-        ) + get_connection_env_var(connection=blob_managed_store) + [
-            get_connections_catalog_env_var(connections=[blob_managed_store])
+        ) + self.converter._get_connection_env_var(connection=blob_managed_store) + [
+            self.converter._get_connections_catalog_env_var(
+                connections=[blob_managed_store]
+            )
         ]
-        assert sidecar.env_from == [get_env_from_secret(secret=resource1)]
+        assert sidecar.env_from == [
+            self.converter._get_env_from_secret(secret=resource1)
+        ]
         assert sidecar.resources == get_sidecar_resources()
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
         ]
 
     def test_get_sidecar_container_host_paths(self):
@@ -876,7 +911,7 @@ class TestSidecarContainer(BaseTestCase):
             sidecar=None,
         )
 
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="foo",
@@ -891,9 +926,9 @@ class TestSidecarContainer(BaseTestCase):
         )
 
         assert sidecar.volume_mounts == [
-            get_auth_context_mount(read_only=True),
-            get_artifacts_context_mount(read_only=False),
-            get_mount_from_store(store=artifacts_store),
+            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_artifacts_context_mount(read_only=False),
+            self.converter._get_mount_from_store(store=artifacts_store),
         ]
 
     def test_get_sidecar_container_override_sync(self):
@@ -919,7 +954,7 @@ class TestSidecarContainer(BaseTestCase):
             sidecar=None,
         )
 
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="foo",
@@ -956,7 +991,7 @@ class TestSidecarContainer(BaseTestCase):
             ),
         )
 
-        sidecar = get_sidecar_container(
+        sidecar = self.converter._get_sidecar_container(
             container_id=MAIN_JOB_CONTAINER,
             polyaxon_sidecar=V1PolyaxonSidecarContainer(
                 image="foo",

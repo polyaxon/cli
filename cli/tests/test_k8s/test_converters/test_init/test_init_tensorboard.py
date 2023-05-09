@@ -28,19 +28,14 @@ from polyaxon.connections import (
 from polyaxon.containers.names import INIT_TENSORBOARD_CONTAINER_PREFIX
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.converter.common.mounts import (
-    get_auth_context_mount,
-    get_connections_context_mount,
-    get_mount_from_store,
-)
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter.common import constants
 from polyaxon.schemas.types import V1TensorboardType
-from tests.test_k8s.test_converters.test_init.base import BaseTestInit
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.converter_mark
-class TestInitTensorboard(BaseTestInit):
+class TestInitTensorboard(BaseConverterTest):
     def test_get_tensorboard_init_container(self):
         store = V1Connection(
             name="test",
@@ -79,11 +74,11 @@ class TestInitTensorboard(BaseTestInit):
         assert container.command == ["polyaxon", "initializer", "tensorboard"]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
-            get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True),
         ]
         uuids_str = ",".join([u.hex for u in uuids])
         assert container.args == [
@@ -134,9 +129,9 @@ class TestInitTensorboard(BaseTestInit):
         ]
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
-            get_connections_context_mount(
+            self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             ),
-            get_mount_from_store(store=store),
+            self.converter._get_mount_from_store(store=store),
         ]
