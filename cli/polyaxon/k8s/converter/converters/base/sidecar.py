@@ -24,7 +24,6 @@ from polyaxon.containers.names import SIDECAR_CONTAINER
 from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
 
@@ -164,4 +163,4 @@ class SidecarConverter(_BaseConverter):
             volume_mounts=volume_mounts,
         )
 
-        return patch_container(container)
+        return cls._patch_container(container)

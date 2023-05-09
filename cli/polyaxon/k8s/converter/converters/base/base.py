@@ -26,7 +26,7 @@ from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.common.annotations import get_connection_annotations
-from polyaxon.k8s.converter.common.containers import sanitize_container
+from polyaxon.k8s.converter.common.containers import ContainerMixin
 from polyaxon.k8s.converter.common.env_vars import EnvMixin
 from polyaxon.k8s.converter.common.mounts import MountsMixin
 from polyaxon.k8s.converter.converters.base.init import InitConverter
@@ -43,6 +43,7 @@ class BaseConverter(
     MainConverter,
     InitConverter,
     SidecarConverter,
+    ContainerMixin,
     EnvMixin,
     MountsMixin,
     _BaseConverter,
@@ -219,8 +220,10 @@ class BaseConverter(
         )
         return ReplicaSpec(
             volumes=volumes,
-            init_containers=[sanitize_container(c) for c in init_containers],
-            sidecar_containers=[sanitize_container(c) for c in sidecar_containers],
+            init_containers=[self._sanitize_container(c) for c in init_containers],
+            sidecar_containers=[
+                self._sanitize_container(c) for c in sidecar_containers
+            ],
             main_container=main_container,
             labels=labels,
             annotations=annotations,

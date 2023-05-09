@@ -46,7 +46,14 @@ from polyaxon.polyflow import V1CompiledOperation, V1Init, V1Plugins
 from polyaxon.runner.converter.common import constants
 from polyaxon.runner.converter.common.containers import ensure_container_name
 from polyaxon.runner.converter.common.volumes import get_volume_name
-from polyaxon.runner.converter.types import Container, EnvVar, Resource, VolumeMount
+from polyaxon.runner.converter.types import (
+    Container,
+    ContainerPort,
+    EnvVar,
+    Resource,
+    ResourceRequirements,
+    VolumeMount,
+)
 from polyaxon.runner.kind import RunnerKind
 from polyaxon.schemas.types import (
     V1ArtifactsType,
@@ -133,6 +140,32 @@ class BaseConverter:
     @staticmethod
     def filter_containers_from_init(init: List[V1Init]) -> List[Container]:
         return [i.container for i in init if not i.has_connection()]
+
+    @staticmethod
+    def _sanitize_container_env(
+        env: List[EnvVar],
+    ) -> Optional[List[EnvVar]]:
+        raise NotImplementedError
+
+    @classmethod
+    def _sanitize_container(cls, container: Container) -> Container:
+        raise NotImplementedError
+
+    @classmethod
+    def _patch_container(
+        cls,
+        container: Container,
+        name: Optional[str] = None,
+        command: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+        image: Optional[str] = None,
+        env: Optional[List[EnvVar]] = None,
+        volume_mounts: Optional[List[VolumeMount]] = None,
+        ports: Optional[List[ContainerPort]] = None,
+        resources: Optional[ResourceRequirements] = None,
+        **kwargs,
+    ) -> k8s_schemas.V1Container:
+        raise NotImplementedError
 
     def _get_service_env_vars(
         self,

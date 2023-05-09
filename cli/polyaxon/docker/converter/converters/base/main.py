@@ -20,7 +20,6 @@ from clipped.utils.lists import to_list
 
 from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.docker import docker_types
-from polyaxon.docker.converter.common.containers import patch_container
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.polyflow import V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
@@ -105,7 +104,7 @@ class MainConverter(_BaseConverter):
 
         ports = to_list(ports, check_none=True)
 
-        return patch_container(
+        return self._patch_container(
             container=main_container,
             name=container_id,
             env=env,

@@ -36,7 +36,6 @@ from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.containers import patch_container
 from polyaxon.polyflow import V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
 from polyaxon.runner.converter.common import constants
@@ -107,7 +106,7 @@ class InitConverter(_BaseConverter):
         )
         env += to_list(cls._get_connection_env_var(connection=store), check_none=True)
 
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -179,7 +178,7 @@ class InitConverter(_BaseConverter):
         container_name = container.name or generate_container_name(
             INIT_CUSTOM_CONTAINER_PREFIX, connection.name
         )
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             env=env,
@@ -218,7 +217,7 @@ class InitConverter(_BaseConverter):
         if plugins and plugins.auth:
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
 
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -269,7 +268,7 @@ class InitConverter(_BaseConverter):
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
 
         file_args.filename = file_args.filename or "file"
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -363,7 +362,7 @@ class InitConverter(_BaseConverter):
             mount_path=mount_path,
             connection=connection.name if track else None,
         )
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -495,7 +494,7 @@ class InitConverter(_BaseConverter):
             resources=polyaxon_init.get_resources(),
             volume_mounts=[cls._get_auth_context_mount(read_only=False)],
         )
-        return patch_container(container)
+        return cls._patch_container(container)
 
     @classmethod
     def _get_artifacts_path_init_container(

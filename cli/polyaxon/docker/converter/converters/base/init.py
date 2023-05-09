@@ -34,17 +34,6 @@ from polyaxon.containers.names import (
 )
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.docker import docker_types
-from polyaxon.docker.converter.common.containers import patch_container
-from polyaxon.docker.converter.common.env_vars import (
-    get_connection_env_var,
-    get_connections_catalog_env_var,
-    get_env_from_config_map,
-    get_env_from_secret,
-    get_env_var,
-    get_items_from_config_map,
-    get_items_from_secret,
-    get_run_instance_env_var,
-)
 from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.polyflow import V1Plugins
@@ -90,19 +79,21 @@ class InitConverter(_BaseConverter):
             volume_mounts = volume_mounts + to_list(
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
-            env = env + to_list(get_items_from_secret(secret=secret), check_none=True)
+            env = env + to_list(
+                cls._get_items_from_secret(secret=secret), check_none=True
+            )
             env_from = env_from + to_list(
-                get_env_from_secret(secret=secret), check_none=True
+                cls._get_env_from_secret(secret=secret), check_none=True
             )
             config_map = store.config_map
             volume_mounts = volume_mounts + to_list(
                 cls._get_mount_from_resource(resource=config_map), check_none=True
             )
             env = env + to_list(
-                get_items_from_config_map(config_map=config_map), check_none=True
+                cls._get_items_from_config_map(config_map=config_map), check_none=True
             )
             env_from = env_from + to_list(
-                get_env_from_config_map(config_map=config_map), check_none=True
+                cls._get_env_from_config_map(config_map=config_map), check_none=True
             )
         else:
             volume_mounts = volume_mounts + to_list(
@@ -110,12 +101,12 @@ class InitConverter(_BaseConverter):
             )
         # Add connections catalog env vars information
         env += to_list(
-            get_connections_catalog_env_var(connections=[store]),
+            cls._get_connections_catalog_env_var(connections=[store]),
             check_none=True,
         )
-        env += to_list(get_connection_env_var(connection=store), check_none=True)
+        env += to_list(cls._get_connection_env_var(connection=store), check_none=True)
 
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -162,30 +153,32 @@ class InitConverter(_BaseConverter):
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
-            env += to_list(get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(get_env_from_secret(secret=secret), check_none=True)
+            env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
+            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
 
         # Add connections catalog env vars information
         env += to_list(
-            get_connections_catalog_env_var(connections=[connection]),
+            cls._get_connections_catalog_env_var(connections=[connection]),
             check_none=True,
         )
-        env += to_list(get_connection_env_var(connection=connection), check_none=True)
+        env += to_list(
+            cls._get_connection_env_var(connection=connection), check_none=True
+        )
         config_map = connection.config_map
         if config_map:
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=config_map), check_none=True
             )
             env += to_list(
-                get_items_from_config_map(config_map=config_map), check_none=True
+                cls._get_items_from_config_map(config_map=config_map), check_none=True
             )
             env_from = to_list(
-                get_env_from_config_map(config_map=config_map), check_none=True
+                cls._get_env_from_config_map(config_map=config_map), check_none=True
             )
         container_name = container.name or generate_container_name(
             INIT_CUSTOM_CONTAINER_PREFIX, connection.name
         )
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             env=env,
@@ -206,7 +199,7 @@ class InitConverter(_BaseConverter):
         mount_path: Optional[str] = None,
     ) -> docker_types.V1Container:
         env = to_list(env, check_none=True)
-        env = env + [get_run_instance_env_var(run_instance)]
+        env = env + [cls._get_run_instance_env_var(run_instance)]
 
         container_name = generate_container_name(INIT_DOCKERFILE_CONTAINER_PREFIX)
         if not container:
@@ -224,7 +217,7 @@ class InitConverter(_BaseConverter):
         if plugins and plugins.auth:
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
 
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -256,7 +249,7 @@ class InitConverter(_BaseConverter):
         mount_path: Optional[str] = None,
     ) -> docker_types.V1Container:
         env = to_list(env, check_none=True)
-        env = env + [get_run_instance_env_var(run_instance)]
+        env = env + [cls._get_run_instance_env_var(run_instance)]
 
         container_name = generate_container_name(INIT_FILE_CONTAINER_PREFIX)
         if not container:
@@ -275,7 +268,7 @@ class InitConverter(_BaseConverter):
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
 
         file_args.filename = file_args.filename or "file"
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -335,28 +328,30 @@ class InitConverter(_BaseConverter):
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
-            env += to_list(get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(get_env_from_secret(secret=secret), check_none=True)
+            env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
+            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
 
         # Add connections catalog env vars information
         env += to_list(
-            get_connections_catalog_env_var(connections=[connection]),
+            cls._get_connections_catalog_env_var(connections=[connection]),
             check_none=True,
         )
-        env += to_list(get_connection_env_var(connection=connection), check_none=True)
+        env += to_list(
+            cls._get_connection_env_var(connection=connection), check_none=True
+        )
         # Add special handling to auto-inject ssh mount path
         if connection.kind == V1ConnectionKind.SSH and secret.mount_path:
-            env += [get_env_var(EV_KEYS_SSH_PATH, secret.mount_path)]
+            env += [cls._get_env_var(EV_KEYS_SSH_PATH, secret.mount_path)]
         config_map = connection.config_map
         if config_map:
             volume_mounts += to_list(
                 cls._get_mount_from_resource(resource=config_map), check_none=True
             )
             env += to_list(
-                get_items_from_config_map(config_map=config_map), check_none=True
+                cls._get_items_from_config_map(config_map=config_map), check_none=True
             )
             env_from = to_list(
-                get_env_from_config_map(config_map=config_map), check_none=True
+                cls._get_env_from_config_map(config_map=config_map), check_none=True
             )
         args = get_repo_context_args(
             name=connection.name,
@@ -367,7 +362,7 @@ class InitConverter(_BaseConverter):
             mount_path=mount_path,
             connection=connection.name if track else None,
         )
-        return patch_container(
+        return cls._patch_container(
             container=container,
             name=container_name,
             image=polyaxon_init.get_image(),
@@ -446,7 +441,7 @@ class InitConverter(_BaseConverter):
         mount_path: Optional[str] = None,
     ) -> docker_types.V1Container:
         env = to_list(env, check_none=True)
-        env = env + [get_run_instance_env_var(run_instance)]
+        env = env + [cls._get_run_instance_env_var(run_instance)]
 
         container_name = generate_container_name(INIT_TENSORBOARD_CONTAINER_PREFIX)
         if not container:
@@ -499,7 +494,7 @@ class InitConverter(_BaseConverter):
             resources=polyaxon_init.get_resources(),
             volume_mounts=[cls._get_auth_context_mount(read_only=False)],
         )
-        return patch_container(container)
+        return cls._patch_container(container)
 
     @classmethod
     def _get_artifacts_path_init_container(

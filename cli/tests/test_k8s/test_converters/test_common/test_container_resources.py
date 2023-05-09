@@ -16,22 +16,22 @@
 
 import pytest
 
-from polyaxon.k8s.converter.common.container_resources import sanitize_resources
+from polyaxon.k8s.converter.common.containers import ContainerMixin
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.k8s_mark
 class TestResourceRequirements(BaseTestCase):
     def test_empty_sanitize_resources(self):
-        resources = sanitize_resources(None)
+        resources = ContainerMixin._sanitize_resources(None)
         assert resources is None
 
     def test_empty_dict_sanitize_resources(self):
-        resources = sanitize_resources({})
+        resources = ContainerMixin._sanitize_resources({})
         assert resources is None
 
     def test_sanitize_resources_containing_ints(self):
-        resources = sanitize_resources(
+        resources = ContainerMixin._sanitize_resources(
             {"requests": {"cpu": 1, "memory": "100Mi", "nvidia.com/gpu": 1}}
         )
         assert resources.limits is None
@@ -41,7 +41,7 @@ class TestResourceRequirements(BaseTestCase):
             "nvidia.com/gpu": "1",
         }
 
-        resources = sanitize_resources(
+        resources = ContainerMixin._sanitize_resources(
             {"limits": {"cpu": "1", "memory": "100Mi", "nvidia.com/gpu": "1"}}
         )
         assert resources.limits == {
@@ -51,7 +51,7 @@ class TestResourceRequirements(BaseTestCase):
         }
         assert resources.requests is None
 
-        resources = sanitize_resources(
+        resources = ContainerMixin._sanitize_resources(
             {
                 "requests": {"cpu": "1", "memory": "100Mi", "nvidia.com/gpu": "1"},
                 "limits": {"cpu": "1", "memory": "100Mi", "nvidia.com/gpu": "1"},
