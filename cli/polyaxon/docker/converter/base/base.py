@@ -19,11 +19,11 @@ from polyaxon import settings
 from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.docker import docker_types
-from polyaxon.docker.converter.common.containers import ContainerMixin
-from polyaxon.docker.converter.common.env_vars import EnvMixin
-from polyaxon.docker.converter.common.mounts import MountsMixin
-from polyaxon.docker.converter.converters.base.init import InitConverter
-from polyaxon.docker.converter.converters.base.main import MainConverter
+from polyaxon.docker.converter.base.containers import ContainerMixin
+from polyaxon.docker.converter.base.env_vars import EnvMixin
+from polyaxon.docker.converter.base.init import InitConverter
+from polyaxon.docker.converter.base.main import MainConverter
+from polyaxon.docker.converter.base.mounts import MountsMixin
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter

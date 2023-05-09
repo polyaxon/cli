@@ -18,7 +18,7 @@ from typing import Dict, Iterable, List, Optional
 
 from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.docker import docker_types
-from polyaxon.docker.converter.converters.base import BaseConverter
+from polyaxon.docker.converter.base import BaseConverter
 from polyaxon.docker.converter.mixins import ServiceMixin
 from polyaxon.polyflow import V1CompiledOperation, V1Plugins, V1Service
 

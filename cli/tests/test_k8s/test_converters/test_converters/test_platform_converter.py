@@ -19,7 +19,7 @@ from polyaxon import settings
 from polyaxon.api import VERSION_V1
 from polyaxon.env_vars.keys import EV_KEYS_PLATFORM_HOST
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s.converter.converters.base import BaseConverter
+from polyaxon.k8s.converter.base import BaseConverter
 from polyaxon.services.auth import AuthenticationTypes
 from polyaxon.services.headers import PolyaxonServiceHeaders
 from polyaxon.services.values import PolyaxonServices

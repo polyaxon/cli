@@ -17,7 +17,7 @@
 import pytest
 
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s.converter.converters.base import BaseConverter
+from polyaxon.k8s.converter.base import BaseConverter
 from polyaxon.utils.test_utils import BaseTestCase
 
 

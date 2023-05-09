@@ -18,7 +18,7 @@ from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
 from polyaxon.connections import V1Connection, V1ConnectionResource
-from polyaxon.k8s.converter.converters.base import BaseConverter
+from polyaxon.k8s.converter.base import BaseConverter
 from polyaxon.k8s.converter.mixins import MPIJobMixin
 from polyaxon.k8s.custom_resources.kubeflow import get_mpi_job_custom_resource
 from polyaxon.k8s.replica import ReplicaSpec

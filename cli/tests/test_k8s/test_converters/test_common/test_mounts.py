@@ -25,7 +25,7 @@ from polyaxon.connections import (
     V1HostPathConnection,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.converter.common.mounts import MountsMixin
+from polyaxon.k8s.converter.base.mounts import MountsMixin
 from polyaxon.runner.converter.common import constants
 from polyaxon.utils.test_utils import BaseTestCase
 

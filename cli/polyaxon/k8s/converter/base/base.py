@@ -25,13 +25,13 @@ from polyaxon import pkg, settings
 from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s.converter.base.containers import ContainerMixin
+from polyaxon.k8s.converter.base.env_vars import EnvMixin
+from polyaxon.k8s.converter.base.init import InitConverter
+from polyaxon.k8s.converter.base.main import MainConverter
+from polyaxon.k8s.converter.base.mounts import MountsMixin
+from polyaxon.k8s.converter.base.sidecar import SidecarConverter
 from polyaxon.k8s.converter.common.annotations import get_connection_annotations
-from polyaxon.k8s.converter.common.containers import ContainerMixin
-from polyaxon.k8s.converter.common.env_vars import EnvMixin
-from polyaxon.k8s.converter.common.mounts import MountsMixin
-from polyaxon.k8s.converter.converters.base.init import InitConverter
-from polyaxon.k8s.converter.converters.base.main import MainConverter
-from polyaxon.k8s.converter.converters.base.sidecar import SidecarConverter
 from polyaxon.k8s.converter.pod.volumes import get_pod_volumes
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins

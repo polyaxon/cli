@@ -16,10 +16,8 @@
 
 import pytest
 
-from mock import MagicMock
-
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.containers import ContainerMixin
+from polyaxon.k8s.converter.base.containers import ContainerMixin
 from polyaxon.utils.test_utils import BaseTestCase
 
 

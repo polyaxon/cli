@@ -17,7 +17,7 @@
 from typing import Dict, Iterable, Optional
 
 from polyaxon.connections import V1Connection, V1ConnectionResource
-from polyaxon.k8s.converter.converters.base import BaseConverter
+from polyaxon.k8s.converter.base import BaseConverter
 from polyaxon.k8s.converter.mixins import ServiceMixin
 from polyaxon.k8s.custom_resources.service import get_service_custom_resource
 from polyaxon.polyflow import V1CompiledOperation, V1Plugins, V1Service

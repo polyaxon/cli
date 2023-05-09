@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from polyaxon.k8s.converter.converters.base import BaseConverter
+from polyaxon.k8s.converter.base import BaseConverter
 from polyaxon.k8s.converter.converters.helpers import (
     CleanerConverter,
     NotifierConverter,

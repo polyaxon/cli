@@ -16,7 +16,7 @@
 
 import pytest
 
-from polyaxon.k8s.converter.common.containers import ContainerMixin
+from polyaxon.k8s.converter.base.containers import ContainerMixin
 from polyaxon.utils.test_utils import BaseTestCase
 
 

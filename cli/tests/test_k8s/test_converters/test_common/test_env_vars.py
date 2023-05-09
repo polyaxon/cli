@@ -33,7 +33,7 @@ from polyaxon.env_vars.keys import (
 )
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.env_vars import EnvMixin
+from polyaxon.k8s.converter.base.env_vars import EnvMixin
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

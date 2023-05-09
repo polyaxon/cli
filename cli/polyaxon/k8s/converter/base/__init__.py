@@ -13,4 +13,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from polyaxon.docker.converter.converters.base.base import BaseConverter
+
+from polyaxon.k8s.converter.base.base import BaseConverter
