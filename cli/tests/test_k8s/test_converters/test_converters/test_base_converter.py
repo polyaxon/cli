@@ -192,7 +192,7 @@ class TestBaseConverter(BaseTestCase):
 
     def test_get_auth_service_env_vars(self):
         self.converter.internal_auth = True
-        env_vars = self.converter.get_auth_service_env_vars()
+        env_vars = self.converter._get_auth_service_env_vars()
         assert env_vars == self.converter._get_service_env_vars(
             header=PolyaxonServiceHeaders.INTERNAL,
             service_header=PolyaxonServices.INITIALIZER,
@@ -209,7 +209,7 @@ class TestBaseConverter(BaseTestCase):
         )
 
         self.converter.internal_auth = False
-        env_vars = self.converter.get_auth_service_env_vars(log_level="info")
+        env_vars = self.converter._get_auth_service_env_vars(log_level="info")
         assert env_vars == self.converter._get_service_env_vars(
             header=PolyaxonServiceHeaders.SERVICE,
             service_header=PolyaxonServices.INITIALIZER,
@@ -224,7 +224,7 @@ class TestBaseConverter(BaseTestCase):
             api_version=VERSION_V1,
             use_proxy_env_vars_use_in_ops=False,
         )
-        env_vars = self.converter.get_auth_service_env_vars(external_host=True)
+        env_vars = self.converter._get_auth_service_env_vars(external_host=True)
         # Default platform host
         assert env_vars == self.converter._get_service_env_vars(
             header=PolyaxonServiceHeaders.SERVICE,
@@ -243,7 +243,7 @@ class TestBaseConverter(BaseTestCase):
         # Setting an env var for the EV_KEYS_PLATFORM_HOST
         current = os.environ.get(EV_KEYS_PLATFORM_HOST)
         os.environ[EV_KEYS_PLATFORM_HOST] = "foo"
-        env_vars = self.converter.get_auth_service_env_vars(external_host=True)
+        env_vars = self.converter._get_auth_service_env_vars(external_host=True)
         assert env_vars == self.converter._get_service_env_vars(
             header=PolyaxonServiceHeaders.SERVICE,
             service_header=PolyaxonServices.INITIALIZER,
@@ -265,7 +265,7 @@ class TestBaseConverter(BaseTestCase):
 
     def test_get_polyaxon_sidecar_service_env_vars(self):
         self.converter.internal_auth = True
-        env_vars = self.converter.get_polyaxon_sidecar_service_env_vars()
+        env_vars = self.converter._get_polyaxon_sidecar_service_env_vars()
         assert env_vars == self.converter._get_service_env_vars(
             header=PolyaxonServiceHeaders.SERVICE,
             service_header=PolyaxonServices.SIDECAR,
@@ -282,7 +282,7 @@ class TestBaseConverter(BaseTestCase):
         )
 
         self.converter.internal_auth = False
-        env_vars = self.converter.get_polyaxon_sidecar_service_env_vars(
+        env_vars = self.converter._get_polyaxon_sidecar_service_env_vars(
             log_level="info"
         )
         assert env_vars == self.converter._get_service_env_vars(
@@ -299,7 +299,7 @@ class TestBaseConverter(BaseTestCase):
             api_version=VERSION_V1,
             use_proxy_env_vars_use_in_ops=False,
         )
-        env_vars = self.converter.get_polyaxon_sidecar_service_env_vars(
+        env_vars = self.converter._get_polyaxon_sidecar_service_env_vars(
             external_host=True, log_level="debug"
         )
         # Default platform host
@@ -320,7 +320,7 @@ class TestBaseConverter(BaseTestCase):
         # Setting an env var for the EV_KEYS_PLATFORM_HOST
         current = os.environ.get(EV_KEYS_PLATFORM_HOST)
         os.environ[EV_KEYS_PLATFORM_HOST] = "foo"
-        env_vars = self.converter.get_polyaxon_sidecar_service_env_vars(
+        env_vars = self.converter._get_polyaxon_sidecar_service_env_vars(
             external_host=True,
             log_level="debug",
         )

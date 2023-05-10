@@ -55,7 +55,30 @@ class TestJobConverter(BaseConverterTest):
         assert results == expected
 
     def test_get_main_env_vars(self):
-        env_vars = self.converter.get_main_env_vars()
+        self.converter.base_env_vars = True
+        env_vars = self.converter._get_main_env_vars(
+            plugins=None,
+            kv_env_vars=[],
+            artifacts_store_name=None,
+            connections=None,
+            secrets=None,
+            config_maps=None,
+        )
+        assert env_vars == self.converter._get_base_env_vars(
+            namespace=self.converter.namespace,
+            resource_name=self.converter.resource_name,
+            use_proxy_env_vars_use_in_ops=False,
+            log_level=None,
+        )
+        self.converter.base_env_vars = False
+        env_vars = self.converter._get_main_env_vars(
+            plugins=None,
+            kv_env_vars=[],
+            artifacts_store_name=None,
+            connections=None,
+            secrets=None,
+            config_maps=None,
+        )
         assert env_vars == self.converter._get_service_env_vars(
             service_header=PolyaxonServices.RUNNER
         )
@@ -74,7 +97,7 @@ class TestJobConverter(BaseConverterTest):
         assert containers == [
             self.converter._get_auth_context_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
-                env=self.converter.get_auth_service_env_vars(),
+                env=self.converter._get_auth_service_env_vars(),
             )
         ]
 
@@ -149,7 +172,7 @@ class TestJobConverter(BaseConverterTest):
                     connection=store,
                     artifacts=None,
                     paths=None,
-                    env=self.converter.get_init_service_env_vars(),
+                    env=self.converter._get_init_service_env_vars(),
                 )
             ],
         )
@@ -179,7 +202,7 @@ class TestJobConverter(BaseConverterTest):
                     connection=store,
                     artifacts=None,
                     paths=None,
-                    env=self.converter.get_init_service_env_vars(),
+                    env=self.converter._get_init_service_env_vars(),
                     is_default_artifacts_store=True,
                 ),
             ],
@@ -225,7 +248,7 @@ class TestJobConverter(BaseConverterTest):
             [
                 self.converter._get_auth_context_init_container(
                     polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
-                    env=self.converter.get_auth_service_env_vars(),
+                    env=self.converter._get_auth_service_env_vars(),
                 ),
                 self.converter._get_artifacts_path_init_container(
                     polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
@@ -240,7 +263,7 @@ class TestJobConverter(BaseConverterTest):
                         files=["/foo", "/bar", ["from-foo", "to-foo"]]
                     ),
                     paths=None,
-                    env=self.converter.get_init_service_env_vars(),
+                    env=self.converter._get_init_service_env_vars(),
                     is_default_artifacts_store=True,
                 ),
                 self.converter._get_store_init_container(
@@ -250,14 +273,14 @@ class TestJobConverter(BaseConverterTest):
                         files=["/foo", "/bar", ["from-foo", "to-foo"]]
                     ),
                     paths=None,
-                    env=self.converter.get_init_service_env_vars(),
+                    env=self.converter._get_init_service_env_vars(),
                 ),
                 self.converter._get_store_init_container(
                     polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                     connection=store1,
                     artifacts=None,
                     paths=["/foo", "/bar", ["from-foo", "to-foo"]],
-                    env=self.converter.get_init_service_env_vars(),
+                    env=self.converter._get_init_service_env_vars(),
                 ),
             ],
         )
@@ -289,7 +312,7 @@ class TestJobConverter(BaseConverterTest):
             self.converter._get_dockerfile_init_container(
                 dockerfile_args=dockerfile_args1,
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 plugins=None,
                 run_path=self.converter.run_path,
                 run_instance=self.converter.run_instance,
@@ -297,7 +320,7 @@ class TestJobConverter(BaseConverterTest):
             self.converter._get_dockerfile_init_container(
                 dockerfile_args=dockerfile_args2,
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 mount_path="/test",
                 plugins=None,
                 run_path=self.converter.run_path,
@@ -329,7 +352,7 @@ class TestJobConverter(BaseConverterTest):
             self.converter._get_file_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 file_args=file_args1,
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 plugins=None,
                 run_path=self.converter.run_path,
                 run_instance=self.converter.run_instance,
@@ -337,7 +360,7 @@ class TestJobConverter(BaseConverterTest):
             self.converter._get_file_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 file_args=file_args2,
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 mount_path="/test",
                 plugins=None,
                 run_path=self.converter.run_path,
@@ -372,7 +395,7 @@ class TestJobConverter(BaseConverterTest):
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 artifacts_store=store,
                 tb_args=tb_args1,
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 plugins=None,
                 run_instance=self.converter.run_instance,
             ),
@@ -380,7 +403,7 @@ class TestJobConverter(BaseConverterTest):
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 artifacts_store=store,
                 tb_args=tb_args2,
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 mount_path="/test",
                 plugins=None,
                 run_instance=self.converter.run_instance,
@@ -413,7 +436,7 @@ class TestJobConverter(BaseConverterTest):
                     name=git1.get_name(), kind=V1ConnectionKind.GIT, schema_=git1
                 ),
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 plugins=None,
             ),
             self.converter._get_git_init_container(
@@ -423,7 +446,7 @@ class TestJobConverter(BaseConverterTest):
                 ),
                 mount_path="/test",
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
-                env=self.converter.get_init_service_env_vars(),
+                env=self.converter._get_init_service_env_vars(),
                 plugins=None,
             ),
         ]
@@ -461,7 +484,7 @@ class TestJobConverter(BaseConverterTest):
         assert containers == [
             self.converter._get_auth_context_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
-                env=self.converter.get_auth_service_env_vars(),
+                env=self.converter._get_auth_service_env_vars(),
             ),
             self.converter._get_artifacts_path_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
@@ -504,7 +527,7 @@ class TestJobConverter(BaseConverterTest):
             self.converter._get_sidecar_container(
                 container_id="dummy",
                 plugins=plugins,
-                env=self.converter.get_polyaxon_sidecar_service_env_vars(),
+                env=self.converter._get_polyaxon_sidecar_service_env_vars(),
                 polyaxon_sidecar=V1PolyaxonSidecarContainer(
                     image="sidecar/sidecar", sleep_interval=12, sync_interval=12
                 ),
@@ -536,7 +559,7 @@ class TestJobConverter(BaseConverterTest):
             self.converter._get_sidecar_container(
                 container_id="dummy",
                 plugins=plugins,
-                env=self.converter.get_polyaxon_sidecar_service_env_vars(),
+                env=self.converter._get_polyaxon_sidecar_service_env_vars(),
                 polyaxon_sidecar=polyaxon_sidecar,
                 artifacts_store=store,
                 run_path=self.converter.run_path,
