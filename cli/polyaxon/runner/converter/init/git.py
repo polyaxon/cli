@@ -22,6 +22,8 @@ from clipped.utils.lists import to_list
 
 from polyaxon.exceptions import PolyaxonConverterError
 
+REPO_INIT_COMMAND = ["polyaxon", "initializer", "git"]
+
 
 def get_repo_context_args(
     name: str,

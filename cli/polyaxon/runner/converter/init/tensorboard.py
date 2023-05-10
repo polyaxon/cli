@@ -18,9 +18,17 @@ from clipped.utils.validation import validate_tags
 
 from polyaxon.schemas.types import V1TensorboardType
 
+TENSORBOARD_INIT_COMMAND = ["polyaxon", "initializer", "tensorboard"]
 
-def get_tensorboard_args(tb_args: V1TensorboardType):
-    args = []
+
+def get_tensorboard_args(
+    tb_args: V1TensorboardType, context_from: str, context_to: str, connection_kind: str
+):
+    args = [
+        "--context-from={}".format(context_from),
+        "--context-to={}".format(context_to),
+        "--connection-kind={}".format(connection_kind),
+    ]
     if tb_args.port:
         args.append("--port={}".format(tb_args.port))
     if tb_args.uuids:

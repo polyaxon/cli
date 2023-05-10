@@ -16,7 +16,7 @@
 
 import copy
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
@@ -130,6 +130,10 @@ class BaseConverter(
         labels = copy.copy(labels)
         labels.update(self.get_recommended_labels(version=version))
         return sanitize_string_dict(labels)
+
+    @staticmethod
+    def _new_container(name: str) -> k8s_schemas.V1Container:
+        return k8s_schemas.V1Container(name=name)
 
     @classmethod
     def _ensure_container(

@@ -41,9 +41,13 @@ from polyaxon.runner.converter import BaseConverter as _BaseConverter
 from polyaxon.runner.converter.common import constants
 from polyaxon.runner.converter.common.volumes import get_volume_name
 from polyaxon.runner.converter.init.artifacts import init_artifact_context_args
-from polyaxon.runner.converter.init.git import get_repo_context_args
+from polyaxon.runner.converter.init.file import FILE_INIT_COMMAND, get_file_init_args
+from polyaxon.runner.converter.init.git import REPO_INIT_COMMAND, get_repo_context_args
 from polyaxon.runner.converter.init.store import get_volume_args
-from polyaxon.runner.converter.init.tensorboard import get_tensorboard_args
+from polyaxon.runner.converter.init.tensorboard import (
+    TENSORBOARD_INIT_COMMAND,
+    get_tensorboard_args,
+)
 from polyaxon.schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,
@@ -203,7 +207,7 @@ class InitConverter(_BaseConverter):
 
         container_name = generate_container_name(INIT_DOCKERFILE_CONTAINER_PREFIX)
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = cls._new_container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -253,7 +257,7 @@ class InitConverter(_BaseConverter):
 
         container_name = generate_container_name(INIT_FILE_CONTAINER_PREFIX)
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = cls._new_container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -273,15 +277,10 @@ class InitConverter(_BaseConverter):
             name=container_name,
             image=polyaxon_init.get_image(),
             image_pull_policy=polyaxon_init.image_pull_policy,
-            command=["polyaxon", "initializer", "file"],
-            args=[
-                "--file-context={}".format(file_args.to_json()),
-                "--filepath={}".format(mount_path),
-                "--copy-path={}".format(
-                    ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)
-                ),
-                "--track",
-            ],
+            command=FILE_INIT_COMMAND,
+            args=get_file_init_args(
+                file_args=file_args, run_path=run_path, mount_path=mount_path
+            ),
             env=env,
             volume_mounts=volume_mounts,
             resources=polyaxon_init.get_resources(),
@@ -306,7 +305,7 @@ class InitConverter(_BaseConverter):
             INIT_GIT_CONTAINER_PREFIX, connection.name
         )
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = cls._new_container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -367,7 +366,7 @@ class InitConverter(_BaseConverter):
             name=container_name,
             image=polyaxon_init.get_image(),
             image_pull_policy=polyaxon_init.image_pull_policy,
-            command=["polyaxon", "initializer", "git"],
+            command=REPO_INIT_COMMAND,
             args=args,
             env=env,
             env_from=env_from,
@@ -391,7 +390,7 @@ class InitConverter(_BaseConverter):
             INIT_ARTIFACTS_CONTAINER_PREFIX, connection.name
         )
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = cls._new_container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -445,7 +444,7 @@ class InitConverter(_BaseConverter):
 
         container_name = generate_container_name(INIT_TENSORBOARD_CONTAINER_PREFIX)
         if not container:
-            container = k8s_schemas.V1Container(name=container_name)
+            container = cls._new_container(name=container_name)
 
         volume_name = (
             get_volume_name(mount_path)
@@ -459,19 +458,19 @@ class InitConverter(_BaseConverter):
         if plugins and plugins.auth:
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
 
-        args = [
-            "--context-from={}".format(artifacts_store.store_path),
-            "--context-to={}".format(mount_path),
-            "--connection-kind={}".format(get_enum_value(artifacts_store.kind)),
-        ]
-        args += get_tensorboard_args(tb_args)
+        args = get_tensorboard_args(
+            tb_args=tb_args,
+            context_from=artifacts_store.store_path,
+            context_to=mount_path,
+            connection_kind=get_enum_value(artifacts_store.kind),
+        )
 
         return cls._get_base_store_container(
             container=container,
             container_name=container_name,
             polyaxon_init=polyaxon_init,
             store=artifacts_store,
-            command=["polyaxon", "initializer", "tensorboard"],
+            command=TENSORBOARD_INIT_COMMAND,
             args=args,
             env=env,
             env_from=[],
@@ -524,7 +523,7 @@ class InitConverter(_BaseConverter):
         container_name = generate_container_name(
             INIT_ARTIFACTS_CONTAINER_PREFIX, DEFAULT, False
         )
-        container = k8s_schemas.V1Container(name=container_name)
+        container = cls._new_container(name=container_name)
 
         return cls._get_base_store_container(
             container_name=container_name,

@@ -180,23 +180,7 @@ class BaseConverter:
     ) -> List[EnvVar]:
         raise NotImplementedError
 
-    def get_main_env_vars(
-        self, external_host: bool = False, log_level: Optional[str] = None, **kwargs
-    ) -> List[EnvVar]:
-        if self.base_env_vars:
-            return self._get_base_env_vars(
-                namespace=self.namespace,
-                resource_name=self.resource_name,
-                use_proxy_env_vars_use_in_ops=settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops,
-                log_level=log_level,
-            )
-        return self._get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER,
-            external_host=external_host,
-            log_level=log_level,
-        )
-
-    def get_polyaxon_sidecar_service_env_vars(
+    def _get_polyaxon_sidecar_service_env_vars(
         self,
         external_host: bool = False,
         log_level: Optional[str] = None,
@@ -221,7 +205,7 @@ class BaseConverter:
             env += proxy_env
         return env
 
-    def get_auth_service_env_vars(
+    def _get_auth_service_env_vars(
         self,
         external_host: bool = False,
         log_level: Optional[str] = None,
@@ -246,7 +230,7 @@ class BaseConverter:
             log_level=log_level,
         )
 
-    def get_init_service_env_vars(
+    def _get_init_service_env_vars(
         self,
         external_host: bool = False,
         log_level: Optional[str] = None,
@@ -384,6 +368,10 @@ class BaseConverter:
     ) -> List[EnvVar]:
         raise NotImplementedError
 
+    @staticmethod
+    def _new_container(name: str) -> Container:
+        raise NotImplementedError
+
     @classmethod
     def _get_sidecar_container(
         cls,
@@ -424,7 +412,7 @@ class BaseConverter:
                 external_host=plugins.external_host if plugins else False,
                 log_level=plugins.log_level if plugins else None,
             )
-        env = to_list(env)
+        env = to_list(env, check_none=True)
         connections = connections or []
 
         if plugins and plugins.collect_artifacts:
@@ -441,17 +429,15 @@ class BaseConverter:
             )
 
         # Add connections catalog env vars information
-        env += to_list(
-            self._get_connections_catalog_env_var(connections=connections),
-            check_none=True,
-        )
+        connection_env = self._get_connections_catalog_env_var(connections=connections)
+        if connection_env:
+            env.append(connection_env)
         # Add connection env vars information
         for connection in connections:
             try:
-                env += to_list(
-                    self._get_connection_env_var(connection=connection),
-                    check_none=True,
-                )
+                connection_env = self._get_connection_env_var(connection=connection)
+                if connection_env:
+                    env.append(connection_env)
             except PolyaxonSchemaError as e:
                 raise PolyaxonConverterError("Error resolving secrets: %s" % e) from e
 
@@ -720,7 +706,7 @@ class BaseConverter:
                             container=self._ensure_container(
                                 init_connection.container, volumes=volumes
                             ),
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -739,7 +725,7 @@ class BaseConverter:
                             container=self._ensure_container(
                                 init_connection.container, volumes=volumes
                             ),
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -758,7 +744,7 @@ class BaseConverter:
                             container=self._ensure_container(
                                 init_connection.container, volumes=volumes
                             ),
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -774,7 +760,7 @@ class BaseConverter:
                             container=self._ensure_container(
                                 init_connection.container, volumes=volumes
                             ),
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -794,7 +780,7 @@ class BaseConverter:
                             container=self._ensure_container(
                                 init_connection.container, volumes=volumes
                             ),
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -817,7 +803,7 @@ class BaseConverter:
                             container=self._ensure_container(
                                 init_connection.container, volumes=volumes
                             ),
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -832,7 +818,7 @@ class BaseConverter:
                         self._get_dockerfile_init_container(
                             polyaxon_init=polyaxon_init,
                             dockerfile_args=init_connection.dockerfile,
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -851,7 +837,7 @@ class BaseConverter:
                         self._get_file_init_container(
                             polyaxon_init=polyaxon_init,
                             file_args=init_connection.file,
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -871,7 +857,7 @@ class BaseConverter:
                             polyaxon_init=polyaxon_init,
                             artifacts_store=artifacts_store,
                             tb_args=init_connection.tensorboard,
-                            env=self.get_init_service_env_vars(
+                            env=self._get_init_service_env_vars(
                                 external_host=external_host,
                                 log_level=log_level,
                             ),
@@ -911,7 +897,7 @@ class BaseConverter:
             containers.append(
                 self._get_auth_context_init_container(
                     polyaxon_init=polyaxon_init,
-                    env=self.get_auth_service_env_vars(
+                    env=self._get_auth_service_env_vars(
                         external_host=plugins.external_host
                     ),
                 )
@@ -959,7 +945,7 @@ class BaseConverter:
         polyaxon_sidecar_container = self._get_sidecar_container(
             container_id=self.MAIN_CONTAINER_ID,
             polyaxon_sidecar=polyaxon_sidecar,
-            env=self.get_polyaxon_sidecar_service_env_vars(
+            env=self._get_polyaxon_sidecar_service_env_vars(
                 external_host=plugins.external_host if plugins else False,
                 log_level=log_level,
             ),
