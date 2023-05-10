@@ -26,17 +26,18 @@ V1ContainerPort = Union[Tuple[str, str], Dict[str, str]]
 
 
 class V1ResourceRequirements(BaseSchemaModel):
-    cpus: Optional[float]
-    memory: Optional[float]
+    cpus: Optional[str]
+    memory: Optional[str]
     gpus: Optional[str]
 
 
 class V1Container(BaseSchemaModel):
-    image: str
+    image: Optional[str]
     name: Optional[str]
     command: Optional[List[str]]
     args: Optional[List[str]]
     env: Optional[List[V1EnvVar]]
     volume_mounts: Optional[List[V1VolumeMount]] = Field(alias="volumeMounts")
     resources: Optional[V1ResourceRequirements]
+    ports: Optional[List[V1ContainerPort]]
     working_dir: Optional[str] = Field(alias="workingDir")

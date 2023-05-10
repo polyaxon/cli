@@ -104,20 +104,36 @@ class BaseConverter(
         gpus = None
         if resources.limits:
             cpus = resources.limits.get("cpu")
+            if not cpus:
+                cpus = resources.limits.get("cpus")
+            gpus = resources.limits.get("gpu")
+            if not gpus:
+                gpus = resources.limits.get("gpus")
+            if not gpus:
+                gpus = resources.limits.get("nvidia.com/gpu")
             memory = resources.limits.get("memory")
-            gpus = resources.limits.get("nvidia.com/gpu")
         if resources.requests:
-            cpus = cpus or resources.requests.get("cpu")
+            cpus = resources.requests.get("cpu")
+            if not cpus:
+                cpus = resources.requests.get("cpus")
+            gpus = resources.requests.get("gpu")
+            if not gpus:
+                gpus = resources.requests.get("gpus")
+            if not gpus:
+                gpus = resources.requests.get("nvidia.com/gpu")
             memory = memory or resources.requests.get("memory")
-            gpus = gpus or resources.requests.get("nvidia.com/gpu")
         docker_resources = {}
         if cpus:
-            docker_resources["cpu"] = cpus
+            docker_resources["cpus"] = cpus
         if memory:
             docker_resources["memory"] = memory
         if gpus:
-            docker_resources[gpus] = gpus
+            docker_resources["gpus"] = gpus
         return docker_types.V1ResourceRequirements.from_dict(docker_resources)
+
+    @staticmethod
+    def _new_container(name: str) -> docker_types.V1Container:
+        return docker_types.V1Container(name=name)
 
     @classmethod
     def _ensure_container(

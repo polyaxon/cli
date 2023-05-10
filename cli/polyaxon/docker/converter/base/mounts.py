@@ -101,7 +101,7 @@ class MountsMixin(BaseConverter):
 
     @classmethod
     def _get_configs_context_mount(cls) -> docker_types.V1VolumeMount:
-        return cls._get_docker_volume(
+        return cls._get_volume(
             mount_path=ctx_paths.CONTEXT_MOUNT_CONFIGS, read_only=False
         )
 
@@ -109,7 +109,7 @@ class MountsMixin(BaseConverter):
     def _get_auth_context_mount(
         cls, read_only: bool = False
     ) -> docker_types.V1VolumeMount:
-        return cls._get_docker_volume(
+        return cls._get_volume(
             mount_path=ctx_paths.CONTEXT_MOUNT_CONFIGS, read_only=read_only
         )
 
@@ -127,7 +127,7 @@ class MountsMixin(BaseConverter):
     def _get_connections_context_mount(
         cls, name: str, mount_path: str
     ) -> docker_types.V1VolumeMount:
-        return cls._get_docker_volume(mount_path=mount_path, read_only=False)
+        return cls._get_volume(mount_path=mount_path, read_only=False)
 
     @classmethod
     def _get_shm_context_mount(cls) -> docker_types.V1VolumeMount:
@@ -138,9 +138,7 @@ class MountsMixin(BaseConverter):
         Some experiments will fail due to lack of share memory,
         such as some experiments running on Pytorch.
         """
-        return cls._get_docker_volume(
-            mount_path=ctx_paths.CONTEXT_MOUNT_SHM, read_only=False
-        )
+        return cls._get_volume(mount_path=ctx_paths.CONTEXT_MOUNT_SHM, read_only=False)
 
     @classmethod
     def _get_mounts(

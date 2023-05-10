@@ -62,26 +62,24 @@ class ContainerMixin(BaseConverter):
 
     @staticmethod
     def _sanitize_container_env(
-        container: docker_types.V1Container,
-    ) -> docker_types.V1Container:
+        env: List[docker_types.V1EnvVar],
+    ) -> List[docker_types.V1EnvVar]:
         def sanitize_env_dict(d: Dict):
             return {
                 d_k: sanitize_value(d_v, handle_dict=False) for d_k, d_v in d.items()
             }
 
-        if container.env:
-            env = []
-            for e in container.env:
-                if isinstance(e, dict):
-                    e = sanitize_env_dict(e)
-                    env.append(e)
-                elif isinstance(e, tuple):
-                    if e[1] is not None:
-                        e = [e[0], sanitize_value(e[1], handle_dict=False)]
-                    env.append(e)
+        results = []
+        for e in env or []:
+            if isinstance(e, dict):
+                e = sanitize_env_dict(e)
+                results.append(e)
+            elif isinstance(e, tuple):
+                if e[1] is not None:
+                    e = [e[0], sanitize_value(e[1], handle_dict=False)]
+                results.append(e)
 
-            container.env = env
-        return container
+        return results
 
     @classmethod
     def _sanitize_container(
@@ -89,4 +87,5 @@ class ContainerMixin(BaseConverter):
         container: docker_types.V1Container,
     ) -> docker_types.V1Container:
         container = sanitize_container_command_args(container)
-        return cls._sanitize_container_env(container)
+        container.env = cls._sanitize_container_env(container.env)
+        return container
