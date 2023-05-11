@@ -75,7 +75,6 @@ class InitConverter(_BaseConverter):
         command: Optional[List[str]] = None,
     ) -> Optional[docker_types.V1Container]:
         env = env or []
-        env_from = env_from or []
         volume_mounts = volume_mounts or []
 
         # Artifact store needs to allow init the contexts as well, so the store is not required
@@ -85,34 +84,30 @@ class InitConverter(_BaseConverter):
         if store.is_bucket:
             secret = store.secret
             volume_mounts = volume_mounts + to_list(
-                cls._get_mount_from_resource(resource=secret), check_none=True
+                cls._get_mount_from_resource(resource=secret),
+                check_none=True,
             )
             env = env + to_list(
-                cls._get_items_from_secret(secret=secret), check_none=True
-            )
-            env_from = env_from + to_list(
-                cls._get_env_from_secret(secret=secret), check_none=True
+                cls._get_items_from_json_resource(resource=secret), check_none=True
             )
             config_map = store.config_map
             volume_mounts = volume_mounts + to_list(
-                cls._get_mount_from_resource(resource=config_map), check_none=True
+                cls._get_mount_from_resource(resource=config_map),
+                check_none=True,
             )
             env = env + to_list(
-                cls._get_items_from_config_map(config_map=config_map), check_none=True
-            )
-            env_from = env_from + to_list(
-                cls._get_env_from_config_map(config_map=config_map), check_none=True
+                cls._get_from_json_resource(resource=config_map),
+                check_none=True,
             )
         else:
             volume_mounts = volume_mounts + to_list(
-                cls._get_mount_from_store(store=store), check_none=True
+                cls._get_mount_from_store(store=store),
+                check_none=True,
             )
         # Add connections catalog env vars information
-        env += to_list(
-            cls._get_connections_catalog_env_var(connections=[store]),
-            check_none=True,
-        )
-        env += to_list(cls._get_connection_env_var(connection=store), check_none=True)
+        connection_env = cls._get_connections_catalog_env_var(connections=[store])
+        if connection_env:
+            env.append(connection_env)
 
         return cls._patch_container(
             container=container,
@@ -122,7 +117,6 @@ class InitConverter(_BaseConverter):
             command=command or ["/bin/sh", "-c"],
             args=args,
             env=env,
-            env_from=env_from,
             resources=cls._get_init_container_resources(polyaxon_init),
             volume_mounts=volume_mounts,
         )
@@ -155,33 +149,32 @@ class InitConverter(_BaseConverter):
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
 
         env = to_list(env, check_none=True)
-        env_from = []
         secret = connection.secret
         if secret:
             volume_mounts += to_list(
-                cls._get_mount_from_resource(resource=secret), check_none=True
+                cls._get_mount_from_resource(resource=secret),
+                check_none=True,
             )
-            env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
+            env += to_list(
+                cls._get_from_json_resource(resource=secret), check_none=True
+            )
 
         # Add connections catalog env vars information
-        env += to_list(
-            cls._get_connections_catalog_env_var(connections=[connection]),
-            check_none=True,
-        )
-        env += to_list(
-            cls._get_connection_env_var(connection=connection), check_none=True
-        )
+        connection_env = cls._get_connections_catalog_env_var(connections=[connection])
+        if connection_env:
+            env.append(connection_env)
+        connection_env = cls._get_connection_env_var(connection=connection)
+        if connection_env:
+            env.append(connection_env)
         config_map = connection.config_map
         if config_map:
             volume_mounts += to_list(
-                cls._get_mount_from_resource(resource=config_map), check_none=True
+                cls._get_mount_from_resource(resource=config_map),
+                check_none=True,
             )
             env += to_list(
-                cls._get_items_from_config_map(config_map=config_map), check_none=True
-            )
-            env_from = to_list(
-                cls._get_env_from_config_map(config_map=config_map), check_none=True
+                cls._get_from_json_resource(resource=config_map),
+                check_none=True,
             )
         container_name = container.name or generate_container_name(
             INIT_CUSTOM_CONTAINER_PREFIX, connection.name
@@ -190,7 +183,6 @@ class InitConverter(_BaseConverter):
             container=container,
             name=container_name,
             env=env,
-            env_from=env_from,
             volume_mounts=volume_mounts,
         )
 
@@ -329,10 +321,15 @@ class InitConverter(_BaseConverter):
         secret = connection.secret
         if secret:
             volume_mounts += to_list(
-                cls._get_mount_from_resource(resource=secret), check_none=True
+                cls._get_mount_from_resource(resource=secret),
+                check_none=True,
             )
-            env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
+            env += to_list(
+                cls._get_from_json_resource(resource=secret), check_none=True
+            )
+            env_from += to_list(
+                cls._get_env_from_secret(secret=secret), check_none=True
+            )
 
         # Add connections catalog env vars information
         env += to_list(
@@ -348,13 +345,16 @@ class InitConverter(_BaseConverter):
         config_map = connection.config_map
         if config_map:
             volume_mounts += to_list(
-                cls._get_mount_from_resource(resource=config_map), check_none=True
+                cls._get_mount_from_resource(resource=config_map),
+                check_none=True,
             )
             env += to_list(
-                cls._get_items_from_config_map(config_map=config_map), check_none=True
+                cls._get_from_json_resource(resource=config_map),
+                check_none=True,
             )
-            env_from = to_list(
-                cls._get_env_from_config_map(config_map=config_map), check_none=True
+            env_from += to_list(
+                cls._get_env_from_config_map(config_map=config_map),
+                check_none=True,
             )
         args = get_repo_context_args(
             name=connection.name,

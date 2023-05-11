@@ -429,15 +429,16 @@ class BaseConverter:
             )
 
         # Add connections catalog env vars information
-        connection_env = self._get_connections_catalog_env_var(connections=connections)
-        if connection_env:
-            env.append(connection_env)
+        env += to_list(
+            self._get_connections_catalog_env_var(connections=connections),
+            check_none=True,
+        )
         # Add connection env vars information
         for connection in connections:
             try:
-                connection_env = self._get_connection_env_var(connection=connection)
-                if connection_env:
-                    env.append(connection_env)
+                env += to_list(
+                    self._get_connection_env_var(connection=connection), check_none=True
+                )
             except PolyaxonSchemaError as e:
                 raise PolyaxonConverterError("Error resolving secrets: %s" % e) from e
 

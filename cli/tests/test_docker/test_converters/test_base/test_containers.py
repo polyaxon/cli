@@ -1,0 +1,205 @@
+#!/usr/bin/python
+#
+# Copyright 2018-2023 Polyaxon, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import pytest
+
+from polyaxon.docker import docker_types
+from polyaxon.docker.converter.base.containers import ContainerMixin
+from polyaxon.utils.test_utils import BaseTestCase
+
+
+@pytest.mark.docker_mark
+class TestSanitizeContainerEnv(BaseTestCase):
+    def test_sanitize_container_env_value(self):
+        value = [{"foo": "bar"}]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(__root__={"foo": "bar"})
+
+        value = [{"foo": 1}]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(__root__={"foo": "1"})
+
+        value = [
+            {
+                "name": "secret-name",
+                "value": True,
+            },
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__={
+                "name": "secret-name",
+                "value": "true",
+            }
+        )
+
+        value = [
+            {
+                "name": "secret-name",
+                "value": 1,
+            },
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__={
+                "name": "secret-name",
+                "value": "1",
+            }
+        )
+
+        value = [
+            {
+                "name": "secret-name",
+                "value": "test",
+            },
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__={
+                "name": "secret-name",
+                "value": "test",
+            }
+        )
+
+        value = [
+            {
+                "name": "secret-name",
+                "value": {"foo": "bar"},
+            },
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__={
+                "name": "secret-name",
+                "value": '{"foo":"bar"}',
+            }
+        )
+
+        value = [{"foo": {"key": "value"}}]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(__root__={"foo": '{"key":"value"}'})
+
+    def test_sanitize_container_env_value_obj_from_dict(self):
+        value = [
+            dict(
+                name="secret-name",
+                value=True,
+            ),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__=dict(
+                name="secret-name",
+                value="true",
+            )
+        )
+
+        value = [
+            dict(
+                name="secret-name",
+                value=1,
+            ),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__=dict(
+                name="secret-name",
+                value="1",
+            )
+        )
+
+        value = [
+            dict(
+                name="secret-name",
+                value="test",
+            ),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__=dict(
+                name="secret-name",
+                value="test",
+            )
+        )
+
+        value = [
+            dict(
+                name="secret-name",
+                value={"foo": "bar"},
+            ),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__=dict(
+                name="secret-name",
+                value='{"foo":"bar"}',
+            )
+        )
+
+    def test_sanitize_container_env_value_obj_from_tuple(self):
+        value = [
+            ("secret-name", True),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__=(
+                "secret-name",
+                "true",
+            )
+        )
+
+        value = [
+            ("secret-name", 1),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(__root__=("secret-name", "1"))
+
+        value = [
+            ("secret-name", "test"),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__=(
+                "secret-name",
+                "test",
+            )
+        )
+
+        value = [
+            ("secret-name", {"foo": "bar"}),
+        ]
+        assert ContainerMixin._sanitize_container_env(value)[
+            0
+        ] == docker_types.V1EnvVar(
+            __root__=(
+                "secret-name",
+                '{"foo":"bar"}',
+            )
+        )

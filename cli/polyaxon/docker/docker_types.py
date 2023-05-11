@@ -20,9 +20,17 @@ from pydantic import Field
 
 from polyaxon.schemas.base import BaseSchemaModel
 
-V1EnvVar = Union[Tuple[str, str], Dict[str, str]]
-V1VolumeMount = Union[Tuple[str, str], Dict[str, str]]
-V1ContainerPort = Union[Tuple[str, str], Dict[str, str]]
+
+class V1EnvVar(BaseSchemaModel):
+    __root__: Union[Tuple[str, str], Dict[str, str]]
+
+
+class V1VolumeMount(BaseSchemaModel):
+    __root__: Union[Tuple[str, str], Dict[str, str]]
+
+
+class V1ContainerPort(BaseSchemaModel):
+    __root__: Union[str, Tuple[str, str], Dict[str, str]]
 
 
 class V1ResourceRequirements(BaseSchemaModel):

@@ -29,7 +29,7 @@ class MountsMixin(BaseConverter):
         volume = f"{host_path}:{mount_path}"
         if read_only:
             volume += ":ro"
-        return "-v", volume
+        return docker_types.V1VolumeMount(__root__=("-v", volume))
 
     @staticmethod
     def _get_docker_mount(
@@ -38,7 +38,7 @@ class MountsMixin(BaseConverter):
         mount = f"type=tmpfs,destination={mount_path}"
         if read_only:
             mount += ",ro"
-        return "--mount", mount
+        return docker_types.V1VolumeMount(__root__=("--mount", mount))
 
     @classmethod
     def _get_config_volume(cls) -> docker_types.V1VolumeMount:

@@ -158,7 +158,9 @@ class InitConverter(_BaseConverter):
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
             env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
+            env_from += to_list(
+                cls._get_env_from_secret(secret=secret), check_none=True
+            )
 
         # Add connections catalog env vars information
         env += to_list(
@@ -328,7 +330,9 @@ class InitConverter(_BaseConverter):
                 cls._get_mount_from_resource(resource=secret), check_none=True
             )
             env += to_list(cls._get_items_from_secret(secret=secret), check_none=True)
-            env_from = to_list(cls._get_env_from_secret(secret=secret), check_none=True)
+            env_from += to_list(
+                cls._get_env_from_secret(secret=secret), check_none=True
+            )
 
         # Add connections catalog env vars information
         env += to_list(

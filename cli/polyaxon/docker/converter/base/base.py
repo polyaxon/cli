@@ -24,6 +24,7 @@ from polyaxon.docker.converter.base.env_vars import EnvMixin
 from polyaxon.docker.converter.base.init import InitConverter
 from polyaxon.docker.converter.base.main import MainConverter
 from polyaxon.docker.converter.base.mounts import MountsMixin
+from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
@@ -57,6 +58,13 @@ class BaseConverter(
 
         docker_env_var = []
         for item in env_var:
+            if isinstance(item, dict):
+                try:
+                    item = k8s_schemas.V1EnvVar(**item)
+                except (ValueError, TypeError) as e:
+                    raise PolyaxonConverterError(
+                        f"Could not parse env var value `{item}` from the K8S schema in container section"
+                    ) from e
             docker_env_var.append(cls._get_env_var(name=item.name, value=item.value))
 
         return docker_env_var
@@ -69,6 +77,30 @@ class BaseConverter(
     ) -> List[docker_types.V1VolumeMount]:
         if not volume_mounts or not volumes:
             return []
+
+        _volume_mounts = []
+        for item in volume_mounts:
+            if isinstance(item, dict):
+                try:
+                    _volume_mounts.append(k8s_schemas.V1VolumeMount(item))
+                except (ValueError, TypeError) as e:
+                    raise PolyaxonConverterError(
+                        f"Could not parse volume mount value `{item}` from the K8S schema in container section"
+                    ) from e
+            else:
+                _volume_mounts.append(item)
+        volume_mounts = _volume_mounts
+
+        _volumes = []
+        for item in volumes:
+            if isinstance(item, dict):
+                try:
+                    _volumes.append(k8s_schemas.V1Volume(**item))
+                except (ValueError, TypeError) as e:
+                    raise PolyaxonConverterError(
+                        f"Could not parse volume value `{item}` from the K8S schema in container section"
+                    ) from e
+        volumes = _volumes
 
         docker_volume_mounts = []
         volumes_by_name = {item.name: item for item in volumes}
@@ -113,10 +145,10 @@ class BaseConverter(
                 gpus = resources.limits.get("nvidia.com/gpu")
             memory = resources.limits.get("memory")
         if resources.requests:
-            cpus = resources.requests.get("cpu")
+            cpus = cpus or resources.requests.get("cpu")
             if not cpus:
                 cpus = resources.requests.get("cpus")
-            gpus = resources.requests.get("gpu")
+            gpus = gpus or resources.requests.get("gpu")
             if not gpus:
                 gpus = resources.requests.get("gpus")
             if not gpus:
@@ -149,7 +181,9 @@ class BaseConverter(
             command=container.command,
             args=container.args,
             env=cls._k8s_to_docker_env_var(container.env),
-            volumes=cls._k8s_to_docker_volume_mounts(container.volume_mounts, volumes),
+            volume_mounts=cls._k8s_to_docker_volume_mounts(
+                container.volume_mounts, volumes
+            ),
             resources=cls._k8s_to_docker_resources(container.resources),
             working_dir=container.working_dir,
         )

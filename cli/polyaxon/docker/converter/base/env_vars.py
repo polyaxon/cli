@@ -19,6 +19,8 @@ import os
 
 from typing import Any, Iterable, List, Optional
 
+import orjson
+
 from clipped.utils.enums import get_enum_value
 from clipped.utils.json import orjson_dumps, orjson_loads
 from clipped.utils.lists import to_list
@@ -56,7 +58,7 @@ class EnvMixin(BaseConverter):
             except (ValueError, TypeError) as e:
                 raise PolyaxonConverterError(e)
 
-        return name, value
+        return docker_types.V1EnvVar(__root__=(name, value))
 
     @staticmethod
     def _get_from_json_resource(
@@ -73,51 +75,7 @@ class EnvMixin(BaseConverter):
         except Exception as e:
             raise PolyaxonConverterError from e
 
-        return list(secret_value.items())
-
-    @staticmethod
-    def _get_item_from_json_env_var(
-        key: str, resource_ref_name: str
-    ) -> Optional[docker_types.V1EnvVar]:
-        secret = os.environ.get(resource_ref_name)
-        if not secret:
-            return None
-        try:
-            secret_value = orjson_loads(secret)
-        except Exception as e:
-            raise PolyaxonConverterError from e
-
-        value = secret_value.get(key)
-        return key, value
-
-    @classmethod
-    def _get_items_from_json_env_var(
-        cls,
-        resource: V1ConnectionResource,
-    ) -> List[docker_types.V1EnvVar]:
-        items_from = []
-        if not resource or not resource.items:
-            return items_from
-
-        for item in resource.items:
-            value = cls._get_item_from_json_env_var(
-                key=item,
-                resource_ref_name=resource.name,
-            )
-            if value:
-                items_from.append(value)
-        return items_from
-
-    @classmethod
-    def _get_env_vars_from_resources(
-        cls,
-        resources: Iterable[V1ConnectionResource],
-    ) -> List[docker_types.V1EnvVar]:
-        resources = resources or []
-        env_vars = []
-        for secret in resources:
-            env_vars += cls._get_items_from_json_env_var(resource=secret)
-        return env_vars
+        return [docker_types.V1EnvVar(__root__=k) for k in (secret_value.items())]
 
     @classmethod
     def _get_env_from_json_resources(
@@ -129,6 +87,52 @@ class EnvMixin(BaseConverter):
         for resource in resources:
             results += cls._get_from_json_resource(resource=resource)
         return [r for r in results if r]
+
+    @staticmethod
+    def _get_item_from_json_resource(
+        key: str, resource_ref_name: str
+    ) -> Optional[docker_types.V1EnvVar]:
+        secret = os.environ.get(resource_ref_name)
+        if not secret:
+            return None
+        try:
+            secret_value = orjson_loads(secret)
+        except orjson.JSONDecodeError:
+            return docker_types.V1EnvVar(__root__=(key, secret))
+
+        value = secret_value.get(key)
+        return docker_types.V1EnvVar(__root__=(key, value))
+
+    @classmethod
+    def _get_items_from_json_resource(
+        cls,
+        resource: V1ConnectionResource,
+    ) -> List[docker_types.V1EnvVar]:
+        items_from = []
+        if not resource or not resource.items:
+            return items_from
+
+        try:
+            secret_value = orjson_loads(resource.name)
+        except orjson.JSONDecodeError as e:
+            return items_from
+
+        for item in resource.items:
+            value = secret_value.get(item)
+            if value:
+                items_from.append(docker_types.V1EnvVar(__root__=(item, value)))
+        return items_from
+
+    @classmethod
+    def _get_env_vars_from_resources(
+        cls,
+        resources: Iterable[V1ConnectionResource],
+    ) -> List[docker_types.V1EnvVar]:
+        resources = resources or []
+        env_vars = []
+        for secret in resources:
+            env_vars += cls._get_items_from_json_resource(resource=secret)
+        return env_vars
 
     @classmethod
     def _get_env_vars_from_k8s_resources(
@@ -207,42 +211,46 @@ class EnvMixin(BaseConverter):
                 )
             )
         if service_header:
-            env_vars.append(
+            env_vars += to_list(
                 self._get_env_var(
                     name=EV_KEYS_HEADER_SERVICE, value=get_enum_value(service_header)
-                )
+                ),
             )
         if include_secret_key:
-            env_vars.append(
-                self._get_item_from_json_env_var(
+            env_vars += to_list(
+                self._get_item_from_json_resource(
                     key=EV_KEYS_SECRET_KEY,
                     resource_ref_name=polyaxon_default_secret_ref,
-                )
+                ),
+                check_none=True,
             )
         internal = False
         if include_internal_token and polyaxon_default_secret_ref:
             internal = True
-            env_vars.append(
-                self._get_item_from_json_env_var(
+            env_vars += to_list(
+                self._get_item_from_json_resource(
                     key=EV_KEYS_SECRET_INTERNAL_TOKEN,
                     resource_ref_name=polyaxon_default_secret_ref,
-                )
+                ),
+                check_none=True,
             )
         if include_agent_token and polyaxon_agent_secret_ref:
             if internal:
                 raise PolyaxonConverterError(
                     "A service cannot have internal token and agent token."
                 )
-            env_vars.append(
-                self._get_item_from_json_env_var(
+            env_vars += to_list(
+                self._get_item_from_json_resource(
                     key=EV_KEYS_AUTH_TOKEN,
                     resource_ref_name=polyaxon_agent_secret_ref,
-                )
+                ),
+                check_none=True,
             )
         if authentication_type:
-            env_vars.append(
+            env_vars += to_list(
                 self._get_env_var(
                     name=EV_KEYS_AUTHENTICATION_TYPE, value=authentication_type
-                )
+                ),
+                check_none=True,
             )
         return env_vars
