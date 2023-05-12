@@ -294,6 +294,8 @@ class V1Plugins(BaseSchemaModel):
     ) -> "V1Plugins":
         if not config:
             config = cls(auth=auth)
+        else:
+            config = config.copy()
         config.set_auth(default=auth)
         config.set_docker()
         config.set_shm()
