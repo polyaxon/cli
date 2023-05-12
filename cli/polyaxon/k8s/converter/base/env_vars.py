@@ -215,8 +215,12 @@ class EnvMixin(BaseConverter):
             cls._get_from_field_ref(
                 name=EV_KEYS_K8S_NODE_NAME, field_path="spec.nodeName"
             ),
-            cls._get_env_var(name=EV_KEYS_K8S_NAMESPACE, value=namespace),
-            cls._get_env_var(name=EV_KEYS_K8S_POD_ID, value=resource_name),
+            cls._get_from_field_ref(
+                name=EV_KEYS_K8S_NAMESPACE, field_path="metadata.namespace"
+            ),
+            cls._get_from_field_ref(
+                name=EV_KEYS_K8S_POD_ID, field_path="metadata.name"
+            ),
         ]
         if log_level:
             env.append(cls._get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level))
