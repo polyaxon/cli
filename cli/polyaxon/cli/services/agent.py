@@ -49,7 +49,7 @@ def start(kind, max_retries, sleep_interval):
     from polyaxon import settings
     from polyaxon.env_vars.getters import get_agent_info
     from polyaxon.runner.agent import BaseAgent
-    from polyaxon.runner.kind import RunnerKind
+    from polyaxon.runner.kinds import RunnerKind
 
     kind = kind or RunnerKind.K8S
 

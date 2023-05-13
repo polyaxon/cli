@@ -36,7 +36,7 @@ from polyaxon.k8s.converter.pod.volumes import get_pod_volumes
 from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.polyflow import V1Environment, V1Init, V1Plugins
 from polyaxon.runner.converter import BaseConverter as _BaseConverter
-from polyaxon.runner.kind import RunnerKind
+from polyaxon.runner.kinds import RunnerKind
 
 
 class BaseConverter(

@@ -54,7 +54,7 @@ from polyaxon.runner.converter.types import (
     ResourceRequirements,
     VolumeMount,
 )
-from polyaxon.runner.kind import RunnerKind
+from polyaxon.runner.kinds import RunnerKind
 from polyaxon.schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,
