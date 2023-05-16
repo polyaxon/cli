@@ -214,3 +214,9 @@ class V1Hook(BaseSchemaModel):
                 )
             )
         return v
+
+    def check_trigger_for_status(self, status: V1Statuses) -> bool:
+        if not self.trigger or self.trigger == V1Statuses.DONE:
+            return True
+
+        return status == self.trigger

@@ -1,7 +1,10 @@
+import os
 import re
 import unicodedata
 
-from typing import Optional
+from typing import List, Optional, Tuple
+
+from clipped.utils.paths import get_relative_path_to
 
 from polyaxon.exceptions import PolyaxonSchemaError
 
@@ -55,7 +58,7 @@ def get_entity_full_name(
     return entity
 
 
-def get_entity_info(entity):
+def get_entity_info(entity: str) -> Tuple[str, str]:
     if not entity:
         raise PolyaxonSchemaError(
             "Received an invalid entity reference: `{}`".format(entity)
@@ -84,3 +87,10 @@ def get_versioned_entity_full_name(
         component = "{}/{}".format(owner, component)
 
     return component
+
+
+def get_run_lineage_paths(run_uuid: str, lineage_paths: List[str]) -> List[str]:
+    lineage_paths = [
+        os.path.relpath(p, run_uuid) if run_uuid in p else p for p in lineage_paths
+    ]
+    return get_relative_path_to(run_uuid, lineage_paths)

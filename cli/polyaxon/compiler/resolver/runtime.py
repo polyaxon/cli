@@ -24,6 +24,10 @@ class BaseResolver:
         V1RunKind.CLEANER,
         V1RunKind.TUNER,
         V1RunKind.WATCHDOG,
+        V1RunKind.DAG,
+        V1RunKind.SPARK,
+        V1RunKind.DASK,
+        V1RunKind.TUNER,
     }
 
     def __init__(
