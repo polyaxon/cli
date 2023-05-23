@@ -14,7 +14,7 @@ from polyaxon.auxiliaries import (
     V1PolyaxonSidecarContainer,
 )
 from polyaxon.config.parser import ConfigParser
-from polyaxon.connections import V1Connection
+from polyaxon.connections import V1Connection, V1ConnectionKind, V1HostPathConnection
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_ARTIFACTS_STORE,
@@ -167,6 +167,17 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
         if subpath:
             full_path = os.path.join(full_path, subpath)
         return full_path
+
+    def set_default_artifacts_store(self):
+        if not self.artifacts_store:
+            self.artifacts_store = V1Connection(
+                name="local",
+                kind=V1ConnectionKind.HOST_PATH,
+                schema_=V1HostPathConnection(
+                    host_path=self.store_root, mount_path=self.store_root
+                ),
+            )
+            self.set_all_connections()
 
 
 class AgentConfig(BaseAgentConfig):
