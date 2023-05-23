@@ -1,4 +1,3 @@
-from polyaxon.k8s.converter.base import BaseConverter
 from polyaxon.k8s.converter.converters.helpers import (
     CleanerConverter,
     NotifierConverter,

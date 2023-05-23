@@ -2,7 +2,7 @@ from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
 from polyaxon.connections import V1Connection, V1ConnectionResource
-from polyaxon.k8s.converter.converters import BaseConverter
+from polyaxon.k8s.converter.base.base import BaseConverter
 from polyaxon.k8s.converter.mixins import MXJobMixin
 from polyaxon.k8s.custom_resources.kubeflow import get_mx_job_custom_resource
 from polyaxon.k8s.replica import ReplicaSpec
