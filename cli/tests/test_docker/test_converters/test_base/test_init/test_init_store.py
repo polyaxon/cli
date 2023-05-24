@@ -191,9 +191,7 @@ class TestInitStore(BaseConverterTest):
         )
         env = [self.converter._get_env_var(name="key", value="value")]
         env_from = [k8s_schemas.V1EnvFromSource(secret_ref={"name": "ref"})]
-        mounts = [
-            docker_types.V1VolumeMount(__root__=dict(name="test", mount_path="/test"))
-        ]
+        mounts = [docker_types.V1VolumeMount(__root__=("-v", "/test"))]
         container = self.converter._get_base_store_container(
             container=docker_types.V1Container(name="init"),
             container_name="init",

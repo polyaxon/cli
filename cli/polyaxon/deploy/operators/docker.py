@@ -18,9 +18,11 @@ class DockerOperator(CmdOperator):
         return True
 
     @classmethod
-    def execute(cls, args, stream=False):
+    def execute(cls, args, stream=False, output_only: bool = True):
         params = cls.params(args)
-        return cls._execute(params=params, env=None, stream=stream)
+        return cls._execute(
+            params=params, env=None, stream=stream, output_only=output_only
+        )
 
     @classmethod
     def set_volume(cls, volume):

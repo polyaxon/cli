@@ -33,38 +33,34 @@ def agent():
 def start(kind, max_retries, sleep_interval):
     from polyaxon import settings
     from polyaxon.env_vars.getters import get_agent_info
-    from polyaxon.runner.agent import BaseAgent
     from polyaxon.runner.kinds import RunnerKind
 
     kind = kind or RunnerKind.K8S
 
     if kind == RunnerKind.K8S:
         from polyaxon.k8s.agent import Agent
+    elif kind == RunnerKind.DOCKER:
+        from polyaxon.docker.agent import Agent
     else:
         logger.error("Received an unsupported agent kind: `{}`".format(kind))
+        sys.exit(1)
 
     settings.CLIENT_CONFIG.set_agent_header()
     owner, agent_uuid = None, None
-    is_base = True
     try:
         owner, agent_uuid = get_agent_info()
-        is_base = False
         logger.info("Using agent with info: {}, {}".format(owner, agent_uuid))
     except PolyaxonAgentError:
         logger.info("Using base agent")
-
-    def start_agent():
-        if is_base:
-            BaseAgent(sleep_interval=sleep_interval).start()
-        else:
-            Agent(owner=owner, agent_uuid=agent_uuid).start()
 
     retry = 0
     while retry < max_retries:
         if retry:
             time.sleep(5 * retry)
         try:
-            start_agent()
+            Agent(
+                owner=owner, agent_uuid=agent_uuid, sleep_interval=sleep_interval
+            ).start()
             return
         except Exception as e:
             logger.warning("Polyaxon agent retrying, error %s", e)

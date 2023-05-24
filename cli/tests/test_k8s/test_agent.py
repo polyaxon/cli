@@ -12,7 +12,7 @@ from polyaxon.utils.test_utils import BaseTestCase
 class TestAgent(BaseTestCase):
     SET_AGENT_SETTINGS = True
 
-    @patch("polyaxon.k8s.agent.Agent._register")
+    @patch("polyaxon.runner.agent.BaseAgent._register")
     def test_init_agent_component(self, register):
         agent = Agent(owner="foo", agent_uuid="uuid")
         assert agent.sleep_interval is None
@@ -24,7 +24,7 @@ class TestAgent(BaseTestCase):
     @patch("polyaxon.sdk.api.AgentsV1Api.create_agent_status")
     @patch("polyaxon.sdk.api.AgentsV1Api.get_agent_state")
     @patch("polyaxon.sdk.api.AgentsV1Api.get_agent")
-    @patch("polyaxon.k8s.agent.Executor")
+    @patch("polyaxon.k8s.executor.executor.Executor.manager")
     def test_init_agent(
         self, _, get_agent, get_agent_state, create_agent_status, sync_agent
     ):
