@@ -18,10 +18,10 @@ class DockerOperator(CmdOperator):
         return True
 
     @classmethod
-    def execute(cls, args, stream=False, output_only: bool = True):
+    def execute(cls, args, env=None, stream=False, output_only: bool = True):
         params = cls.params(args)
         return cls._execute(
-            params=params, env=None, stream=stream, output_only=output_only
+            params=params, env=env, stream=stream, output_only=output_only
         )
 
     @classmethod

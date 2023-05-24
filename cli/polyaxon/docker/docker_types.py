@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import Field
@@ -67,7 +68,7 @@ class V1Container(BaseSchemaModel):
     def get_cmd_args(self):
         cmd_args = ["run", "--rm"]
         for env in self.env:
-            cmd_args += ["-e", env.to_cmd()]
+            cmd_args += ["-e", json.dumps(env.to_cmd())]
         for volume in self.volume_mounts:
             cmd_args += [volume.to_cmd()]
         if self.working_dir:
@@ -83,4 +84,8 @@ class V1Container(BaseSchemaModel):
             for port in self.ports:
                 cmd_args += ["-p", port.to_cmd()]
         cmd_args += [self.image]
+        if self.command:
+            cmd_args += self.command
+        if self.args:
+            cmd_args += self.args
         return cmd_args

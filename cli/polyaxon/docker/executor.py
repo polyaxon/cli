@@ -17,7 +17,7 @@ from polyaxon.runner.kinds import RunnerKind
 class Executor(BaseExecutor):
     MIXIN_MAPPING = MIXIN_MAPPING
     CONVERTERS = CONVERTERS
-    RUNNER_KIND = RunnerKind.K8S
+    RUNNER_KIND = RunnerKind.DOCKER
 
     def __init__(self):
         super().__init__()
