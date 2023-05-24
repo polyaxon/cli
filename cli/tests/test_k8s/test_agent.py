@@ -38,4 +38,4 @@ class TestAgent(BaseTestCase):
         assert get_agent_state.call_count == 0
         assert create_agent_status.call_count == 1
         assert sync_agent.call_count == 1
-        assert agent.executor.k8s_manager.get_version.call_count == 1
+        assert agent.executor.manager.get_version.call_count == 1

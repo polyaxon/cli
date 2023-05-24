@@ -16,7 +16,7 @@ class TestExecutor(BaseTestCase):
     def test_start_apply_stop_get(self):
         k8s_manager = mock.MagicMock()
         k8s_manager.create_custom_object.return_value = ("", "")
-        self.executor._k8s_manager = k8s_manager
+        self.executor._manager = k8s_manager
 
         self.executor.create(run_uuid="", run_kind=V1RunKind.JOB, resource={})
         assert k8s_manager.create_custom_object.call_count == 1

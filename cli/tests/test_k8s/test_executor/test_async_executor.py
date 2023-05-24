@@ -43,7 +43,7 @@ async def test_start_apply_stop_get():
 
     executor = AsyncExecutor()
     k8s_manager.create_custom_object.return_value = ("", "")
-    executor._k8s_manager = k8s_manager
+    executor._manager = k8s_manager
 
     await executor.create(run_uuid="", run_kind=V1RunKind.JOB, resource={})
     assert k8s_manager.create_custom_object.call_count == 1

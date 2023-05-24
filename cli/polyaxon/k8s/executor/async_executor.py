@@ -6,19 +6,16 @@ from polyaxon.utils.fqn_utils import get_resource_name
 
 
 class AsyncExecutor(BaseExecutor):
-    @property
-    def k8s_manager(self):
-        if not self._k8s_manager:
-            self._k8s_manager = AsyncK8sManager(
-                namespace=self.namespace,
-                in_cluster=self.in_cluster,
-            )
-        return self._k8s_manager
+    def _get_manager(self):
+        return AsyncK8sManager(
+            namespace=self.namespace,
+            in_cluster=self.in_cluster,
+        )
 
     async def create(self, run_uuid: str, run_kind: str, resource: Dict):
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        return await self.k8s_manager.create_custom_object(
+        return await self.manager.create_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,
@@ -29,7 +26,7 @@ class AsyncExecutor(BaseExecutor):
     async def apply(self, run_uuid: str, run_kind: str, resource: Dict):
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        return await self.k8s_manager.update_custom_object(
+        return await self.manager.update_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,
@@ -40,7 +37,7 @@ class AsyncExecutor(BaseExecutor):
     async def stop(self, run_uuid: str, run_kind: str):
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        return await self.k8s_manager.delete_custom_object(
+        return await self.manager.delete_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,
@@ -50,7 +47,7 @@ class AsyncExecutor(BaseExecutor):
     async def get(self, run_uuid: str, run_kind: str):
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        return await self.k8s_manager.get_custom_object(
+        return await self.manager.get_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,

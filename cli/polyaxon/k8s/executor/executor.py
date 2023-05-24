@@ -6,24 +6,17 @@ from polyaxon.utils.fqn_utils import get_resource_name
 
 
 class Executor(BaseExecutor):
-    @property
-    def k8s_manager(self):
-        if not self._k8s_manager:
-            self._k8s_manager = K8sManager(
-                k8s_config=self.k8s_config,
-                namespace=self.namespace,
-                in_cluster=self.in_cluster,
-            )
-        return self._k8s_manager
-
-    def refresh(self):
-        self._k8s_manager = None
-        return self.k8s_manager
+    def _get_manager(self):
+        return K8sManager(
+            k8s_config=self.k8s_config,
+            namespace=self.namespace,
+            in_cluster=self.in_cluster,
+        )
 
     def create(self, run_uuid: str, run_kind: str, resource: Dict) -> Dict:
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        return self.k8s_manager.create_custom_object(
+        return self.manager.create_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,
@@ -34,7 +27,7 @@ class Executor(BaseExecutor):
     def apply(self, run_uuid: str, run_kind: str, resource: Dict) -> Dict:
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        return self.k8s_manager.update_custom_object(
+        return self.manager.update_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,
@@ -45,7 +38,7 @@ class Executor(BaseExecutor):
     def stop(self, run_uuid: str, run_kind: str):
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        self.k8s_manager.delete_custom_object(
+        self.manager.delete_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,
@@ -62,7 +55,7 @@ class Executor(BaseExecutor):
     def get(self, run_uuid: str, run_kind: str):
         mixin = self._get_mixin_for_kind(kind=run_kind)
         resource_name = get_resource_name(run_uuid)
-        self.k8s_manager.get_custom_object(
+        self.manager.get_custom_object(
             name=resource_name,
             group=mixin.GROUP,
             version=mixin.API_VERSION,
