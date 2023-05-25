@@ -1,5 +1,6 @@
 import os
 import signal
+import subprocess
 
 from typing import Dict, List
 
@@ -26,17 +27,28 @@ class Executor(BaseExecutor):
     def _get_manager(self):
         return DockerOperator()
 
-    def _get_op_proc(self, run_uuid: str):
+    def _get_op_proc(self, run_uuid: str) -> List[subprocess.Popen]:
         return self._ops.get(run_uuid)
 
     def create(
-        self, run_uuid: str, run_kind: str, resource: List[docker_types.V1Container]
+        self,
+        run_uuid: str,
+        run_kind: str,
+        resource: List[docker_types.V1Container],
     ) -> Dict:
-        cmd = []
-        for c in resource:
-            cmd.append(c.get_cmd_args())
-
-        self._ops[run_uuid] = self.manager.execute(" && ".join(cmd), output_only=False)
+        logger.info(f"[Executor] Starting operation {run_uuid} {run_kind}.")
+        self._ops[run_uuid] = []
+        for r in resource:
+            logger.info(f"[Executor] Starting task container {r.name} {r.image} .")
+            proc = self.manager.execute(
+                r.get_cmd_args(), env=os.environ, output_only=False
+            )
+            self._ops[run_uuid].append(proc)
+            proc.wait()
+            logger.info(
+                f"[Executor] Task container: {proc.pid} {self._get_task_status(proc)}"
+            )
+        return {"status": V1Statuses.CREATED, "tasks": self._ops[run_uuid]}
 
     def apply(self, run_uuid: str, run_kind: str, resource: Dict) -> Dict:
         raise PolyaxonAgentError(
@@ -68,11 +80,14 @@ class Executor(BaseExecutor):
             resource={"metadata": {"finalizers": None}},
         )
 
-    def get(self, run_uuid: str, run_kind: str):
-        proc = self._get_op_proc(run_uuid)
+    def _get_task_status(self, proc) -> V1Statuses:
         exit_code = proc.poll()
         if exit_code is None:
             return V1Statuses.RUNNING
         if exit_code == 0:
             return V1Statuses.DONE
         return V1Statuses.FAILED
+
+    def get(self, run_uuid: str, run_kind: str) -> V1Statuses:
+        procs = self._get_op_proc(run_uuid)
+        return self._get_task_status(procs[-1])

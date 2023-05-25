@@ -1,5 +1,6 @@
 from polyaxon.deploy.operators.cmd_operator import CmdOperator
 from polyaxon.exceptions import PolyaxonOperatorException
+from polyaxon.logger import logger
 
 
 class DockerOperator(CmdOperator):
@@ -20,6 +21,7 @@ class DockerOperator(CmdOperator):
     @classmethod
     def execute(cls, args, env=None, stream=False, output_only: bool = True):
         params = cls.params(args)
+        logger.debug("Docker operator executing command: {}".format(" ".join(args)))
         return cls._execute(
             params=params, env=env, stream=stream, output_only=output_only
         )
