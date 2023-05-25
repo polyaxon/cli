@@ -1,3 +1,4 @@
+import os
 import sys
 
 from collections import namedtuple
@@ -6,6 +7,7 @@ from typing import Dict, List, Optional
 from clipped.formatting import Printer
 from urllib3.exceptions import HTTPError
 
+from polyaxon import settings
 from polyaxon.cli.dashboard import get_dashboard_url
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.operations import approve
@@ -21,9 +23,12 @@ from polyaxon.constants.metadata import (
     META_EAGER_MODE,
     META_UPLOAD_ARTIFACTS,
 )
+from polyaxon.exceptions import PolyaxonException
 from polyaxon.managers.run import RunConfigManager
 from polyaxon.polyflow import V1CompiledOperation, V1Operation
+from polyaxon.runner.kinds import RunnerKind
 from polyaxon.schemas import V1RunPending
+from polyaxon.schemas.responses.v1_run import V1Run
 from polyaxon.schemas.types import V1ArtifactsType
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
@@ -31,6 +36,76 @@ from polyaxon.utils import cache
 
 class RunWatchSpec(namedtuple("RunWatchSpec", "uuid name")):
     pass
+
+
+def _execute_on_docker(response: V1Run):
+    from polyaxon.docker.executor import Executor
+
+    executor = Executor()
+    if not executor.manager.check():
+        raise PolyaxonException("Docker is required to run this command.")
+    executor.create_from_run(response)
+
+
+def execute_on_k8s(response: V1Run):
+    from polyaxon.k8s.executor.executor import Executor
+
+    if not settings.AGENT_CONFIG.namespace:
+        raise PolyaxonException("Agent config requires a namespace to be set.")
+
+    executor = Executor(namespace=settings.AGENT_CONFIG.namespace)
+    if not executor.manager.get_version():
+        raise PolyaxonException("Kubernetes is required to run this command.")
+    executor.create_from_run(response)
+
+
+def _execute_on_local_process(
+    response: V1Run, conda_env: Optional[str] = None, pip_env: Optional[str] = None
+):
+    from polyaxon.process.executor.executor import Executor
+
+    executor = Executor()
+    if not executor.manager.check():
+        raise PolyaxonException("Conda is required to run this command.")
+
+    def _check_conda():
+        from polyaxon.deploy.operators.conda import CondaOperator
+
+        conda = CondaOperator()
+        if not conda.check():
+            raise PolyaxonException("Conda is required to run this command.")
+
+        envs = conda.execute(["env", "list", "--json"], is_json=True)
+        env_names = [os.path.basename(env) for env in envs["envs"]]
+        if conda_env not in env_names:
+            raise PolyaxonException(
+                "Conda env `{}` is not installed.".format(conda_env)
+            )
+
+        # cmd_bash, cmd_args = specification.run.get_container_cmd()
+        # cmd_args = ["source activate {}".format(conda_env)] + cmd_args
+        # subprocess.Popen(cmd_bash + [" && ".join(cmd_args)], close_fds=True)
+
+
+def execute_locally(
+    response: V1Run,
+    executor: RunnerKind,
+    conda_env: Optional[str] = None,
+    pip_env: Optional[str] = None,
+):
+    if not settings.AGENT_CONFIG:
+        settings.set_agent_config()
+        if not settings.AGENT_CONFIG.artifacts_store:
+            if executor == RunnerKind.K8S:
+                raise PolyaxonException("Could not resolve an agent configuration.")
+            settings.AGENT_CONFIG.set_default_artifacts_store()
+
+    if executor == RunnerKind.DOCKER:
+        _execute_on_docker(response)
+    elif executor == RunnerKind.K8S:
+        execute_on_k8s(response)
+    elif executor == RunnerKind.PROCESS:
+        _execute_on_local_process(response, conda_env, pip_env)
 
 
 def run(
@@ -99,6 +174,7 @@ def run(
             Printer.success(
                 "A new run was created: {}".format(get_instance_info(response))
             )
+
             if not eager:
                 cache_run(response)
                 Printer.print(

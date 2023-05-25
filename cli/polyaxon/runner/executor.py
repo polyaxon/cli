@@ -2,6 +2,7 @@ from typing import Any, Dict, Iterable, Optional
 
 from clipped.utils.enums import get_enum_value
 
+from polyaxon import settings
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.compiler import resolver
 from polyaxon.compiler.resolver import AgentResolver
@@ -200,19 +201,13 @@ class BaseExecutor:
             default_auth=default_auth,
         )
 
-    def create_from_run(self, response: V1Run):
-        from polyaxon import settings
-
-        if not settings.AGENT_CONFIG:
-            settings.set_agent_config()
-            settings.AGENT_CONFIG.set_default_artifacts_store()
-
+    def create_from_run(self, response: V1Run, default_auth: bool = False):
         resource = self.convert(
             owner_name=response.owner,
             project_name=response.project,
             run_name=response.name,
             run_uuid=response.uuid,
-            default_auth=False,
+            default_auth=default_auth,
             content=response.content,
             agent_content=settings.AGENT_CONFIG.to_json(),
         )

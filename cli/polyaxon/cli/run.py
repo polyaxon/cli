@@ -5,20 +5,13 @@ import click
 from clipped.formatting import Printer
 from clipped.utils import git as git_utils
 from clipped.utils.validation import validate_tags
-from pydantic import ValidationError
 
-from polyaxon import settings
-from polyaxon.cli.executor import docker_run, k8s_run, platform_run
+from polyaxon.cli import _executor
 from polyaxon.cli.options import OPTIONS_NAME, OPTIONS_PROJECT
 from polyaxon.env_vars.getters import get_project_or_local
-from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.logger import clean_outputs
 from polyaxon.managers.git import GitConfigManager
-from polyaxon.polyaxonfile import (
-    CompiledOperationSpecification,
-    OperationSpecification,
-    check_polyaxonfile,
-)
+from polyaxon.polyaxonfile import check_polyaxonfile
 
 
 @click.command()
@@ -374,57 +367,20 @@ def run(
     owner, project_name = get_project_or_local(project, is_cli=True)
     tags = validate_tags(tags, validate_yaml=True)
 
-    if local:
-        try:
-            compiled_operation = OperationSpecification.compile_operation(op_spec)
-            compiled_operation = (
-                CompiledOperationSpecification.apply_operation_contexts(
-                    compiled_operation
-                )
-            )
-        except (PolyaxonSchemaError, ValidationError):
-            Printer.error(
-                "Could not run this polyaxonfile locally, "
-                "a context is required to resolve it dependencies."
-            )
-            sys.exit(1)
-        docker_run(
-            ctx=ctx,
-            name=name,
-            owner=owner,
-            project_name=project_name,
-            description=description,
-            tags=tags,
-            compiled_operation=compiled_operation,
-            log=log,
-            shell=shell,
-        )
-    elif settings.CLIENT_CONFIG.no_api:
-        k8s_run(
-            ctx=ctx,
-            name=name,
-            owner=owner,
-            project_name=project_name,
-            description=description,
-            tags=tags,
-            op_spec=op_spec,
-            log=log,
-        )
-    else:
-        platform_run(
-            ctx=ctx,
-            name=name,
-            owner=owner,
-            project_name=project_name,
-            description=description,
-            tags=tags,
-            op_spec=op_spec,
-            log=log,
-            upload=upload,
-            upload_to=upload_to,
-            upload_from=upload_from,
-            watch=watch,
-            eager=eager,
-            output=output,
-            shell=shell,
-        )
+    _executor.run(
+        ctx=ctx,
+        name=name,
+        owner=owner,
+        project_name=project_name,
+        description=description,
+        tags=tags,
+        op_spec=op_spec,
+        log=log,
+        upload=upload,
+        upload_to=upload_to,
+        upload_from=upload_from,
+        watch=watch,
+        eager=eager,
+        output=output,
+        shell=shell,
+    )
