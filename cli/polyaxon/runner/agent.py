@@ -87,9 +87,7 @@ class BaseAgent:
             return self.client.agents_v1.get_agent_state(
                 owner=self.owner, uuid=self.agent_uuid
             )
-        return self.client.agents_v1.get_global_state(
-            owner=self.owner, uuid=self.agent_uuid
-        )
+        return self.client.agents_v1.get_global_state(owner=self.owner)
 
     def log_agent_status(
         self, status: str, reason: Optional[str] = None, message: Optional[str] = None
