@@ -11,6 +11,7 @@ from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpeci
 from polyaxon.polyflow import V1CompiledOperation
 from polyaxon.runner.kinds import RunnerKind
 from polyaxon.schemas.cli.agent_config import AgentConfig
+from polyaxon.schemas.responses.v1_run import V1Run
 
 
 class BaseExecutor:
@@ -197,4 +198,26 @@ class BaseExecutor:
             polyaxon_init=resolver_obj.polyaxon_init,
             default_sa=default_sa,
             default_auth=default_auth,
+        )
+
+    def create_from_run(self, response: V1Run):
+        from polyaxon import settings
+
+        if not settings.AGENT_CONFIG:
+            settings.set_agent_config()
+            settings.AGENT_CONFIG.set_default_artifacts_store()
+
+        resource = self.convert(
+            owner_name=response.owner,
+            project_name=response.project,
+            run_name=response.name,
+            run_uuid=response.uuid,
+            default_auth=False,
+            content=response.content,
+            agent_content=settings.AGENT_CONFIG.to_json(),
+        )
+        self.create(
+            run_uuid=response.uuid,
+            run_kind=response.kind,
+            resource=resource,
         )
