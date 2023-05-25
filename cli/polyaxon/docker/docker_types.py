@@ -1,4 +1,3 @@
-import json
 from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import Field
@@ -14,14 +13,14 @@ class V1EnvVar(BaseSchemaModel):
             value = self.__root__
         else:
             value = self.__root__.items()
-        return f"{value[0]}:{value[1]}"
+        return [f"{value[0]}:{value[1]}"]
 
 
 class V1VolumeMount(BaseSchemaModel):
-    __root__: Union[Tuple[str, str]]
+    __root__: Tuple[str, str]
 
     def to_cmd(self):
-        return f"{self.__root__[0]} {self.__root__[1]}"
+        return list(self.__root__)
 
 
 class V1ContainerPort(BaseSchemaModel):
@@ -29,13 +28,13 @@ class V1ContainerPort(BaseSchemaModel):
 
     def to_cmd(self):
         if isinstance(self.__root__, str):
-            return self.__root__
+            return [self.__root__]
 
         if isinstance(self.__root__, tuple):
             value = self.__root__
         else:
             value = self.__root__.items()
-        return f"{value[0]}:{value[1]}"
+        return list(value[0])
 
 
 class V1ResourceRequirements(BaseSchemaModel):
@@ -68,9 +67,9 @@ class V1Container(BaseSchemaModel):
     def get_cmd_args(self):
         cmd_args = ["run", "--rm"]
         for env in self.env:
-            cmd_args += ["-e", json.dumps(env.to_cmd())]
+            cmd_args += ["-e"] + env.to_cmd()
         for volume in self.volume_mounts:
-            cmd_args += [volume.to_cmd()]
+            cmd_args += volume.to_cmd()
         if self.working_dir:
             cmd_args += ["-w", self.working_dir]
         if self.resources:
@@ -82,10 +81,12 @@ class V1Container(BaseSchemaModel):
                 cmd_args += ["--gpus", self.resources.gpus]
         if self.ports:
             for port in self.ports:
-                cmd_args += ["-p", port.to_cmd()]
+                cmd_args += ["-p"] + port.to_cmd()
+        if self.command:
+            cmd_args += ["--entrypoint", self.command[0]]
         cmd_args += [self.image]
         if self.command:
-            cmd_args += self.command
+            cmd_args += self.command[1:]
         if self.args:
             cmd_args += self.args
         return cmd_args
