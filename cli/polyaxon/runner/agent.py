@@ -80,14 +80,14 @@ class BaseAgent:
         time.sleep(1)
 
     def get_info(self) -> V1Agent:
-        if not self._is_managed:
-            return
         return self.client.agents_v1.get_agent(owner=self.owner, uuid=self.agent_uuid)
 
     def get_state(self) -> V1AgentStateResponse:
-        if not self._is_managed:
-            return
-        return self.client.agents_v1.get_agent_state(
+        if self._is_managed:
+            return self.client.agents_v1.get_agent_state(
+                owner=self.owner, uuid=self.agent_uuid
+            )
+        return self.client.agents_v1.get_global_state(
             owner=self.owner, uuid=self.agent_uuid
         )
 
