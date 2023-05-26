@@ -170,14 +170,6 @@ from polyaxon.polyaxonfile import check_polyaxonfile
     "e.g. '--approved=1', '--approved=yes', '--approved=false', '--approved=t', ...",
 )
 @click.option(
-    "--eager",
-    is_flag=True,
-    default=False,
-    help="A flag to enable eager mode for pipeline operations, "
-    "currently this mode supports grid search, random search, and parallel mapping. "
-    "Note that this flag requires numpy.",
-)
-@click.option(
     "--git-preset",
     is_flag=True,
     default=False,
@@ -237,7 +229,6 @@ def run(
     nocache,
     cache,
     approved,
-    eager,
     git_preset,
     git_revision,
     ignore_template,
@@ -360,7 +351,6 @@ def run(
         nocache=nocache,
         approved=approved,
         verbose=False,
-        eager=eager,
         git_init=git_init,
         ignore_template=ignore_template,
     )
@@ -387,7 +377,6 @@ def run(
         upload_to=upload_to,
         upload_from=upload_from,
         watch=watch,
-        eager=eager,
         output=output,
         shell=shell,
         local=local,

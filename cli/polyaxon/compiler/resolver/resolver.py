@@ -21,7 +21,6 @@ def resolve(
     cloning_kind: V1CloningKind = None,
     original_uuid: Optional[str] = None,
     is_independent: bool = True,
-    eager: bool = False,
 ):
     resolver_cls = resolver_cls or BaseResolver
     resolver_cls.is_valid(compiled_operation)
@@ -41,7 +40,6 @@ def resolve(
         cloning_kind=cloning_kind,
         original_uuid=original_uuid,
         is_independent=is_independent,
-        eager=eager,
     )
     if resolver:
         # If build section is present resolve the build
@@ -65,7 +63,6 @@ def resolve_hooks(
     compiled_at: Optional[datetime] = None,
     cloning_kind: V1CloningKind = None,
     original_uuid: Optional[str] = None,
-    eager: bool = False,
 ) -> List[V1Operation]:
     resolver_cls = resolver_cls or BaseResolver
     resolver_cls.is_valid(compiled_operation)
@@ -91,5 +88,4 @@ def resolve_hooks(
         cloning_kind=cloning_kind,
         original_uuid=original_uuid,
         is_independent=False,
-        eager=eager,
     ).resolve_hooks()

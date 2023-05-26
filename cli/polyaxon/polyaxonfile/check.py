@@ -9,10 +9,7 @@ from clipped.utils.lists import to_list
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.config.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
-from polyaxon.polyaxonfile.manager import (
-    get_op_specification,
-    is_supported_in_eager_mode,
-)
+from polyaxon.polyaxonfile.manager import get_op_specification
 from polyaxon.polyaxonfile.params import parse_hparams, parse_params
 from polyaxon.polyaxonfile.specs import get_specification, kinds
 from polyaxon.polyflow import V1Dag, V1Init, V1Matrix, V1Operation
@@ -90,7 +87,6 @@ def check_polyaxonfile(
     to_op: bool = True,
     validate_params: bool = True,
     approved: Optional[Union[int, str, bool]] = None,
-    eager: bool = False,
     git_init: Optional[V1Init] = None,
     ignore_template: bool = False,
 ):
@@ -203,8 +199,6 @@ def check_polyaxonfile(
                     plx_file.template.fields
                 )
             Printer.warning(template_message)
-        if eager:
-            is_supported_in_eager_mode(spec=plx_file)
         return plx_file
     except Exception as e:
         message = "Polyaxonfile is not valid."

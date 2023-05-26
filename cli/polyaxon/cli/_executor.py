@@ -18,18 +18,13 @@ from polyaxon.cli.operations import upload as run_upload
 from polyaxon.cli.utils import handle_output
 from polyaxon.client import RunClient
 from polyaxon.constants.globals import DEFAULT_UPLOADS_PATH
-from polyaxon.constants.metadata import (
-    META_COPY_ARTIFACTS,
-    META_EAGER_MODE,
-    META_UPLOAD_ARTIFACTS,
-)
+from polyaxon.constants.metadata import META_LOCAL_MODE, META_UPLOAD_ARTIFACTS
 from polyaxon.exceptions import PolyaxonException
 from polyaxon.managers.run import RunConfigManager
-from polyaxon.polyflow import V1CompiledOperation, V1Operation
+from polyaxon.polyflow import V1Operation
 from polyaxon.runner.kinds import RunnerKind
 from polyaxon.schemas import V1RunPending
 from polyaxon.schemas.responses.v1_run import V1Run
-from polyaxon.schemas.types import V1ArtifactsType
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 
@@ -123,7 +118,6 @@ def run(
     upload_to: str,
     upload_from: str,
     watch: bool,
-    eager: bool,
     output: Optional[str] = None,
     local: Optional[bool] = False,
     executor: Optional[RunnerKind] = None,
@@ -178,14 +172,11 @@ def run(
                 "A new run was created: {}".format(get_instance_info(response))
             )
 
+            cache_run(response)
+            Printer.print("You can view this run on Polyaxon UI: {}".format(run_url))
+
             if local:
                 execute_locally(response, executor=executor)
-
-            if not eager:
-                cache_run(response)
-                Printer.print(
-                    "You can view this run on Polyaxon UI: {}".format(run_url)
-                )
             return response
         except (ApiException, HTTPError) as e:
             handle_cli_error(
@@ -196,24 +187,6 @@ def run(
                     "otherwise you need to pass a project with `-p/--project`. "
                     "The project {}/{} does not exist.".format(owner, project_name)
                 },
-            )
-            sys.exit(1)
-
-    def refresh_run():
-        try:
-            polyaxon_client.refresh_data()
-        except (ApiException, HTTPError) as e:
-            handle_cli_error(
-                e, message="The current eager operation does not exist anymore."
-            )
-            sys.exit(1)
-
-    def delete_run():
-        try:
-            polyaxon_client.delete()
-        except (ApiException, HTTPError) as e:
-            handle_cli_error(
-                e, message="The current eager operation does not exist anymore."
             )
             sys.exit(1)
 
@@ -239,14 +212,16 @@ def run(
     if not output:
         Printer.print("Creating a new run...")
     run_meta_info = None
-    if eager:
-        run_meta_info = {META_EAGER_MODE: True}
+    if local:
+        run_meta_info = {META_LOCAL_MODE: True}
     if upload:
         upload_to = upload_to or DEFAULT_UPLOADS_PATH
         run_meta_info = run_meta_info or {}
         run_meta_info[META_UPLOAD_ARTIFACTS] = upload_to
     run_instance = create_run(
-        not eager, run_meta_info, pending=V1RunPending.UPLOAD if upload else None
+        is_managed=not local,
+        meta_info=run_meta_info,
+        pending=V1RunPending.UPLOAD if upload else None,
     )
     if not run_instance:
         return
@@ -262,49 +237,18 @@ def run(
     if upload:
         upload_run(build_uuid or run_instance.uuid)
 
-    if eager:
-        from polyaxon.polyaxonfile.manager import get_eager_matrix_operations
-
-        refresh_run()
-        # Prepare artifacts
-        run_meta_info = {}
-        if upload:
-            run_meta_info = {
-                META_UPLOAD_ARTIFACTS: upload_to,
-                META_COPY_ARTIFACTS: V1ArtifactsType(
-                    dirs=[run_instance.uuid]
-                ).to_dict(),
-            }
-        compiled_operation = V1CompiledOperation.read(polyaxon_client.run_data.content)
-        matrix_content = polyaxon_client.run_data.raw_content
-        # Delete matrix placeholder
-        Printer.print("Cleaning matrix run placeholder...")
-        delete_run()
-        # Suggestions
-        Printer.print("Starting eager mode...")
-        for op_spec in get_eager_matrix_operations(
-            content=matrix_content,
-            compiled_operation=compiled_operation,
-            is_cli=True,
-        ):
-            i_run_instance = create_run(meta_info=run_meta_info)
-            runs_to_watch.append(RunWatchSpec(i_run_instance.uuid, i_run_instance.name))
-
-        return
-
     # Check if we need to invoke logs
-    if not eager:
-        if watch:
-            for instance in runs_to_watch:
-                Printer.header(f"Starting watch for run: {get_instance_info(instance)}")
-                watch_run_statuses(instance.uuid)
-        if log:
-            for instance in runs_to_watch:
-                Printer.header(f"Starting logs for run: {get_instance_info(instance)}")
-                watch_run_logs(instance.uuid)
-        if shell:
-            for instance in runs_to_watch:
-                Printer.header(
-                    f"Starting shell session for run: {get_instance_info(instance)}",
-                )
-                start_run_shell(instance.uuid)
+    if watch:
+        for instance in runs_to_watch:
+            Printer.header(f"Starting watch for run: {get_instance_info(instance)}")
+            watch_run_statuses(instance.uuid)
+    if log:
+        for instance in runs_to_watch:
+            Printer.header(f"Starting logs for run: {get_instance_info(instance)}")
+            watch_run_logs(instance.uuid)
+    if shell:
+        for instance in runs_to_watch:
+            Printer.header(
+                f"Starting shell session for run: {get_instance_info(instance)}",
+            )
+            start_run_shell(instance.uuid)

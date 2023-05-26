@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from polyaxon import settings
 from polyaxon.compiler.contexts import resolve_contexts, resolve_globals_contexts
@@ -46,7 +46,6 @@ class BaseResolver:
         cloning_kind: V1CloningKind = None,
         original_uuid: Optional[str] = None,
         is_independent: bool = True,
-        eager: bool = False,
     ):
         if not compiled_operation:
             raise PolyaxonCompilerError("A run spec is required for resolution.")
@@ -77,7 +76,6 @@ class BaseResolver:
         self.started_at = None
         self.finished_at = None
         self.duration = None
-        self.eager = eager
         self.cloning_kind = cloning_kind
         self.original_uuid = original_uuid
         self.is_independent = is_independent

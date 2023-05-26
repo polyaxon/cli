@@ -24,12 +24,6 @@ class V1RunKind(str, PEnum):
     BUILDER = "builder"
 
     @classmethod
-    def eager_values(cls):
-        return {
-            cls.MATRIX,
-        }
-
-    @classmethod
     def default_runtime_values(cls):
         return {
             cls.JOB,

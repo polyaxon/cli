@@ -11,14 +11,6 @@ class V1MatrixKind(str, PEnum):
     MAPPING = "mapping"
 
     @classmethod
-    def eager_values(cls):
-        return {
-            cls.RANDOM,
-            cls.GRID,
-            cls.MAPPING,
-        }
-
-    @classmethod
     def iteration_values(cls):
         return {
             cls.HYPERBAND,
