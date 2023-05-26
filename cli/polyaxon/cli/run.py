@@ -1,17 +1,202 @@
 import sys
 
+from collections import namedtuple
+from typing import Dict, List, Optional
+
 import click
 
 from clipped.formatting import Printer
 from clipped.utils import git as git_utils
 from clipped.utils.validation import validate_tags
+from urllib3.exceptions import HTTPError
 
-from polyaxon.cli import _executor
+from polyaxon.cli.dashboard import get_dashboard_url
+from polyaxon.cli.errors import handle_cli_error
+from polyaxon.cli.operations import approve
+from polyaxon.cli.operations import execute as run_execute
+from polyaxon.cli.operations import logs as run_logs
+from polyaxon.cli.operations import shell as run_shell
+from polyaxon.cli.operations import statuses
+from polyaxon.cli.operations import upload as run_upload
 from polyaxon.cli.options import OPTIONS_NAME, OPTIONS_PROJECT
+from polyaxon.cli.utils import handle_output
+from polyaxon.client import RunClient
+from polyaxon.constants.globals import DEFAULT_UPLOADS_PATH
+from polyaxon.constants.metadata import META_LOCAL_MODE, META_UPLOAD_ARTIFACTS
 from polyaxon.env_vars.getters import get_project_or_local
 from polyaxon.logger import clean_outputs
 from polyaxon.managers.git import GitConfigManager
+from polyaxon.managers.run import RunConfigManager
 from polyaxon.polyaxonfile import check_polyaxonfile
+from polyaxon.polyflow import V1Operation
+from polyaxon.runner.kinds import RunnerKind
+from polyaxon.schemas import V1RunPending
+from polyaxon.sdk.exceptions import ApiException
+from polyaxon.utils import cache
+
+
+class RunWatchSpec(namedtuple("RunWatchSpec", "uuid name")):
+    pass
+
+
+def _run(
+    ctx,
+    name: str,
+    owner: str,
+    project_name: str,
+    description: str,
+    tags: List[str],
+    op_spec: V1Operation,
+    log: bool,
+    shell: bool,
+    upload: bool,
+    upload_to: str,
+    upload_from: str,
+    watch: bool,
+    output: Optional[str] = None,
+    local: Optional[bool] = False,
+    executor: Optional[RunnerKind] = None,
+):
+    polyaxon_client = RunClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
+
+    def get_instance_info(r):
+        rn = (
+            f"[white]{r.name}[/white]@[white]{r.uuid}[/white]"
+            if r.name
+            else "[white]{r.uuid}[/white]"
+        )
+        return f"[white]{owner}[/white]/[white]{project_name}[/white]:{rn}"
+
+    def cache_run(data):
+        config = polyaxon_client.client.sanitize_for_serialization(data)
+        cache.cache(
+            config_manager=RunConfigManager,
+            config=config,
+            owner=owner,
+            project=project_name,
+        )
+
+    def create_run(
+        is_managed: bool = True,
+        meta_info: Optional[Dict] = None,
+        pending: Optional[str] = None,
+    ):
+        try:
+            response = polyaxon_client.create(
+                name=name,
+                description=description,
+                tags=tags,
+                content=op_spec,
+                is_managed=is_managed,
+                meta_info=meta_info,
+                pending=pending,
+            )
+            run_url = get_dashboard_url(
+                subpath="{}/{}/runs/{}".format(owner, project_name, response.uuid)
+            )
+            if output:
+                response_data = polyaxon_client.client.sanitize_for_serialization(
+                    response
+                )
+                response_data["url"] = run_url
+                handle_output(response_data, output)
+                return
+            Printer.success(
+                "A new run was created: {}".format(get_instance_info(response))
+            )
+
+            cache_run(response)
+            Printer.print("You can view this run on Polyaxon UI: {}".format(run_url))
+
+            return response
+        except (ApiException, HTTPError) as e:
+            handle_cli_error(
+                e,
+                message="Could not create a run.",
+                http_messages_mapping={
+                    404: "Make sure you have a project initialized in your current workdir, "
+                    "otherwise you need to pass a project with `-p/--project`. "
+                    "The project {}/{} does not exist.".format(owner, project_name)
+                },
+            )
+            sys.exit(1)
+
+    def execute_run_locally(run_uuid: str):
+        ctx.obj = {
+            "project": "{}/{}".format(owner, project_name),
+            "run_uuid": run_uuid,
+            "executor": executor,
+        }
+        ctx.invoke(run_execute)
+
+    def watch_run_statuses(run_uuid: str):
+        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.invoke(statuses, watch=True)
+
+    def watch_run_logs(run_uuid: str):
+        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.invoke(run_logs)
+
+    def start_run_shell(run_uuid: str):
+        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.invoke(run_shell)
+
+    def upload_run(run_uuid: str):
+        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.invoke(
+            run_upload, path_to=upload_to, path_from=upload_from, sync_failure=True
+        )
+        ctx.invoke(approve)
+
+    if not output:
+        Printer.print("Creating a new run...")
+    run_meta_info = None
+    if local:
+        run_meta_info = {META_LOCAL_MODE: True}
+    if upload:
+        upload_to = upload_to or DEFAULT_UPLOADS_PATH
+        run_meta_info = run_meta_info or {}
+        run_meta_info[META_UPLOAD_ARTIFACTS] = upload_to
+    run_instance = create_run(
+        is_managed=not local,
+        meta_info=run_meta_info,
+        pending=V1RunPending.UPLOAD if upload else None,
+    )
+    if not run_instance:
+        return
+
+    runs_to_watch = [RunWatchSpec(run_instance.uuid, run_instance.name)]
+
+    build_uuid = None
+    if run_instance.pending == V1RunPending.BUILD and run_instance.settings.build:
+        build_uuid = run_instance.settings.build.get("uuid")
+        build_name = run_instance.settings.build.get("name")
+        runs_to_watch.insert(0, RunWatchSpec(build_uuid, build_name))
+
+    if upload:
+        upload_run(build_uuid or run_instance.uuid)
+
+    if local:
+        for instance in runs_to_watch:
+            execute_run_locally(instance.uuid)
+
+    # Check if we need to invoke logs
+    if watch:
+        for instance in runs_to_watch:
+            Printer.header(f"Starting watch for run: {get_instance_info(instance)}")
+            watch_run_statuses(instance.uuid)
+    if log:
+        for instance in runs_to_watch:
+            Printer.header(f"Starting logs for run: {get_instance_info(instance)}")
+            watch_run_logs(instance.uuid)
+    if shell:
+        for instance in runs_to_watch:
+            Printer.header(
+                f"Starting shell session for run: {get_instance_info(instance)}",
+            )
+            start_run_shell(instance.uuid)
 
 
 @click.command()
@@ -364,7 +549,7 @@ def run(
     owner, project_name = get_project_or_local(project, is_cli=True)
     tags = validate_tags(tags, validate_yaml=True)
 
-    _executor.run(
+    _run(
         ctx=ctx,
         name=name,
         owner=owner,

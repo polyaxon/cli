@@ -1,7 +1,7 @@
 import os
 import sys
 
-from typing import Any
+from typing import Any, Optional
 
 import click
 
@@ -19,6 +19,7 @@ from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
+from polyaxon import settings
 from polyaxon.api import (
     EXTERNAL_V1,
     REWRITE_EXTERNAL_V1,
@@ -50,6 +51,8 @@ from polyaxon.logger import clean_outputs, not_in_ce
 from polyaxon.managers.run import RunConfigManager
 from polyaxon.polyaxonfile import OperationSpecification
 from polyaxon.polyflow import V1RunKind
+from polyaxon.runner.kinds import RunnerKind
+from polyaxon.schemas.responses.v1_run import V1Run
 from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 
@@ -921,6 +924,117 @@ def invalidate(ctx, project, uid):
 @ops.command()
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
+@click.option(
+    "--executor",
+    "-exc",
+    type=str,
+    help="The local executor to use, possible values are: docker, k8s, process.",
+)
+@click.pass_context
+@clean_outputs
+def execute(ctx, project, uid, executor):
+    """Execute a run on the current local machine using one of the specified executor.
+
+    Uses /docs/core/cli/#caching
+
+    Examples getting executing a run:
+
+    \b
+    $ polyaxon ops execute
+
+    \b
+    $ polyaxon ops execute -uid 8aac02e3a62a4f0aaa257c59da5eab80
+    """
+
+    def _execute_on_docker(response: V1Run):
+        from polyaxon.docker.executor import Executor
+
+        executor = Executor()
+        if not executor.manager.check():
+            raise Printer.error(
+                "Docker is required to run this command.", sys_exit=True
+            )
+        executor.create_from_run(response)
+
+    def execute_on_k8s(response: V1Run):
+        from polyaxon.k8s.executor.executor import Executor
+
+        if not settings.AGENT_CONFIG.namespace:
+            raise Printer.error(
+                "Agent config requires a namespace to be set.", sys_exit=True
+            )
+
+        executor = Executor(namespace=settings.AGENT_CONFIG.namespace)
+        if not executor.manager.get_version():
+            raise Printer.error(
+                "Kubernetes is required to run this command.", sys_exit=True
+            )
+        executor.create_from_run(response)
+
+    def _execute_on_local_process(response: V1Run):
+        from polyaxon.process.executor.executor import Executor
+
+        executor = Executor()
+        if not executor.manager.check():
+            raise Printer.error("Conda is required to run this command.", sys_exit=True)
+
+        # def _check_conda():
+        #     from polyaxon.deploy.operators.conda import CondaOperator
+        #
+        #     conda = CondaOperator()
+        #     if not conda.check():
+        #         raise Printer.error("Conda is required to run this command.", sys_exit=True)
+        #
+        #     envs = conda.execute(["env", "list", "--json"], is_json=True)
+        #     env_names = [os.path.basename(env) for env in envs["envs"]]
+        #     if conda_env not in env_names:
+        #         raise Printer.error(
+        #             "Conda env `{}` is not installed.".format(conda_env), sys_exit=True
+        #         )
+        #
+        #     cmd_bash, cmd_args = specification.run.get_container_cmd()
+        #     cmd_args = ["source activate {}".format(conda_env)] + cmd_args
+        #     subprocess.Popen(cmd_bash + [" && ".join(cmd_args)], close_fds=True)
+
+    executor = executor or ctx.obj.get("executor") or RunnerKind.DOCKER
+    if not settings.AGENT_CONFIG:
+        settings.set_agent_config()
+        if not settings.AGENT_CONFIG.artifacts_store:
+            if executor == RunnerKind.K8S:
+                raise Printer.error(
+                    "Could not resolve an agent configuration.", sys_exit=True
+                )
+            settings.AGENT_CONFIG.set_default_artifacts_store()
+
+    owner, project_name, run_uuid = get_project_run_or_local(
+        project or ctx.obj.get("project"),
+        uid or ctx.obj.get("run_uuid"),
+        is_cli=True,
+    )
+
+    try:
+        polyaxon_client = RunClient(
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
+        )
+        polyaxon_client.refresh_data()
+    except (ApiException, HTTPError) as e:
+        handle_cli_error(e, message="Could not execute run `{}`.".format(run_uuid))
+        sys.exit(1)
+
+    if executor == RunnerKind.DOCKER:
+        _execute_on_docker(polyaxon_client.run_data)
+    elif executor == RunnerKind.K8S:
+        execute_on_k8s(polyaxon_client.run_data)
+    elif executor == RunnerKind.PROCESS:
+        _execute_on_local_process(polyaxon_client.run_data)
+
+
+@ops.command()
+@click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
+@click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
 @click.option("--watch", "-w", is_flag=True, help="Watch statuses.")
 @click.option(*OPTIONS_RUN_OFFLINE["args"], **OPTIONS_RUN_OFFLINE["kwargs"])
 @click.option(
@@ -1077,7 +1191,7 @@ def statuses(ctx, project, uid, watch, offline, path):
 )
 @click.pass_context
 @clean_outputs
-def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline, path):
+def logs(ctx, project, uid, follow, hide_time, all_containers, all_info):
     """Get run's logs.
 
     Uses /docs/core/cli/#caching
