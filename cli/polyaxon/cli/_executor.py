@@ -89,10 +89,11 @@ def _execute_on_local_process(
 
 def execute_locally(
     response: V1Run,
-    executor: RunnerKind,
+    executor: Optional[RunnerKind] = None,
     conda_env: Optional[str] = None,
     pip_env: Optional[str] = None,
 ):
+    executor = executor or RunnerKind.DOCKER
     if not settings.AGENT_CONFIG:
         settings.set_agent_config()
         if not settings.AGENT_CONFIG.artifacts_store:
@@ -124,6 +125,8 @@ def run(
     watch: bool,
     eager: bool,
     output: Optional[str] = None,
+    local: Optional[bool] = False,
+    executor: Optional[RunnerKind] = None,
 ):
     polyaxon_client = RunClient(
         owner=owner, project=project_name, manual_exceptions_handling=True
@@ -174,6 +177,9 @@ def run(
             Printer.success(
                 "A new run was created: {}".format(get_instance_info(response))
             )
+
+            if local:
+                execute_locally(response, executor=executor)
 
             if not eager:
                 cache_run(response)

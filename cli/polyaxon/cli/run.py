@@ -101,6 +101,12 @@ from polyaxon.polyaxonfile import check_polyaxonfile
     help="To start the run locally, with `docker` environment as default.",
 )
 @click.option(
+    "--executor",
+    "-exc",
+    type=str,
+    help="The local executor to use, possible values are: docker, k8s, process.",
+)
+@click.option(
     "--params",
     "--param",
     "-P",
@@ -220,6 +226,7 @@ def run(
     upload_to,
     watch,
     local,
+    executor,
     params,
     hparams,
     matrix_kind,
@@ -383,4 +390,6 @@ def run(
         eager=eager,
         output=output,
         shell=shell,
+        local=local,
+        executor=executor,
     )
