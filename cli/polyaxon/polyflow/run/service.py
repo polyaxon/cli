@@ -2,18 +2,13 @@ from typing import List, Optional, Union
 from typing_extensions import Literal
 
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
-from pydantic import Field, StrictInt, StrictStr, validator
+from pydantic import Field, StrictInt
 
-from polyaxon.k8s import k8s_schemas, k8s_validation
-from polyaxon.polyflow.environment import V1Environment
-from polyaxon.polyflow.init import V1Init
-from polyaxon.polyflow.run.base import BaseRun
+from polyaxon.polyflow.run.job import V1Job
 from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.polyflow.run.resources import V1RunResources
-from polyaxon.polyflow.run.utils import DestinationImageMixin
 
 
-class V1Service(BaseRun, DestinationImageMixin):
+class V1Service(V1Job):
     """Services are used to launch Tensorboards, Notebooks, JupyterHub apps,
     Streamlit/Voila/Bokeh apps, internal tools,
     and dashboards based on your models and data analysis.
@@ -275,44 +270,9 @@ class V1Service(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.SERVICE
-    _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    environment: Optional[Union[V1Environment, RefField]]
-    connections: Optional[Union[List[StrictStr], RefField]]
-    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
-    init: Optional[Union[List[V1Init], RefField]]
-    sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]]
-    container: Optional[Union[k8s_schemas.V1Container, RefField]]
     ports: Optional[Union[List[StrictInt], RefField]]
     rewrite_path: Optional[BoolOrRef] = Field(alias="rewritePath")
     is_external: Optional[BoolOrRef] = Field(alias="isExternal")
     replicas: Optional[IntOrRef]
-
-    @validator("volumes", always=True, pre=True)
-    def validate_volumes(cls, v):
-        if not v:
-            return v
-        return [k8s_validation.validate_k8s_volume(vi) for vi in v]
-
-    @validator("sidecars", always=True, pre=True)
-    def validate_helper_containers(cls, v):
-        if not v:
-            return v
-        return [k8s_validation.validate_k8s_container(vi) for vi in v]
-
-    @validator("container", always=True, pre=True)
-    def validate_container(cls, v):
-        return k8s_validation.validate_k8s_container(v)
-
-    def get_resources(self):
-        return V1RunResources.from_container(self.container)
-
-    def get_all_containers(self):
-        return [self.container] if self.container else []
-
-    def get_all_connections(self):
-        return self.connections or []
-
-    def get_all_init(self):
-        return self.init or []
