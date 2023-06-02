@@ -4,6 +4,7 @@ from typing_extensions import Literal
 from clipped.types.ref_or_obj import RefField
 from pydantic import Field, PositiveInt, validator
 
+from polyaxon.contexts.params import is_template_ref
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind
@@ -105,7 +106,7 @@ class V1Mapping(BaseSearchConfig):
     _IDENTIFIER = V1MatrixKind.MAPPING
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    values: List[Union[Dict, RefField]]
+    values: Union[List[Dict], RefField]
     concurrency: Optional[Union[PositiveInt, RefField]]
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
         alias="earlyStopping"
@@ -120,4 +121,6 @@ class V1Mapping(BaseSearchConfig):
         return v
 
     def has_key(self, key: str):
+        if is_template_ref(self.values):
+            return True
         return self.values and key in set(self.values[0].keys())

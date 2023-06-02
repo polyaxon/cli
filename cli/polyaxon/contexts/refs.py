@@ -2,7 +2,7 @@ import uuid
 
 from typing import Optional
 
-from polyaxon.contexts.params import PARAM_REGEX
+from polyaxon.contexts.params import PARAM_REGEX, is_template_ref
 from polyaxon.exceptions import PolyaxonValidationError
 
 OPS = "ops"
@@ -76,13 +76,7 @@ class RefMixin:
 
     @property
     def is_template_ref(self) -> bool:
-        try:
-            value_parts = PARAM_REGEX.search(self.value)  # type: ignore[attr-defined]
-            if value_parts:
-                return True
-        except Exception:  # noqa
-            pass
-        return False
+        return is_template_ref(self.value)
 
     @property
     def is_runs_ref(self) -> bool:
