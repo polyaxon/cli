@@ -342,7 +342,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
      * [V1Dask](/docs/experimentation/distributed/dask-jobs/): for running a Dask job.
      * [V1Dag](/docs/automation/flow-engine/specification/): for running a DAG/workflow.
 
-    For example, fi we define a generic component for running Jupyter Notebook:
+    For example, if we define a generic component for running Jupyter Notebook:
 
     ```yaml
     >>> version: 1.1
@@ -403,7 +403,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### dagRef
 
-    If you building a dag and you have a component that can be used by several operation,
+    If you are building a dag and you have a component that can be used by several operations,
     you can define a component and reuse it in all operations using `dagRef`.
     Please check Polyaxon automation's [flow engine section](/docs/automation/flow-engine/)
     for more details.

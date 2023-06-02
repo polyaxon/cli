@@ -283,14 +283,14 @@ class V1Component(
     The [outputs](/docs/core/specification/io/) definition for this component.
 
     If the component defines required outputs, no exception will be raised at execution time,
-    since Polyaxon considers the outputs values will be resolved in the future,
+    since Polyaxon considers the output values will be resolved in the future,
     for example during the run time when the user will be using the tracking
     client to log a metric or a value or an artifact.
 
     Sometimes the outputs can be resolved immediately at execution time,
     for example a container image name, because such information is required for the
     job to finish successfully, i.e. pushing the image with the correct name,
-    in that case you can disable `delayValidation` flag.
+    in that case you can disable the `delayValidation` flag.
 
     ```yaml
     >>> component:
@@ -341,7 +341,7 @@ class V1Component(
     ### isApproved
 
     This is a flag to trigger human validation before queuing and scheduling this component.
-    the default behavior is `True` even when the field is not set, i.e. no validation is required.
+    The default behavior is `True` even when the field is not set, i.e. no validation is required.
     To require a human validation prior to scheduling an operation,
     you can set this field to `False`.
 
@@ -351,7 +351,7 @@ class V1Component(
 
     ### Cost
 
-    A field to define the cost of running the operation, the value is a float and should map to a
+    A field to define the cost of running the operation. The value is a float and should map to a
     convention of a cost estimation in your team or
     it can map directly to the cost of using the environment where the operation is running.
 

@@ -114,12 +114,13 @@ class V1IO(BaseSchemaModel):
         description: str, optional
         type: str, any python type hint, pydantic built-in types, and gcs, s3, wasb, dockerfile, git, image, event, artifacts, path, metric, metadata, date, datetime.
         value: any, optional
-        is_optional: bool, optional
+        is_optional: bool, optional (**Deprecated**)
         is_list: bool, optional
         is_flag: bool, optional
         arg_format: str, optional
         delay_validation: bool, optional
-        options: List[any], optional
+        options: List[any], optional (**Deprecated**)
+        validation: Validation, optional
         connection: str, optional
         to_init: bool, optional
         to_env: str, optional
@@ -255,7 +256,17 @@ class V1IO(BaseSchemaModel):
 
     ### isList
 
-    A flag to tell if an input/output is a list of the type passed.
+    > **Deprecated**: Please use `type: List[TYPING]` instead.
+
+    In `v2` you should:
+
+    ```yaml
+    >>> inputs:
+    >>>   - name: learning_rates
+    >>>     type: List[float]
+    ```
+
+    A flag used in `v1` to tell if an input/output is a list of the type passed.
 
     ```yaml
     >>> inputs:
@@ -375,6 +386,8 @@ class V1IO(BaseSchemaModel):
     ```
 
     ### options
+
+    > **Deprecated**: Please use `validation: ...` instead.
 
     Options allow to pass a list of values that will be used to validate any passed params.
 
