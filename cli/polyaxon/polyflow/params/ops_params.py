@@ -135,6 +135,7 @@ def validate_params(
                     is_flag=inp.is_flag,
                     is_list=inp.is_list,
                     is_context=False,
+                    is_requested=True,
                     arg_format=inp.arg_format,
                 )
             )
@@ -182,6 +183,7 @@ def validate_params(
                     is_flag=out.is_flag,
                     is_list=out.is_list,
                     is_context=False,
+                    is_requested=True,
                     arg_format=out.arg_format,
                 )
             )
@@ -222,6 +224,7 @@ def validate_params(
                     is_flag=None,
                     is_list=None,
                     is_context=True,
+                    is_requested=True,
                     arg_format=None,
                 )
             )

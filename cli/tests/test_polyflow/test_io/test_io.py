@@ -229,6 +229,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -248,6 +249,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -266,6 +268,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -285,6 +288,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -303,6 +307,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -344,6 +349,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -362,6 +368,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -380,6 +387,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -412,6 +420,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -431,6 +440,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format=None,
         )
 
@@ -450,6 +460,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format="--sdf={{ foo }}",
         )
         assert (
@@ -460,6 +471,7 @@ class TestV1IOs(BaseTestCase):
                 is_flag=False,
                 is_list=False,
                 is_context=False,
+                is_requested=True,
                 arg_format="--sdf={{ foo }}",
             ).as_arg()
             == "--sdf=SDfd"
@@ -481,6 +493,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format="--sdf={{ foo }}",
         )
         assert (
@@ -491,6 +504,7 @@ class TestV1IOs(BaseTestCase):
                 is_flag=False,
                 is_list=False,
                 is_context=False,
+                is_requested=True,
                 arg_format="--sdf={{ foo }}",
             ).as_arg()
             == ""
@@ -512,6 +526,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format="--sdf={{ foo }}",
         )
         assert (
@@ -522,6 +537,7 @@ class TestV1IOs(BaseTestCase):
                 is_flag=False,
                 is_list=False,
                 is_context=False,
+                is_requested=True,
                 arg_format="--sdf={{ foo }}",
             ).as_arg()
             == "--sdf=0"
@@ -543,6 +559,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format="{{'true-var' if foo else 'false-var'}}",
         )
         assert (
@@ -553,6 +570,7 @@ class TestV1IOs(BaseTestCase):
                 is_flag=False,
                 is_list=False,
                 is_context=False,
+                is_requested=True,
                 arg_format="{{'true-var' if foo else 'false-var'}}",
             ).as_arg()
             == "true-var"
@@ -573,6 +591,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format="{{'true-var' if foo else 'false-var'}}",
         )
         assert (
@@ -583,6 +602,7 @@ class TestV1IOs(BaseTestCase):
                 is_flag=False,
                 is_list=False,
                 is_context=False,
+                is_requested=True,
                 arg_format="{{'true-var' if foo else 'false-var'}}",
             ).as_arg()
             == "false-var"
@@ -604,6 +624,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format="{{foo}}",
         )
         assert (
@@ -615,6 +636,7 @@ class TestV1IOs(BaseTestCase):
                     is_flag=True,
                     is_list=False,
                     is_context=False,
+                    is_requested=True,
                     arg_format="{{foo}}",
                 )
             )
@@ -637,6 +659,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=True,
             is_list=False,
             is_context=False,
+            is_requested=True,
             arg_format="{{foo}}",
         )
         assert (
@@ -648,6 +671,7 @@ class TestV1IOs(BaseTestCase):
                     is_flag=True,
                     is_list=False,
                     is_context=False,
+                    is_requested=True,
                     arg_format="{{foo}}",
                 )
             )
@@ -670,6 +694,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=True,
+            is_requested=True,
             arg_format="{{foo}}",
         )
         assert ParamSpec(
@@ -679,6 +704,7 @@ class TestV1IOs(BaseTestCase):
             is_flag=False,
             is_list=False,
             is_context=True,
+            is_requested=True,
             arg_format=None,
         ).param.value == {"key": "value"}
         assert str(
@@ -689,6 +715,7 @@ class TestV1IOs(BaseTestCase):
                 is_flag=False,
                 is_list=False,
                 is_context=True,
+                is_requested=True,
                 arg_format=None,
             )
         ) == orjson_dumps({"key": "value"})

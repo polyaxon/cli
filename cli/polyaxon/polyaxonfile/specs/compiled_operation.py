@@ -26,7 +26,11 @@ class CompiledOperationSpecification(BaseSpecification):
     CONFIG: Type[V1CompiledOperation] = V1CompiledOperation
 
     @staticmethod
-    def dict_to_param_spec(contexts: Optional[Dict] = None, is_context: bool = False):
+    def dict_to_param_spec(
+        contexts: Optional[Dict] = None,
+        is_requested: bool = False,
+        is_context: bool = False,
+    ):
         contexts = contexts or {}
         return {
             k: ParamSpec(
@@ -35,6 +39,7 @@ class CompiledOperationSpecification(BaseSpecification):
                 type="Any",
                 is_flag=False,
                 is_list=None,
+                is_requested=is_requested,
                 is_context=is_context,
                 arg_format=None,
             )
@@ -260,7 +265,9 @@ class CompiledOperationSpecification(BaseSpecification):
             for k in contexts:
                 param_spec[k] = copy.copy(replica_param_spec)
                 param_spec[k].update(
-                    cls.dict_to_param_spec(contexts=contexts[k], is_context=True)
+                    cls.dict_to_param_spec(
+                        contexts=contexts[k], is_requested=True, is_context=True
+                    )
                 )
         parsed_data = PolyaxonfileParser.parse_distributed_runtime(
             config.to_dict(), param_spec

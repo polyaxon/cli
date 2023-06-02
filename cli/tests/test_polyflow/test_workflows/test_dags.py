@@ -2713,6 +2713,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
             assert op_upstream_by_names["B"][1] == ops_params.ParamSpec(
@@ -2722,6 +2723,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
 
@@ -2733,6 +2735,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
             assert op_upstream_by_names["B"][0] == ops_params.ParamSpec(
@@ -2742,6 +2745,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
         op_upstream_by_names = ops_params.get_upstream_op_params_by_names(
@@ -2767,6 +2771,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
         ]
@@ -2941,6 +2946,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
             assert op_upstream_by_names["A"][1] == ops_params.ParamSpec(
@@ -2950,6 +2956,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
 
@@ -2961,6 +2968,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
             assert op_upstream_by_names["A"][0] == ops_params.ParamSpec(
@@ -2970,6 +2978,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
         op_upstream_by_names = ops_params.get_upstream_op_params_by_names(
@@ -2984,6 +2993,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                     is_flag=None,
                     is_list=None,
                     is_context=None,
+                    is_requested=True,
                     arg_format=None,
                 )
             ],
@@ -2995,6 +3005,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                     is_flag=None,
                     is_list=None,
                     is_context=None,
+                    is_requested=True,
                     arg_format=None,
                 ),
                 ops_params.ParamSpec(
@@ -3004,6 +3015,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                     is_flag=None,
                     is_list=None,
                     is_context=None,
+                    is_requested=True,
                     arg_format=None,
                 ),
             ],
@@ -3023,6 +3035,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
         ]
@@ -3059,6 +3072,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 is_flag=None,
                 is_list=None,
                 is_context=None,
+                is_requested=True,
                 arg_format=None,
             )
         ]

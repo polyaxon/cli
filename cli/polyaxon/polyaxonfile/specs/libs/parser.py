@@ -53,7 +53,7 @@ class PolyaxonfileParser:
         for param in param_spec or {}:
             parsed_params[param] = param_spec[param].get_display_value()
             # Add params level
-            if not param_spec[param].is_context:
+            if param_spec[param].is_requested:
                 as_arg.append(param_spec[param].as_arg())
                 parsed_params["params"][param] = param_spec[param].to_parsed_param()
 

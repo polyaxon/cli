@@ -171,6 +171,7 @@ class ParamValueMixin:
             is_flag=is_flag,
             is_list=is_list,
             is_context=is_context,
+            is_requested=True,
             arg_format=arg_format,
         )
 
@@ -400,7 +401,10 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
 
 class ParamSpec(
-    namedtuple("ParamSpec", "name type param is_flag is_list is_context arg_format")
+    namedtuple(
+        "ParamSpec",
+        "name type param is_flag is_list is_context is_requested arg_format",
+    )
 ):
     def get_typed_param_value(self):
         if self.type == "str":
