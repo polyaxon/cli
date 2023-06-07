@@ -1,7 +1,7 @@
 import os
 import sys
 
-from typing import Any, Optional
+from typing import Any
 
 import click
 
@@ -1190,7 +1190,7 @@ def statuses(ctx, project, uid, watch, offline, path):
 )
 @click.pass_context
 @clean_outputs
-def logs(ctx, project, uid, follow, hide_time, all_containers, all_info):
+def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline, path):
     """Get run's logs.
 
     Uses /docs/core/cli/#caching
@@ -1203,7 +1203,42 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info):
     \b
     $ polyaxon ops logs -uid 8aac02e3a62a4f0aaa257c59da5eab80 -p mnist
     """
-    # TODO: add support for offline
+    if offline:
+        offline_path = ctx_paths.get_offline_path(
+            entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
+        )
+        logs_path = "{}/plxlogs".format(offline_path)
+        offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
+        if not os.path.exists(offline_path):
+            Printer.error(
+                f"Could not get offline run, the path `{offline_path}` "
+                f"does not exist."
+            )
+            sys.exit(1)
+        else:
+            response = RunConfigManager.read_from_path(offline_path)
+            Printer.print(
+                "Loading logs for run {}<{}> from path `{}`".format(
+                    response.name, uid, logs_path
+                )
+            )
+
+        try:
+            from traceml.logging.streamer import get_logs_streamer, load_logs_from_path
+
+            load_logs_from_path(
+                logs_path=logs_path,
+                hide_time=hide_time,
+                all_containers=all_containers,
+                all_info=all_info,
+            )
+        except OSError as e:
+            Printer.error(
+                f"Could not get offline run, the path `{logs_path}` " f"Error %s." % e
+            )
+            sys.exit(1)
+        return
+
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
