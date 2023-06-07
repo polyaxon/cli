@@ -5,10 +5,10 @@ from typing import Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1Activity(BaseSchemaModel):
+class V1Activity(BaseResponseModel):
     actor: Optional[StrictStr]
     owner: Optional[StrictStr]
     created_at: Optional[datetime.datetime]

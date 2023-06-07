@@ -3,10 +3,10 @@ from typing import Optional
 from clipped.types.email import EmailStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1User(BaseSchemaModel):
+class V1User(BaseResponseModel):
     username: Optional[StrictStr]
     email: Optional[EmailStr]
     name: Optional[StrictStr]

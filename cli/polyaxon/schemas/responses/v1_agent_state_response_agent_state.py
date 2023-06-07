@@ -1,9 +1,9 @@
 from typing import List, Optional
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1AgentStateResponseAgentState(BaseSchemaModel):
+class V1AgentStateResponseAgentState(BaseResponseModel):
     schedules: Optional[List]
     hooks: Optional[List]
     watchdogs: Optional[List]

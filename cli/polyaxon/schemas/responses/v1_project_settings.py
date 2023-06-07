@@ -2,11 +2,11 @@ from typing import List, Optional
 
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_project_user_access import V1ProjectUserAccess
 
 
-class V1ProjectSettings(BaseSchemaModel):
+class V1ProjectSettings(BaseResponseModel):
     connections: Optional[List[StrictStr]]
     preset: Optional[StrictStr]
     presets: Optional[List[StrictStr]]

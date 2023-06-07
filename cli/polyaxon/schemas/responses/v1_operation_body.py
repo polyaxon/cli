@@ -3,10 +3,10 @@ from typing import Any, Dict, List, Optional
 from pydantic import StrictStr
 
 from polyaxon.schemas import V1RunPending
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1OperationBody(BaseSchemaModel):
+class V1OperationBody(BaseResponseModel):
     content: Optional[StrictStr]
     is_managed: Optional[bool]
     pending: Optional[V1RunPending]

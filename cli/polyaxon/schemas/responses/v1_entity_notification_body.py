@@ -4,10 +4,10 @@ from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.lifecycle import V1StatusCondition
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1EntityNotificationBody(BaseSchemaModel):
+class V1EntityNotificationBody(BaseResponseModel):
     namespace: Optional[StrictStr]
     owner: Optional[StrictStr]
     project: Optional[StrictStr]

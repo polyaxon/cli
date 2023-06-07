@@ -2,12 +2,12 @@ from typing import Any, Dict, Optional
 
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_analytics_spec import V1AnalyticsSpec
 from polyaxon.schemas.responses.v1_dashboard_spec import V1DashboardSpec
 
 
-class V1SearchSpec(BaseSchemaModel):
+class V1SearchSpec(BaseResponseModel):
     query: Optional[StrictStr]
     sort: Optional[StrictStr]
     limit: Optional[int]

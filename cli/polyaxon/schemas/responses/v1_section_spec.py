@@ -2,10 +2,10 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Field, StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1SectionSpec(BaseSchemaModel):
+class V1SectionSpec(BaseResponseModel):
     name: Optional[StrictStr]
     is_minimized: Optional[bool]
     columns: Optional[int]

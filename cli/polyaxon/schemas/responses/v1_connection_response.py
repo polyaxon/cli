@@ -6,10 +6,10 @@ from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.connections import V1ConnectionKind
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1ConnectionResponse(BaseSchemaModel):
+class V1ConnectionResponse(BaseResponseModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     agent: Optional[StrictStr]

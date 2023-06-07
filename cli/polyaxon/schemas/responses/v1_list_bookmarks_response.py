@@ -2,10 +2,10 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1ListBookmarksResponse(BaseSchemaModel):
+class V1ListBookmarksResponse(BaseResponseModel):
     count: Optional[int]
     results: Optional[List[Dict[str, Any]]]
     previous: Optional[StrictStr]

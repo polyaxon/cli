@@ -2,12 +2,12 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_run_reference_catalog import V1RunReferenceCatalog
 from polyaxon.schemas.responses.v1_settings_catalog import V1SettingsCatalog
 
 
-class V1RunSettings(BaseSchemaModel):
+class V1RunSettings(BaseResponseModel):
     namespace: Optional[StrictStr]
     agent: Optional[V1SettingsCatalog]
     queue: Optional[V1SettingsCatalog]

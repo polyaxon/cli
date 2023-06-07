@@ -4,10 +4,10 @@ from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.lifecycle import V1StatusCondition
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1EntityStatusBodyRequest(BaseSchemaModel):
+class V1EntityStatusBodyRequest(BaseResponseModel):
     owner: Optional[StrictStr]
     project: Optional[StrictStr]
     uuid: Optional[UUIDStr]

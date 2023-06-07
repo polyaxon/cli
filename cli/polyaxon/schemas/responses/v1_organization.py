@@ -5,10 +5,10 @@ from typing import Any, Dict, Optional
 from clipped.types.email import EmailStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1Organization(BaseSchemaModel):
+class V1Organization(BaseResponseModel):
     user: Optional[StrictStr]
     user_email: Optional[EmailStr]
     name: Optional[StrictStr]

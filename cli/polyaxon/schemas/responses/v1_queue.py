@@ -5,10 +5,10 @@ from typing import Any, Dict, List, Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1Queue(BaseSchemaModel):
+class V1Queue(BaseResponseModel):
     uuid: Optional[UUIDStr]
     agent: Optional[StrictStr]
     name: Optional[StrictStr]

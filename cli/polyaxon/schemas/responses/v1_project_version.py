@@ -6,10 +6,10 @@ from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.lifecycle import V1ProjectVersionKind, V1StageCondition, V1Stages
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1ProjectVersion(BaseSchemaModel):
+class V1ProjectVersion(BaseResponseModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     description: Optional[StrictStr]

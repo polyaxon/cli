@@ -5,11 +5,11 @@ from typing import List, Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_project_settings import V1ProjectSettings
 
 
-class V1Project(BaseSchemaModel):
+class V1Project(BaseResponseModel):
     uuid: Optional[UUIDStr]
     owner: Optional[StrictStr]
     name: Optional[StrictStr]

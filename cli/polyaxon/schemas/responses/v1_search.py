@@ -5,12 +5,12 @@ from typing import List, Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_search_spec import V1SearchSpec
 from traceml.events.schemas import SearchView
 
 
-class V1Search(BaseSchemaModel):
+class V1Search(BaseResponseModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     description: Optional[StrictStr]

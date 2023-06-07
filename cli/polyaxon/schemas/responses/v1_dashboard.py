@@ -5,11 +5,11 @@ from typing import List, Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_dashboard_spec import V1DashboardSpec
 
 
-class V1Dashboard(BaseSchemaModel):
+class V1Dashboard(BaseResponseModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     description: Optional[StrictStr]

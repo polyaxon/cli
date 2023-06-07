@@ -5,10 +5,10 @@ from typing import List, Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1Token(BaseSchemaModel):
+class V1Token(BaseResponseModel):
     uuid: Optional[UUIDStr]
     key: Optional[StrictStr]
     name: Optional[StrictStr]
