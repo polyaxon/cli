@@ -3,7 +3,7 @@ import os
 from typing import Dict, List, Optional
 
 from clipped.config.schema import skip_partial, to_partial
-from pydantic import Extra, Field, StrictStr, validator
+from pydantic import Extra, Field, StrictStr, root_validator, validator
 from vents.connections import ConnectionCatalog
 
 from polyaxon.auxiliaries import (
@@ -71,6 +71,16 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
 
     class Config:
         extra = Extra.ignore
+
+    @root_validator(pre=True)
+    def handle_camel_case_artifacts_store(cls, values):
+        if (
+            not values.get("artifacts_store")
+            and not values.get(EV_KEYS_AGENT_ARTIFACTS_STORE)
+            and "artifactsStore" in values
+        ):
+            values[EV_KEYS_AGENT_ARTIFACTS_STORE] = values["artifactsStore"]
+        return values
 
     @validator("connections", pre=True)
     def validate_json_list(cls, v):
@@ -205,6 +215,64 @@ class AgentConfig(BaseAgentConfig):
     executor_refresh_interval: Optional[int] = Field(
         alias=EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL
     )
+
+    @root_validator(pre=True)
+    def handle_camel_case_agent(cls, values):
+        if (
+            not values.get("is_replica")
+            and not values.get(EV_KEYS_AGENT_IS_REPLICA)
+            and "isReplica" in values
+        ):
+            values[EV_KEYS_AGENT_IS_REPLICA] = values["artifactsStore"]
+        if (
+            not values.get("use_proxy_env_vars_use_in_ops")
+            and not values.get(EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS)
+            and "useProxyEnvVarsUseInOps" in values
+        ):
+            values[EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS] = values[
+                "useProxyEnvVarsUseInOps"
+            ]
+        if (
+            not values.get("default_scheduling")
+            and not values.get(EV_KEYS_AGENT_DEFAULT_SCHEDULING)
+            and "defaultScheduling" in values
+        ):
+            values[EV_KEYS_AGENT_DEFAULT_SCHEDULING] = values["defaultScheduling"]
+        if (
+            not values.get("default_image_pull_secrets")
+            and not values.get(EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS)
+            and "defaultImagePullSecrets" in values
+        ):
+            values[EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS] = values[
+                "defaultImagePullSecrets"
+            ]
+        if (
+            not values.get("app_secret_name")
+            and not values.get(EV_KEYS_K8S_APP_SECRET_NAME)
+            and "appSecretName" in values
+        ):
+            values[EV_KEYS_K8S_APP_SECRET_NAME] = values["appSecretName"]
+        if (
+            not values.get("agent_secret_name")
+            and not values.get(EV_KEYS_AGENT_SECRET_NAME)
+            and "agentSecretName" in values
+        ):
+            values[EV_KEYS_AGENT_SECRET_NAME] = values["agentSecretName"]
+        if (
+            not values.get("runs_sa")
+            and not values.get(EV_KEYS_AGENT_RUNS_SA)
+            and "runsSa" in values
+        ):
+            values[EV_KEYS_AGENT_RUNS_SA] = values["runsSa"]
+        if (
+            not values.get("executor_refresh_interval")
+            and not values.get(EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL)
+            and "executorRefreshInterval" in values
+        ):
+            values[EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL] = values[
+                "executorRefreshInterval"
+            ]
+        return values
 
     def __init__(
         self,
