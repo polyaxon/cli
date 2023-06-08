@@ -384,3 +384,17 @@ class LiveState(int, PEnum):
     LIVE = 1
     ARCHIVED = 0
     DELETION_PROGRESSING = -1
+
+
+class ManagedBy(int, PEnum):
+    """Operator Managing a run in Polyaxon.
+
+    Enum:
+        AGENT: 1
+        CLI: 0
+        TRACKING: -1
+    """
+
+    AGENT = 1
+    CLI = 0
+    TRACKING = -1
