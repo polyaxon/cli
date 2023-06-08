@@ -370,3 +370,17 @@ class V1ProjectFeature(str, PEnum):
     MODEL = "model"
     ARTIFACT = "artifact"
     RUNTIME = "runtime"
+
+
+class LiveState(int, PEnum):
+    """State of a model in Polyaxon.
+
+    Enum:
+        LIVE: 1
+        ARCHIVED: 0
+        DELETION_PROGRESSING: -1
+    """
+
+    LIVE = 1
+    ARCHIVED = 0
+    DELETION_PROGRESSING = -1

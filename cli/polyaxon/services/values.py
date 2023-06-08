@@ -26,7 +26,7 @@ class PolyaxonServices(str, PEnum):
     OPERATOR = "operator"
     BILLING = "billing"
     HP_SEARCH = "hp_search"
-    EVENTS_HANDLER = "events-handlers"
+    EVENTS_HANDLER = "events_handlers"
 
     @classmethod
     def agent_values(cls):

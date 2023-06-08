@@ -12,13 +12,13 @@ from clipped.utils.workers import exit_context, get_pool_workers, get_wait
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import HTTPError
 
-from polyaxon import live_state, pkg, settings
+from polyaxon import pkg, settings
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.client import PolyaxonClient
 from polyaxon.connections import V1Connection
 from polyaxon.env_vars.getters import get_run_info
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.lifecycle import V1StatusCondition, V1Statuses
+from polyaxon.lifecycle import LiveState, V1StatusCondition, V1Statuses
 from polyaxon.logger import logger
 from polyaxon.runner.executor import BaseExecutor
 from polyaxon.schemas.cli.checks_config import ChecksConfig
@@ -212,7 +212,7 @@ class BaseAgent:
                 "Please either set the agent to starting or teardown the agent deployment."
             )
             self.end(sleep=self.SLEEP_STOP_TIME)
-        elif agent_state.live_state < live_state.STATE_LIVE:
+        elif agent_state.live_state < LiveState.LIVE:
             print(
                 "Agent has been archived from the platform,"
                 "but the deployment is still running."
