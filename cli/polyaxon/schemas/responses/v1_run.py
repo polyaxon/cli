@@ -30,6 +30,7 @@ class V1Run(BaseResponseModel):
     finished_at: Optional[datetime.datetime]
     wait_time: Optional[int]
     duration: Optional[int]
+    managed_by: Optional[int]
     is_managed: Optional[bool]
     is_approved: Optional[bool]
     pending: Optional[V1RunPending]

@@ -45,6 +45,7 @@ from polyaxon.env_vars.getters import (
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.lifecycle import (
     LifeCycle,
+    ManagedBy,
     V1ProjectFeature,
     V1StatusCondition,
     V1Statuses,
@@ -180,6 +181,7 @@ class RunClient:
             kind=default_runtime,
             runtime=default_runtime,
             is_managed=False if self._is_offline else None,
+            managed_by=ManagedBy.USER if self._is_offline else None,
         )
         self._namespace: Optional[str] = None
         self._results: Dict[str, Any] = {}
@@ -403,7 +405,8 @@ class RunClient:
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
         content: Optional[Union[str, Dict, V1Operation]] = None,
-        is_managed: bool = True,
+        managed_by: Optional[ManagedBy] = None,
+        is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
     ) -> V1Run:
@@ -429,6 +432,7 @@ class RunClient:
                  it will override the tags in the operation if provided.
             content: str or Dict or V1Operation, optional.
             is_managed: bool, flag to create a managed run.
+            managed_by: ManagedBy, optional, service that manages the operation.
             pending: str, to specify if the run is pending approval (requires human validation) or pending upload.  # noqa
             meta_info: dict, meta info to create the run with.
 
@@ -446,7 +450,10 @@ class RunClient:
                 self._run_uuid = uuid.uuid4().hex
             self.run_data.uuid = self._run_uuid
             return self.run_data
+        if not managed_by and is_managed is not None:
+            managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
         if not content:
+            managed_by = ManagedBy.USER
             is_managed = False
         elif not isinstance(content, (str, Mapping, V1Operation)):
             raise PolyaxonClientException(
@@ -463,6 +470,7 @@ class RunClient:
             tags=tags,
             content=content,
             is_managed=is_managed,
+            managed_by=managed_by,
             pending=pending,
             meta_info=meta_info,
         )

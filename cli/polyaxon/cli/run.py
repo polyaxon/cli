@@ -22,8 +22,9 @@ from polyaxon.cli.options import OPTIONS_NAME, OPTIONS_PROJECT
 from polyaxon.cli.utils import handle_output
 from polyaxon.client import RunClient
 from polyaxon.constants.globals import DEFAULT_UPLOADS_PATH
-from polyaxon.constants.metadata import META_LOCAL_MODE, META_UPLOAD_ARTIFACTS
+from polyaxon.constants.metadata import META_UPLOAD_ARTIFACTS
 from polyaxon.env_vars.getters import get_project_or_local
+from polyaxon.lifecycle import ManagedBy
 from polyaxon.logger import clean_outputs
 from polyaxon.managers.git import GitConfigManager
 from polyaxon.managers.run import RunConfigManager
@@ -79,7 +80,7 @@ def _run(
         )
 
     def create_run(
-        is_managed: bool = True,
+        managed_by: Optional[ManagedBy] = ManagedBy.AGENT,
         meta_info: Optional[Dict] = None,
         pending: Optional[str] = None,
     ):
@@ -89,7 +90,7 @@ def _run(
                 description=description,
                 tags=tags,
                 content=op_spec,
-                is_managed=is_managed,
+                managed_by=managed_by,
                 meta_info=meta_info,
                 pending=pending,
             )
@@ -152,15 +153,16 @@ def _run(
 
     if not output:
         Printer.print("Creating a new run...")
+    managed_by = ManagedBy.AGENT
     run_meta_info = None
     if local:
-        run_meta_info = {META_LOCAL_MODE: True}
+        managed_by = ManagedBy.CLI
     if upload:
         upload_to = upload_to or DEFAULT_UPLOADS_PATH
         run_meta_info = run_meta_info or {}
         run_meta_info[META_UPLOAD_ARTIFACTS] = upload_to
     run_instance = create_run(
-        is_managed=not local,
+        managed_by=managed_by,
         meta_info=run_meta_info,
         pending=V1RunPending.UPLOAD if upload else None,
     )

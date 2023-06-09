@@ -386,15 +386,13 @@ class LiveState(int, PEnum):
     DELETION_PROGRESSING = -1
 
 
-class ManagedBy(int, PEnum):
-    """Operator Managing a run in Polyaxon.
+class ManagedBy(str, PEnum):
+    """Operator Managing a run in Polyaxon."""
 
-    Enum:
-        AGENT: 1
-        CLI: 0
-        TRACKING: -1
-    """
+    USER = "user"
+    CLI = "cli"
+    AGENT = "agent"
 
-    AGENT = 1
-    CLI = 0
-    TRACKING = -1
+    @classmethod
+    def is_managed(cls, value: str) -> bool:
+        return value in {cls.CLI, cls.AGENT}

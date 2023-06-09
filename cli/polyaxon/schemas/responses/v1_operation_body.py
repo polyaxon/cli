@@ -9,6 +9,7 @@ from polyaxon.schemas.base import BaseResponseModel
 class V1OperationBody(BaseResponseModel):
     content: Optional[StrictStr]
     is_managed: Optional[bool]
+    managed_by: Optional[int]
     pending: Optional[V1RunPending]
     name: Optional[StrictStr]
     description: Optional[StrictStr]
