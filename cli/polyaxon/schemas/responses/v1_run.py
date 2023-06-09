@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
-from polyaxon.lifecycle import V1StatusCondition, V1Statuses
+from polyaxon.lifecycle import ManagedBy, V1StatusCondition, V1Statuses
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.schemas import V1RunPending
@@ -30,7 +30,7 @@ class V1Run(BaseResponseModel):
     finished_at: Optional[datetime.datetime]
     wait_time: Optional[int]
     duration: Optional[int]
-    managed_by: Optional[int]
+    managed_by: Optional[ManagedBy]
     is_managed: Optional[bool]
     is_approved: Optional[bool]
     pending: Optional[V1RunPending]
