@@ -253,6 +253,7 @@ class DeploymentConfig(BaseSchemaModel):
     intervals: Optional[IntervalsConfig]
     artifacts_store: Optional[V1Connection] = Field(alias="artifactsStore")
     connections: Optional[List[V1Connection]]
+    mount_connections: Optional[List[str]] = Field(alias="mountConnections")
     log_level: Optional[StrictStr] = Field(alias="logLevel")
     security_context: Optional[SecurityContextConfig] = Field(alias="securityContext")
     external_services: Optional[ExternalServicesConfig] = Field(
