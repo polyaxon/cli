@@ -12,7 +12,7 @@ def validate_store(connection_type: V1Connection):
 
 
 def get_artifacts_connection() -> Optional[V1Connection]:
-    store_name = get_artifacts_store_name()
+    store_name = get_artifacts_store_name(default=None)
     if store_name:
         return CONNECTION_CONFIG.get_connection_for(store_name)
     if settings.AGENT_CONFIG:

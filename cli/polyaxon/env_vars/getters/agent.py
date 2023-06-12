@@ -25,6 +25,6 @@ def get_agent_info(agent_instance: Optional[str] = None) -> Tuple[str, str]:
     return parts[0], parts[-1]
 
 
-def get_artifacts_store_name():
+def get_artifacts_store_name(default: Optional[str] = "artifacts_store"):
     """Get the artifacts store name"""
-    return os.getenv(EV_KEYS_ARTIFACTS_STORE_NAME)
+    return os.getenv(EV_KEYS_ARTIFACTS_STORE_NAME, default)

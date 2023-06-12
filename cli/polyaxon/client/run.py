@@ -2450,7 +2450,7 @@ class RunClient:
 
         summaries = []
         last_values = {}
-        connection_name = get_artifacts_store_name()
+        connection_name = get_artifacts_store_name(default=None)
         with get_files_in_path_context(current_events_path) as files:  # type: List[str]
             for f in files:
                 if last_check and not file_modified_since(
