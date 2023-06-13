@@ -23,24 +23,6 @@ class V1RunKind(str, PEnum):
     CLEANER = "cleaner"
     BUILDER = "builder"
 
-    @classmethod
-    def default_runtime_values(cls):
-        return {
-            cls.JOB,
-            cls.SERVICE,
-            cls.MPIJOB,
-            cls.TFJOB,
-            cls.PYTORCHJOB,
-            cls.MXJOB,
-            cls.PADDLEJOB,
-            cls.XGBJOB,
-            cls.NOTIFIER,
-            cls.WATCHDOG,
-            cls.TUNER,
-            cls.CLEANER,
-            cls.BUILDER,
-        }
-
 
 class V1CloningKind(str, PEnum):
     COPY = "copy"

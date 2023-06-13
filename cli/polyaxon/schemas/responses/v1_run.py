@@ -1,13 +1,15 @@
 import datetime
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from clipped.types.uuids import UUIDStr
 from pydantic import StrictStr
 
 from polyaxon.lifecycle import ManagedBy, V1StatusCondition, V1Statuses
+from polyaxon.polyflow.matrix.kinds import V1MatrixKind
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.resources import V1RunResources
+from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
 from polyaxon.schemas import V1RunPending
 from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_cloning import V1Cloning
@@ -42,7 +44,7 @@ class V1Run(BaseResponseModel):
     readme: Optional[StrictStr]
     meta_info: Optional[Dict[str, Any]]
     kind: Optional[V1RunKind]
-    runtime: Optional[V1RunKind]
+    runtime: Optional[Union[V1RunKind, V1MatrixKind, V1ScheduleKind]]
     inputs: Optional[Dict[str, Any]]
     outputs: Optional[Dict[str, Any]]
     original: Optional[V1Cloning]
