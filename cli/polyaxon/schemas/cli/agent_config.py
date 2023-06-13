@@ -32,6 +32,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_SECRET_NAME,
     EV_KEYS_AGENT_SIDECAR,
     EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS,
+    EV_KEYS_ARTIFACTS_STORE_NAME,
     EV_KEYS_K8S_APP_SECRET_NAME,
     EV_KEYS_K8S_NAMESPACE,
 )
@@ -189,6 +190,10 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
                 ),
             )
             self.set_all_connections()
+
+    def set_artifacts_store_name(self):
+        if self.artifacts_store:
+            os.environ[EV_KEYS_ARTIFACTS_STORE_NAME] = self.artifacts_store.name
 
 
 class AgentConfig(BaseAgentConfig):

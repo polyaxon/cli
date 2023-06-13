@@ -45,6 +45,9 @@ def set_agent_config(config: Optional["AgentConfig"] = None):
 
     AGENT_CONFIG = config or AgentConfigManager.get_config_from_env()
 
+    # Set artifacts store name
+    AGENT_CONFIG.set_artifacts_store_name()
+
     # Always sync the connections catalog to the current agent config
     CONNECTION_CONFIG.set_connections_catalog(AGENT_CONFIG.all_connections)
 

@@ -14,6 +14,7 @@ from polyaxon.schemas.api.authentication import AccessTokenConfig
 from polyaxon.schemas.cli.agent_config import AgentConfig
 from polyaxon.schemas.cli.cli_config import CliConfig
 from polyaxon.schemas.cli.client_config import ClientConfig
+from polyaxon.settings import set_agent_config
 
 
 def assert_equal_feature_processors(fp1, fp2):
@@ -79,7 +80,7 @@ def patch_settings(
 
     settings.AGENT_CONFIG = None
     if set_agent:
-        settings.AGENT_CONFIG = AgentConfig()
+        set_agent_config(AgentConfig())
 
 
 class BaseTestCase(TestCase):
@@ -138,7 +139,7 @@ class AsyncMock(mock.MagicMock):
 
 def set_store():
     store_root = tempfile.mkdtemp()
-    settings.AGENT_CONFIG = AgentConfig(
+    config = AgentConfig(
         artifacts_store=V1Connection(
             name="test",
             kind=V1ConnectionKind.HOST_PATH,
@@ -147,6 +148,7 @@ def set_store():
         ),
         connections=[],
     )
+    set_agent_config(config)
     settings.CLIENT_CONFIG.archives_root = tempfile.mkdtemp()
     return store_root
 
