@@ -17,7 +17,9 @@ async def test_download_dir_archive():
     check_or_create_path(path, is_dir=True)
     create_tmp_files(path)
     fs = await get_default_fs()
-    await download_dir(fs=fs, subpath="foo", to_tar=True)
+    await download_dir(
+        fs=fs, store_path=settings.AGENT_CONFIG.store_root, subpath="foo", to_tar=True
+    )
 
     path_to = os.path.join(settings.AGENT_CONFIG.local_root, "foo")
     assert os.path.exists(path_to)
@@ -35,7 +37,12 @@ async def test_download_file():
     check_or_create_path(path, is_dir=True)
     create_tmp_files(path)
     fs = await get_default_fs()
-    await download_file(fs=fs, subpath="foo/file0.txt", check_cache=False)
+    await download_file(
+        fs=fs,
+        store_path=settings.AGENT_CONFIG.store_root,
+        subpath="foo/file0.txt",
+        check_cache=False,
+    )
 
     path_to = os.path.join(settings.AGENT_CONFIG.local_root, "foo/file0.txt")
     assert os.path.exists(path_to)
@@ -52,7 +59,12 @@ async def test_delete_file():
     assert os.path.exists(path) is True
     assert os.path.exists(filepath) is True
     fs = await get_default_fs()
-    await delete_file_or_dir(fs=fs, subpath="foo/file0.txt", is_file=True)
+    await delete_file_or_dir(
+        fs=fs,
+        store_path=settings.AGENT_CONFIG.store_root,
+        subpath="foo/file0.txt",
+        is_file=True,
+    )
     assert os.path.exists(path) is True
     assert os.path.exists(filepath) is False
 
@@ -69,6 +81,8 @@ async def test_delete_dir():
     assert os.path.exists(filepath) is True
     assert os.path.exists(filepath) is True
     fs = await get_default_fs()
-    await delete_file_or_dir(fs=fs, subpath="foo", is_file=False)
+    await delete_file_or_dir(
+        fs=fs, store_path=settings.AGENT_CONFIG.store_root, subpath="foo", is_file=False
+    )
     assert os.path.exists(path) is False
     assert os.path.exists(filepath) is False

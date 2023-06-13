@@ -3,12 +3,6 @@ from typing import Optional
 from polyaxon import settings
 from polyaxon.connections import CONNECTION_CONFIG, V1Connection, V1ConnectionKind
 from polyaxon.env_vars.getters import get_artifacts_store_name
-from polyaxon.exceptions import PolyaxonConnectionError
-
-
-def validate_store(connection_type: V1Connection):
-    if not connection_type or not connection_type.is_artifact:
-        raise PolyaxonConnectionError("An artifact store type was not provided.")
 
 
 def get_artifacts_connection() -> Optional[V1Connection]:

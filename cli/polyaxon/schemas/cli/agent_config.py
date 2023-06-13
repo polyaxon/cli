@@ -37,7 +37,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_K8S_NAMESPACE,
 )
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.lifecycle import V1ProjectFeature
+from polyaxon.fs.utils import get_store_path
 from polyaxon.schemas.base import BaseSchemaModel
 
 
@@ -147,38 +147,21 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
         return artifacts_root
 
     def get_local_path(self, subpath: str, entity: Optional[str] = None) -> str:
-        full_path = self.local_root
-        if entity == V1ProjectFeature.RUNTIME:
-            from polyaxon.services.values import PolyaxonServices
-
-            if PolyaxonServices.is_sandbox():
-                full_path = os.path.join(full_path, "runs")
-        else:
-            full_path = os.path.join(full_path, f"{entity}s")
-
-        return f"{full_path}/{subpath}"
+        return get_store_path(
+            store_path=self.local_root, subpath=subpath, entity=entity
+        )
 
     @property
     def store_root(self) -> str:
-        artifacts_root = ctx_paths.CONTEXT_ARTIFACTS_ROOT
         if not self.artifacts_store:
-            return artifacts_root
+            return ctx_paths.CONTEXT_ARTIFACTS_ROOT
 
         return self.artifacts_store.store_path
 
     def get_store_path(self, subpath: str, entity: Optional[str] = None) -> str:
-        full_path = self.store_root
-        if entity == V1ProjectFeature.RUNTIME:
-            from polyaxon.services.values import PolyaxonServices
-
-            if PolyaxonServices.is_sandbox():
-                full_path = os.path.join(full_path, "runs")
-        else:
-            full_path = os.path.join(full_path, f"{entity}s")
-
-        if subpath:
-            full_path = os.path.join(full_path, subpath)
-        return full_path
+        return get_store_path(
+            store_path=self.store_root, subpath=subpath, entity=entity
+        )
 
     def set_default_artifacts_store(self):
         if not self.artifacts_store:
