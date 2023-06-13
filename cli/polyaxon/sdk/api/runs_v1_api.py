@@ -6023,6 +6023,9 @@ class RunsV1Api(BaseApi):
         force: Annotated[
             Optional[bool], Field(description="Force query param.")
         ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
         **kwargs
     ) -> V1Logs:  # noqa: E501
         """Get run logs  # noqa: E501
@@ -6030,7 +6033,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_logs(namespace, owner, project, uuid, last_time, last_file, force, async_req=True)
+        >>> thread = api.get_run_logs(namespace, owner, project, uuid, last_time, last_file, force, connection, async_req=True)
         >>> result = thread.get()
 
         :param namespace: (required)
@@ -6047,6 +6050,8 @@ class RunsV1Api(BaseApi):
         :type last_file: str
         :param force: Force query param.
         :type force: bool
+        :param connection: Connection to use.
+        :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -6064,7 +6069,15 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.get_run_logs_with_http_info(
-            namespace, owner, project, uuid, last_time, last_file, force, **kwargs
+            namespace,
+            owner,
+            project,
+            uuid,
+            last_time,
+            last_file,
+            force,
+            connection,
+            **kwargs
         )  # noqa: E501
 
     @validate_arguments
@@ -6087,6 +6100,9 @@ class RunsV1Api(BaseApi):
         force: Annotated[
             Optional[bool], Field(description="Force query param.")
         ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
         **kwargs
     ):  # noqa: E501
         """Get run logs  # noqa: E501
@@ -6094,7 +6110,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_logs_with_http_info(namespace, owner, project, uuid, last_time, last_file, force, async_req=True)
+        >>> thread = api.get_run_logs_with_http_info(namespace, owner, project, uuid, last_time, last_file, force, connection, async_req=True)
         >>> result = thread.get()
 
         :param namespace: (required)
@@ -6111,6 +6127,8 @@ class RunsV1Api(BaseApi):
         :type last_file: str
         :param force: Force query param.
         :type force: bool
+        :param connection: Connection to use.
+        :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -6145,6 +6163,7 @@ class RunsV1Api(BaseApi):
             "last_time",
             "last_file",
             "force",
+            "connection",
         ]
         _all_params.extend(
             [
@@ -6184,11 +6203,23 @@ class RunsV1Api(BaseApi):
         # process the query parameters
         _query_params = []
         if _params.get("last_time") is not None:  # noqa: E501
-            _query_params.append(("last_time", _params["last_time"]))
+            if isinstance(_params["last_time"], datetime):
+                _query_params.append(
+                    (
+                        "last_time",
+                        _params["last_time"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
+                )
+            else:
+                _query_params.append(("last_time", _params["last_time"]))
         if _params.get("last_file") is not None:  # noqa: E501
             _query_params.append(("last_file", _params["last_file"]))
         if _params.get("force") is not None:  # noqa: E501
             _query_params.append(("force", _params["force"]))
+        if _params.get("connection") is not None:  # noqa: E501
+            _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
