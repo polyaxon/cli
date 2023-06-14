@@ -43,6 +43,7 @@ from polyaxon.env_vars.getters import (
     get_run_or_local,
 )
 from polyaxon.exceptions import PolyaxonClientException
+from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon.lifecycle import (
     LifeCycle,
     ManagedBy,
@@ -183,7 +184,6 @@ class RunClient:
             is_managed=False if self._is_offline else None,
             managed_by=ManagedBy.USER if self._is_offline else None,
         )
-        self._namespace: Optional[str] = None
         self._results: Dict[str, Any] = {}
         self._artifacts_lineage: Dict[str, V1RunArtifact] = {}
         self._default_filename_sanitize_paths: List[str] = []
@@ -240,13 +240,15 @@ class RunClient:
 
     @property
     def namespace(self) -> str:
-        if self._namespace:
-            return self._namespace
         if self.settings and self.settings.namespace:
-            self._namespace = self.settings.namespace
-        else:
-            self._namespace = self.get_namespace()
-        return self._namespace or ""
+            return self.settings.namespace
+        return DEFAULT_NAMESPACE
+
+    @property
+    def artifacts_store(self) -> Optional[str]:
+        if self.settings and self.settings.artifacts_store:
+            return self.settings.artifacts_store.name
+        return None
 
     @property
     def owner(self) -> str:
@@ -871,7 +873,11 @@ class RunClient:
         Returns:
             V1Logs
         """
-        params = get_logs_params(last_file=last_file, last_time=last_time)
+        if not self.settings:
+            self.refresh_data()
+        params = get_logs_params(
+            last_file=last_file, last_time=last_time, connection=self.artifacts_store
+        )
         return self.client.runs_v1.get_run_logs(
             self.namespace, self.owner, self.project, self.run_uuid, **params
         )
@@ -1005,6 +1011,9 @@ class RunClient:
             orient: str, csv or dict.
             force: bool, force reload the events.
         """
+        if not self.settings:
+            self.refresh_data()
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
         return self.client.runs_v1.get_run_events(
             self.namespace,
             self.owner,
@@ -1014,6 +1023,7 @@ class RunClient:
             names=names,
             orient=orient,
             force=force,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1036,6 +1046,9 @@ class RunClient:
         Returns:
             V1EventsResponse
         """
+        if not self.settings:
+            self.refresh_data()
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
         return self.client.runs_v1.get_multi_run_events(
             self.namespace,
             self.owner,
@@ -1045,6 +1058,7 @@ class RunClient:
             runs=runs,
             orient=orient,
             force=force,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1121,6 +1135,9 @@ class RunClient:
         Returns:
             str.
         """
+        if not self.settings:
+            self.refresh_data()
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
         return self.client.runs_v1.get_run_artifact(
             namespace=self.namespace,
             owner=self.owner,
@@ -1130,6 +1147,7 @@ class RunClient:
             stream=stream,
             force=force,
             _preload_content=True,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1167,6 +1185,8 @@ class RunClient:
 
         if V1ArtifactKind.is_single_or_multi_file_event(lineage.kind):
             if is_event or has_step:
+                if not self.settings:
+                    self.refresh_data()
                 url = get_proxy_run_url(
                     service=STREAMS_V1_LOCATION,
                     namespace=self.namespace,
@@ -1179,6 +1199,8 @@ class RunClient:
                 params = {"names": lineage.name, "pkg_assets": True}
                 if force:
                     params["force"] = True
+                if self.artifacts_store:
+                    params["connection"] = self.artifacts_store
 
                 return self.store.download_file(
                     url=url,
@@ -1225,6 +1247,8 @@ class RunClient:
         Returns:
             str
         """
+        if not self.settings:
+            self.refresh_data()
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1237,6 +1261,8 @@ class RunClient:
         params = {}
         if force:
             params["force"] = True
+        if self.artifacts_store:
+            params["connection"] = self.artifacts_store
 
         return self.store.download_file(
             url=url, path=path, path_to=path_to, params=params
@@ -1265,6 +1291,8 @@ class RunClient:
         Returns:
             str.
         """
+        if not self.settings:
+            self.refresh_data()
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1277,6 +1305,8 @@ class RunClient:
         params = {}
         if check_path:
             params["check_path"] = True
+        if self.artifacts_store:
+            params["connection"] = self.artifacts_store
 
         return self.store.download_file(
             url=url,
@@ -1310,6 +1340,11 @@ class RunClient:
         Returns:
             str
         """
+        if not self.settings:
+            self.refresh_data()
+
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1327,6 +1362,7 @@ class RunClient:
             untar=untar,
             overwrite=overwrite,
             show_progress=show_progress,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1393,6 +1429,12 @@ class RunClient:
         if not files:
             logger.warning("No files to upload to %s.", path)
             return
+
+        if not self.settings:
+            self.refresh_data()
+
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1409,6 +1451,7 @@ class RunClient:
             files=files,
             overwrite=overwrite,
             relative_to=relative_to,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1418,12 +1461,16 @@ class RunClient:
         Args:
             path: str, the relative path of the artifact to return.
         """
+        if not self.settings:
+            self.refresh_data()
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
         self.client.runs_v1.delete_run_artifact(
             namespace=self.namespace,
             owner=self.owner,
             project=self.project,
             uuid=self.run_uuid,
             path=path,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1433,12 +1480,16 @@ class RunClient:
         Args:
             path: str, the relative path of the artifact to return.
         """
+        if not self.settings:
+            self.refresh_data()
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
         return self.client.runs_v1.delete_run_artifacts(
             namespace=self.namespace,
             owner=self.owner,
             project=self.project,
             uuid=self.run_uuid,
             path=path,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1451,12 +1502,16 @@ class RunClient:
         Returns:
             V1ArtifactTree.
         """
+        if not self.settings:
+            self.refresh_data()
+        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
         return self.client.runs_v1.get_run_artifacts_tree(
             namespace=self.namespace,
             owner=self.owner,
             project=self.project,
             uuid=self.run_uuid,
             path=path,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)

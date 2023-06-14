@@ -274,7 +274,12 @@ class PolyaxonStore:
         return local_path
 
     def upload_file(
-        self, url: str, filepath: str, show_progress: bool = True, **kwargs
+        self,
+        url: str,
+        filepath: str,
+        show_progress: bool = True,
+        connection: str = None,
+        **kwargs,
     ):
         """This function uploads a single file or several files compressed in tar.gz.
 
@@ -286,6 +291,8 @@ class PolyaxonStore:
             "path": kwargs.get("path", ""),
             "overwrite": kwargs.get("overwrite", True),
         }
+        if connection:
+            json_data["connection"] = connection
         with get_files_by_paths("upload_file", [filepath]) as (files, files_size):
             return self.upload(
                 url,
@@ -295,13 +302,15 @@ class PolyaxonStore:
                 show_progress=show_progress,
             )
 
-    def upload_dir(self, url: str, files: List[str], **kwargs):
+    def upload_dir(self, url: str, files: List[str], connection: str = None, **kwargs):
         path = kwargs.get("path", "")
         json_data = {
             "untar": True,
             "path": path,
             "overwrite": kwargs.get("overwrite", True),
         }
+        if connection:
+            json_data["connection"] = connection
         dirname = os.path.basename(path) if path else DEFAULT_UPLOADS_PATH
         with create_tarfile_from_path(
             files, dirname, relative_to=kwargs.get("relative_to", None)
