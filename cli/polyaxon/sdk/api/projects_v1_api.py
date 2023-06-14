@@ -512,7 +512,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         body: Annotated[
@@ -562,7 +562,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         body: Annotated[
@@ -709,7 +709,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity namespace")],
         kind: Annotated[
-            StrictStr,
+            str,
             Field(
                 ..., description="Optional kind, only required for an version entity"
             ),
@@ -765,7 +765,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity namespace")],
         kind: Annotated[
-            StrictStr,
+            str,
             Field(
                 ..., description="Optional kind, only required for an version entity"
             ),
@@ -1080,7 +1080,7 @@ class ProjectsV1Api(BaseApi):
                 ..., description="Entity: project name, hub name, registry name, ..."
             ),
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -1130,7 +1130,7 @@ class ProjectsV1Api(BaseApi):
                 ..., description="Entity: project name, hub name, registry name, ..."
             ),
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
         **kwargs
     ):  # noqa: E501
@@ -2167,7 +2167,7 @@ class ProjectsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
-        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,
@@ -2258,7 +2258,7 @@ class ProjectsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
-        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,
@@ -2443,7 +2443,7 @@ class ProjectsV1Api(BaseApi):
                 ..., description="Entity: project name, hub name, registry name, ..."
             ),
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
         **kwargs
     ) -> V1ProjectVersion:  # noqa: E501
@@ -2493,7 +2493,7 @@ class ProjectsV1Api(BaseApi):
                 ..., description="Entity: project name, hub name, registry name, ..."
             ),
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
         **kwargs
     ):  # noqa: E501
@@ -2632,7 +2632,7 @@ class ProjectsV1Api(BaseApi):
                 ..., description="Entity: project name, hub name, registry name, ..."
             ),
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
         **kwargs
     ) -> V1Stage:  # noqa: E501
@@ -2682,7 +2682,7 @@ class ProjectsV1Api(BaseApi):
                 ..., description="Entity: project name, hub name, registry name, ..."
             ),
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
         **kwargs
     ):  # noqa: E501
@@ -3712,7 +3712,7 @@ class ProjectsV1Api(BaseApi):
         entity: Annotated[
             StrictStr, Field(..., description="Entity name under namesapce")
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -3777,7 +3777,7 @@ class ProjectsV1Api(BaseApi):
         entity: Annotated[
             StrictStr, Field(..., description="Entity name under namesapce")
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -3948,7 +3948,7 @@ class ProjectsV1Api(BaseApi):
         entity: Annotated[
             StrictStr, Field(..., description="Entity name under namesapce")
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -4013,7 +4013,7 @@ class ProjectsV1Api(BaseApi):
         entity: Annotated[
             StrictStr, Field(..., description="Entity name under namesapce")
         ],
-        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        kind: Annotated[str, Field(..., description="Version Kind")],
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -4545,7 +4545,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         version_name: Annotated[
@@ -4604,7 +4604,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         version_name: Annotated[
@@ -4918,7 +4918,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         version_name: Annotated[
@@ -4977,7 +4977,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         version_name: Annotated[
@@ -5650,7 +5650,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         version_name: Annotated[
@@ -5709,7 +5709,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[StrictStr, Field(..., description="Project name")],
         version_kind: Annotated[
-            StrictStr,
+            str,
             Field(..., description="Optional kind to tell the kind of this version"),
         ],
         version_name: Annotated[

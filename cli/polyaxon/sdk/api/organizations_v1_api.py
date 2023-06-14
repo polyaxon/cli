@@ -1034,7 +1034,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -1109,7 +1109,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -2008,7 +2008,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -2083,7 +2083,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -3192,7 +3192,7 @@ class OrganizationsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
-        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,
@@ -3277,7 +3277,7 @@ class OrganizationsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
-        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,

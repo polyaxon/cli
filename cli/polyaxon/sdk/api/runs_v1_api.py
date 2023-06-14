@@ -1123,7 +1123,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[StrictStr, Field(..., description="Kind of the entity")],
+        kind: Annotated[str, Field(..., description="Kind of the entity")],
         **kwargs
     ) -> None:  # noqa: E501
         """Internal API to collect run logs  # noqa: E501
@@ -1175,7 +1175,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[StrictStr, Field(..., description="Kind of the entity")],
+        kind: Annotated[str, Field(..., description="Kind of the entity")],
         **kwargs
     ):  # noqa: E501
         """Internal API to collect run logs  # noqa: E501
@@ -3033,7 +3033,7 @@ class RunsV1Api(BaseApi):
         project: Annotated[
             StrictStr, Field(..., description="Project where the run will be assigned")
         ],
-        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        kind: Annotated[str, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -3120,7 +3120,7 @@ class RunsV1Api(BaseApi):
         project: Annotated[
             StrictStr, Field(..., description="Project where the run will be assigned")
         ],
-        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        kind: Annotated[str, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -5566,7 +5566,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        kind: Annotated[str, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -5653,7 +5653,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        kind: Annotated[str, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -6957,7 +6957,7 @@ class RunsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
-        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,
@@ -7052,7 +7052,7 @@ class RunsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
-        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,
