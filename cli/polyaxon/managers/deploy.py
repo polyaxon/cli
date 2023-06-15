@@ -1,4 +1,5 @@
 import shutil
+import time
 
 from typing import Dict, Optional
 
@@ -19,6 +20,8 @@ from polyaxon.managers.compose import ComposeConfigManager
 
 
 class DeployConfigManager:
+    _SLEEP_TIME = 5
+
     def __init__(
         self,
         config: DeploymentConfig = None,
@@ -49,7 +52,7 @@ class DeployConfigManager:
     def deployment_version(self) -> Optional[str]:
         if self.config and self.config.deployment_version:
             return self.config.deployment_version
-        return None
+        return "latest"
 
     @property
     def deployment_namespace(self) -> str:
@@ -222,6 +225,8 @@ class DeployConfigManager:
         if self.dry_run:
             args += ["--debug", "--dry-run"]
 
+        with Printer.console.status("Running final checks before install command ..."):
+            time.sleep(self._SLEEP_TIME)
         with Printer.console.status("Running install command ..."):
             stdout = self.helm.execute(args=args, stream=settings.CLIENT_CONFIG.debug)
             Printer.success("Install command finished")
@@ -316,6 +321,9 @@ class DeployConfigManager:
         args += ["--namespace={}".format(self.deployment_namespace)]
         if self.dry_run:
             args += ["--debug", "--dry-run"]
+
+        with Printer.console.status("Running final checks before upgrade command ..."):
+            time.sleep(self._SLEEP_TIME)
         with Printer.console.status("Running upgrade command ..."):
             stdout = self.helm.execute(args=args, stream=settings.CLIENT_CONFIG.debug)
             Printer.success("Upgrade command finished")
