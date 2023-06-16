@@ -964,7 +964,16 @@ def execute(ctx, project, uid, executor):
             raise Printer.error(
                 "Docker is required to run this command.", sys_exit=True
             )
-        executor.create_from_run(response)
+        result = executor.create_from_run(response)
+        if result["status"] == V1Statuses.SUCCEEDED:
+            polyaxon_client.log_succeeded(
+                reason="CliDockerExecutor", message="Operation was succeeded"
+            )
+        else:
+            polyaxon_client.log_failed(
+                reason="CliDockerExecutor",
+                message="Operation was failed.\n{}".format(result["message"]),
+            )
 
     def execute_on_k8s(response: V1Run):
         from polyaxon.k8s.executor.executor import Executor

@@ -1799,7 +1799,11 @@ class RunClient:
         )  # Just to give the opportunity to the worker to pick the message
 
     @client_handler(check_no_op=True)
-    def log_succeeded(self, message="Operation has succeeded"):
+    def log_succeeded(
+        self,
+        reason: Optional[str] = None,
+        message: Optional[str] = "Operation has succeeded",
+    ):
         """Sets the current run to `succeeded` status.
 
         <blockquote class="info">
@@ -1808,10 +1812,16 @@ class RunClient:
         This method is only useful for manual runs outside of Polyaxon.
         </blockquote>
         """
-        self._log_end_status(status=V1Statuses.SUCCEEDED, message=message)
+        self._log_end_status(
+            status=V1Statuses.SUCCEEDED, reason=reason, message=message
+        )
 
     @client_handler(check_no_op=True)
-    def log_stopped(self, message="Operation is stopped"):
+    def log_stopped(
+        self,
+        reason: Optional[str] = None,
+        message: Optional[str] = "Operation is stopped",
+    ):
         """Sets the current run to `stopped` status.
 
         <blockquote class="info">
@@ -1820,7 +1830,7 @@ class RunClient:
         This method is only useful for manual runs outside of Polyaxon.
         </blockquote>
         """
-        self._log_end_status(status=V1Statuses.STOPPED, message=message)
+        self._log_end_status(status=V1Statuses.STOPPED, reason=reason, message=message)
 
     @client_handler(check_no_op=True)
     def log_failed(self, reason: Optional[str] = None, message: Optional[str] = None):

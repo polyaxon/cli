@@ -45,10 +45,20 @@ class Executor(BaseExecutor):
             )
             self._ops[run_uuid].append(proc)
             proc.wait()
-            logger.info(
-                f"[Executor] Task container: {proc.pid} {self._get_task_status(proc)}"
+            task_status = self._get_task_status(proc)
+            message = (
+                f"Task container {r.name} {r.image} with id {proc.pid} {task_status}"
             )
-        return {"status": V1Statuses.CREATED, "tasks": self._ops[run_uuid]}
+            if task_status == V1Statuses.SUCCEEDED:
+                logger.info(f"[Executor] message")
+            else:
+                logger.warning(f"[Executor] message")
+                return {
+                    "status": V1Statuses.FAILED,
+                    "tasks": self._ops[run_uuid],
+                    "message": message,
+                }
+        return {"status": V1Statuses.SUCCEEDED, "tasks": self._ops[run_uuid]}
 
     def apply(self, run_uuid: str, run_kind: str, resource: Dict) -> Dict:
         raise PolyaxonAgentError(
@@ -85,7 +95,7 @@ class Executor(BaseExecutor):
         if exit_code is None:
             return V1Statuses.RUNNING
         if exit_code == 0:
-            return V1Statuses.DONE
+            return V1Statuses.SUCCEEDED
         return V1Statuses.FAILED
 
     def get(self, run_uuid: str, run_kind: str) -> V1Statuses:

@@ -211,7 +211,7 @@ class BaseExecutor:
             content=response.content,
             agent_content=settings.AGENT_CONFIG.to_json(),
         )
-        self.create(
+        return self.create(
             run_uuid=response.uuid,
             run_kind=response.kind,
             resource=resource,
