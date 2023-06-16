@@ -146,12 +146,12 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
             init_project = True
 
         if init_project:
-            ProjectConfigManager.purge(visibility=ProjectConfigManager.VISIBILITY_LOCAL)
+            ProjectConfigManager.purge(visibility=ProjectConfigManager.Visibility.LOCAL)
             config = polyaxon_client.client.sanitize_for_serialization(
                 polyaxon_client.project_data
             )
             ProjectConfigManager.set_config(
-                config, init=True, visibility=ProjectConfigManager.VISIBILITY_LOCAL
+                config, init=True, visibility=ProjectConfigManager.Visibility.LOCAL
             )
             Printer.success("Project was initialized")
             Printer.heading(
@@ -175,7 +175,7 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
             init_git = True
 
         if init_git:
-            GitConfigManager.purge(visibility=GitConfigManager.VISIBILITY_LOCAL)
+            GitConfigManager.purge(visibility=GitConfigManager.Visibility.LOCAL)
             config = GitConfigManager.CONFIG(
                 connection=git_connection,
                 git=V1GitType(url=git_url) if git_url else None,

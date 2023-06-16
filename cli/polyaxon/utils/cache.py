@@ -36,7 +36,7 @@ def _cache_project(config, owner=None, project=None):
             return
 
     ProjectConfigManager.set_config(
-        config, visibility=ProjectConfigManager.VISIBILITY_GLOBAL
+        config, visibility=ProjectConfigManager.Visibility.GLOBAL
     )
 
 
