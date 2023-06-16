@@ -950,8 +950,17 @@ def execute(ctx, project, uid, executor):
     def _execute_on_docker(response: V1Run):
         from polyaxon.docker.executor import Executor
 
+        polyaxon_client.log_status(
+            V1Statuses.STARTING,
+            reason="CliDockerExecutor",
+            message="Operation is starting",
+        )
         executor = Executor()
         if not executor.manager.check():
+            polyaxon_client.log_failed(
+                reason="CliDockerExecutor",
+                message="Docker is required to run this operation.",
+            )
             raise Printer.error(
                 "Docker is required to run this command.", sys_exit=True
             )
@@ -960,13 +969,26 @@ def execute(ctx, project, uid, executor):
     def execute_on_k8s(response: V1Run):
         from polyaxon.k8s.executor.executor import Executor
 
+        polyaxon_client.log_status(
+            V1Statuses.STARTING,
+            reason="CliK8SExecutor",
+            message="Operation is starting",
+        )
         if not settings.AGENT_CONFIG.namespace:
+            polyaxon_client.log_failed(
+                reason="CliDockerExecutor",
+                message="an agent config with defined namespace is required.",
+            )
             raise Printer.error(
                 "Agent config requires a namespace to be set.", sys_exit=True
             )
 
         executor = Executor(namespace=settings.AGENT_CONFIG.namespace)
         if not executor.manager.get_version():
+            polyaxon_client.log_failed(
+                reason="CliDockerExecutor",
+                message="Kubernetes is required to run this operation.",
+            )
             raise Printer.error(
                 "Kubernetes is required to run this command.", sys_exit=True
             )
@@ -975,6 +997,11 @@ def execute(ctx, project, uid, executor):
     def _execute_on_local_process(response: V1Run):
         from polyaxon.process.executor.executor import Executor
 
+        polyaxon_client.log_status(
+            V1Statuses.STARTING,
+            reason="CliProcessExecutor",
+            message="Operation is starting",
+        )
         executor = Executor()
         if not executor.manager.check():
             raise Printer.error("Conda is required to run this command.", sys_exit=True)
@@ -997,16 +1024,6 @@ def execute(ctx, project, uid, executor):
         #     cmd_args = ["source activate {}".format(conda_env)] + cmd_args
         #     subprocess.Popen(cmd_bash + [" && ".join(cmd_args)], close_fds=True)
 
-    executor = executor or ctx.obj.get("executor") or RunnerKind.DOCKER
-    if not settings.AGENT_CONFIG:
-        settings.set_agent_config()
-        if not settings.AGENT_CONFIG.artifacts_store:
-            if executor == RunnerKind.K8S:
-                raise Printer.error(
-                    "Could not resolve an agent configuration.", sys_exit=True
-                )
-            settings.AGENT_CONFIG.set_default_artifacts_store()
-
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -1025,12 +1042,36 @@ def execute(ctx, project, uid, executor):
         handle_cli_error(e, message="Could not execute run `{}`.".format(run_uuid))
         sys.exit(1)
 
+    executor = executor or ctx.obj.get("executor") or RunnerKind.DOCKER
+    if not settings.AGENT_CONFIG:
+        settings.set_agent_config()
+        if not settings.AGENT_CONFIG.artifacts_store:
+            if executor == RunnerKind.K8S:
+                polyaxon_client.log_failed(
+                    reason="CliK8SExecutor",
+                    message="Could not resolve an agent configuration.",
+                )
+                raise Printer.error(
+                    "Could not resolve an agent configuration.", sys_exit=True
+                )
+            settings.AGENT_CONFIG.set_default_artifacts_store()
+
+    polyaxon_client.log_status(
+        V1Statuses.SCHEDULED,
+        reason="CliExecutor",
+        message="Operation is pulled by CLI.",
+    )
     if executor == RunnerKind.DOCKER:
         _execute_on_docker(polyaxon_client.run_data)
     elif executor == RunnerKind.K8S:
         execute_on_k8s(polyaxon_client.run_data)
     elif executor == RunnerKind.PROCESS:
         _execute_on_local_process(polyaxon_client.run_data)
+    else:
+        polyaxon_client.log_failed(
+            reason="CliExecutor",
+            message="Local executor is not supported {}.".format(executor),
+        )
 
 
 @ops.command()
