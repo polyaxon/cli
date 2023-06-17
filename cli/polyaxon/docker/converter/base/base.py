@@ -21,6 +21,13 @@ class BaseConverter(
 ):
     RUNNER_KIND = RunnerKind.DOCKER
 
+    @staticmethod
+    def _post_process_host(host: str) -> str:
+        for v in ["0.0.0.0", "127.0.0.1", "localhost"]:
+            if v in host:
+                return host.replace(v, "host.docker.internal")
+        return host
+
     @classmethod
     def _get_sidecar_container(
         cls,

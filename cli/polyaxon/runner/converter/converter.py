@@ -112,11 +112,17 @@ class BaseConverter:
         return {c.name: c for c in values}
 
     @staticmethod
-    def get_api_host(external_host: bool = False) -> str:
+    def _post_process_host(host: str) -> str:
+        return host
+
+    @classmethod
+    def get_api_host(cls, external_host: bool = False) -> str:
         if external_host:
-            return get_api_host(default=settings.CLIENT_CONFIG.host)
+            return cls._post_process_host(
+                get_api_host(default=settings.CLIENT_CONFIG.host)
+            )
         else:
-            return clean_host(settings.CLIENT_CONFIG.host)
+            return cls._post_process_host(clean_host(settings.CLIENT_CONFIG.host))
 
     @staticmethod
     def filter_connections_from_init(init: List[V1Init]) -> List[V1Init]:
