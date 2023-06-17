@@ -38,17 +38,17 @@ class Executor(BaseExecutor):
     ) -> Dict:
         logger.info(f"[Executor] Starting operation {run_uuid} {run_kind}.")
         self._ops[run_uuid] = []
-        for r in resource:
-            logger.info(f"[Executor] Starting task container {r.name} {r.image} .")
+        for task in resource:
+            logger.info(
+                f"[Executor] Starting task container {task.name} {task.image} ."
+            )
             proc = self.manager.execute(
-                r.get_cmd_args(), env=os.environ, output_only=False
+                task.get_cmd_args(), env=os.environ, output_only=False
             )
             self._ops[run_uuid].append(proc)
             proc.wait()
             task_status = self._get_task_status(proc)
-            message = (
-                f"Task container {r.name} {r.image} with id {proc.pid} {task_status}"
-            )
+            message = f"Task container {task.name} {task.image} with id {proc.pid} {task_status}"
             if task_status == V1Statuses.SUCCEEDED:
                 logger.info(f"[Executor] message")
             else:

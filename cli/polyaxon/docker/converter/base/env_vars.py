@@ -168,6 +168,7 @@ class EnvMixin(BaseConverter):
         polyaxon_agent_secret_ref = (
             polyaxon_agent_secret_ref or settings.AGENT_CONFIG.agent_secret_name
         )
+        # TODO: Add support for local CLI auth
         use_proxy_env_vars_use_in_ops = (
             use_proxy_env_vars_use_in_ops
             if use_proxy_env_vars_use_in_ops is not None

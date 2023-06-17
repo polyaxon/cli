@@ -13,7 +13,7 @@ class V1EnvVar(BaseSchemaModel):
             value = self.__root__
         else:
             value = self.__root__.items()
-        return [f"{value[0]}:{value[1]}"]
+        return [f"{value[0]}={value[1]}"]
 
 
 class V1VolumeMount(BaseSchemaModel):
