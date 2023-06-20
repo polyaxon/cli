@@ -11,11 +11,11 @@ from polyaxon.connections import (
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.k8s.converter.base.mounts import MountsMixin
 from polyaxon.runner.converter.common import constants
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_k8s.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.k8s_mark
-class TestMounts(BaseTestCase):
+class TestMounts(BaseConverterTest):
     def test_get_mount_from_store(self):
         # Bucket stores
         assert MountsMixin._get_mount_from_store(store=None) is None
@@ -80,7 +80,7 @@ class TestMounts(BaseTestCase):
         assert mount.mount_path == store.schema_.mount_path
         assert mount.read_only == store.schema_.read_only
 
-    def cd(self):
+    def test_mount_resources(self):
         # Non mouth resource
         assert MountsMixin._get_mount_from_resource(None) is None
         resource = V1ConnectionResource(
@@ -144,7 +144,9 @@ class TestMounts(BaseTestCase):
 
     def test_get_connections_context_mount(self):
         mount = MountsMixin._get_connections_context_mount(
-            name="test", mount_path="/test"
+            name="test",
+            mount_path="/test",
+            run_path=self.converter.run_path,
         )
         assert mount.name == "test"
         assert mount.mount_path == "/test"

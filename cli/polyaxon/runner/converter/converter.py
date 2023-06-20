@@ -453,11 +453,16 @@ class BaseConverter:
         raise NotImplementedError
 
     @staticmethod
-    def _get_artifacts_context_mount(read_only: Optional[bool] = None) -> VolumeMount:
+    def _get_artifacts_context_mount(
+        read_only: Optional[bool] = None,
+        run_path: Optional[str] = None,
+    ) -> VolumeMount:
         raise NotImplementedError
 
     @staticmethod
-    def _get_connections_context_mount(name: str, mount_path: str) -> VolumeMount:
+    def _get_connections_context_mount(
+        name: str, mount_path: str, run_path: str
+    ) -> VolumeMount:
         raise NotImplementedError
 
     @staticmethod
@@ -485,17 +490,19 @@ class BaseConverter:
         use_docker_context: bool,
         use_shm_context: bool,
         use_artifacts_context: bool,
+        run_path: Optional[str] = None,
     ) -> List[VolumeMount]:
         raise NotImplementedError
 
     @classmethod
     def _get_main_volume_mounts(
         cls,
+        run_path: str,
         plugins: V1Plugins,
         init: Optional[List[V1Init]],
         connections: Iterable[V1Connection],
         secrets: Iterable[V1ConnectionResource],
-        config_maps: Iterable[V1ConnectionResource] = None,
+        config_maps: Iterable[V1ConnectionResource],
     ) -> List[VolumeMount]:
         init = init or []
         connections = connections or []
@@ -506,7 +513,8 @@ class BaseConverter:
         volume_names = set()
         if plugins and plugins.collect_artifacts:
             volume_mounts += to_list(
-                cls._get_artifacts_context_mount(read_only=False), check_none=True
+                cls._get_artifacts_context_mount(read_only=False, run_path=run_path),
+                check_none=True,
             )
             volume_names.add(constants.VOLUME_MOUNT_ARTIFACTS)
         for init_connection in init:
@@ -521,7 +529,7 @@ class BaseConverter:
             volume_names.add(volume_name)
             volume_mounts += to_list(
                 cls._get_connections_context_mount(
-                    name=volume_name, mount_path=mount_path
+                    name=volume_name, mount_path=mount_path, run_path=run_path
                 ),
                 check_none=True,
             )
@@ -580,6 +588,7 @@ class BaseConverter:
         connection: V1Connection,
         plugins: V1Plugins,
         container: Optional[Container],
+        run_path: str,
         env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
     ) -> Container:
@@ -619,6 +628,7 @@ class BaseConverter:
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         plugins: V1Plugins,
+        run_path: str,
         container: Optional[Container] = None,
         env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
@@ -633,6 +643,7 @@ class BaseConverter:
         connection: V1Connection,
         artifacts: V1ArtifactsType,
         paths: Union[List[str], List[Tuple[str, str]]],
+        run_path: str,
         container: Optional[Container] = None,
         env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
@@ -647,6 +658,7 @@ class BaseConverter:
         artifacts_store: V1Connection,
         tb_args: V1TensorboardType,
         plugins: V1Plugins,
+        run_path: str,
         run_instance: str,
         container: Optional[Container] = None,
         env: List[EnvVar] = None,
@@ -698,6 +710,7 @@ class BaseConverter:
                     patch_git(connection_spec.schema_, init_connection.git)
                     containers.append(
                         self._get_git_init_container(
+                            run_path=self.run_path,
                             polyaxon_init=polyaxon_init,
                             connection=connection_spec,
                             container=self._ensure_container(
@@ -717,6 +730,7 @@ class BaseConverter:
                         connection_spec.schema_.patch(init_connection.git)
                     containers.append(
                         self._get_git_init_container(
+                            run_path=self.run_path,
                             polyaxon_init=polyaxon_init,
                             connection=connection_spec,
                             container=self._ensure_container(
@@ -734,6 +748,7 @@ class BaseConverter:
                 elif V1ConnectionKind.is_artifact(connection_spec.kind):
                     containers.append(
                         self._get_store_init_container(
+                            run_path=self.run_path,
                             polyaxon_init=polyaxon_init,
                             connection=connection_spec,
                             artifacts=init_connection.artifacts,
@@ -753,6 +768,7 @@ class BaseConverter:
                 else:
                     containers.append(
                         self._get_custom_init_container(
+                            run_path=self.run_path,
                             connection=connection_spec,
                             container=self._ensure_container(
                                 init_connection.container, volumes=volumes
@@ -770,6 +786,7 @@ class BaseConverter:
                 if init_connection.artifacts or init_connection.paths:
                     containers.append(
                         self._get_store_init_container(
+                            run_path=self.run_path,
                             polyaxon_init=polyaxon_init,
                             connection=artifacts_store,
                             artifacts=init_connection.artifacts,
@@ -790,6 +807,7 @@ class BaseConverter:
                     git_name = init_connection.git.get_name()
                     containers.append(
                         self._get_git_init_container(
+                            run_path=self.run_path,
                             polyaxon_init=polyaxon_init,
                             connection=V1Connection(
                                 name=git_name,
@@ -863,6 +881,7 @@ class BaseConverter:
                                 init_connection.container, volumes=volumes
                             ),
                             plugins=plugins,
+                            run_path=self.run_path,
                             run_instance=self.run_instance,
                         )
                     )

@@ -85,12 +85,18 @@ class TestMainMounts(BaseConverterTest):
                 connections=None,
                 secrets=None,
                 config_maps=None,
+                run_path=self.converter.run_path,
             )
             == []
         )
         assert (
             self.converter._get_main_volume_mounts(
-                plugins=None, init=[], connections=[], secrets=[], config_maps=[]
+                plugins=None,
+                init=[],
+                connections=[],
+                secrets=[],
+                config_maps=[],
+                run_path=self.converter.run_path,
             )
             == []
         )
@@ -98,7 +104,12 @@ class TestMainMounts(BaseConverterTest):
     def assert_contexts_store(self, plugins, results):
         assert (
             self.converter._get_main_volume_mounts(
-                plugins=plugins, init=[], connections=[], secrets=[], config_maps=[]
+                plugins=plugins,
+                init=[],
+                connections=[],
+                secrets=[],
+                config_maps=[],
+                run_path=self.converter.run_path,
             )
             == results
         )
@@ -127,7 +138,12 @@ class TestMainMounts(BaseConverterTest):
     def assert_single_store(self, store, results):
         assert (
             self.converter._get_main_volume_mounts(
-                plugins=None, init=[], connections=[store], secrets=[], config_maps=[]
+                plugins=None,
+                init=[],
+                connections=[store],
+                secrets=[],
+                config_maps=[],
+                run_path=self.converter.run_path,
             )
             == results
         )
@@ -140,6 +156,7 @@ class TestMainMounts(BaseConverterTest):
                 connections=[],
                 secrets=[],
                 config_maps=[],
+                run_path=self.converter.run_path,
             )
             == results
         )
@@ -163,7 +180,9 @@ class TestMainMounts(BaseConverterTest):
             store=self.s3_store,
             results=[
                 self.converter._get_connections_context_mount(
-                    name=volume_name, mount_path="/test"
+                    name=volume_name,
+                    mount_path="/test",
+                    run_path=self.converter.run_path,
                 )
             ],
         )
@@ -171,7 +190,9 @@ class TestMainMounts(BaseConverterTest):
             store=self.gcs_store,
             results=[
                 self.converter._get_connections_context_mount(
-                    name=volume_name, mount_path="/test"
+                    name=volume_name,
+                    mount_path="/test",
+                    run_path=self.converter.run_path,
                 )
             ],
         )
@@ -179,7 +200,9 @@ class TestMainMounts(BaseConverterTest):
             store=self.az_store,
             results=[
                 self.converter._get_connections_context_mount(
-                    name=volume_name, mount_path="/test"
+                    name=volume_name,
+                    mount_path="/test",
+                    run_path=self.converter.run_path,
                 )
             ],
         )
@@ -187,7 +210,9 @@ class TestMainMounts(BaseConverterTest):
             store=self.claim_store,
             results=[
                 self.converter._get_connections_context_mount(
-                    name=volume_name, mount_path="/test"
+                    name=volume_name,
+                    mount_path="/test",
+                    run_path=self.converter.run_path,
                 )
             ],
         )
@@ -195,7 +220,9 @@ class TestMainMounts(BaseConverterTest):
             store=self.host_path_store,
             results=[
                 self.converter._get_connections_context_mount(
-                    name=volume_name, mount_path="/test"
+                    name=volume_name,
+                    mount_path="/test",
+                    run_path=self.converter.run_path,
                 )
             ],
         )
@@ -215,6 +242,7 @@ class TestMainMounts(BaseConverterTest):
                     ],
                     secrets=[],
                     config_maps=[],
+                    run_path=self.converter.run_path,
                 )
             )
             == 2
@@ -234,6 +262,7 @@ class TestMainMounts(BaseConverterTest):
                     connections=[],
                     secrets=[],
                     config_maps=[],
+                    run_path=self.converter.run_path,
                 )
             )
             == 5
@@ -259,6 +288,7 @@ class TestMainMounts(BaseConverterTest):
                     ],
                     secrets=[],
                     config_maps=[],
+                    run_path=self.converter.run_path,
                 )
             )
             == 7
@@ -267,7 +297,12 @@ class TestMainMounts(BaseConverterTest):
     def assert_secret(self, secret, results):
         assert (
             self.converter._get_main_volume_mounts(
-                plugins=None, init=[], connections=[], secrets=[secret], config_maps=[]
+                plugins=None,
+                init=[],
+                connections=[],
+                secrets=[secret],
+                config_maps=[],
+                run_path=self.converter.run_path,
             )
             == results
         )
@@ -280,6 +315,7 @@ class TestMainMounts(BaseConverterTest):
                 connections=[],
                 secrets=[],
                 config_maps=[config_map],
+                run_path=self.converter.run_path,
             )
             == results
         )
@@ -333,6 +369,7 @@ class TestMainMounts(BaseConverterTest):
                 self.mount_resource1,
                 self.mount_resource2,
             ],
+            run_path=self.converter.run_path,
         ) == [
             self.converter._get_mount_from_resource(resource=self.mount_resource1),
             self.converter._get_mount_from_resource(resource=self.mount_resource2),
@@ -373,6 +410,7 @@ class TestMainMounts(BaseConverterTest):
                         self.mount_resource1,
                         self.mount_resource2,
                     ],
+                    run_path=self.converter.run_path,
                 )
             )
             # 1: output store
@@ -410,6 +448,7 @@ class TestMainMounts(BaseConverterTest):
                         self.mount_resource1,
                         self.mount_resource2,
                     ],
+                    run_path=self.converter.run_path,
                 )
             )
             # 7: 5 managed contexts + 2 mounts
@@ -449,6 +488,7 @@ class TestMainMounts(BaseConverterTest):
                         self.mount_resource1,
                         self.mount_resource2,
                     ],
+                    run_path=self.converter.run_path,
                 )
             )
             # 1: outputs context store
@@ -488,6 +528,7 @@ class TestMainMounts(BaseConverterTest):
                         self.mount_resource1,
                         self.mount_resource2,
                     ],
+                    run_path=self.converter.run_path,
                 )
             )
             # 7: 5 managed contexts + 2 mounts

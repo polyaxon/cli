@@ -48,6 +48,9 @@ CONTEXT_MOUNT_DOCKER = "/var/run/docker.sock"
 CONTEXT_TMP_POLYAXON_PATH = get_temp_path(".polyaxon")
 CONTEXT_USER_POLYAXON_PATH = get_project_path(".polyaxon")
 
+CONTEXT_TMP_RUNS_ROOT_FORMAT = os.environ.get(
+    EV_KEYS_ARCHIVES_ROOT, "/tmp/plx/.runs/{}"
+)
 CONTEXT_ARCHIVES_ROOT = os.environ.get(EV_KEYS_ARCHIVES_ROOT, "/tmp/plx/archives")
 CONTEXT_ARTIFACTS_ROOT = os.environ.get(EV_KEYS_ARTIFACTS_ROOT, "/tmp/plx/artifacts")
 CONTEXT_SANDBOX_ROOT = None

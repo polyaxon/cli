@@ -111,6 +111,7 @@ class InitConverter(_BaseConverter):
         connection: V1Connection,
         plugins: V1Plugins,
         container: Optional[docker_types.V1Container],
+        run_path: str,
         env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
     ) -> docker_types.V1Container:
@@ -126,7 +127,9 @@ class InitConverter(_BaseConverter):
         )
         mount_path = mount_path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
         volume_mounts = [
-            cls._get_connections_context_mount(name=volume_name, mount_path=mount_path)
+            cls._get_connections_context_mount(
+                name=volume_name, mount_path=mount_path, run_path=run_path
+            )
         ]
 
         if plugins and plugins.auth:
@@ -196,7 +199,9 @@ class InitConverter(_BaseConverter):
         )
         mount_path = mount_path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
         volume_mounts = [
-            cls._get_connections_context_mount(name=volume_name, mount_path=mount_path)
+            cls._get_connections_context_mount(
+                name=volume_name, mount_path=mount_path, run_path=run_path
+            )
         ]
         if plugins and plugins.auth:
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
@@ -246,7 +251,9 @@ class InitConverter(_BaseConverter):
         )
         mount_path = mount_path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
         volume_mounts = [
-            cls._get_connections_context_mount(name=volume_name, mount_path=mount_path)
+            cls._get_connections_context_mount(
+                name=volume_name, mount_path=mount_path, run_path=run_path
+            )
         ]
         if plugins and plugins.auth:
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
@@ -272,6 +279,7 @@ class InitConverter(_BaseConverter):
         polyaxon_init: V1PolyaxonInitContainer,
         connection: V1Connection,
         plugins: V1Plugins,
+        run_path: str,
         container: Optional[docker_types.V1Container] = None,
         env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
@@ -294,7 +302,9 @@ class InitConverter(_BaseConverter):
         )
         mount_path = mount_path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
         volume_mounts = [
-            cls._get_connections_context_mount(name=volume_name, mount_path=mount_path)
+            cls._get_connections_context_mount(
+                name=volume_name, mount_path=mount_path, run_path=run_path
+            )
         ]
 
         if plugins and plugins.auth:
@@ -369,6 +379,7 @@ class InitConverter(_BaseConverter):
         connection: V1Connection,
         artifacts: V1ArtifactsType,
         paths: Union[List[str], List[Tuple[str, str]]],
+        run_path: str,
         container: Optional[docker_types.V1Container] = None,
         env: List[docker_types.V1EnvVar] = None,
         mount_path: Optional[str] = None,
@@ -388,7 +399,7 @@ class InitConverter(_BaseConverter):
         volume_mount_path = mount_path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
         volume_mounts = [
             cls._get_connections_context_mount(
-                name=volume_name, mount_path=volume_mount_path
+                name=volume_name, mount_path=volume_mount_path, run_path=run_path
             )
         ]
         mount_path = mount_path or (
@@ -422,6 +433,7 @@ class InitConverter(_BaseConverter):
         artifacts_store: V1Connection,
         tb_args: V1TensorboardType,
         plugins: V1Plugins,
+        run_path: str,
         run_instance: str,
         container: Optional[docker_types.V1Container] = None,
         env: List[docker_types.V1EnvVar] = None,
@@ -441,7 +453,9 @@ class InitConverter(_BaseConverter):
         )
         mount_path = mount_path or ctx_paths.CONTEXT_MOUNT_ARTIFACTS
         volume_mounts = [
-            cls._get_connections_context_mount(name=volume_name, mount_path=mount_path)
+            cls._get_connections_context_mount(
+                name=volume_name, mount_path=mount_path, run_path=run_path
+            )
         ]
         if plugins and plugins.auth:
             volume_mounts.append(cls._get_auth_context_mount(read_only=True))
@@ -519,7 +533,7 @@ class InitConverter(_BaseConverter):
             store=artifacts_store,
             env=env,
             env_from=[],
-            volume_mounts=[cls._get_artifacts_context_mount()],
+            volume_mounts=[cls._get_artifacts_context_mount(run_path=run_path)],
             # If we are dealing with a volume we need to make sure the path exists for the user
             # We also clean the path if this is not a resume run
             args=[" ".join(init_args)],

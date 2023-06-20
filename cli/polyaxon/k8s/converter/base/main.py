@@ -68,6 +68,7 @@ class MainConverter(_BaseConverter):
             connections=requested_connections,
             secrets=requested_secrets,
             config_maps=requested_config_maps,
+            run_path=run_path,
         )
 
         # Env vars

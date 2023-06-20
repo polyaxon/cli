@@ -50,6 +50,7 @@ class TestInitTensorboard(BaseConverterTest):
             tb_args=tb_args,
             artifacts_store=store,
             plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
+            run_path=self.converter.run_path,
             run_instance="foo.bar.runs.uuid",
             env=None,
         )
@@ -61,6 +62,7 @@ class TestInitTensorboard(BaseConverterTest):
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]
@@ -96,6 +98,7 @@ class TestInitTensorboard(BaseConverterTest):
             tb_args=tb_args,
             artifacts_store=store,
             plugins=V1Plugins.get_or_create(V1Plugins(auth=False)),
+            run_path=self.converter.run_path,
             run_instance="foo.bar.runs.uuid",
             env=None,
         )
@@ -115,6 +118,7 @@ class TestInitTensorboard(BaseConverterTest):
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_mount_from_store(store=store),
         ]

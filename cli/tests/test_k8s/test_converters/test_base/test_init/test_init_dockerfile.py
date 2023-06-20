@@ -43,6 +43,7 @@ class TestInitDockerfile(BaseConverterTest):
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]
@@ -86,7 +87,9 @@ class TestInitDockerfile(BaseConverterTest):
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
-                name=get_volume_name("/somepath"), mount_path="/somepath"
+                name=get_volume_name("/somepath"),
+                mount_path="/somepath",
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]

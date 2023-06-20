@@ -17,7 +17,10 @@ class TestInitGit(BaseConverterTest):
     def test_get_git_init_container_raises_for_missing_info(self):
         with self.assertRaises(PolyaxonConverterError):
             self.converter._get_git_init_container(
-                polyaxon_init=V1PolyaxonInitContainer(), connection=None, plugins=None
+                polyaxon_init=V1PolyaxonInitContainer(),
+                connection=None,
+                plugins=None,
+                run_path=self.converter.run_path,
             )
 
         with self.assertRaises(PolyaxonConverterError):
@@ -26,6 +29,7 @@ class TestInitGit(BaseConverterTest):
                 connection=None,
                 mount_path=None,
                 plugins=None,
+                run_path=self.converter.run_path,
             )
 
     def test_get_git_init_container(self):
@@ -38,6 +42,7 @@ class TestInitGit(BaseConverterTest):
             polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
             connection=connection,
             plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
+            run_path=self.converter.run_path,
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)
@@ -55,6 +60,7 @@ class TestInitGit(BaseConverterTest):
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]
@@ -67,6 +73,7 @@ class TestInitGit(BaseConverterTest):
             ),
             connection=connection,
             plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
+            run_path=self.converter.run_path,
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)
@@ -86,6 +93,7 @@ class TestInitGit(BaseConverterTest):
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]
@@ -106,6 +114,7 @@ class TestInitGit(BaseConverterTest):
             connection=connection,
             mount_path="/somepath",
             plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
+            run_path=self.converter.run_path,
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)
@@ -122,7 +131,9 @@ class TestInitGit(BaseConverterTest):
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
-                name=get_volume_name("/somepath"), mount_path="/somepath"
+                name=get_volume_name("/somepath"),
+                mount_path="/somepath",
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]
@@ -145,6 +156,7 @@ class TestInitGit(BaseConverterTest):
             connection=connection,
             mount_path="/somepath",
             plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
+            run_path=self.converter.run_path,
         )
         assert (
             generate_container_name(INIT_GIT_CONTAINER_PREFIX, connection.name, False)
@@ -162,7 +174,9 @@ class TestInitGit(BaseConverterTest):
         assert container.resources == get_init_resources()
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
-                name=get_volume_name("/somepath"), mount_path="/somepath"
+                name=get_volume_name("/somepath"),
+                mount_path="/somepath",
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]

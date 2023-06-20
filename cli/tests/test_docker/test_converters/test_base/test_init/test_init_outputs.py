@@ -71,7 +71,9 @@ class TestInitOutputsStore(BaseConverterTest):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[self.converter._get_artifacts_context_mount()],
+            volume_mounts=[
+                self.converter._get_artifacts_context_mount(run_path="run_uid")
+            ],
             args=[" ".join(init_args)],
         )
 
@@ -114,7 +116,9 @@ class TestInitOutputsStore(BaseConverterTest):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[self.converter._get_artifacts_context_mount()],
+            volume_mounts=[
+                self.converter._get_artifacts_context_mount(run_path="run_uid")
+            ],
             args=[" ".join(init_args)],
         )
 
@@ -157,7 +161,9 @@ class TestInitOutputsStore(BaseConverterTest):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[self.converter._get_artifacts_context_mount()],
+            volume_mounts=[
+                self.converter._get_artifacts_context_mount(run_path="run_uid")
+            ],
             args=[" ".join(init_args)],
         )
 
@@ -184,6 +190,8 @@ class TestInitOutputsStore(BaseConverterTest):
             store=store,
             env=[],
             env_from=[],
-            volume_mounts=[self.converter._get_artifacts_context_mount()],
+            volume_mounts=[
+                self.converter._get_artifacts_context_mount(run_path="run_uid")
+            ],
             args=[" ".join(init_args)],
         )

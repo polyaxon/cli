@@ -11,11 +11,11 @@ from polyaxon.connections import (
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.docker import docker_types
 from polyaxon.docker.converter.base.mounts import MountsMixin
-from polyaxon.utils.test_utils import BaseTestCase
+from tests.test_docker.test_converters.base import BaseConverterTest
 
 
 @pytest.mark.docker_mark
-class TestMounts(BaseTestCase):
+class TestMounts(BaseConverterTest):
     def test_get_mount_from_store(self):
         # Bucket stores
         assert MountsMixin._get_mount_from_store(store=None) is None
@@ -72,7 +72,7 @@ class TestMounts(BaseTestCase):
         mount = MountsMixin._get_mount_from_store(store=store)
         assert mount == docker_types.V1VolumeMount(__root__=("-v", "/tmp:/tmp:ro"))
 
-    def cd(self):
+    def test_mount_resources(self):
         # Non mouth resource
         assert MountsMixin._get_mount_from_resource(None) is None
         resource = V1ConnectionResource(
@@ -95,23 +95,21 @@ class TestMounts(BaseTestCase):
             name="test1",
             items=["item1", "item2"],
             mount_path="/tmp",
+            host_path="/tmp",
             is_requested=False,
         )
         mount = MountsMixin._get_mount_from_resource(resource=resource)
-        assert mount.name == resource.name
-        assert mount.mount_path == resource.mount_path
-        assert mount.read_only is True
+        assert mount == docker_types.V1VolumeMount(__root__=("-v", "/tmp:/tmp:ro"))
 
         resource = V1ConnectionResource(
             name="test1",
             items=["item1", "item2"],
             mount_path="/tmp",
+            host_path="/tmp",
             is_requested=False,
         )
         mount = MountsMixin._get_mount_from_resource(resource=resource)
-        assert mount.name == resource.name
-        assert mount.mount_path == resource.mount_path
-        assert mount.read_only is True
+        assert mount == docker_types.V1VolumeMount(__root__=("-v", "/tmp:/tmp:ro"))
 
     def test_get_docker_context_mount(self):
         mount = MountsMixin._get_docker_context_mount()
@@ -146,10 +144,12 @@ class TestMounts(BaseTestCase):
 
     def test_get_connections_context_mount(self):
         mount = MountsMixin._get_connections_context_mount(
-            name="test", mount_path="/test"
+            name="test",
+            mount_path="/test",
+            run_path=self.converter.run_path,
         )
         assert mount == docker_types.V1VolumeMount(
-            __root__=("--mount", "type=tmpfs,destination=/test")
+            __root__=("-v", "/tmp/plx/.runs/run_uuid:/test")
         )
 
     def test_get_shm_context_mount(self):

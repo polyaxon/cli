@@ -30,6 +30,7 @@ class TestInitFile(BaseConverterTest):
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]
@@ -72,6 +73,7 @@ class TestInitFile(BaseConverterTest):
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_auth_context_mount(read_only=True),
         ]

@@ -50,6 +50,7 @@ class MountsMixin(BaseConverter):
     @staticmethod
     def _get_artifacts_context_mount(
         read_only: Optional[bool] = None,
+        run_path: Optional[str] = None,
     ) -> k8s_schemas.V1VolumeMount:
         return k8s_schemas.V1VolumeMount(
             name=constants.VOLUME_MOUNT_ARTIFACTS,
@@ -59,7 +60,7 @@ class MountsMixin(BaseConverter):
 
     @staticmethod
     def _get_connections_context_mount(
-        name: str, mount_path: str
+        name: str, mount_path: str, run_path: str
     ) -> k8s_schemas.V1VolumeMount:
         return k8s_schemas.V1VolumeMount(name=name, mount_path=mount_path)
 
@@ -83,12 +84,15 @@ class MountsMixin(BaseConverter):
         use_docker_context: bool,
         use_shm_context: bool,
         use_artifacts_context: bool,
+        run_path: Optional[str] = None,
     ) -> List[k8s_schemas.V1VolumeMount]:
         mounts = []
         if use_auth_context:
             mounts.append(cls._get_auth_context_mount(read_only=True))
         if use_artifacts_context:
-            mounts.append(cls._get_artifacts_context_mount(read_only=False))
+            mounts.append(
+                cls._get_artifacts_context_mount(read_only=False, run_path=run_path)
+            )
         if use_docker_context:
             mounts.append(cls._get_docker_context_mount())
         if use_shm_context:

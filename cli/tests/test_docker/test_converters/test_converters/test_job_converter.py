@@ -167,6 +167,7 @@ class TestJobConverter(BaseConverterTest):
                     artifacts=None,
                     paths=None,
                     env=self.converter._get_init_service_env_vars(),
+                    run_path=self.converter.run_path,
                 )
             ],
         )
@@ -197,6 +198,7 @@ class TestJobConverter(BaseConverterTest):
                     artifacts=None,
                     paths=None,
                     env=self.converter._get_init_service_env_vars(),
+                    run_path=self.converter.run_path,
                     is_default_artifacts_store=True,
                 ),
             ],
@@ -258,6 +260,7 @@ class TestJobConverter(BaseConverterTest):
                     ),
                     paths=None,
                     env=self.converter._get_init_service_env_vars(),
+                    run_path=self.converter.run_path,
                     is_default_artifacts_store=True,
                 ),
                 self.converter._get_store_init_container(
@@ -268,6 +271,7 @@ class TestJobConverter(BaseConverterTest):
                     ),
                     paths=None,
                     env=self.converter._get_init_service_env_vars(),
+                    run_path=self.converter.run_path,
                 ),
                 self.converter._get_store_init_container(
                     polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
@@ -275,6 +279,7 @@ class TestJobConverter(BaseConverterTest):
                     artifacts=None,
                     paths=["/foo", "/bar", ["from-foo", "to-foo"]],
                     env=self.converter._get_init_service_env_vars(),
+                    run_path=self.converter.run_path,
                 ),
             ],
         )
@@ -391,6 +396,7 @@ class TestJobConverter(BaseConverterTest):
                 tb_args=tb_args1,
                 env=self.converter._get_init_service_env_vars(),
                 plugins=None,
+                run_path=self.converter.run_path,
                 run_instance=self.converter.run_instance,
             ),
             self.converter._get_tensorboard_init_container(
@@ -400,6 +406,7 @@ class TestJobConverter(BaseConverterTest):
                 env=self.converter._get_init_service_env_vars(),
                 mount_path="/test",
                 plugins=None,
+                run_path=self.converter.run_path,
                 run_instance=self.converter.run_instance,
             ),
         ]
@@ -432,6 +439,7 @@ class TestJobConverter(BaseConverterTest):
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 env=self.converter._get_init_service_env_vars(),
                 plugins=None,
+                run_path=self.converter.run_path,
             ),
             self.converter._get_git_init_container(
                 container=docker_types.V1Container(name="test"),
@@ -442,6 +450,7 @@ class TestJobConverter(BaseConverterTest):
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 env=self.converter._get_init_service_env_vars(),
                 plugins=None,
+                run_path=self.converter.run_path,
             ),
         ]
         self.assert_containers(expected_containers, containers)

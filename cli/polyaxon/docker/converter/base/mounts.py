@@ -100,18 +100,28 @@ class MountsMixin(BaseConverter):
 
     @classmethod
     def _get_artifacts_context_mount(
-        cls, read_only: bool = False
+        cls,
+        read_only: bool = False,
+        run_path: Optional[str] = None,
     ) -> docker_types.V1VolumeMount:
         return cls._get_docker_volume(
-            host_path=ctx_paths.CONTEXT_ARCHIVES_ROOT,
+            host_path=ctx_paths.CONTEXT_TMP_RUNS_ROOT_FORMAT.format(run_path),
             mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
             read_only=read_only,
         )
 
     @classmethod
     def _get_connections_context_mount(
-        cls, name: str, mount_path: str
+        cls,
+        name: str,
+        mount_path: str,
+        run_path: str,
     ) -> docker_types.V1VolumeMount:
+        return cls._get_docker_volume(
+            host_path=ctx_paths.CONTEXT_TMP_RUNS_ROOT_FORMAT.format(run_path),
+            mount_path=mount_path,
+            read_only=False,
+        )
         return cls._get_volume(mount_path=mount_path, read_only=False)
 
     @classmethod
@@ -132,12 +142,15 @@ class MountsMixin(BaseConverter):
         use_docker_context: bool,
         use_shm_context: bool,
         use_artifacts_context: bool,
+        run_path: Optional[str] = None,
     ) -> List[docker_types.V1VolumeMount]:
         mounts = []
         if use_auth_context:
             mounts.append(cls._get_auth_context_mount(read_only=True))
         if use_artifacts_context:
-            mounts.append(cls._get_artifacts_context_mount(read_only=False))
+            mounts.append(
+                cls._get_artifacts_context_mount(read_only=False, run_path=run_path)
+            )
         if use_docker_context:
             mounts.append(cls._get_docker_context_mount())
         if use_shm_context:
