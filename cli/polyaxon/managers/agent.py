@@ -30,8 +30,8 @@ class AgentConfigManager(ConfigManager):
         glob_path = cls.get_global_config_path()
 
         config_paths = [
-            ConfigSpec(tmp_path, config_type=".json", check_if_exists=False),
-            ConfigSpec(glob_path, config_type=".json", check_if_exists=False),
+            ConfigSpec(tmp_path, config_type=".yaml", check_if_exists=False),
+            ConfigSpec(glob_path, config_type=".yaml", check_if_exists=False),
             os.environ,
             {"dummy": "dummy"},
         ]

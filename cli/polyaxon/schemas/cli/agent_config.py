@@ -212,7 +212,7 @@ class AgentConfig(BaseAgentConfig):
             and not values.get(EV_KEYS_AGENT_IS_REPLICA)
             and "isReplica" in values
         ):
-            values[EV_KEYS_AGENT_IS_REPLICA] = values["artifactsStore"]
+            values[EV_KEYS_AGENT_IS_REPLICA] = values["isReplica"]
         if (
             not values.get("use_proxy_env_vars_use_in_ops")
             and not values.get(EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS)

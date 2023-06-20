@@ -148,6 +148,7 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
     \b
     $ polyaxon config set --host=localhost
     """
+    no_purge = kwargs.pop("no_purge", None)
     if kwargs.get("home") is not None:
         try:
             _config = HomeConfigManager.get_config_or_default()
@@ -161,7 +162,7 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
             logger.debug()
             HomeConfigManager.purge()
             _config = HomeConfigManager.get_config_or_default()
-        setattr(_config, "path", kwargs.get("home"))
+        setattr(_config, "path", kwargs.pop("home", None))
         HomeConfigManager.set_config(_config)
 
     from polyaxon.managers.auth import AuthConfigManager
@@ -184,7 +185,7 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
     Printer.success("Config was updated.")
     # Reset cli config
     CliConfigManager.purge()
-    if should_purge and not kwargs.get("no_purge"):
+    if should_purge and not no_purge:
         AuthConfigManager.purge()
         UserConfigManager.purge()
         settings.set_client_config()
