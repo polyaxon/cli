@@ -134,6 +134,10 @@ async def start_sidecar(
     await monitor()
     logger.info("Cleaning non main containers")
     if k8s_manager:
+        logger.info("Cleaning k8s manager")
         await k8s_manager.close()
 
+    logger.info("Cleaning fs connection")
     await close_fs(fs)
+    # Ensures that the monitors are closed
+    await asyncio.sleep(1)
