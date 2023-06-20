@@ -50,11 +50,15 @@ class TestJobConverter(BaseConverterTest):
             secrets=None,
             config_maps=None,
         )
-        assert env_vars == self.converter._get_base_env_vars(
-            namespace=self.converter.namespace,
-            resource_name=self.converter.resource_name,
-            use_proxy_env_vars_use_in_ops=False,
-            log_level=None,
+        assert (
+            env_vars
+            == self.converter._get_base_env_vars(
+                namespace=self.converter.namespace,
+                resource_name=self.converter.resource_name,
+                use_proxy_env_vars_use_in_ops=False,
+                log_level=None,
+            )
+            + self.converter._get_additional_env_vars()
         )
         self.converter.base_env_vars = False
         env_vars = self.converter._get_main_env_vars(
@@ -65,8 +69,12 @@ class TestJobConverter(BaseConverterTest):
             secrets=None,
             config_maps=None,
         )
-        assert env_vars == self.converter._get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER
+        assert (
+            env_vars
+            == self.converter._get_service_env_vars(
+                service_header=PolyaxonServices.RUNNER
+            )
+            + self.converter._get_additional_env_vars()
         )
 
     def test_get_init_containers_with_auth(self):

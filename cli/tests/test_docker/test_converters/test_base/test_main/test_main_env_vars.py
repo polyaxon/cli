@@ -69,17 +69,21 @@ class TestMainEnvVars(BaseConverterTest):
         )
 
     def test_get_env_vars(self):
-        assert self.converter._get_main_env_vars(
-            plugins=None,
-            kv_env_vars=None,
-            artifacts_store_name=None,
-            connections=None,
-            secrets=None,
-            config_maps=None,
-        ) == self.converter._get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER,
-            external_host=False,
-            log_level=None,
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=None,
+                kv_env_vars=None,
+                artifacts_store_name=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+            )
+            == self.converter._get_service_env_vars(
+                service_header=PolyaxonServices.RUNNER,
+                external_host=False,
+                log_level=None,
+            )
+            + self.converter._get_additional_env_vars()
         )
 
     def test_get_env_vars_with_kv_env_vars(self):
@@ -109,15 +113,18 @@ class TestMainEnvVars(BaseConverterTest):
             external_host=False,
             log_level=None,
         )
-        assert self.converter._get_main_env_vars(
-            plugins=None,
-            kv_env_vars=[["key1", "val1"], ["key2", "val2"]],
-            artifacts_store_name=None,
-            connections=None,
-            secrets=None,
-            config_maps=None,
-        ) == base_env + self.converter._get_kv_env_vars(
-            [["key1", "val1"], ["key2", "val2"]]
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=None,
+                kv_env_vars=[["key1", "val1"], ["key2", "val2"]],
+                artifacts_store_name=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+            )
+            == base_env
+            + self.converter._get_kv_env_vars([["key1", "val1"], ["key2", "val2"]])
+            + self.converter._get_additional_env_vars()
         )
 
     def test_get_env_vars_with_artifacts_store(self):
@@ -135,24 +142,31 @@ class TestMainEnvVars(BaseConverterTest):
                 secrets=None,
                 config_maps=None,
             )
-            == base_env
+            == base_env + self.converter._get_additional_env_vars()
         )
 
-        assert self.converter._get_main_env_vars(
-            plugins=V1Plugins.get_or_create(
-                V1Plugins(
-                    collect_logs=False, collect_artifacts=True, collect_resources=True
-                )
-            ),
-            kv_env_vars=None,
-            artifacts_store_name=None,
-            connections=None,
-            secrets=None,
-            config_maps=None,
-        ) == base_env + [
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
-        ]
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=V1Plugins.get_or_create(
+                    V1Plugins(
+                        collect_logs=False,
+                        collect_artifacts=True,
+                        collect_resources=True,
+                    )
+                ),
+                kv_env_vars=None,
+                artifacts_store_name=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+            )
+            == base_env
+            + [
+                self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
+                self.converter._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
+            ]
+            + self.converter._get_additional_env_vars()
+        )
 
         assert (
             self.converter._get_main_env_vars(
@@ -169,7 +183,7 @@ class TestMainEnvVars(BaseConverterTest):
                 secrets=None,
                 config_maps=None,
             )
-            == base_env
+            == base_env + self.converter._get_additional_env_vars()
         )
 
         assert (
@@ -181,25 +195,28 @@ class TestMainEnvVars(BaseConverterTest):
                 secrets=None,
                 config_maps=None,
             )
-            == base_env
+            == base_env + self.converter._get_additional_env_vars()
         )
 
-        assert self.converter._get_main_env_vars(
-            plugins=V1Plugins.get_or_create(
-                V1Plugins(
-                    collect_logs=False,
-                    collect_artifacts=True,
-                    collect_resources=False,
-                )
-            ),
-            kv_env_vars=None,
-            artifacts_store_name=None,
-            connections=None,
-            secrets=None,
-            config_maps=None,
-        ) == base_env + [
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True)
-        ]
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=V1Plugins.get_or_create(
+                    V1Plugins(
+                        collect_logs=False,
+                        collect_artifacts=True,
+                        collect_resources=False,
+                    )
+                ),
+                kv_env_vars=None,
+                artifacts_store_name=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+            )
+            == base_env
+            + [self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True)]
+            + self.converter._get_additional_env_vars()
+        )
 
     def test_get_env_vars_with_secrets(self):
         base_env = self.converter._get_service_env_vars(
@@ -207,39 +224,41 @@ class TestMainEnvVars(BaseConverterTest):
             external_host=False,
             log_level=None,
         )
-        assert self.converter._get_main_env_vars(
-            plugins=None,
-            kv_env_vars=None,
-            artifacts_store_name=None,
-            connections=None,
-            secrets=[self.resource1, self.resource2],
-            config_maps=None,
-        ) == base_env + self.converter._get_items_from_json_resource(
-            resource=self.resource1
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource2
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=None,
+                kv_env_vars=None,
+                artifacts_store_name=None,
+                connections=None,
+                secrets=[self.resource1, self.resource2],
+                config_maps=None,
+            )
+            == base_env
+            + self.converter._get_items_from_json_resource(resource=self.resource1)
+            + self.converter._get_items_from_json_resource(resource=self.resource2)
+            + self.converter._get_additional_env_vars()
         )
 
-        assert self.converter._get_main_env_vars(
-            plugins=None,
-            kv_env_vars=None,
-            artifacts_store_name=None,
-            connections=None,
-            secrets=[
-                self.resource1,
-                self.resource2,
-                self.resource3,
-                self.resource4,
-            ],
-            config_maps=None,
-        ) == base_env + self.converter._get_items_from_json_resource(
-            resource=self.resource1
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource2
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource3
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource4
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=None,
+                kv_env_vars=None,
+                artifacts_store_name=None,
+                connections=None,
+                secrets=[
+                    self.resource1,
+                    self.resource2,
+                    self.resource3,
+                    self.resource4,
+                ],
+                config_maps=None,
+            )
+            == base_env
+            + self.converter._get_items_from_json_resource(resource=self.resource1)
+            + self.converter._get_items_from_json_resource(resource=self.resource2)
+            + self.converter._get_items_from_json_resource(resource=self.resource3)
+            + self.converter._get_items_from_json_resource(resource=self.resource4)
+            + self.converter._get_additional_env_vars()
         )
 
     def test_get_env_vars_with_config_maps(self):
@@ -248,39 +267,41 @@ class TestMainEnvVars(BaseConverterTest):
             external_host=False,
             log_level=None,
         )
-        assert self.converter._get_main_env_vars(
-            plugins=None,
-            kv_env_vars=None,
-            artifacts_store_name=None,
-            connections=None,
-            secrets=None,
-            config_maps=[self.resource1, self.resource2],
-        ) == base_env + self.converter._get_items_from_json_resource(
-            resource=self.resource1
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource2
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=None,
+                kv_env_vars=None,
+                artifacts_store_name=None,
+                connections=None,
+                secrets=None,
+                config_maps=[self.resource1, self.resource2],
+            )
+            == base_env
+            + self.converter._get_items_from_json_resource(resource=self.resource1)
+            + self.converter._get_items_from_json_resource(resource=self.resource2)
+            + self.converter._get_additional_env_vars()
         )
 
-        assert self.converter._get_main_env_vars(
-            plugins=None,
-            kv_env_vars=None,
-            artifacts_store_name=None,
-            connections=None,
-            secrets=None,
-            config_maps=[
-                self.resource1,
-                self.resource2,
-                self.resource3,
-                self.resource4,
-            ],
-        ) == base_env + self.converter._get_items_from_json_resource(
-            resource=self.resource1
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource2
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource3
-        ) + self.converter._get_items_from_json_resource(
-            resource=self.resource4
+        assert (
+            self.converter._get_main_env_vars(
+                plugins=None,
+                kv_env_vars=None,
+                artifacts_store_name=None,
+                connections=None,
+                secrets=None,
+                config_maps=[
+                    self.resource1,
+                    self.resource2,
+                    self.resource3,
+                    self.resource4,
+                ],
+            )
+            == base_env
+            + self.converter._get_items_from_json_resource(resource=self.resource1)
+            + self.converter._get_items_from_json_resource(resource=self.resource2)
+            + self.converter._get_items_from_json_resource(resource=self.resource3)
+            + self.converter._get_items_from_json_resource(resource=self.resource4)
+            + self.converter._get_additional_env_vars()
         )
 
     def test_get_env_vars_with_all(self):
@@ -348,5 +369,6 @@ class TestMainEnvVars(BaseConverterTest):
                 self.resource4,
             ],
         )
+        expected += self.converter._get_additional_env_vars()
 
         assert env_vars == expected

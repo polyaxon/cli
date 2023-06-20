@@ -131,10 +131,14 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        assert container.env == self.converter._get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER,
-            external_host=False,
-            log_level=None,
+        assert (
+            container.env
+            == self.converter._get_service_env_vars(
+                service_header=PolyaxonServices.RUNNER,
+                external_host=False,
+                log_level=None,
+            )
+            + self.converter._get_additional_env_vars()
         )
         assert container.resources is None
         assert container.volume_mounts == []
@@ -184,10 +188,13 @@ class TestMainContainer(BaseConverterTest):
             ports=None,
             run_path="run_path",
         )
-        base_env = self.converter._get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER,
-            external_host=False,
-            log_level=None,
+        base_env = (
+            self.converter._get_service_env_vars(
+                service_header=PolyaxonServices.RUNNER,
+                external_host=False,
+                log_level=None,
+            )
+            + self.converter._get_additional_env_vars()
         )
 
         assert container.name == "test"
@@ -341,10 +348,13 @@ class TestMainContainer(BaseConverterTest):
             ports=None,
             run_path="run_path",
         )
-        base_env = self.converter._get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER,
-            external_host=False,
-            log_level=None,
+        base_env = (
+            self.converter._get_service_env_vars(
+                service_header=PolyaxonServices.RUNNER,
+                external_host=False,
+                log_level=None,
+            )
+            + self.converter._get_additional_env_vars()
         )
 
         assert container.name == "main"
@@ -546,10 +556,13 @@ class TestMainContainer(BaseConverterTest):
             ports=None,
             run_path="run_path",
         )
-        base_env = self.converter._get_service_env_vars(
-            service_header=PolyaxonServices.RUNNER,
-            external_host=False,
-            log_level=None,
+        base_env = (
+            self.converter._get_service_env_vars(
+                service_header=PolyaxonServices.RUNNER,
+                external_host=False,
+                log_level=None,
+            )
+            + self.converter._get_additional_env_vars()
         )
 
         assert container.name == "test"

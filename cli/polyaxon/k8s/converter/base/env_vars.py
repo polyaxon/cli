@@ -134,6 +134,10 @@ class EnvMixin(BaseConverter):
 
         return env_vars
 
+    @classmethod
+    def _get_additional_env_vars(cls) -> List[k8s_schemas.V1EnvVar]:
+        return []
+
     @staticmethod
     def _get_env_from_secret(
         secret: V1ConnectionResource,

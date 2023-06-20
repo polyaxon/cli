@@ -16,6 +16,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_API_VERSION,
     EV_KEYS_AUTH_TOKEN,
     EV_KEYS_AUTHENTICATION_TYPE,
+    EV_KEYS_HAS_PROCESS_SIDECAR,
     EV_KEYS_HEADER,
     EV_KEYS_HEADER_SERVICE,
     EV_KEYS_HOST,
@@ -127,6 +128,10 @@ class EnvMixin(BaseConverter):
             config_maps, check_none=True
         )
         return cls._get_env_vars_from_resources(resources=resources)
+
+    @classmethod
+    def _get_additional_env_vars(cls) -> List[docker_types.V1EnvVar]:
+        return [cls._get_env_var(name=EV_KEYS_HAS_PROCESS_SIDECAR, value=True)]
 
     @classmethod
     def _get_base_env_vars(

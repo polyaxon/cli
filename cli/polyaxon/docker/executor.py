@@ -50,9 +50,9 @@ class Executor(BaseExecutor):
             task_status = self._get_task_status(proc)
             message = f"Task container {task.name} {task.image} with id {proc.pid} {task_status}"
             if task_status == V1Statuses.SUCCEEDED:
-                logger.info(f"[Executor] message")
+                logger.info(f"[Executor] {message}")
             else:
-                logger.warning(f"[Executor] message")
+                logger.warning(f"[Executor] {message}")
                 return {
                     "status": V1Statuses.FAILED,
                     "tasks": self._ops[run_uuid],

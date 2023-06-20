@@ -350,6 +350,10 @@ class BaseConverter:
     ) -> List[EnvVar]:
         raise NotImplementedError
 
+    @classmethod
+    def _get_additional_env_vars(cls) -> List[EnvVar]:
+        raise NotImplementedError
+
     @staticmethod
     def _get_base_env_vars(
         namespace: str,
@@ -437,6 +441,7 @@ class BaseConverter:
         env += self._get_env_vars_from_k8s_resources(
             secrets=secrets, config_maps=config_maps
         )
+        env += self._get_additional_env_vars()
         return env
 
     @classmethod
