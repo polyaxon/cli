@@ -221,7 +221,9 @@ class DeployConfigManager:
                 "gateway.service.type=NodePort,deploymentType={}".format(self.type),
             ]
         if self.deployment_version:
-            args += ["--version", self.deployment_version]
+            Printer.info("Deployment version: `{}`".format(self.deployment_version))
+            if self.deployment_version != "latest":
+                args += ["--version", self.deployment_version]
         if self.dry_run:
             args += ["--debug", "--dry-run"]
 
@@ -317,7 +319,8 @@ class DeployConfigManager:
             ]
         if self.deployment_version:
             Printer.info("Deployment version: `{}`".format(self.deployment_version))
-            args += ["--version", self.deployment_version]
+            if self.deployment_version != "latest":
+                args += ["--version", self.deployment_version]
         args += ["--namespace={}".format(self.deployment_namespace)]
         if self.dry_run:
             args += ["--debug", "--dry-run"]
