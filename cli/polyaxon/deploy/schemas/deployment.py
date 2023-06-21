@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.formatting import Printer
 from pydantic import Field, StrictInt, StrictStr, root_validator, validator
 
 from polyaxon.auxiliaries import (
@@ -168,12 +169,8 @@ def validate_deployment_chart(
     if deployment_chart == DeploymentCharts.AGENT and not agent:
         raise ValueError("Agent deployment requires a valid `agent` key configuration.")
 
-    if (
-        deployment_chart == DeploymentCharts.PLATFORM
-        and agent
-        and environment != "staging"
-    ):
-        raise ValueError("Platform deployment received an unexpected `agent` key.")
+    if deployment_chart == DeploymentCharts.PLATFORM and agent:
+        Printer.header("Deployment has agent enabled!")
 
 
 class DeploymentConfig(BaseSchemaModel):
