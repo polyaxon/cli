@@ -227,7 +227,7 @@ class DeployConfigManager:
         if self.dry_run:
             args += ["--debug", "--dry-run"]
 
-        with Printer.console.status("Running final checks before install command ..."):
+        with Printer.console.status("Running final checks before ..."):
             time.sleep(self._SLEEP_TIME)
         with Printer.console.status("Running install command ..."):
             stdout = self.helm.execute(args=args, stream=settings.CLIENT_CONFIG.debug)
@@ -325,7 +325,7 @@ class DeployConfigManager:
         if self.dry_run:
             args += ["--debug", "--dry-run"]
 
-        with Printer.console.status("Running final checks before upgrade command ..."):
+        with Printer.console.status("Running final checks ..."):
             time.sleep(self._SLEEP_TIME)
         with Printer.console.status("Running upgrade command ..."):
             stdout = self.helm.execute(args=args, stream=settings.CLIENT_CONFIG.debug)
