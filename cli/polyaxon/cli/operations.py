@@ -964,6 +964,11 @@ def execute(ctx, project, uid, executor):
             raise Printer.error(
                 "Docker is required to run this command.", sys_exit=True
             )
+        polyaxon_client.log_status(
+            V1Statuses.RUNNING,
+            reason="CliK8SExecutor",
+            message="Operation is running",
+        )
         result = executor.create_from_run(response)
         if result["status"] == V1Statuses.SUCCEEDED:
             polyaxon_client.log_succeeded(
@@ -1001,6 +1006,11 @@ def execute(ctx, project, uid, executor):
             raise Printer.error(
                 "Kubernetes is required to run this command.", sys_exit=True
             )
+        polyaxon_client.log_status(
+            V1Statuses.RUNNING,
+            reason="CliK8SExecutor",
+            message="Operation is running",
+        )
         executor.create_from_run(response)
 
     def _execute_on_local_process(response: V1Run):
