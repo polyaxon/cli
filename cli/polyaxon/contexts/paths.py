@@ -83,14 +83,15 @@ def get_offline_path(
     )
 
 
-def mount_sandbox():
+def mount_sandbox(path: Optional[str] = None):
     global CONTEXT_SANDBOX_ROOT
     global CONTEXT_OFFLINE_ROOT
     global CONTEXT_ARTIFACTS_ROOT
     global CONTEXT_OFFLINE_FORMAT
     global CONTEXT_ARTIFACTS_FORMAT
 
-    CONTEXT_SANDBOX_ROOT = os.environ.get(EV_KEYS_SANDBOX_ROOT, CONTEXT_OFFLINE_ROOT)
+    path = path or CONTEXT_OFFLINE_ROOT
+    CONTEXT_SANDBOX_ROOT = os.environ.get(EV_KEYS_SANDBOX_ROOT, path)
     CONTEXT_OFFLINE_ROOT = CONTEXT_SANDBOX_ROOT
     CONTEXT_ARTIFACTS_ROOT = CONTEXT_SANDBOX_ROOT
     CONTEXT_OFFLINE_FORMAT = "{}/{{}}".format(CONTEXT_OFFLINE_ROOT)
