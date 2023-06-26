@@ -1,12 +1,14 @@
 from typing import Any, Dict, Iterable, Optional
 
 from clipped.utils.enums import get_enum_value
+from clipped.utils.paths import delete_path
 
 from polyaxon import settings
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon.compiler import resolver
 from polyaxon.compiler.resolver import AgentResolver
 from polyaxon.connections import V1Connection, V1ConnectionResource
+from polyaxon.contexts import paths as ctx_paths
 from polyaxon.exceptions import PolyaxonAgentError, PolyaxonCompilerError
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.polyflow import V1CompiledOperation
@@ -59,6 +61,9 @@ class BaseExecutor:
 
     def clean(self, run_uuid: str, run_kind: str):
         raise NotImplementedError
+
+    def _clean_temp_execution_path(self, run_uuid: str):
+        delete_path(ctx_paths.CONTEXT_TMP_RUNS_ROOT_FORMAT.format(run_uuid))
 
     @classmethod
     def get_resource(

@@ -53,11 +53,13 @@ class Executor(BaseExecutor):
                 logger.info(f"[Executor] {message}")
             else:
                 logger.warning(f"[Executor] {message}")
+                self._clean_temp_execution_path(run_uuid)
                 return {
                     "status": V1Statuses.FAILED,
                     "tasks": self._ops[run_uuid],
                     "message": message,
                 }
+        self._clean_temp_execution_path(run_uuid)
         return {"status": V1Statuses.SUCCEEDED, "tasks": self._ops[run_uuid]}
 
     def apply(self, run_uuid: str, run_kind: str, resource: Dict) -> Dict:
