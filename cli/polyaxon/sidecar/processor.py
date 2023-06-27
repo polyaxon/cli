@@ -36,6 +36,8 @@ class SidecarThread(threading.Thread):
     def _process(self):
         self._fw.init()
         self._fw.sync(self._path, exclude=IGNORE_FOLDERS)
+        if hasattr(self._client, "sync_artifacts_and_summaries"):
+            self._client.sync_artifacts_and_summaries()
 
         def get_path(_path: str, remove_basename: bool):
             if self._client.run_uuid in _path:
