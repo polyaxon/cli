@@ -104,8 +104,7 @@ def client_handler(
                 handle_client_error(
                     e=None if manual_exceptions_handling else e, message=message
                 )
-                if manual_exceptions_handling:
-                    raise e
+                raise e
 
         return wrapper
 
