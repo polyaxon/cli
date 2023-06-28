@@ -20,7 +20,6 @@ from polyaxon.env_vars.getters import get_artifacts_store_name
 from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_ARTIFACTS_STORE,
     EV_KEYS_AGENT_CLEANER,
-    EV_KEYS_AGENT_COMPRESSED_LOGS,
     EV_KEYS_AGENT_CONNECTIONS,
     EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
     EV_KEYS_AGENT_DEFAULT_SCHEDULING,
@@ -183,7 +182,6 @@ class AgentConfig(BaseAgentConfig):
     _IDENTIFIER = "agent"
 
     is_replica: Optional[bool] = Field(alias=EV_KEYS_AGENT_IS_REPLICA)
-    compressed_logs: Optional[bool] = Field(alias=EV_KEYS_AGENT_COMPRESSED_LOGS)
     sidecar: Optional[V1PolyaxonSidecarContainer] = Field(alias=EV_KEYS_AGENT_SIDECAR)
     init: Optional[V1PolyaxonInitContainer] = Field(alias=EV_KEYS_AGENT_INIT)
     notifier: Optional[V1PolyaxonNotifier] = Field(alias=EV_KEYS_AGENT_NOTIFIER)

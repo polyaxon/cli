@@ -23,7 +23,6 @@ class AgentServiceConfig(DeploymentService):
     instance: Optional[StrictStr]
     token: Optional[StrictStr]
     is_replica: Optional[bool] = Field(alias="isReplica")
-    compressed_logs: Optional[bool] = Field(alias="compressedLogs")
 
 
 class OperatorServiceConfig(DeploymentService):

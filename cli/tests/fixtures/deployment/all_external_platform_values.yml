@@ -114,7 +114,6 @@ agent:
   token:
   instance:
   isReplica: false
-  compressedLogs: false
   enabled: false
   image: polyaxon/polyaxon-agent
   imageTag: 1.0.9
