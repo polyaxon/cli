@@ -223,18 +223,26 @@ class EnvMixin(BaseConverter):
                 ),
                 check_none=True,
             )
-        if include_agent_token and polyaxon_agent_secret_ref:
+        if include_agent_token:
             if internal:
                 raise PolyaxonConverterError(
                     "A service cannot have internal token and agent token."
                 )
-            env_vars += to_list(
-                self._get_item_from_json_resource(
-                    key=EV_KEYS_AUTH_TOKEN,
-                    resource_ref_name=polyaxon_agent_secret_ref,
-                ),
-                check_none=True,
-            )
+            if polyaxon_agent_secret_ref:
+                env_vars += to_list(
+                    self._get_item_from_json_resource(
+                        key=EV_KEYS_AUTH_TOKEN,
+                        resource_ref_name=polyaxon_agent_secret_ref,
+                    ),
+                    check_none=True,
+                )
+            elif settings.CLIENT_CONFIG.token:
+                env_vars += to_list(
+                    self._get_env_var(
+                        name=EV_KEYS_AUTH_TOKEN, value=settings.CLIENT_CONFIG.token
+                    ),
+                    check_none=True,
+                )
         if authentication_type:
             env_vars += to_list(
                 self._get_env_var(

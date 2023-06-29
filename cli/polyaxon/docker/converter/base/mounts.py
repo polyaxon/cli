@@ -92,10 +92,14 @@ class MountsMixin(BaseConverter):
 
     @classmethod
     def _get_auth_context_mount(
-        cls, read_only: bool = False
+        cls,
+        read_only: Optional[bool] = None,
+        run_path: Optional[str] = None,
     ) -> docker_types.V1VolumeMount:
-        return cls._get_volume(
-            mount_path=ctx_paths.CONTEXT_MOUNT_CONFIGS, read_only=read_only
+        return cls._get_docker_volume(
+            host_path=ctx_paths.CONTEXT_TMP_RUNS_ROOT_FORMAT.format(run_path),
+            mount_path=ctx_paths.CONTEXT_MOUNT_CONFIGS,
+            read_only=read_only,
         )
 
     @classmethod
@@ -122,12 +126,11 @@ class MountsMixin(BaseConverter):
             mount_path=mount_path,
             read_only=False,
         )
-        return cls._get_volume(mount_path=mount_path, read_only=False)
 
     @classmethod
     def _get_shm_context_mount(cls) -> docker_types.V1VolumeMount:
         """
-        Mount an tmpfs volume to /dev/shm.
+        Mount a tmpfs volume to /dev/shm.
         This will set /dev/shm size to half of the RAM of node.
         By default, /dev/shm is very small, only 64MB.
         Some experiments will fail due to lack of share memory,
@@ -146,7 +149,9 @@ class MountsMixin(BaseConverter):
     ) -> List[docker_types.V1VolumeMount]:
         mounts = []
         if use_auth_context:
-            mounts.append(cls._get_auth_context_mount(read_only=True))
+            mounts.append(
+                cls._get_auth_context_mount(read_only=True, run_path=run_path)
+            )
         if use_artifacts_context:
             mounts.append(
                 cls._get_artifacts_context_mount(read_only=False, run_path=run_path)

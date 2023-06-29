@@ -449,7 +449,10 @@ class BaseConverter:
         raise NotImplementedError
 
     @staticmethod
-    def _get_auth_context_mount(read_only: bool = False) -> VolumeMount:
+    def _get_auth_context_mount(
+        read_only: Optional[bool] = None,
+        run_path: Optional[str] = None,
+    ) -> VolumeMount:
         raise NotImplementedError
 
     @staticmethod
@@ -670,6 +673,7 @@ class BaseConverter:
     def _get_auth_context_init_container(
         cls,
         polyaxon_init: V1PolyaxonInitContainer,
+        run_path: str,
         env: Optional[List[EnvVar]] = None,
     ) -> Container:
         raise NotImplementedError
@@ -913,6 +917,7 @@ class BaseConverter:
             containers.append(
                 self._get_auth_context_init_container(
                     polyaxon_init=polyaxon_init,
+                    run_path=self.run_path,
                     env=self._get_auth_service_env_vars(
                         external_host=plugins.external_host
                     ),

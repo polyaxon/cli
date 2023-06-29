@@ -127,11 +127,14 @@ class TestMounts(BaseConverterTest):
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_DOCKER
 
     def test_get_auth_context_mount(self):
-        mount = MountsMixin._get_auth_context_mount()
+        mount = MountsMixin._get_auth_context_mount(run_path=self.converter.run_path)
         assert mount.name == constants.VOLUME_MOUNT_CONFIGS
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_CONFIGS
         assert mount.read_only is None
-        mount = MountsMixin._get_auth_context_mount(read_only=True)
+        mount = MountsMixin._get_auth_context_mount(
+            read_only=True,
+            run_path=self.converter.run_path,
+        )
         assert mount.read_only is True
 
     def test_get_artifacts_context_mount(self):
@@ -174,7 +177,10 @@ class TestMounts(BaseConverterTest):
             use_docker_context=True,
             use_shm_context=True,
         ) == [
-            MountsMixin._get_auth_context_mount(read_only=True),
+            MountsMixin._get_auth_context_mount(
+                read_only=True,
+                run_path=self.converter.run_path,
+            ),
             MountsMixin._get_artifacts_context_mount(read_only=False),
             MountsMixin._get_docker_context_mount(),
             MountsMixin._get_shm_context_mount(),

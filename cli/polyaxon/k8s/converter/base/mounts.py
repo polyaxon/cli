@@ -40,7 +40,10 @@ class MountsMixin(BaseConverter):
         )
 
     @staticmethod
-    def _get_auth_context_mount(read_only=None) -> k8s_schemas.V1VolumeMount:
+    def _get_auth_context_mount(
+        read_only: Optional[bool] = None,
+        run_path: Optional[str] = None,
+    ) -> k8s_schemas.V1VolumeMount:
         return k8s_schemas.V1VolumeMount(
             name=constants.VOLUME_MOUNT_CONFIGS,
             mount_path=ctx_paths.CONTEXT_MOUNT_CONFIGS,
@@ -88,7 +91,9 @@ class MountsMixin(BaseConverter):
     ) -> List[k8s_schemas.V1VolumeMount]:
         mounts = []
         if use_auth_context:
-            mounts.append(cls._get_auth_context_mount(read_only=True))
+            mounts.append(
+                cls._get_auth_context_mount(read_only=True, run_path=run_path)
+            )
         if use_artifacts_context:
             mounts.append(
                 cls._get_artifacts_context_mount(read_only=False, run_path=run_path)

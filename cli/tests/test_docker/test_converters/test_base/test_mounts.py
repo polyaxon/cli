@@ -121,14 +121,14 @@ class TestMounts(BaseConverterTest):
         )
 
     def test_get_auth_context_mount(self):
-        mount = MountsMixin._get_auth_context_mount()
-        assert mount.__root__[0] == "--mount"
-        assert "type=tmpfs,destination=" in mount.__root__[1]
+        mount = MountsMixin._get_auth_context_mount(run_path="test")
+        assert mount.__root__[0] == "-v"
+        assert ".runs/test" in mount.__root__[1]
         assert ctx_paths.CONTEXT_MOUNT_CONFIGS in mount.__root__[1]
         assert "ro" not in mount.__root__[1]
-        mount = MountsMixin._get_auth_context_mount(read_only=True)
-        assert mount.__root__[0] == "--mount"
-        assert "type=tmpfs,destination=" in mount.__root__[1]
+        mount = MountsMixin._get_auth_context_mount(read_only=True, run_path="test")
+        assert mount.__root__[0] == "-v"
+        assert ".runs/test" in mount.__root__[1]
         assert ctx_paths.CONTEXT_MOUNT_CONFIGS in mount.__root__[1]
         assert "ro" in mount.__root__[1]
 
@@ -176,9 +176,16 @@ class TestMounts(BaseConverterTest):
             use_artifacts_context=True,
             use_docker_context=True,
             use_shm_context=True,
+            run_path="test",
         ) == [
-            MountsMixin._get_auth_context_mount(read_only=True),
-            MountsMixin._get_artifacts_context_mount(read_only=False),
+            MountsMixin._get_auth_context_mount(
+                read_only=True,
+                run_path="test",
+            ),
+            MountsMixin._get_artifacts_context_mount(
+                read_only=False,
+                run_path="test",
+            ),
             MountsMixin._get_docker_context_mount(),
             MountsMixin._get_shm_context_mount(),
         ]

@@ -15,6 +15,7 @@ class TestInitAuth(BaseConverterTest):
                 image_tag="",
                 image_pull_policy=PullPolicy.IF_NOT_PRESENT,
             ),
+            run_path=self.converter.run_path,
             env=[],
         )
 
@@ -25,5 +26,7 @@ class TestInitAuth(BaseConverterTest):
         assert container.env == []
         assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
         assert container.volume_mounts == [
-            self.converter._get_auth_context_mount(read_only=False)
+            self.converter._get_auth_context_mount(
+                read_only=False, run_path=self.converter.run_path
+            ),
         ]

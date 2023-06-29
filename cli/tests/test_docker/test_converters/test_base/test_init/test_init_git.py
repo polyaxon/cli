@@ -61,7 +61,9 @@ class TestInitGit(BaseConverterTest):
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
                 run_path=self.converter.run_path,
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(
+                read_only=True, run_path=self.converter.run_path
+            ),
         ]
 
         container = self.converter._get_git_init_container(
@@ -93,7 +95,9 @@ class TestInitGit(BaseConverterTest):
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
                 run_path=self.converter.run_path,
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(
+                read_only=True, run_path=self.converter.run_path
+            ),
         ]
 
         connection = V1Connection(
@@ -132,7 +136,9 @@ class TestInitGit(BaseConverterTest):
                 mount_path="/somepath",
                 run_path=self.converter.run_path,
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(
+                read_only=True, run_path=self.converter.run_path
+            ),
         ]
 
         connection = V1Connection(
@@ -174,5 +180,7 @@ class TestInitGit(BaseConverterTest):
                 mount_path="/somepath",
                 run_path=self.converter.run_path,
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(
+                read_only=True, run_path=self.converter.run_path
+            ),
         ]

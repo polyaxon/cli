@@ -135,7 +135,9 @@ class InitConverter(_BaseConverter):
         ]
 
         if plugins and plugins.auth:
-            volume_mounts.append(cls._get_auth_context_mount(read_only=True))
+            volume_mounts.append(
+                cls._get_auth_context_mount(run_path=run_path, read_only=True)
+            )
 
         env = to_list(env, check_none=True)
         env_from = []
@@ -210,7 +212,9 @@ class InitConverter(_BaseConverter):
             )
         ]
         if plugins and plugins.auth:
-            volume_mounts.append(cls._get_auth_context_mount(read_only=True))
+            volume_mounts.append(
+                cls._get_auth_context_mount(run_path=run_path, read_only=True)
+            )
 
         return cls._patch_container(
             container=container,
@@ -262,7 +266,9 @@ class InitConverter(_BaseConverter):
             )
         ]
         if plugins and plugins.auth:
-            volume_mounts.append(cls._get_auth_context_mount(read_only=True))
+            volume_mounts.append(
+                cls._get_auth_context_mount(run_path=run_path, read_only=True)
+            )
 
         file_args.filename = file_args.filename or "file"
         return cls._patch_container(
@@ -314,7 +320,9 @@ class InitConverter(_BaseConverter):
         ]
 
         if plugins and plugins.auth:
-            volume_mounts.append(cls._get_auth_context_mount(read_only=True))
+            volume_mounts.append(
+                cls._get_auth_context_mount(run_path=run_path, read_only=True)
+            )
 
         env = to_list(env, check_none=True)
         env_from = []
@@ -458,7 +466,9 @@ class InitConverter(_BaseConverter):
             )
         ]
         if plugins and plugins.auth:
-            volume_mounts.append(cls._get_auth_context_mount(read_only=True))
+            volume_mounts.append(
+                cls._get_auth_context_mount(run_path=run_path, read_only=True)
+            )
 
         args = get_tensorboard_args(
             tb_args=tb_args,
@@ -483,6 +493,7 @@ class InitConverter(_BaseConverter):
     def _get_auth_context_init_container(
         cls,
         polyaxon_init: V1PolyaxonInitContainer,
+        run_path: str,
         env: Optional[List[k8s_schemas.V1EnvVar]] = None,
     ) -> k8s_schemas.V1Container:
         env = to_list(env, check_none=True)
@@ -493,7 +504,9 @@ class InitConverter(_BaseConverter):
             command=["polyaxon", "initializer", "auth"],
             env=env,
             resources=polyaxon_init.get_resources(),
-            volume_mounts=[cls._get_auth_context_mount(read_only=False)],
+            volume_mounts=[
+                cls._get_auth_context_mount(run_path=run_path, read_only=False)
+            ],
         )
         return cls._patch_container(container)
 

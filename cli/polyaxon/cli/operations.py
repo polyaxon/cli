@@ -969,7 +969,7 @@ def execute(ctx, project, uid, executor):
             reason="CliK8SExecutor",
             message="Operation is running",
         )
-        result = executor.create_from_run(response)
+        result = executor.create_from_run(response, default_auth=True)
         if result["status"] == V1Statuses.SUCCEEDED:
             polyaxon_client.log_succeeded(
                 reason="CliDockerExecutor", message="Operation was succeeded"
@@ -1011,7 +1011,7 @@ def execute(ctx, project, uid, executor):
             reason="CliK8SExecutor",
             message="Operation is running",
         )
-        executor.create_from_run(response)
+        executor.create_from_run(response, default_auth=True)
 
     def _execute_on_local_process(response: V1Run):
         from polyaxon.process.executor.executor import Executor

@@ -31,7 +31,7 @@ class TestInitFile(BaseConverterTest):
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
                 run_path="test",
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True, run_path="test"),
         ]
         assert file_args.to_json() == '{"content":"test","filename":"file"}'
         assert container.args == [
@@ -73,5 +73,5 @@ class TestInitFile(BaseConverterTest):
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
                 run_path="test",
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True, run_path="test"),
         ]

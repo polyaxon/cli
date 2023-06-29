@@ -44,7 +44,7 @@ class TestInitDockerfile(BaseConverterTest):
                 mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
                 run_path="test",
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True, run_path="test"),
         ]
 
         dockerfile_args = V1DockerfileType(
@@ -89,5 +89,5 @@ class TestInitDockerfile(BaseConverterTest):
                 mount_path="/somepath",
                 run_path="test",
             ),
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(read_only=True, run_path="test"),
         ]

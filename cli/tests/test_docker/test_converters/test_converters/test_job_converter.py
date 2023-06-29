@@ -91,6 +91,7 @@ class TestJobConverter(BaseConverterTest):
         assert containers == [
             self.converter._get_auth_context_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
+                run_path=self.converter.run_path,
                 env=self.converter._get_auth_service_env_vars(),
             )
         ]
@@ -244,6 +245,7 @@ class TestJobConverter(BaseConverterTest):
             [
                 self.converter._get_auth_context_init_container(
                     polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
+                    run_path=self.converter.run_path,
                     env=self.converter._get_auth_service_env_vars(),
                 ),
                 self.converter._get_artifacts_path_init_container(
@@ -487,6 +489,7 @@ class TestJobConverter(BaseConverterTest):
         assert containers == [
             self.converter._get_auth_context_init_container(
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
+                run_path=self.converter.run_path,
                 env=self.converter._get_auth_service_env_vars(),
             ),
             self.converter._get_artifacts_path_init_container(

@@ -58,6 +58,7 @@ class MainConverter(_BaseConverter):
                 use_artifacts_context=False,  # Main container has a check and handling for this
                 use_docker_context=plugins.docker,
                 use_shm_context=plugins.shm,
+                run_path=run_path,
             )
             if plugins
             else []

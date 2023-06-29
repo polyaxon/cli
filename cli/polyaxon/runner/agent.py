@@ -362,7 +362,7 @@ class BaseAgent:
         run_name: str,
         run_uuid: str,
         content: str,
-        default_auth=False,
+        default_auth: bool = False,
     ) -> Optional[Any]:
         try:
             return self.executor.make_and_convert(

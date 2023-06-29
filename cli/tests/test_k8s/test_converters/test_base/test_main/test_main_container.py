@@ -635,6 +635,8 @@ class TestMainContainer(BaseConverterTest):
         )
 
         assert container.volume_mounts == [
-            self.converter._get_auth_context_mount(read_only=True),
+            self.converter._get_auth_context_mount(
+                read_only=True, run_path=self.converter.run_path
+            ),
             self.converter._get_artifacts_context_mount(read_only=False),
         ]
