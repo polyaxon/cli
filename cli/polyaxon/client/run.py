@@ -1608,13 +1608,25 @@ class RunClient:
             )
 
     @client_handler(check_no_op=True, check_offline=True)
-    def resume(self, content: Optional[Union[str, Dict, V1Operation]] = None, **kwargs):
+    def resume(
+        self,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
+        recompile: bool = False,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        **kwargs,
+    ):
         """Resumes the current run
 
         Args:
             content: Dict or str, optional,
                  config to use for overriding the original run's config.
                  If `recompile` is `True` the content will be used as a full specification.
+            recompile: bool, optional, default: False, to restart a full specification polyaxonfile instead of an override.  # noqa
+            name: str, optional, default: None, name to use for the restarted run.
+            description: str, optional, default: None, description to use for the restarted run.
+            tags: list[str], optional, default: None, tags to use for the restarted run.
 
         Returns:
             V1Run instance.
@@ -1624,6 +1636,14 @@ class RunClient:
         if isinstance(content, V1Operation):
             content = content.to_json()
         body = V1Run(content=content)
+        if name:
+            body.name = name
+        if description:
+            body.description = description
+        if tags:
+            body.tags = validate_tags(tags, validate_yaml=True)
+        if recompile:
+            body.meta_info = {META_RECOMPILE: True}
         return self.client.runs_v1.resume_run(
             self.owner, self.project, self.run_uuid, body=body, **kwargs
         )

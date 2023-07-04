@@ -850,6 +850,13 @@ def restart(
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
 @click.option(
+    "--name",
+    type=str,
+    help="Name to give to this run, must be unique within the project, could be none.",
+)
+@click.option("--tags", type=str, help="Tags of this run (comma separated values).")
+@click.option("--description", type=str, help="The description to give to this run.")
+@click.option(
     "-f",
     "--file",
     "polyaxonfile",
@@ -866,7 +873,16 @@ def restart(
 )
 @click.pass_context
 @clean_outputs
-def resume(ctx, project, uid, polyaxonfile, recompile):
+def resume(
+    ctx,
+    project,
+    uid,
+    name,
+    tags,
+    description,
+    polyaxonfile,
+    recompile,
+):
     """Resume run.
 
     Uses /docs/core/cli/#caching
@@ -895,7 +911,13 @@ def resume(ctx, project, uid, polyaxonfile, recompile):
             run_uuid=run_uuid,
             manual_exceptions_handling=True,
         )
-        response = polyaxon_client.resume(content=content, recompile=recompile)
+        response = polyaxon_client.resume(
+            name=name,
+            description=description,
+            tags=tags,
+            content=content,
+            recompile=recompile,
+        )
         Printer.success("Run was resumed with uid {}".format(response.uuid))
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not resume run `{}`.".format(run_uuid))
