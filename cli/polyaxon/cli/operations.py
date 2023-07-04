@@ -751,7 +751,8 @@ def stop(ctx, project, uid, yes):
     "-c",
     is_flag=True,
     default=False,
-    help="To copy the run before restarting.",
+    help="Copy mode clones the run before restarting instead "
+    "to not mutate the current state of the run.",
 )
 @click.option(
     "--copy-dir",
@@ -773,7 +774,14 @@ def stop(ctx, project, uid, yes):
     "polyaxonfile",
     multiple=True,
     type=click.Path(exists=True),
-    help="The polyaxonfiles to update with, they should be an operation preset.",
+    help="Optional polyaxonfile to use. The config passed will be treated as an override."
+    "Use `--recompile` to use a full specification instead of an override/preset config.",
+)
+@click.option(
+    "--recompile",
+    is_flag=True,
+    default=False,
+    help="A flag to tell Polyaxon that polyaxonfile is a full specification.",
 )
 @click.pass_context
 @clean_outputs
@@ -788,6 +796,7 @@ def restart(
     copy_dirs,
     copy_files,
     polyaxonfile,
+    recompile,
 ):
     """Restart run.
 
@@ -821,7 +830,8 @@ def restart(
             name=name,
             description=description,
             tags=tags,
-            override_config=content,
+            content=content,
+            recompile=recompile,
             copy=copy,
             copy_dirs=copy_dirs,
             copy_files=copy_files,
@@ -845,11 +855,18 @@ def restart(
     "polyaxonfile",
     multiple=True,
     type=click.Path(exists=True),
-    help="The polyaxonfiles to update with, they should be an operation preset.",
+    help="Optional polyaxonfile to use. The config passed will be treated as an override."
+    "Use `--recompile` to use a full specification instead of an override/preset config.",
+)
+@click.option(
+    "--recompile",
+    is_flag=True,
+    default=False,
+    help="A flag to tell Polyaxon that polyaxonfile is a full specification.",
 )
 @click.pass_context
 @clean_outputs
-def resume(ctx, project, uid, polyaxonfile):
+def resume(ctx, project, uid, polyaxonfile, recompile):
     """Resume run.
 
     Uses /docs/core/cli/#caching
@@ -878,7 +895,7 @@ def resume(ctx, project, uid, polyaxonfile):
             run_uuid=run_uuid,
             manual_exceptions_handling=True,
         )
-        response = polyaxon_client.resume(override_config=content)
+        response = polyaxon_client.resume(content=content, recompile=recompile)
         Printer.success("Run was resumed with uid {}".format(response.uuid))
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not resume run `{}`.".format(run_uuid))

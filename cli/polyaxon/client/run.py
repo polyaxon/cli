@@ -32,7 +32,7 @@ from polyaxon.api import K8S_V1_LOCATION, STREAMS_V1_LOCATION
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.client.client import PolyaxonClient
 from polyaxon.client.decorators import client_handler, get_global_or_inline_config
-from polyaxon.constants.metadata import META_COPY_ARTIFACTS
+from polyaxon.constants.metadata import META_COPY_ARTIFACTS, META_RECOMPILE
 from polyaxon.containers.names import MAIN_CONTAINER_NAMES
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.getters import (
@@ -1544,8 +1544,9 @@ class RunClient:
     @client_handler(check_no_op=True, check_offline=True)
     def restart(
         self,
-        override_config=None,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
         copy: bool = False,
+        recompile: bool = False,
         copy_dirs: Optional[List[str]] = None,
         copy_files: Optional[List[str]] = None,
         name: Optional[str] = None,
@@ -1556,9 +1557,11 @@ class RunClient:
         """Restarts the current run
 
         Args:
-            override_config: Dict or str, optional,
+            content: Dict or str, optional,
                  config to use for overriding the original run's config.
+                 If `recompile` is `True` the content will be used as a full specification.
             copy: bool, optional, default: False, to restart with copy mechanism.
+            recompile: bool, optional, default: False, to restart a full specification polyaxonfile instead of an override.  # noqa
             copy_dirs: List[str], optional, default: None or all in copy mode, list of dirs to copy.
             copy_files: List[str], optional, default: None or all in copy mode, list of files to copy.  # noqa
             name: str, optional, default: None, name to use for the restarted run.
@@ -1568,7 +1571,11 @@ class RunClient:
         Returns:
             V1Run instance.
         """
-        body = V1Run.construct(content=override_config)
+        if isinstance(content, Mapping):
+            content = V1Operation.from_dict(content)
+        if isinstance(content, V1Operation):
+            content = content.to_json()
+        body = V1Run.construct(content=content)
         if name:
             body.name = name
         if description:
@@ -1589,6 +1596,9 @@ class RunClient:
                         "{}/{}".format(self.run_uuid, cp) for cp in copy_files
                     ]
                 body.meta_info = {META_COPY_ARTIFACTS: copy_artifacts.to_dict()}
+            if recompile:
+                body.meta_info = body.meta_info or {}
+                body.meta_info[META_RECOMPILE] = True
             return self.client.runs_v1.copy_run(
                 self.owner, self.project, self.run_uuid, body=body, **kwargs
             )
@@ -1598,17 +1608,22 @@ class RunClient:
             )
 
     @client_handler(check_no_op=True, check_offline=True)
-    def resume(self, override_config=None, **kwargs):
+    def resume(self, content: Optional[Union[str, Dict, V1Operation]] = None, **kwargs):
         """Resumes the current run
 
         Args:
-            override_config: Dict or str, optional,
+            content: Dict or str, optional,
                  config to use for overriding the original run's config.
+                 If `recompile` is `True` the content will be used as a full specification.
 
         Returns:
             V1Run instance.
         """
-        body = V1Run(content=override_config)
+        if isinstance(content, Mapping):
+            content = V1Operation.from_dict(content)
+        if isinstance(content, V1Operation):
+            content = content.to_json()
+        body = V1Run(content=content)
         return self.client.runs_v1.resume_run(
             self.owner, self.project, self.run_uuid, body=body, **kwargs
         )
