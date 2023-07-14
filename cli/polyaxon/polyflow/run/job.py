@@ -177,7 +177,7 @@ class V1Job(BaseRun, DestinationImageMixin):
 
 
     A list of [sidecar containers](/docs/core/specification/sidecars/)
-    that will used as sidecars.
+    that will be used as sidecars.
 
     ```yaml
     >>> run:

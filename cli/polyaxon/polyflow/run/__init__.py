@@ -5,8 +5,7 @@ from pydantic import Field
 
 from polyaxon.polyflow.run.cleaner import V1CleanerJob
 from polyaxon.polyflow.run.dag import V1Dag
-from polyaxon.polyflow.run.dask import V1Dask
-from polyaxon.polyflow.run.flink import V1Flink
+from polyaxon.polyflow.run.dask import V1DaskJob, V1DaskReplica
 from polyaxon.polyflow.run.job import V1Job
 from polyaxon.polyflow.run.kinds import (
     V1CloningKind,
@@ -25,11 +24,15 @@ from polyaxon.polyflow.run.kubeflow.tf_job import V1TFJob
 from polyaxon.polyflow.run.kubeflow.xgboost_job import V1XGBoostJob
 from polyaxon.polyflow.run.notifier import V1NotifierJob
 from polyaxon.polyflow.run.patch import validate_run_patch
-from polyaxon.polyflow.run.ray import V1Ray
+from polyaxon.polyflow.run.ray import V1RayJob, V1RayReplica
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.service import V1Service
-from polyaxon.polyflow.run.spark.replica import V1SparkReplica
-from polyaxon.polyflow.run.spark.spark import V1Spark, V1SparkDeploy, V1SparkType
+from polyaxon.polyflow.run.spark import (
+    V1SparkDeploy,
+    V1SparkJob,
+    V1SparkReplica,
+    V1SparkType,
+)
 from polyaxon.polyflow.run.tuner import V1TunerJob
 
 V1Runtime = Annotated[
@@ -43,10 +46,9 @@ V1Runtime = Annotated[
         V1MXJob,
         V1PaddleJob,
         V1XGBoostJob,
-        V1Spark,
-        V1Flink,
-        V1Dask,
-        V1Ray,
+        V1SparkJob,
+        V1DaskJob,
+        V1RayJob,
         V1NotifierJob,
         V1CleanerJob,
         V1TunerJob,
@@ -92,16 +94,16 @@ class RunMixin:
         return self.get_run_kind() == V1RunKind.XGBJOB
 
     @property
-    def is_spark_run(self):
-        return self.get_run_kind() == V1RunKind.SPARK
+    def is_spark_job_run(self):
+        return self.get_run_kind() == V1RunKind.SPARKJOB
 
     @property
-    def is_flink_run(self):
-        return self.get_run_kind() == V1RunKind.FLINK
+    def is_ray_job_run(self):
+        return self.get_run_kind() == V1RunKind.RAYJOB
 
     @property
-    def is_dask_run(self):
-        return self.get_run_kind() == V1RunKind.DASK
+    def is_dask_job_run(self):
+        return self.get_run_kind() == V1RunKind.DASKJOB
 
     @property
     def is_dag_run(self):

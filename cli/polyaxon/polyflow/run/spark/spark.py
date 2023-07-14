@@ -3,11 +3,12 @@ from typing_extensions import Literal
 
 from clipped.types.ref_or_obj import RefField
 from clipped.utils.enums import PEnum
-from pydantic import Field, StrictStr
+from pydantic import Field, StrictStr, validator
 
-from polyaxon.k8s import k8s_schemas
+from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
+from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.spark.replica import V1SparkReplica
 
 
@@ -24,13 +25,13 @@ class V1SparkDeploy(str, PEnum):
     IN_CLUSTER_CLIENT = "in_cluster_client"
 
 
-class V1Spark(BaseRun):
+class V1SparkJob(BaseRun):
     """Spark jobs are used to run Spark applications on Kubernetes.
 
     [Apache Spark](https://spark.apache.org/) is data-processing engine.
 
     Args:
-        kind: str, should be equal `spark`
+        kind: str, should be equal `sparkjob`
         connections: List[str], optional
         volumes: List[[Kubernetes Volume](https://kubernetes.io/docs/concepts/storage/volumes/)],
              optional
@@ -52,7 +53,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   connections:
     >>>   volumes:
     >>>   type:
@@ -72,9 +73,9 @@ class V1Spark(BaseRun):
     ## Python usage
 
     ```python
-    >>> from polyaxon.polyflow import V1Environment, V1Init, V1Spark, V1SparkReplica, V1SparkType
+    >>> from polyaxon.polyflow import V1Environment, V1Init, V1SparkJob, V1SparkReplica, V1SparkType
     >>> from polyaxon.k8s import k8s_schemas
-    >>> spark_job = V1Spark(
+    >>> spark_job = V1SparkJob(
     >>>     connections=["connection-name1"],
     >>>     volumes=[k8s_schemas.V1Volume(...)],
     >>>     type=V1SparkType.PYTHON,
@@ -96,7 +97,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     ```
 
     ### connections
@@ -117,7 +118,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   connections: [connection1, connection2]
     ```
 
@@ -132,7 +133,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   volumes:
     >>>     - name: volume1
     >>>       persistentVolumeClaim:
@@ -146,7 +147,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   type: Python
     >>>   ...
     ```
@@ -157,7 +158,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   sparkVersion: 3.0.0
     >>>   ...
     ```
@@ -168,7 +169,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   deployMode: cluster
     >>>   ...
     ```
@@ -180,7 +181,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   mainClass: ...
     >>>   ...
     ```
@@ -191,7 +192,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   mainApplicationFile: ...
     >>>   ...
     ```
@@ -202,7 +203,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   arguments: [...]
     >>>   ...
     ```
@@ -216,7 +217,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   hadoopConf: {...}
     >>>   ...
     ```
@@ -228,7 +229,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   sparkConf: {...}
     >>>   ...
     ```
@@ -241,7 +242,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   hadoopConfigMap: {...}
     >>>   ...
     ```
@@ -254,7 +255,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   sparkConfigMap: {...}
     >>>   ...
     ```
@@ -265,7 +266,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   executor:
     >>>     replicas: 1
     >>>     ...
@@ -278,7 +279,7 @@ class V1Spark(BaseRun):
 
     ```yaml
     >>> run:
-    >>>   kind: spark
+    >>>   kind: sparkjob
     >>>   driver:
     >>>     replicas: 1
     >>>     ...
@@ -286,7 +287,7 @@ class V1Spark(BaseRun):
     ```
     """
 
-    _IDENTIFIER = V1RunKind.SPARK
+    _IDENTIFIER = V1RunKind.SPARKJOB
     _SWAGGER_FIELDS = [
         "volumes",
     ]
@@ -315,3 +316,25 @@ class V1Spark(BaseRun):
     )
     executor: Optional[Union[V1SparkReplica, RefField]]
     driver: Optional[Union[V1SparkReplica, RefField]]
+
+    @validator("volumes", always=True, pre=True)
+    def validate_volumes(cls, v):
+        if not v:
+            return v
+        return [k8s_validation.validate_k8s_volume(vi) for vi in v]
+
+    def get_resources(self):
+        resources = V1RunResources()
+        for i in range(self.replicas or 1):
+            resources += V1RunResources.from_container(self.container)
+
+        return resources
+
+    def get_all_containers(self):
+        return [self.container] if self.container else []
+
+    def get_all_connections(self):
+        return self.connections or []
+
+    def get_all_init(self):
+        return self.init or []

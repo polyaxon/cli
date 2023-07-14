@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow.run.cleaner import V1CleanerJob
 from polyaxon.polyflow.run.dag import V1Dag
-from polyaxon.polyflow.run.dask import V1Dask
+from polyaxon.polyflow.run.dask import V1DaskJob, V1DaskReplica
 from polyaxon.polyflow.run.job import V1Job
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.kubeflow.mpi_job import V1MPIJob
@@ -16,9 +16,9 @@ from polyaxon.polyflow.run.kubeflow.replica import V1KFReplica
 from polyaxon.polyflow.run.kubeflow.tf_job import V1TFJob
 from polyaxon.polyflow.run.kubeflow.xgboost_job import V1XGBoostJob
 from polyaxon.polyflow.run.notifier import V1NotifierJob
+from polyaxon.polyflow.run.ray import V1RayJob, V1RayReplica
 from polyaxon.polyflow.run.service import V1Service
-from polyaxon.polyflow.run.spark.replica import V1SparkReplica
-from polyaxon.polyflow.run.spark.spark import V1Spark
+from polyaxon.polyflow.run.spark import V1SparkJob, V1SparkReplica
 from polyaxon.polyflow.run.tuner import V1TunerJob
 
 
@@ -59,13 +59,21 @@ def validate_run_patch(run_patch: Dict, kind: V1RunKind):
             patch = V1XGBoostJob.from_dict(run_patch)
         except ValidationError:
             patch = V1KFReplica.from_dict(run_patch)
-    elif kind == V1RunKind.SPARK:
+    elif kind == V1RunKind.SPARKJOB:
         try:
-            patch = V1Spark.from_dict(run_patch)
+            patch = V1SparkJob.from_dict(run_patch)
         except ValidationError:
             patch = V1SparkReplica.from_dict(run_patch)
-    elif kind == V1RunKind.DASK:
-        patch = V1Dask.from_dict(run_patch)
+    elif kind == V1RunKind.RAYJOB:
+        try:
+            patch = V1RayJob.from_dict(run_patch)
+        except ValidationError:
+            patch = V1RayReplica.from_dict(run_patch)
+    elif kind == V1RunKind.DASKJOB:
+        try:
+            patch = V1DaskJob.from_dict(run_patch)
+        except ValidationError:
+            patch = V1DaskReplica.from_dict(run_patch)
     elif kind == V1RunKind.NOTIFIER:
         patch = V1NotifierJob.from_dict(run_patch)
     elif kind == V1RunKind.TUNER:

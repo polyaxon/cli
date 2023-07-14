@@ -1,34 +1,20 @@
 from typing import List, Optional, Union
-from typing_extensions import Literal
 
 from clipped.types.ref_or_obj import IntOrRef, RefField
-from pydantic import Field, StrictStr, validator
+from pydantic import StrictStr, validator
 
 from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.init import V1Init
 from polyaxon.polyflow.run.base import BaseRun
-from polyaxon.polyflow.run.kinds import V1RunKind
+from polyaxon.polyflow.run.resources import V1RunResources
 
 
-class V1Dask(BaseRun):
-    """Dask jobs are used to run distributed jobs using a
-    [Dask cluster](https://kubernetes.dask.org/en/latest/).
-
-    > Dask Kubernetes deploys Dask workers on Kubernetes clusters using native Kubernetes APIs.
-    > It is designed to dynamically launch short-lived deployments of workers
-    > during the lifetime of a Python process.
-
-    The Dask job spawn a temporary adaptive Dask cluster with a
-    Dask scheduler and workers to run your container.
+class V1DaskReplica(BaseRun):
+    """Dask replica is the specification for a Dask job, worker or scheduler.
 
     Args:
-        kind: str, should be equal `dask`
-        threads: int, optiona
-        scale: int, optional
-        adapt_min: int, optional
-        adapt_max: int, optional
-        adapt_interval: int, optional
+        replicas: str, optional int
         environment: [V1Environment](/docs/core/specification/environment/), optional
         connections: List[str], optional
         volumes: List[[Kubernetes Volume](https://kubernetes.io/docs/concepts/storage/volumes/)],
@@ -40,13 +26,8 @@ class V1Dask(BaseRun):
     ## YAML usage
 
     ```yaml
-    >>> run:
-    >>>   kind: dask
-    >>>   threads:
-    >>>   scale:
-    >>>   adaptMin:
-    >>>   adaptMax:
-    >>>   adaptInterval:
+    >>> head/worker:
+    >>>   replicas:
     >>>   environment:
     >>>   connections:
     >>>   volumes:
@@ -58,17 +39,11 @@ class V1Dask(BaseRun):
     ## Python usage
 
     ```python
-    >>> from polyaxon.polyflow import V1Environment, V1Init, V1Dask
+    >>> from polyaxon.polyflow import V1Environment, V1Init, V1DaskReplica
     >>> from polyaxon.k8s import k8s_schemas
-    >>> dask_job = V1Dask(
-    >>>     threads=2,
-    >>>     scale=None,
-    >>>     adapt_min=1,
-    >>>     adapt_max=100,
-    >>>     adapt_interval=1000,
+    >>> replica = V1DaskReplica(
+    >>>     replicas=2,
     >>>     environment=V1Environment(...),
-    >>>     connections=["connection-name1"],
-    >>>     volumes=[k8s_schemas.V1Volume(...)],
     >>>     init=[V1Init(...)],
     >>>     sidecars=[k8s_schemas.V1Container(...)],
     >>>     container=k8s_schemas.V1Container(...),
@@ -77,78 +52,22 @@ class V1Dask(BaseRun):
 
     ## Fields
 
-    ### kind
+    ### replicas
 
-    The kind signals to the CLI, client, and other tools that
-    this component's runtime is a dask job.
-
-    If you are using the python client to create the runtime,
-    this field is not required and is set by default.
+    The number of worker replica instances.
 
     ```yaml
-    >>> run:
-    >>>   kind: dask
-    ```
-
-    ### threads
-
-    Number of threads to pass to the Dask worker, default is `1`.
-
-    ```yaml
-    >>> run:
-    >>>   kind: dask
-    >>>   threads: 2
-    ```
-
-    ### scale
-
-    To specify number of workers explicitly.
-
-    ```yaml
-    >>> run:
-    >>>   kind: dask
-    >>>   scale: 20
-    ```
-
-
-    ### adaptMin
-
-    To specify adaptive mode min workers and dynamically scale based on current workload.
-
-    ```yaml
-    >>> run:
-    >>>   kind: dask
-    >>>   adaptMin: 2
-    ```
-
-    ### adaptMax
-
-    To specify adaptive mode max workers and dynamically scale based on current workload.
-
-    ```yaml
-    >>> run:
-    >>>   kind: dask
-    >>>   adaptMax: 20
-    ```
-
-    ### adaptInterval
-
-    To specify adaptive mode interval check, default `1000 ms`.
-
-    ```yaml
-    >>> run:
-    >>>   kind: dask
-    >>>   adaptInterval: 20000
+    >>> executor:
+    >>>   replicas: 2
     ```
 
     ### environment
 
     Optional [environment section](/docs/core/specification/environment/),
-    it provides a way to inject pod related information.
+    it provides a way to inject pod related information into the replica (executor/driver).
 
     ```yaml
-    >>> run:
-    >>>   kind: dask
+    >>> worker:
     >>>   environment:
     >>>     labels:
     >>>        key1: "label1"
@@ -179,41 +98,14 @@ class V1Dask(BaseRun):
     environment variables for your main container to function correctly.
 
     ```yaml
-    >>> run:
-    >>>   kind: dask
+    >>> worker:
     >>>   connections: [connection1, connection2]
-    ```
-
-    ### volumes
-
-    A list of [Kubernetes Volumes](https://kubernetes.io/docs/concepts/storage/volumes/)
-    to resolve and mount for your jobs.
-
-    This is an advanced use-case where configuring a connection is not an option.
-
-    When you add a volume you need to mount it manually to your container(s).
-
-    ```yaml
-    >>> run:
-    >>>   kind: dask
-    >>>   volumes:
-    >>>     - name: volume1
-    >>>       persistentVolumeClaim:
-    >>>         claimName: pvc1
-    >>>   ...
-    >>>   container:
-    >>>     name: myapp-container
-    >>>     image: busybox:1.28
-    >>>     command: ['sh', '-c', 'echo custom init container']
-    >>>     volumeMounts:
-    >>>     - name: volume1
-    >>>       mountPath: /mnt/vol/path
     ```
 
     ### init
 
     A list of [init handlers and containers](/docs/core/specification/init/)
-    to resolve for the job.
+    to resolve for the replica (executor/driver).
 
     <blockquote class="light">
     If you are referencing a connection it must be configured.
@@ -225,8 +117,7 @@ class V1Dask(BaseRun):
     </blockquote>
 
     ```yaml
-    >>> run:
-    >>>   kind: dask
+    >>> worker:
     >>>   init:
     >>>     - artifacts:
     >>>         dirs: ["path/on/the/default/artifacts/store"]
@@ -248,11 +139,10 @@ class V1Dask(BaseRun):
 
 
     A list of [sidecar containers](/docs/core/specification/sidecars/)
-    that will used as sidecars.
+    that will be used as sidecars.
 
     ```yaml
-    >>> run:
-    >>>   kind: dask
+    >>> worker:
     >>>   sidecars:
     >>>     - name: sidecar2
     >>>       image: busybox:1.28
@@ -269,11 +159,11 @@ class V1Dask(BaseRun):
     ### container
 
     The [main Kubernetes Container](https://kubernetes.io/docs/concepts/containers/)
-    that will run your experiment training or data processing logic.
+    that will run your experiment training or data processing
+    logic for the replica (executor/driver).
 
     ```yaml
-    >>> run:
-    >>>   kind: dask
+    >>> worker:
     >>>   init:
     >>>     - connection: my-code-repo
     >>>   container:
@@ -282,15 +172,10 @@ class V1Dask(BaseRun):
     ```
     """
 
-    _IDENTIFIER = V1RunKind.DASK
+    _IDENTIFIER = "replica"
     _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    threads: Optional[IntOrRef]
-    scale: Optional[IntOrRef]
-    adapt_min: Optional[IntOrRef] = Field(alias="adaptMin")
-    adapt_max: Optional[IntOrRef] = Field(alias="adaptMax")
-    adapt_interval: Optional[IntOrRef] = Field(alias="adaptInterval")
+    replicas: Optional[IntOrRef]
     environment: Optional[Union[V1Environment, RefField]]
     connections: Optional[Union[List[StrictStr], RefField]]
     volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
@@ -313,3 +198,19 @@ class V1Dask(BaseRun):
     @validator("container", always=True, pre=True)
     def validate_container(cls, v):
         return k8s_validation.validate_k8s_container(v)
+
+    def get_resources(self):
+        resources = V1RunResources()
+        for i in range(self.replicas or 1):
+            resources += V1RunResources.from_container(self.container)
+
+        return resources
+
+    def get_all_containers(self):
+        return [self.container] if self.container else []
+
+    def get_all_connections(self):
+        return self.connections or []
+
+    def get_all_init(self):
+        return self.init or []

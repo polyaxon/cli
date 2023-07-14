@@ -168,7 +168,7 @@ class V1KFReplica(BaseSchemaModel):
 
 
     A list of [sidecar containers](/docs/core/specification/sidecars/)
-    that will used as sidecars.
+    that will be used as sidecars.
 
     ```yaml
     >>> worker:
