@@ -1,13 +1,10 @@
-from typing import List, Optional, Union
+from typing import Optional, Union
 from typing_extensions import Literal
 
-from clipped.types.ref_or_obj import IntOrRef, RefField
-from pydantic import Field, StrictStr, validator
+from clipped.types.ref_or_obj import RefField
 
-from polyaxon.k8s import k8s_schemas, k8s_validation
-from polyaxon.polyflow.environment import V1Environment
-from polyaxon.polyflow.init import V1Init
 from polyaxon.polyflow.run.base import BaseRun
+from polyaxon.polyflow.run.dask.replica import V1DaskReplica
 from polyaxon.polyflow.run.kinds import V1RunKind
 
 
@@ -128,30 +125,6 @@ class V1DaskJob(BaseRun):
     _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    threads: Optional[IntOrRef]
-    scale: Optional[IntOrRef]
-    adapt_min: Optional[IntOrRef] = Field(alias="adaptMin")
-    adapt_max: Optional[IntOrRef] = Field(alias="adaptMax")
-    adapt_interval: Optional[IntOrRef] = Field(alias="adaptInterval")
-    environment: Optional[Union[V1Environment, RefField]]
-    connections: Optional[Union[List[StrictStr], RefField]]
-    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
-    init: Optional[Union[List[V1Init], RefField]]
-    sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]]
-    container: Optional[Union[k8s_schemas.V1Container, RefField]]
-
-    @validator("volumes", always=True, pre=True)
-    def validate_volumes(cls, v):
-        if not v:
-            return v
-        return [k8s_validation.validate_k8s_volume(vi) for vi in v]
-
-    @validator("sidecars", always=True, pre=True)
-    def validate_helper_containers(cls, v):
-        if not v:
-            return v
-        return [k8s_validation.validate_k8s_container(vi) for vi in v]
-
-    @validator("container", always=True, pre=True)
-    def validate_container(cls, v):
-        return k8s_validation.validate_k8s_container(v)
+    job: Optional[Union[V1DaskReplica, RefField]]
+    worker: Optional[Union[V1DaskReplica, RefField]]
+    scheduler: Optional[Union[V1DaskReplica, RefField]]
