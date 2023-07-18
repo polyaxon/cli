@@ -4,6 +4,9 @@ from datetime import datetime
 from typing import Dict, Optional
 
 from polyaxon.compiler.contexts.job import JobContextsManager
+from polyaxon.compiler.contexts.ray_job import RayJobContextsManager
+from polyaxon.compiler.contexts.dask_job import DaskJobContextsManager
+from polyaxon.compiler.contexts.spark_job import SparkJobContextsManager
 from polyaxon.compiler.contexts.kubeflow import (
     MPIJobContextsManager,
     MXJobContextsManager,
@@ -34,6 +37,9 @@ CONTEXTS_MANAGERS = {
     V1RunKind.XGBJOB: XGBoostJobContextsManager,
     V1RunKind.PYTORCHJOB: PytorchJobContextsManager,
     V1RunKind.PADDLEJOB: PaddleJobContextsManager,
+    V1RunKind.RAYJOB: RayJobContextsManager,
+    V1RunKind.DASKJOB: DaskJobContextsManager,
+    V1RunKind.SPARKJOB: SparkJobContextsManager,
 }
 
 
