@@ -257,3 +257,83 @@ def get_fxt_tf_job():
             },
         },
     }
+
+
+def get_fxt_ray_job():
+    return {
+        "version": 1.1,
+        "kind": "operation",
+        "name": "foo",
+        "description": "a description",
+        "component": {
+            "name": "ray-job",
+            "tags": ["tag1", "tag2"],
+            "run": {
+                "kind": "rayjob",
+                "entrypoint": "python sample_code.py",
+                "runtimeEnv": {
+                    "pip": ["requests==2.26.0", "pendulum==2.1.2"],
+                    "env_vars": {"counter_name": "test_counter"},
+                },
+                "rayVersion": "2.5.0",
+                "head": {
+                    "environment": {
+                        "nodeSelector": {"polyaxon": "experiments-gpu-t4"},
+                        "tolerations": [
+                            {
+                                "key": "nvidia.com/gpu",
+                                "operator": "Equal",
+                                "value": "present",
+                                "effect": "NoSchedule",
+                            }
+                        ],
+                    },
+                    "container": {
+                        "resources": {
+                            "requests": {"cpu": 4, "memory": "4Gi"},
+                            "limits": {"nvidia.com/gpu": 1, "cpu": 4, "memory": "8Gi"},
+                        },
+                        "image": "foo/bar:gpu",
+                        "workingDir": "{{ globals.run_artifacts_path }}/uploads/src",
+                        "command": ["python", "-u", "mnist.py"],
+                    },
+                },
+                "workers": {
+                    "small-group": {
+                        "replicas": 2,
+                        "minReplicas": 2,
+                        "maxReplicas": 4,
+                        "rayStartParams": {},
+                        "environment": {
+                            "restartPolicy": "OnFailure",
+                            "nodeSelector": {"polyaxon": "experiments-gpu-t4"},
+                            "tolerations": [
+                                {
+                                    "key": "nvidia.com/gpu",
+                                    "operator": "Equal",
+                                    "value": "present",
+                                    "effect": "NoSchedule",
+                                }
+                            ],
+                        },
+                        "container": {
+                            "resources": {
+                                "requests": {"cpu": 4, "memory": "4Gi"},
+                                "limits": {
+                                    "nvidia.com/gpu": 1,
+                                    "cpu": 4,
+                                    "memory": "8Gi",
+                                },
+                            },
+                            "image": "foo/bar:gpu",
+                            "lifecycle": {
+                                "preStop": {
+                                    "exec": {"command": ["/bin/sh", "-c", "ray stop"]}
+                                }
+                            },
+                        },
+                    }
+                },
+            },
+        },
+    }

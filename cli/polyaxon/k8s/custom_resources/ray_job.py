@@ -68,18 +68,19 @@ def get_ray_replicas_template(
 def get_ray_worker_replicas_template(
     namespace: str,
     resource_name: str,
-    replicas: Optional[List[ReplicaSpec]],
+    replicas: Optional[Dict[str, ReplicaSpec]],
     labels: Dict[str, str],
     annotations: Dict[str, str],
     template_spec: Dict,
 ):
     workers = []
-    for i, replica in enumerate(replicas or []):
+    for replica_name in replicas or {}:
+        replica = replicas[replica_name]
         workers.append(
             _get_ray_replicas_template(
                 namespace=namespace,
                 resource_name=resource_name,
-                replica_name="Worker{}".format(i + 1),
+                replica_name=replica_name,
                 replica=replica,
                 labels=labels,
                 annotations=annotations,
@@ -94,7 +95,7 @@ def get_ray_job_custom_resource(
     resource_name: str,
     namespace: str,
     head: Optional[ReplicaSpec],
-    workers: Optional[List[ReplicaSpec]],
+    workers: Optional[Dict[str, ReplicaSpec]],
     termination: V1Termination,
     collect_logs: bool,
     sync_statuses: bool,

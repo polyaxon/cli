@@ -137,4 +137,7 @@ class RunMixin:
             or self.is_tf_job_run
             or self.is_mx_job_run
             or self.is_xgb_job_run
+            or self.is_spark_job_run
+            or self.is_ray_job_run
+            or self.is_dask_job_run
         )

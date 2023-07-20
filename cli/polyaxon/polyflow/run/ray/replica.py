@@ -17,7 +17,6 @@ class V1RayReplica(BaseSchemaModel):
         replicas: str, optional int
         min_replicas: str, int, optional
         max_replicas: str, int, optional
-        group_name: str, str, optional
         ray_start_params: str, Dict[str, str], optional
         environment: [V1Environment](/docs/core/specification/environment/), optional
         connections: List[str], optional
@@ -30,11 +29,10 @@ class V1RayReplica(BaseSchemaModel):
     ## YAML usage
 
     ```yaml
-    >>> head/worker:
+    >>> head / workerName:
     >>>   replicas:
     >>>   minReplicas:
     >>>   maxReplicas:
-    >>>   groupName:
     >>>   rayStartParams:
     >>>   environment:
     >>>   connections:
@@ -87,15 +85,6 @@ class V1RayReplica(BaseSchemaModel):
     >>>   minReplicas: 1
     ```
 
-    ### groupName
-
-    The group name for the worker replica instances.
-
-    ```yaml
-    >>> executor:
-    >>>   groupName: "group1"
-    ```
-
     ### rayStartParams
 
     The ray start parameters.
@@ -145,7 +134,7 @@ class V1RayReplica(BaseSchemaModel):
     environment variables for your main container to function correctly.
 
     ```yaml
-    >>> worker:
+    >>> replica:
     >>>   connections: [connection1, connection2]
     ```
 
@@ -164,7 +153,7 @@ class V1RayReplica(BaseSchemaModel):
     </blockquote>
 
     ```yaml
-    >>> worker:
+    >>> replica:
     >>>   init:
     >>>     - artifacts:
     >>>         dirs: ["path/on/the/default/artifacts/store"]
@@ -189,7 +178,7 @@ class V1RayReplica(BaseSchemaModel):
     that will be used as sidecars.
 
     ```yaml
-    >>> worker:
+    >>> replica:
     >>>   sidecars:
     >>>     - name: sidecar2
     >>>       image: busybox:1.28
@@ -210,7 +199,7 @@ class V1RayReplica(BaseSchemaModel):
     logic for the replica (executor/driver).
 
     ```yaml
-    >>> worker:
+    >>> replica:
     >>>   init:
     >>>     - connection: my-code-repo
     >>>   container:
@@ -225,7 +214,6 @@ class V1RayReplica(BaseSchemaModel):
     replicas: Optional[IntOrRef]
     min_replicas: Optional[IntOrRef] = Field(alias="minReplicas")
     max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas")
-    group_name: Optional[str] = Field(alias="groupName")
     ray_start_params: Optional[Dict[str, str]] = Field(alias="rayStartParams")
     environment: Optional[Union[V1Environment, RefField]]
     connections: Optional[Union[List[StrictStr], RefField]]

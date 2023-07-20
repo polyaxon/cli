@@ -26,7 +26,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
         metadata: int, Dict, optional
         ray_version: str, optional
         head: [V1RayReplica](/docs/experimentation/distributed/ray-replica/), optional
-        workers: List[[V1RayReplica](/docs/experimentation/distributed/ray-replica/)], optional
+        workers: Dict[str, [V1RayReplica](/docs/experimentation/distributed/ray-replica/)], optional
 
 
     ## YAML usage
@@ -39,7 +39,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
     >>>   metadata:
     >>>   rayVersion:
     >>>   head:
-    >>>   worker:
+    >>>   workers:
     ```
 
     ## Python usage
@@ -126,11 +126,11 @@ class V1RayJob(BaseRun, DestinationImageMixin):
     >>> run:
     >>>   kind: rayjob
     >>>   workers:
-    >>>     - groupName: small-group
+    >>>     small-group:
     >>>       replicas: 1
     >>>       minReplicas: 1
     >>>       maxReplicas: 5
-    >>>     - ...
+    >>>     ...
     >>>   ...
     ```
     """
@@ -143,23 +143,25 @@ class V1RayJob(BaseRun, DestinationImageMixin):
     metadata: Optional[Union[Dict[str, str], RefField]]
     ray_version: Optional[str] = Field(alias="rayVersion")
     head: Optional[Union[V1RayReplica, RefField]]
-    workers: Optional[List[Union[V1RayReplica, RefField]]]
+    workers: Optional[Dict[str, Union[V1RayReplica, RefField]]]
 
     def apply_image_destination(self, image: str):
         if self.head:
             self.head.container = self.head.container or V1Container()
             self.head.container.image = image
         if self.workers:
-            for worker in self.workers:
+            for worker_name in self.workers:
+                worker = self.workers[worker_name]
                 worker.container = worker.container or V1Container()
                 worker.container.image = image
 
     def get_resources(self):
         resources = V1RunResources()
+        if self.head:
+            resources += self.head.get_resources()
         if self.workers:
-            resources += self.workers.get_resources()
-        if self.workers:
-            for worker in self.workers:
+            for worker_name in self.workers:
+                worker = self.workers[worker_name]
                 resources += worker.get_resources()
         return resources
 
@@ -168,7 +170,8 @@ class V1RayJob(BaseRun, DestinationImageMixin):
         if self.head:
             containers += self.head.get_all_containers()
         if self.workers:
-            for worker in self.workers:
+            for worker_name in self.workers:
+                worker = self.workers[worker_name]
                 containers += worker.get_all_containers()
         return containers
 
@@ -177,7 +180,8 @@ class V1RayJob(BaseRun, DestinationImageMixin):
         if self.head:
             connections += self.head.get_all_connections()
         if self.workers:
-            for worker in self.workers:
+            for worker_name in self.workers:
+                worker = self.workers[worker_name]
                 connections += worker.get_all_connections()
         return connections
 
@@ -186,6 +190,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
         if self.head:
             init += self.head.get_all_init()
         if self.workers:
-            for worker in self.workers:
+            for worker_name in self.workers:
+                worker = self.workers[worker_name]
                 init += worker.get_all_init()
         return init

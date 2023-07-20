@@ -708,12 +708,15 @@ class TestPolyaxonfiles(BaseTestCase):
         assert run_config.termination is not None
         assert run_config.termination.ttl == 12
         assert run_config.is_ray_job_run
-        assert run_config.run.workers[0].replicas == 5
-        assert run_config.run.workers[0].min_replicas == 5
-        assert run_config.run.workers[0].max_replicas == 15
-        assert run_config.run.workers[0].environment.affinity is not None
-        assert run_config.run.workers[0].environment.restart_policy == "OnFailure"
-        assert run_config.run.workers[0].container.resources == {
+        assert run_config.run.workers["small-group"].replicas == 5
+        assert run_config.run.workers["small-group"].min_replicas == 5
+        assert run_config.run.workers["small-group"].max_replicas == 15
+        assert run_config.run.workers["small-group"].environment.affinity is not None
+        assert (
+            run_config.run.workers["small-group"].environment.restart_policy
+            == "OnFailure"
+        )
+        assert run_config.run.workers["small-group"].container.resources == {
             "limits": {"cpu": "1"},
             "requests": {"cpu": "200m"},
         }

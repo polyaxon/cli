@@ -35,5 +35,5 @@ class RayJobContextsManager(BaseContextsManager):
 
         return {
             "head": _get_replica(job.head),
-            "workers": _get_replica(job.workers),
+            "workers": {wn: _get_replica(job.workers[wn]) for wn in job.workers},
         }

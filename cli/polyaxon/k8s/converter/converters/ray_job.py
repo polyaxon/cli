@@ -50,7 +50,7 @@ class RayJobConverter(RayJobMixin, BaseConverter):
             config=compiled_operation.plugins, auth=default_auth
         )
         head = _get_replica(job.head)
-        workers = [_get_replica(w) for w in job.workers]
+        workers = {wn: _get_replica(wn) for wn in job.workers}
         labels = self.get_labels(version=pkg.VERSION, labels={})
 
         return get_ray_job_custom_resource(

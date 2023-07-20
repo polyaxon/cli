@@ -1,7 +1,7 @@
 from polyaxon.k8s.custom_resources.crd import get_custom_object
 from polyaxon.k8s.custom_resources.ray_job import get_ray_job_custom_resource
 from polyaxon.lifecycle import V1Statuses
-from polyaxon.polyflow import V1Notification, V1SchedulingPolicy
+from polyaxon.polyflow import V1Notification
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.termination import V1Termination
 from tests.test_k8s.test_custom_resources.base_kubeflow import (
@@ -105,7 +105,7 @@ class TestRayJobCRD(BaseDistributedCRDTestCase):
             namespace="default",
             resource_name="foo",
             head=head,
-            workers=[worker],
+            workers={"worker1": worker},
             entrypoint="foo",
             metadata={"foo": "bar"},
             runtime_env="foo",

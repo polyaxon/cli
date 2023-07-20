@@ -53,10 +53,10 @@ run:
             - key: sample_code.py
               path: sample_code.py
   workers:
-    - replicas: 5
+    small-group:
+      replicas: 5
       minReplicas: 5
       maxReplicas: 15
-      groupName: small-group
       rayStartParams: {}
       environment:
         restartPolicy: OnFailure
