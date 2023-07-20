@@ -4,7 +4,7 @@ from polyaxon.k8s.replica import ReplicaSpec
 from polyaxon.utils.test_utils import BaseTestCase
 
 
-class BaseKubeflowCRDTestCase(BaseTestCase):
+class BaseDistributedCRDTestCase(BaseTestCase):
     def get_replica(self, environment):
         main_container = k8s_schemas.V1Container(name="main")
         sidecar_containers = [k8s_schemas.V1Container(name="sidecar")]

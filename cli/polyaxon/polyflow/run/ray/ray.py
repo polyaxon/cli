@@ -4,12 +4,15 @@ from typing_extensions import Literal
 from clipped.types.ref_or_obj import RefField
 from pydantic import Field
 
+from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.ray.replica import V1RayReplica
+from polyaxon.polyflow.run.resources import V1RunResources
+from polyaxon.polyflow.run.utils import DestinationImageMixin
 
 
-class V1RayJob(BaseRun):
+class V1RayJob(BaseRun, DestinationImageMixin):
     """Ray jobs are used to run Ray applications on Kubernetes.
 
     [Ray](https://www.ray.io/) Ray is an open-source unified compute framework that makes
@@ -141,3 +144,48 @@ class V1RayJob(BaseRun):
     ray_version: Optional[str] = Field(alias="rayVersion")
     head: Optional[Union[V1RayReplica, RefField]]
     workers: Optional[List[Union[V1RayReplica, RefField]]]
+
+    def apply_image_destination(self, image: str):
+        if self.head:
+            self.head.container = self.head.container or V1Container()
+            self.head.container.image = image
+        if self.workers:
+            for worker in self.workers:
+                worker.container = worker.container or V1Container()
+                worker.container.image = image
+
+    def get_resources(self):
+        resources = V1RunResources()
+        if self.workers:
+            resources += self.workers.get_resources()
+        if self.workers:
+            for worker in self.workers:
+                resources += worker.get_resources()
+        return resources
+
+    def get_all_containers(self):
+        containers = []
+        if self.head:
+            containers += self.head.get_all_containers()
+        if self.workers:
+            for worker in self.workers:
+                containers += worker.get_all_containers()
+        return containers
+
+    def get_all_connections(self):
+        connections = []
+        if self.head:
+            connections += self.head.get_all_connections()
+        if self.workers:
+            for worker in self.workers:
+                connections += worker.get_all_connections()
+        return connections
+
+    def get_all_init(self):
+        init = []
+        if self.head:
+            init += self.head.get_all_init()
+        if self.workers:
+            for worker in self.workers:
+                init += worker.get_all_init()
+        return init

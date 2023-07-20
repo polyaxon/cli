@@ -1,0 +1,92 @@
+---
+version:  1.1
+kind: component
+tags: [ray]
+termination:
+  ttl: 12
+run:
+  kind: rayjob
+  entrypoint: python /home/ray/samples/sample_code.py
+  runtimeEnv:
+    "pip": [
+        "requests==2.26.0",
+        "pendulum==2.1.2"
+    ]
+    "env_vars": {
+        "counter_name": "test_counter"
+    }
+  rayVersion: '2.5.0'
+  head:
+    environment:
+      restartPolicy: OnFailure
+      tolerations:
+        - key: "key"
+          operator: "Exists"
+          effect: "NoSchedule"
+    container:
+      image: rayproject/ray:2.5.0
+      ports:
+        - containerPort: 6379
+          name: gcs-server
+        - containerPort: 8265 # Ray dashboard
+          name: dashboard
+        - containerPort: 10001
+          name: client
+        - containerPort: 8000
+          name: serve
+      resources:
+        limits:
+          cpu: "1"
+        requests:
+          cpu: "200m"
+      volumeMounts:
+        - mountPath: /home/ray/samples
+          name: code-sample
+    volumes:
+      # You set volumes at the Pod level, then mount them into containers inside that Pod
+      - name: code-sample
+        configMap:
+          # Provide the name of the ConfigMap you want to mount.
+          name: ray-job-code-sample
+          # An array of keys from the ConfigMap to create as files
+          items:
+            - key: sample_code.py
+              path: sample_code.py
+  workers:
+    - replicas: 5
+      minReplicas: 5
+      maxReplicas: 15
+      groupName: small-group
+      rayStartParams: {}
+      environment:
+        restartPolicy: OnFailure
+        affinity:
+          node_affinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/e2e-az-name
+                  operator: In
+                  values:
+                  - e2e-az1
+                  - e2e-az2
+            preferred_during_scheduling_ignored_during_execution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: another-node-label-key
+                  operator: In
+                  values:
+                  - another-node-label-value
+      container:
+        image: rayproject/ray:2.5.0
+        lifecycle:
+          preStop:
+            exec:
+              command: [ "/bin/sh","-c","ray stop" ]
+        resources:
+          limits:
+            cpu: "1"
+          requests:
+            cpu: "200m"
+...

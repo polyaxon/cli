@@ -4,10 +4,12 @@ from polyaxon.lifecycle import V1Statuses
 from polyaxon.polyflow import V1Notification, V1SchedulingPolicy
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.termination import V1Termination
-from tests.test_k8s.test_custom_resources.base_kubeflow import BaseKubeflowCRDTestCase
+from tests.test_k8s.test_custom_resources.base_kubeflow import (
+    BaseDistributedCRDTestCase,
+)
 
 
-class TestMXJobCRD(BaseKubeflowCRDTestCase):
+class TestMXJobCRD(BaseDistributedCRDTestCase):
     def test_get_mx_job_custom_resource_with_no_workers(self):
         termination = V1Termination(max_retries=5, ttl=10, timeout=10)
         environment = V1Environment(

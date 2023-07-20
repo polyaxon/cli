@@ -1,0 +1,95 @@
+---
+version:  1.1
+kind: component
+tags: [ray]
+termination:
+  ttl: 12
+run:
+  kind: daskjob
+  job:
+    environment:
+      restartPolicy: OnFailure
+      tolerations:
+        - key: "key"
+          operator: "Exists"
+          effect: "NoSchedule"
+    container:
+      image: "ghcr.io/dask/dask:latest"
+      args:
+        - python
+        - -c
+        - "from dask.distributed import Client; client = Client(); # Do some work..."
+      resources:
+        limits:
+          cpu: "1"
+        requests:
+          cpu: "200m"
+  worker:
+    replicas: 5
+    environment:
+      restartPolicy: OnFailure
+      tolerations:
+        - key: "key"
+          operator: "Exists"
+          effect: "NoSchedule"
+    container:
+      image: "ghcr.io/dask/dask:latest"
+      args:
+        - dask-worker
+        - --name
+        - $(DASK_WORKER_NAME)
+        - --dashboard
+        - --dashboard-address
+        - "8788"
+      ports:
+        - name: http-dashboard
+          containerPort: 8788
+          protocol: TCP
+      env:
+        - name: WORKER_ENV
+          value: hello-world
+      resources:
+        limits:
+          cpu: "1"
+        requests:
+          cpu: "200m"
+  scheduler:
+    environment:
+      restartPolicy: OnFailure
+      tolerations:
+        - key: "key"
+          operator: "Exists"
+          effect: "NoSchedule"
+    container:
+      image: "ghcr.io/dask/dask:latest"
+      args:
+        - dask-scheduler
+      ports:
+        - name: tcp-comm
+          containerPort: 8786
+          protocol: TCP
+        - name: http-dashboard
+          containerPort: 8787
+          protocol: TCP
+      readinessProbe:
+        httpGet:
+          port: http-dashboard
+          path: /health
+        initialDelaySeconds: 5
+        periodSeconds: 10
+      livenessProbe:
+        httpGet:
+          port: http-dashboard
+          path: /health
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      env:
+        - name: SCHEDULER_ENV
+          value: hello-world
+      resources:
+        limits:
+          cpu: "1"
+        requests:
+          cpu: "200m"
+
+...

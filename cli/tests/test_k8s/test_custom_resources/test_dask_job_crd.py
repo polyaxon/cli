@@ -1,5 +1,5 @@
 from polyaxon.k8s.custom_resources.crd import get_custom_object
-from polyaxon.k8s.custom_resources.kubeflow import get_paddle_job_custom_resource
+from polyaxon.k8s.custom_resources.dask_job import get_dask_job_custom_resource
 from polyaxon.lifecycle import V1Statuses
 from polyaxon.polyflow import V1Notification, V1SchedulingPolicy
 from polyaxon.polyflow.environment import V1Environment
@@ -9,8 +9,8 @@ from tests.test_k8s.test_custom_resources.base_kubeflow import (
 )
 
 
-class TestPaddleJobCRD(BaseDistributedCRDTestCase):
-    def test_get_paddle_job_custom_resource_with_no_workers(self):
+class TestDaskJobCRD(BaseDistributedCRDTestCase):
+    def test_get_dask_job_custom_resource_with_no_workers(self):
         termination = V1Termination(max_retries=5, ttl=10, timeout=10)
         environment = V1Environment(
             labels={"foo": "bar"},
@@ -20,7 +20,7 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         custom_object = {
-            "paddleJobSpec": {"cleanPodPolicy": "All", "replicaSpecs": {}},
+            "daskJobSpec": {"replicaSpecs": {}},
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,
@@ -36,17 +36,16 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
             kind="Operation",
             api_version="core.polyaxon.com/v1",
             labels={"foo": "bar"},
-            custom_object=custom_object,
             annotations={"foo": "long-foo-bar" * 300},
+            custom_object=custom_object,
         )
 
-        crd = get_paddle_job_custom_resource(
+        crd = get_dask_job_custom_resource(
             namespace="default",
             resource_name="foo",
-            master=None,
+            job=None,
             worker=None,
-            clean_pod_policy=None,
-            scheduling_policy=None,
+            scheduler=None,
             termination=termination,
             collect_logs=False,
             sync_statuses=False,
@@ -57,7 +56,7 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
 
         assert crd == expected_crd
 
-    def test_get_paddle_job_custom_resource(self):
+    def test_get_dask_job_custom_resource(self):
         termination = V1Termination(max_retries=5, ttl=10, timeout=10)
         environment = V1Environment(
             labels={"foo": "bar"},
@@ -67,18 +66,18 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         notifications = [V1Notification(connections=["test"], trigger=V1Statuses.DONE)]
-        master, master_replica_template = self.get_replica(environment)
+        job, job_replica_template = self.get_replica(environment)
         worker, worker_replica_template = self.get_replica(environment)
+        scheduler, scheduler_replica_template = self.get_replica(environment)
         template_spec = {
-            "cleanPodPolicy": "Running",
-            "schedulingPolicy": {"minAvailable": 1},
             "replicaSpecs": {
-                "Master": master_replica_template,
+                "Job": job_replica_template,
                 "Worker": worker_replica_template,
+                "Scheduler": scheduler_replica_template,
             },
         }
         custom_object = {
-            "paddleJobSpec": template_spec,
+            "daskJobSpec": template_spec,
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,
@@ -99,19 +98,18 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
             custom_object=custom_object,
         )
 
-        crd = get_paddle_job_custom_resource(
+        crd = get_dask_job_custom_resource(
             namespace="default",
             resource_name="foo",
-            master=master,
+            job=job,
             worker=worker,
-            scheduling_policy=V1SchedulingPolicy(min_available=1),
-            clean_pod_policy="Running",
+            scheduler=scheduler,
             termination=termination,
-            labels=environment.labels,
-            annotations={"foo": "bar"},
-            notifications=notifications,
             collect_logs=True,
             sync_statuses=True,
+            notifications=notifications,
+            labels=environment.labels,
+            annotations={"foo": "bar"},
         )
 
         assert crd == expected_crd

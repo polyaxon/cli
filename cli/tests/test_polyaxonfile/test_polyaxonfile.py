@@ -694,6 +694,75 @@ class TestPolyaxonfiles(BaseTestCase):
             "resources": {"limits": {"nvidia.com/gpu": 1}},
         }
 
+    def test_ray_passes(self):
+        run_config = CompiledOperationSpecification.read(
+            [
+                os.path.abspath("tests/fixtures/plain/distributed_ray_file.yml"),
+                {"kind": "compiled_operation"},
+            ]
+        )
+
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        assert run_config.build is None
+        assert run_config.version == 1.1
+        assert run_config.termination is not None
+        assert run_config.termination.ttl == 12
+        assert run_config.is_ray_job_run
+        assert run_config.run.workers[0].replicas == 5
+        assert run_config.run.workers[0].min_replicas == 5
+        assert run_config.run.workers[0].max_replicas == 15
+        assert run_config.run.workers[0].environment.affinity is not None
+        assert run_config.run.workers[0].environment.restart_policy == "OnFailure"
+        assert run_config.run.workers[0].container.resources == {
+            "limits": {"cpu": "1"},
+            "requests": {"cpu": "200m"},
+        }
+        assert run_config.run.head.replicas is None
+        assert run_config.run.head.environment.affinity is None
+        assert isinstance(run_config.run.head.environment.tolerations, list)
+        assert run_config.run.head.environment.restart_policy == "OnFailure"
+        assert run_config.run.head.container.resources == {
+            "limits": {"cpu": "1"},
+            "requests": {"cpu": "200m"},
+        }
+
+    def test_dask_passes(self):
+        run_config = CompiledOperationSpecification.read(
+            [
+                os.path.abspath("tests/fixtures/plain/distributed_dask_file.yml"),
+                {"kind": "compiled_operation"},
+            ]
+        )
+
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        assert run_config.build is None
+        assert run_config.version == 1.1
+        assert run_config.termination is not None
+        assert run_config.termination.ttl == 12
+        assert run_config.is_dask_job_run
+        assert run_config.run.worker.replicas == 5
+        assert run_config.run.worker.environment.restart_policy == "OnFailure"
+        assert run_config.run.worker.container.resources == {
+            "limits": {"cpu": "1"},
+            "requests": {"cpu": "200m"},
+        }
+        assert run_config.run.job.replicas is None
+        assert run_config.run.job.environment.affinity is None
+        assert isinstance(run_config.run.job.environment.tolerations, list)
+        assert run_config.run.job.environment.restart_policy == "OnFailure"
+        assert run_config.run.job.container.resources == {
+            "limits": {"cpu": "1"},
+            "requests": {"cpu": "200m"},
+        }
+        assert run_config.run.scheduler.replicas is None
+        assert run_config.run.scheduler.environment.affinity is None
+        assert isinstance(run_config.run.scheduler.environment.tolerations, list)
+        assert run_config.run.scheduler.environment.restart_policy == "OnFailure"
+        assert run_config.run.scheduler.container.resources == {
+            "limits": {"cpu": "1"},
+            "requests": {"cpu": "200m"},
+        }
+
     def test_specification_with_quotes(self):
         run_config = CompiledOperationSpecification.read(
             [

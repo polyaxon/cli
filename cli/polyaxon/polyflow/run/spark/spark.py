@@ -10,6 +10,7 @@ from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.spark.replica import V1SparkReplica
+from polyaxon.polyflow.run.utils import DestinationImageMixin
 
 
 class V1SparkType(str, PEnum):
@@ -25,7 +26,7 @@ class V1SparkDeploy(str, PEnum):
     IN_CLUSTER_CLIENT = "in_cluster_client"
 
 
-class V1SparkJob(BaseRun):
+class V1SparkJob(BaseRun, DestinationImageMixin):
     """Spark jobs are used to run Spark applications on Kubernetes.
 
     [Apache Spark](https://spark.apache.org/) is data-processing engine.

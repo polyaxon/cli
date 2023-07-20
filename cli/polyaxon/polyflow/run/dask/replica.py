@@ -6,11 +6,11 @@ from pydantic import StrictStr, validator
 from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.init import V1Init
-from polyaxon.polyflow.run.base import BaseRun
 from polyaxon.polyflow.run.resources import V1RunResources
+from polyaxon.schemas.base import BaseSchemaModel
 
 
-class V1DaskReplica(BaseRun):
+class V1DaskReplica(BaseSchemaModel):
     """Dask replica is the specification for a Dask job, worker or scheduler.
 
     Args:
