@@ -38,8 +38,9 @@ from polyaxon.managers.user import UserConfigManager
 @click.option(
     "-s", "--service", type=str, help="The service to forward, default 'gateway'."
 )
+@click.option("-add", "--address", type=str, help="The host address.")
 @clean_outputs
-def port_forward(port, namespace, deployment_type, release_name, service):
+def port_forward(port, namespace, deployment_type, release_name, service, address):
     """If you deploy Polyaxon using ClusterIP, you can use this command
     to access the gateway through `localhost:port`.
     """
@@ -63,6 +64,10 @@ def port_forward(port, namespace, deployment_type, release_name, service):
         "svc/{}-polyaxon-{}".format(release_name, service),
         "{}:80".format(port),
     ]
+    if address:
+        args.extend(["--address", address])
+    else:
+        address = "localhost"
 
     try:
         _config = ClientConfigManager.get_config_or_default()
@@ -71,7 +76,7 @@ def port_forward(port, namespace, deployment_type, release_name, service):
         Printer.heading("You can reset your config by running: `polyaxon config purge`")
         sys.exit(1)
 
-    _config.host = "http://localhost:{}".format(port)
+    _config.host = "http://{}:{}".format(address, port)
     ClientConfigManager.set_config(_config)
     CliConfigManager.purge()
     AuthConfigManager.purge()
