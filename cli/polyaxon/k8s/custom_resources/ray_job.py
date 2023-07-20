@@ -88,7 +88,7 @@ def get_ray_worker_replicas_template(
             )
         )
     if workers:
-        template_spec["Workers"] = workers
+        template_spec["workers"] = workers
 
 
 def get_ray_job_custom_resource(
@@ -110,7 +110,7 @@ def get_ray_job_custom_resource(
     template_spec = {}
 
     get_ray_replicas_template(
-        replica_name="Head",
+        replica_name="head",
         replica=head,
         namespace=namespace,
         resource_name=resource_name,

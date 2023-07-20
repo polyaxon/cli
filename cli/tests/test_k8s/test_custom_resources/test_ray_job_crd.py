@@ -76,8 +76,8 @@ class TestRayJobCRD(BaseDistributedCRDTestCase):
             "metadata": {"foo": "bar"},
             "runtimeEnv": "foo",
             "rayVersion": "0.0.0",
-            "Head": head_replica_template,
-            "Workers": [worker_replica_template],
+            "head": head_replica_template,
+            "workers": [worker_replica_template],
         }
         custom_object = {
             "rayJobSpec": template_spec,
