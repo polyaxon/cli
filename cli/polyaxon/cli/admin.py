@@ -293,7 +293,7 @@ def clean_ops(namespace, in_cluster, delete, uuids):
 
     uuids = validate_tags(uuids, validate_yaml=True)
     if uuids:
-        ops = [get_resource_name(o) for o in uuids]
+        ops = [o if "plx-operation-" in o else get_resource_name(o) for o in uuids]
     else:
         ops = [
             o["metadata"]["name"]
