@@ -72,10 +72,18 @@ def get_ray_head_replicas_template(
         # Set default ports on main container
         if replica.main_container.ports is None:
             replica.main_container.ports = [
-                k8s_schemas.V1ContainerPort(container_port=6379, name="gcs-server"),
-                k8s_schemas.V1ContainerPort(container_port=8265, name="dashboard"),
-                k8s_schemas.V1ContainerPort(container_port=10001, name="client"),
-                k8s_schemas.V1ContainerPort(container_port=8000, name="serve"),
+                k8s_schemas.V1ContainerPort(
+                    container_port=6379, name="gcs-server", protocol="TCP"
+                ),
+                k8s_schemas.V1ContainerPort(
+                    container_port=8265, name="dashboard", protocol="TCP"
+                ),
+                k8s_schemas.V1ContainerPort(
+                    container_port=10001, name="client", protocol="TCP"
+                ),
+                k8s_schemas.V1ContainerPort(
+                    container_port=8000, name="serve", protocol="TCP"
+                ),
             ]
     head = _get_ray_replicas_template(
         namespace=namespace,

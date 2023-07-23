@@ -54,6 +54,7 @@ class TestDaskJobCRD(BaseDistributedCRDTestCase):
             annotations={"foo": "long-foo-bar" * 300},
         )
 
+        assert crd["daskJobSpec"].pop("service") is not None
         assert crd == expected_crd
 
     def test_get_dask_job_custom_resource(self):
@@ -112,4 +113,5 @@ class TestDaskJobCRD(BaseDistributedCRDTestCase):
             annotations={"foo": "bar"},
         )
 
+        assert crd["daskJobSpec"].pop("service") is not None
         assert crd == expected_crd

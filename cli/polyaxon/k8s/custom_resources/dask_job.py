@@ -1,5 +1,8 @@
 from typing import Dict, List, Optional
 
+from kubernetes import client
+
+from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.k8s.custom_resources.operation import get_operation_custom_object
 from polyaxon.k8s.custom_resources.setter import (
@@ -20,9 +23,22 @@ def get_dask_replicas_template(
     labels: Dict[str, str],
     annotations: Dict[str, str],
     template_spec: Dict,
+    args: Optional[List[str]] = None,
+    ports: Optional[List[k8s_schemas.V1ContainerPort]] = None,
+    readiness_probe: Optional[client.V1Probe] = None,
+    liveness_probe: Optional[client.V1Probe] = None,
 ):
     if not replica:
         return
+
+    if ports and replica.main_container.ports is None:
+        replica.main_container.ports = ports
+    if args and replica.main_container.args is None:
+        replica.main_container.args = args
+    if readiness_probe and replica.main_container.readiness_probe is None:
+        replica.main_container.readiness_probe = readiness_probe
+    if liveness_probe and replica.main_container.liveness_probe is None:
+        replica.main_container.liveness_probe = liveness_probe
 
     metadata, pod_spec = get_pod_spec(
         namespace=namespace,
@@ -75,6 +91,19 @@ def get_dask_job_custom_resource(
         labels=labels,
         annotations=annotations,
         template_spec=template_spec,
+        args=[
+            "dask-worker",
+            "--name",
+            "$(DASK_WORKER_NAME)",
+            "--dashboard",
+            "--dashboard-address",
+            "8788",
+        ],
+        ports=[
+            k8s_schemas.V1ContainerPort(
+                name="http-dashboard", container_port=8788, protocol="TCP"
+            )
+        ],
     )
     get_dask_replicas_template(
         replica_name="Scheduler",
@@ -84,8 +113,39 @@ def get_dask_job_custom_resource(
         labels=labels,
         annotations=annotations,
         template_spec=template_spec,
+        args=["dask-scheduler", "--dashboard", "--dashboard-address", "8787"],
+        ports=[
+            k8s_schemas.V1ContainerPort(
+                name="tcp-comm", container_port=8786, protocol="TCP"
+            ),
+            k8s_schemas.V1ContainerPort(
+                name="http-dashboard", container_port=8787, protocol="TCP"
+            ),
+        ],
+        readiness_probe=client.V1Probe(
+            http_get=client.V1HTTPGetAction(path="/", port="http-dashboard"),
+            initial_delay_seconds=5,
+            period_seconds=5,
+        ),
+        liveness_probe=client.V1Probe(
+            http_get=client.V1HTTPGetAction(path="/", port="http-dashboard"),
+            initial_delay_seconds=15,
+            period_seconds=15,
+        ),
     )
-    template_spec = {"replicaSpecs": template_spec}
+    service = client.V1ServiceSpec(
+        type="ClusterIP",
+        selector=labels,
+        ports=[
+            client.V1ServicePort(
+                port=8786, target_port=8786, name="tcp-comm", protocol="TCP"
+            ),
+            client.V1ServicePort(
+                port=8787, target_port=8787, name="http-dashboard", protocol="TCP"
+            ),
+        ],
+    )
+    template_spec = {"replicaSpecs": template_spec, "service": service}
     custom_object = {"daskJobSpec": template_spec}
     custom_object = set_termination(
         custom_object=custom_object, termination=termination
