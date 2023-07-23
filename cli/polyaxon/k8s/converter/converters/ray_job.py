@@ -28,6 +28,13 @@ class RayJobConverter(RayJobMixin, BaseConverter):
         def _get_replica(replica: Optional[V1RayReplica]) -> Optional[ReplicaSpec]:
             if not replica:
                 return None
+            custom = {}
+            if replica.min_replicas:
+                custom["min_replicas"] = replica.min_replicas
+            if replica.max_replicas:
+                custom["max_replicas"] = replica.max_replicas
+            if replica.ray_start_params:
+                custom["ray_start_params"] = replica.ray_start_params
             return self.get_replica_resource(
                 plugins=plugins,
                 environment=replica.environment,
@@ -43,6 +50,7 @@ class RayJobConverter(RayJobMixin, BaseConverter):
                 kv_env_vars=kv_env_vars,
                 default_sa=default_sa,
                 num_replicas=replica.replicas,
+                custom=custom,
             )
 
         kv_env_vars = compiled_operation.get_env_io()

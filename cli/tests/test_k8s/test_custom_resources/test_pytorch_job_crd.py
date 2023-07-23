@@ -4,7 +4,7 @@ from polyaxon.lifecycle import V1Statuses
 from polyaxon.polyflow import V1Notification, V1SchedulingPolicy
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.termination import V1Termination
-from tests.test_k8s.test_custom_resources.base_kubeflow import (
+from tests.test_k8s.test_custom_resources.base_distributed import (
     BaseDistributedCRDTestCase,
 )
 

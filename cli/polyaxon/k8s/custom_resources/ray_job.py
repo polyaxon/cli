@@ -15,11 +15,12 @@ from polyaxon.polyflow import V1Notification, V1Termination
 def _get_ray_replicas_template(
     namespace: str,
     resource_name: str,
-    replica_name: str,
+    replica_name: Optional[str],
     replica: Optional[ReplicaSpec],
     labels: Dict[str, str],
     annotations: Dict[str, str],
     template_spec: Dict,
+    default_start_params: Optional[Dict] = None,
 ):
     if not replica:
         return
@@ -36,17 +37,31 @@ def _get_ray_replicas_template(
         annotations=annotations,
     )
 
-    return {
+    data = {
         "replicas": replica.num_replicas,
         "restartPolicy": pod_spec.restart_policy or "Never",
         "template": get_pod_template_spec(metadata=metadata, pod_spec=pod_spec),
     }
+    custom = replica.custom or {}
+    if custom.get("min_replicas"):
+        data["minReplicas"] = custom["min_replicas"]
+    if custom.get("max_replicas"):
+        data["maxReplicas"] = custom["max_replicas"]
+    if custom.get("ray_start_params"):
+        data["rayStartParams"] = custom["ray_start_params"]
+    if default_start_params:
+        data["rayStartParams"] = {
+            **default_start_params,
+            **data.get("rayStartParams", {}),
+        }
+    if replica_name:
+        data["groupName"] = replica_name
+    return data
 
 
-def get_ray_replicas_template(
+def get_ray_head_replicas_template(
     namespace: str,
     resource_name: str,
-    replica_name: str,
     replica: Optional[ReplicaSpec],
     labels: Dict[str, str],
     annotations: Dict[str, str],
@@ -55,14 +70,15 @@ def get_ray_replicas_template(
     template = _get_ray_replicas_template(
         namespace=namespace,
         resource_name=resource_name,
-        replica_name=replica_name,
+        replica_name="head",
         replica=replica,
         labels=labels,
         annotations=annotations,
         template_spec=template_spec,
+        default_start_params={"dashboard-host": "0.0.0.0"},
     )
     if template:
-        template_spec[replica_name] = template
+        template_spec["head"] = template
 
 
 def get_ray_worker_replicas_template(
@@ -109,8 +125,7 @@ def get_ray_job_custom_resource(
 ) -> Dict:
     template_spec = {}
 
-    get_ray_replicas_template(
-        replica_name="head",
+    get_ray_head_replicas_template(
         replica=head,
         namespace=namespace,
         resource_name=resource_name,

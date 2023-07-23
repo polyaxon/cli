@@ -5,7 +5,7 @@ from polyaxon.utils.test_utils import BaseTestCase
 
 
 class BaseDistributedCRDTestCase(BaseTestCase):
-    def get_replica(self, environment):
+    def get_replica(self, environment, custom=None):
         main_container = k8s_schemas.V1Container(name="main")
         sidecar_containers = [k8s_schemas.V1Container(name="sidecar")]
         init_containers = [k8s_schemas.V1Container(name="init")]
@@ -18,6 +18,7 @@ class BaseDistributedCRDTestCase(BaseTestCase):
             annotations=environment.annotations,
             environment=environment,
             num_replicas=12,
+            custom=custom,
         )
         metadata, pod_spec = get_pod_spec(
             namespace="default",

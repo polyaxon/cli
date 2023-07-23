@@ -142,6 +142,7 @@ class BaseConverter(
         default_sa: Optional[str] = None,
         ports: List[int] = None,
         num_replicas: Optional[int] = None,
+        custom: Dict = None,
     ) -> ReplicaSpec:
         volumes = volumes or []
         init = init or []
@@ -217,4 +218,5 @@ class BaseConverter(
             annotations=annotations,
             environment=environment,
             num_replicas=num_replicas,
+            custom=custom,
         )

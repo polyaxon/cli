@@ -4,7 +4,7 @@ from polyaxon.lifecycle import V1Statuses
 from polyaxon.polyflow import V1Notification
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.termination import V1Termination
-from tests.test_k8s.test_custom_resources.base_kubeflow import (
+from tests.test_k8s.test_custom_resources.base_distributed import (
     BaseDistributedCRDTestCase,
 )
 
@@ -69,8 +69,13 @@ class TestRayJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         notifications = [V1Notification(connections=["test"], trigger=V1Statuses.DONE)]
-        head, head_replica_template = self.get_replica(environment)
+        head, head_replica_template = self.get_replica(
+            environment, custom={"dashboard-host": "0.0.0.0"}
+        )
+        head_replica_template["rayStartParams"] = {"dashboard-host": "0.0.0.0"}
+        head_replica_template["groupName"] = "head"
         worker, worker_replica_template = self.get_replica(environment)
+        worker_replica_template["groupName"] = "worker1"
         template_spec = {
             "entrypoint": "foo",
             "metadata": {"foo": "bar"},
