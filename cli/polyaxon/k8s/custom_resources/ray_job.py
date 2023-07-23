@@ -92,17 +92,24 @@ def get_ray_worker_replicas_template(
     workers = []
     for replica_name in replicas or {}:
         replica = replicas[replica_name]
-        workers.append(
-            _get_ray_replicas_template(
-                namespace=namespace,
-                resource_name=resource_name,
-                replica_name=replica_name,
-                replica=replica,
-                labels=labels,
-                annotations=annotations,
-                template_spec=template_spec,
-            )
+        worker = _get_ray_replicas_template(
+            namespace=namespace,
+            resource_name=resource_name,
+            replica_name=replica_name,
+            replica=replica,
+            labels=labels,
+            annotations=annotations,
+            template_spec=template_spec,
         )
+        # Check the lifecycle is set
+        if worker:
+            template = worker["template"]
+            if template.spec.containers[0].lifecycle is None:
+                template.spec.containers[0].lifecycle = {
+                    "preStop": {"exec": {"command": ["/bin/sh", "-c", "ray stop"]}}
+                }
+                worker["template"] = template
+            workers.append(worker)
     if workers:
         template_spec["workers"] = workers
 
