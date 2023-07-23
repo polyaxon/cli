@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 
+from polyaxon.k8s import k8s_schemas
 from polyaxon.k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon.k8s.custom_resources.operation import get_operation_custom_object
 from polyaxon.k8s.custom_resources.setter import (
@@ -67,7 +68,16 @@ def get_ray_head_replicas_template(
     annotations: Dict[str, str],
     template_spec: Dict,
 ):
-    template = _get_ray_replicas_template(
+    if replica:
+        # Set default ports on main container
+        if replica.main_container.ports is None:
+            replica.main_container.ports = [
+                k8s_schemas.V1ContainerPort(container_port=6379, name="gcs-server"),
+                k8s_schemas.V1ContainerPort(container_port=8265, name="dashboard"),
+                k8s_schemas.V1ContainerPort(container_port=10001, name="client"),
+                k8s_schemas.V1ContainerPort(container_port=8000, name="serve"),
+            ]
+    head = _get_ray_replicas_template(
         namespace=namespace,
         resource_name=resource_name,
         replica_name="head",
@@ -77,8 +87,8 @@ def get_ray_head_replicas_template(
         template_spec=template_spec,
         default_start_params={"dashboard-host": "0.0.0.0"},
     )
-    if template:
-        template_spec["head"] = template
+    if head:
+        template_spec["head"] = head
 
 
 def get_ray_worker_replicas_template(
