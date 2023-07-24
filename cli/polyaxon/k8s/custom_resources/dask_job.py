@@ -138,10 +138,10 @@ def get_dask_job_custom_resource(
         selector=labels,
         ports=[
             client.V1ServicePort(
-                port=8786, target_port=8786, name="tcp-comm", protocol="TCP"
+                port=8786, target_port="tcp-comm", name="tcp-comm", protocol="TCP"
             ),
             client.V1ServicePort(
-                port=8787, target_port=8787, name="http-dashboard", protocol="TCP"
+                port=8787, target_port="http-dashboard", name="http-dashboard", protocol="TCP"
             ),
         ],
     )
