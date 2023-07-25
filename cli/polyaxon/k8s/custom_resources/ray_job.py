@@ -70,7 +70,7 @@ def get_ray_head_replicas_template(
 ):
     if replica:
         # Set default ports on main container
-        if replica.main_container.ports is None:
+        if not replica.main_container.ports:
             replica.main_container.ports = [
                 k8s_schemas.V1ContainerPort(
                     container_port=6379, name="gcs-server", protocol="TCP"

@@ -31,7 +31,7 @@ def get_dask_replicas_template(
     if not replica:
         return
 
-    if ports and replica.main_container.ports is None:
+    if ports and not replica.main_container.ports:
         replica.main_container.ports = ports
     if args and replica.main_container.args is None:
         replica.main_container.args = args
@@ -113,7 +113,7 @@ def get_dask_job_custom_resource(
         labels=labels,
         annotations=annotations,
         template_spec=template_spec,
-        args=["dask-scheduler", "--dashboard", "--dashboard-address", "8787"],
+        args=["dask-scheduler"],
         ports=[
             k8s_schemas.V1ContainerPort(
                 name="tcp-comm", container_port=8786, protocol="TCP"
@@ -123,12 +123,12 @@ def get_dask_job_custom_resource(
             ),
         ],
         readiness_probe=client.V1Probe(
-            http_get=client.V1HTTPGetAction(path="/", port="http-dashboard"),
+            http_get=client.V1HTTPGetAction(path="/health", port="http-dashboard"),
             initial_delay_seconds=5,
             period_seconds=5,
         ),
         liveness_probe=client.V1Probe(
-            http_get=client.V1HTTPGetAction(path="/", port="http-dashboard"),
+            http_get=client.V1HTTPGetAction(path="/health", port="http-dashboard"),
             initial_delay_seconds=15,
             period_seconds=15,
         ),
