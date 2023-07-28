@@ -49,7 +49,7 @@ class V1Termination(BaseSchemaModel):
     [backoffLimit](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/).
     Polyaxon exposes a uniform specification and knows how
     to manage and inject this value into the underlying primitive of the runtime,
-    i.e. Job, Service, TFJob CRD, Spark Application CRD, ...
+    i.e. Job, Service, TFJob CRD, RayJob CRD, ...
 
     ```yaml
     >>> termination:

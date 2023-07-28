@@ -134,7 +134,7 @@ Here are some examples of using distributed training:
  * [Distributed Pytorch](https://polyaxon.com/docs/experimentation/distributed/pytorch-jobs/)
  * [Distributed MPI](https://polyaxon.com/docs/experimentation/distributed/mpi-jobs/)
  * [Horovod](https://polyaxon.com/integrations/horovod/)
- * [Spark](https://polyaxon.com/docs/experimentation/distributed/spark-jobs/)
+ * [Ray](https://polyaxon.com/docs/experimentation/distributed/ray-jobs/)
  * [Dask](https://polyaxon.com/docs/experimentation/distributed/dask-jobs/)
 
 # Hyperparameters tuning

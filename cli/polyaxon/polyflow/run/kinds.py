@@ -5,7 +5,6 @@ class V1RunKind(str, PEnum):
     JOB = "job"
     SERVICE = "service"
     DAG = "dag"
-    SPARKJOB = "sparkjob"
     DASKJOB = "daskjob"
     RAYJOB = "rayjob"
     MPIJOB = "mpijob"

@@ -339,7 +339,6 @@ class V1Operation(BaseOp, TemplateMixinConfig):
      * [V1XGBoostJob](/docs/experimentation/distributed/xgboost-jobs/): for running distributed XGBoost training job.  # noqa
      * [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/): for running distributed MPI job.  # noqa
      * [V1RayJob](/docs/experimentation/distributed/ray-jobs/): for running a Ray job.
-     * [V1SparkJob](/docs/experimentation/distributed/spark-jobs/): for running a Spark job.
      * [V1DaskJob](/docs/experimentation/distributed/dask-jobs/): for running a Dask job.
      * [V1Dag](/docs/automation/flow-engine/specification/): for running a DAG/workflow.
 

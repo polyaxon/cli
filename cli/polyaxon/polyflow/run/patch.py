@@ -18,7 +18,6 @@ from polyaxon.polyflow.run.kubeflow.xgboost_job import V1XGBoostJob
 from polyaxon.polyflow.run.notifier import V1NotifierJob
 from polyaxon.polyflow.run.ray import V1RayJob, V1RayReplica
 from polyaxon.polyflow.run.service import V1Service
-from polyaxon.polyflow.run.spark import V1SparkJob, V1SparkReplica
 from polyaxon.polyflow.run.tuner import V1TunerJob
 
 
@@ -59,11 +58,6 @@ def validate_run_patch(run_patch: Dict, kind: V1RunKind):
             patch = V1XGBoostJob.from_dict(run_patch)
         except ValidationError:
             patch = V1KFReplica.from_dict(run_patch)
-    elif kind == V1RunKind.SPARKJOB:
-        try:
-            patch = V1SparkJob.from_dict(run_patch)
-        except ValidationError:
-            patch = V1SparkReplica.from_dict(run_patch)
     elif kind == V1RunKind.RAYJOB:
         try:
             patch = V1RayJob.from_dict(run_patch)

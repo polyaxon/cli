@@ -15,7 +15,6 @@ from polyaxon.compiler.contexts.kubeflow import (
 )
 from polyaxon.compiler.contexts.ray_job import RayJobContextsManager
 from polyaxon.compiler.contexts.service import ServiceContextsManager
-from polyaxon.compiler.contexts.spark_job import SparkJobContextsManager
 from polyaxon.connections import V1Connection
 from polyaxon.contexts import keys as ctx_keys
 from polyaxon.contexts import paths as ctx_paths
@@ -39,7 +38,6 @@ CONTEXTS_MANAGERS = {
     V1RunKind.PADDLEJOB: PaddleJobContextsManager,
     V1RunKind.RAYJOB: RayJobContextsManager,
     V1RunKind.DASKJOB: DaskJobContextsManager,
-    V1RunKind.SPARKJOB: SparkJobContextsManager,
 }
 
 

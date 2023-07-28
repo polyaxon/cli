@@ -98,12 +98,6 @@ class DaskJobMixin(BaseMixin):
     MAIN_CONTAINER_ID = MAIN_JOB_CONTAINER
 
 
-class SparkJobMixin(BaseMixin):
-    K8S_ANNOTATIONS_KIND = V1RunKind.SPARKJOB
-    K8S_LABELS_COMPONENT = "polyaxon-spark-jobs"
-    MAIN_CONTAINER_ID = MAIN_JOB_CONTAINER
-
-
 MIXIN_MAPPING: Dict = {
     V1RunKind.JOB: JobMixin,
     V1RunKind.NOTIFIER: NotifierMixin,
@@ -118,5 +112,4 @@ MIXIN_MAPPING: Dict = {
     V1RunKind.MPIJOB: MPIJobMixin,
     V1RunKind.RAYJOB: RayJobMixin,
     V1RunKind.DASKJOB: DaskJobMixin,
-    V1RunKind.SPARKJOB: SparkJobMixin,
 }

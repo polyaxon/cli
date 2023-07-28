@@ -27,12 +27,6 @@ from polyaxon.polyflow.run.patch import validate_run_patch
 from polyaxon.polyflow.run.ray import V1RayJob, V1RayReplica
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.service import V1Service
-from polyaxon.polyflow.run.spark import (
-    V1SparkDeploy,
-    V1SparkJob,
-    V1SparkReplica,
-    V1SparkType,
-)
 from polyaxon.polyflow.run.tuner import V1TunerJob
 
 V1Runtime = Annotated[
@@ -46,7 +40,6 @@ V1Runtime = Annotated[
         V1MXJob,
         V1PaddleJob,
         V1XGBoostJob,
-        V1SparkJob,
         V1DaskJob,
         V1RayJob,
         V1NotifierJob,
@@ -94,10 +87,6 @@ class RunMixin:
         return self.get_run_kind() == V1RunKind.XGBJOB
 
     @property
-    def is_spark_job_run(self):
-        return self.get_run_kind() == V1RunKind.SPARKJOB
-
-    @property
     def is_ray_job_run(self):
         return self.get_run_kind() == V1RunKind.RAYJOB
 
@@ -137,7 +126,6 @@ class RunMixin:
             or self.is_tf_job_run
             or self.is_mx_job_run
             or self.is_xgb_job_run
-            or self.is_spark_job_run
             or self.is_ray_job_run
             or self.is_dask_job_run
         )

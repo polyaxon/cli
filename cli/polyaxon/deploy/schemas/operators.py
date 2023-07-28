@@ -10,6 +10,5 @@ class OperatorsConfig(BaseSchemaModel):
     mpijob: Optional[bool]
     mxjob: Optional[bool]
     xgbjob: Optional[bool]
-    sparkjob: Optional[bool]
     daskjob: Optional[bool]
     rayjob: Optional[bool]
