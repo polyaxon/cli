@@ -1,8 +1,8 @@
 from typing import List, Optional, Union
 
+from clipped.compact.pydantic import Field, StrictStr, constr, validator
 from clipped.types.ref_or_obj import BoolOrRef, FloatOrRef, RefField
 from clipped.utils.lists import to_list
-from pydantic import Field, StrictStr, constr, validator
 
 from polyaxon.polyflow.builds import V1Build
 from polyaxon.polyflow.cache import V1Cache

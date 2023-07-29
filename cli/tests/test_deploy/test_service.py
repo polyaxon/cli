@@ -1,4 +1,4 @@
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon.deploy.schemas.service import (
     DeploymentService,

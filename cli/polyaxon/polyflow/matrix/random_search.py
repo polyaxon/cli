@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import Field, PositiveInt, validator
 from clipped.types.ref_or_obj import IntOrRef, RefField
-from pydantic import Field, PositiveInt, validator
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig

@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
+from clipped.compact.pydantic import StrictInt
 from clipped.types.ref_or_obj import RefField
-from pydantic import StrictInt
 
 from polyaxon.schemas.types.base import BaseTypeConfig
 

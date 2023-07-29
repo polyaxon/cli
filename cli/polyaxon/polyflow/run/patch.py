@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow.run.cleaner import V1CleanerJob

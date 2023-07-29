@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import StrictStr
+from clipped.compact.pydantic import StrictStr
 
 from polyaxon import dist
 from polyaxon.schemas.api.compatibility import V1Compatibility

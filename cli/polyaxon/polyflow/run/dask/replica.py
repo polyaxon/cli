@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
+from clipped.compact.pydantic import StrictStr, validator
 from clipped.types.ref_or_obj import IntOrRef, RefField
-from pydantic import StrictStr, validator
 
 from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.polyflow.environment import V1Environment

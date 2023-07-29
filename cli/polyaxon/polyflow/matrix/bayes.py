@@ -1,10 +1,16 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import (
+    Field,
+    PositiveInt,
+    StrictInt,
+    root_validator,
+    validator,
+)
 from clipped.config.schema import skip_partial
 from clipped.types.ref_or_obj import RefField
 from clipped.utils.enums import PEnum
-from pydantic import Field, PositiveInt, StrictInt, root_validator, validator
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig

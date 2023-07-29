@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
+from clipped.compact.pydantic import Field, StrictStr
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.types.ref_or_obj import RefField
-from pydantic import Field, StrictStr
 
 from polyaxon.polyflow.cache import V1Cache
 from polyaxon.polyflow.params import V1Param

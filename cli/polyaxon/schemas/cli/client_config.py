@@ -2,8 +2,8 @@ from typing import Dict, Optional, Union
 
 import urllib3
 
+from clipped.compact.pydantic import Extra, Field, StrictStr
 from clipped.utils.http import clean_host
-from pydantic import Extra, Field, StrictStr
 
 from polyaxon.api import LOCALHOST, POLYAXON_CLOUD_HOST
 from polyaxon.contexts import paths as ctx_paths

@@ -1,7 +1,7 @@
 from typing import Optional
 
+from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import IntOrRef
-from pydantic import Field, StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
 

@@ -2,8 +2,8 @@ import datetime
 
 from typing import Any, Dict, List, Optional, Union
 
+from clipped.compact.pydantic import StrictStr
 from clipped.types.uuids import UUIDStr
-from pydantic import StrictStr
 
 from polyaxon.lifecycle import ManagedBy, V1StatusCondition, V1Statuses
 from polyaxon.polyflow.matrix.kinds import V1MatrixKind

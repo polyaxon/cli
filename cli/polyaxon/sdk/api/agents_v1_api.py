@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
 from polyaxon.lifecycle import V1Status
 from polyaxon.schemas.responses.v1_agent import V1Agent

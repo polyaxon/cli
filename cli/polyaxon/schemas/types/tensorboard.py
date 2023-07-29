@@ -1,9 +1,9 @@
 from typing import List, Optional, Union
 
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validator
 from clipped.types.ref_or_obj import RefField
 from clipped.types.uuids import UUIDStr
 from clipped.utils.lists import to_list
-from pydantic import Field, StrictInt, StrictStr, validator
 
 from polyaxon.schemas.types.base import BaseTypeConfig
 

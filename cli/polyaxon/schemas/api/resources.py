@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional
 
+from clipped.compact.pydantic import StrictInt, StrictStr
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.uuids import UUIDStr
-from pydantic import StrictInt, StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
 

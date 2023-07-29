@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Union
 
+from clipped.compact.pydantic import Field, StrictStr, validator
 from clipped.types.ref_or_obj import BoolOrRef, RefField
-from pydantic import Field, StrictStr, validator
 
 from polyaxon.lifecycle import V1Statuses
 from polyaxon.polyflow.params import V1Param

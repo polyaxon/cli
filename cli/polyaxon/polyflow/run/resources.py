@@ -1,8 +1,8 @@
 from typing import Optional, Union
 
+from clipped.compact.pydantic import StrictStr
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.utils.units import to_cpu_value, to_memory_bytes
-from pydantic import StrictStr
 
 from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.schemas.base import BaseSchemaModel

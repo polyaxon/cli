@@ -2,10 +2,10 @@ import datetime
 
 from typing import Any, Dict, List, Optional, Union
 
+from clipped.compact.pydantic import StrictStr
 from clipped.utils.dates import parse_datetime
 from clipped.utils.enums import PEnum
 from clipped.utils.tz import now
-from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
 

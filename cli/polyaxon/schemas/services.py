@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import Field, StrictStr, validator
 
 from polyaxon.containers.pull_policy import PullPolicy
 from polyaxon.k8s import k8s_schemas, k8s_validation

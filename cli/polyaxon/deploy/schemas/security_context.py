@@ -1,7 +1,7 @@
 from typing import Optional
 
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, root_validator
 from clipped.config.schema import skip_partial
-from pydantic import Field, StrictInt, StrictStr, root_validator
 
 from polyaxon.schemas.base import BaseSchemaModel
 

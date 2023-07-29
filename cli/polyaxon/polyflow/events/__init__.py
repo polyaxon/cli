@@ -1,8 +1,8 @@
 from typing import List, Union
 
+from clipped.compact.pydantic import StrictStr
 from clipped.types.ref_or_obj import RefField
 from clipped.utils.enums import PEnum
-from pydantic import StrictStr
 
 from polyaxon.contexts import refs as ctx_refs
 from polyaxon.lifecycle import V1Statuses

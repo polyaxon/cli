@@ -3,8 +3,8 @@ import math
 from typing import Dict, List, Optional, Tuple, Union
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import Field, NonNegativeFloat, PositiveInt, PrivateAttr
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
-from pydantic import Field, NonNegativeFloat, PositiveInt, PrivateAttr
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig

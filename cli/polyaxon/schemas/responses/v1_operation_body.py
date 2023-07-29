@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import StrictStr
+from clipped.compact.pydantic import StrictStr
 
 from polyaxon.lifecycle import ManagedBy
 from polyaxon.schemas import V1RunPending

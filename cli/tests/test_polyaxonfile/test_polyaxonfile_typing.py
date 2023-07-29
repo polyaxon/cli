@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 from polyaxon.k8s import k8s_schemas

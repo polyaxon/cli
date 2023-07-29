@@ -1,7 +1,7 @@
 from typing import Union
 from typing_extensions import Annotated
 
-from pydantic import Field
+from clipped.compact.pydantic import Field
 
 from polyaxon.polyflow.schedules.cron import V1CronSchedule
 from polyaxon.polyflow.schedules.datetime import V1DateTimeSchedule

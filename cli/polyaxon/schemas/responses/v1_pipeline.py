@@ -1,7 +1,7 @@
 from typing import Optional
 
+from clipped.compact.pydantic import StrictStr
 from clipped.types.uuids import UUIDStr
-from pydantic import StrictStr
 
 from polyaxon.polyflow.run.kinds import V1PipelineKind
 from polyaxon.schemas.base import BaseResponseModel

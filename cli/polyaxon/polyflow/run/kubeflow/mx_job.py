@@ -1,9 +1,9 @@
 from typing import Optional, Union
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import Field
 from clipped.types.ref_or_obj import RefField
 from clipped.utils.enums import PEnum
-from pydantic import Field
 
 from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.polyflow.run.base import BaseRun

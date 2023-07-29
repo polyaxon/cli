@@ -1,8 +1,8 @@
 from typing import Optional
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import Field
 from clipped.types.ref_or_obj import BoolOrRef, DatetimeOrRef, IntOrRef, TimeDeltaOrRef
-from pydantic import Field
 
 from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
 from polyaxon.schemas.base import BaseSchemaModel

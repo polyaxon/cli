@@ -2,17 +2,17 @@ from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 from typing_extensions import Annotated, Literal
 
+from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
 from clipped.config.schema import skip_partial
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import RefField
-from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon import types
 from polyaxon.polyflow.matrix.kinds import V1HPKind
 from polyaxon.schemas.base import BaseSchemaModel
 
 if TYPE_CHECKING:
-    from pydantic.typing import CallableGenerator
+    from clipped.compact.pydantic import CallableGenerator
 
 try:
     import numpy as np

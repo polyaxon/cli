@@ -1,4 +1,4 @@
-from pydantic import validate_arguments
+from clipped.compact.pydantic import validate_arguments
 
 from polyaxon.schemas.api.authentication import V1Credentials
 from polyaxon.schemas.responses.v1_auth import V1Auth

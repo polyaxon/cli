@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from clipped.compact.pydantic import Field, StrictStr, validator
 from clipped.config.schema import skip_partial
 from clipped.types.docker_image import validate_image
 from clipped.types.ref_or_obj import RefField
-from pydantic import Field, StrictStr, validator
 
 from polyaxon.schemas.types.base import BaseTypeConfig
 

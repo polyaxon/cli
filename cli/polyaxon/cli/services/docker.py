@@ -2,10 +2,10 @@ import sys
 
 import click
 
+from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.types.docker_image import validate_image
 from clipped.utils.paths import copy_file
-from pydantic import ValidationError
 
 from polyaxon.cli.check import check_polyaxonfile
 from polyaxon.cli.errors import handle_cli_error

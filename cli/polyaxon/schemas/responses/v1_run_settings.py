@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import StrictStr
+from clipped.compact.pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_run_reference_catalog import V1RunReferenceCatalog

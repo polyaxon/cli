@@ -1,7 +1,7 @@
 import pytest
 
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
-from pydantic import ValidationError
 
 from polyaxon.polyflow import V1EventKind, V1EventTrigger
 from polyaxon.utils.test_utils import BaseTestCase

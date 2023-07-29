@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
+from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import BoolOrRef, RefField
-from pydantic import Field, StrictStr
 
 from polyaxon.auxiliaries.sidecar import V1PolyaxonSidecarContainer
 from polyaxon.polyflow.notifications import V1Notification

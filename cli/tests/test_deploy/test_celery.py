@@ -1,4 +1,4 @@
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon.deploy.schemas.celery import CeleryConfig
 from polyaxon.utils.test_utils import BaseTestCase

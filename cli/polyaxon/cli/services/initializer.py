@@ -4,10 +4,10 @@ import sys
 
 import click
 
+from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.utils.lists import to_list
 from clipped.utils.paths import check_or_create_path, copy_file
-from pydantic import ValidationError
 
 from polyaxon.config.spec import ConfigSpec
 from polyaxon.connections import V1ConnectionKind

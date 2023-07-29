@@ -1,8 +1,8 @@
 from typing import Optional, Union
 from typing_extensions import Annotated, Literal
 
+from clipped.compact.pydantic import Field, StrictFloat, StrictStr
 from clipped.types.ref_or_obj import BoolOrRef, FloatOrRef, IntOrRef
-from pydantic import Field, StrictFloat, StrictStr
 
 from polyaxon.polyflow.optimization import V1Optimization
 from polyaxon.schemas.base import BaseSchemaModel

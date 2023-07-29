@@ -2,8 +2,14 @@ from collections.abc import Mapping
 from typing import Any, Dict, ForwardRef, List, Optional, Set, Union
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import (
+    Field,
+    PositiveInt,
+    PrivateAttr,
+    StrictStr,
+    validator,
+)
 from clipped.types.ref_or_obj import RefField
-from pydantic import Field, PositiveInt, PrivateAttr, StrictStr, validator
 
 from polyaxon import types
 from polyaxon.contexts import sections as ctx_sections

@@ -2,10 +2,10 @@ from collections import namedtuple
 from collections.abc import Mapping
 from typing import Any, Dict, Optional
 
+from clipped.compact.pydantic import Field, StrictStr, validator
 from clipped.config.schema import skip_partial
 from clipped.utils.lists import to_list
 from clipped.utils.strings import to_string
-from pydantic import Field, StrictStr, validator
 
 from polyaxon import types
 from polyaxon.contexts import refs as ctx_refs

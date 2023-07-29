@@ -1,5 +1,5 @@
+from clipped.compact.pydantic import Extra
 from clipped.config.schema import BaseSchemaModel as _BaseSchemaModel
-from pydantic import Extra
 
 from polyaxon import pkg
 from polyaxon.config.spec import ConfigSpec

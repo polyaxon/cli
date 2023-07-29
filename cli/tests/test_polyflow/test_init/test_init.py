@@ -1,6 +1,6 @@
 import pytest
 
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon.polyflow import V1Init, V1RunKind
 from polyaxon.polyflow.operations import V1CompiledOperation

@@ -3,9 +3,9 @@ import uuid
 
 from collections import OrderedDict
 
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 from clipped.utils.json import orjson_dumps
-from pydantic import ValidationError
 
 from polyaxon import types
 from polyaxon.exceptions import PolyaxonValidationError

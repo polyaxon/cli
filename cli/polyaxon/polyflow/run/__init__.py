@@ -1,7 +1,7 @@
 from typing import Union
 from typing_extensions import Annotated
 
-from pydantic import Field
+from clipped.compact.pydantic import Field
 
 from polyaxon.polyflow.run.cleaner import V1CleanerJob
 from polyaxon.polyflow.run.dag import V1Dag

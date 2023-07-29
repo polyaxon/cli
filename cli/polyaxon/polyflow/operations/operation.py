@@ -2,9 +2,9 @@ from copy import copy
 from typing import Dict, Optional
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
-from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon.polyflow.builds import V1Build
 from polyaxon.polyflow.component.component import V1Component

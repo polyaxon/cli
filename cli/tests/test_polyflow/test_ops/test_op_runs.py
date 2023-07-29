@@ -1,7 +1,7 @@
 import pytest
 
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.tz import now
-from pydantic import ValidationError
 
 from polyaxon import types
 from polyaxon.exceptions import PolyaxonValidationError

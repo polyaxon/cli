@@ -1,8 +1,14 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import (
+    Field,
+    StrictInt,
+    StrictStr,
+    root_validator,
+    validator,
+)
 from clipped.formatting import Printer
-from pydantic import Field, StrictInt, StrictStr, root_validator, validator
 
 from polyaxon.auxiliaries import (
     V1PolyaxonCleaner,

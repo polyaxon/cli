@@ -1,7 +1,7 @@
 from typing import Union
 from typing_extensions import Annotated
 
-from pydantic import Field
+from clipped.compact.pydantic import Field
 
 from polyaxon.polyflow.component.component import V1Component
 from polyaxon.polyflow.references import V1DagRef, V1HubRef, V1PathRef, V1UrlRef

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import StrictStr
+from clipped.compact.pydantic import StrictStr
 
 from polyaxon.lifecycle import V1Statuses
 from polyaxon.schemas.base import BaseSchemaModel

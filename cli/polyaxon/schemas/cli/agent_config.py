@@ -2,8 +2,8 @@ import os
 
 from typing import Dict, List, Optional
 
+from clipped.compact.pydantic import Extra, Field, StrictStr, root_validator, validator
 from clipped.config.schema import skip_partial, to_partial
-from pydantic import Extra, Field, StrictStr, root_validator, validator
 from vents.connections import ConnectionCatalog
 
 from polyaxon.auxiliaries import (

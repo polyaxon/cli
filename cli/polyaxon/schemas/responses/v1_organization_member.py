@@ -2,8 +2,8 @@ import datetime
 
 from typing import Optional
 
+from clipped.compact.pydantic import StrictStr
 from clipped.types.email import EmailStr
-from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseResponseModel
 

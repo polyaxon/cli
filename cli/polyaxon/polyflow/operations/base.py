@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Set, Union
 
+from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import RefField
-from pydantic import Field, StrictStr
 
 from polyaxon.contexts import refs as ctx_refs
 from polyaxon.lifecycle import V1Statuses

@@ -1,6 +1,6 @@
 import pytest
 
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon.schemas.types.dockerfile import (
     POLYAXON_DOCKER_SHELL,

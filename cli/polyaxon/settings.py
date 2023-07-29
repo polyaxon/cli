@@ -2,9 +2,9 @@ import os
 
 from typing import TYPE_CHECKING, Optional
 
+from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.utils.bools import to_bool
-from pydantic import ValidationError
 
 from polyaxon.api import LOCALHOST
 from polyaxon.env_vars.keys import EV_KEYS_NO_CONFIG, EV_KEYS_SET_AGENT

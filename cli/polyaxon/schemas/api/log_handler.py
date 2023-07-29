@@ -2,7 +2,7 @@ import base64
 
 from typing import Optional
 
-from pydantic import StrictStr
+from clipped.compact.pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
 

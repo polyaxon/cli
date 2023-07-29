@@ -3,8 +3,8 @@ import pytest
 from copy import copy
 from datetime import datetime, timedelta
 
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
-from pydantic import ValidationError
 
 from polyaxon.polyflow import V1RunKind
 from polyaxon.polyflow.matrix.grid_search import V1GridSearch

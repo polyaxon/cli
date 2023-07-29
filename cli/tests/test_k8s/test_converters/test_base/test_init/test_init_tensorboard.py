@@ -1,7 +1,7 @@
 import pytest
 import uuid
 
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
 from polyaxon.connections import (

@@ -3,7 +3,7 @@ import pytest
 
 from mock import MagicMock, patch
 
-from pydantic import ValidationError
+from clipped.compact.pydantic import ValidationError
 
 from polyaxon import pkg
 from polyaxon.contexts import paths as ctx_paths

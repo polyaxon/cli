@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
+from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
 from clipped.config.schema import skip_partial
-from pydantic import Field, StrictStr, root_validator, validator
 
 from polyaxon.config.parser import ConfigParser
 from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError

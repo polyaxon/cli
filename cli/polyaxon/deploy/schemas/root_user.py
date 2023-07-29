@@ -1,7 +1,7 @@
 from typing import Optional
 
+from clipped.compact.pydantic import StrictStr, constr
 from clipped.types.email import EmailStr
-from pydantic import StrictStr, constr
 
 from polyaxon.schemas.base import NAME_REGEX, BaseSchemaModel
 

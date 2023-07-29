@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 
+from clipped.compact.pydantic import Field
 from clipped.utils.lists import to_list
-from pydantic import Field
 
 from polyaxon import settings
 from polyaxon.auxiliaries import (

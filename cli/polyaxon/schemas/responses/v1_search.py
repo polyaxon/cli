@@ -2,8 +2,8 @@ import datetime
 
 from typing import List, Optional
 
+from clipped.compact.pydantic import StrictStr
 from clipped.types.uuids import UUIDStr
-from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_search_spec import V1SearchSpec

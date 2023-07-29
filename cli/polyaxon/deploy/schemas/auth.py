@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import Field, StrictStr
+from clipped.compact.pydantic import Field, StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
 

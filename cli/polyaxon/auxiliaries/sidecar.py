@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
+from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
-from pydantic import Field, StrictStr
 
 from polyaxon import pkg
 from polyaxon.containers.pull_policy import PullPolicy

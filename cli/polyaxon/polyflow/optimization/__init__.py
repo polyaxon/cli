@@ -1,7 +1,7 @@
 from typing import Optional
 
+from clipped.compact.pydantic import StrictStr
 from clipped.utils.enums import PEnum
-from pydantic import StrictStr
 
 from polyaxon.schemas.base import BaseSchemaModel
 
