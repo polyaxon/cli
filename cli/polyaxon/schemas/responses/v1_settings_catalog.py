@@ -9,3 +9,4 @@ from polyaxon.schemas.base import BaseResponseModel
 class V1SettingsCatalog(BaseResponseModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
+    version: Optional[StrictStr]

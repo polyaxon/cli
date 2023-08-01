@@ -354,7 +354,11 @@ class TestResolveContexts(BaseTestCase):
                 "namespace": "test",
                 "iteration": 12,
                 "ports": [1212, 1234],
-                "base_url": "/services/v1/test/user/project/runs/uuid",
+                "base_url": "/services/v1/test/user/project/runs/uuid/1212",
+                "base_urls": [
+                    "/services/v1/test/user/project/runs/uuid/1212",
+                    "/services/v1/test/user/project/runs/uuid/1234",
+                ],
                 "created_at": None,
                 "compiled_at": None,
                 "schedule_at": None,

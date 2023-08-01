@@ -17,6 +17,7 @@ from clipped.utils.json import orjson_dumps
 from clipped.utils.lists import to_list
 from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
+from clipped.utils.versions import compare_versions
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
@@ -38,7 +39,7 @@ from polyaxon.cli.options import (
 )
 from polyaxon.cli.utils import handle_output
 from polyaxon.client import RunClient, get_run_logs
-from polyaxon.constants.metadata import META_IS_EXTERNAL, META_REWRITE_PATH
+from polyaxon.constants.metadata import META_IS_EXTERNAL, META_PORTS, META_REWRITE_PATH
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.getters import get_project_or_local, get_project_run_or_local
 from polyaxon.exceptions import (
@@ -1963,9 +1964,24 @@ def service(ctx, project, uid, yes, external, url):
     service_endpoint = EXTERNAL_V1 if is_external else SERVICES_V1
     if rewrite_path:
         service_endpoint = REWRITE_EXTERNAL_V1 if is_external else REWRITE_SERVICES_V1
+
+    service_subpath = "{}/{}/{}/runs/{}/".format(
+        namespace, owner, project_name, run_uuid
+    )
+    port = 80
+    if client.settings and client.settings.agent:
+        version = client.settings.agent.version
+        if version and compare_versions(version, "2.0.0", ">="):
+            ports = client.run_data.meta_info.get(META_PORTS, [])
+            port = ports[0] if ports else 80
+        else:
+            port = None
+    if port:
+        service_subpath = "{}/{}/".format(service_subpath, port)
+
     external_run_url = get_dashboard_url(
         base=service_endpoint,
-        subpath="{}/{}/{}/runs/{}/".format(namespace, owner, project_name, run_uuid),
+        subpath=service_subpath,
     )
 
     if url:

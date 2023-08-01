@@ -44,13 +44,18 @@ class ServiceContextsManager(BaseContextsManager):
                     if compiled_operation.run.rewrite_path
                     else SERVICES_V1_LOCATION
                 )
-            base_url = get_proxy_run_url(
-                service=service,
-                namespace=namespace,
-                owner=owner_name,
-                project=project_name,
-                run_uuid=run_uuid,
-            )
-            contexts["globals"]["base_url"] = base_url
-
+            ports = compiled_operation.run.ports or [80]
+            base_urls = []
+            for port in ports:
+                base_url = get_proxy_run_url(
+                    service=service,
+                    namespace=namespace,
+                    owner=owner_name,
+                    project=project_name,
+                    run_uuid=run_uuid,
+                    port=port,
+                )
+                base_urls.append(base_url)
+            contexts["globals"]["base_url"] = base_urls[0]
+            contexts["globals"]["base_urls"] = base_urls
         return contexts
