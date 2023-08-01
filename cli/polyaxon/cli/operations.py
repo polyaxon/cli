@@ -1977,7 +1977,7 @@ def service(ctx, project, uid, yes, external, url):
         else:
             port = None
     if port:
-        service_subpath = "{}/{}/".format(service_subpath, port)
+        service_subpath = "{}{}/".format(service_subpath, port)
 
     external_run_url = get_dashboard_url(
         base=service_endpoint,
