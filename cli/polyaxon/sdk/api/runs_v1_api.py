@@ -8156,6 +8156,9 @@ class RunsV1Api(BaseApi):
         sample: Annotated[
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
@@ -8241,6 +8244,9 @@ class RunsV1Api(BaseApi):
         ] = None,
         sample: Annotated[
             Optional[StrictInt], Field(description="Sample query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")

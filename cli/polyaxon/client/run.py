@@ -22,7 +22,11 @@ from clipped.utils.paths import (
     get_dirs_under_path,
     get_files_in_path_context,
 )
-from clipped.utils.query_params import get_logs_params, get_query_params
+from clipped.utils.query_params import (
+    get_logs_params,
+    get_query_params,
+    get_streams_params,
+)
 from clipped.utils.tz import now
 from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
@@ -896,8 +900,11 @@ class RunClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def inspect(self):
+        if not self.settings:
+            self.refresh_data()
+        params = get_streams_params(connection=self.artifacts_store, status=self.status)
         return self.client.runs_v1.inspect_run(
-            self.namespace, self.owner, self.project, self.run_uuid
+            self.namespace, self.owner, self.project, self.run_uuid, **params
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1013,7 +1020,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+        params = get_streams_params(self.artifacts_store)
         return self.client.runs_v1.get_run_events(
             self.namespace,
             self.owner,
@@ -1048,7 +1055,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+        params = get_streams_params(self.artifacts_store)
         return self.client.runs_v1.get_multi_run_events(
             self.namespace,
             self.owner,
@@ -1137,7 +1144,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+        params = get_streams_params(self.artifacts_store)
         return self.client.runs_v1.get_run_artifact(
             namespace=self.namespace,
             owner=self.owner,
@@ -1196,11 +1203,10 @@ class RunClient:
                     subpath="events/{}".format(lineage.kind),
                 )
                 url = absolute_uri(url=url, host=self.client.config.host)
-                params = {"names": lineage.name, "pkg_assets": True}
-                if force:
-                    params["force"] = True
-                if self.artifacts_store:
-                    params["connection"] = self.artifacts_store
+                params = get_streams_params(
+                    connection=self.artifacts_store, force=force
+                )
+                params.update({"names": lineage.name, "pkg_assets": True})
 
                 return self.store.download_file(
                     url=url,
@@ -1258,12 +1264,7 @@ class RunClient:
             subpath="artifact",
         )
         url = absolute_uri(url=url, host=self.client.config.host)
-        params = {}
-        if force:
-            params["force"] = True
-        if self.artifacts_store:
-            params["connection"] = self.artifacts_store
-
+        params = get_streams_params(connection=self.artifacts_store, force=force)
         return self.store.download_file(
             url=url, path=path, path_to=path_to, params=params
         )
@@ -1302,11 +1303,9 @@ class RunClient:
             subpath="artifacts",
         )
         url = absolute_uri(url=url, host=self.client.config.host)
-        params = {}
+        params = get_streams_params(connection=self.artifacts_store)
         if check_path:
             params["check_path"] = True
-        if self.artifacts_store:
-            params["connection"] = self.artifacts_store
 
         return self.store.download_file(
             url=url,
@@ -1343,8 +1342,7 @@ class RunClient:
         if not self.settings:
             self.refresh_data()
 
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
-
+        params = get_streams_params(connection=self.artifacts_store)
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1433,8 +1431,7 @@ class RunClient:
         if not self.settings:
             self.refresh_data()
 
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
-
+        params = get_streams_params(connection=self.artifacts_store)
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1463,7 +1460,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+        params = get_streams_params(connection=self.artifacts_store)
         self.client.runs_v1.delete_run_artifact(
             namespace=self.namespace,
             owner=self.owner,
@@ -1482,7 +1479,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+        params = get_streams_params(connection=self.artifacts_store)
         return self.client.runs_v1.delete_run_artifacts(
             namespace=self.namespace,
             owner=self.owner,
@@ -1504,7 +1501,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
-        params = {"connection": self.artifacts_store} if self.artifacts_store else {}
+        params = get_streams_params(connection=self.artifacts_store)
         return self.client.runs_v1.get_run_artifacts_tree(
             namespace=self.namespace,
             owner=self.owner,
