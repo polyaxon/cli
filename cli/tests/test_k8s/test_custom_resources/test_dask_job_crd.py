@@ -1,7 +1,7 @@
 from polyaxon.k8s.custom_resources.crd import get_custom_object
 from polyaxon.k8s.custom_resources.dask_job import get_dask_job_custom_resource
 from polyaxon.lifecycle import V1Statuses
-from polyaxon.polyflow import V1Notification, V1SchedulingPolicy
+from polyaxon.polyflow import V1Notification
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.termination import V1Termination
 from tests.test_k8s.test_custom_resources.base_distributed import (
@@ -42,6 +42,7 @@ class TestDaskJobCRD(BaseDistributedCRDTestCase):
 
         crd = get_dask_job_custom_resource(
             namespace="default",
+            run_uuid="foo",
             resource_name="foo",
             job=None,
             worker=None,
@@ -101,6 +102,7 @@ class TestDaskJobCRD(BaseDistributedCRDTestCase):
 
         crd = get_dask_job_custom_resource(
             namespace="default",
+            run_uuid="foo",
             resource_name="foo",
             job=job,
             worker=worker,

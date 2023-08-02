@@ -53,6 +53,7 @@ class DaskJobConverter(DaskJobMixin, BaseConverter):
 
         return get_dask_job_custom_resource(
             namespace=self.namespace,
+            run_uuid=self.run_uuid,
             resource_name=self.resource_name,
             job=job_replica,
             worker=worker,

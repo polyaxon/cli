@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 
+from clipped.utils.lists import to_list
 from kubernetes import client
 
 from polyaxon.k8s import k8s_schemas
@@ -24,6 +25,7 @@ def get_dask_replicas_template(
     annotations: Dict[str, str],
     template_spec: Dict,
     args: Optional[List[str]] = None,
+    additional_args: Optional[List[str]] = None,
     ports: Optional[List[k8s_schemas.V1ContainerPort]] = None,
     readiness_probe: Optional[client.V1Probe] = None,
     liveness_probe: Optional[client.V1Probe] = None,
@@ -35,6 +37,10 @@ def get_dask_replicas_template(
         replica.main_container.ports = ports
     if args and replica.main_container.args is None:
         replica.main_container.args = args
+    if additional_args:
+        replica.main_container.args = (
+            to_list(replica.main_container.args, check_none=True) + additional_args
+        )
     if readiness_probe and replica.main_container.readiness_probe is None:
         replica.main_container.readiness_probe = readiness_probe
     if liveness_probe and replica.main_container.liveness_probe is None:
@@ -61,6 +67,7 @@ def get_dask_replicas_template(
 
 def get_dask_job_custom_resource(
     resource_name: str,
+    run_uuid: str,
     namespace: str,
     job: Optional[ReplicaSpec],
     worker: Optional[ReplicaSpec],
@@ -105,6 +112,8 @@ def get_dask_job_custom_resource(
             )
         ],
     )
+    dash_prefix = "/dask/{}/{}".format(resource_name, run_uuid)
+    health_path = "{}/health".format(dash_prefix)
     get_dask_replicas_template(
         replica_name="Scheduler",
         replica=scheduler,
@@ -114,6 +123,7 @@ def get_dask_job_custom_resource(
         annotations=annotations,
         template_spec=template_spec,
         args=["dask-scheduler"],
+        additional_args=["--dashboard-prefix", dash_prefix],
         ports=[
             k8s_schemas.V1ContainerPort(
                 name="tcp-comm", container_port=8786, protocol="TCP"
@@ -123,12 +133,12 @@ def get_dask_job_custom_resource(
             ),
         ],
         readiness_probe=client.V1Probe(
-            http_get=client.V1HTTPGetAction(path="/health", port="http-dashboard"),
+            http_get=client.V1HTTPGetAction(path=health_path, port="http-dashboard"),
             initial_delay_seconds=5,
             period_seconds=5,
         ),
         liveness_probe=client.V1Probe(
-            http_get=client.V1HTTPGetAction(path="/health", port="http-dashboard"),
+            http_get=client.V1HTTPGetAction(path=health_path, port="http-dashboard"),
             initial_delay_seconds=15,
             period_seconds=15,
         ),
