@@ -21,6 +21,20 @@ class V1RunKind(str, PEnum):
     CLEANER = "cleaner"
     BUILDER = "builder"
 
+    @classmethod
+    def has_service(cls, kind: str):
+        return kind in (
+            cls.SERVICE,
+            cls.DASKJOB,
+            cls.RAYJOB,
+            cls.MPIJOB,
+            cls.TFJOB,
+            cls.PYTORCHJOB,
+            cls.PADDLEJOB,
+            cls.MXJOB,
+            cls.XGBJOB,
+        )
+
 
 class V1CloningKind(str, PEnum):
     COPY = "copy"

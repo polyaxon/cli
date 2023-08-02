@@ -3052,6 +3052,9 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ) -> V1EventsResponse:  # noqa: E501
         """Get multi runs events  # noqa: E501
@@ -3059,7 +3062,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_multi_run_events(namespace, owner, project, kind, names, runs, orient, force, sample, connection, async_req=True)
+        >>> thread = api.get_multi_run_events(namespace, owner, project, kind, names, runs, orient, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -3082,6 +3085,8 @@ class RunsV1Api(BaseApi):
         :type sample: int
         :param connection: Connection query param.
         :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -3109,6 +3114,7 @@ class RunsV1Api(BaseApi):
             force,
             sample,
             connection,
+            status,
             **kwargs
         )  # noqa: E501
 
@@ -3139,6 +3145,9 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ):  # noqa: E501
         """Get multi runs events  # noqa: E501
@@ -3146,7 +3155,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_multi_run_events_with_http_info(namespace, owner, project, kind, names, runs, orient, force, sample, connection, async_req=True)
+        >>> thread = api.get_multi_run_events_with_http_info(namespace, owner, project, kind, names, runs, orient, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -3169,6 +3178,8 @@ class RunsV1Api(BaseApi):
         :type sample: int
         :param connection: Connection query param.
         :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -3206,6 +3217,7 @@ class RunsV1Api(BaseApi):
             "force",
             "sample",
             "connection",
+            "status",
         ]
         _all_params.extend(
             [
@@ -3256,6 +3268,8 @@ class RunsV1Api(BaseApi):
             _query_params.append(("sample", _params["sample"]))
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
+        if _params.get("status") is not None:  # noqa: E501
+            _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
@@ -5582,6 +5596,9 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ) -> V1EventsResponse:  # noqa: E501
         """Get run events  # noqa: E501
@@ -5589,7 +5606,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_events(namespace, owner, project, uuid, kind, names, orient, force, sample, connection, async_req=True)
+        >>> thread = api.get_run_events(namespace, owner, project, uuid, kind, names, orient, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -5612,6 +5629,8 @@ class RunsV1Api(BaseApi):
         :type sample: int
         :param connection: Connection query param.
         :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -5639,6 +5658,7 @@ class RunsV1Api(BaseApi):
             force,
             sample,
             connection,
+            status,
             **kwargs
         )  # noqa: E501
 
@@ -5669,6 +5689,9 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ):  # noqa: E501
         """Get run events  # noqa: E501
@@ -5676,7 +5699,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_events_with_http_info(namespace, owner, project, uuid, kind, names, orient, force, sample, connection, async_req=True)
+        >>> thread = api.get_run_events_with_http_info(namespace, owner, project, uuid, kind, names, orient, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -5699,6 +5722,8 @@ class RunsV1Api(BaseApi):
         :type sample: int
         :param connection: Connection query param.
         :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -5736,6 +5761,7 @@ class RunsV1Api(BaseApi):
             "force",
             "sample",
             "connection",
+            "status",
         ]
         _all_params.extend(
             [
@@ -5786,6 +5812,8 @@ class RunsV1Api(BaseApi):
             _query_params.append(("sample", _params["sample"]))
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
+        if _params.get("status") is not None:  # noqa: E501
+            _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
@@ -6511,6 +6539,9 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ) -> V1EventsResponse:  # noqa: E501
         """Get run resources events  # noqa: E501
@@ -6518,7 +6549,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_resources(namespace, owner, project, uuid, names, tail, force, sample, connection, async_req=True)
+        >>> thread = api.get_run_resources(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -6539,6 +6570,8 @@ class RunsV1Api(BaseApi):
         :type sample: int
         :param connection: Connection query param.
         :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -6565,6 +6598,7 @@ class RunsV1Api(BaseApi):
             force,
             sample,
             connection,
+            status,
             **kwargs
         )  # noqa: E501
 
@@ -6594,6 +6628,9 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ):  # noqa: E501
         """Get run resources events  # noqa: E501
@@ -6601,7 +6638,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_resources_with_http_info(namespace, owner, project, uuid, names, tail, force, sample, connection, async_req=True)
+        >>> thread = api.get_run_resources_with_http_info(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -6622,6 +6659,8 @@ class RunsV1Api(BaseApi):
         :type sample: int
         :param connection: Connection query param.
         :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -6658,6 +6697,7 @@ class RunsV1Api(BaseApi):
             "force",
             "sample",
             "connection",
+            "status",
         ]
         _all_params.extend(
             [
@@ -6706,6 +6746,8 @@ class RunsV1Api(BaseApi):
             _query_params.append(("sample", _params["sample"]))
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
+        if _params.get("status") is not None:  # noqa: E501
+            _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
@@ -8114,6 +8156,9 @@ class RunsV1Api(BaseApi):
         sample: Annotated[
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ) -> object:  # noqa: E501
         """Inspect an active run full conditions  # noqa: E501
@@ -8121,7 +8166,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.inspect_run(namespace, owner, project, uuid, names, tail, force, sample, async_req=True)
+        >>> thread = api.inspect_run(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -8140,6 +8185,10 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
+        :param connection: Connection to use.
+        :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -8157,7 +8206,17 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.inspect_run_with_http_info(
-            namespace, owner, project, uuid, names, tail, force, sample, **kwargs
+            namespace,
+            owner,
+            project,
+            uuid,
+            names,
+            tail,
+            force,
+            sample,
+            connection,
+            status,
+            **kwargs
         )  # noqa: E501
 
     @validate_arguments
@@ -8183,6 +8242,9 @@ class RunsV1Api(BaseApi):
         sample: Annotated[
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
         **kwargs
     ):  # noqa: E501
         """Inspect an active run full conditions  # noqa: E501
@@ -8190,7 +8252,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.inspect_run_with_http_info(namespace, owner, project, uuid, names, tail, force, sample, async_req=True)
+        >>> thread = api.inspect_run_with_http_info(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -8209,6 +8271,10 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
+        :param connection: Connection to use.
+        :type connection: str
+        :param status: Optional status.
+        :type status: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -8244,6 +8310,8 @@ class RunsV1Api(BaseApi):
             "tail",
             "force",
             "sample",
+            "connection",
+            "status",
         ]
         _all_params.extend(
             [
@@ -8290,6 +8358,10 @@ class RunsV1Api(BaseApi):
             _query_params.append(("force", _params["force"]))
         if _params.get("sample") is not None:  # noqa: E501
             _query_params.append(("sample", _params["sample"]))
+        if _params.get("connection") is not None:  # noqa: E501
+            _query_params.append(("connection", _params["connection"]))
+        if _params.get("status") is not None:  # noqa: E501
+            _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
