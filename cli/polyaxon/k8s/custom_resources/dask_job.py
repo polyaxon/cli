@@ -67,6 +67,8 @@ def get_dask_replicas_template(
 
 def get_dask_job_custom_resource(
     resource_name: str,
+    owner_name: str,
+    project_name: str,
     run_uuid: str,
     namespace: str,
     job: Optional[ReplicaSpec],
@@ -112,7 +114,7 @@ def get_dask_job_custom_resource(
             )
         ],
     )
-    dash_prefix = "/dask/{}/{}".format(resource_name, run_uuid)
+    dash_prefix = f"/monitors/v1/{namespace}/{owner_name}/{project_name}/{run_uuid}/plx-operation-{run_uuid}-scheduler/8787"
     health_path = "{}/health".format(dash_prefix)
     get_dask_replicas_template(
         replica_name="Scheduler",

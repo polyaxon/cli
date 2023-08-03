@@ -42,6 +42,8 @@ class TestDaskJobCRD(BaseDistributedCRDTestCase):
 
         crd = get_dask_job_custom_resource(
             namespace="default",
+            owner_name="foo",
+            project_name="foo",
             run_uuid="foo",
             resource_name="foo",
             job=None,
@@ -102,6 +104,8 @@ class TestDaskJobCRD(BaseDistributedCRDTestCase):
 
         crd = get_dask_job_custom_resource(
             namespace="default",
+            owner_name="foo",
+            project_name="foo",
             run_uuid="foo",
             resource_name="foo",
             job=job,
