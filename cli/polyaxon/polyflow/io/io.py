@@ -1,7 +1,8 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
 from clipped.config.schema import skip_partial
+from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 from polyaxon.config.parser import ConfigParser
 from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
@@ -79,6 +80,158 @@ def validate_io(name, type, value, is_optional, is_list, is_flag, options):
     return value
 
 
+class V1Validation(BaseSchemaModel):
+    """Validation is used to validate inputs/outputs.
+
+    Validation is defined as a sdt of predicates, each one of the predicates that must be satisfied.
+
+    Args:
+        delay: bool, optional
+        gt: int, optional
+        ge: int, optional
+        lt: int, optional
+        le: int, optional
+        multiple_of: int, optional
+        max_digits: int, optional
+        decimal_places: int, optional
+        regex: str, optional
+        min_length: int, optional
+        max_length: int, optional
+        keys: List[str], optional
+        contains_keys: List[str], optional
+        excludes_keys: List[str], optional
+        contains: List[str], optional
+        excludes: List[str], optional
+        options: List[str], optional
+
+    ## YAML usage
+
+    ```yaml
+    >>> inputs:
+    >>>   - name: loss
+    >>>     type: str
+    >>>     validation:
+    >>>       options: [MeanSquaredError, MeanAbsoluteError]
+    >>>   - name: learning_rate
+    >>>     type: float
+    >>>     validation:
+    >>>       gt: 0.001
+    >>>       lt: 0.5
+    >>> options:
+    >>>   - name: accuracy
+    >>>     type: float
+    >>>     validation:
+    >>>       ge: 0.5
+    >>>   - name: outputs-path
+    >>>     type: path
+    >>>     validation:
+    >>>       regex: "^s3://(?P<bucket>[a-z0-9-.]{3,63})/(?P<key>.+)$"
+    ```
+
+    ## Python usage
+
+    ```python
+    >>> from polyaxon import types
+    >>> from polyaxon.polyflow import V1Validation
+    >>> inputs = [
+    >>>     V1IO(
+    >>>         name="loss",
+    >>>         type='str',
+    >>>         validation=V1Validation(options=["MeanSquaredError", "MeanAbsoluteError"])
+    >>>     ),
+    >>>     V1IO(
+    >>>         name="learning_rate",
+    >>>         type='float',
+    >>>         validation=V1Validation(gt=0.001, lt=0.5)
+    >>> ]
+    >>> outputs = [
+    >>>     V1IO(
+    >>>         name="accuracy",
+    >>>         type='float',
+    >>>         validation=V1Validation(ge=0.5)
+    >>>     ),
+    >>>     V1IO(
+    >>>         name="outputs-path",
+    >>>         type=types.PATH,
+    >>>         validation=V1Validation(regex="^s3://(?P<bucket>[a-z0-9-.]{3,63})/(?P<key>.+)$")
+    >>>     )
+    >>> ]
+    ```
+
+    ## Validation
+
+    ### Delay
+
+    To instruct the parser to only validate the input/output at compilation or resolution time:
+
+    ```yaml
+    >>> inputs:
+    >>>   - name: learning_rate
+    >>>     description: A short description about this input
+    >>>     type: float
+    >>>     value: 1.1
+    >>>     validation:
+    >>>       delay: true
+    ```
+
+    This flag is enabled by default for outputs, since they can only be
+    resolved after or during the run. To request validation at compilation time for outputs,
+    you need to set this flag to `False`.
+
+    ### Validators
+
+    #### Numerical Constraints
+    * gt - greater than
+    * lt - less than
+    * ge - greater than or equal to
+    * le - less than or equal to
+    * multipleOf - a multiple of the given number
+
+    #### Decimal Constraints
+    * maxDigits - maximum number of digits
+    * decimalPlaces - maximum number of decimal places
+
+    #### String Constraints
+    * regex - a regex pattern
+
+    #### String/List/Dict Constraints
+    * minLength - minimum length
+    * maxLength - maximum length
+
+    #### Dict Constraints
+    * keys - a list of keys that must be present in the dict
+    * containsKeys - a list of keys that must be present in the dict
+    * excludesKeys - a list of keys that must not be present in the dict
+
+    #### Generic Constraints
+    * contains - a list of values that must be present
+    * excludes - a list of values that must not be present
+    * options - a list of values that must be present
+    """
+
+    delay: Optional[BoolOrRef]
+    gt: Optional[IntOrRef]
+    ge: Optional[IntOrRef]
+    lt: Optional[IntOrRef]
+    le: Optional[IntOrRef]
+    multiple_of: Optional[IntOrRef] = Field(alias="multipleOf")
+    max_digits: Optional[IntOrRef] = Field(alias="maxDigits")
+    decimal_places: Optional[IntOrRef] = Field(alias="decimalPlaces")
+    regex: Optional[StrictStr]
+    min_length: Optional[IntOrRef] = Field(alias="minLength")
+    max_length: Optional[IntOrRef] = Field(alias="maxLength")
+    keys: Optional[Union[List[StrictStr], RefField]]
+    contains_keys: Optional[Union[List[StrictStr], RefField]] = Field(
+        alias="containsKeys"
+    )
+    excludes_keys: Optional[Union[List[StrictStr], RefField]] = Field(
+        alias="excludesKeys"
+    )
+    contains: Optional[Any]
+    excludes: Optional[Any]
+    options: Optional[Any]
+
+
 class V1IO(BaseSchemaModel):
     """Each Component may have its own inputs and outputs.
     The inputs and outputs describe the expected parameters to pass to the component
@@ -118,12 +271,12 @@ class V1IO(BaseSchemaModel):
         is_list: bool, optional
         is_flag: bool, optional
         arg_format: str, optional
-        delay_validation: bool, optional
-        options: List[any], optional (**Deprecated**)
-        validation: Validation, optional
         connection: str, optional
         to_init: bool, optional
         to_env: str, optional
+        validation: [V1Validation](/docs/core/specification/validation/), optional
+        delay_validation: bool, optional (**Deprecated**: please see valiation.delay)
+        options: List[any], optional (**Deprecated**: please see valiation)
 
     ## YAML usage
 
@@ -354,15 +507,6 @@ class V1IO(BaseSchemaModel):
     >>>    command: ["lr=0.01", "1"]
     ```
 
-    ### delayValidation
-
-    A flag to tell if an input/output should not be
-    validated at compilation or resolution time.
-
-    This flag is enabled by default for outputs, since they can only be
-    resolved after or during the run. To request validation at compilation time for outputs,
-    you need to set this flag to `False`.
-
     ### connection
 
     A connection to use with the input/outputs.
@@ -384,6 +528,53 @@ class V1IO(BaseSchemaModel):
     >>>     value: 1.1
     >>>     toEnv: MY_LEARNING_RATE
     ```
+
+    ### validation
+
+    A schema to use to validate the input/output value or to delay the validation to runtime.
+
+    To instruct the parser to only validate the input/output at compilation or resolution time:
+
+    ```yaml
+    >>> inputs:
+    >>>   - name: learning_rate
+    >>>     description: A short description about this input
+    >>>     type: float
+    >>>     value: 1.1
+    >>>     validation:
+    >>>       delay: true
+    ```
+
+    This flag is enabled by default for outputs, since they can only be
+    resolved after or during the run. To request validation at compilation time for outputs,
+    you need to set this flag to `False`.
+
+    To validate an input/output value:
+
+    ```yaml
+    >>> inputs:
+    >>>   - name: learning_rate
+    >>>     description: A short description about this input
+    >>>     type: float
+    >>>     value: 1.1
+    >>>     validation:
+    >>>       min: 0.01
+    >>>       max: 0.1
+    ```
+
+    Please check
+
+    ### delayValidation
+
+    > **Deprecated**: Please use `validation: ...` instead.
+
+    A flag to tell if an input/output should not be
+    validated at compilation or resolution time.
+
+    This flag is enabled by default for outputs, since they can only be
+    resolved after or during the run. To request validation at compilation time for outputs,
+    you need to set this flag to `False`.
+
 
     ### options
 
@@ -491,12 +682,13 @@ class V1IO(BaseSchemaModel):
     is_list: Optional[bool] = Field(alias="isList")
     is_flag: Optional[bool] = Field(alias="isFlag")
     arg_format: Optional[StrictStr] = Field(alias="argFormat")
-    delay_validation: Optional[bool] = Field(alias="delayValidation")
-    options: Optional[Any]
     connection: Optional[StrictStr]
     to_init: Optional[bool] = Field(alias="toInit")
     to_env: Optional[StrictStr] = Field(alias="toEnv")
     value: Optional[Any]
+    validation: Optional[V1Validation]
+    delay_validation: Optional[bool] = Field(alias="delayValidation")
+    options: Optional[Any]
 
     @validator("name", always=True)
     def validate_name(cls, v):
