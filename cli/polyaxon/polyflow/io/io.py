@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
 from clipped.config.schema import skip_partial
+from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 from polyaxon.config.parser import ConfigParser
@@ -241,11 +242,11 @@ class V1Validation(BaseSchemaModel):
     """
 
     delay: Optional[BoolOrRef]
-    gt: Optional[IntOrRef]
-    ge: Optional[IntOrRef]
-    lt: Optional[IntOrRef]
-    le: Optional[IntOrRef]
-    multiple_of: Optional[IntOrRef] = Field(alias="multipleOf")
+    gt: Optional[Union[StrictIntOrFloat, RefField]]
+    ge: Optional[Union[StrictIntOrFloat, RefField]]
+    lt: Optional[Union[StrictIntOrFloat, RefField]]
+    le: Optional[Union[StrictIntOrFloat, RefField]]
+    multiple_of: Optional[Union[StrictIntOrFloat, RefField]] = Field(alias="multipleOf")
     min_digits: Optional[IntOrRef] = Field(alias="minDigits")
     max_digits: Optional[IntOrRef] = Field(alias="maxDigits")
     decimal_places: Optional[IntOrRef] = Field(alias="decimalPlaces")
