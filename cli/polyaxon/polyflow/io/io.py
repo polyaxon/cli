@@ -1,4 +1,6 @@
-from typing import Any, List, Optional, Union
+import re
+
+from typing import Any, Dict, List, Optional, Union
 
 from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
 from clipped.config.schema import skip_partial
@@ -23,7 +25,7 @@ def validate_io_value(
     default: Any,
     is_optional: bool,
     is_list: bool,
-    options: List[Any],
+    validation: Optional[Union["V1Validation", Dict]],
     parse: bool = True,
 ):
     try:
@@ -33,8 +35,11 @@ def validate_io_value(
             is_list=is_list,
             is_optional=is_optional,
             default=default,
-            options=options,
         )
+        if validation:
+            validation.run_validation(
+                value=parsed_value, type=type, is_optional=is_optional
+            )
         if parse:
             return parsed_value
         # Return the original value, the parser will return specs sometimes
@@ -43,11 +48,20 @@ def validate_io_value(
         return default
     except PolyaxonSchemaError as e:
         raise PolyaxonValidationError(
-            "Could not parse value `%s`, an error was encountered: %s" % (value, e)
+            "Could not parse value `%s` for `%s`, an error was encountered: %s"
+            % (value, name, e)
         )
 
 
-def validate_io(name, type, value, is_optional, is_list, is_flag, options):
+def validate_io(
+    name: str,
+    type: str,
+    value: Any,
+    is_optional: bool,
+    is_list: bool,
+    is_flag: bool,
+    validation: Optional[Union["V1Validation", Dict]],
+):
     if type and value:
         try:
             value = validate_io_value(
@@ -57,7 +71,7 @@ def validate_io(name, type, value, is_optional, is_list, is_flag, options):
                 default=None,
                 is_list=is_list,
                 is_optional=is_optional,
-                options=options,
+                validation=validation,
             )
         except PolyaxonValidationError as e:
             raise ValueError(e)
@@ -92,6 +106,7 @@ class V1Validation(BaseSchemaModel):
         lt: int, optional
         le: int, optional
         multiple_of: int, optional
+        min_items: int, optional
         max_digits: int, optional
         decimal_places: int, optional
         regex: str, optional
@@ -137,23 +152,23 @@ class V1Validation(BaseSchemaModel):
     >>>     V1IO(
     >>>         name="loss",
     >>>         type='str',
-    >>>         validation=V1Validation(options=["MeanSquaredError", "MeanAbsoluteError"])
+    >>>         validation=[V1Validation(options=["MeanSquaredError", "MeanAbsoluteError"])]
     >>>     ),
     >>>     V1IO(
     >>>         name="learning_rate",
     >>>         type='float',
-    >>>         validation=V1Validation(gt=0.001, lt=0.5)
+    >>>         validation=[V1Validation(gt=0.001, lt=0.5)]
     >>> ]
     >>> outputs = [
     >>>     V1IO(
     >>>         name="accuracy",
     >>>         type='float',
-    >>>         validation=V1Validation(ge=0.5)
+    >>>         validation=[V1Validation(ge=0.5)]
     >>>     ),
     >>>     V1IO(
     >>>         name="outputs-path",
     >>>         type=types.PATH,
-    >>>         validation=V1Validation(regex="^s3://(?P<bucket>[a-z0-9-.]{3,63})/(?P<key>.+)$")
+    >>>         validation=[V1Validation(regex="^s3://(?P<bucket>[a-z0-9-.]{3,63})/(?P<key>.+)$")]
     >>>     )
     >>> ]
     ```
@@ -181,6 +196,9 @@ class V1Validation(BaseSchemaModel):
     ### Validators
 
     #### Numerical Constraints
+
+    > these constraints are also applied item wise for lists and for dict values
+
     * gt - greater than
     * lt - less than
     * ge - greater than or equal to
@@ -188,25 +206,38 @@ class V1Validation(BaseSchemaModel):
     * multipleOf - a multiple of the given number
 
     #### Decimal Constraints
+
+    > these constraints are also applied item wise for lists and for dict values
+
+    * minDigits - minimum number of digits
     * maxDigits - maximum number of digits
     * decimalPlaces - maximum number of decimal places
 
     #### String Constraints
-    * regex - a regex pattern
 
-    #### String/List/Dict Constraints
+    > these constraints are also applied item wise for lists and for dict values
+
+    * regex - a regex pattern
     * minLength - minimum length
     * maxLength - maximum length
+
+    #### Generic Constraints
+
+    > these constraints are also applied item wise for lists and for dict values
+
+    * contains - a list of values that must be present
+    * excludes - a list of values that must not be present
+    * options - a list of values that must be present
 
     #### Dict Constraints
     * keys - a list of keys that must be present in the dict
     * containsKeys - a list of keys that must be present in the dict
     * excludesKeys - a list of keys that must not be present in the dict
 
-    #### Generic Constraints
-    * contains - a list of values that must be present
-    * excludes - a list of values that must not be present
-    * options - a list of values that must be present
+    #### Items Constraints
+
+    * minItems - minimum number of items
+    * maxItems - maximum number of items
     """
 
     delay: Optional[BoolOrRef]
@@ -215,11 +246,17 @@ class V1Validation(BaseSchemaModel):
     lt: Optional[IntOrRef]
     le: Optional[IntOrRef]
     multiple_of: Optional[IntOrRef] = Field(alias="multipleOf")
+    min_digits: Optional[IntOrRef] = Field(alias="minDigits")
     max_digits: Optional[IntOrRef] = Field(alias="maxDigits")
     decimal_places: Optional[IntOrRef] = Field(alias="decimalPlaces")
     regex: Optional[StrictStr]
     min_length: Optional[IntOrRef] = Field(alias="minLength")
     max_length: Optional[IntOrRef] = Field(alias="maxLength")
+    contains: Optional[Any]
+    excludes: Optional[Any]
+    options: Optional[Any]
+    min_items: Optional[IntOrRef] = Field(alias="minItems")
+    max_items: Optional[IntOrRef] = Field(alias="maxItems")
     keys: Optional[Union[List[StrictStr], RefField]]
     contains_keys: Optional[Union[List[StrictStr], RefField]] = Field(
         alias="containsKeys"
@@ -227,9 +264,176 @@ class V1Validation(BaseSchemaModel):
     excludes_keys: Optional[Union[List[StrictStr], RefField]] = Field(
         alias="excludesKeys"
     )
-    contains: Optional[Any]
-    excludes: Optional[Any]
-    options: Optional[Any]
+
+    def _validate_gt(self, value):
+        if self.gt is not None and value <= self.gt:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must be greater than `{self.gt}`"
+            )
+
+    def _validate_ge(self, value):
+        if self.ge is not None and value < self.ge:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must be greater than or equal to `{self.ge}`"
+            )
+
+    def _validate_lt(self, value):
+        if self.lt is not None and value >= self.lt:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must be less than `{self.lt}`"
+            )
+
+    def _validate_le(self, value):
+        if self.le is not None and value > self.le:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must be less than or equal to `{self.le}`"
+            )
+
+    def _validate_multiple_of(self, value):
+        if self.multiple_of is not None and value % self.multiple_of != 0:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must be a multiple of `{self.multiple_of}`"
+            )
+
+    def _validate_min_digits(self, value):
+        if (
+            self.min_digits is not None
+            and len(str(value).replace(".", "")) < self.min_digits
+        ):
+            raise PolyaxonValidationError(
+                f"Value `{value}` must have at least `{self.min_digits}` digits"
+            )
+
+    def _validate_max_digits(self, value):
+        if (
+            self.max_digits is not None
+            and len(str(value).replace(".", "")) > self.max_digits
+        ):
+            raise PolyaxonValidationError(
+                f"Value `{value}` must have at most `{self.max_digits}` digits"
+            )
+
+    def _validate_decimal_places(self, value):
+        if (
+            self.decimal_places is not None
+            and len(str(value).split(".")[1]) > self.decimal_places
+        ):
+            raise PolyaxonValidationError(
+                f"Value `{value}` must have at most `{self.decimal_places}` decimal places"
+            )
+
+    def _validate_regex(self, value):
+        if self.regex is not None and not re.match(self.regex, value):
+            raise PolyaxonValidationError(
+                f"Value `{value}` must match the regex `{self.regex}`"
+            )
+
+    def _validate_min_length(self, value):
+        if self.min_length is not None and len(value) < self.min_length:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must have at least `{self.min_length}` characters"
+            )
+
+    def _validate_max_length(self, value):
+        if self.max_length is not None and len(value) > self.max_length:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must have at most `{self.max_length}` characters"
+            )
+
+    def _validate_contains(self, value):
+        if self.contains is not None and self.contains not in value:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must contain one of the values `{self.contains}`"
+            )
+
+    def _validate_excludes(self, value):
+        if self.excludes is not None and self.excludes in value:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must not contain any of the values `{self.excludes}`"
+            )
+
+    def _validate_options(self, value):
+        if self.options is not None and value not in self.options:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must be one of the values `{self.options}`"
+            )
+
+    def _validate_min_items(self, value):
+        if self.min_items is not None and len(value) < self.min_items:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must have at least `{self.min_items}` items"
+            )
+
+    def _validate_max_items(self, value):
+        if self.max_items is not None and len(value) > self.max_items:
+            raise PolyaxonValidationError(
+                f"Value `{value}` must have at most `{self.max_items}` items"
+            )
+
+    def _validate_keys(self, value):
+        if self.keys is not None and set(value.keys()) != set(self.keys):
+            raise PolyaxonValidationError(
+                f"Value `{value}` must contain all the keys `{self.keys}`"
+            )
+
+    def _validate_contains_keys(self, value):
+        if self.contains_keys is not None and not all(
+            k in value for k in self.contains_keys
+        ):
+            raise PolyaxonValidationError(
+                f"Value `{value}` must contain all the keys `{self.contains_keys}`"
+            )
+
+    def _validate_excludes_keys(self, value):
+        if self.excludes_keys is not None and any(
+            k in value for k in self.excludes_keys
+        ):
+            raise PolyaxonValidationError(
+                f"Value `{value}` must not contain any of the keys `{self.excludes_keys}`"
+            )
+
+    def run_validation(
+        self,
+        value: Any,
+        type: str,
+        is_optional: bool,
+    ):
+        if value is None and is_optional:
+            return
+
+        def _validate_value(v):
+            self._validate_gt(v)
+            self._validate_ge(v)
+            self._validate_lt(v)
+            self._validate_le(v)
+            self._validate_multiple_of(v)
+            self._validate_min_digits(v)
+            self._validate_max_digits(v)
+            self._validate_decimal_places(v)
+            self._validate_regex(v)
+            self._validate_min_length(v)
+            self._validate_max_length(v)
+            self._validate_contains(v)
+            self._validate_excludes(v)
+            self._validate_options(v)
+
+        if isinstance(value, (list, tuple, set)):
+            for v in value:
+                _validate_value(v)
+        elif isinstance(value, dict):
+            for v in value.values():
+                _validate_value(v)
+        else:
+            _validate_value(value)
+
+        if isinstance(value, (list, tuple, set, dict)):
+            self._validate_min_items(value)
+            self._validate_max_items(value)
+
+        if isinstance(value, dict):
+            self._validate_keys(value)
+            self._validate_contains_keys(value)
+            self._validate_excludes_keys(value)
 
 
 class V1IO(BaseSchemaModel):
@@ -529,7 +733,7 @@ class V1IO(BaseSchemaModel):
     >>>     toEnv: MY_LEARNING_RATE
     ```
 
-    ### validation
+    ### validation [v2]
 
     A schema to use to validate the input/output value or to delay the validation to runtime.
 
@@ -562,7 +766,17 @@ class V1IO(BaseSchemaModel):
     >>>       max: 0.1
     ```
 
-    Please check
+    Options allow to pass a list of values that will be used to validate any passed params.
+
+    ```yaml
+    >>> inputs:
+    >>>   - name: learning_rate
+    >>>     description: A short description about this input
+    >>>     type: float
+    >>>     value: 0.1
+    >>>     validation:
+    >>>       options: [0.1, 0.2, 0.3]
+    ```
 
     ### delayValidation
 
@@ -696,6 +910,24 @@ class V1IO(BaseSchemaModel):
             raise ValueError(IO_NAME_ERROR)
         return v
 
+    @root_validator(pre=True)
+    def handle_validation(cls, values):
+        validation = values.get("validation")
+        if not validation and (
+            values.get("options") is not None
+            or values.get("delay_validation") is not None
+        ):
+            validation = {}
+        if isinstance(validation, dict):
+            validation = V1Validation(**validation)
+        if values.get("options") is not None:
+            validation.options = values.pop("options")
+        if values.get("delay_validation") is not None:
+            validation.delay = values.pop("delay_validation")
+        if validation:
+            values["validation"] = validation
+        return values
+
     @root_validator
     @skip_partial
     def validate_io(cls, values):
@@ -706,7 +938,7 @@ class V1IO(BaseSchemaModel):
             is_list=values.get("is_list"),
             is_optional=values.get("is_optional"),
             is_flag=values.get("is_flag"),
-            options=values.get("options"),
+            validation=values.get("validation"),
         )
         return values
 
@@ -721,7 +953,7 @@ class V1IO(BaseSchemaModel):
             default=self.value,
             is_list=self.is_list,
             is_optional=self.is_optional,
-            options=self.options,
+            validation=self.validation,
             parse=parse,
         )
 

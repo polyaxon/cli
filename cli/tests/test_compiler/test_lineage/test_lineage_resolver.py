@@ -37,6 +37,7 @@ class TestLineageResolver(BaseTestCase):
                         "type": "str",
                         "value": "test",
                         "isOptional": "true",
+                        "validation": {"minLength": 1},
                     },
                     {
                         "name": "param1",
