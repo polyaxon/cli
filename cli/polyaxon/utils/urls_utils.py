@@ -40,13 +40,14 @@ def get_proxy_run_url(
     subpath: Optional[str] = None,
     port: Optional[int] = None,
 ) -> str:
-    url_path = "{namespace}/{owner}/{project}/runs/{run_uuid}/{port}".format(
+    url_path = "{namespace}/{owner}/{project}/runs/{run_uuid}".format(
         namespace=namespace,
         owner=owner,
         project=project,
         run_uuid=run_uuid,
-        port=port,
     )
+    if port:
+        url_path = "{}/{}".format(url_path, port)
     if subpath:
         url_path = "{}/{}".format(url_path, subpath)
     return urljoin(service.rstrip() + "/", url_path.lstrip("/"))
