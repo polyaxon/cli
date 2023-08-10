@@ -412,7 +412,8 @@ def tokenize_query(query: str) -> Dict[str, Iterable]:
     name_operation_tuples = [parse_expression(expression) for expression in expressions]
     operation_by_name = defaultdict(list)
     for name, operation in name_operation_tuples:
-        operation_by_name[name].append(operation)
+        if operation != "__any__":
+            operation_by_name[name].append(operation)
     return operation_by_name
 
 

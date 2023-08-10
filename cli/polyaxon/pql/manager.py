@@ -19,6 +19,7 @@ class PQLManager:
     CHECK_ALIVE = True
     PARSERS_BY_FIELD = {}
     CONDITIONS_BY_FIELD = {}
+    DEFAULT_FILTERS = {}
     QUERY_BACKEND = None
     TIMEZONE = None
 
@@ -69,6 +70,15 @@ class PQLManager:
         return False
 
     @classmethod
+    def set_default_filters(
+        cls, query_spec: Dict[str, Iterable]
+    ) -> Dict[str, Iterable]:
+        query_spec = query_spec or {}
+        for key in cls.DEFAULT_FILTERS or {}:
+            query_spec[key] = query_spec.get(key) or cls.DEFAULT_FILTERS[key]
+        return query_spec
+
+    @classmethod
     def tokenize(cls, query_spec: str) -> Dict[str, Iterable]:
         tokenized_query = tokenize_query(query_spec)
         results = {}
@@ -84,6 +94,10 @@ class PQLManager:
                     )
                 )
             cls.trans_field(key, tokenized_query, results)
+
+        # Set default filters
+        results = cls.set_default_filters(results)
+
         return results
 
     @classmethod

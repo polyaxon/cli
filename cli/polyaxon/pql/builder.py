@@ -4,6 +4,7 @@ from typing import Any, Callable, Optional
 from clipped.utils.bools import to_bool
 from clipped.utils.dates import DateTimeFormatter, DateTimeFormatterException
 from clipped.utils.lists import to_list
+from clipped.utils.tz import get_datetime_from_now
 
 from polyaxon.exceptions import PQLException
 
@@ -271,6 +272,19 @@ class DateTimeCondition(ComparisonCondition):
 
     @staticmethod
     def _eq_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
+        # Special handling for constant last_3_months
+        if params == "last_3_months":
+            params_value = get_datetime_from_now(days=30 * 3)
+            filters = {
+                f"{name}__date__gte": params_value.date(),
+            }
+            return query_backend(**filters)
+        if params == "last_month":
+            params_value = get_datetime_from_now(days=30)
+            filters = {
+                f"{name}__date__gte": params_value.date(),
+            }
+            return query_backend(**filters)
         try:
             # Check If params is date
             DateTimeFormatter.extract_timestamp(
