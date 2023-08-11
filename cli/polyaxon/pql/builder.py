@@ -272,13 +272,7 @@ class DateTimeCondition(ComparisonCondition):
 
     @staticmethod
     def _eq_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
-        # Special handling for constant last_3_months
-        if params == "last_3_months":
-            params_value = get_datetime_from_now(days=30 * 3)
-            filters = {
-                f"{name}__date__gte": params_value.date(),
-            }
-            return query_backend(**filters)
+        # Special handling for constant last_month
         if params == "last_month":
             params_value = get_datetime_from_now(days=30)
             filters = {
