@@ -35,7 +35,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
     >>> run:
     >>>   kind: rayjob
     >>>   entrypoint:
-    >>>   runtimeRnv:
+    >>>   runtimeEnv:
     >>>   metadata:
     >>>   rayVersion:
     >>>   head:
