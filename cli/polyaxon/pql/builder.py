@@ -276,7 +276,7 @@ class DateTimeCondition(ComparisonCondition):
         if params == "last_month":
             params_value = get_datetime_from_now(days=30)
             filters = {
-                f"{name}__date__gte": params_value.date(),
+                f"{name}__gte": params_value.date().isoformat(),
             }
             return query_backend(**filters)
         try:

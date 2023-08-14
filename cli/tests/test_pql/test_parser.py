@@ -243,11 +243,11 @@ class TestParser(BaseTestCase):
         with self.assertRaises(PQLException):
             tokenize_query(", , ")
 
-        assert tokenize_query("any_name:__any__") == {}
+        assert tokenize_query("any_name:_any_") == {}
         assert tokenize_query("name:~tag1 | tag2| tag23") == {
             "name": ["~tag1 | tag2| tag23"]
         }
-        assert tokenize_query("any_name:__any__, name:~tag1 | tag2| tag23") == {
+        assert tokenize_query("any_name:_any_, name:~tag1 | tag2| tag23") == {
             "name": ["~tag1 | tag2| tag23"]
         }
         assert tokenize_query(

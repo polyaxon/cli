@@ -397,7 +397,7 @@ def split_query(query: str) -> List[str]:
     return expressions
 
 
-def tokenize_query(query: str) -> Dict[str, Iterable]:
+def tokenize_query(query: str, default: Optional[Dict] = None) -> Dict[str, Iterable]:
     """Tokenizes a standard search query in name: operations mapping.
 
     Example:
@@ -408,12 +408,19 @@ def tokenize_query(query: str) -> Dict[str, Iterable]:
           'foo': ['~<=1', 'll..ff']
         }
     """
+    default = default or {}
+    no_default = set([])
     expressions = split_query(query)
     name_operation_tuples = [parse_expression(expression) for expression in expressions]
     operation_by_name = defaultdict(list)
     for name, operation in name_operation_tuples:
-        if operation != "__any__":
+        if operation == "_any_":
+            no_default.add(name)
+        else:
             operation_by_name[name].append(operation)
+    for key in default:
+        if key not in operation_by_name and key not in no_default:
+            operation_by_name[key].append(default[key])
     return operation_by_name
 
 
