@@ -37,6 +37,38 @@ class TestInitTensorboard(BaseConverterTest):
                 plugins="plug1, plug2",
             )
 
+        tb_args = V1TensorboardType(
+            port=6006,
+            uuids="{{ uuids }}",
+            use_names=True,
+            path_prefix="/path/prefix",
+            plugins="plug1, plug2",
+        )
+        container = self.converter._get_tensorboard_init_container(
+            polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
+            tb_args=tb_args,
+            artifacts_store=store,
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
+            run_path=self.converter.run_path,
+            run_instance="foo.bar.runs.uuid",
+            env=None,
+        )
+        assert INIT_TENSORBOARD_CONTAINER_PREFIX in container.name
+        assert container.image == "foo"
+        assert container.image_pull_policy is None
+        assert container.command == ["polyaxon", "initializer", "tensorboard"]
+        assert container.resources == get_init_resources()
+        assert container.volume_mounts == [
+            self.converter._get_connections_context_mount(
+                name=constants.VOLUME_MOUNT_ARTIFACTS,
+                mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
+            ),
+            self.converter._get_auth_context_mount(
+                read_only=True, run_path=self.converter.run_path
+            ),
+        ]
+
         uuids = [uuid.uuid4(), uuid.uuid4()]
         tb_args = V1TensorboardType(
             port=6006,
@@ -69,7 +101,41 @@ class TestInitTensorboard(BaseConverterTest):
                 read_only=True, run_path=self.converter.run_path
             ),
         ]
-        uuids_str = ",".join([u.hex for u in uuids])
+
+        uuids_hex = [uuid.uuid4().hex, uuid.uuid4().hex]
+        tb_args = V1TensorboardType(
+            port=6006,
+            uuids=uuids_hex,
+            use_names=True,
+            path_prefix="/path/prefix",
+            plugins="plug1, plug2",
+        )
+        container = self.converter._get_tensorboard_init_container(
+            polyaxon_init=V1PolyaxonInitContainer(image="foo", image_tag=""),
+            tb_args=tb_args,
+            artifacts_store=store,
+            plugins=V1Plugins.get_or_create(V1Plugins(auth=True)),
+            run_path=self.converter.run_path,
+            run_instance="foo.bar.runs.uuid",
+            env=None,
+        )
+        assert INIT_TENSORBOARD_CONTAINER_PREFIX in container.name
+        assert container.image == "foo"
+        assert container.image_pull_policy is None
+        assert container.command == ["polyaxon", "initializer", "tensorboard"]
+        assert container.resources == get_init_resources()
+        assert container.volume_mounts == [
+            self.converter._get_connections_context_mount(
+                name=constants.VOLUME_MOUNT_ARTIFACTS,
+                mount_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS,
+                run_path=self.converter.run_path,
+            ),
+            self.converter._get_auth_context_mount(
+                read_only=True, run_path=self.converter.run_path
+            ),
+        ]
+
+        uuids_str = ",".join(uuids_hex)
         assert container.args == [
             "--context-from=s3//:foo",
             "--context-to={}".format(ctx_paths.CONTEXT_MOUNT_ARTIFACTS),

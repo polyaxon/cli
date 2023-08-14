@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validator
+from clipped.config.constants import PARAM_REGEX
 from clipped.types.ref_or_obj import RefField
 from clipped.types.uuids import UUIDStr
 from clipped.utils.lists import to_list
@@ -136,6 +137,6 @@ class V1TensorboardType(BaseTypeConfig):
 
     @validator("uuids", "plugins", pre=True)
     def validate_str_list(cls, v, field):
-        if isinstance(v, str):
+        if isinstance(v, str) and v is not None and not PARAM_REGEX.search(v):
             return to_list(v, check_str=True)
         return v
