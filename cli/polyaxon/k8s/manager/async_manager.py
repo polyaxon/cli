@@ -1,5 +1,3 @@
-import re
-
 from typing import Dict, List, Optional, Tuple
 
 from kubernetes_asyncio import client, config
@@ -7,27 +5,13 @@ from kubernetes_asyncio.client import Configuration
 from kubernetes_asyncio.client.rest import ApiException
 
 from polyaxon.exceptions import PolyaxonK8sError
+from polyaxon.k8s.manager.base import BaseK8sManager
 from polyaxon.k8s.monitor import is_pod_running
 from polyaxon.logger import logger
 
 
-class AsyncK8sManager:
-    def __init__(self, namespace: str = "default", in_cluster: bool = False):
-        self.namespace = namespace
-        self.in_cluster = in_cluster
-
-        self.api_client = None
-        self.k8s_api = None
-        self.k8s_batch_api = None
-        self.k8s_apps_api = None
-        self.k8s_custom_object_api = None
-        self.k8s_version_api = None
-
-    @staticmethod
-    def get_managed_by_polyaxon(instance: str) -> str:
-        return "app.kubernetes.io/instance={},app.kubernetes.io/managed-by=polyaxon".format(
-            instance
-        )
+class AsyncK8sManager(BaseK8sManager):
+    CLIENT = client
 
     @staticmethod
     async def load_config(
@@ -40,22 +24,6 @@ class AsyncK8sManager:
                 await config.load_kube_config()
         return Configuration.get_default_copy()
 
-    @classmethod
-    def get_config_auth(cls, k8s_config: Optional[Configuration] = None) -> str:
-        if not k8s_config or not k8s_config.api_key:
-            return ""
-        api_key = k8s_config.api_key
-        if api_key.get("authorization", ""):
-            api_key = api_key.get("authorization", "")
-        elif api_key.get("BearerToken", ""):
-            api_key = api_key.get("BearerToken", "")
-        elif api_key.get("Authorization", ""):
-            api_key = api_key.get("Authorization", "")
-        elif api_key.get("Token", ""):
-            api_key = api_key.get("Token", "")
-        api_pattern = re.compile("bearer", re.IGNORECASE)
-        return api_pattern.sub("", api_key).strip()
-
     async def setup(self, k8s_config: Optional[Configuration] = None):
         if not k8s_config:
             if self.in_cluster:
@@ -66,18 +34,18 @@ class AsyncK8sManager:
         else:
             self.api_client = client.api_client.ApiClient(configuration=k8s_config)
 
-        self.k8s_api = client.CoreV1Api(self.api_client)
-        self.k8s_batch_api = client.BatchV1Api(self.api_client)
-        self.k8s_apps_api = client.AppsV1Api(self.api_client)
-        self.k8s_custom_object_api = client.CustomObjectsApi(self.api_client)
-        self.k8s_version_api = client.VersionApi(self.api_client)
-
     async def close(self):
         if self.api_client:
             await self.api_client.close()
 
-    async def set_namespace(self, namespace):
-        self.namespace = namespace
+    async def get_version(self, reraise=False):
+        try:
+            version = await self.k8s_version_api.get_code()
+            return version.to_dict()
+        except ApiException as e:
+            logger.error("K8S error: {}".format(e))
+            if reraise:
+                raise PolyaxonK8sError("Connection error: %s" % e) from e
 
     async def get_pod(self, name, reraise=False) -> Optional[client.V1Pod]:
         try:

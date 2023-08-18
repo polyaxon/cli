@@ -1,14 +1,21 @@
+from typing import Optional
+
 from kubernetes import client, config
+from kubernetes.client import Configuration
 from kubernetes.client.rest import ApiException
 
 from polyaxon.exceptions import PolyaxonK8sError
 from polyaxon.k8s import constants
+from polyaxon.k8s.manager.base import BaseK8sManager
 from polyaxon.k8s.monitor import is_pod_running
 from polyaxon.logger import logger
 
 
-class K8sManager:
-    def __init__(self, k8s_config=None, namespace="default", in_cluster=False):
+class K8sManager(BaseK8sManager):
+    CLIENT = client
+
+    def __init__(self, namespace="default", in_cluster=False, k8s_config=None):
+        super().__init__(namespace=namespace, in_cluster=in_cluster)
         if not k8s_config:
             if in_cluster:
                 config.load_incluster_config()
@@ -18,53 +25,16 @@ class K8sManager:
         else:
             self.api_client = client.api_client.ApiClient(configuration=k8s_config)
 
-        self._k8s_api = None
-        self._k8s_batch_api = None
-        self._k8s_apps_api = None
-        self._networking_v1_beta1_api = None
-        self._k8s_custom_object_api = None
-        self._k8s_version_api = None
-        self.namespace = namespace
-        self.in_cluster = in_cluster
-
-    @property
-    def k8s_api(self):
-        if not self._k8s_api:
-            self._k8s_api = client.CoreV1Api(self.api_client)
-        return self._k8s_api
-
-    @property
-    def k8s_batch_api(self):
-        if not self._k8s_batch_api:
-            self._k8s_batch_api = client.BatchV1Api(self.api_client)
-        return self._k8s_batch_api
-
-    @property
-    def k8s_apps_api(self):
-        if not self._k8s_apps_api:
-            self._k8s_apps_api = client.AppsV1Api(self.api_client)
-        return self._k8s_apps_api
-
-    @property
-    def networking_v1_beta1_api(self):
-        if not self._networking_v1_beta1_api:
-            self._networking_v1_beta1_api = client.NetworkingV1beta1Api(self.api_client)
-        return self._networking_v1_beta1_api
-
-    @property
-    def k8s_custom_object_api(self):
-        if not self._k8s_custom_object_api:
-            self._k8s_custom_object_api = client.CustomObjectsApi(self.api_client)
-        return self._k8s_custom_object_api
-
-    @property
-    def k8s_version_api(self):
-        if not self._k8s_version_api:
-            self._k8s_version_api = client.VersionApi(self.api_client)
-        return self._k8s_version_api
-
-    def set_namespace(self, namespace):
-        self.namespace = namespace
+    @staticmethod
+    async def load_config(
+        in_cluster: bool = False, k8s_config: Optional[bool] = None
+    ) -> Configuration:
+        if not k8s_config:
+            if in_cluster:
+                config.load_incluster_config()
+            else:
+                await config.load_kube_config()
+        return Configuration.get_default_copy()
 
     def get_version(self, reraise=False):
         try:
