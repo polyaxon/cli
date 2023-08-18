@@ -1,4 +1,4 @@
-from polyaxon.docker.executor import Executor
+from polyaxon.k8s.executor.executor import Executor
 from polyaxon.runner.agent.sync_agent import BaseSyncAgent
 
 

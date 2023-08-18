@@ -30,6 +30,8 @@ def agent():
     default=3,
     help="Number of times to retry the process.",
 )
+# @coroutine
+# async def start(kind, max_retries, sleep_interval):
 def start(kind, max_retries, sleep_interval):
     from polyaxon import settings
     from polyaxon.env_vars.getters import get_agent_info
@@ -38,7 +40,8 @@ def start(kind, max_retries, sleep_interval):
     kind = kind or RunnerKind.K8S
 
     if kind == RunnerKind.K8S:
-        from polyaxon.k8s.agent import Agent
+        # from polyaxon.k8s.agent.async_agent import AsyncAgent
+        from polyaxon.k8s.agent.async_agent import Agent
     elif kind == RunnerKind.DOCKER:
         from polyaxon.docker.agent import Agent
     else:
@@ -58,10 +61,13 @@ def start(kind, max_retries, sleep_interval):
         if retry:
             time.sleep(5 * retry)
         try:
-            Agent(
+            # async with AsyncAgent(
+            with Agent(
                 owner=owner, agent_uuid=agent_uuid, sleep_interval=sleep_interval
-            ).start()
-            return
+            ) as agent:
+                # await agent.start()
+                agent.start()
+                return
         except Exception as e:
             logger.warning("Polyaxon agent retrying, error %s", e)
             retry += 1
@@ -74,8 +80,8 @@ def start(kind, max_retries, sleep_interval):
     help="Health interval between checks.",
 )
 def healthz(health_interval):
-    from polyaxon.runner.agent import BaseAgent
+    from polyaxon.runner.agent.sync_agent import BaseSyncAgent
 
-    if not BaseAgent.pong(interval=health_interval):
+    if not BaseSyncAgent.pong(interval=health_interval):
         logger.warning("Polyaxon agent is not healthy!")
         sys.exit(1)
