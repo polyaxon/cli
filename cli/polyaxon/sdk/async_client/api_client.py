@@ -1,7 +1,6 @@
 import atexit
 import re
 
-from multiprocessing.pool import ThreadPool
 from urllib.parse import quote
 
 from polyaxon.sdk.exceptions import ApiException
@@ -46,39 +45,107 @@ class AsyncApiClient(ApiClient):
 
         return rest.RESTClientObject(self.configuration)
 
-    @property
-    def pool(self):
-        """Create thread pool on first request
-        avoids instantiating unused threadpool for blocking clients.
+    def call_api(
+        self,
+        resource_path,
+        method,
+        path_params=None,
+        query_params=None,
+        header_params=None,
+        body=None,
+        post_params=None,
+        files=None,
+        response_types_map=None,
+        auth_settings=None,
+        async_req=None,
+        _return_http_data_only=None,
+        collection_formats=None,
+        _preload_content=True,
+        _request_timeout=None,
+        _host=None,
+        _request_auth=None,
+    ):
+        """Makes the HTTP request (synchronous) and returns deserialized data.
+
+        To make an async_req request, set the async_req parameter.
+
+        :param resource_path: Path to method endpoint.
+        :param method: Method to call.
+        :param path_params: Path parameters in the url.
+        :param query_params: Query parameters in the url.
+        :param header_params: Header parameters to be
+            placed in the request header.
+        :param body: Request body.
+        :param post_params dict: Request post form parameters,
+            for `application/x-www-form-urlencoded`, `multipart/form-data`.
+        :param auth_settings list: Auth Settings names for the request.
+        :param response: Response data type.
+        :param files dict: key -> filename, value -> filepath,
+            for `multipart/form-data`.
+        :param async_req bool: execute request asynchronously
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :param collection_formats: dict of collection formats for path, query,
+            header, and post parameters.
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_token: dict, optional
+        :return:
+            If async_req parameter is True,
+            the request will be called asynchronously.
+            The method will return the request thread.
+            If parameter async_req is False or missing,
+            then the method will return the response directly.
         """
-        if self._pool is None:
-            atexit.register(self.close)
-            self._pool = ThreadPool(self.pool_threads)
-        return self._pool
+        if not async_req:
+            return self.__call_api(
+                resource_path,
+                method,
+                path_params,
+                query_params,
+                header_params,
+                body,
+                post_params,
+                files,
+                response_types_map,
+                auth_settings,
+                _return_http_data_only,
+                collection_formats,
+                _preload_content,
+                _request_timeout,
+                _host,
+                _request_auth,
+            )
 
-    @property
-    def user_agent(self):
-        """User agent for this API client"""
-        return self.default_headers["User-Agent"]
-
-    @user_agent.setter
-    def user_agent(self, value):
-        self.default_headers["User-Agent"] = value
-
-    def set_default_header(self, header_name, header_value):
-        self.default_headers[header_name] = header_value
-
-    _default = None
-
-    @classmethod
-    def set_default(cls, default):
-        """Set default instance of AsyncApiClient.
-
-        It stores default AsyncApiClient.
-
-        :param default: object of AsyncApiClient.
-        """
-        cls._default = default
+        return self.pool.apply_async(
+            self.__call_api,
+            (
+                resource_path,
+                method,
+                path_params,
+                query_params,
+                header_params,
+                body,
+                post_params,
+                files,
+                response_types_map,
+                auth_settings,
+                _return_http_data_only,
+                collection_formats,
+                _preload_content,
+                _request_timeout,
+                _host,
+                _request_auth,
+            ),
+        )
 
     async def __call_api(
         self,
@@ -193,13 +260,13 @@ class AsyncApiClient(ApiClient):
             encoding = match.group(1) if match else "utf-8"
             response_data.data = response_data.data.decode(encoding)
 
-            # deserialize response data
-            if response_type == "bytearray":
-                return_data = response_data.data
-            elif response_type:
-                return_data = self.deserialize(response_data, response_type)
-            else:
-                return_data = None
+        # deserialize response data
+        if response_type == "bytearray":
+            return_data = response_data.data
+        elif response_type:
+            return_data = self.deserialize(response_data, response_type)
+        else:
+            return_data = None
 
         if _return_http_data_only:
             return return_data

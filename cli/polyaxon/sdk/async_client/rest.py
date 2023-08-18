@@ -52,7 +52,17 @@ class RESTClientObject(object):
         self.proxy_headers = configuration.proxy_headers
 
         # https pool manager
-        self.pool_manager = aiohttp.ClientSession(connector=connector, trust_env=True)
+        self.pool_manager = aiohttp.ClientSession(
+            connector=connector,
+            trust_env=True,
+            # Watch events containing large resource objects can exceed
+            # aiohttp's default read buffer size.
+            #
+            # There is no hard-limit defined by k8s, but the etcd default
+            # maximum request size is 1.5MiB.
+            # https://github.com/kubernetes/kubernetes/issues/19781
+            read_bufsize=2**21,
+        )
 
     async def close(self):
         await self.pool_manager.close()
