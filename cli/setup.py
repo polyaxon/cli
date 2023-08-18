@@ -65,7 +65,7 @@ extra = {
     "fs": fs_requirements,
     "init": init_requirements,
     "sidecar": sidecar_requirements,
-    "sandbox": ["haupt[platform,streams,fs]"],
+    "sandbox": ["haupt[sandbox]"],
 }
 
 setup(
