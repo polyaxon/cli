@@ -1,12 +1,11 @@
 import pytest
 
-from mock import patch
-from unittest.mock import AsyncMock
+from mock import MagicMock, patch
 
 from polyaxon.k8s.agent.async_agent import AsyncAgent
 from polyaxon.k8s.executor.async_executor import AsyncExecutor
 from polyaxon.runner.agent.client import AgentClient
-from polyaxon.utils.test_utils import patch_settings
+from polyaxon.utils.test_utils import AsyncMock, patch_settings
 
 
 @pytest.mark.agent_mark
@@ -38,8 +37,8 @@ async def test_init_agent(
     _, get_agent, get_agent_state, create_agent_status, sync_agent
 ):
     patch_settings()
-    get_agent.return_value = AsyncMock(status=None, live_state=1)
-    get_agent_state.return_value = AsyncMock(status=None, live_state=1)
+    get_agent.return_value = MagicMock(status=None, live_state=1)
+    get_agent_state.return_value = MagicMock(status=None, live_state=1)
     agent = AsyncAgent(owner="foo", agent_uuid="uuid")
     agent.executor.manager.get_version.return_value = {}
     assert agent.sleep_interval is None
