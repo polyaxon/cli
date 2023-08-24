@@ -95,7 +95,7 @@ class BaseAsyncAgent(BaseAgent):
                         self._check_status(agent_state)
                         if agent_state.state.full:
                             index = 2
-                        self.ping()
+                        # self.ping()
                         timeout = self.sleep_interval or get_wait(index)
                         logger.info("Sleeping for {} seconds".format(timeout))
         except Exception as e:
