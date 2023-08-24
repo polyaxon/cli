@@ -140,6 +140,7 @@ class AsyncK8sManager(BaseK8sManager):
             plural=plural,
             namespace=self.namespace,
             body=body,
+            _content_type="application/merge-patch+json",
         )
         logger.debug("Custom object `{}` was patched".format(name))
         return resp
