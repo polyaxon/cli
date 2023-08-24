@@ -23,6 +23,7 @@ from polyaxon.env_vars.keys import (
     EV_KEYS_AGENT_CONNECTIONS,
     EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
     EV_KEYS_AGENT_DEFAULT_SCHEDULING,
+    EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS,
     EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL,
     EV_KEYS_AGENT_INIT,
     EV_KEYS_AGENT_IS_REPLICA,
@@ -198,6 +199,9 @@ class AgentConfig(BaseAgentConfig):
     app_secret_name: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_APP_SECRET_NAME)
     agent_secret_name: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_SECRET_NAME)
     runs_sa: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_RUNS_SA)
+    enable_health_checks: Optional[bool] = Field(
+        alias=EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS
+    )
     # This refresh logic will mitigate several issues with AKS's numerous networking problems
     executor_refresh_interval: Optional[int] = Field(
         alias=EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL
@@ -251,6 +255,12 @@ class AgentConfig(BaseAgentConfig):
             and "runsSa" in values
         ):
             values[EV_KEYS_AGENT_RUNS_SA] = values["runsSa"]
+        if (
+            not values.get("enable_health_checks")
+            and not values.get(EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS)
+            and "enableHealthChecks" in values
+        ):
+            values[EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS] = values["enableHealthChecks"]
         if (
             not values.get("executor_refresh_interval")
             and not values.get(EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL)

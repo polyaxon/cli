@@ -77,6 +77,8 @@ class BaseAgent:
 
     @classmethod
     def ping(cls):
+        if not settings.AGENT_CONFIG.enable_health_checks:
+            return
         ChecksConfig.init_file(cls.HEALTH_FILE)
         config = cls.get_healthz_config()
         if config:
