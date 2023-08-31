@@ -3192,7 +3192,8 @@ class OrganizationsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
-        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
+        mode: Annotated[Optional[StrictStr], Field(description="Stats Mode.")] = None,
+        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,
@@ -3207,7 +3208,7 @@ class OrganizationsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_organization_stats(owner, offset, limit, sort, query, bookmarks, kind, aggregate, groupby, trunc, async_req=True)
+        >>> thread = api.get_organization_stats(owner, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -3222,6 +3223,8 @@ class OrganizationsV1Api(BaseApi):
         :type query: str
         :param bookmarks: Filter by bookmarks.
         :type bookmarks: bool
+        :param mode: Stats Mode.
+        :type mode: str
         :param kind: Stats Kind.
         :type kind: str
         :param aggregate: Stats aggregate.
@@ -3253,6 +3256,7 @@ class OrganizationsV1Api(BaseApi):
             sort,
             query,
             bookmarks,
+            mode,
             kind,
             aggregate,
             groupby,
@@ -3277,6 +3281,7 @@ class OrganizationsV1Api(BaseApi):
         bookmarks: Annotated[
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
+        mode: Annotated[Optional[StrictStr], Field(description="Stats Mode.")] = None,
         kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
@@ -3292,7 +3297,7 @@ class OrganizationsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_organization_stats_with_http_info(owner, offset, limit, sort, query, bookmarks, kind, aggregate, groupby, trunc, async_req=True)
+        >>> thread = api.get_organization_stats_with_http_info(owner, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -3307,6 +3312,8 @@ class OrganizationsV1Api(BaseApi):
         :type query: str
         :param bookmarks: Filter by bookmarks.
         :type bookmarks: bool
+        :param mode: Stats Mode.
+        :type mode: str
         :param kind: Stats Kind.
         :type kind: str
         :param aggregate: Stats aggregate.
@@ -3348,6 +3355,7 @@ class OrganizationsV1Api(BaseApi):
             "sort",
             "query",
             "bookmarks",
+            "mode",
             "kind",
             "aggregate",
             "groupby",
@@ -3394,6 +3402,8 @@ class OrganizationsV1Api(BaseApi):
             _query_params.append(("query", _params["query"]))
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+        if _params.get("mode") is not None:  # noqa: E501
+            _query_params.append(("mode", _params["mode"]))
         if _params.get("kind") is not None:  # noqa: E501
             _query_params.append(("kind", _params["kind"]))
         if _params.get("aggregate") is not None:  # noqa: E501
