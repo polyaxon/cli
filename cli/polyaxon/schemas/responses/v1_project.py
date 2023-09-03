@@ -1,6 +1,6 @@
 import datetime
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.types.uuids import UUIDStr
@@ -24,4 +24,5 @@ class V1Project(BaseResponseModel):
     excluded_runtimes: Optional[List[StrictStr]]
     settings: Optional[V1ProjectSettings]
     role: Optional[StrictStr]
+    contributors: Optional[Dict[str, Any]]
     live_state: Optional[int]

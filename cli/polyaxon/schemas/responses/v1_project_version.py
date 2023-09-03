@@ -29,3 +29,4 @@ class V1ProjectVersion(BaseResponseModel):
     readme: Optional[StrictStr]
     state: Optional[StrictStr]
     role: Optional[StrictStr]
+    contributors: Optional[Dict[str, Any]]

@@ -51,6 +51,7 @@ class V1Run(BaseResponseModel):
     pipeline: Optional[V1Pipeline]
     status_conditions: Optional[List[V1StatusCondition]]
     role: Optional[StrictStr]
+    contributors: Optional[Dict[str, Any]]
     settings: Optional[V1RunSettings]
     resources: Optional[V1RunResources]
     graph: Optional[Dict[str, Any]]
