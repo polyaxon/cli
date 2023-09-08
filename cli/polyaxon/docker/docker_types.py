@@ -73,6 +73,7 @@ class V1Container(BaseSchemaModel):
         if self.working_dir:
             cmd_args += ["-w", self.working_dir]
         if self.resources:
+            # TODO: Add translation/handling for resources (e.g. 500Mi is not recognized)
             if self.resources.cpus:
                 cmd_args += ["--cpus", self.resources.cpus]
             if self.resources.memory:
