@@ -148,9 +148,13 @@ class BaseConverter(
             memory = memory or resources.requests.get("memory")
         docker_resources = {}
         if cpus:
-            docker_resources["cpus"] = cpus
+            docker_resources["cpus"] = docker_types.V1ResourceRequirements.from_k8s_cpu(
+                cpus
+            )
         if memory:
-            docker_resources["memory"] = memory
+            docker_resources[
+                "memory"
+            ] = docker_types.V1ResourceRequirements.from_k8s_memory(memory)
         if gpus:
             docker_resources["gpus"] = gpus
         return docker_types.V1ResourceRequirements.from_dict(docker_resources)

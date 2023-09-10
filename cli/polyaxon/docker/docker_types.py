@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 from clipped.compact.pydantic import Field
+from clipped.utils.units import to_cpu_value, to_memory_bytes, to_unit_memory
 
 from polyaxon.schemas.base import BaseSchemaModel
 
@@ -42,6 +43,19 @@ class V1ResourceRequirements(BaseSchemaModel):
     memory: Optional[str]
     gpus: Optional[str]
 
+    @staticmethod
+    def from_k8s_cpu(cpu: str) -> Union[str, float]:
+        if not cpu:
+            return cpu
+        return to_cpu_value(cpu)
+
+    @staticmethod
+    def from_k8s_memory(memory: str) -> str:
+        if not memory:
+            return memory
+        docker_mem_bytes = to_memory_bytes(memory)
+        return to_unit_memory(number=docker_mem_bytes, use_i=True)
+
     def to_cmd(self):
         cmd_args = []
         if self.cpus:
@@ -73,7 +87,6 @@ class V1Container(BaseSchemaModel):
         if self.working_dir:
             cmd_args += ["-w", self.working_dir]
         if self.resources:
-            # TODO: Add translation/handling for resources (e.g. 500Mi is not recognized)
             if self.resources.cpus:
                 cmd_args += ["--cpus", self.resources.cpus]
             if self.resources.memory:
