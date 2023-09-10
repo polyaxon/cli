@@ -64,7 +64,12 @@ class BaseOperatorCondition(BaseCondition):
         )
 
     def apply_operator(
-        self, name: str, params: Any, query_backend: Any, timezone: str
+        self,
+        name: str,
+        params: Any,
+        query_backend: Any,
+        timezone: str,
+        request: Optional[Any] = None,
     ) -> Any:
         return self.operator(
             name=name, params=params, query_backend=query_backend, timezone=timezone
@@ -94,7 +99,12 @@ class CallbackCondition(BaseCondition):
         )
 
     def apply_operator(
-        self, name: str, params: Any, query_backend: Any, timezone: str
+        self,
+        name: str,
+        params: Any,
+        query_backend: Any,
+        timezone: str,
+        request: Optional[Any] = None,
     ) -> Any:
         return self.callback(
             query_backend,
@@ -102,6 +112,7 @@ class CallbackCondition(BaseCondition):
             negation=self.negation,
             query_backend=query_backend,
             timezone=timezone,
+            request=request,
         )
 
 

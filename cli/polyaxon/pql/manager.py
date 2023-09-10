@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Optional
 
 from polyaxon.exceptions import PQLException
 from polyaxon.pql.builder import QueryCondSpec
@@ -122,7 +122,9 @@ class PQLManager:
         return built_query
 
     @classmethod
-    def apply(cls, query_spec: str, queryset: Any) -> Any:
+    def apply(
+        cls, query_spec: str, queryset: Any, request: Optional[Any] = None
+    ) -> Any:
         built_query = cls.handle_query(query_spec=query_spec)
         operators = []
         trigger_distinct = False
@@ -137,13 +139,15 @@ class PQLManager:
                         params=cond_spec.params,
                         query_backend=cls.QUERY_BACKEND,
                         timezone=cls.TIMEZONE,
+                        request=request,
                     )
                 except Exception as e:
                     raise PQLException(
                         "Error applying operator for key `%s` by the query manager `%s`. "
                         "%s" % (key, cls.NAME, e)
                     )
-                operators.append(operator)
+                if operator:
+                    operators.append(operator)
 
         queryset = queryset.filter(*operators)
         if trigger_distinct:
