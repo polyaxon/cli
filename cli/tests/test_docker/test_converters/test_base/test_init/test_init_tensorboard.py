@@ -57,7 +57,7 @@ class TestInitTensorboard(BaseConverterTest):
         assert INIT_TENSORBOARD_CONTAINER_PREFIX in container.name
         assert container.image == "foo"
         assert container.command == ["polyaxon", "initializer", "tensorboard"]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
@@ -115,7 +115,7 @@ class TestInitTensorboard(BaseConverterTest):
             "--uuids={}".format(uuids[0].hex),
             "--plugins=plug1",
         ]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,

@@ -54,7 +54,7 @@ class TestInitGit(BaseConverterTest):
         assert container.env == [
             self.converter._get_connections_catalog_env_var(connections=[connection])
         ]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
@@ -88,7 +88,7 @@ class TestInitGit(BaseConverterTest):
             ),
             "--url={}".format(connection.schema_.url),
         ]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
@@ -129,7 +129,7 @@ class TestInitGit(BaseConverterTest):
             "--url={}".format(connection.schema_.url),
             "--revision=00b9d2ea01c40f58d6b4051319f9375675a43c02",
         ]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=get_volume_name("/somepath"),
@@ -173,7 +173,7 @@ class TestInitGit(BaseConverterTest):
             "--revision=00b9d2ea01c40f58d6b4051319f9375675a43c02",
             '--flags=["--falg1","--flag2=test","k=v"]',
         ]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=get_volume_name("/somepath"),

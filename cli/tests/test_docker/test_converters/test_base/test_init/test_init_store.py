@@ -302,7 +302,7 @@ class TestInitStore(BaseConverterTest):
             )
         ]
         assert container.env is not None
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=get_volume_name(mount_path),

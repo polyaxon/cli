@@ -37,7 +37,7 @@ class TestInitDockerfile(BaseConverterTest):
         assert container.env == [
             self.converter._get_run_instance_env_var(run_instance="foo.bar.runs.uuid")
         ]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=constants.VOLUME_MOUNT_ARTIFACTS,
@@ -82,7 +82,7 @@ class TestInitDockerfile(BaseConverterTest):
         assert container.env == [
             self.converter._get_run_instance_env_var(run_instance="foo.bar.runs.uuid")
         ]
-        assert container.resources.to_dict() == {"cpus": "1", "memory": "500Mi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
         assert container.volume_mounts == [
             self.converter._get_connections_context_mount(
                 name=get_volume_name("/somepath"),
