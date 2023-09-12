@@ -1,2 +1,2 @@
-traceml==1.1.0rc39 #>1.1,<1.2
-hypertune==1.1.0rc39 #>1.1,<1.2
+traceml==2.0.0rc40 #>1.1,<1.2
+hypertune==2.0.0rc40 #>1.1,<1.2
