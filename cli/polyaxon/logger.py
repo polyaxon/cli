@@ -5,7 +5,7 @@ import sys
 from functools import wraps
 from typing import List, Union
 
-from polyaxon.env_vars.keys import EV_KEYS_DEBUG, EV_KEYS_LOG_LEVEL
+from polyaxon.env_vars.keys import ENV_KEYS_DEBUG, ENV_KEYS_LOG_LEVEL
 
 logger = logging.getLogger("polyaxon.cli")
 
@@ -15,16 +15,16 @@ def configure_logger(verbose):
     from polyaxon import settings
     from polyaxon.plugins.sentry import set_raven_client
 
-    if verbose or settings.CLIENT_CONFIG.debug or os.environ.get(EV_KEYS_DEBUG, False):
+    if verbose or settings.CLIENT_CONFIG.debug or os.environ.get(ENV_KEYS_DEBUG, False):
         log_level = logging.DEBUG
-        os.environ[EV_KEYS_LOG_LEVEL] = "DEBUG"
+        os.environ[ENV_KEYS_LOG_LEVEL] = "DEBUG"
         settings.CLIENT_CONFIG.debug = True
     else:
         if not settings.CLIENT_CONFIG.disable_errors_reporting:
             set_raven_client()
         log_level = (
             logging.DEBUG
-            if os.environ.get(EV_KEYS_LOG_LEVEL) in ["debug", "DEBUG"]
+            if os.environ.get(ENV_KEYS_LOG_LEVEL) in ["debug", "DEBUG"]
             else logging.INFO
         )
         if settings.CLIENT_CONFIG.log_level:
@@ -63,21 +63,6 @@ def clean_outputs(fn):
             return fn(*args, **kwargs)
 
     return clean_outputs_wrapper
-
-
-def not_in_ce(fn):
-    """Decorator to show an error when a command not available in CE"""
-
-    @wraps(fn)
-    def not_in_ce_wrapper(*args, **kwargs):
-        from polyaxon import settings
-        from polyaxon.cli.errors import handle_command_not_in_ce
-
-        if not settings.CLI_CONFIG or settings.CLI_CONFIG.is_community:
-            handle_command_not_in_ce()
-        return fn(*args, **kwargs)
-
-    return not_in_ce_wrapper
 
 
 def reconfigure_loggers(

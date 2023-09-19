@@ -9,28 +9,28 @@ from polyaxon.connections import (
     V1ConnectionResource,
 )
 from polyaxon.env_vars.keys import (
-    EV_KEYS_AGENT_ARTIFACTS_STORE,
-    EV_KEYS_AGENT_CONNECTIONS,
-    EV_KEYS_K8S_NAMESPACE,
+    ENV_KEYS_AGENT_ARTIFACTS_STORE,
+    ENV_KEYS_AGENT_CONNECTIONS,
+    ENV_KEYS_K8S_NAMESPACE,
 )
-from polyaxon.schemas.cli.agent_config import AgentConfig
+from polyaxon.schemas.agent import AgentConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.schemas_mark
 class TestAgentConfig(BaseTestCase):
     def test_agent_config(self):
-        config_dict = {EV_KEYS_AGENT_ARTIFACTS_STORE: 12}
+        config_dict = {ENV_KEYS_AGENT_ARTIFACTS_STORE: 12}
         with self.assertRaises(ValidationError):
             AgentConfig.from_dict(config_dict)
 
-        config_dict = {EV_KEYS_AGENT_ARTIFACTS_STORE: "some"}
+        config_dict = {ENV_KEYS_AGENT_ARTIFACTS_STORE: "some"}
         with self.assertRaises(ValidationError):
             AgentConfig.from_dict(config_dict)
 
         config_dict = {
-            EV_KEYS_K8S_NAMESPACE: "foo",
-            EV_KEYS_AGENT_ARTIFACTS_STORE: {
+            ENV_KEYS_K8S_NAMESPACE: "foo",
+            ENV_KEYS_AGENT_ARTIFACTS_STORE: {
                 "name": "some",
                 "kind": V1ConnectionKind.GCS,
                 "schema": V1BucketConnection(bucket="gs://test").to_dict(),
@@ -40,9 +40,9 @@ class TestAgentConfig(BaseTestCase):
         assert config.to_light_dict() == config_dict
 
         config_dict = {
-            EV_KEYS_K8S_NAMESPACE: "foo",
-            EV_KEYS_AGENT_ARTIFACTS_STORE: "some",
-            EV_KEYS_AGENT_CONNECTIONS: [
+            ENV_KEYS_K8S_NAMESPACE: "foo",
+            ENV_KEYS_AGENT_ARTIFACTS_STORE: "some",
+            ENV_KEYS_AGENT_CONNECTIONS: [
                 {
                     "name": "some",
                     "kind": V1ConnectionKind.GCS,
@@ -55,14 +55,14 @@ class TestAgentConfig(BaseTestCase):
             AgentConfig.from_dict(config_dict)
 
         config_dict = {
-            EV_KEYS_K8S_NAMESPACE: "foo",
-            EV_KEYS_AGENT_ARTIFACTS_STORE: {
+            ENV_KEYS_K8S_NAMESPACE: "foo",
+            ENV_KEYS_AGENT_ARTIFACTS_STORE: {
                 "name": "test",
                 "kind": V1ConnectionKind.GCS,
                 "schema": V1BucketConnection(bucket="gs://test").to_dict(),
                 "secret": V1ConnectionResource(name="some").to_dict(),
             },
-            EV_KEYS_AGENT_CONNECTIONS: [
+            ENV_KEYS_AGENT_CONNECTIONS: [
                 {
                     "name": "some",
                     "kind": V1ConnectionKind.GCS,
@@ -81,8 +81,8 @@ class TestAgentConfig(BaseTestCase):
 
     def test_agent_config_from_str_envs(self):
         config_dict = {
-            EV_KEYS_K8S_NAMESPACE: "foo",
-            EV_KEYS_AGENT_ARTIFACTS_STORE: orjson_dumps(
+            ENV_KEYS_K8S_NAMESPACE: "foo",
+            ENV_KEYS_AGENT_ARTIFACTS_STORE: orjson_dumps(
                 {
                     "name": "test1",
                     "kind": V1ConnectionKind.GCS,
@@ -90,7 +90,7 @@ class TestAgentConfig(BaseTestCase):
                     "secret": V1ConnectionResource(name="some").to_dict(),
                 }
             ),
-            EV_KEYS_AGENT_CONNECTIONS: orjson_dumps(
+            ENV_KEYS_AGENT_CONNECTIONS: orjson_dumps(
                 [
                     {
                         "name": "test2",
@@ -109,4 +109,4 @@ class TestAgentConfig(BaseTestCase):
 
         config = AgentConfig.from_dict(config_dict)
         assert len(config.secrets) == 1
-        assert len(config.to_light_dict()[EV_KEYS_AGENT_CONNECTIONS]) == 2
+        assert len(config.to_light_dict()[ENV_KEYS_AGENT_CONNECTIONS]) == 2

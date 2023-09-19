@@ -1,4 +1,3 @@
-from clipped.compact.pydantic import Extra
 from clipped.config.schema import BaseSchemaModel as _BaseSchemaModel
 
 from polyaxon import pkg
@@ -10,11 +9,6 @@ class BaseSchemaModel(_BaseSchemaModel):
     _VERSION = pkg.SCHEMA_VERSION
     _SCHEMA_EXCEPTION = PolyaxonSchemaError
     _CONFIG_SPEC = ConfigSpec
-
-
-class BaseResponseModel(BaseSchemaModel):
-    class Config(BaseSchemaModel.Config):
-        extra = Extra.allow
 
 
 NAME_REGEX = r"^[-a-zA-Z0-9_]+\Z"

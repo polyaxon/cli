@@ -10,10 +10,10 @@ from clipped.utils.paths import delete_path
 from polyaxon import dist, settings
 from polyaxon.connections import V1Connection, V1ConnectionKind, V1HostPathConnection
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.schemas.api.authentication import AccessTokenConfig
-from polyaxon.schemas.cli.agent_config import AgentConfig
-from polyaxon.schemas.cli.cli_config import CliConfig
-from polyaxon.schemas.cli.client_config import ClientConfig
+from polyaxon.schemas.agent import AgentConfig
+from polyaxon.schemas.authentication import AccessTokenConfig
+from polyaxon.schemas.cli import CliConfig
+from polyaxon.schemas.client import ClientConfig
 from polyaxon.settings import set_agent_config
 
 

@@ -1,9 +1,10 @@
 from typing import List, Optional
 
-from polyaxon.schemas.base import BaseResponseModel
+from clipped.config.schema import BaseAllowSchemaModel
+
 from polyaxon.schemas.responses.v1_settings_catalog import V1SettingsCatalog
 
 
-class V1TeamSettings(BaseResponseModel):
+class V1TeamSettings(BaseAllowSchemaModel):
     projects: Optional[List[V1SettingsCatalog]]
     hubs: Optional[List[V1SettingsCatalog]]

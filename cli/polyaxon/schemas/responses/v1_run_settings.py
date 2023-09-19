@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_run_reference_catalog import V1RunReferenceCatalog
 from polyaxon.schemas.responses.v1_settings_catalog import V1SettingsCatalog
 
 
-class V1RunSettings(BaseResponseModel):
+class V1RunSettings(BaseAllowSchemaModel):
     namespace: Optional[StrictStr]
     agent: Optional[V1SettingsCatalog]
     queue: Optional[V1SettingsCatalog]

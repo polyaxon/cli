@@ -4,7 +4,7 @@ from typing_extensions import Literal
 from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import BoolOrRef, DatetimeOrRef, IntOrRef
 
-from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
+from polyaxon.polyflow.schedules.enums import V1ScheduleKind
 from polyaxon.schemas.base import BaseSchemaModel
 
 

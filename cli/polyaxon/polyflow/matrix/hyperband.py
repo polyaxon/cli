@@ -8,7 +8,7 @@ from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
-from polyaxon.polyflow.matrix.kinds import V1MatrixKind
+from polyaxon.polyflow.matrix.enums import V1MatrixKind
 from polyaxon.polyflow.matrix.params import V1HpParam
 from polyaxon.polyflow.matrix.tuner import V1Tuner
 from polyaxon.polyflow.optimization import V1OptimizationMetric, V1OptimizationResource

@@ -11,13 +11,13 @@ from polyaxon.cli.errors import handle_cli_error
 from polyaxon.cli.options import OPTIONS_PROJECT
 from polyaxon.client import ProjectClient
 from polyaxon.env_vars.getters import get_project_or_local
+from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs
 from polyaxon.managers.git import GitConfigManager
 from polyaxon.managers.ignore import IgnoreConfigManager
 from polyaxon.managers.project import ProjectConfigManager
 from polyaxon.polyaxonfile import check_polyaxonfile
 from polyaxon.schemas.types import V1GitType
-from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cli_constants
 from polyaxon.utils.cache import get_local_project
 

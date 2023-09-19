@@ -10,66 +10,18 @@ from clipped.compact.pydantic import (
 )
 from clipped.config.schema import skip_partial
 from clipped.types.ref_or_obj import RefField
-from clipped.utils.enums import PEnum
 
 from polyaxon.polyflow.early_stopping import V1EarlyStopping
 from polyaxon.polyflow.matrix.base import BaseSearchConfig
-from polyaxon.polyflow.matrix.kinds import V1MatrixKind
+from polyaxon.polyflow.matrix.enums import (
+    AcquisitionFunctions,
+    GaussianProcessesKernels,
+    V1MatrixKind,
+)
 from polyaxon.polyflow.matrix.params import V1HpParam
 from polyaxon.polyflow.matrix.tuner import V1Tuner
 from polyaxon.polyflow.optimization import V1OptimizationMetric
 from polyaxon.schemas.base import BaseSchemaModel
-
-
-class AcquisitionFunctions(str, PEnum):
-    UCB = "ucb"
-    EI = "ei"
-    POI = "poi"
-
-    @classmethod
-    def ucb_values(cls):
-        return {cls.UCB, cls.UCB.upper(), cls.UCB.capitalize()}
-
-    @classmethod
-    def ei_values(cls):
-        return {cls.EI, cls.EI.upper(), cls.EI.capitalize()}
-
-    @classmethod
-    def poi_values(cls):
-        return {cls.POI, cls.POI.upper(), cls.POI.capitalize()}
-
-    @classmethod
-    def is_ucb(cls, value):
-        return value in cls.ucb_values()
-
-    @classmethod
-    def is_ei(cls, value):
-        return value in cls.ei_values()
-
-    @classmethod
-    def is_poi(cls, value):
-        return value in cls.poi_values()
-
-
-class GaussianProcessesKernels(str, PEnum):
-    RBF = "rbf"
-    MATERN = "matern"
-
-    @classmethod
-    def rbf_value(cls):
-        return {cls.RBF, cls.RBF.upper(), cls.RBF.capitalize()}
-
-    @classmethod
-    def matern_value(cls):
-        return {cls.MATERN, cls.MATERN.upper(), cls.MATERN.capitalize()}
-
-    @classmethod
-    def is_rbf(cls, value):
-        return value in cls.rbf_value()
-
-    @classmethod
-    def is_mattern(cls, value):
-        return value in cls.matern_value()
 
 
 class GaussianProcessConfig(BaseSchemaModel):

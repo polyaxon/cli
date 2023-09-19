@@ -9,7 +9,7 @@ import aiohttp
 
 from clipped.utils.json import orjson_dumps
 
-from polyaxon.sdk.exceptions import ApiException, ApiValueError
+from polyaxon.exceptions import ApiException, ApiValueError
 
 logger = logging.getLogger(__name__)
 

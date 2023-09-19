@@ -17,10 +17,10 @@ from polyaxon.client import ProjectClient
 from polyaxon.env_vars.getters import get_project_or_local
 from polyaxon.env_vars.getters.owner_entity import resolve_entity_info
 from polyaxon.env_vars.getters.user import get_local_owner
+from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs
 from polyaxon.managers.project import ProjectConfigManager
 from polyaxon.schemas.responses.v1_project import V1Project
-from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 from polyaxon.utils.cache import get_local_project
 

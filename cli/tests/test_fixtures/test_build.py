@@ -1,6 +1,7 @@
 import pytest
 
-from polyaxon.polyflow import V1Operation, V1RunKind
+from polyaxon.polyflow import V1Operation
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.utils.fixtures import set_build_fixture
 from polyaxon.utils.test_utils import BaseTestCase
 

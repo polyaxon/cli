@@ -1,7 +1,6 @@
 import pytest
 
-from polyaxon.polyflow import V1RunKind
-from polyaxon.polyflow.operations import V1CompiledOperation
+from polyaxon.polyflow import V1CompiledOperation, V1RunKind
 from polyaxon.utils.test_utils import BaseTestCase
 
 

@@ -4,7 +4,7 @@ from typing import Type
 
 from polyaxon.config.manager import ConfigManager
 from polyaxon.config.spec import ConfigSpec
-from polyaxon.schemas.cli.client_config import ClientConfig
+from polyaxon.schemas.client import ClientConfig
 
 
 class ClientConfigManager(ConfigManager):

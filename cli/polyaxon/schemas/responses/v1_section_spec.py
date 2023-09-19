@@ -1,11 +1,10 @@
 from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import Field, StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1SectionSpec(BaseResponseModel):
+class V1SectionSpec(BaseAllowSchemaModel):
     name: Optional[StrictStr]
     is_minimized: Optional[bool]
     columns: Optional[int]

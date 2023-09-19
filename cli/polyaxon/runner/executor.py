@@ -13,7 +13,7 @@ from polyaxon.exceptions import PolyaxonAgentError, PolyaxonCompilerError
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.polyflow import V1CompiledOperation
 from polyaxon.runner.kinds import RunnerKind
-from polyaxon.schemas.cli.agent_config import AgentConfig
+from polyaxon.schemas.agent import AgentConfig
 from polyaxon.schemas.responses.v1_run import V1Run
 
 

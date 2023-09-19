@@ -1,13 +1,13 @@
 from typing import List, Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
 
 from polyaxon.lifecycle import V1StatusCondition
-from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1EntityNotificationBody(BaseResponseModel):
+class V1EntityNotificationBody(BaseAllowSchemaModel):
     namespace: Optional[StrictStr]
     owner: Optional[StrictStr]
     project: Optional[StrictStr]

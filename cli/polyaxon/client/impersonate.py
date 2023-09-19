@@ -4,9 +4,8 @@ from urllib3.exceptions import HTTPError
 
 from polyaxon.client.client import PolyaxonClient
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.exceptions import PolyaxonClientException
-from polyaxon.schemas.api.authentication import AccessTokenConfig
-from polyaxon.sdk.exceptions import ApiException
+from polyaxon.exceptions import ApiException, PolyaxonClientException
+from polyaxon.schemas.authentication import AccessTokenConfig
 
 
 def create_context_auth(

@@ -8,9 +8,9 @@ from polyaxon.connections import (
     V1ConnectionResource,
 )
 from polyaxon.env_vars.keys import (
-    EV_KEYS_ARTIFACTS_STORE_NAME,
-    EV_KEYS_COLLECT_ARTIFACTS,
-    EV_KEYS_COLLECT_RESOURCES,
+    ENV_KEYS_ARTIFACTS_STORE_NAME,
+    ENV_KEYS_COLLECT_ARTIFACTS,
+    ENV_KEYS_COLLECT_RESOURCES,
 )
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.polyflow import V1Plugins
@@ -150,8 +150,8 @@ class TestMainEnvVars(BaseConverterTest):
             secrets=None,
             config_maps=None,
         ) == base_env + [
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
+            self.converter._get_env_var(name=ENV_KEYS_COLLECT_ARTIFACTS, value=True),
+            self.converter._get_env_var(name=ENV_KEYS_COLLECT_RESOURCES, value=True),
         ]
 
         assert (
@@ -198,7 +198,7 @@ class TestMainEnvVars(BaseConverterTest):
             secrets=None,
             config_maps=None,
         ) == base_env + [
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True)
+            self.converter._get_env_var(name=ENV_KEYS_COLLECT_ARTIFACTS, value=True)
         ]
 
     def test_get_env_vars_with_secrets(self):
@@ -320,10 +320,10 @@ class TestMainEnvVars(BaseConverterTest):
             log_level=None,
         )
         expected += [
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True),
-            self.converter._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True),
+            self.converter._get_env_var(name=ENV_KEYS_COLLECT_ARTIFACTS, value=True),
+            self.converter._get_env_var(name=ENV_KEYS_COLLECT_RESOURCES, value=True),
             self.converter._get_env_var(
-                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="test"
+                name=ENV_KEYS_ARTIFACTS_STORE_NAME, value="test"
             ),
         ]
         expected += self.converter._get_connection_env_var(connection=connection)

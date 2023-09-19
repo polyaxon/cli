@@ -3,10 +3,10 @@ from typing import Optional
 from clipped.compact.pydantic import StrictStr
 
 from polyaxon import dist
-from polyaxon.schemas.api.compatibility import V1Compatibility
-from polyaxon.schemas.api.installation import V1Installation
-from polyaxon.schemas.api.log_handler import V1LogHandler
-from polyaxon.schemas.cli.checks_config import ChecksConfig
+from polyaxon.schemas.checks import ChecksConfig
+from polyaxon.schemas.compatibility import V1Compatibility
+from polyaxon.schemas.installation import V1Installation
+from polyaxon.schemas.log_handler import V1LogHandler
 
 
 class CliConfig(ChecksConfig):

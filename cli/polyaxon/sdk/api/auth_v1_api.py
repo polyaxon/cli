@@ -1,13 +1,13 @@
 from clipped.compact.pydantic import validate_arguments
 
-from polyaxon.schemas.api.authentication import V1Credentials
+from polyaxon.exceptions import ApiTypeError
+from polyaxon.schemas.authentication import V1Credentials
 from polyaxon.schemas.responses.v1_auth import V1Auth
 from polyaxon.schemas.responses.v1_password_change import V1PasswordChange
 from polyaxon.schemas.responses.v1_trial_start import V1TrialStart
 from polyaxon.schemas.responses.v1_user_email import V1UserEmail
 from polyaxon.schemas.responses.v1_user_singup import V1UserSingup
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class AuthV1Api(BaseApi):

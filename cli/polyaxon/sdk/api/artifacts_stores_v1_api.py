@@ -3,8 +3,8 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class ArtifactsStoresV1Api(BaseApi):

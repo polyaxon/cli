@@ -17,8 +17,9 @@ from polyaxon.connections import (
 )
 from polyaxon.managers.agent import AgentConfigManager
 from polyaxon.polyaxonfile.specs import kinds
-from polyaxon.polyflow import V1CompiledOperation, V1RunKind
-from polyaxon.schemas.cli.agent_config import AgentConfig
+from polyaxon.polyflow import V1CompiledOperation
+from polyaxon.polyflow.run.enums import V1RunKind
+from polyaxon.schemas.agent import AgentConfig
 from polyaxon.utils.test_utils import BaseTestCase
 from traceml.artifacts import V1ArtifactKind
 

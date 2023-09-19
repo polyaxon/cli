@@ -8,7 +8,7 @@ from clipped.formatting import Printer
 from clipped.utils.lists import to_list
 from clipped.utils.units import to_percentage, to_unit_memory
 
-from polyaxon.schemas.api.resources import ContainerResourcesConfig
+from polyaxon.schemas.container_resources import ContainerResourcesConfig
 
 
 def resources(jobs_resources: Union[List[Dict], Dict]):

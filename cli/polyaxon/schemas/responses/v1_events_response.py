@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
-from polyaxon.schemas.base import BaseResponseModel
+from clipped.config.schema import BaseAllowSchemaModel
 
 
-class V1EventsResponse(BaseResponseModel):
+class V1EventsResponse(BaseAllowSchemaModel):
     data: Optional[List[Dict[str, Any]]]

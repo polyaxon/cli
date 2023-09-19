@@ -8,7 +8,7 @@ from mock import patch
 from clipped.utils.tz import now
 
 from polyaxon.managers.cli import CliConfigManager
-from polyaxon.schemas.cli.cli_config import CliConfig
+from polyaxon.schemas.cli import CliConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 

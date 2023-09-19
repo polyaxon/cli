@@ -1,11 +1,10 @@
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1ProjectUserAccess(BaseResponseModel):
+class V1ProjectUserAccess(BaseAllowSchemaModel):
     user: Optional[StrictStr]
     queue: Optional[StrictStr]
     preset: Optional[StrictStr]

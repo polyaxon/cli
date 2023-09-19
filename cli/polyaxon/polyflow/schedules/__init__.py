@@ -5,8 +5,8 @@ from clipped.compact.pydantic import Field
 
 from polyaxon.polyflow.schedules.cron import V1CronSchedule
 from polyaxon.polyflow.schedules.datetime import V1DateTimeSchedule
+from polyaxon.polyflow.schedules.enums import V1ScheduleKind
 from polyaxon.polyflow.schedules.interval import V1IntervalSchedule
-from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
 
 V1Schedule = Annotated[
     Union[V1IntervalSchedule, V1CronSchedule, V1DateTimeSchedule],

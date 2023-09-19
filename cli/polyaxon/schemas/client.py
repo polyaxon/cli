@@ -8,34 +8,34 @@ from clipped.utils.http import clean_host
 from polyaxon.api import LOCALHOST, POLYAXON_CLOUD_HOST
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.keys import (
-    EV_KEYS_API_VERSION,
-    EV_KEYS_ARCHIVES_ROOT,
-    EV_KEYS_ASSERT_HOSTNAME,
-    EV_KEYS_AUTHENTICATION_TYPE,
-    EV_KEYS_CERT_FILE,
-    EV_KEYS_CONNECTION_POOL_MAXSIZE,
-    EV_KEYS_DEBUG,
-    EV_KEYS_DISABLE_ERRORS_REPORTING,
-    EV_KEYS_HEADER,
-    EV_KEYS_HEADER_SERVICE,
-    EV_KEYS_HOST,
-    EV_KEYS_INTERVAL,
-    EV_KEYS_INTERVALS_COMPATIBILITY_CHECK,
-    EV_KEYS_IS_MANAGED,
-    EV_KEYS_IS_OFFLINE,
-    EV_KEYS_K8S_IN_CLUSTER,
-    EV_KEYS_K8S_NAMESPACE,
-    EV_KEYS_KEY_FILE,
-    EV_KEYS_LOG_LEVEL,
-    EV_KEYS_NO_API,
-    EV_KEYS_NO_OP,
-    EV_KEYS_RETRIES,
-    EV_KEYS_SSL_CA_CERT,
-    EV_KEYS_TIME_ZONE,
-    EV_KEYS_TIMEOUT,
-    EV_KEYS_TRACKING_TIMEOUT,
-    EV_KEYS_VERIFY_SSL,
-    EV_KEYS_WATCH_INTERVAL,
+    ENV_KEYS_API_VERSION,
+    ENV_KEYS_ARCHIVES_ROOT,
+    ENV_KEYS_ASSERT_HOSTNAME,
+    ENV_KEYS_AUTHENTICATION_TYPE,
+    ENV_KEYS_CERT_FILE,
+    ENV_KEYS_CONNECTION_POOL_MAXSIZE,
+    ENV_KEYS_DEBUG,
+    ENV_KEYS_DISABLE_ERRORS_REPORTING,
+    ENV_KEYS_HEADER,
+    ENV_KEYS_HEADER_SERVICE,
+    ENV_KEYS_HOST,
+    ENV_KEYS_INTERVAL,
+    ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK,
+    ENV_KEYS_IS_MANAGED,
+    ENV_KEYS_IS_OFFLINE,
+    ENV_KEYS_K8S_IN_CLUSTER,
+    ENV_KEYS_K8S_NAMESPACE,
+    ENV_KEYS_KEY_FILE,
+    ENV_KEYS_LOG_LEVEL,
+    ENV_KEYS_NO_API,
+    ENV_KEYS_NO_OP,
+    ENV_KEYS_RETRIES,
+    ENV_KEYS_SSL_CA_CERT,
+    ENV_KEYS_TIME_ZONE,
+    ENV_KEYS_TIMEOUT,
+    ENV_KEYS_TRACKING_TIMEOUT,
+    ENV_KEYS_VERIFY_SSL,
+    ENV_KEYS_WATCH_INTERVAL,
 )
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.pkg import VERSION
@@ -52,48 +52,50 @@ class ClientConfig(BaseSchemaModel):
     _PAGE_SIZE = 20
     _BASE_URL = "{}/api/{}"
 
-    host: Optional[StrictStr] = Field(alias=EV_KEYS_HOST)
-    version: Optional[StrictStr] = Field(default="v1", alias=EV_KEYS_API_VERSION)
-    debug: Optional[bool] = Field(default=False, alias=EV_KEYS_DEBUG)
-    log_level: Optional[StrictStr] = Field(alias=EV_KEYS_LOG_LEVEL)
+    host: Optional[StrictStr] = Field(alias=ENV_KEYS_HOST)
+    version: Optional[StrictStr] = Field(default="v1", alias=ENV_KEYS_API_VERSION)
+    debug: Optional[bool] = Field(default=False, alias=ENV_KEYS_DEBUG)
+    log_level: Optional[StrictStr] = Field(alias=ENV_KEYS_LOG_LEVEL)
     authentication_type: Optional[StrictStr] = Field(
-        default=AuthenticationTypes.TOKEN, alias=EV_KEYS_AUTHENTICATION_TYPE
+        default=AuthenticationTypes.TOKEN, alias=ENV_KEYS_AUTHENTICATION_TYPE
     )
-    is_managed: Optional[bool] = Field(default=False, alias=EV_KEYS_IS_MANAGED)
-    is_offline: Optional[bool] = Field(default=False, alias=EV_KEYS_IS_OFFLINE)
-    in_cluster: Optional[bool] = Field(default=False, alias=EV_KEYS_K8S_IN_CLUSTER)
-    no_op: Optional[bool] = Field(default=False, alias=EV_KEYS_NO_OP)
-    timeout: Optional[float] = Field(default=20, alias=EV_KEYS_TIMEOUT)
-    tracking_timeout: Optional[float] = Field(default=1, alias=EV_KEYS_TRACKING_TIMEOUT)
-    timezone: Optional[StrictStr] = Field(alias=EV_KEYS_TIME_ZONE)
-    watch_interval: Optional[int] = Field(default=5, alias=EV_KEYS_WATCH_INTERVAL)
-    interval: Optional[float] = Field(default=5, alias=EV_KEYS_INTERVAL)
-    verify_ssl: Optional[bool] = Field(alias=EV_KEYS_VERIFY_SSL)
-    ssl_ca_cert: Optional[StrictStr] = Field(alias=EV_KEYS_SSL_CA_CERT)
-    cert_file: Optional[StrictStr] = Field(alias=EV_KEYS_CERT_FILE)
-    key_file: Optional[StrictStr] = Field(alias=EV_KEYS_KEY_FILE)
-    assert_hostname: Optional[bool] = Field(alias=EV_KEYS_ASSERT_HOSTNAME)
+    is_managed: Optional[bool] = Field(default=False, alias=ENV_KEYS_IS_MANAGED)
+    is_offline: Optional[bool] = Field(default=False, alias=ENV_KEYS_IS_OFFLINE)
+    in_cluster: Optional[bool] = Field(default=False, alias=ENV_KEYS_K8S_IN_CLUSTER)
+    no_op: Optional[bool] = Field(default=False, alias=ENV_KEYS_NO_OP)
+    timeout: Optional[float] = Field(default=20, alias=ENV_KEYS_TIMEOUT)
+    tracking_timeout: Optional[float] = Field(
+        default=1, alias=ENV_KEYS_TRACKING_TIMEOUT
+    )
+    timezone: Optional[StrictStr] = Field(alias=ENV_KEYS_TIME_ZONE)
+    watch_interval: Optional[int] = Field(default=5, alias=ENV_KEYS_WATCH_INTERVAL)
+    interval: Optional[float] = Field(default=5, alias=ENV_KEYS_INTERVAL)
+    verify_ssl: Optional[bool] = Field(alias=ENV_KEYS_VERIFY_SSL)
+    ssl_ca_cert: Optional[StrictStr] = Field(alias=ENV_KEYS_SSL_CA_CERT)
+    cert_file: Optional[StrictStr] = Field(alias=ENV_KEYS_CERT_FILE)
+    key_file: Optional[StrictStr] = Field(alias=ENV_KEYS_KEY_FILE)
+    assert_hostname: Optional[bool] = Field(alias=ENV_KEYS_ASSERT_HOSTNAME)
     connection_pool_maxsize: Optional[int] = Field(
-        alias=EV_KEYS_CONNECTION_POOL_MAXSIZE
+        alias=ENV_KEYS_CONNECTION_POOL_MAXSIZE
     )
     archives_root: Optional[StrictStr] = Field(
-        default=ctx_paths.CONTEXT_ARCHIVES_ROOT, alias=EV_KEYS_ARCHIVES_ROOT
+        default=ctx_paths.CONTEXT_ARCHIVES_ROOT, alias=ENV_KEYS_ARCHIVES_ROOT
     )
     header: Optional[Union[StrictStr, PolyaxonServiceHeaders]] = Field(
-        alias=EV_KEYS_HEADER
+        alias=ENV_KEYS_HEADER
     )
     header_service: Optional[Union[StrictStr, PolyaxonServices]] = Field(
-        alias=EV_KEYS_HEADER_SERVICE
+        alias=ENV_KEYS_HEADER_SERVICE
     )
-    namespace: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_NAMESPACE)
-    no_api: Optional[bool] = Field(default=False, alias=EV_KEYS_NO_API)
+    namespace: Optional[StrictStr] = Field(alias=ENV_KEYS_K8S_NAMESPACE)
+    no_api: Optional[bool] = Field(default=False, alias=ENV_KEYS_NO_API)
     disable_errors_reporting: Optional[bool] = Field(
-        default=False, alias=EV_KEYS_DISABLE_ERRORS_REPORTING
+        default=False, alias=ENV_KEYS_DISABLE_ERRORS_REPORTING
     )
     compatibility_check_interval: Optional[int] = Field(
-        alias=EV_KEYS_INTERVALS_COMPATIBILITY_CHECK
+        alias=ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
     )
-    retries: Optional[int] = Field(alias=EV_KEYS_RETRIES)
+    retries: Optional[int] = Field(alias=ENV_KEYS_RETRIES)
     token: Optional[StrictStr]
     client_header: Optional[Dict]
 

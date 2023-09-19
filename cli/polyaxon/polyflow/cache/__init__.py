@@ -2,8 +2,8 @@ from typing import List, Optional, Union
 
 from clipped.compact.pydantic import StrictStr
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
-from clipped.utils.enums import PEnum
 
+from polyaxon.polyflow.cache.enums import CacheSection
 from polyaxon.schemas.base import BaseSchemaModel
 
 
@@ -99,12 +99,7 @@ class V1Cache(BaseSchemaModel):
 
     _IDENTIFIER = "cache"
 
-    class CacheSections(str, PEnum):
-        CONTAINERS = "containers"
-        INIT = "init"
-        CONNECTIONS = "connections"
-
     disable: Optional[BoolOrRef]
     ttl: Optional[IntOrRef]
     io: Optional[Union[List[StrictStr], RefField]]
-    sections: Optional[Union[List[CacheSections], RefField]]
+    sections: Optional[Union[List[CacheSection], RefField]]

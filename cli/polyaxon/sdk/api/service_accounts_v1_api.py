@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.schemas.responses.v1_list_service_accounts_response import (
     V1ListServiceAccountsResponse,
 )
@@ -10,7 +11,6 @@ from polyaxon.schemas.responses.v1_list_token_response import V1ListTokenRespons
 from polyaxon.schemas.responses.v1_service_account import V1ServiceAccount
 from polyaxon.schemas.responses.v1_token import V1Token
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class ServiceAccountsV1Api(BaseApi):

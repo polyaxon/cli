@@ -32,7 +32,7 @@ from polyaxon.env_vars.getters import get_project_or_local
 from polyaxon.lifecycle import V1ProjectVersionKind, V1Stages
 from polyaxon.logger import clean_outputs
 from polyaxon.polyaxonfile import get_specification
-from polyaxon.schemas.cli.client_config import ClientConfig
+from polyaxon.schemas.client import ClientConfig
 
 
 def get_current_or_public_client():

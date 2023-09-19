@@ -5,11 +5,10 @@ from polyaxon.lifecycle import (
     V1Status,
     V1StatusCondition,
 )
-from polyaxon.schemas.api.authentication import V1Credentials
-from polyaxon.schemas.api.compatibility import V1Compatibility
-from polyaxon.schemas.api.installation import V1Installation
-from polyaxon.schemas.api.log_handler import V1LogHandler
-from polyaxon.schemas.api.version import V1Version
+from polyaxon.schemas.authentication import V1Credentials
+from polyaxon.schemas.compatibility import V1Compatibility
+from polyaxon.schemas.installation import V1Installation
+from polyaxon.schemas.log_handler import V1LogHandler
 from polyaxon.schemas.responses.v1_activity import V1Activity
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
@@ -112,5 +111,6 @@ from polyaxon.schemas.responses.v1_user import V1User
 from polyaxon.schemas.responses.v1_user_email import V1UserEmail
 from polyaxon.schemas.responses.v1_user_singup import V1UserSingup
 from polyaxon.schemas.responses.v1_uuids import V1Uuids
+from polyaxon.schemas.version import V1Version
 from traceml.artifacts import V1RunArtifact, V1RunArtifacts
 from traceml.logging import V1Logs

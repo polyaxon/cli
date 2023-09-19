@@ -13,12 +13,12 @@ from polyaxon import pkg
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.client import PolyaxonClient
 from polyaxon.constants.globals import NO_AUTH
+from polyaxon.exceptions import ApiException
 from polyaxon.managers.auth import AuthConfigManager
 from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.user import UserConfigManager
-from polyaxon.schemas.api.installation import V1Installation
-from polyaxon.schemas.cli.client_config import ClientConfig
-from polyaxon.sdk.exceptions import ApiException
+from polyaxon.schemas.client import ClientConfig
+from polyaxon.schemas.installation import V1Installation
 from polyaxon.services.values import PolyaxonServices
 
 

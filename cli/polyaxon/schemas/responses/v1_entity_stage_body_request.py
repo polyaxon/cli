@@ -1,12 +1,12 @@
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
 from polyaxon.lifecycle import V1StageCondition
-from polyaxon.schemas.base import BaseResponseModel
 
 
-class V1EntityStageBodyRequest(BaseResponseModel):
+class V1EntityStageBodyRequest(BaseAllowSchemaModel):
     owner: Optional[StrictStr]
     entity: Optional[StrictStr]
     kind: Optional[StrictStr]

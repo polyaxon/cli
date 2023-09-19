@@ -18,12 +18,12 @@ from polyaxon.containers.names import INIT_PREFIX, SIDECAR_PREFIX
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.docker import docker_types
 from polyaxon.env_vars.keys import (
-    EV_KEYS_ARTIFACTS_STORE_NAME,
-    EV_KEYS_COLLECT_ARTIFACTS,
-    EV_KEYS_COLLECT_RESOURCES,
-    EV_KEYS_LOG_LEVEL,
-    EV_KEYS_NO_API,
-    EV_KEYS_RUN_INSTANCE,
+    ENV_KEYS_ARTIFACTS_STORE_NAME,
+    ENV_KEYS_COLLECT_ARTIFACTS,
+    ENV_KEYS_COLLECT_RESOURCES,
+    ENV_KEYS_LOG_LEVEL,
+    ENV_KEYS_NO_API,
+    ENV_KEYS_RUN_INSTANCE,
 )
 from polyaxon.exceptions import PolyaxonConverterError, PolyaxonSchemaError
 from polyaxon.k8s import k8s_schemas
@@ -186,9 +186,9 @@ class BaseConverter:
             )
         env = []
         if settings.CLIENT_CONFIG.no_api:
-            env += [self._get_env_var(name=EV_KEYS_NO_API, value=True)]
+            env += [self._get_env_var(name=ENV_KEYS_NO_API, value=True)]
         if log_level:
-            env += [self._get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level)]
+            env += [self._get_env_var(name=ENV_KEYS_LOG_LEVEL, value=log_level)]
         proxy_env = self._get_proxy_env_vars(
             settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops
         )
@@ -236,9 +236,9 @@ class BaseConverter:
             )
         env = []
         if settings.CLIENT_CONFIG.no_api:
-            env.append(self._get_env_var(name=EV_KEYS_NO_API, value=True))
+            env.append(self._get_env_var(name=ENV_KEYS_NO_API, value=True))
         if log_level:
-            env.append(self._get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level))
+            env.append(self._get_env_var(name=ENV_KEYS_LOG_LEVEL, value=log_level))
         proxy_env = self._get_proxy_env_vars(
             settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops
         )
@@ -248,7 +248,7 @@ class BaseConverter:
 
     @classmethod
     def _get_run_instance_env_var(cls, run_instance: str) -> EnvVar:
-        return cls._get_env_var(name=EV_KEYS_RUN_INSTANCE, value=run_instance)
+        return cls._get_env_var(name=ENV_KEYS_RUN_INSTANCE, value=run_instance)
 
     @staticmethod
     def _get_env_var(name: str, value: Any) -> EnvVar:
@@ -411,15 +411,15 @@ class BaseConverter:
         connections = connections or []
 
         if plugins and plugins.collect_artifacts:
-            env.append(self._get_env_var(name=EV_KEYS_COLLECT_ARTIFACTS, value=True))
+            env.append(self._get_env_var(name=ENV_KEYS_COLLECT_ARTIFACTS, value=True))
 
         if plugins and plugins.collect_resources:
-            env.append(self._get_env_var(name=EV_KEYS_COLLECT_RESOURCES, value=True))
+            env.append(self._get_env_var(name=ENV_KEYS_COLLECT_RESOURCES, value=True))
 
         if artifacts_store_name:
             env.append(
                 self._get_env_var(
-                    name=EV_KEYS_ARTIFACTS_STORE_NAME, value=artifacts_store_name
+                    name=ENV_KEYS_ARTIFACTS_STORE_NAME, value=artifacts_store_name
                 )
             )
 

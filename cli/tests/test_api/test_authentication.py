@@ -2,8 +2,8 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon.env_vars.keys import EV_KEYS_AUTH_TOKEN, EV_KEYS_AUTH_USERNAME
-from polyaxon.schemas.api.authentication import AccessTokenConfig, V1Credentials
+from polyaxon.env_vars.keys import ENV_KEYS_AUTH_TOKEN, ENV_KEYS_AUTH_USERNAME
+from polyaxon.schemas.authentication import AccessTokenConfig, V1Credentials
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -11,8 +11,8 @@ from polyaxon.utils.test_utils import BaseTestCase
 class TestAccessConfigs(BaseTestCase):
     def test_access_token_wrong_config(self):
         config_dict = {
-            EV_KEYS_AUTH_USERNAME: "username",
-            EV_KEYS_AUTH_TOKEN: "sdfsdf098sdf80s9dSDF800",
+            ENV_KEYS_AUTH_USERNAME: "username",
+            ENV_KEYS_AUTH_TOKEN: "sdfsdf098sdf80s9dSDF800",
             "foo": "bar",
         }
         config = AccessTokenConfig.from_dict(config_dict)
@@ -22,8 +22,8 @@ class TestAccessConfigs(BaseTestCase):
 
     def test_access_token_config(self):
         config_dict = {
-            EV_KEYS_AUTH_USERNAME: "username",
-            EV_KEYS_AUTH_TOKEN: "sdfsdf098sdf80s9dSDF800",
+            ENV_KEYS_AUTH_USERNAME: "username",
+            ENV_KEYS_AUTH_TOKEN: "sdfsdf098sdf80s9dSDF800",
         }
         config = AccessTokenConfig.from_dict(config_dict)
         assert config.to_dict() == config_dict

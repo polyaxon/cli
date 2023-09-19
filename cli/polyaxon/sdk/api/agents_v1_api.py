@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.lifecycle import V1Status
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
@@ -12,7 +13,6 @@ from polyaxon.schemas.responses.v1_agent_status_body_request import (
 from polyaxon.schemas.responses.v1_list_agents_response import V1ListAgentsResponse
 from polyaxon.schemas.responses.v1_token import V1Token
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class AgentsV1Api(BaseApi):

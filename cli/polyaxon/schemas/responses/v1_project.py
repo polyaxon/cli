@@ -3,13 +3,13 @@ import datetime
 from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
 
-from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_project_settings import V1ProjectSettings
 
 
-class V1Project(BaseResponseModel):
+class V1Project(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr]
     owner: Optional[StrictStr]
     name: Optional[StrictStr]

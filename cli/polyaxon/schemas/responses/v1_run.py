@@ -3,21 +3,23 @@ import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
 
 from polyaxon.lifecycle import ManagedBy, V1StatusCondition, V1Statuses
-from polyaxon.polyflow.matrix.kinds import V1MatrixKind
-from polyaxon.polyflow.run.kinds import V1RunKind
-from polyaxon.polyflow.run.resources import V1RunResources
-from polyaxon.polyflow.schedules.kinds import V1ScheduleKind
-from polyaxon.schemas import V1RunPending
-from polyaxon.schemas.base import BaseResponseModel
+from polyaxon.polyflow import (
+    V1MatrixKind,
+    V1RunKind,
+    V1RunPending,
+    V1RunResources,
+    V1ScheduleKind,
+)
 from polyaxon.schemas.responses.v1_cloning import V1Cloning
 from polyaxon.schemas.responses.v1_pipeline import V1Pipeline
 from polyaxon.schemas.responses.v1_run_settings import V1RunSettings
 
 
-class V1Run(BaseResponseModel):
+class V1Run(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     description: Optional[StrictStr]

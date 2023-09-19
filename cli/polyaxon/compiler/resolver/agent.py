@@ -13,8 +13,8 @@ from polyaxon.auxiliaries import (
 from polyaxon.connections import V1Connection, V1ConnectionResource
 from polyaxon.exceptions import PolyaxonCompilerError
 from polyaxon.polyflow import V1CompiledOperation, V1Init
+from polyaxon.schemas.agent import AgentConfig
 from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.schemas.cli.agent_config import AgentConfig
 
 
 class AgentResolver(BaseSchemaModel):

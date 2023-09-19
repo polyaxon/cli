@@ -6,7 +6,7 @@ from mock import patch
 from mock.mock import MagicMock
 
 from polyaxon import settings
-from polyaxon.env_vars.keys import EV_KEYS_RUN_INSTANCE
+from polyaxon.env_vars.keys import ENV_KEYS_RUN_INSTANCE
 from polyaxon.exceptions import PolyaxonContainerException
 from polyaxon.init.auth import create_auth_context
 from polyaxon.utils.test_utils import BaseTestCase
@@ -19,10 +19,10 @@ class TestInitAuth(BaseTestCase):
             create_auth_context()
 
     def test_raise_if_env_var_not_correct(self):
-        os.environ[EV_KEYS_RUN_INSTANCE] = "foo"
+        os.environ[ENV_KEYS_RUN_INSTANCE] = "foo"
         with self.assertRaises(PolyaxonContainerException):
             create_auth_context()
-        del os.environ[EV_KEYS_RUN_INSTANCE]
+        del os.environ[ENV_KEYS_RUN_INSTANCE]
 
     @patch("polyaxon.sdk.api.RunsV1Api.impersonate_token")
     @patch("polyaxon.sdk.api.UsersV1Api.get_user")
@@ -31,12 +31,12 @@ class TestInitAuth(BaseTestCase):
         get_user.return_value = MagicMock(username="foobar", email="foo@bar.com")
         impersonate_token.return_value = MagicMock(token="token")
         settings.CLIENT_CONFIG.is_managed = True
-        os.environ[EV_KEYS_RUN_INSTANCE] = "owner.project.runs.{}".format(
+        os.environ[ENV_KEYS_RUN_INSTANCE] = "owner.project.runs.{}".format(
             uuid.uuid4().hex
         )
         create_auth_context()
         assert impersonate_token.call_count == 1
         assert create_context.call_count == 1
         assert get_user.call_count == 1
-        del os.environ[EV_KEYS_RUN_INSTANCE]
+        del os.environ[ENV_KEYS_RUN_INSTANCE]
         settings.CLIENT_CONFIG.is_managed = None

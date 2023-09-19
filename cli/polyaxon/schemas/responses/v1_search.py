@@ -3,14 +3,14 @@ import datetime
 from typing import List, Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
 
-from polyaxon.schemas.base import BaseResponseModel
 from polyaxon.schemas.responses.v1_search_spec import V1SearchSpec
 from traceml.events.schemas import SearchView
 
 
-class V1Search(BaseResponseModel):
+class V1Search(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     description: Optional[StrictStr]

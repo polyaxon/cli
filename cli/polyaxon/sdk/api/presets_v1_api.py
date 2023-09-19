@@ -3,10 +3,10 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.schemas.responses.v1_list_presets_response import V1ListPresetsResponse
 from polyaxon.schemas.responses.v1_preset import V1Preset
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class PresetsV1Api(BaseApi):

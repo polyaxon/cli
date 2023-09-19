@@ -4,6 +4,7 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.schemas.responses.v1_entities_tags import V1EntitiesTags
 from polyaxon.schemas.responses.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon.schemas.responses.v1_list_activities_response import (
@@ -21,7 +22,6 @@ from polyaxon.schemas.responses.v1_organization_member import V1OrganizationMemb
 from polyaxon.schemas.responses.v1_run import V1Run
 from polyaxon.schemas.responses.v1_uuids import V1Uuids
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class OrganizationsV1Api(BaseApi):

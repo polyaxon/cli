@@ -6,11 +6,11 @@ from clipped.config.contexts import get_project_path, get_temp_path
 from clipped.utils.enums import get_enum_value
 
 from polyaxon.env_vars.keys import (
-    EV_KEYS_ARCHIVES_ROOT,
-    EV_KEYS_ARTIFACTS_ROOT,
-    EV_KEYS_CONTEXT_ROOT,
-    EV_KEYS_OFFLINE_ROOT,
-    EV_KEYS_SANDBOX_ROOT,
+    ENV_KEYS_ARCHIVES_ROOT,
+    ENV_KEYS_ARTIFACTS_ROOT,
+    ENV_KEYS_CONTEXT_ROOT,
+    ENV_KEYS_OFFLINE_ROOT,
+    ENV_KEYS_SANDBOX_ROOT,
 )
 
 CONTEXT_RELATED_RUNS = "_related_runs"
@@ -24,7 +24,7 @@ CONTEXT_LOCAL_PROJECT = "project.plx.json"
 CONTEXT_LOCAL_RUN = "run.plx.json"
 CONTEXT_LOCAL_VERSION = "version.plx.json"
 
-CONTEXT_ROOT = os.environ.get(EV_KEYS_CONTEXT_ROOT, "/plx-context")
+CONTEXT_ROOT = os.environ.get(ENV_KEYS_CONTEXT_ROOT, "/plx-context")
 CONTEXT_MOUNT_CONFIGS = "{}/.configs".format(CONTEXT_ROOT)
 CONTEXT_MOUNT_AUTH = "{}/.auth".format(CONTEXT_MOUNT_CONFIGS)
 CONTEXT_MOUNT_ARTIFACTS = "{}/artifacts".format(CONTEXT_ROOT)
@@ -49,12 +49,12 @@ CONTEXT_TMP_POLYAXON_PATH = get_temp_path(".polyaxon")
 CONTEXT_USER_POLYAXON_PATH = get_project_path(".polyaxon")
 
 CONTEXT_TMP_RUNS_ROOT_FORMAT = os.environ.get(
-    EV_KEYS_ARCHIVES_ROOT, "/tmp/plx/.runs/{}"
+    ENV_KEYS_ARCHIVES_ROOT, "/tmp/plx/.runs/{}"
 )
-CONTEXT_ARCHIVES_ROOT = os.environ.get(EV_KEYS_ARCHIVES_ROOT, "/tmp/plx/archives")
-CONTEXT_ARTIFACTS_ROOT = os.environ.get(EV_KEYS_ARTIFACTS_ROOT, "/tmp/plx/artifacts")
+CONTEXT_ARCHIVES_ROOT = os.environ.get(ENV_KEYS_ARCHIVES_ROOT, "/tmp/plx/archives")
+CONTEXT_ARTIFACTS_ROOT = os.environ.get(ENV_KEYS_ARTIFACTS_ROOT, "/tmp/plx/artifacts")
 CONTEXT_SANDBOX_ROOT = None
-CONTEXT_OFFLINE_ROOT = os.environ.get(EV_KEYS_OFFLINE_ROOT, "/tmp/plx/offline")
+CONTEXT_OFFLINE_ROOT = os.environ.get(ENV_KEYS_OFFLINE_ROOT, "/tmp/plx/offline")
 CONTEXT_OFFLINE_FORMAT = "{}/{{}}".format(CONTEXT_OFFLINE_ROOT)
 CONTEXT_ARTIFACTS_FORMAT = "{}/{{}}".format(CONTEXT_ARTIFACTS_ROOT)
 
@@ -91,7 +91,7 @@ def mount_sandbox(path: Optional[str] = None):
     global CONTEXT_ARTIFACTS_FORMAT
 
     path = path or CONTEXT_OFFLINE_ROOT
-    CONTEXT_SANDBOX_ROOT = os.environ.get(EV_KEYS_SANDBOX_ROOT, path)
+    CONTEXT_SANDBOX_ROOT = os.environ.get(ENV_KEYS_SANDBOX_ROOT, path)
     CONTEXT_OFFLINE_ROOT = CONTEXT_SANDBOX_ROOT
     CONTEXT_ARTIFACTS_ROOT = CONTEXT_SANDBOX_ROOT
     CONTEXT_OFFLINE_FORMAT = "{}/{{}}".format(CONTEXT_OFFLINE_ROOT)

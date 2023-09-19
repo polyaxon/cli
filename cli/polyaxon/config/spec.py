@@ -4,9 +4,12 @@ from requests import HTTPError
 
 from clipped.config.spec import ConfigSpec as _ConfigSpec
 
-from polyaxon.env_vars.keys import EV_KEYS_PUBLIC_REGISTRY, EV_KEYS_USE_GIT_REGISTRY
-from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
-from polyaxon.sdk.exceptions import ApiException
+from polyaxon.env_vars.keys import ENV_KEYS_PUBLIC_REGISTRY, ENV_KEYS_USE_GIT_REGISTRY
+from polyaxon.exceptions import (
+    ApiException,
+    PolyaxonClientException,
+    PolyaxonSchemaError,
+)
 
 
 class ConfigSpec(_ConfigSpec):
@@ -14,9 +17,9 @@ class ConfigSpec(_ConfigSpec):
 
     @classmethod
     def get_public_registry(cls):
-        if os.environ.get(EV_KEYS_USE_GIT_REGISTRY, False):
+        if os.environ.get(ENV_KEYS_USE_GIT_REGISTRY, False):
             return os.environ.get(
-                EV_KEYS_PUBLIC_REGISTRY,
+                ENV_KEYS_PUBLIC_REGISTRY,
                 "https://raw.githubusercontent.com/polyaxon/polyaxon-hub/master",
             )
 
@@ -26,7 +29,7 @@ class ConfigSpec(_ConfigSpec):
         from polyaxon.constants.globals import DEFAULT_HUB, NO_AUTH
         from polyaxon.env_vars.getters import get_component_info
         from polyaxon.lifecycle import V1ProjectVersionKind
-        from polyaxon.schemas.cli.client_config import ClientConfig
+        from polyaxon.schemas.client import ClientConfig
 
         owner, component, version = get_component_info(hub)
 

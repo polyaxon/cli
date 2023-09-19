@@ -4,7 +4,7 @@ from typing import Dict, Type
 
 from polyaxon.config.manager import ConfigManager
 from polyaxon.config.spec import ConfigSpec
-from polyaxon.schemas.api.home import HomeConfig
+from polyaxon.schemas.home import HomeConfig
 
 
 class HomeConfigManager(ConfigManager):

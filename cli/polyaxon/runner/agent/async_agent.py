@@ -11,12 +11,12 @@ from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg, settings
 from polyaxon.env_vars.getters import get_run_info
+from polyaxon.exceptions import ApiException as SDKApiException
 from polyaxon.exceptions import PolyaxonAgentError, PolyaxonConverterError
 from polyaxon.logger import logger
 from polyaxon.runner.agent.base_agent import BaseAgent
 from polyaxon.schemas.responses.v1_agent import V1Agent
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
-from polyaxon.sdk.exceptions import ApiException as SDKApiException
 
 
 class BaseAsyncAgent(BaseAgent):

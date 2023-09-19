@@ -6,8 +6,8 @@ from polyaxon.exceptions import PolyaxonValidationError
 from polyaxon.polyflow.run.cleaner import V1CleanerJob
 from polyaxon.polyflow.run.dag import V1Dag
 from polyaxon.polyflow.run.dask import V1DaskJob, V1DaskReplica
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.polyflow.run.job import V1Job
-from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.polyflow.run.kubeflow.mpi_job import V1MPIJob
 from polyaxon.polyflow.run.kubeflow.mx_job import V1MXJob
 from polyaxon.polyflow.run.kubeflow.paddle_job import V1PaddleJob

@@ -5,9 +5,9 @@ from clipped.utils.tz import now
 
 from polyaxon import types
 from polyaxon.exceptions import PolyaxonValidationError
-from polyaxon.polyflow import V1RunKind
 from polyaxon.polyflow.operations import V1CompiledOperation
 from polyaxon.polyflow.params import ops_params
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.utils.test_utils import BaseTestCase
 
 

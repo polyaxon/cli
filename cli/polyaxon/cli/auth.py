@@ -8,17 +8,17 @@ from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
 from polyaxon.cli.dashboard import get_dashboard_url
-from polyaxon.cli.errors import handle_cli_error, handle_command_not_in_ce
+from polyaxon.cli.errors import handle_cli_error, handle_command_not_in_ce, not_in_ce
 from polyaxon.cli.session import ensure_cli_config, session_expired, set_versions_config
 from polyaxon.client import PolyaxonClient
-from polyaxon.logger import clean_outputs, logger, not_in_ce
+from polyaxon.exceptions import ApiException
+from polyaxon.logger import clean_outputs, logger
 from polyaxon.managers.auth import AuthConfigManager
 from polyaxon.managers.cli import CliConfigManager
 from polyaxon.managers.user import UserConfigManager
-from polyaxon.schemas.api.authentication import AccessTokenConfig, V1Credentials
+from polyaxon.schemas.authentication import AccessTokenConfig, V1Credentials
 from polyaxon.schemas.responses.v1_auth import V1Auth
 from polyaxon.schemas.responses.v1_user import V1User
-from polyaxon.sdk.exceptions import ApiException
 
 
 def get_user_info(user: V1User):

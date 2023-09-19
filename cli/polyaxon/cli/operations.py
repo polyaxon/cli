@@ -43,6 +43,7 @@ from polyaxon.constants.metadata import META_IS_EXTERNAL, META_PORTS, META_REWRI
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.getters import get_project_or_local, get_project_run_or_local
 from polyaxon.exceptions import (
+    ApiException,
     PolyaxonClientException,
     PolyaxonHTTPError,
     PolyaxonShouldExitError,
@@ -54,7 +55,6 @@ from polyaxon.polyaxonfile import OperationSpecification
 from polyaxon.polyflow import V1RunKind
 from polyaxon.runner.kinds import RunnerKind
 from polyaxon.schemas.responses.v1_run import V1Run
-from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 
 DEFAULT_EXCLUDE = [

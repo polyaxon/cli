@@ -7,7 +7,7 @@ from mock import patch
 from unittest.mock import MagicMock
 
 from polyaxon.client.impersonate import create_context_auth, impersonate
-from polyaxon.schemas.api.authentication import AccessTokenConfig
+from polyaxon.schemas.authentication import AccessTokenConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 

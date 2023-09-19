@@ -7,7 +7,7 @@ import urllib3
 
 from clipped.utils.json import orjson_dumps
 
-from polyaxon.sdk.exceptions import (
+from polyaxon.exceptions import (
     ApiException,
     ApiValueError,
     ForbiddenException,

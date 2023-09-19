@@ -17,7 +17,7 @@ from polyaxon.containers.names import (
     generate_container_name,
 )
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.env_vars.keys import EV_KEYS_SSH_PATH
+from polyaxon.env_vars.keys import ENV_KEYS_SSH_PATH
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Plugins
@@ -346,7 +346,7 @@ class InitConverter(_BaseConverter):
         )
         # Add special handling to auto-inject ssh mount path
         if connection.kind == V1ConnectionKind.SSH and secret.mount_path:
-            env += [cls._get_env_var(EV_KEYS_SSH_PATH, secret.mount_path)]
+            env += [cls._get_env_var(ENV_KEYS_SSH_PATH, secret.mount_path)]
         config_map = connection.config_map
         if config_map:
             volume_mounts += to_list(

@@ -22,7 +22,7 @@ from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.io import V1IO
 from polyaxon.polyflow.params import ops_params
 from polyaxon.polyflow.run.base import BaseRun
-from polyaxon.polyflow.run.kinds import V1RunKind
+from polyaxon.polyflow.run.enums import V1RunKind
 
 V1Operation = ForwardRef("V1Operation")
 V1Component = ForwardRef("V1Component")

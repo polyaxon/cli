@@ -4,18 +4,18 @@ from polyaxon.connections import V1ConnectionResource
 from polyaxon.docker import docker_types
 from polyaxon.docker.converter.base.env_vars import EnvMixin
 from polyaxon.env_vars.keys import (
-    EV_KEYS_API_VERSION,
-    EV_KEYS_AUTH_TOKEN,
-    EV_KEYS_AUTHENTICATION_TYPE,
-    EV_KEYS_HEADER,
-    EV_KEYS_HEADER_SERVICE,
-    EV_KEYS_HOST,
-    EV_KEYS_IS_MANAGED,
-    EV_KEYS_K8S_NAMESPACE,
-    EV_KEYS_K8S_POD_ID,
-    EV_KEYS_RUN_INSTANCE,
-    EV_KEYS_SECRET_INTERNAL_TOKEN,
-    EV_KEYS_SECRET_KEY,
+    ENV_KEYS_API_VERSION,
+    ENV_KEYS_AUTH_TOKEN,
+    ENV_KEYS_AUTHENTICATION_TYPE,
+    ENV_KEYS_HEADER,
+    ENV_KEYS_HEADER_SERVICE,
+    ENV_KEYS_HOST,
+    ENV_KEYS_IS_MANAGED,
+    ENV_KEYS_K8S_NAMESPACE,
+    ENV_KEYS_K8S_POD_ID,
+    ENV_KEYS_RUN_INSTANCE,
+    ENV_KEYS_SECRET_INTERNAL_TOKEN,
+    ENV_KEYS_SECRET_KEY,
 )
 from polyaxon.exceptions import PolyaxonConverterError
 from tests.test_docker.test_converters.base import BaseConverterTest
@@ -192,7 +192,7 @@ class TestEnvVars(BaseConverterTest):
     def test_get_run_instance_env_var(self):
         assert EnvMixin._get_run_instance_env_var(
             "run_instance"
-        ) == EnvMixin._get_env_var(name=EV_KEYS_RUN_INSTANCE, value="run_instance")
+        ) == EnvMixin._get_env_var(name=ENV_KEYS_RUN_INSTANCE, value="run_instance")
 
     def test_get_service_env_vars_raises_for_internal_and_agent_token(self):
         with self.assertRaises(PolyaxonConverterError):
@@ -228,12 +228,12 @@ class TestEnvVars(BaseConverterTest):
         )
         assert len(env_vars) == 7
         env_var_names = [env_var.__root__[0] for env_var in env_vars]
-        assert EV_KEYS_K8S_POD_ID in env_var_names
-        assert EV_KEYS_K8S_NAMESPACE in env_var_names
-        assert EV_KEYS_HOST in env_var_names
-        assert EV_KEYS_IS_MANAGED in env_var_names
-        assert EV_KEYS_API_VERSION in env_var_names
-        assert EV_KEYS_RUN_INSTANCE in env_var_names
+        assert ENV_KEYS_K8S_POD_ID in env_var_names
+        assert ENV_KEYS_K8S_NAMESPACE in env_var_names
+        assert ENV_KEYS_HOST in env_var_names
+        assert ENV_KEYS_IS_MANAGED in env_var_names
+        assert ENV_KEYS_API_VERSION in env_var_names
+        assert ENV_KEYS_RUN_INSTANCE in env_var_names
 
         env_vars = self.converter._get_service_env_vars(
             header="foo",
@@ -251,19 +251,19 @@ class TestEnvVars(BaseConverterTest):
         )
         assert len(env_vars) == 10  # Normally 12
         env_var_names = [env_var.__root__[0] for env_var in env_vars]
-        assert EV_KEYS_K8S_POD_ID in env_var_names
-        assert EV_KEYS_K8S_NAMESPACE in env_var_names
-        assert EV_KEYS_HOST in env_var_names
-        assert EV_KEYS_IS_MANAGED in env_var_names
-        assert EV_KEYS_API_VERSION in env_var_names
-        assert EV_KEYS_HEADER in env_var_names
-        assert EV_KEYS_HEADER_SERVICE in env_var_names
-        assert EV_KEYS_SECRET_KEY not in env_var_names  # This should be in the agent
+        assert ENV_KEYS_K8S_POD_ID in env_var_names
+        assert ENV_KEYS_K8S_NAMESPACE in env_var_names
+        assert ENV_KEYS_HOST in env_var_names
+        assert ENV_KEYS_IS_MANAGED in env_var_names
+        assert ENV_KEYS_API_VERSION in env_var_names
+        assert ENV_KEYS_HEADER in env_var_names
+        assert ENV_KEYS_HEADER_SERVICE in env_var_names
+        assert ENV_KEYS_SECRET_KEY not in env_var_names  # This should be in the agent
         assert (
-            EV_KEYS_SECRET_INTERNAL_TOKEN not in env_var_names
+            ENV_KEYS_SECRET_INTERNAL_TOKEN not in env_var_names
         )  # This should be in the agent
-        assert EV_KEYS_AUTHENTICATION_TYPE in env_var_names
-        assert EV_KEYS_RUN_INSTANCE in env_var_names
+        assert ENV_KEYS_AUTHENTICATION_TYPE in env_var_names
+        assert ENV_KEYS_RUN_INSTANCE in env_var_names
 
         env_vars = self.converter._get_service_env_vars(
             header="foo",
@@ -281,14 +281,14 @@ class TestEnvVars(BaseConverterTest):
         )
         assert len(env_vars) == 10  # Normally 12
         env_var_names = [env_var.__root__[0] for env_var in env_vars]
-        assert EV_KEYS_K8S_POD_ID in env_var_names
-        assert EV_KEYS_K8S_NAMESPACE in env_var_names
-        assert EV_KEYS_HOST in env_var_names
-        assert EV_KEYS_IS_MANAGED in env_var_names
-        assert EV_KEYS_API_VERSION in env_var_names
-        assert EV_KEYS_HEADER in env_var_names
-        assert EV_KEYS_HEADER_SERVICE in env_var_names
-        assert EV_KEYS_SECRET_KEY not in env_var_names  # This should be in the agent
-        assert EV_KEYS_AUTH_TOKEN not in env_var_names  # This should be in the agent
-        assert EV_KEYS_AUTHENTICATION_TYPE in env_var_names
-        assert EV_KEYS_RUN_INSTANCE in env_var_names
+        assert ENV_KEYS_K8S_POD_ID in env_var_names
+        assert ENV_KEYS_K8S_NAMESPACE in env_var_names
+        assert ENV_KEYS_HOST in env_var_names
+        assert ENV_KEYS_IS_MANAGED in env_var_names
+        assert ENV_KEYS_API_VERSION in env_var_names
+        assert ENV_KEYS_HEADER in env_var_names
+        assert ENV_KEYS_HEADER_SERVICE in env_var_names
+        assert ENV_KEYS_SECRET_KEY not in env_var_names  # This should be in the agent
+        assert ENV_KEYS_AUTH_TOKEN not in env_var_names  # This should be in the agent
+        assert ENV_KEYS_AUTHENTICATION_TYPE in env_var_names
+        assert ENV_KEYS_RUN_INSTANCE in env_var_names

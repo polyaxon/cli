@@ -1,5 +1,3 @@
-from polyaxon import pkg
-
 VERSION_V1 = "v1"
 API_V1 = "api/{}".format(VERSION_V1)
 STREAMS_V1 = "streams/{}".format(VERSION_V1)
@@ -38,4 +36,3 @@ K8S_V1_LOCATION = "/" + K8S_V1 + "/"
 HEALTHZ_LOCATION = "/healthz/"
 POLYAXON_CLOUD_HOST = "https://cloud.polyaxon.com"
 LOCALHOST = "http://localhost:8000"
-POLYAXON_VERSIONS_HOST = "https://versions.polyaxon.com/?v={}".format(pkg.VERSION)

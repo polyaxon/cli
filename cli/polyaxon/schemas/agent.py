@@ -18,23 +18,23 @@ from polyaxon.connections import V1Connection, V1ConnectionKind, V1HostPathConne
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.getters import get_artifacts_store_name
 from polyaxon.env_vars.keys import (
-    EV_KEYS_AGENT_ARTIFACTS_STORE,
-    EV_KEYS_AGENT_CLEANER,
-    EV_KEYS_AGENT_CONNECTIONS,
-    EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
-    EV_KEYS_AGENT_DEFAULT_SCHEDULING,
-    EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS,
-    EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL,
-    EV_KEYS_AGENT_INIT,
-    EV_KEYS_AGENT_IS_REPLICA,
-    EV_KEYS_AGENT_NOTIFIER,
-    EV_KEYS_AGENT_RUNS_SA,
-    EV_KEYS_AGENT_SECRET_NAME,
-    EV_KEYS_AGENT_SIDECAR,
-    EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS,
-    EV_KEYS_ARTIFACTS_STORE_NAME,
-    EV_KEYS_K8S_APP_SECRET_NAME,
-    EV_KEYS_K8S_NAMESPACE,
+    ENV_KEYS_AGENT_ARTIFACTS_STORE,
+    ENV_KEYS_AGENT_CLEANER,
+    ENV_KEYS_AGENT_CONNECTIONS,
+    ENV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS,
+    ENV_KEYS_AGENT_DEFAULT_SCHEDULING,
+    ENV_KEYS_AGENT_ENABLE_HEALTH_CHECKS,
+    ENV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL,
+    ENV_KEYS_AGENT_INIT,
+    ENV_KEYS_AGENT_IS_REPLICA,
+    ENV_KEYS_AGENT_NOTIFIER,
+    ENV_KEYS_AGENT_RUNS_SA,
+    ENV_KEYS_AGENT_SECRET_NAME,
+    ENV_KEYS_AGENT_SIDECAR,
+    ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS,
+    ENV_KEYS_ARTIFACTS_STORE_NAME,
+    ENV_KEYS_K8S_APP_SECRET_NAME,
+    ENV_KEYS_K8S_NAMESPACE,
 )
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.fs.utils import get_store_path
@@ -67,9 +67,11 @@ def validate_agent_config(
 class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
     _REQUIRED_ARTIFACTS_STORE = True
 
-    connections: Optional[List[V1Connection]] = Field(alias=EV_KEYS_AGENT_CONNECTIONS)
-    artifacts_store: Optional[V1Connection] = Field(alias=EV_KEYS_AGENT_ARTIFACTS_STORE)
-    namespace: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_NAMESPACE)
+    connections: Optional[List[V1Connection]] = Field(alias=ENV_KEYS_AGENT_CONNECTIONS)
+    artifacts_store: Optional[V1Connection] = Field(
+        alias=ENV_KEYS_AGENT_ARTIFACTS_STORE
+    )
+    namespace: Optional[StrictStr] = Field(alias=ENV_KEYS_K8S_NAMESPACE)
 
     class Config:
         extra = Extra.ignore
@@ -78,10 +80,10 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
     def handle_camel_case_artifacts_store(cls, values):
         if (
             not values.get("artifacts_store")
-            and not values.get(EV_KEYS_AGENT_ARTIFACTS_STORE)
+            and not values.get(ENV_KEYS_AGENT_ARTIFACTS_STORE)
             and "artifactsStore" in values
         ):
-            values[EV_KEYS_AGENT_ARTIFACTS_STORE] = values["artifactsStore"]
+            values[ENV_KEYS_AGENT_ARTIFACTS_STORE] = values["artifactsStore"]
         return values
 
     @validator("connections", pre=True)
@@ -90,7 +92,7 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
             return v
         try:
             return ConfigParser.parse(Dict)(
-                key=EV_KEYS_AGENT_CONNECTIONS,
+                key=ENV_KEYS_AGENT_CONNECTIONS,
                 value=v,
                 is_list=True,
                 is_optional=True,
@@ -104,7 +106,7 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
             return v
         try:
             return ConfigParser.parse(Dict)(
-                key=EV_KEYS_AGENT_ARTIFACTS_STORE,
+                key=ENV_KEYS_AGENT_ARTIFACTS_STORE,
                 value=v,
                 is_optional=True,
             )
@@ -176,97 +178,97 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
 
     def set_artifacts_store_name(self):
         if self.artifacts_store:
-            os.environ[EV_KEYS_ARTIFACTS_STORE_NAME] = self.artifacts_store.name
+            os.environ[ENV_KEYS_ARTIFACTS_STORE_NAME] = self.artifacts_store.name
 
 
 class AgentConfig(BaseAgentConfig):
     _IDENTIFIER = "agent"
 
-    is_replica: Optional[bool] = Field(alias=EV_KEYS_AGENT_IS_REPLICA)
-    sidecar: Optional[V1PolyaxonSidecarContainer] = Field(alias=EV_KEYS_AGENT_SIDECAR)
-    init: Optional[V1PolyaxonInitContainer] = Field(alias=EV_KEYS_AGENT_INIT)
-    notifier: Optional[V1PolyaxonNotifier] = Field(alias=EV_KEYS_AGENT_NOTIFIER)
-    cleaner: Optional[V1PolyaxonCleaner] = Field(alias=EV_KEYS_AGENT_CLEANER)
+    is_replica: Optional[bool] = Field(alias=ENV_KEYS_AGENT_IS_REPLICA)
+    sidecar: Optional[V1PolyaxonSidecarContainer] = Field(alias=ENV_KEYS_AGENT_SIDECAR)
+    init: Optional[V1PolyaxonInitContainer] = Field(alias=ENV_KEYS_AGENT_INIT)
+    notifier: Optional[V1PolyaxonNotifier] = Field(alias=ENV_KEYS_AGENT_NOTIFIER)
+    cleaner: Optional[V1PolyaxonCleaner] = Field(alias=ENV_KEYS_AGENT_CLEANER)
     use_proxy_env_vars_use_in_ops: Optional[bool] = Field(
-        alias=EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
+        alias=ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
     )
     default_scheduling: Optional[V1DefaultScheduling] = Field(
-        alias=EV_KEYS_AGENT_DEFAULT_SCHEDULING
+        alias=ENV_KEYS_AGENT_DEFAULT_SCHEDULING
     )
     default_image_pull_secrets: Optional[List[StrictStr]] = Field(
-        alias=EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS
+        alias=ENV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS
     )
-    app_secret_name: Optional[StrictStr] = Field(alias=EV_KEYS_K8S_APP_SECRET_NAME)
-    agent_secret_name: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_SECRET_NAME)
-    runs_sa: Optional[StrictStr] = Field(alias=EV_KEYS_AGENT_RUNS_SA)
+    app_secret_name: Optional[StrictStr] = Field(alias=ENV_KEYS_K8S_APP_SECRET_NAME)
+    agent_secret_name: Optional[StrictStr] = Field(alias=ENV_KEYS_AGENT_SECRET_NAME)
+    runs_sa: Optional[StrictStr] = Field(alias=ENV_KEYS_AGENT_RUNS_SA)
     enable_health_checks: Optional[bool] = Field(
-        alias=EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS
+        alias=ENV_KEYS_AGENT_ENABLE_HEALTH_CHECKS
     )
     # This refresh logic will mitigate several issues with AKS's numerous networking problems
     executor_refresh_interval: Optional[int] = Field(
-        alias=EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL
+        alias=ENV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL
     )
 
     @root_validator(pre=True)
     def handle_camel_case_agent(cls, values):
         if (
             not values.get("is_replica")
-            and not values.get(EV_KEYS_AGENT_IS_REPLICA)
+            and not values.get(ENV_KEYS_AGENT_IS_REPLICA)
             and "isReplica" in values
         ):
-            values[EV_KEYS_AGENT_IS_REPLICA] = values["isReplica"]
+            values[ENV_KEYS_AGENT_IS_REPLICA] = values["isReplica"]
         if (
             not values.get("use_proxy_env_vars_use_in_ops")
-            and not values.get(EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS)
+            and not values.get(ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS)
             and "useProxyEnvVarsUseInOps" in values
         ):
-            values[EV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS] = values[
+            values[ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS] = values[
                 "useProxyEnvVarsUseInOps"
             ]
         if (
             not values.get("default_scheduling")
-            and not values.get(EV_KEYS_AGENT_DEFAULT_SCHEDULING)
+            and not values.get(ENV_KEYS_AGENT_DEFAULT_SCHEDULING)
             and "defaultScheduling" in values
         ):
-            values[EV_KEYS_AGENT_DEFAULT_SCHEDULING] = values["defaultScheduling"]
+            values[ENV_KEYS_AGENT_DEFAULT_SCHEDULING] = values["defaultScheduling"]
         if (
             not values.get("default_image_pull_secrets")
-            and not values.get(EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS)
+            and not values.get(ENV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS)
             and "defaultImagePullSecrets" in values
         ):
-            values[EV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS] = values[
+            values[ENV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS] = values[
                 "defaultImagePullSecrets"
             ]
         if (
             not values.get("app_secret_name")
-            and not values.get(EV_KEYS_K8S_APP_SECRET_NAME)
+            and not values.get(ENV_KEYS_K8S_APP_SECRET_NAME)
             and "appSecretName" in values
         ):
-            values[EV_KEYS_K8S_APP_SECRET_NAME] = values["appSecretName"]
+            values[ENV_KEYS_K8S_APP_SECRET_NAME] = values["appSecretName"]
         if (
             not values.get("agent_secret_name")
-            and not values.get(EV_KEYS_AGENT_SECRET_NAME)
+            and not values.get(ENV_KEYS_AGENT_SECRET_NAME)
             and "agentSecretName" in values
         ):
-            values[EV_KEYS_AGENT_SECRET_NAME] = values["agentSecretName"]
+            values[ENV_KEYS_AGENT_SECRET_NAME] = values["agentSecretName"]
         if (
             not values.get("runs_sa")
-            and not values.get(EV_KEYS_AGENT_RUNS_SA)
+            and not values.get(ENV_KEYS_AGENT_RUNS_SA)
             and "runsSa" in values
         ):
-            values[EV_KEYS_AGENT_RUNS_SA] = values["runsSa"]
+            values[ENV_KEYS_AGENT_RUNS_SA] = values["runsSa"]
         if (
             not values.get("enable_health_checks")
-            and not values.get(EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS)
+            and not values.get(ENV_KEYS_AGENT_ENABLE_HEALTH_CHECKS)
             and "enableHealthChecks" in values
         ):
-            values[EV_KEYS_AGENT_ENABLE_HEALTH_CHECKS] = values["enableHealthChecks"]
+            values[ENV_KEYS_AGENT_ENABLE_HEALTH_CHECKS] = values["enableHealthChecks"]
         if (
             not values.get("executor_refresh_interval")
-            and not values.get(EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL)
+            and not values.get(ENV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL)
             and "executorRefreshInterval" in values
         ):
-            values[EV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL] = values[
+            values[ENV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL] = values[
                 "executorRefreshInterval"
             ]
         return values

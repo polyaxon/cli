@@ -1,9 +1,8 @@
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1Auth(BaseResponseModel):
+class V1Auth(BaseAllowSchemaModel):
     token: Optional[StrictStr]

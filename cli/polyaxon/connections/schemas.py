@@ -57,10 +57,10 @@ class V1Connection(Connection, BaseTypeConfig):
     similar to how easy it is to define service accounts or image pull secrets instead of
     defining all the volumes and mounting them to the containers manually.
 
-    For some distributions, Polyaxon will exposes:
+    For some distributions, Polyaxon will expose:
         * Analytics about how often connections are used.
         * Jobs that requested those connections.
-        * Profiling and runtime meta data to optimize access to those resources and connections.
+        * Profiling and runtime metadata to optimize access to those resources and connections.
         * Additional RBAC and ACL rules to control who can access the connections.
 
     Args:

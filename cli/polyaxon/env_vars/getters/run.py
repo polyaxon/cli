@@ -8,9 +8,9 @@ from clipped.utils.bools import to_bool
 from polyaxon import settings
 from polyaxon.env_vars.getters.project import get_project_or_local
 from polyaxon.env_vars.keys import (
-    EV_KEYS_COLLECT_ARTIFACTS,
-    EV_KEYS_COLLECT_RESOURCES,
-    EV_KEYS_RUN_INSTANCE,
+    ENV_KEYS_COLLECT_ARTIFACTS,
+    ENV_KEYS_COLLECT_RESOURCES,
+    ENV_KEYS_RUN_INSTANCE,
 )
 from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.managers.run import RunConfigManager
@@ -47,7 +47,7 @@ def get_collect_artifacts(arg: Optional[bool] = None, default: Optional[bool] = 
     return (
         arg
         if arg is not None
-        else to_bool(os.getenv(EV_KEYS_COLLECT_ARTIFACTS, default), handle_none=True)
+        else to_bool(os.getenv(ENV_KEYS_COLLECT_ARTIFACTS, default), handle_none=True)
     )
 
 
@@ -56,7 +56,7 @@ def get_collect_resources(arg: Optional[bool] = None, default: Optional[bool] = 
     return (
         arg
         if arg is not None
-        else to_bool(os.getenv(EV_KEYS_COLLECT_RESOURCES, default), handle_none=True)
+        else to_bool(os.getenv(ENV_KEYS_COLLECT_RESOURCES, default), handle_none=True)
     )
 
 
@@ -66,7 +66,7 @@ def get_log_level():
 
 
 def get_run_info(run_instance: Optional[str] = None):
-    run_instance = run_instance or os.getenv(EV_KEYS_RUN_INSTANCE, None)
+    run_instance = run_instance or os.getenv(ENV_KEYS_RUN_INSTANCE, None)
     if not run_instance:
         raise PolyaxonClientException(
             "Could not get run info, "

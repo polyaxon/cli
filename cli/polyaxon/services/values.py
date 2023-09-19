@@ -4,7 +4,7 @@ from typing import Optional
 
 from clipped.utils.enums import PEnum
 
-from polyaxon.env_vars.keys import EV_KEYS_SERVICE
+from polyaxon.env_vars.keys import ENV_KEYS_SERVICE
 
 SERVICE = None
 
@@ -50,7 +50,7 @@ class PolyaxonServices(str, PEnum):
     def set_service_name(cls, value: Optional[str] = None):
         global SERVICE
 
-        SERVICE = value or os.environ.get(EV_KEYS_SERVICE)
+        SERVICE = value or os.environ.get(ENV_KEYS_SERVICE)
 
     @classmethod
     def is_agent(cls, value: Optional[str] = None):

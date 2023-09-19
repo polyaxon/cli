@@ -1,9 +1,8 @@
 from typing import Optional
 
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.email import EmailStr
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1UserEmail(BaseResponseModel):
+class V1UserEmail(BaseAllowSchemaModel):
     email: Optional[EmailStr]

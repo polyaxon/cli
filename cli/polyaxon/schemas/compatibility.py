@@ -1,7 +1,7 @@
 from typing import Optional
 
-from polyaxon.schemas.api.version import V1Version
 from polyaxon.schemas.base import BaseSchemaModel
+from polyaxon.schemas.version import V1Version
 
 
 class V1Compatibility(BaseSchemaModel):

@@ -3,12 +3,11 @@ import datetime
 from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1Queue(BaseResponseModel):
+class V1Queue(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr]
     agent: Optional[StrictStr]
     name: Optional[StrictStr]

@@ -3,7 +3,7 @@ import pytest
 
 from polyaxon.exceptions import PolyaxonAgentError
 from polyaxon.k8s.executor.executor import Executor
-from polyaxon.polyflow import V1RunKind
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.utils.test_utils import BaseTestCase
 
 

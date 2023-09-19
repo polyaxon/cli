@@ -14,7 +14,7 @@ from polyaxon.lifecycle import LiveState, V1Statuses
 from polyaxon.logger import logger
 from polyaxon.runner.agent.client import AgentClient
 from polyaxon.runner.executor import BaseExecutor
-from polyaxon.schemas.cli.checks_config import ChecksConfig
+from polyaxon.schemas.checks import ChecksConfig
 from polyaxon.schemas.responses.v1_agent_state_response import V1AgentStateResponse
 
 

@@ -87,6 +87,7 @@ from polyaxon.polyflow.run import (
     V1RayReplica,
     V1RunEdgeKind,
     V1RunKind,
+    V1RunPending,
     V1RunResources,
     V1Runtime,
     V1SchedulingPolicy,

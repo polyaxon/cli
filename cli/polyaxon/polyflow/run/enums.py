@@ -56,3 +56,10 @@ class V1RunEdgeKind(str, PEnum):
     RUN = "run"
     TB = "tb"
     BUILD = "build"
+
+
+class V1RunPending(str, PEnum):
+    APPROVAL = "approval"
+    UPLOAD = "upload"
+    CACHE = "cache"
+    BUILD = "build"

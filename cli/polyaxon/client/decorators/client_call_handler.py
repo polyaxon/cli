@@ -7,8 +7,8 @@ from urllib3.exceptions import HTTPError
 from polyaxon import settings
 from polyaxon.client import PolyaxonClient
 from polyaxon.client.decorators.errors import handle_client_error
+from polyaxon.exceptions import ApiException
 from polyaxon.logger import logger
-from polyaxon.sdk.exceptions import ApiException
 
 
 def client_handler(

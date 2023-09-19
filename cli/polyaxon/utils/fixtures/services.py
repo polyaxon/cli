@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from polyaxon.polyflow import V1RunKind
+from polyaxon.polyflow.run.enums import V1RunKind
 
 
 def get_fxt_service():

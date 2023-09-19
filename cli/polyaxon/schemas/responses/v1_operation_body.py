@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
 from polyaxon.lifecycle import ManagedBy
-from polyaxon.schemas import V1RunPending
-from polyaxon.schemas.base import BaseResponseModel
+from polyaxon.polyflow import V1RunPending
 
 
-class V1OperationBody(BaseResponseModel):
+class V1OperationBody(BaseAllowSchemaModel):
     content: Optional[StrictStr]
     is_managed: Optional[bool]
     managed_by: Optional[ManagedBy]

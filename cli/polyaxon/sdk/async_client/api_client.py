@@ -3,7 +3,7 @@ import re
 
 from urllib.parse import quote
 
-from polyaxon.sdk.exceptions import ApiException
+from polyaxon.exceptions import ApiException
 from polyaxon.sdk.sync_client.api_client import ApiClient
 
 

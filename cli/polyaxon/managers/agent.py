@@ -5,7 +5,7 @@ from typing import Type
 from polyaxon.config.manager import ConfigManager
 from polyaxon.config.spec import ConfigSpec
 from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
-from polyaxon.schemas.cli.agent_config import AgentConfig
+from polyaxon.schemas.agent import AgentConfig
 
 
 class AgentConfigManager(ConfigManager):

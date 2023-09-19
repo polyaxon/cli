@@ -3,11 +3,11 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictStr, validate_arguments
 
-from polyaxon.schemas.api.compatibility import V1Compatibility
-from polyaxon.schemas.api.installation import V1Installation
-from polyaxon.schemas.api.log_handler import V1LogHandler
+from polyaxon.exceptions import ApiTypeError
+from polyaxon.schemas.compatibility import V1Compatibility
+from polyaxon.schemas.installation import V1Installation
+from polyaxon.schemas.log_handler import V1LogHandler
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class VersionsV1Api(BaseApi):

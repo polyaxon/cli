@@ -8,7 +8,7 @@ from polyaxon.k8s import k8s_schemas, k8s_validation
 from polyaxon.polyflow.environment import V1Environment
 from polyaxon.polyflow.init import V1Init
 from polyaxon.polyflow.run.base import BaseRun
-from polyaxon.polyflow.run.kinds import V1RunKind
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin
 

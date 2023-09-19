@@ -7,23 +7,23 @@ from clipped.formatting import Printer
 from clipped.utils.bools import to_bool
 
 from polyaxon.api import LOCALHOST
-from polyaxon.env_vars.keys import EV_KEYS_NO_CONFIG, EV_KEYS_SET_AGENT
+from polyaxon.env_vars.keys import ENV_KEYS_NO_CONFIG, ENV_KEYS_SET_AGENT
 from polyaxon.managers.client import ClientConfigManager
 from polyaxon.managers.home import HomeConfigManager
 from polyaxon.managers.user import UserConfigManager
 from polyaxon.services.values import PolyaxonServices
 
 if TYPE_CHECKING:
-    from polyaxon.deploy.schemas.auth import AccessTokenConfig
-    from polyaxon.schemas.api.home import HomeConfig
-    from polyaxon.schemas.cli.agent_config import AgentConfig
-    from polyaxon.schemas.cli.cli_config import CliConfig
-    from polyaxon.schemas.cli.client_config import ClientConfig
+    from polyaxon.schemas.agent import AgentConfig
+    from polyaxon.schemas.authentication import AccessTokenConfig
+    from polyaxon.schemas.cli import CliConfig
+    from polyaxon.schemas.client import ClientConfig
+    from polyaxon.schemas.home import HomeConfig
 
 MIN_TIMEOUT = 1
 LONG_REQUEST_TIMEOUT = 3600
 HEALTH_CHECK_INTERVAL = 60
-SET_AGENT = to_bool(os.environ.get(EV_KEYS_SET_AGENT, False))
+SET_AGENT = to_bool(os.environ.get(ENV_KEYS_SET_AGENT, False))
 
 HOME_CONFIG: "HomeConfig" = HomeConfigManager.get_config_from_env()
 AUTH_CONFIG: Optional["AccessTokenConfig"] = None
@@ -105,7 +105,7 @@ def set_auth_config():
         Printer.warning("Your user configuration was purged!")
 
 
-if not to_bool(os.environ.get(EV_KEYS_NO_CONFIG, False)):
+if not to_bool(os.environ.get(ENV_KEYS_NO_CONFIG, False)):
     set_auth_config()
     set_client_config()
     if PolyaxonServices.is_agent() or SET_AGENT:

@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.schemas.responses.v1_list_team_members_response import (
     V1ListTeamMembersResponse,
 )
@@ -10,7 +11,6 @@ from polyaxon.schemas.responses.v1_list_teams_response import V1ListTeamsRespons
 from polyaxon.schemas.responses.v1_team import V1Team
 from polyaxon.schemas.responses.v1_team_member import V1TeamMember
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class TeamsV1Api(BaseApi):

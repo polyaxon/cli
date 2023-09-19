@@ -1,12 +1,11 @@
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.email import EmailStr
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1UserSingup(BaseResponseModel):
+class V1UserSingup(BaseAllowSchemaModel):
     username: Optional[StrictStr]
     email: Optional[EmailStr]
     organization: Optional[StrictStr]

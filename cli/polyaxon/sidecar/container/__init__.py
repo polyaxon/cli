@@ -7,7 +7,7 @@ from kubernetes_asyncio.client.rest import ApiException
 from polyaxon.client import RunClient
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.getters import get_run_info
-from polyaxon.env_vars.keys import EV_KEYS_K8S_POD_ID
+from polyaxon.env_vars.keys import ENV_KEYS_K8S_POD_ID
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonContainerException
 from polyaxon.fs.fs import (
     close_fs,
@@ -34,7 +34,7 @@ async def start_sidecar(
         interval=sync_interval, sleep_interval=sleep_interval
     )
     try:
-        pod_id = os.environ[EV_KEYS_K8S_POD_ID]
+        pod_id = os.environ[ENV_KEYS_K8S_POD_ID]
     except KeyError as e:
         raise PolyaxonContainerException(
             "Please make sure that this job has been "

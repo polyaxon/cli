@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.lifecycle import V1Stage
 from polyaxon.schemas.responses.v1_entity_stage_body_request import (
     V1EntityStageBodyRequest,
@@ -21,7 +22,6 @@ from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.schemas.responses.v1_project_settings import V1ProjectSettings
 from polyaxon.schemas.responses.v1_project_version import V1ProjectVersion
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class ProjectsV1Api(BaseApi):

@@ -3,8 +3,7 @@ import pytest
 from clipped.utils.assertions import assert_equal_dict
 
 from polyaxon.polyaxonfile.specs import kinds
-from polyaxon.polyflow import V1CompiledOperation, V1RunKind
-from polyaxon.polyflow.plugins import V1Plugins
+from polyaxon.polyflow import V1CompiledOperation, V1Plugins, V1RunKind
 from polyaxon.utils.test_utils import BaseTestCase
 
 

@@ -6,13 +6,14 @@ from clipped.compact.pydantic import Field
 from polyaxon.polyflow.run.cleaner import V1CleanerJob
 from polyaxon.polyflow.run.dag import V1Dag
 from polyaxon.polyflow.run.dask import V1DaskJob, V1DaskReplica
-from polyaxon.polyflow.run.job import V1Job
-from polyaxon.polyflow.run.kinds import (
+from polyaxon.polyflow.run.enums import (
     V1CloningKind,
     V1PipelineKind,
     V1RunEdgeKind,
     V1RunKind,
+    V1RunPending,
 )
+from polyaxon.polyflow.run.job import V1Job
 from polyaxon.polyflow.run.kubeflow.clean_pod_policy import V1CleanPodPolicy
 from polyaxon.polyflow.run.kubeflow.mpi_job import V1MPIJob
 from polyaxon.polyflow.run.kubeflow.mx_job import MXJobMode, V1MXJob

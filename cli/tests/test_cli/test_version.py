@@ -3,9 +3,9 @@ import pytest
 from mock import patch
 
 from polyaxon.cli.version import upgrade, version
-from polyaxon.schemas.api.compatibility import V1Compatibility
-from polyaxon.schemas.api.installation import V1Installation
-from polyaxon.schemas.api.version import V1Version
+from polyaxon.schemas.compatibility import V1Compatibility
+from polyaxon.schemas.installation import V1Installation
+from polyaxon.schemas.version import V1Version
 from tests.test_cli.utils import BaseCommandTestCase
 
 

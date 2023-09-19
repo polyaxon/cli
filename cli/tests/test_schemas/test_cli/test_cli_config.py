@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.schemas.cli.cli_config import CliConfig
+from polyaxon.schemas.cli import CliConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 

@@ -2,7 +2,7 @@ import os
 import pytest
 import uuid
 
-from polyaxon.env_vars.keys import EV_KEYS_RUN_INSTANCE
+from polyaxon.env_vars.keys import ENV_KEYS_RUN_INSTANCE
 from polyaxon.exceptions import PolyaxonContainerException
 from polyaxon.sidecar.container import start_sidecar
 from polyaxon.utils.test_utils import patch_settings
@@ -12,7 +12,7 @@ from polyaxon.utils.test_utils import patch_settings
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 async def test_monitor_raise_if_no_env_is_set():
     patch_settings()
-    os.environ[EV_KEYS_RUN_INSTANCE] = "foo"
+    os.environ[ENV_KEYS_RUN_INSTANCE] = "foo"
     with pytest.raises(PolyaxonContainerException):
         await start_sidecar(
             container_id="foo",
@@ -21,14 +21,14 @@ async def test_monitor_raise_if_no_env_is_set():
             monitor_outputs=True,
             monitor_logs=False,
         )
-    del os.environ[EV_KEYS_RUN_INSTANCE]
+    del os.environ[ENV_KEYS_RUN_INSTANCE]
 
 
 @pytest.mark.asyncio
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 async def test_monitor_raise_if_no_pod_id():
     patch_settings()
-    os.environ[EV_KEYS_RUN_INSTANCE] = "owner.project.runs.{}".format(uuid.uuid4().hex)
+    os.environ[ENV_KEYS_RUN_INSTANCE] = "owner.project.runs.{}".format(uuid.uuid4().hex)
     with pytest.raises(PolyaxonContainerException):
         await start_sidecar(
             container_id="foo",
@@ -37,4 +37,4 @@ async def test_monitor_raise_if_no_pod_id():
             monitor_outputs=True,
             monitor_logs=False,
         )
-    del os.environ[EV_KEYS_RUN_INSTANCE]
+    del os.environ[ENV_KEYS_RUN_INSTANCE]

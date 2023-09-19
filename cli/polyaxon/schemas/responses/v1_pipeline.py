@@ -1,13 +1,13 @@
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
 
-from polyaxon.polyflow.run.kinds import V1PipelineKind
-from polyaxon.schemas.base import BaseResponseModel
+from polyaxon.polyflow import V1PipelineKind
 
 
-class V1Pipeline(BaseResponseModel):
+class V1Pipeline(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     kind: Optional[V1PipelineKind]

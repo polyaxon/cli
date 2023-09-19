@@ -4,6 +4,7 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.lifecycle import V1Status
 from polyaxon.schemas.responses.v1_artifact_tree import V1ArtifactTree
 from polyaxon.schemas.responses.v1_auth import V1Auth
@@ -32,7 +33,6 @@ from polyaxon.schemas.responses.v1_run import V1Run
 from polyaxon.schemas.responses.v1_run_settings import V1RunSettings
 from polyaxon.schemas.responses.v1_uuids import V1Uuids
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 from traceml.artifacts import V1RunArtifact, V1RunArtifacts
 from traceml.logging import V1Logs
 

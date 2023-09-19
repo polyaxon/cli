@@ -1,9 +1,9 @@
 from typing import List, Optional
 
-from polyaxon.schemas.base import BaseResponseModel
+from clipped.config.schema import BaseAllowSchemaModel
 
 
-class V1AgentStateResponseAgentState(BaseResponseModel):
+class V1AgentStateResponseAgentState(BaseAllowSchemaModel):
     schedules: Optional[List]
     hooks: Optional[List]
     watchdogs: Optional[List]

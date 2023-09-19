@@ -24,15 +24,14 @@ from polyaxon.client import RunClient
 from polyaxon.constants.globals import DEFAULT_UPLOADS_PATH
 from polyaxon.constants.metadata import META_UPLOAD_ARTIFACTS
 from polyaxon.env_vars.getters import get_project_or_local
+from polyaxon.exceptions import ApiException
 from polyaxon.lifecycle import ManagedBy
 from polyaxon.logger import clean_outputs
 from polyaxon.managers.git import GitConfigManager
 from polyaxon.managers.run import RunConfigManager
 from polyaxon.polyaxonfile import check_polyaxonfile
-from polyaxon.polyflow import V1Operation
+from polyaxon.polyflow import V1Operation, V1RunPending
 from polyaxon.runner.kinds import RunnerKind
-from polyaxon.schemas import V1RunPending
-from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils import cache
 
 

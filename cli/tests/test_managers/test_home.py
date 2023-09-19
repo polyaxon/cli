@@ -1,7 +1,7 @@
 import pytest
 
 from polyaxon.managers.home import HomeConfigManager
-from polyaxon.schemas.api.home import HomeConfig
+from polyaxon.schemas.home import HomeConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 

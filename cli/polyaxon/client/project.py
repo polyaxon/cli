@@ -15,7 +15,7 @@ from polyaxon.client.decorators import client_handler, get_global_or_inline_conf
 from polyaxon.constants.globals import DEFAULT
 from polyaxon.contexts import paths as ctx_paths
 from polyaxon.env_vars.getters.user import get_local_owner
-from polyaxon.exceptions import PolyaxonClientException
+from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.lifecycle import V1ProjectVersionKind, V1StageCondition, V1Stages
 from polyaxon.logger import logger
 from polyaxon.schemas.responses.v1_list_project_versions_response import (
@@ -23,7 +23,6 @@ from polyaxon.schemas.responses.v1_list_project_versions_response import (
 )
 from polyaxon.schemas.responses.v1_project import V1Project
 from polyaxon.schemas.responses.v1_project_version import V1ProjectVersion
-from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.fqn_utils import get_entity_full_name, get_entity_info
 from traceml.artifacts import V1RunArtifact
 

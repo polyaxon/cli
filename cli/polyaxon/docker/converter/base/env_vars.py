@@ -13,20 +13,20 @@ from polyaxon.api import VERSION_V1
 from polyaxon.connections import V1ConnectionResource
 from polyaxon.docker import docker_types
 from polyaxon.env_vars.keys import (
-    EV_KEYS_API_VERSION,
-    EV_KEYS_AUTH_TOKEN,
-    EV_KEYS_AUTHENTICATION_TYPE,
-    EV_KEYS_HAS_PROCESS_SIDECAR,
-    EV_KEYS_HEADER,
-    EV_KEYS_HEADER_SERVICE,
-    EV_KEYS_HOST,
-    EV_KEYS_IS_MANAGED,
-    EV_KEYS_K8S_NAMESPACE,
-    EV_KEYS_K8S_NODE_NAME,
-    EV_KEYS_K8S_POD_ID,
-    EV_KEYS_LOG_LEVEL,
-    EV_KEYS_SECRET_INTERNAL_TOKEN,
-    EV_KEYS_SECRET_KEY,
+    ENV_KEYS_API_VERSION,
+    ENV_KEYS_AUTH_TOKEN,
+    ENV_KEYS_AUTHENTICATION_TYPE,
+    ENV_KEYS_HAS_PROCESS_SIDECAR,
+    ENV_KEYS_HEADER,
+    ENV_KEYS_HEADER_SERVICE,
+    ENV_KEYS_HOST,
+    ENV_KEYS_IS_MANAGED,
+    ENV_KEYS_K8S_NAMESPACE,
+    ENV_KEYS_K8S_NODE_NAME,
+    ENV_KEYS_K8S_POD_ID,
+    ENV_KEYS_LOG_LEVEL,
+    ENV_KEYS_SECRET_INTERNAL_TOKEN,
+    ENV_KEYS_SECRET_KEY,
 )
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.runner.converter import BaseConverter
@@ -131,7 +131,7 @@ class EnvMixin(BaseConverter):
 
     @classmethod
     def _get_additional_env_vars(cls) -> List[docker_types.V1EnvVar]:
-        return [cls._get_env_var(name=EV_KEYS_HAS_PROCESS_SIDECAR, value=True)]
+        return [cls._get_env_var(name=ENV_KEYS_HAS_PROCESS_SIDECAR, value=True)]
 
     @classmethod
     def _get_base_env_vars(
@@ -142,12 +142,12 @@ class EnvMixin(BaseConverter):
         log_level: Optional[str] = None,
     ) -> List[docker_types.V1EnvVar]:
         env = [
-            cls._get_env_var(name=EV_KEYS_K8S_NODE_NAME, value="docker-agent"),
-            cls._get_env_var(name=EV_KEYS_K8S_NAMESPACE, value=namespace),
-            cls._get_env_var(name=EV_KEYS_K8S_POD_ID, value=resource_name),
+            cls._get_env_var(name=ENV_KEYS_K8S_NODE_NAME, value="docker-agent"),
+            cls._get_env_var(name=ENV_KEYS_K8S_NAMESPACE, value=namespace),
+            cls._get_env_var(name=ENV_KEYS_K8S_POD_ID, value=resource_name),
         ]
         if log_level:
-            env.append(cls._get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level))
+            env.append(cls._get_env_var(name=ENV_KEYS_LOG_LEVEL, value=log_level))
         env += cls._get_proxy_env_vars(use_proxy_env_vars_use_in_ops)
         return env
 
@@ -185,30 +185,30 @@ class EnvMixin(BaseConverter):
             resource_name=self.resource_name,
             use_proxy_env_vars_use_in_ops=use_proxy_env_vars_use_in_ops,
         ) + [
-            self._get_env_var(name=EV_KEYS_HOST, value=api_host),
-            self._get_env_var(name=EV_KEYS_IS_MANAGED, value=True),
-            self._get_env_var(name=EV_KEYS_API_VERSION, value=api_version),
+            self._get_env_var(name=ENV_KEYS_HOST, value=api_host),
+            self._get_env_var(name=ENV_KEYS_IS_MANAGED, value=True),
+            self._get_env_var(name=ENV_KEYS_API_VERSION, value=api_version),
             self._get_run_instance_env_var(self.run_instance),
         ]
         if log_level:
-            env_vars.append(self._get_env_var(name=EV_KEYS_LOG_LEVEL, value=log_level))
+            env_vars.append(self._get_env_var(name=ENV_KEYS_LOG_LEVEL, value=log_level))
         if header:
             env_vars.append(
                 self._get_env_var(
-                    name=EV_KEYS_HEADER,
+                    name=ENV_KEYS_HEADER,
                     value=PolyaxonServiceHeaders.get_header(header),
                 )
             )
         if service_header:
             env_vars += to_list(
                 self._get_env_var(
-                    name=EV_KEYS_HEADER_SERVICE, value=get_enum_value(service_header)
+                    name=ENV_KEYS_HEADER_SERVICE, value=get_enum_value(service_header)
                 ),
             )
         if include_secret_key:
             env_vars += to_list(
                 self._get_item_from_json_resource(
-                    key=EV_KEYS_SECRET_KEY,
+                    key=ENV_KEYS_SECRET_KEY,
                     resource_ref_name=polyaxon_default_secret_ref,
                 ),
                 check_none=True,
@@ -218,7 +218,7 @@ class EnvMixin(BaseConverter):
             internal = True
             env_vars += to_list(
                 self._get_item_from_json_resource(
-                    key=EV_KEYS_SECRET_INTERNAL_TOKEN,
+                    key=ENV_KEYS_SECRET_INTERNAL_TOKEN,
                     resource_ref_name=polyaxon_default_secret_ref,
                 ),
                 check_none=True,
@@ -231,7 +231,7 @@ class EnvMixin(BaseConverter):
             if polyaxon_agent_secret_ref:
                 env_vars += to_list(
                     self._get_item_from_json_resource(
-                        key=EV_KEYS_AUTH_TOKEN,
+                        key=ENV_KEYS_AUTH_TOKEN,
                         resource_ref_name=polyaxon_agent_secret_ref,
                     ),
                     check_none=True,
@@ -239,14 +239,14 @@ class EnvMixin(BaseConverter):
             elif settings.CLIENT_CONFIG.token:
                 env_vars += to_list(
                     self._get_env_var(
-                        name=EV_KEYS_AUTH_TOKEN, value=settings.CLIENT_CONFIG.token
+                        name=ENV_KEYS_AUTH_TOKEN, value=settings.CLIENT_CONFIG.token
                     ),
                     check_none=True,
                 )
         if authentication_type:
             env_vars += to_list(
                 self._get_env_var(
-                    name=EV_KEYS_AUTHENTICATION_TYPE, value=authentication_type
+                    name=ENV_KEYS_AUTHENTICATION_TYPE, value=authentication_type
                 ),
                 check_none=True,
             )

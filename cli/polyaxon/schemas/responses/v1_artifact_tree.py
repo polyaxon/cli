@@ -1,11 +1,10 @@
 from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1ArtifactTree(BaseResponseModel):
+class V1ArtifactTree(BaseAllowSchemaModel):
     files: Optional[Dict[str, StrictStr]]
     dirs: Optional[List[StrictStr]]
     is_done: Optional[bool]

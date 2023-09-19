@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Dict, Optional
 
 from clipped.formatting import Printer
@@ -25,3 +26,17 @@ def handle_command_not_in_ce():
         "You are running Polyaxon CE which does not support this command!",
         sys_exit=True,
     )
+
+
+def not_in_ce(fn):
+    """Decorator to show an error when a command not available in CE"""
+
+    @wraps(fn)
+    def not_in_ce_wrapper(*args, **kwargs):
+        from polyaxon import settings
+
+        if not settings.CLI_CONFIG or settings.CLI_CONFIG.is_community:
+            handle_command_not_in_ce()
+        return fn(*args, **kwargs)
+
+    return not_in_ce_wrapper

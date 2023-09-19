@@ -1,11 +1,10 @@
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon.schemas.base import BaseResponseModel
 
-
-class V1AnalyticsSpec(BaseResponseModel):
+class V1AnalyticsSpec(BaseAllowSchemaModel):
     view: Optional[StrictStr]
     trunc: Optional[StrictStr]
     groupby: Optional[StrictStr]

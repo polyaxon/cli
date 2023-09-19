@@ -4,7 +4,7 @@ from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.dicts import deep_update
 from clipped.utils.tz import now
 
-from polyaxon import pkg, types
+from polyaxon import pkg
 from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
 from polyaxon.polyflow import V1Component, V1EventKind, V1Operation, V1RunKind
 from polyaxon.utils.test_utils import BaseTestCase

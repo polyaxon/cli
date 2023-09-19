@@ -3,11 +3,9 @@ import pytest
 
 from mock import MagicMock, patch
 
-from clipped.compact.pydantic import ValidationError
-
 from polyaxon import pkg
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.env_vars.keys import EV_KEYS_USE_GIT_REGISTRY
+from polyaxon.env_vars.keys import ENV_KEYS_USE_GIT_REGISTRY
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 from polyaxon.lifecycle import V1ProjectVersionKind
 from polyaxon.polyaxonfile import check_polyaxonfile
@@ -15,17 +13,20 @@ from polyaxon.polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
 )
-from polyaxon.polyflow import V1CompiledOperation, V1Plugins, V1RunKind
-from polyaxon.polyflow.early_stopping import V1MetricEarlyStopping
-from polyaxon.polyflow.environment import V1Environment
-from polyaxon.polyflow.matrix import (
+from polyaxon.polyflow import (
+    V1CompiledOperation,
+    V1Environment,
     V1GridSearch,
+    V1HpChoice,
+    V1HpLinSpace,
     V1Hyperband,
     V1Mapping,
+    V1MetricEarlyStopping,
+    V1Plugins,
     V1RandomSearch,
+    V1RunKind,
+    V1Termination,
 )
-from polyaxon.polyflow.matrix.params import V1HpChoice, V1HpLinSpace
-from polyaxon.polyflow.termination import V1Termination
 from polyaxon.utils.test_utils import BaseTestCase
 
 
@@ -76,7 +77,7 @@ class TestPolyaxonfiles(BaseTestCase):
             check_polyaxonfile(hub="component:12", is_cli=False, to_op=False)
 
     def test_from_git_hub(self):
-        os.environ[EV_KEYS_USE_GIT_REGISTRY] = "true"
+        os.environ[ENV_KEYS_USE_GIT_REGISTRY] = "true"
         with patch(
             "polyaxon.config.spec.ConfigSpec.read_from_public_hub"
         ) as request_mock:
@@ -88,7 +89,7 @@ class TestPolyaxonfiles(BaseTestCase):
         assert request_mock.call_count == 1
         assert operation.kind == "operation"
         assert operation.hub_ref == "component:12"
-        del os.environ[EV_KEYS_USE_GIT_REGISTRY]
+        del os.environ[ENV_KEYS_USE_GIT_REGISTRY]
 
     def test_from_public_hub(self):
         with patch("polyaxon.sdk.api.ProjectsV1Api.get_version") as request_mock:

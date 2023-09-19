@@ -2,12 +2,15 @@ import os
 
 from typing import Optional, Tuple
 
-from polyaxon.env_vars.keys import EV_KEYS_AGENT_INSTANCE, EV_KEYS_ARTIFACTS_STORE_NAME
+from polyaxon.env_vars.keys import (
+    ENV_KEYS_AGENT_INSTANCE,
+    ENV_KEYS_ARTIFACTS_STORE_NAME,
+)
 from polyaxon.exceptions import PolyaxonAgentError
 
 
 def get_agent_info(agent_instance: Optional[str] = None) -> Tuple[str, str]:
-    agent_instance = agent_instance or os.getenv(EV_KEYS_AGENT_INSTANCE, None)
+    agent_instance = agent_instance or os.getenv(ENV_KEYS_AGENT_INSTANCE, None)
     if not agent_instance:
         raise PolyaxonAgentError(
             "Could get agent info, "
@@ -27,4 +30,4 @@ def get_agent_info(agent_instance: Optional[str] = None) -> Tuple[str, str]:
 
 def get_artifacts_store_name(default: Optional[str] = "artifacts_store"):
     """Get the artifacts store name"""
-    return os.getenv(EV_KEYS_ARTIFACTS_STORE_NAME, default)
+    return os.getenv(ENV_KEYS_ARTIFACTS_STORE_NAME, default)

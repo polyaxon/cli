@@ -3,11 +3,11 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.schemas.responses.v1_entities_tags import V1EntitiesTags
 from polyaxon.schemas.responses.v1_list_tags_response import V1ListTagsResponse
 from polyaxon.schemas.responses.v1_tag import V1Tag
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class TagsV1Api(BaseApi):

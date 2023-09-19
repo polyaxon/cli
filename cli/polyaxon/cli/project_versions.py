@@ -14,8 +14,8 @@ from urllib3.exceptions import HTTPError
 from polyaxon.cli.dashboard import get_dashboard_url
 from polyaxon.cli.errors import handle_cli_error
 from polyaxon.client import PolyaxonClient, ProjectClient
+from polyaxon.exceptions import ApiException
 from polyaxon.lifecycle import V1ProjectVersionKind
-from polyaxon.sdk.exceptions import ApiException
 from polyaxon.utils.fqn_utils import get_versioned_entity_full_name
 
 

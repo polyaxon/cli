@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING, Optional, Type
 from clipped.utils.tz import now
 
 from polyaxon.config.manager import ConfigManager
-from polyaxon.schemas.cli.cli_config import CliConfig
+from polyaxon.schemas.cli import CliConfig
 
 if TYPE_CHECKING:
-    from polyaxon.schemas.api.compatibility import V1Compatibility
-    from polyaxon.schemas.api.installation import V1Installation
-    from polyaxon.schemas.api.log_handler import V1LogHandler
+    from polyaxon.schemas.compatibility import V1Compatibility
+    from polyaxon.schemas.installation import V1Installation
+    from polyaxon.schemas.log_handler import V1LogHandler
 
 
 class CliConfigManager(ConfigManager):

@@ -4,8 +4,8 @@ from typing_extensions import Literal
 from clipped.compact.pydantic import Field, StrictInt
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.polyflow.run.job import V1Job
-from polyaxon.polyflow.run.kinds import V1RunKind
 
 
 class V1Service(V1Job):

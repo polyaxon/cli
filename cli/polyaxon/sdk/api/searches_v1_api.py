@@ -3,10 +3,10 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
 
+from polyaxon.exceptions import ApiTypeError
 from polyaxon.schemas.responses.v1_list_searches_response import V1ListSearchesResponse
 from polyaxon.schemas.responses.v1_search import V1Search
 from polyaxon.sdk.base_api import BaseApi
-from polyaxon.sdk.exceptions import ApiTypeError
 
 
 class SearchesV1Api(BaseApi):

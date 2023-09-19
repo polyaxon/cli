@@ -5,7 +5,7 @@ from typing import Type
 from polyaxon.config.manager import ConfigManager
 from polyaxon.config.spec import ConfigSpec
 from polyaxon.contexts import paths as ctx_paths
-from polyaxon.schemas.api.authentication import AccessTokenConfig
+from polyaxon.schemas.authentication import AccessTokenConfig
 
 
 class AuthConfigManager(ConfigManager):

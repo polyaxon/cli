@@ -1,7 +1,7 @@
 import pytest
 
 from polyaxon.auxiliaries import get_sidecar_resources
-from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
+from polyaxon.env_vars.keys import ENV_KEYS_ARTIFACTS_STORE_NAME, ENV_KEYS_CONTAINER_ID
 from polyaxon.k8s import k8s_schemas
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
@@ -14,9 +14,9 @@ class TestSidecarContainer(BaseConverterTest):
         )
 
         assert sidecar_env_vars == [
-            self.converter._get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
+            self.converter._get_env_var(name=ENV_KEYS_CONTAINER_ID, value="foo"),
             self.converter._get_env_var(
-                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"
+                name=ENV_KEYS_ARTIFACTS_STORE_NAME, value="name"
             ),
         ]
 
@@ -30,9 +30,9 @@ class TestSidecarContainer(BaseConverterTest):
         )
 
         assert sidecar_env_vars == env_vars + [
-            self.converter._get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
+            self.converter._get_env_var(name=ENV_KEYS_CONTAINER_ID, value="foo"),
             self.converter._get_env_var(
-                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"
+                name=ENV_KEYS_ARTIFACTS_STORE_NAME, value="name"
             ),
         ]
 
@@ -42,9 +42,9 @@ class TestSidecarContainer(BaseConverterTest):
         )
 
         assert sidecar_env_vars == [
-            self.converter._get_env_var(name=EV_KEYS_CONTAINER_ID, value="foo"),
+            self.converter._get_env_var(name=ENV_KEYS_CONTAINER_ID, value="foo"),
             self.converter._get_env_var(
-                name=EV_KEYS_ARTIFACTS_STORE_NAME, value="name"
+                name=ENV_KEYS_ARTIFACTS_STORE_NAME, value="name"
             ),
         ]
 

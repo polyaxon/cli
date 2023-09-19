@@ -14,8 +14,8 @@ from dateutil.parser import parse
 import polyaxon.sdk.models
 
 from polyaxon import pkg
+from polyaxon.exceptions import ApiException, ApiValueError
 from polyaxon.sdk.configuration import Configuration
-from polyaxon.sdk.exceptions import ApiException, ApiValueError
 
 
 class ApiClient(object):

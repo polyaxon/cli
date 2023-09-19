@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.schemas.api.user import UserConfig
+from polyaxon.schemas.user import UserConfig
 from polyaxon.utils.test_utils import BaseTestCase
 
 

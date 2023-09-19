@@ -8,7 +8,7 @@ from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import RefField
 
 from polyaxon import types
-from polyaxon.polyflow.matrix.kinds import V1HPKind
+from polyaxon.polyflow.matrix.enums import V1HPKind
 from polyaxon.schemas.base import BaseSchemaModel
 
 if TYPE_CHECKING:

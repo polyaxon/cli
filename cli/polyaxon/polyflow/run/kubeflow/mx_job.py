@@ -7,7 +7,7 @@ from clipped.utils.enums import PEnum
 
 from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.polyflow.run.base import BaseRun
-from polyaxon.polyflow.run.kinds import V1RunKind
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.polyflow.run.kubeflow.clean_pod_policy import V1CleanPodPolicy
 from polyaxon.polyflow.run.kubeflow.replica import V1KFReplica
 from polyaxon.polyflow.run.kubeflow.scheduling_policy import V1SchedulingPolicy

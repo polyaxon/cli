@@ -5,7 +5,7 @@ from typing import Optional
 
 from clipped.utils.tz import now
 
-from polyaxon.env_vars.keys import EV_KEYS_INTERVALS_COMPATIBILITY_CHECK
+from polyaxon.env_vars.keys import ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
 from polyaxon.schemas.base import BaseSchemaModel
 
 
@@ -27,7 +27,7 @@ class ChecksConfig(BaseSchemaModel):
         if interval is not None:
             return interval
         interval = int(
-            os.environ.get(EV_KEYS_INTERVALS_COMPATIBILITY_CHECK, self._INTERVAL)
+            os.environ.get(ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK, self._INTERVAL)
         )
         if interval == -1:
             return interval

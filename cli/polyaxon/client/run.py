@@ -46,7 +46,7 @@ from polyaxon.env_vars.getters import (
     get_run_info,
     get_run_or_local,
 )
-from polyaxon.exceptions import PolyaxonClientException
+from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon.lifecycle import (
     LifeCycle,
@@ -64,7 +64,6 @@ from polyaxon.schemas.responses.v1_project_version import V1ProjectVersion
 from polyaxon.schemas.responses.v1_run import V1Run
 from polyaxon.schemas.responses.v1_run_settings import V1RunSettings
 from polyaxon.schemas.types import V1ArtifactsType
-from polyaxon.sdk.exceptions import ApiException
 from polyaxon.stores.polyaxon_store import PolyaxonStore
 from polyaxon.utils.fqn_utils import get_entity_full_name, to_fqn_name
 from polyaxon.utils.urls_utils import get_proxy_run_url

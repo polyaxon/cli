@@ -49,6 +49,13 @@ MAPPING = {
 
 FORWARDING = {
     **CLIPPED_FORWARDING,
+    "FileType": V1FileType,
+    "DockerfileType": V1DockerfileType,
+    "TensorboardType": V1TensorboardType,
+    "GitType": V1GitType,
+    "ageStr": ImageStr,
+    "EventType": V1EventType,
+    "ArtifactsType": V1ArtifactsType,
     "V1FileType": V1FileType,
     "V1DockerfileType": V1DockerfileType,
     "V1TensorboardType": V1TensorboardType,

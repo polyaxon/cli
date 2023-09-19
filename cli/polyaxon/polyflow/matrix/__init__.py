@@ -4,17 +4,20 @@ from typing_extensions import Annotated
 from clipped.compact.pydantic import Field
 
 from polyaxon.polyflow.matrix.bayes import (
-    AcquisitionFunctions,
     GaussianProcessConfig,
-    GaussianProcessesKernels,
     UtilityFunctionConfig,
     V1Bayes,
+)
+from polyaxon.polyflow.matrix.enums import (
+    AcquisitionFunctions,
+    GaussianProcessesKernels,
+    V1HPKind,
+    V1MatrixKind,
 )
 from polyaxon.polyflow.matrix.grid_search import V1GridSearch
 from polyaxon.polyflow.matrix.hyperband import V1Hyperband
 from polyaxon.polyflow.matrix.hyperopt import V1Hyperopt
 from polyaxon.polyflow.matrix.iterative import V1Iterative
-from polyaxon.polyflow.matrix.kinds import V1HPKind, V1MatrixKind
 from polyaxon.polyflow.matrix.mapping import V1Mapping
 from polyaxon.polyflow.matrix.params import (
     V1HpChoice,

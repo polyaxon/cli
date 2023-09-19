@@ -3,14 +3,15 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon.polyflow import V1MatrixKind
-from polyaxon.polyflow.matrix.bayes import (
+from polyaxon.polyflow import (
     AcquisitionFunctions,
     GaussianProcessesKernels,
+    V1CompiledOperation,
+    V1MatrixKind,
+    V1Optimization,
+    V1OptimizationMetric,
+    V1RunKind,
 )
-from polyaxon.polyflow.operations import V1CompiledOperation
-from polyaxon.polyflow.optimization import V1Optimization, V1OptimizationMetric
-from polyaxon.polyflow.run.kinds import V1RunKind
 from polyaxon.utils.test_utils import BaseTestCase
 
 

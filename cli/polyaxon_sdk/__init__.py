@@ -1,4 +1,11 @@
 # import apis into sdk package
+from polyaxon.exceptions import (
+    ApiException,
+    ApiKeyError,
+    ApiTypeError,
+    ApiValueError,
+    OpenApiException,
+)
 from polyaxon.sdk.api.agents_v1_api import AgentsV1Api
 from polyaxon.sdk.api.artifacts_stores_v1_api import ArtifactsStoresV1Api
 from polyaxon.sdk.api.auth_v1_api import AuthV1Api
@@ -21,11 +28,4 @@ from polyaxon.sdk.api.versions_v1_api import VersionsV1Api
 # import ApiClient
 from polyaxon.sdk.async_client.api_client import AsyncApiClient
 from polyaxon.sdk.configuration import Configuration
-from polyaxon.sdk.exceptions import (
-    ApiException,
-    ApiKeyError,
-    ApiTypeError,
-    ApiValueError,
-    OpenApiException,
-)
 from polyaxon.sdk.sync_client.api_client import ApiClient

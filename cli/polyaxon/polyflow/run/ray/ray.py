@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import Field
@@ -6,7 +6,7 @@ from clipped.types.ref_or_obj import RefField
 
 from polyaxon.k8s.k8s_schemas import V1Container
 from polyaxon.polyflow.run.base import BaseRun
-from polyaxon.polyflow.run.kinds import V1RunKind
+from polyaxon.polyflow.run.enums import V1RunKind
 from polyaxon.polyflow.run.ray.replica import V1RayReplica
 from polyaxon.polyflow.run.resources import V1RunResources
 from polyaxon.polyflow.run.utils import DestinationImageMixin

@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.schemas.api.log_handler import V1LogHandler
+from polyaxon.schemas.log_handler import V1LogHandler
 from polyaxon.utils.test_utils import BaseTestCase
 
 

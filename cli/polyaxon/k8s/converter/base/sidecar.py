@@ -5,7 +5,7 @@ from clipped.utils.lists import to_list
 from polyaxon.auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon.connections import V1Connection
 from polyaxon.containers.names import SIDECAR_CONTAINER
-from polyaxon.env_vars.keys import EV_KEYS_ARTIFACTS_STORE_NAME, EV_KEYS_CONTAINER_ID
+from polyaxon.env_vars.keys import ENV_KEYS_ARTIFACTS_STORE_NAME, ENV_KEYS_CONTAINER_ID
 from polyaxon.exceptions import PolyaxonConverterError
 from polyaxon.k8s import k8s_schemas
 from polyaxon.polyflow import V1Plugins
@@ -21,10 +21,12 @@ class SidecarConverter(_BaseConverter):
         artifacts_store_name: str,
     ) -> List[k8s_schemas.V1EnvVar]:
         env_vars = to_list(env_vars, check_none=True)[:]
-        env_vars.append(cls._get_env_var(name=EV_KEYS_CONTAINER_ID, value=container_id))
+        env_vars.append(
+            cls._get_env_var(name=ENV_KEYS_CONTAINER_ID, value=container_id)
+        )
         env_vars.append(
             cls._get_env_var(
-                name=EV_KEYS_ARTIFACTS_STORE_NAME, value=artifacts_store_name
+                name=ENV_KEYS_ARTIFACTS_STORE_NAME, value=artifacts_store_name
             )
         )
         return env_vars
