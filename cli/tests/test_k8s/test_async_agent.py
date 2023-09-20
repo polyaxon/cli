@@ -2,17 +2,17 @@ import pytest
 
 from mock import MagicMock, patch
 
-from polyaxon.k8s.agent.async_agent import AsyncAgent
-from polyaxon.k8s.executor.async_executor import AsyncExecutor
-from polyaxon.runner.agent.client import AgentClient
-from polyaxon.utils.test_utils import AsyncMock, patch_settings
+from polyaxon._k8s.agent.async_agent import AsyncAgent
+from polyaxon._k8s.executor.async_executor import AsyncExecutor
+from polyaxon._runner.agent.client import AgentClient
+from polyaxon._utils.test_utils import AsyncMock, patch_settings
 
 
 @pytest.mark.agent_mark
 @pytest.mark.asyncio
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @patch(
-    "polyaxon.runner.agent.async_agent.BaseAsyncAgent._enter", new_callable=AsyncMock
+    "polyaxon._runner.agent.async_agent.BaseAsyncAgent._enter", new_callable=AsyncMock
 )
 async def test_init_agent_component(register):
     patch_settings()
@@ -26,12 +26,13 @@ async def test_init_agent_component(register):
 @pytest.mark.agent_mark
 @pytest.mark.asyncio
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@patch("polyaxon.sdk.api.AgentsV1Api.sync_agent", new_callable=AsyncMock)
-@patch("polyaxon.sdk.api.AgentsV1Api.create_agent_status", new_callable=AsyncMock)
-@patch("polyaxon.sdk.api.AgentsV1Api.get_agent_state", new_callable=AsyncMock)
-@patch("polyaxon.sdk.api.AgentsV1Api.get_agent", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.AgentsV1Api.sync_agent", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.AgentsV1Api.create_agent_status", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.AgentsV1Api.get_agent_state", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.AgentsV1Api.get_agent", new_callable=AsyncMock)
 @patch(
-    "polyaxon.k8s.executor.async_executor.AsyncExecutor.manager", new_callable=AsyncMock
+    "polyaxon._k8s.executor.async_executor.AsyncExecutor.manager",
+    new_callable=AsyncMock,
 )
 async def test_init_agent(
     _, get_agent, get_agent_state, create_agent_status, sync_agent

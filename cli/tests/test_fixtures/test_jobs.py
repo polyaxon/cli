@@ -1,7 +1,7 @@
 import pytest
 
-from polyaxon.polyflow import V1Operation
-from polyaxon.utils.fixtures import (
+from polyaxon._flow import V1Operation
+from polyaxon._utils.fixtures import (
     get_fxt_job,
     get_fxt_job_with_inputs,
     get_fxt_job_with_inputs_and_conditions,
@@ -10,7 +10,7 @@ from polyaxon.utils.fixtures import (
     get_fxt_ray_job,
     get_fxt_tf_job,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.fixtures_mark

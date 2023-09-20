@@ -1,5 +1,5 @@
-from polyaxon.sidecar.container.intervals import get_sync_interval
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._sidecar.container.intervals import get_sync_interval
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class TestSidecar(BaseTestCase):

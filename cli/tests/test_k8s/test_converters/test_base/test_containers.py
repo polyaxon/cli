@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.base.containers import ContainerMixin
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._k8s import k8s_schemas
+from polyaxon._k8s.converter.base.containers import ContainerMixin
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.k8s_mark

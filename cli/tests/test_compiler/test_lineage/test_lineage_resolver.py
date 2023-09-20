@@ -2,25 +2,25 @@ import pytest
 import tempfile
 
 from polyaxon import settings, types
-from polyaxon.auxiliaries import (
+from polyaxon._auxiliaries import (
     get_default_init_container,
     get_default_sidecar_container,
 )
-from polyaxon.compiler.lineage import collect_io_artifacts
-from polyaxon.compiler.resolver import BaseResolver
-from polyaxon.connections import (
+from polyaxon._compiler.lineage import collect_io_artifacts
+from polyaxon._compiler.resolver import BaseResolver
+from polyaxon._connections import (
     V1BucketConnection,
     V1Connection,
     V1ConnectionKind,
     V1ConnectionResource,
     V1HostConnection,
 )
-from polyaxon.managers.agent import AgentConfigManager
-from polyaxon.polyaxonfile.specs import kinds
-from polyaxon.polyflow import V1CompiledOperation
-from polyaxon.polyflow.run.enums import V1RunKind
-from polyaxon.schemas.agent import AgentConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow import V1CompiledOperation
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._managers.agent import AgentConfigManager
+from polyaxon._polyaxonfile.specs import kinds
+from polyaxon._schemas.agent import AgentConfig
+from polyaxon._utils.test_utils import BaseTestCase
 from traceml.artifacts import V1ArtifactKind
 
 

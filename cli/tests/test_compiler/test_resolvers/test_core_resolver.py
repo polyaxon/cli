@@ -2,24 +2,24 @@ import pytest
 import tempfile
 
 from polyaxon import settings
-from polyaxon.auxiliaries import (
+from polyaxon._auxiliaries import (
     get_default_init_container,
     get_default_sidecar_container,
 )
-from polyaxon.compiler.resolver import BaseResolver
-from polyaxon.connections import (
+from polyaxon._compiler.resolver import BaseResolver
+from polyaxon._connections import (
     V1BucketConnection,
     V1Connection,
     V1ConnectionKind,
     V1ConnectionResource,
 )
+from polyaxon._flow import V1CompiledOperation
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._managers.agent import AgentConfigManager
+from polyaxon._polyaxonfile.specs import kinds
+from polyaxon._schemas.agent import AgentConfig
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonCompilerError
-from polyaxon.managers.agent import AgentConfigManager
-from polyaxon.polyaxonfile.specs import kinds
-from polyaxon.polyflow import V1CompiledOperation
-from polyaxon.polyflow.run.enums import V1RunKind
-from polyaxon.schemas.agent import AgentConfig
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.compiler_mark

@@ -3,7 +3,7 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon.polyflow import (
+from polyaxon._flow import (
     AcquisitionFunctions,
     GaussianProcessesKernels,
     V1CompiledOperation,
@@ -12,7 +12,7 @@ from polyaxon.polyflow import (
     V1OptimizationMetric,
     V1RunKind,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.workflow_mark

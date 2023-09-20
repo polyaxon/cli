@@ -1,9 +1,9 @@
 import pytest
 
-from polyaxon.env_vars.keys import ENV_KEYS_DEBUG, ENV_KEYS_HOST, ENV_KEYS_VERIFY_SSL
-from polyaxon.schemas.client import ClientConfig
-from polyaxon.services.auth import AuthenticationTypes
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._env_vars.keys import ENV_KEYS_DEBUG, ENV_KEYS_HOST, ENV_KEYS_VERIFY_SSL
+from polyaxon._schemas.client import ClientConfig
+from polyaxon._services.auth import AuthenticationTypes
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.schemas_mark

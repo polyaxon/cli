@@ -2,10 +2,10 @@ import os
 import pytest
 import uuid
 
-from polyaxon.env_vars.keys import ENV_KEYS_RUN_INSTANCE
+from polyaxon._env_vars.keys import ENV_KEYS_RUN_INSTANCE
+from polyaxon._sidecar.container import start_sidecar
+from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import PolyaxonContainerException
-from polyaxon.sidecar.container import start_sidecar
-from polyaxon.utils.test_utils import patch_settings
 
 
 @pytest.mark.asyncio

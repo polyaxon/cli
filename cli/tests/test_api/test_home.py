@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.env_vars.keys import ENV_KEYS_HOME
-from polyaxon.schemas.home import HomeConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._env_vars.keys import ENV_KEYS_HOME
+from polyaxon._schemas.home import HomeConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.api_mark

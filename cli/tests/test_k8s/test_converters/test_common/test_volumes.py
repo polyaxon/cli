@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
@@ -8,9 +8,9 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.volumes import (
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._k8s import k8s_schemas
+from polyaxon._k8s.converter.common.volumes import (
     get_artifacts_context_volume,
     get_configs_context_volume,
     get_connections_context_volume,
@@ -21,8 +21,8 @@ from polyaxon.k8s.converter.common.volumes import (
     get_volume_from_connection,
     get_volume_from_secret,
 )
-from polyaxon.runner.converter.common import constants
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._runner.converter.common import constants
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.k8s_mark

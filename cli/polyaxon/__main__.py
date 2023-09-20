@@ -1,3 +1,3 @@
-from polyaxon.main import main
+from polyaxon.cli import cli
 
-main()
+cli(auto_envvar_prefix="POLYAXON_CLI")

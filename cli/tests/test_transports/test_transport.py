@@ -1,6 +1,6 @@
-from polyaxon.client.transport import Transport
-from polyaxon.schemas.client import ClientConfig
-from polyaxon.services.auth import AuthenticationTypes
+from polyaxon._client.transport import Transport
+from polyaxon._schemas.client import ClientConfig
+from polyaxon._services.auth import AuthenticationTypes
 from tests.test_transports.utils import BaseTestCaseTransport
 
 

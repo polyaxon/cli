@@ -1,3 +1,0 @@
-from polyaxon.compiler.lineage.artifacts_collector import collect_lineage_artifacts_path
-from polyaxon.compiler.lineage.collector import resolve_artifacts_lineage
-from polyaxon.compiler.lineage.io_collector import collect_io_artifacts

@@ -4,25 +4,25 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 
 from polyaxon import types
-from polyaxon.exceptions import (
-    PolyaxonfileError,
-    PolyaxonSchemaError,
-    PolyaxonValidationError,
-)
-from polyaxon.polyaxonfile.specs import (
-    CompiledOperationSpecification,
-    ComponentSpecification,
-    OperationSpecification,
-)
-from polyaxon.polyflow import (
+from polyaxon._flow import (
     V1CompiledOperation,
     V1Component,
     V1Operation,
     V1Param,
     V1RunKind,
 )
-from polyaxon.schemas.types import V1GitType
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._polyaxonfile.specs import (
+    CompiledOperationSpecification,
+    ComponentSpecification,
+    OperationSpecification,
+)
+from polyaxon._schemas.types import V1GitType
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import (
+    PolyaxonfileError,
+    PolyaxonSchemaError,
+    PolyaxonValidationError,
+)
 
 
 @pytest.mark.polyaxonfile_mark

@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow.run.resources import V1RunResources
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow.run.resources import V1RunResources
+from polyaxon._k8s import k8s_schemas
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.container_mark

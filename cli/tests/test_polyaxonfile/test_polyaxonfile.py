@@ -4,16 +4,9 @@ import pytest
 from mock import MagicMock, patch
 
 from polyaxon import pkg
-from polyaxon.contexts import paths as ctx_paths
-from polyaxon.env_vars.keys import ENV_KEYS_USE_GIT_REGISTRY
-from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
-from polyaxon.lifecycle import V1ProjectVersionKind
-from polyaxon.polyaxonfile import check_polyaxonfile
-from polyaxon.polyaxonfile.specs import (
-    CompiledOperationSpecification,
-    OperationSpecification,
-)
-from polyaxon.polyflow import (
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._env_vars.keys import ENV_KEYS_USE_GIT_REGISTRY
+from polyaxon._flow import (
     V1CompiledOperation,
     V1Environment,
     V1GridSearch,
@@ -27,7 +20,14 @@ from polyaxon.polyflow import (
     V1RunKind,
     V1Termination,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._polyaxonfile import check_polyaxonfile
+from polyaxon._polyaxonfile.specs import (
+    CompiledOperationSpecification,
+    OperationSpecification,
+)
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
+from polyaxon.schemas import V1ProjectVersionKind
 
 
 @pytest.mark.polyaxonfile_mark
@@ -79,7 +79,7 @@ class TestPolyaxonfiles(BaseTestCase):
     def test_from_git_hub(self):
         os.environ[ENV_KEYS_USE_GIT_REGISTRY] = "true"
         with patch(
-            "polyaxon.config.spec.ConfigSpec.read_from_public_hub"
+            "polyaxon._config.spec.ConfigSpec.read_from_public_hub"
         ) as request_mock:
             request_mock.return_value = os.path.abspath(
                 "tests/fixtures/plain/simple_job.yml"
@@ -92,7 +92,7 @@ class TestPolyaxonfiles(BaseTestCase):
         del os.environ[ENV_KEYS_USE_GIT_REGISTRY]
 
     def test_from_public_hub(self):
-        with patch("polyaxon.sdk.api.ProjectsV1Api.get_version") as request_mock:
+        with patch("polyaxon._sdk.api.ProjectsV1Api.get_version") as request_mock:
             request_mock.return_value = MagicMock(
                 kind=V1ProjectVersionKind.COMPONENT,
                 content=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
@@ -104,7 +104,7 @@ class TestPolyaxonfiles(BaseTestCase):
         assert operation.hub_ref == "component:12"
 
     def test_from_hub(self):
-        with patch("polyaxon.sdk.api.ProjectsV1Api.get_version") as request_mock:
+        with patch("polyaxon._sdk.api.ProjectsV1Api.get_version") as request_mock:
             request_mock.return_value = MagicMock(
                 kind=V1ProjectVersionKind.COMPONENT,
                 content=os.path.abspath("tests/fixtures/plain/simple_job.yml"),

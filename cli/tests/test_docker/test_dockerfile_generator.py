@@ -2,13 +2,13 @@ import os
 import pytest
 import tempfile
 
-from polyaxon.docker.builder.generator import DockerFileGenerator
-from polyaxon.schemas.types.dockerfile import (
+from polyaxon._docker.builder.generator import DockerFileGenerator
+from polyaxon._schemas.types.dockerfile import (
     POLYAXON_DOCKER_WORKDIR,
     POLYAXON_DOCKERFILE_NAME,
     V1DockerfileType,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.docker_mark

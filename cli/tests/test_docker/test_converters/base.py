@@ -1,7 +1,7 @@
 import pytest
 
-from polyaxon.docker.converter.converters.job import JobConverter
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._docker.converter.converters.job import JobConverter
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class DummyConverter(JobConverter):

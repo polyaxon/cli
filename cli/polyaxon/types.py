@@ -2,7 +2,7 @@ from clipped.types import FORWARDING as CLIPPED_FORWARDING
 from clipped.types import MAPPING as CLIPPED_MAPPING
 from clipped.types import *
 
-from polyaxon.schemas.types import (
+from polyaxon._schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,
     V1EventType,

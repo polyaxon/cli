@@ -1,9 +1,9 @@
 import os
 
-from polyaxon.env_vars.getters import get_agent_info
-from polyaxon.env_vars.keys import ENV_KEYS_AGENT_INSTANCE
+from polyaxon._env_vars.getters import get_agent_info
+from polyaxon._env_vars.keys import ENV_KEYS_AGENT_INSTANCE
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonAgentError
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 class TestAgentEnvVars(BaseTestCase):

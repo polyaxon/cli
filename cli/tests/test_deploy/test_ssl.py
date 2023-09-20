@@ -1,5 +1,5 @@
-from polyaxon.deploy.schemas.ssl import SSLConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._deploy.schemas.ssl import SSLConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class TestSSLConfig(BaseTestCase):

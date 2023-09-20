@@ -1,7 +1,7 @@
 import pytest
 
-from polyaxon.auxiliaries import V1PolyaxonSidecarContainer, get_sidecar_resources
-from polyaxon.connections import (
+from polyaxon._auxiliaries import V1PolyaxonSidecarContainer, get_sidecar_resources
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
@@ -9,10 +9,10 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.containers.names import MAIN_JOB_CONTAINER, SIDECAR_CONTAINER
-from polyaxon.containers.pull_policy import PullPolicy
+from polyaxon._containers.names import MAIN_JOB_CONTAINER, SIDECAR_CONTAINER
+from polyaxon._containers.pull_policy import PullPolicy
+from polyaxon._flow import V1Plugins
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.polyflow import V1Plugins
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

@@ -2,17 +2,17 @@ import pytest
 
 from mock import MagicMock, patch
 
-from polyaxon.k8s.agent.agent import Agent
-from polyaxon.k8s.executor.executor import Executor
-from polyaxon.runner.agent.client import AgentClient
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._k8s.agent.agent import Agent
+from polyaxon._k8s.executor.executor import Executor
+from polyaxon._runner.agent.client import AgentClient
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.agent_mark
 class TestAgent(BaseTestCase):
     SET_AGENT_SETTINGS = True
 
-    @patch("polyaxon.runner.agent.sync_agent.BaseSyncAgent._enter")
+    @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._enter")
     def test_init_agent_component(self, register):
         agent = Agent(owner="foo", agent_uuid="uuid")
         assert agent.sleep_interval is None
@@ -20,11 +20,11 @@ class TestAgent(BaseTestCase):
         assert isinstance(agent.client, AgentClient)
         assert register.call_count == 0
 
-    @patch("polyaxon.sdk.api.AgentsV1Api.sync_agent")
-    @patch("polyaxon.sdk.api.AgentsV1Api.create_agent_status")
-    @patch("polyaxon.sdk.api.AgentsV1Api.get_agent_state")
-    @patch("polyaxon.sdk.api.AgentsV1Api.get_agent")
-    @patch("polyaxon.k8s.executor.executor.Executor.manager")
+    @patch("polyaxon._sdk.api.AgentsV1Api.sync_agent")
+    @patch("polyaxon._sdk.api.AgentsV1Api.create_agent_status")
+    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent_state")
+    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent")
+    @patch("polyaxon._k8s.executor.executor.Executor.manager")
     def test_init_agent(
         self, _, get_agent, get_agent_state, create_agent_status, sync_agent
     ):

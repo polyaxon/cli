@@ -2,17 +2,17 @@ import pytest
 import tempfile
 
 from polyaxon import settings
-from polyaxon.client.client import PolyaxonClient
-from polyaxon.constants.globals import NO_AUTH
-from polyaxon.schemas.client import ClientConfig
-from polyaxon.sdk.api import (
+from polyaxon._client.client import PolyaxonClient
+from polyaxon._constants.globals import NO_AUTH
+from polyaxon._schemas.client import ClientConfig
+from polyaxon._sdk.api import (
     AuthV1Api,
     ProjectsV1Api,
     RunsV1Api,
     UsersV1Api,
     VersionsV1Api,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.client_mark

@@ -1,6 +1,6 @@
-from polyaxon.env_vars.getters import get_project_error_message, get_project_or_local
+from polyaxon._env_vars.getters import get_project_error_message, get_project_or_local
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 class TestProjectEnvVars(BaseTestCase):

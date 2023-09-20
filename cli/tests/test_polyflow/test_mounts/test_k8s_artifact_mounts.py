@@ -3,8 +3,8 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon.polyflow.mounts import V1ArtifactsMount
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow.mounts import V1ArtifactsMount
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.mounts_mark

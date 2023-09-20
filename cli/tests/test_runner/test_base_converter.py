@@ -1,24 +1,24 @@
 import os
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
     V1HostPathConnection,
 )
-from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.runner.converter.init.artifacts import get_artifacts_store_args
-from polyaxon.runner.converter.init.git import get_repo_context_args
-from polyaxon.runner.converter.init.store import (
+from polyaxon._runner.converter.init.artifacts import get_artifacts_store_args
+from polyaxon._runner.converter.init.git import get_repo_context_args
+from polyaxon._runner.converter.init.store import (
     cp_mount_args,
     cp_store_args,
     get_or_create_args,
     get_volume_args,
 )
-from polyaxon.schemas.types import V1ArtifactsType
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._schemas.types import V1ArtifactsType
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonConverterError
 
 
 @pytest.mark.agent_mark

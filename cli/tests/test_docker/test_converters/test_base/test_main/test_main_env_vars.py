@@ -1,20 +1,20 @@
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
     V1ConnectionResource,
 )
-from polyaxon.env_vars.keys import (
+from polyaxon._env_vars.keys import (
     ENV_KEYS_ARTIFACTS_STORE_NAME,
     ENV_KEYS_COLLECT_ARTIFACTS,
     ENV_KEYS_COLLECT_RESOURCES,
 )
+from polyaxon._flow import V1Plugins
+from polyaxon._services.values import PolyaxonServices
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.polyflow import V1Plugins
-from polyaxon.services.values import PolyaxonServices
 from tests.test_docker.test_converters.base import BaseConverterTest
 
 

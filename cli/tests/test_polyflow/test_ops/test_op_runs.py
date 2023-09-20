@@ -4,11 +4,11 @@ from clipped.compact.pydantic import ValidationError
 from clipped.utils.tz import now
 
 from polyaxon import types
+from polyaxon._flow.operations import V1CompiledOperation
+from polyaxon._flow.params import ops_params
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonValidationError
-from polyaxon.polyflow.operations import V1CompiledOperation
-from polyaxon.polyflow.params import ops_params
-from polyaxon.polyflow.run.enums import V1RunKind
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.ops_mark

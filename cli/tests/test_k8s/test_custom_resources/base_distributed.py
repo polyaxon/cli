@@ -1,7 +1,7 @@
-from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
-from polyaxon.k8s.replica import ReplicaSpec
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._k8s import k8s_schemas
+from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
+from polyaxon._k8s.replica import ReplicaSpec
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class BaseDistributedCRDTestCase(BaseTestCase):

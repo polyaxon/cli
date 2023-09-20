@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.docker import docker_types
-from polyaxon.docker.converter.base.containers import ContainerMixin
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._docker import docker_types
+from polyaxon._docker.converter.base.containers import ContainerMixin
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.docker_mark

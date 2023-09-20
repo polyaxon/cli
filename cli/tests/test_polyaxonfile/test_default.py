@@ -1,12 +1,12 @@
 import pytest
 import tempfile
 
-from polyaxon.polyaxonfile import (
+from polyaxon._polyaxonfile import (
     DEFAULT_POLYAXON_FILE_EXTENSION,
     DEFAULT_POLYAXON_FILE_NAME,
     check_default_path,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyaxonfile_mark

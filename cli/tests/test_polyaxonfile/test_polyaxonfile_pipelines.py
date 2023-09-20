@@ -3,23 +3,20 @@ import pytest
 
 from mock import patch
 
-from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.k8s.k8s_schemas import V1Container
-from polyaxon.polyaxonfile import check_polyaxonfile
-from polyaxon.polyaxonfile.check import collect_dag_components
-from polyaxon.polyaxonfile.specs import (
+from polyaxon._flow import V1IO, V1CompiledOperation, V1Component, V1Job, V1RunKind
+from polyaxon._flow.early_stopping import V1FailureEarlyStopping, V1MetricEarlyStopping
+from polyaxon._flow.matrix import V1GridSearch, V1Hyperband, V1RandomSearch
+from polyaxon._flow.matrix.params import V1HpChoice, V1HpLinSpace
+from polyaxon._flow.run import V1Dag
+from polyaxon._k8s.k8s_schemas import V1Container
+from polyaxon._polyaxonfile import check_polyaxonfile
+from polyaxon._polyaxonfile.check import collect_dag_components
+from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
 )
-from polyaxon.polyflow import V1IO, V1CompiledOperation, V1Component, V1Job, V1RunKind
-from polyaxon.polyflow.early_stopping import (
-    V1FailureEarlyStopping,
-    V1MetricEarlyStopping,
-)
-from polyaxon.polyflow.matrix import V1GridSearch, V1Hyperband, V1RandomSearch
-from polyaxon.polyflow.matrix.params import V1HpChoice, V1HpLinSpace
-from polyaxon.polyflow.run import V1Dag
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonSchemaError
 
 
 @pytest.mark.polyaxonfile_mark
@@ -96,7 +93,7 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
                 {"kind": "compiled_operation"},
             ]
         )
-        with patch("polyaxon.config.spec.ConfigSpec.read") as config_read:
+        with patch("polyaxon._config.spec.ConfigSpec.read") as config_read:
             config_read.return_value = V1Component(
                 kind="component",
                 version=" 1.1",

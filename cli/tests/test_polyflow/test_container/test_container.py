@@ -2,9 +2,9 @@ import pytest
 
 from mock import MagicMock
 
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow.containers import get_container_command_args
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow.containers import get_container_command_args
+from polyaxon._k8s import k8s_schemas
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.container_mark

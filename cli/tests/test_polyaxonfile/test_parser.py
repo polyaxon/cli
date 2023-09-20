@@ -1,7 +1,7 @@
 import pytest
 
-from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._polyaxonfile.specs.libs.parser import PolyaxonfileParser
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyaxonfile_mark

@@ -3,7 +3,7 @@
 #
 # from polyaxon.polyaxonfile.specs.libs.parser import PolyaxonfileParser
 # from polyaxon.polyflow.operators import ForConfig, IfConfig
-# from polyaxon.utils.test_utils import BaseTestCase
+# from polyaxon._utils.test_utils import BaseTestCase
 #
 #
 # @pytest.mark.polyflow_mark

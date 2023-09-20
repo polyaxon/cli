@@ -1,10 +1,10 @@
 import mock
 import pytest
 
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._k8s.executor.executor import Executor
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonAgentError
-from polyaxon.k8s.executor.executor import Executor
-from polyaxon.polyflow.run.enums import V1RunKind
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.agent_mark

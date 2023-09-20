@@ -2,12 +2,12 @@ import pytest
 
 from unittest import TestCase
 
-from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.utils.fqn_utils import (
+from polyaxon._utils.fqn_utils import (
     get_entity_full_name,
     get_entity_info,
     get_versioned_entity_full_name,
 )
+from polyaxon.exceptions import PolyaxonSchemaError
 
 
 @pytest.mark.utils_mark

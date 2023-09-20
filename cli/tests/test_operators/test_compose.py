@@ -1,10 +1,10 @@
 import mock
 import pytest
 
-from polyaxon.deploy import reader
-from polyaxon.deploy.operators.compose import ComposeOperator
+from polyaxon._deploy import reader
+from polyaxon._deploy.operators.compose import ComposeOperator
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonOperatorException
-from polyaxon.utils.test_utils import BaseTestCase
 
 DUMMY_RETURN_VALUE = object()
 
@@ -27,13 +27,13 @@ class TestComposeOperator(BaseTestCase):
 
         return mock.Mock(side_effect=popen)
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_docker_compose(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, "bar")
         assert self.compose.execute(["up"]) == "bar"
         assert mock_subprocess.Popen.call_args[0][0] == ["docker-compose", "up"]
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_docker_error(self, mock_subprocess):
         return_code = 1
         stdout = "output"

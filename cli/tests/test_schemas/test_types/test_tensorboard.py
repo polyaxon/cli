@@ -1,8 +1,7 @@
-import json
 import pytest
 
-from polyaxon.schemas.types.tensorboard import V1TensorboardType
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._schemas.types.tensorboard import V1TensorboardType
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.init_mark

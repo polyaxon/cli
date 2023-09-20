@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
-from polyaxon.containers.names import INIT_AUTH_CONTAINER
-from polyaxon.containers.pull_policy import PullPolicy
+from polyaxon._auxiliaries import V1PolyaxonInitContainer, get_init_resources
+from polyaxon._containers.names import INIT_AUTH_CONTAINER
+from polyaxon._containers.pull_policy import PullPolicy
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

@@ -2,8 +2,8 @@ import requests
 import time
 
 from polyaxon import settings
-from polyaxon.client.transport.threaded_transport import ThreadedTransportMixin
-from polyaxon.client.workers.queue_worker import QueueWorker
+from polyaxon._client.transport.threaded_transport import ThreadedTransportMixin
+from polyaxon._client.workers.queue_worker import QueueWorker
 from tests.test_transports.utils import BaseTestCaseTransport
 
 

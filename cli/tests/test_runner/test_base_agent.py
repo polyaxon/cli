@@ -2,9 +2,9 @@ import pytest
 
 from mock import MagicMock, patch
 
-from polyaxon.runner.agent.client import AgentClient
-from polyaxon.runner.agent.sync_agent import BaseSyncAgent
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._runner.agent.client import AgentClient
+from polyaxon._runner.agent.sync_agent import BaseSyncAgent
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class DummyAgent(BaseSyncAgent):
@@ -15,11 +15,11 @@ class DummyAgent(BaseSyncAgent):
 class TestBaseSyncAgent(BaseTestCase):
     SET_AGENT_SETTINGS = True
 
-    @patch("polyaxon.runner.agent.sync_agent.BaseSyncAgent._check_status")
-    @patch("polyaxon.sdk.api.AgentsV1Api.sync_agent")
-    @patch("polyaxon.sdk.api.AgentsV1Api.create_agent_status")
-    @patch("polyaxon.sdk.api.AgentsV1Api.get_agent_state")
-    @patch("polyaxon.sdk.api.AgentsV1Api.get_agent")
+    @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._check_status")
+    @patch("polyaxon._sdk.api.AgentsV1Api.sync_agent")
+    @patch("polyaxon._sdk.api.AgentsV1Api.create_agent_status")
+    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent_state")
+    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent")
     def test_init_base_agent(
         self, get_agent, get_agent_state, create_agent_status, sync_agent, agent_check
     ):
@@ -103,7 +103,7 @@ class TestBaseSyncAgent(BaseTestCase):
         assert agent.executor.manager.get_version.call_count == 1
         assert agent_check.call_count == 2
 
-    @patch("polyaxon.runner.agent.sync_agent.BaseSyncAgent._enter")
+    @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._enter")
     def test_init_agent_component(self, register):
         agent = DummyAgent(owner="foo", agent_uuid="uuid")
         assert agent.sleep_interval is None

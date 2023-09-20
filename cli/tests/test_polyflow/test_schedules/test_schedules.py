@@ -6,14 +6,14 @@ from clipped.compact.pydantic import ValidationError
 from clipped.utils.json import orjson_dumps
 from clipped.utils.tz import now
 
-from polyaxon.polyflow.schedules import (
+from polyaxon._flow.schedules import (
     V1CronSchedule,
     V1DateTimeSchedule,
     V1IntervalSchedule,
     V1Schedule,
 )
-from polyaxon.schemas.base import BaseSchemaModel
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._schemas.base import BaseSchemaModel
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyflow_mark

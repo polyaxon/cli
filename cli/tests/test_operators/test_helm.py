@@ -1,9 +1,9 @@
 import mock
 import pytest
 
-from polyaxon.deploy.operators.helm import HelmOperator
+from polyaxon._deploy.operators.helm import HelmOperator
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonOperatorException
-from polyaxon.utils.test_utils import BaseTestCase
 
 DUMMY_RETURN_VALUE = object()
 
@@ -26,13 +26,13 @@ class TestHelmOperator(BaseTestCase):
 
         return mock.Mock(side_effect=popen)
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_helm(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, "bar")
         assert self.helm.execute(["foo"]) == "bar"
         assert mock_subprocess.Popen.call_args[0][0] == ["helm", "foo"]
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_helm_error(self, mock_subprocess):
         return_code = 1
         stdout = "output"

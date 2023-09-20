@@ -1,7 +1,7 @@
 import pytest
 
-from polyaxon.schemas.user import UserConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._schemas.user import UserConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.api_mark

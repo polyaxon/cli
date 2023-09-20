@@ -3,9 +3,9 @@ import pytest
 
 from unittest.mock import mock_open, patch
 
-from polyaxon.managers.ignore import IgnoreConfigManager
-from polyaxon.utils import cli_constants
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._managers.ignore import IgnoreConfigManager
+from polyaxon._utils import cli_constants
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.managers_mark
@@ -27,7 +27,7 @@ class TestIgnoreConfigManager(BaseTestCase):
     def get_allowed(patterns):
         return [r.pattern for r in patterns if not r.is_exclude]
 
-    @patch("polyaxon.managers.ignore.os.path.isfile", return_value=True)
+    @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_ignored_lines(self, mock_file, _):
         configs = [
@@ -47,7 +47,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             )
             assert list(IgnoreConfigManager.find_matching(path, patterns)) == []
 
-    @patch("polyaxon.managers.ignore.os.path.isfile", return_value=True)
+    @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_allowed_list_lines(self, mock_file, _):
         configs = [
@@ -78,7 +78,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             )
             assert len(list(IgnoreConfigManager.find_matching(path, patterns))) == 1
 
-    @patch("polyaxon.managers.ignore.os.path.isfile", return_value=True)
+    @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_ignores_commented_lines(self, mock_file, _):
         file_data = ["", "# comment", "", "*.py"]
@@ -89,7 +89,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             (self.get_ignored(patterns), self.get_allowed(patterns)), (["*.py"], [])
         )
 
-    @patch("polyaxon.managers.ignore.os.path.isfile", return_value=True)
+    @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_trims_slash_prefix_from_abs_paths(self, mock_file, _):
         file_data = ["/test", "!/ignore"]
@@ -101,7 +101,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             (["/test"], ["/ignore"]),
         )
 
-    @patch("polyaxon.managers.ignore.os.path.isfile", return_value=True)
+    @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_properly_interprets_allowed_list_globs(self, mock_file, _):
         file_data = ["", "# comment", "*.py", "!file1.py"]
@@ -113,7 +113,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             (["*.py"], ["file1.py"]),
         )
 
-    @patch("polyaxon.managers.ignore.os.path.isfile", return_value=False)
+    @patch("polyaxon._managers.ignore.os.path.isfile", return_value=False)
     def test_returns_two_empty_lists_if_file_is_not_present(self, _):
         patterns = IgnoreConfigManager.get_config()
         self.assertEqual(
@@ -123,7 +123,7 @@ class TestIgnoreConfigManager(BaseTestCase):
             ),
         )
 
-    @patch("polyaxon.managers.ignore.os.path.isfile", return_value=True)
+    @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_escaping_of_globs_that_start_with_reserved_chars(self, mock_file, _):
         file_data = ["", r"# comment", r"\#file1", r"\!file2"]  # noqa

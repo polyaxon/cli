@@ -2,12 +2,12 @@ import pytest
 
 from clipped.utils.tz import now
 
-from polyaxon.compiler.contexts import resolve_contexts
-from polyaxon.connections import V1ClaimConnection, V1Connection, V1ConnectionKind
-from polyaxon.contexts import paths as ctx_paths
-from polyaxon.polyaxonfile.specs import kinds
-from polyaxon.polyflow import V1CloningKind, V1CompiledOperation, V1RunKind
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._compiler.contexts import resolve_contexts
+from polyaxon._connections import V1ClaimConnection, V1Connection, V1ConnectionKind
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._flow import V1CloningKind, V1CompiledOperation, V1RunKind
+from polyaxon._polyaxonfile.specs import kinds
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class V1CloningKin(object):

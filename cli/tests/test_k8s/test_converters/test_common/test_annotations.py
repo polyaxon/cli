@@ -1,15 +1,15 @@
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
     V1HostPathConnection,
 )
-from polyaxon.k8s.converter.common.annotations import get_connection_annotations
-from polyaxon.polyflow import V1Init
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow import V1Init
+from polyaxon._k8s.converter.common.annotations import get_connection_annotations
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.k8s_mark

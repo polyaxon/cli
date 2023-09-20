@@ -2,7 +2,7 @@ import pytest
 
 from clipped.types.docker_image import validate_image
 
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyflow_mark

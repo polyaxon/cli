@@ -1,5 +1,5 @@
-from polyaxon.k8s.custom_resources.crd import get_custom_object
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._k8s.custom_resources.crd import get_custom_object
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class TestCRD(BaseTestCase):

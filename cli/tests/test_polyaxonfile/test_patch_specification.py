@@ -5,9 +5,12 @@ from clipped.utils.dicts import deep_update
 from clipped.utils.tz import now
 
 from polyaxon import pkg
-from polyaxon.polyaxonfile import CompiledOperationSpecification, OperationSpecification
-from polyaxon.polyflow import V1Component, V1EventKind, V1Operation, V1RunKind
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow import V1Component, V1EventKind, V1Operation, V1RunKind
+from polyaxon._polyaxonfile import (
+    CompiledOperationSpecification,
+    OperationSpecification,
+)
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyaxonfile_mark

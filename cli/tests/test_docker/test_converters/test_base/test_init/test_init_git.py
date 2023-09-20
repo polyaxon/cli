@@ -1,14 +1,17 @@
 import pytest
 
-from polyaxon.auxiliaries import V1PolyaxonInitContainer
-from polyaxon.connections import V1Connection, V1ConnectionKind, V1GitConnection
-from polyaxon.containers.names import INIT_GIT_CONTAINER_PREFIX, generate_container_name
-from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.contexts import paths as ctx_paths
+from polyaxon._auxiliaries import V1PolyaxonInitContainer
+from polyaxon._connections import V1Connection, V1ConnectionKind, V1GitConnection
+from polyaxon._containers.names import (
+    INIT_GIT_CONTAINER_PREFIX,
+    generate_container_name,
+)
+from polyaxon._containers.pull_policy import PullPolicy
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._flow import V1Plugins
+from polyaxon._runner.converter.common import constants
+from polyaxon._runner.converter.common.volumes import get_volume_name
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.polyflow import V1Plugins
-from polyaxon.runner.converter.common import constants
-from polyaxon.runner.converter.common.volumes import get_volume_name
 from tests.test_docker.test_converters.base import BaseConverterTest
 
 

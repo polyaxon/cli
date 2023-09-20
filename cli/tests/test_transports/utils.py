@@ -1,5 +1,5 @@
 from polyaxon import settings
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class BaseTestCaseTransport(BaseTestCase):

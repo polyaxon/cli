@@ -2,14 +2,14 @@ import pytest
 
 from uuid import uuid4
 
-from polyaxon.polyflow import V1Operation
-from polyaxon.utils.fixtures import (
+from polyaxon._flow import V1Operation
+from polyaxon._utils.fixtures import (
     get_fxt_job_with_hub_ref,
     get_fxt_service,
     get_fxt_service_with_inputs,
     get_fxt_service_with_upstream_runs,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.fixtures_mark

@@ -2,7 +2,7 @@ import pytest
 
 from mock import patch
 
-from polyaxon.cli.projects import project
+from polyaxon._cli.projects import project
 from tests.test_cli.utils import BaseCommandTestCase
 
 

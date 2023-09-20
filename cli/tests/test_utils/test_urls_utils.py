@@ -3,7 +3,7 @@ import pytest
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from polyaxon.utils.urls_utils import (
+from polyaxon._utils.urls_utils import (
     get_fqn_run_url,
     get_owner_project_url,
     get_owner_url,

@@ -1,6 +1,6 @@
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon.deploy.schemas.service import (
+from polyaxon._deploy.schemas.service import (
     DeploymentService,
     ExternalService,
     ExternalServicesConfig,
@@ -9,7 +9,7 @@ from polyaxon.deploy.schemas.service import (
     RedisConfig,
     ThirdPartyService,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class TestService(BaseTestCase):

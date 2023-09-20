@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.auxiliaries import get_sidecar_resources
-from polyaxon.env_vars.keys import ENV_KEYS_ARTIFACTS_STORE_NAME, ENV_KEYS_CONTAINER_ID
-from polyaxon.k8s import k8s_schemas
+from polyaxon._auxiliaries import get_sidecar_resources
+from polyaxon._env_vars.keys import ENV_KEYS_ARTIFACTS_STORE_NAME, ENV_KEYS_CONTAINER_ID
+from polyaxon._k8s import k8s_schemas
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

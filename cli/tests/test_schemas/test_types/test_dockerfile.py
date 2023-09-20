@@ -2,13 +2,13 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon.schemas.types.dockerfile import (
+from polyaxon._schemas.types.dockerfile import (
     POLYAXON_DOCKER_SHELL,
     POLYAXON_DOCKER_WORKDIR,
     POLYAXON_DOCKERFILE_NAME,
     V1DockerfileType,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.init_mark

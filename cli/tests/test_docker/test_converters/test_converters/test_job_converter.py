@@ -1,25 +1,25 @@
 import uuid
 
 from polyaxon import settings
-from polyaxon.auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
-from polyaxon.connections import (
+from polyaxon._auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
     V1ConnectionResource,
 )
-from polyaxon.docker import docker_types
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.schemas.types import (
+from polyaxon._docker import docker_types
+from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._k8s import k8s_schemas
+from polyaxon._schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,
     V1FileType,
     V1GitType,
     V1TensorboardType,
 )
-from polyaxon.services.values import PolyaxonServices
+from polyaxon._services.values import PolyaxonServices
 from tests.test_docker.test_converters.base import BaseConverterTest
 from traceml.artifacts import V1ArtifactKind
 

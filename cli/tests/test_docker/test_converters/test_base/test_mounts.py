@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
@@ -8,9 +8,9 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.contexts import paths as ctx_paths
-from polyaxon.docker import docker_types
-from polyaxon.docker.converter.base.mounts import MountsMixin
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._docker import docker_types
+from polyaxon._docker.converter.base.mounts import MountsMixin
 from tests.test_docker.test_converters.base import BaseConverterTest
 
 

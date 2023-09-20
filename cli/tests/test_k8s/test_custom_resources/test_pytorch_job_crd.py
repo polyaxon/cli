@@ -1,9 +1,9 @@
-from polyaxon.k8s.custom_resources.crd import get_custom_object
-from polyaxon.k8s.custom_resources.kubeflow import get_pytorch_job_custom_resource
-from polyaxon.lifecycle import V1Statuses
-from polyaxon.polyflow import V1Notification, V1SchedulingPolicy
-from polyaxon.polyflow.environment import V1Environment
-from polyaxon.polyflow.termination import V1Termination
+from polyaxon._flow import V1Notification, V1SchedulingPolicy
+from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.termination import V1Termination
+from polyaxon._k8s.custom_resources.crd import get_custom_object
+from polyaxon._k8s.custom_resources.kubeflow import get_pytorch_job_custom_resource
+from polyaxon.schemas import V1Statuses
 from tests.test_k8s.test_custom_resources.base_distributed import (
     BaseDistributedCRDTestCase,
 )

@@ -1,9 +1,9 @@
 import mock
 import pytest
 
-from polyaxon.deploy.operators.kubectl import KubectlOperator
+from polyaxon._deploy.operators.kubectl import KubectlOperator
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonOperatorException
-from polyaxon.utils.test_utils import BaseTestCase
 
 DUMMY_RETURN_VALUE = object()
 
@@ -26,19 +26,19 @@ class TestKubectlOperator(BaseTestCase):
 
         return mock.Mock(side_effect=popen)
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_kubectl(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, "bar")
         assert self.kubectl.execute(["foo"], is_json=False) == "bar"
         assert mock_subprocess.Popen.call_args[0][0] == ["kubectl", "foo"]
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_kubectl_json(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, '{"foo": "bar"}')
         assert self.kubectl.execute(["foo"], is_json=True) == dict(foo="bar")
         assert mock_subprocess.Popen.call_args[0][0] == ["kubectl", "foo", "-o", "json"]
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_kubectl_error(self, mock_subprocess):
         return_code = 1
         stdout = "output"

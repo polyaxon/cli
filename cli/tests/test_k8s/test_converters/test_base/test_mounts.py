@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
@@ -8,9 +8,9 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.contexts import paths as ctx_paths
-from polyaxon.k8s.converter.base.mounts import MountsMixin
-from polyaxon.runner.converter.common import constants
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._k8s.converter.base.mounts import MountsMixin
+from polyaxon._runner.converter.common import constants
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

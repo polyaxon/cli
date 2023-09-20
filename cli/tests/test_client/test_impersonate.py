@@ -6,9 +6,9 @@ import uuid
 from mock import patch
 from unittest.mock import MagicMock
 
-from polyaxon.client.impersonate import create_context_auth, impersonate
-from polyaxon.schemas.authentication import AccessTokenConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._client.impersonate import create_context_auth, impersonate
+from polyaxon._schemas.authentication import AccessTokenConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.client_mark
@@ -26,9 +26,9 @@ class TestImpersonate(BaseTestCase):
         create_context_auth(AccessTokenConfig(token=token), context_mount_auth)
         assert os.path.exists(context_mount_auth) is True
 
-    @patch("polyaxon.sdk.api.RunsV1Api.impersonate_token")
-    @patch("polyaxon.sdk.api.UsersV1Api.get_user")
-    @patch("polyaxon.client.impersonate.create_context_auth")
+    @patch("polyaxon._sdk.api.RunsV1Api.impersonate_token")
+    @patch("polyaxon._sdk.api.UsersV1Api.get_user")
+    @patch("polyaxon._client.impersonate.create_context_auth")
     def test_login_impersonate(self, create_context, get_user, impersonate_token):
         get_user.return_value = MagicMock(username="foobar", email="foo@bar.com")
         impersonate_token.return_value = MagicMock(token="token")

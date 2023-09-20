@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.managers.home import HomeConfigManager
-from polyaxon.schemas.home import HomeConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._managers.home import HomeConfigManager
+from polyaxon._schemas.home import HomeConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.managers_mark

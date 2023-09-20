@@ -2,8 +2,8 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon.polyflow import V1Cache
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow import V1Cache
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.components_mark

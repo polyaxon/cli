@@ -5,7 +5,7 @@ import sys
 from functools import wraps
 from typing import List, Union
 
-from polyaxon.env_vars.keys import ENV_KEYS_DEBUG, ENV_KEYS_LOG_LEVEL
+from polyaxon._env_vars.keys import ENV_KEYS_DEBUG, ENV_KEYS_LOG_LEVEL
 
 logger = logging.getLogger("polyaxon.cli")
 
@@ -13,7 +13,7 @@ logger = logging.getLogger("polyaxon.cli")
 def configure_logger(verbose):
     # DO NOT MOVE OUTSIDE THE FUNCTION!
     from polyaxon import settings
-    from polyaxon.plugins.sentry import set_raven_client
+    from polyaxon._plugins.sentry import set_raven_client
 
     if verbose or settings.CLIENT_CONFIG.debug or os.environ.get(ENV_KEYS_DEBUG, False):
         log_level = logging.DEBUG

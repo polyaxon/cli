@@ -1,10 +1,10 @@
 import pytest
 
-from polyaxon.deploy.operators.helm import HelmOperator
-from polyaxon.deploy.operators.kubectl import KubectlOperator
-from polyaxon.deploy.schemas.deployment import DeploymentConfig, DeploymentTypes
-from polyaxon.managers.deploy import DeployConfigManager
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._deploy.operators.helm import HelmOperator
+from polyaxon._deploy.operators.kubectl import KubectlOperator
+from polyaxon._deploy.schemas.deployment import DeploymentConfig, DeploymentTypes
+from polyaxon._managers.deploy import DeployConfigManager
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.managers_mark

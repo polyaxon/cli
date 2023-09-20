@@ -1,9 +1,9 @@
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon.deploy import reader
-from polyaxon.deploy.schemas.deployment import DeploymentConfig
-from polyaxon.deploy.schemas.service_types import ServiceTypes
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._deploy import reader
+from polyaxon._deploy.schemas.deployment import DeploymentConfig
+from polyaxon._deploy.schemas.service_types import ServiceTypes
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class TestDeploymentConfig(BaseTestCase):

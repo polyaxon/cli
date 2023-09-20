@@ -3,19 +3,19 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
-from polyaxon.k8s import k8s_schemas
-from polyaxon.polyaxonfile import check_polyaxonfile
-from polyaxon.polyaxonfile.specs import (
+from polyaxon._flow import V1CompiledOperation, V1Hyperband
+from polyaxon._flow.io import V1IO
+from polyaxon._flow.matrix import V1GridSearch
+from polyaxon._flow.matrix.params import V1HpChoice, V1HpLinSpace
+from polyaxon._flow.params import V1Param
+from polyaxon._k8s import k8s_schemas
+from polyaxon._polyaxonfile import check_polyaxonfile
+from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
 )
-from polyaxon.polyflow import V1CompiledOperation, V1Hyperband
-from polyaxon.polyflow.io import V1IO
-from polyaxon.polyflow.matrix import V1GridSearch
-from polyaxon.polyflow.matrix.params import V1HpChoice, V1HpLinSpace
-from polyaxon.polyflow.params import V1Param
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 
 
 @pytest.mark.polyaxonfile_mark

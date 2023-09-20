@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
@@ -8,9 +8,9 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.k8s.converter.common.volumes import get_volume
-from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.runner.converter.common.volumes import get_volume_name
+from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._k8s.converter.common.volumes import get_volume
+from polyaxon._runner.converter.common.volumes import get_volume_name
 from tests.test_docker.test_converters.base import BaseConverterTest
 
 

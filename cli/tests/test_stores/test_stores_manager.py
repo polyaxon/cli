@@ -4,9 +4,9 @@ import pytest
 from clipped.utils.paths import check_or_create_path
 
 from polyaxon import settings
-from polyaxon.fs.async_manager import delete_file_or_dir, download_dir, download_file
-from polyaxon.fs.fs import get_default_fs
-from polyaxon.utils.test_utils import create_tmp_files, set_store
+from polyaxon._fs.async_manager import delete_file_or_dir, download_dir, download_file
+from polyaxon._fs.fs import get_default_fs
+from polyaxon._utils.test_utils import create_tmp_files, set_store
 
 
 @pytest.mark.asyncio

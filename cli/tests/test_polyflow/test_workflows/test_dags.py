@@ -3,9 +3,7 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 
 from polyaxon import types
-from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.lifecycle import V1Statuses
-from polyaxon.polyflow import (
+from polyaxon._flow import (
     V1IO,
     V1Dag,
     V1Operation,
@@ -14,7 +12,9 @@ from polyaxon.polyflow import (
     dags,
     ops_params,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonSchemaError
+from polyaxon.schemas import V1Statuses
 
 
 @pytest.mark.workflow_mark

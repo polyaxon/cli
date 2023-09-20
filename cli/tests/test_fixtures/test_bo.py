@@ -1,11 +1,11 @@
 import pytest
 
-from polyaxon.polyflow import V1Operation
-from polyaxon.utils.fixtures import (
+from polyaxon._flow import V1Operation
+from polyaxon._utils.fixtures import (
     get_fxt_bo_with_inputs_outputs,
     get_fxt_bo_with_run_patch,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.fixtures_mark

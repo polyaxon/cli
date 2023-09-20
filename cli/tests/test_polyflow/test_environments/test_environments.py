@@ -2,8 +2,8 @@ import pytest
 
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon.polyflow.environment import V1Environment
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow.environment import V1Environment
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.environment_mark

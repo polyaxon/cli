@@ -1,6 +1,6 @@
-from polyaxon.env_vars.getters import get_component_info
+from polyaxon._env_vars.getters import get_component_info
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 class TestComponentEnvVars(BaseTestCase):

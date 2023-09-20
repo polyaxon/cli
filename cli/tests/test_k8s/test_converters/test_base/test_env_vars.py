@@ -1,7 +1,7 @@
 import pytest
 
-from polyaxon.connections import V1ConnectionResource
-from polyaxon.env_vars.keys import (
+from polyaxon._connections import V1ConnectionResource
+from polyaxon._env_vars.keys import (
     ENV_KEYS_API_VERSION,
     ENV_KEYS_AUTH_TOKEN,
     ENV_KEYS_AUTHENTICATION_TYPE,
@@ -15,9 +15,9 @@ from polyaxon.env_vars.keys import (
     ENV_KEYS_SECRET_INTERNAL_TOKEN,
     ENV_KEYS_SECRET_KEY,
 )
+from polyaxon._k8s import k8s_schemas
+from polyaxon._k8s.converter.base.env_vars import EnvMixin
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.base.env_vars import EnvMixin
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

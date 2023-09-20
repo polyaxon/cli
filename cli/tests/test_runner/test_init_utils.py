@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.auxiliaries import get_init_resources
-from polyaxon.k8s import k8s_schemas
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._auxiliaries import get_init_resources
+from polyaxon._k8s import k8s_schemas
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.converter_mark

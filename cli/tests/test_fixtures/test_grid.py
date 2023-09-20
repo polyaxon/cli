@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.polyflow import V1Operation
-from polyaxon.utils.fixtures import get_fxt_grid_with_inputs_outputs
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow import V1Operation
+from polyaxon._utils.fixtures import get_fxt_grid_with_inputs_outputs
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.fixtures_mark

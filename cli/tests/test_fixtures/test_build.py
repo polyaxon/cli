@@ -1,9 +1,9 @@
 import pytest
 
-from polyaxon.polyflow import V1Operation
-from polyaxon.polyflow.run.enums import V1RunKind
-from polyaxon.utils.fixtures import set_build_fixture
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow import V1Operation
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._utils.fixtures import set_build_fixture
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.fixtures_mark

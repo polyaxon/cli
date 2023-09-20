@@ -6,9 +6,9 @@ from datetime import timedelta
 
 from clipped.utils.tz import now
 
-from polyaxon.env_vars.keys import ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
-from polyaxon.schemas.checks import ChecksConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._env_vars.keys import ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
+from polyaxon._schemas.checks import ChecksConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.schemas_mark

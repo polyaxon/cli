@@ -3,8 +3,8 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon.polyflow.notifications import V1Notification
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow.notifications import V1Notification
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.plugins_mark

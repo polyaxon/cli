@@ -1,8 +1,8 @@
 import pytest
 
+from polyaxon._k8s.converter.base import BaseConverter
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s.converter.base import BaseConverter
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.converter_mark

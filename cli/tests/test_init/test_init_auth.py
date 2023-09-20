@@ -6,10 +6,10 @@ from mock import patch
 from mock.mock import MagicMock
 
 from polyaxon import settings
-from polyaxon.env_vars.keys import ENV_KEYS_RUN_INSTANCE
+from polyaxon._env_vars.keys import ENV_KEYS_RUN_INSTANCE
+from polyaxon._init.auth import create_auth_context
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonContainerException
-from polyaxon.init.auth import create_auth_context
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.init_mark
@@ -24,9 +24,9 @@ class TestInitAuth(BaseTestCase):
             create_auth_context()
         del os.environ[ENV_KEYS_RUN_INSTANCE]
 
-    @patch("polyaxon.sdk.api.RunsV1Api.impersonate_token")
-    @patch("polyaxon.sdk.api.UsersV1Api.get_user")
-    @patch("polyaxon.client.impersonate.create_context_auth")
+    @patch("polyaxon._sdk.api.RunsV1Api.impersonate_token")
+    @patch("polyaxon._sdk.api.UsersV1Api.get_user")
+    @patch("polyaxon._client.impersonate.create_context_auth")
     def test_init_auth(self, create_context, get_user, impersonate_token):
         get_user.return_value = MagicMock(username="foobar", email="foo@bar.com")
         impersonate_token.return_value = MagicMock(token="token")

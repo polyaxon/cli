@@ -3,10 +3,10 @@ import pytest
 
 from urllib3.exceptions import ReadTimeoutError
 
-from polyaxon.docker.builder import DockerBuilder, DockerPusher, build, build_and_push
+from polyaxon._docker.builder import DockerBuilder, DockerPusher, build, build_and_push
+from polyaxon._schemas.types import V1UriType
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonBuildException
-from polyaxon.schemas.types import V1UriType
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.docker_mark

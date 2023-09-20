@@ -1,6 +1,6 @@
-from polyaxon.env_vars.getters.queue import get_queue_info
+from polyaxon._env_vars.getters.queue import get_queue_info
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 class TestQueueEnvVars(BaseTestCase):

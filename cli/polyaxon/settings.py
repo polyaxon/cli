@@ -1,42 +1,46 @@
 import os
 
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.utils.bools import to_bool
 
+from polyaxon._env_vars.keys import ENV_KEYS_NO_CONFIG, ENV_KEYS_SET_AGENT
+from polyaxon._managers.client import ClientConfigManager
+from polyaxon._managers.home import HomeConfigManager
+from polyaxon._managers.user import UserConfigManager
+from polyaxon._schemas.agent import AgentConfig
+from polyaxon._schemas.authentication import AccessTokenConfig
+from polyaxon._schemas.cli import CliConfig
+from polyaxon._schemas.client import ClientConfig
+from polyaxon._schemas.home import HomeConfig
+from polyaxon._services.values import PolyaxonServices
 from polyaxon.api import LOCALHOST
-from polyaxon.env_vars.keys import ENV_KEYS_NO_CONFIG, ENV_KEYS_SET_AGENT
-from polyaxon.managers.client import ClientConfigManager
-from polyaxon.managers.home import HomeConfigManager
-from polyaxon.managers.user import UserConfigManager
-from polyaxon.services.values import PolyaxonServices
 
-if TYPE_CHECKING:
-    from polyaxon.schemas.agent import AgentConfig
-    from polyaxon.schemas.authentication import AccessTokenConfig
-    from polyaxon.schemas.cli import CliConfig
-    from polyaxon.schemas.client import ClientConfig
-    from polyaxon.schemas.home import HomeConfig
+from polyaxon._managers.ignore import IgnoreConfigManager  # noqa
+from polyaxon._managers.run import RunConfigManager  # noqa
+from polyaxon._managers.project import ProjectConfigManager  # noqa
+from polyaxon._managers.auth import AuthConfigManager  # noqa
+from polyaxon._managers.cli import CliConfigManager  # noqa
 
 MIN_TIMEOUT = 1
 LONG_REQUEST_TIMEOUT = 3600
 HEALTH_CHECK_INTERVAL = 60
 SET_AGENT = to_bool(os.environ.get(ENV_KEYS_SET_AGENT, False))
 
-HOME_CONFIG: "HomeConfig" = HomeConfigManager.get_config_from_env()
-AUTH_CONFIG: Optional["AccessTokenConfig"] = None
-CLIENT_CONFIG: "ClientConfig"
-CLI_CONFIG: Optional["CliConfig"] = None
-AGENT_CONFIG: Optional["AgentConfig"] = None
+HOME_CONFIG: HomeConfig = HomeConfigManager.get_config_from_env()
+AUTH_CONFIG: Optional[AccessTokenConfig] = None
+CLIENT_CONFIG: ClientConfig
+CLI_CONFIG: Optional[CliConfig] = None
+AGENT_CONFIG: Optional[AgentConfig] = None
 
 PolyaxonServices.set_service_name()
 
 
-def set_agent_config(config: Optional["AgentConfig"] = None):
-    from polyaxon.connections import CONNECTION_CONFIG
-    from polyaxon.managers.agent import AgentConfigManager
+def set_agent_config(config: Optional[AgentConfig] = None):
+    from polyaxon._connections import CONNECTION_CONFIG
+    from polyaxon._managers.agent import AgentConfigManager
 
     global AGENT_CONFIG
 
@@ -53,8 +57,6 @@ def set_agent_config(config: Optional["AgentConfig"] = None):
 
 
 def set_cli_config():
-    from polyaxon.managers.cli import CliConfigManager
-
     global CLI_CONFIG
 
     # Patch the config with correct home path if available
@@ -82,8 +84,6 @@ def set_client_config():
 
 
 def set_auth_config():
-    from polyaxon.managers.auth import AuthConfigManager
-
     global AUTH_CONFIG
 
     # Patch the config with correct home path if available

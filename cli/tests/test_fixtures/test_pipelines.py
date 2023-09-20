@@ -2,8 +2,8 @@ import pytest
 
 from uuid import uuid4
 
-from polyaxon.polyflow import V1Operation
-from polyaxon.utils.fixtures import (
+from polyaxon._flow import V1Operation
+from polyaxon._utils.fixtures import (
     get_fxt_build_run_pipeline,
     get_fxt_build_run_pipeline_with_inputs,
     get_fxt_map_reduce,
@@ -12,7 +12,7 @@ from polyaxon.utils.fixtures import (
     get_fxt_templated_pipeline_without_params,
     get_fxt_train_tensorboard_events_pipeline,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.fixtures_mark

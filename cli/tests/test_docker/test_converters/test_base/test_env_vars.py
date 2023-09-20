@@ -1,9 +1,9 @@
 import pytest
 
-from polyaxon.connections import V1ConnectionResource
-from polyaxon.docker import docker_types
-from polyaxon.docker.converter.base.env_vars import EnvMixin
-from polyaxon.env_vars.keys import (
+from polyaxon._connections import V1ConnectionResource
+from polyaxon._docker import docker_types
+from polyaxon._docker.converter.base.env_vars import EnvMixin
+from polyaxon._env_vars.keys import (
     ENV_KEYS_API_VERSION,
     ENV_KEYS_AUTH_TOKEN,
     ENV_KEYS_AUTHENTICATION_TYPE,

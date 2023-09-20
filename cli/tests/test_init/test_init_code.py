@@ -2,21 +2,21 @@ import os
 import pytest
 import tempfile
 
-from polyaxon.env_vars.keys import (
+from polyaxon._env_vars.keys import (
     ENV_KEYS_GIT_CREDENTIALS,
     ENV_KEYS_GIT_CREDENTIALS_STORE,
     ENV_KEYS_RUN_INSTANCE,
     ENV_KEYS_SSH_PATH,
 )
-from polyaxon.exceptions import PolyaxonContainerException
-from polyaxon.init.git import (
+from polyaxon._init.git import (
     create_code_repo,
     get_clone_url,
     has_cred_access,
     has_cred_store_access,
     has_ssh_access,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonContainerException
 
 
 @pytest.mark.init_mark

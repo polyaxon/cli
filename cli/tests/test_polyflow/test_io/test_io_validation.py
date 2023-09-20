@@ -1,8 +1,8 @@
 import pytest
 
+from polyaxon._flow.io import V1IO, V1Validation
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonValidationError
-from polyaxon.polyflow.io import V1IO, V1Validation
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyflow_mark

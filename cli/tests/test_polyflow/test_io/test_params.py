@@ -3,8 +3,8 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon.polyflow.params import V1Param
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow.params import V1Param
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.polyflow_mark

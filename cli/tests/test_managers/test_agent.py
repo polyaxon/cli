@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.managers.agent import AgentConfigManager
-from polyaxon.schemas.agent import AgentConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._managers.agent import AgentConfigManager
+from polyaxon._schemas.agent import AgentConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.managers_mark

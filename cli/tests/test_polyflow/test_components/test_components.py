@@ -4,9 +4,9 @@ from clipped.compact.pydantic import ValidationError
 from clipped.utils.tz import local_datetime, now
 
 from polyaxon import types
+from polyaxon._flow import V1Component, V1RunKind, ops_params
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonValidationError
-from polyaxon.polyflow import V1Component, V1RunKind, ops_params
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 @pytest.mark.components_mark

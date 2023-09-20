@@ -1,12 +1,12 @@
 import pytest
 
-from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
-from polyaxon.containers.names import INIT_FILE_CONTAINER_PREFIX
-from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.contexts import paths as ctx_paths
-from polyaxon.polyflow import V1Plugins
-from polyaxon.runner.converter.common import constants
-from polyaxon.schemas.types import V1FileType
+from polyaxon._auxiliaries import V1PolyaxonInitContainer, get_init_resources
+from polyaxon._containers.names import INIT_FILE_CONTAINER_PREFIX
+from polyaxon._containers.pull_policy import PullPolicy
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._flow import V1Plugins
+from polyaxon._runner.converter.common import constants
+from polyaxon._schemas.types import V1FileType
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

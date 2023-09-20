@@ -1,5 +1,5 @@
-from polyaxon.deploy.schemas.rbac import RBACConfig
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._deploy.schemas.rbac import RBACConfig
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class TestRBACConfig(BaseTestCase):

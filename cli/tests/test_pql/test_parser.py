@@ -1,5 +1,4 @@
-from polyaxon.exceptions import PQLException
-from polyaxon.pql.parser import (
+from polyaxon._pql.parser import (
     QueryOpSpec,
     parse_datetime_operation,
     parse_expression,
@@ -10,7 +9,8 @@ from polyaxon.pql.parser import (
     split_query,
     tokenize_query,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PQLException
 
 
 class TestParser(BaseTestCase):

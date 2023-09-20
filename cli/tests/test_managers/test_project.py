@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.managers.project import ProjectConfigManager
-from polyaxon.schemas.responses.v1_project import V1Project
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._managers.project import ProjectConfigManager
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.client import V1Project
 
 
 @pytest.mark.managers_mark

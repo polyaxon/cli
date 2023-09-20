@@ -1,8 +1,8 @@
 import pytest
 
-from polyaxon.managers.run import RunConfigManager
-from polyaxon.schemas.responses.v1_run import V1Run
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._managers.run import RunConfigManager
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.client import V1Run
 
 
 @pytest.mark.managers_mark

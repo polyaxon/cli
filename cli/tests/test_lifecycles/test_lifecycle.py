@@ -1,7 +1,7 @@
 from clipped.utils.tz import now
 
-from polyaxon.lifecycle import LifeCycle, V1Statuses
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.schemas import LifeCycle, V1Statuses
 
 
 class Entity:

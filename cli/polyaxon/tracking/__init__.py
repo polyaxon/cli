@@ -1,10 +1,5 @@
-# To keep backwards compatibility
-
-from typing import List, Optional
-
-from polyaxon.client import RunClient
 from traceml import tracking
-from traceml.tracking import *
+from traceml.tracking import *  # noqa
 
 
 def __getattr__(name):

@@ -1,23 +1,23 @@
 import pytest
 
-from polyaxon.auxiliaries import V1PolyaxonInitContainer
-from polyaxon.connections import (
+from polyaxon._auxiliaries import V1PolyaxonInitContainer
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
 )
-from polyaxon.containers.names import (
+from polyaxon._containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
     generate_container_name,
 )
-from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.contexts import paths as ctx_paths
-from polyaxon.docker import docker_types
+from polyaxon._containers.pull_policy import PullPolicy
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._docker import docker_types
+from polyaxon._runner.converter.init.artifacts import init_artifact_context_args
+from polyaxon._runner.converter.init.store import get_volume_args
+from polyaxon._schemas.types import V1ArtifactsType
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.runner.converter.init.artifacts import init_artifact_context_args
-from polyaxon.runner.converter.init.store import get_volume_args
-from polyaxon.schemas.types import V1ArtifactsType
 from tests.test_docker.test_converters.base import BaseConverterTest
 
 

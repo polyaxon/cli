@@ -1,9 +1,9 @@
 import mock
 import pytest
 
-from polyaxon.deploy.operators.conda import CondaOperator
+from polyaxon._deploy.operators.conda import CondaOperator
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonOperatorException
-from polyaxon.utils.test_utils import BaseTestCase
 
 DUMMY_RETURN_VALUE = object()
 
@@ -26,13 +26,13 @@ class TestCondaOperator(BaseTestCase):
 
         return mock.Mock(side_effect=popen)
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_conda(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, "bar")
         assert self.conda.execute(["install"]) == "bar"
         assert mock_subprocess.Popen.call_args[0][0] == ["conda", "install"]
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_conda_json(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, '{"foo": "bar"}')
         assert self.conda.execute(["env", "list", "--json"], is_json=True) == dict(
@@ -45,7 +45,7 @@ class TestCondaOperator(BaseTestCase):
             "--json",
         ]
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_conda_error(self, mock_subprocess):
         return_code = 1
         stdout = "output"

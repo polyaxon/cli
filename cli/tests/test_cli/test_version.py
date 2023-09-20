@@ -2,17 +2,17 @@ import pytest
 
 from mock import patch
 
-from polyaxon.cli.version import upgrade, version
-from polyaxon.schemas.compatibility import V1Compatibility
-from polyaxon.schemas.installation import V1Installation
-from polyaxon.schemas.version import V1Version
+from polyaxon._cli.version import upgrade, version
+from polyaxon._schemas.compatibility import V1Compatibility
+from polyaxon._schemas.installation import V1Installation
+from polyaxon._schemas.version import V1Version
 from tests.test_cli.utils import BaseCommandTestCase
 
 
 @pytest.mark.cli_mark
 class TestCliVersion(BaseCommandTestCase):
-    @patch("polyaxon.cli.version.pip_upgrade")
-    @patch("polyaxon.cli.version.sys")
+    @patch("polyaxon._cli.version.pip_upgrade")
+    @patch("polyaxon._cli.version.sys")
     def test_upgrade(self, mock_sys, pip_upgrade):
         mock_sys.version = (
             "2.7.13 (default, Jan 19 2017, 14:48:08) \n[GCC 6.3.0 20170118]"
@@ -20,10 +20,10 @@ class TestCliVersion(BaseCommandTestCase):
         self.runner.invoke(upgrade)
         pip_upgrade.assert_called_once()
 
-    @patch("polyaxon.sdk.api.VersionsV1Api.get_installation")
-    @patch("polyaxon.sdk.api.VersionsV1Api.get_compatibility")
-    @patch("polyaxon.cli.version.Printer.dict_tabulate")
-    @patch("polyaxon.managers.cli.CliConfigManager.reset")
+    @patch("polyaxon._sdk.api.VersionsV1Api.get_installation")
+    @patch("polyaxon._sdk.api.VersionsV1Api.get_compatibility")
+    @patch("polyaxon._cli.version.Printer.dict_tabulate")
+    @patch("polyaxon._managers.cli.CliConfigManager.reset")
     def test_versions(
         self, config_rest, dict_tabulate, get_compatibility, get_installation
     ):

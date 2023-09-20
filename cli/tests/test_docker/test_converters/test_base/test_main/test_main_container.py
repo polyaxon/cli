@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon.connections import (
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
@@ -8,11 +8,11 @@ from polyaxon.connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.docker import docker_types
+from polyaxon._containers.pull_policy import PullPolicy
+from polyaxon._docker import docker_types
+from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._services.values import PolyaxonServices
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.polyflow import V1Init, V1Plugins
-from polyaxon.services.values import PolyaxonServices
 from tests.test_docker.test_converters.base import BaseConverterTest
 
 

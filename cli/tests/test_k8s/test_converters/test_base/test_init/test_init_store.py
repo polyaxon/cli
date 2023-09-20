@@ -1,24 +1,24 @@
 import pytest
 
-from polyaxon.auxiliaries import V1PolyaxonInitContainer, get_init_resources
-from polyaxon.connections import (
+from polyaxon._auxiliaries import V1PolyaxonInitContainer, get_init_resources
+from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
     V1Connection,
     V1ConnectionKind,
     V1ConnectionResource,
 )
-from polyaxon.containers.names import (
+from polyaxon._containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
     generate_container_name,
 )
-from polyaxon.containers.pull_policy import PullPolicy
-from polyaxon.contexts import paths as ctx_paths
+from polyaxon._containers.pull_policy import PullPolicy
+from polyaxon._contexts import paths as ctx_paths
+from polyaxon._k8s import k8s_schemas
+from polyaxon._runner.converter.common import constants
+from polyaxon._runner.converter.common.volumes import get_volume_name
+from polyaxon._runner.converter.init.store import get_volume_args
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s import k8s_schemas
-from polyaxon.runner.converter.common import constants
-from polyaxon.runner.converter.common.volumes import get_volume_name
-from polyaxon.runner.converter.init.store import get_volume_args
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
 

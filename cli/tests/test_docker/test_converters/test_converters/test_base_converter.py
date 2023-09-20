@@ -1,15 +1,15 @@
 import os
 
 from polyaxon import settings
+from polyaxon._docker.converter.base import BaseConverter
+from polyaxon._env_vars.keys import ENV_KEYS_PLATFORM_HOST
+from polyaxon._k8s import k8s_schemas
+from polyaxon._services.auth import AuthenticationTypes
+from polyaxon._services.headers import PolyaxonServiceHeaders
+from polyaxon._services.values import PolyaxonServices
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.api import VERSION_V1
-from polyaxon.docker.converter.base import BaseConverter
-from polyaxon.env_vars.keys import ENV_KEYS_PLATFORM_HOST
 from polyaxon.exceptions import PolyaxonConverterError
-from polyaxon.k8s import k8s_schemas
-from polyaxon.services.auth import AuthenticationTypes
-from polyaxon.services.headers import PolyaxonServiceHeaders
-from polyaxon.services.values import PolyaxonServices
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 class DummyConverter(BaseConverter):

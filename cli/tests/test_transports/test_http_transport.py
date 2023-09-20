@@ -1,6 +1,6 @@
 import requests
 
-from polyaxon.client.transport import Transport
+from polyaxon._client.transport import Transport
 from tests.test_transports.utils import BaseTestCaseTransport
 
 

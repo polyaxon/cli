@@ -2,9 +2,9 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon.env_vars.keys import ENV_KEYS_AUTH_TOKEN, ENV_KEYS_AUTH_USERNAME
-from polyaxon.schemas.authentication import AccessTokenConfig, V1Credentials
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._env_vars.keys import ENV_KEYS_AUTH_TOKEN, ENV_KEYS_AUTH_USERNAME
+from polyaxon._schemas.authentication import AccessTokenConfig, V1Credentials
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.api_mark

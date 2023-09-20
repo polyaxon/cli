@@ -1,12 +1,12 @@
 import pytest
 
-from polyaxon.k8s import k8s_schemas
-from polyaxon.k8s.converter.common.accelerators import (
+from polyaxon._k8s import k8s_schemas
+from polyaxon._k8s.converter.common.accelerators import (
     has_tpu_annotation,
     requests_gpu,
     requests_tpu,
 )
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.k8s_mark

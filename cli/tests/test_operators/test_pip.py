@@ -1,9 +1,9 @@
 import mock
 import pytest
 
-from polyaxon.deploy.operators.pip import PipOperator
+from polyaxon._deploy.operators.pip import PipOperator
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonOperatorException
-from polyaxon.utils.test_utils import BaseTestCase
 
 DUMMY_RETURN_VALUE = object()
 
@@ -26,13 +26,13 @@ class TestPipOperator(BaseTestCase):
 
         return mock.Mock(side_effect=popen)
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_pip(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, "bar")
         assert self.pip.execute(["install"]) == "bar"
         assert mock_subprocess.Popen.call_args[0][0] == ["pip", "install"]
 
-    @mock.patch("polyaxon.deploy.operators.cmd_operator.subprocess")
+    @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_pip_error(self, mock_subprocess):
         return_code = 1
         stdout = "output"

@@ -3,10 +3,10 @@ import pytest
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon.polyflow.matrix.iterative import V1Iterative
-from polyaxon.polyflow.operations import V1CompiledOperation
-from polyaxon.polyflow.run.enums import V1RunKind
-from polyaxon.utils.test_utils import BaseTestCase
+from polyaxon._flow.matrix.iterative import V1Iterative
+from polyaxon._flow.operations import V1CompiledOperation
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.workflow_mark

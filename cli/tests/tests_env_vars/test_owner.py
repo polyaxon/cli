@@ -1,7 +1,7 @@
-from polyaxon.env_vars.getters.owner_entity import resolve_entity_info
+from polyaxon._env_vars.getters.owner_entity import resolve_entity_info
+from polyaxon._utils.fqn_utils import get_entity_full_name, get_entity_info
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
-from polyaxon.utils.fqn_utils import get_entity_full_name, get_entity_info
-from polyaxon.utils.test_utils import BaseTestCase
 
 
 class TestOwnerEnvVars(BaseTestCase):

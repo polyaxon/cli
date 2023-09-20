@@ -1,6 +1,0 @@
-from polyaxon.compiler.contexts.kubeflow.mpi_job import MPIJobContextsManager
-from polyaxon.compiler.contexts.kubeflow.mx_job import MXJobContextsManager
-from polyaxon.compiler.contexts.kubeflow.paddle_job import PaddleJobContextsManager
-from polyaxon.compiler.contexts.kubeflow.pytroch_job import PytorchJobContextsManager
-from polyaxon.compiler.contexts.kubeflow.tf_job import TfJobContextsManager
-from polyaxon.compiler.contexts.kubeflow.xgb_job import XGBoostJobContextsManager

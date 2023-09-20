@@ -2,7 +2,7 @@ import pytest
 
 from mock import patch
 
-from polyaxon.cli.operations import ops
+from polyaxon._cli.operations import ops
 from tests.test_cli.utils import BaseCommandTestCase
 
 
@@ -14,10 +14,10 @@ class TestCliRuns(BaseCommandTestCase):
         assert list_runs.call_count == 1
 
     @patch("polyaxon.client.RunClient.refresh_data")
-    @patch("polyaxon.managers.project.ProjectConfigManager.is_initialized")
-    @patch("polyaxon.managers.project.ProjectConfigManager.get_config")
-    @patch("polyaxon.managers.run.RunConfigManager.set_config")
-    @patch("polyaxon.cli.operations.get_run_details")
+    @patch("polyaxon._managers.project.ProjectConfigManager.is_initialized")
+    @patch("polyaxon._managers.project.ProjectConfigManager.get_config")
+    @patch("polyaxon._managers.run.RunConfigManager.set_config")
+    @patch("polyaxon._cli.operations.get_run_details")
     def test_get_run(
         self, get_run_details, set_config, get_config, is_initialized, get_run
     ):
@@ -32,10 +32,10 @@ class TestCliRuns(BaseCommandTestCase):
         assert get_run_details.call_count == 1
 
     @patch("polyaxon.client.RunClient.refresh_data")
-    @patch("polyaxon.managers.project.ProjectConfigManager.is_initialized")
-    @patch("polyaxon.utils.cache._is_same_project")
-    @patch("polyaxon.managers.run.RunConfigManager.set_config")
-    @patch("polyaxon.cli.operations.get_run_details")
+    @patch("polyaxon._managers.project.ProjectConfigManager.is_initialized")
+    @patch("polyaxon._utils.cache._is_same_project")
+    @patch("polyaxon._managers.run.RunConfigManager.set_config")
+    @patch("polyaxon._cli.operations.get_run_details")
     def test_get_run_cache(
         self, get_run_details, set_config, is_same_project, is_initialized, get_run
     ):
