@@ -5,7 +5,7 @@ import uuid
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import urlparse
 
 from clipped.formatting import Printer
@@ -192,6 +192,8 @@ class RunClient:
         self._default_filename_sanitize_paths: List[str] = []
         self._last_update: Optional[Tuple[datetime, int]] = None
         self._store: Optional[PolyaxonStore] = None
+        self._metrics = {}
+        self._metric_names = set([])
 
     def _set_is_offline(
         self,
@@ -304,7 +306,10 @@ class RunClient:
 
     @client_handler(check_no_op=True, check_offline=True)
     def refresh_data(
-        self, load_artifacts_lineage: bool = False, load_conditions: bool = False
+        self,
+        load_artifacts_lineage: bool = False,
+        load_conditions: bool = False,
+        load_metrics: bool = False,
     ):
         """Fetches the run data from the api."""
         self._run_data = self.client.runs_v1.get_run(
@@ -316,6 +321,8 @@ class RunClient:
         if load_artifacts_lineage:
             lineages = self.get_artifacts_lineage(limit=1000).results
             self._artifacts_lineage = {l.name: l for l in lineages}
+        if load_metrics:
+            self.get_metrics(self.metric_names, force)
 
     def _throttle_updates(self) -> bool:
         current_time = now().replace(microsecond=0)
@@ -1066,6 +1073,153 @@ class RunClient:
             force=force,
             **params,
         )
+
+    @client_handler(check_no_op=True)
+    def get_metrics(
+        self, names: Union[Set[str], List[str]], force: bool = False
+    ) -> Dict:
+        """Gets the run's metrics.
+
+        Args:
+            names: List[str], list of events to return.
+            force: bool, force reload the events.
+        """
+        events = self.get_events(
+            kind=V1ArtifactKind.METRIC,
+            names=names,
+            orient=V1Events.ORIENT_DICT,
+            force=force,
+        ).data
+        for e in events:
+            self._metrics[e["name"]] = e
+            self._metric_names.add(e["name"])
+        return self._metrics
+
+    @client_handler(check_no_op=True)
+    def get_metrics_as_tidy_df(self):
+        """Get current's run metrics as tidy dataframe."""
+        import pandas as pd
+
+        dfs = []
+        for m in self._metric_names:
+            data = self._metrics[m]
+            df = V1Events.read(**data).df
+            df["name"] = m
+            dfs.append(df)
+        return pd.concat(dfs)
+
+    @client_handler(check_no_op=True)
+    def get_metrics_as_wide_df(self):
+        """Get current's run metrics as wide dataframe."""
+        import pandas as pd
+
+        dfs = []
+        for m in self._metric_names:
+            data = self._metrics[m]
+            df = V1Events.read(**data).df
+            df[m] = df.metric
+            df = df[["step", "timestamp", m]]
+            dfs.append(df)
+
+        return pd.concat(dfs, axis=1)
+
+    @client_handler(check_no_op=True)
+    def get_metrics_as_bar_chart(
+        self,
+        x: str = "timestamp",
+        y: str = "metric",
+        color: str = "name",
+        barmode: str = "group",
+    ):
+        """Get current's run metrics as bar chart."""
+        import plotly.express as px
+
+        df = self.get_metrics_as_wide_df()
+        return px.bar(df, x=x, y=y, color=color, barmode=barmode)
+
+    @client_handler(check_no_op=True)
+    def get_metrics_as_line_chart(
+        self, x: str = "timestamp", y: str = "metric", color: str = "name"
+    ):
+        """Get current's run metrics as line chart."""
+        import plotly.express as px
+
+        df = self.get_metrics_as_wide_df()
+        return px.line(df, x=x, y=y, color=color)
+
+    @client_handler(check_no_op=True)
+    def get_metrics_as_scatter_chart(
+        self,
+        x: Optional[str] = None,
+        y: Optional[str] = None,
+        color: Optional[str] = None,
+        **kwargs,
+    ):
+        """Get current's run metrics as scatter chart."""
+        import plotly.express as px
+
+        if len(self._metric_names) < 2:
+            raise ValueError("You need at least 2 metrics to use this plot.")
+
+        df = self.get_metrics_as_wide_df()
+        return px.scatter(df, x=x, y=y, color=color, **kwargs)
+
+    @client_handler(check_no_op=True)
+    def get_runs_io(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ):
+        """Gets multiple runs' inputs/outputs under the current owner - project.
+
+        [Run API](/docs/api/#operation/ListRuns)
+
+        Args:
+            query: str, optional, query filters, please refer to
+                 [Run PQL](/docs/core/query-language/runs/#query)
+            sort: str, optional, fields to order by, please refer to
+                 [Run PQL](/docs/core/query-language/runs/#sort)
+            limit: int, optional, limit of runs to return.
+            offset: int, optional, offset pages to paginate runs.
+
+        Returns:
+            List[Dict[uid, values]], list of runs inputs/outputs.
+        """
+        runs = self.list(
+            query=query,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        ).results
+        data = []
+        for r in runs:
+            run = runs[r]
+            values = run.inputs or {}
+            values.update(run.outputs or {})
+            data.append({"uid": run.uuid, "values": values})
+        return data
+
+    @client_handler(check_no_op=True)
+    def get_runs_as_hiplot(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ):
+        """Gets multiple runs' inputs/outputs under the current
+        owner - project and generate a parallel coordinates plot using hiplot.
+        """
+        import hiplot
+
+        data = self.get_runs_io(query=query, sort=sort, limit=limit, offset=offset)
+        exp = hiplot.Experiment()
+        for d in data:
+            dp = hiplot.Datapoint(uid=d["uid"], values=d["values"])
+            exp.datapoints.append(dp)
+        return exp
 
     @client_handler(check_no_op=True, check_offline=True)
     def get_artifacts_lineage(

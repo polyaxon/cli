@@ -108,7 +108,7 @@ setup(
     install_requires=requirements,
     extras_require=extra,
     entry_points={
-        "console_scripts": ["polyaxon = polyaxon.main:cli", "plx = polyaxon.main:cli"]
+        "console_scripts": ["polyaxon = polyaxon.cli:cli", "plx = polyaxon.cli:cli"]
     },
     python_requires=">=3.7",
     classifiers=[
