@@ -54,7 +54,7 @@ class V1ResourceRequirements(BaseSchemaModel):
         if not memory:
             return memory
         docker_mem_bytes = to_memory_bytes(memory)
-        return to_unit_memory(number=docker_mem_bytes, use_i=True)
+        return to_unit_memory(number=docker_mem_bytes, use_i=False, use_space=False)
 
     def to_cmd(self):
         cmd_args = []

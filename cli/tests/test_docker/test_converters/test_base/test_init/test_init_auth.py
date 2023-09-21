@@ -24,7 +24,7 @@ class TestInitAuth(BaseConverterTest):
         assert container.command == ["polyaxon", "initializer", "auth"]
         assert container.args is None
         assert container.env == []
-        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49 Gi"}
+        assert container.resources.to_dict() == {"cpus": "1.0", "memory": "0.49G"}
         assert container.volume_mounts == [
             self.converter._get_auth_context_mount(
                 read_only=False, run_path=self.converter.run_path
