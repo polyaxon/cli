@@ -22,7 +22,7 @@ def agent():
     help="The agent executor backend to use.",
 )
 @click.option(
-    "--sleep-interval",
+    "--max-interval",
     type=int,
     help="Sleep interval between fetches (Applied only to base agent).",
 )
@@ -33,7 +33,7 @@ def agent():
     help="Number of times to retry the process.",
 )
 @coroutine
-async def start(kind, max_retries, sleep_interval):
+async def start(kind, max_retries, max_interval):
     from polyaxon import settings
     from polyaxon._env_vars.getters import get_agent_info
     from polyaxon._runner.kinds import RunnerKind
@@ -60,7 +60,7 @@ async def start(kind, max_retries, sleep_interval):
             time.sleep(5 * retry)
         try:
             async with AsyncAgent(
-                owner=owner, agent_uuid=agent_uuid, sleep_interval=sleep_interval
+                owner=owner, agent_uuid=agent_uuid, max_interval=max_interval
             ) as ag:
                 await ag.start()
                 return

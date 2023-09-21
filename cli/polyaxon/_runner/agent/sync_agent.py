@@ -82,16 +82,17 @@ class BaseSyncAgent(BaseAgent):
 
                 with ThreadPoolExecutor(workers) as pool:
                     logger.debug("Thread pool Workers: {}".format(workers))
-                    timeout = self.sleep_interval or get_wait(index)
+                    timeout = get_wait(index, max_interval=self.max_interval)
                     while not exit_event.wait(timeout=timeout):
                         index += 1
                         self.refresh_executor()
+                        self.cron()
                         agent_state = self.process(pool)
                         self._check_status(agent_state)
                         if agent_state.state.full:
                             index = 2
                         self.ping()
-                        timeout = self.sleep_interval or get_wait(index)
+                        timeout = get_wait(index, max_interval=self.max_interval)
                         logger.info("Sleeping for {} seconds".format(timeout))
         finally:
             self.end()

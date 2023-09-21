@@ -62,6 +62,9 @@ class AgentClient:
             body=agent,
         )
 
+    def cron_agent(self):
+        return self.client.agents_v1.cron_agent(owner=self.owner, _request_timeout=10)
+
     def log_agent_running(self):
         return self.log_agent_status(status=V1Statuses.RUNNING, reason="AgentLogger")
 

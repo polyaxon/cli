@@ -15,7 +15,7 @@ class TestAgent(BaseTestCase):
     @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._enter")
     def test_init_agent_component(self, register):
         agent = Agent(owner="foo", agent_uuid="uuid")
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 6
         assert isinstance(agent.executor, Executor)
         assert isinstance(agent.client, AgentClient)
         assert register.call_count == 0
@@ -32,7 +32,7 @@ class TestAgent(BaseTestCase):
         get_agent_state.return_value = MagicMock(status=None, live_state=1)
         agent = Agent(owner="foo", agent_uuid="uuid")
         agent.executor.manager.get_version.return_value = {}
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 6
         assert agent.executor is not None
         assert isinstance(agent.client, AgentClient)
         assert get_agent.call_count == 0
@@ -42,7 +42,7 @@ class TestAgent(BaseTestCase):
         assert agent.executor.manager.get_version.call_count == 0
 
         agent._enter()
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 6
         assert agent.executor is not None
         assert isinstance(agent.client, AgentClient)
         assert get_agent.call_count == 1

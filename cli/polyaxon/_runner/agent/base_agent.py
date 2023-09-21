@@ -29,12 +29,13 @@ class BaseAgent:
         self,
         owner: Optional[str] = None,
         agent_uuid: Optional[str] = None,
-        sleep_interval: Optional[int] = None,
+        max_interval: Optional[int] = None,
     ):
-        self.sleep_interval = sleep_interval
-        if self.sleep_interval:
-            self.sleep_interval = max(self.sleep_interval, 1)
+        self.max_interval = 6 if agent_uuid else 4
+        if max_interval:
+            self.max_interval = max(max_interval, 3)
         self.executor = None
+        self._agent_uuid = agent_uuid
         self._executor_refreshed_at = now()
         self._graceful_shutdown = False
         self.client = AgentClient(
@@ -45,6 +46,10 @@ class BaseAgent:
 
     def sync(self):
         raise NotImplementedError
+
+    def cron(self):
+        if not self._agent_uuid:
+            return self.client.cron_agent()
 
     def sync_compatible_updates(self, compatible_updates: Dict):
         if compatible_updates and settings.AGENT_CONFIG:

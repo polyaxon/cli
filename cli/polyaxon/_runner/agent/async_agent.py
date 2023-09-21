@@ -80,7 +80,7 @@ class BaseAsyncAgent(BaseAgent):
         try:
             async with async_exit_context() as exit_event:
                 index = 0
-                timeout = self.sleep_interval or get_wait(index)
+                timeout = get_wait(index, max_interval=self.max_interval)
 
                 while True:
                     try:
@@ -89,14 +89,13 @@ class BaseAsyncAgent(BaseAgent):
                     except asyncio.TimeoutError:
                         index += 1
                         await self.refresh_executor()
-                        print("Refreshing agent ...")
+                        await self.cron()
                         agent_state = await self.process()
-                        print("Agent state: {}".format(agent_state))
                         self._check_status(agent_state)
                         if agent_state.state.full:
                             index = 2
                         self.ping()
-                        timeout = self.sleep_interval or get_wait(index)
+                        timeout = get_wait(index, max_interval=self.max_interval)
                         logger.info("Sleeping for {} seconds".format(timeout))
         except Exception as e:
             print(e)

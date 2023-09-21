@@ -17,7 +17,7 @@ from polyaxon._utils.test_utils import AsyncMock, patch_settings
 async def test_init_agent_component(register):
     patch_settings()
     agent = AsyncAgent(owner="foo", agent_uuid="uuid")
-    assert agent.sleep_interval is None
+    assert agent.max_interval == 6
     assert isinstance(agent.executor, AsyncExecutor)
     assert isinstance(agent.client, AgentClient)
     assert register.call_count == 0
@@ -42,7 +42,7 @@ async def test_init_agent(
     get_agent_state.return_value = MagicMock(status=None, live_state=1)
     agent = AsyncAgent(owner="foo", agent_uuid="uuid")
     agent.executor.manager.get_version.return_value = {}
-    assert agent.sleep_interval is None
+    assert agent.max_interval == 6
     assert agent.executor is not None
     assert isinstance(agent.client, AgentClient)
     assert get_agent.call_count == 0
@@ -52,7 +52,7 @@ async def test_init_agent(
     assert agent.executor.manager.get_version.call_count == 0
 
     await agent._enter()
-    assert agent.sleep_interval is None
+    assert agent.max_interval == 6
     assert agent.executor is not None
     assert isinstance(agent.client, AgentClient)
     assert get_agent.call_count == 1

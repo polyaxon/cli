@@ -24,7 +24,7 @@ class TestBaseSyncAgent(BaseTestCase):
         self, get_agent, get_agent_state, create_agent_status, sync_agent, agent_check
     ):
         agent = DummyAgent()
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 4
         assert agent.client.owner is None
         assert agent.client.agent_uuid is None
         assert isinstance(agent.executor, MagicMock)
@@ -37,7 +37,7 @@ class TestBaseSyncAgent(BaseTestCase):
         assert agent_check.call_count == 0
 
         agent._enter()
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 4
         assert agent.client.owner is None
         assert agent.client.agent_uuid is None
         assert isinstance(agent.executor, MagicMock)
@@ -49,8 +49,8 @@ class TestBaseSyncAgent(BaseTestCase):
         assert agent.executor.manager.get_version.call_count == 0
         assert agent_check.call_count == 0
 
-        agent = DummyAgent(sleep_interval=2, owner="foo", agent_uuid="uuid")
-        assert agent.sleep_interval == 2
+        agent = DummyAgent(max_interval=2, owner="foo", agent_uuid="uuid")
+        assert agent.max_interval == 3
         assert agent.client.owner == "foo"
         assert agent.client.agent_uuid == "uuid"
         assert isinstance(agent.executor, MagicMock)
@@ -63,7 +63,7 @@ class TestBaseSyncAgent(BaseTestCase):
         assert agent_check.call_count == 0
 
         agent._enter()
-        assert agent.sleep_interval == 2
+        assert agent.max_interval == 3
         assert agent.client.owner == "foo"
         assert agent.client.agent_uuid == "uuid"
         assert isinstance(agent.executor, MagicMock)
@@ -78,7 +78,7 @@ class TestBaseSyncAgent(BaseTestCase):
         get_agent.return_value = MagicMock(status=None, live_state=1)
         get_agent_state.return_value = MagicMock(status=None, live_state=1)
         agent = DummyAgent(owner="foo", agent_uuid="uuid")
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 6
         assert agent.client.owner == "foo"
         assert agent.client.agent_uuid == "uuid"
         assert agent.executor is not None
@@ -91,7 +91,7 @@ class TestBaseSyncAgent(BaseTestCase):
         assert agent_check.call_count == 1
 
         agent._enter()
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 6
         assert agent.client.owner == "foo"
         assert agent.client.agent_uuid == "uuid"
         assert agent.executor is not None
@@ -106,13 +106,13 @@ class TestBaseSyncAgent(BaseTestCase):
     @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._enter")
     def test_init_agent_component(self, register):
         agent = DummyAgent(owner="foo", agent_uuid="uuid")
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 6
         assert isinstance(agent.executor, MagicMock)
         assert isinstance(agent.client, AgentClient)
         assert register.call_count == 0
 
         agent._enter()
-        assert agent.sleep_interval is None
+        assert agent.max_interval == 6
         assert isinstance(agent.executor, MagicMock)
         assert isinstance(agent.client, AgentClient)
         assert register.call_count == 1
