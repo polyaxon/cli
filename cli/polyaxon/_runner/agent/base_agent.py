@@ -9,6 +9,7 @@ from clipped.utils.tz import now
 from polyaxon import settings
 from polyaxon._auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon._connections import V1Connection
+from polyaxon._constants.globals import DEFAULT
 from polyaxon._runner.agent.client import AgentClient
 from polyaxon._runner.executor import BaseExecutor
 from polyaxon._schemas.checks import ChecksConfig
@@ -34,6 +35,8 @@ class BaseAgent:
         self.max_interval = 6 if agent_uuid else 4
         if max_interval:
             self.max_interval = max(max_interval, 3)
+        if not agent_uuid and not owner:
+            owner = DEFAULT
         self.executor = None
         self._agent_uuid = agent_uuid
         self._executor_refreshed_at = now()

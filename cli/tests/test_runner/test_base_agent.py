@@ -2,6 +2,7 @@ import pytest
 
 from mock import MagicMock, patch
 
+from polyaxon._constants.globals import DEFAULT
 from polyaxon._runner.agent.client import AgentClient
 from polyaxon._runner.agent.sync_agent import BaseSyncAgent
 from polyaxon._utils.test_utils import BaseTestCase
@@ -25,7 +26,7 @@ class TestBaseSyncAgent(BaseTestCase):
     ):
         agent = DummyAgent()
         assert agent.max_interval == 4
-        assert agent.client.owner is None
+        assert agent.client.owner == DEFAULT
         assert agent.client.agent_uuid is None
         assert isinstance(agent.executor, MagicMock)
         assert isinstance(agent.client, AgentClient)
@@ -38,7 +39,7 @@ class TestBaseSyncAgent(BaseTestCase):
 
         agent._enter()
         assert agent.max_interval == 4
-        assert agent.client.owner is None
+        assert agent.client.owner == DEFAULT
         assert agent.client.agent_uuid is None
         assert isinstance(agent.executor, MagicMock)
         assert isinstance(agent.client, AgentClient)
