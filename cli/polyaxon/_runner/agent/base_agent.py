@@ -51,8 +51,7 @@ class BaseAgent:
         raise NotImplementedError
 
     def cron(self):
-        if not self._agent_uuid:
-            return self.client.cron_agent()
+        return self.client.cron_agent()
 
     def sync_compatible_updates(self, compatible_updates: Dict):
         if compatible_updates and settings.AGENT_CONFIG:

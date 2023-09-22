@@ -44,6 +44,8 @@ class BaseAsyncAgent(BaseAgent):
                 reason = "Error {}.".format(repr(e))
             await self.client.log_agent_failed(message="{} {}".format(message, reason))
             raise PolyaxonAgentError(message="{} {}".format(message, reason))
+        except Exception as e:
+            raise PolyaxonAgentError from e
 
     async def _exit(self):
         if not self.client._is_managed:
@@ -89,8 +91,15 @@ class BaseAsyncAgent(BaseAgent):
                     except asyncio.TimeoutError:
                         index += 1
                         await self.refresh_executor()
-                        await self.cron()
+                        if not self._agent_uuid:
+                            await self.cron()
                         agent_state = await self.process()
+                        if not agent_state:
+                            logger.warning(
+                                "Agent state is empty, waiting for next check."
+                            )
+                            index = self.max_interval
+                            continue
                         self._check_status(agent_state)
                         if agent_state.state.full:
                             index = 2

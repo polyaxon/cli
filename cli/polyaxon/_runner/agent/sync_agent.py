@@ -43,6 +43,8 @@ class BaseSyncAgent(BaseAgent):
                 reason = "Error {}.".format(repr(e))
             self.client.log_agent_failed(message="{} {}".format(message, reason))
             raise PolyaxonAgentError(message="{} {}".format(message, reason))
+        except Exception as e:
+            raise PolyaxonAgentError from e
 
     def _exit(self):
         if not self.client._is_managed:
@@ -86,8 +88,15 @@ class BaseSyncAgent(BaseAgent):
                     while not exit_event.wait(timeout=timeout):
                         index += 1
                         self.refresh_executor()
-                        self.cron()
+                        if not self._agent_uuid:
+                            self.cron()
                         agent_state = self.process(pool)
+                        if not agent_state:
+                            logger.warning(
+                                "Agent state is empty, waiting for next check."
+                            )
+                            index = self.max_interval
+                            continue
                         self._check_status(agent_state)
                         if agent_state.state.full:
                             index = 2
