@@ -22,7 +22,7 @@ from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
 from polyaxon._cli.dashboard import get_dashboard, get_dashboard_url
-from polyaxon._cli.errors import handle_cli_error
+from polyaxon._cli.errors import handle_cli_error, is_in_ce
 from polyaxon._cli.options import (
     OPTIONS_NAME,
     OPTIONS_PROJECT,
@@ -1008,7 +1008,7 @@ def execute(ctx, project, uid, executor):
             reason="CliK8SExecutor",
             message="Operation is running",
         )
-        result = executor.create_from_run(response, default_auth=True)
+        result = executor.create_from_run(response, default_auth=not is_in_ce())
         if result["status"] == V1Statuses.SUCCEEDED:
             polyaxon_client.log_succeeded(
                 reason="CliDockerExecutor", message="Operation was succeeded"
@@ -1050,7 +1050,7 @@ def execute(ctx, project, uid, executor):
             reason="CliK8SExecutor",
             message="Operation is running",
         )
-        executor.create_from_run(response, default_auth=True)
+        executor.create_from_run(response, default_auth=not is_in_ce())
 
     def _execute_on_local_process(response: V1Run):
         from polyaxon.process.executor.executor import Executor

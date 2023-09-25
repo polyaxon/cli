@@ -28,14 +28,18 @@ def handle_command_not_in_ce():
     )
 
 
+def is_in_ce():
+    from polyaxon import settings
+
+    return not settings.CLI_CONFIG or settings.CLI_CONFIG.is_community
+
+
 def not_in_ce(fn):
     """Decorator to show an error when a command not available in CE"""
 
     @wraps(fn)
     def not_in_ce_wrapper(*args, **kwargs):
-        from polyaxon import settings
-
-        if not settings.CLI_CONFIG or settings.CLI_CONFIG.is_community:
+        if is_in_ce():
             handle_command_not_in_ce()
         return fn(*args, **kwargs)
 
