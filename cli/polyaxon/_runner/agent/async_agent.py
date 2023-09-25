@@ -91,7 +91,7 @@ class BaseAsyncAgent(BaseAgent):
                     except asyncio.TimeoutError:
                         index += 1
                         await self.refresh_executor()
-                        if not self._agent_uuid:
+                        if not self._default_auth:
                             await self.cron()
                         agent_state = await self.process()
                         if not agent_state:
@@ -164,7 +164,7 @@ class BaseAsyncAgent(BaseAgent):
                 run_name=run_name,
                 run_uuid=run_uuid,
                 content=content,
-                default_auth=True,
+                default_auth=self._default_auth,
                 agent_content=self.content,
             )
         except PolyaxonConverterError as e:

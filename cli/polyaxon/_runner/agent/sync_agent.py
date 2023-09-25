@@ -88,7 +88,7 @@ class BaseSyncAgent(BaseAgent):
                     while not exit_event.wait(timeout=timeout):
                         index += 1
                         self.refresh_executor()
-                        if not self._agent_uuid:
+                        if not self._default_auth:
                             self.cron()
                         agent_state = self.process(pool)
                         if not agent_state:
@@ -159,7 +159,7 @@ class BaseSyncAgent(BaseAgent):
                 run_name=run_name,
                 run_uuid=run_uuid,
                 content=content,
-                default_auth=True,
+                default_auth=self._default_auth,
                 agent_content=self.content,
             )
         except PolyaxonConverterError as e:

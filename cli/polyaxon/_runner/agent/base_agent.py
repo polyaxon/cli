@@ -38,7 +38,7 @@ class BaseAgent:
         if not agent_uuid and not owner:
             owner = DEFAULT
         self.executor = None
-        self._agent_uuid = agent_uuid
+        self._default_auth = bool(agent_uuid)
         self._executor_refreshed_at = now()
         self._graceful_shutdown = False
         self.client = AgentClient(
