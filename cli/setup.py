@@ -110,7 +110,7 @@ setup(
     entry_points={
         "console_scripts": ["polyaxon = polyaxon.cli:cli", "plx = polyaxon.cli:cli"]
     },
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     classifiers=[
         "Intended Audience :: Information Technology",
         "Intended Audience :: System Administrators",
