@@ -22,6 +22,7 @@ class V1Project(BaseAllowSchemaModel):
     readme: Optional[StrictStr]
     excluded_features: Optional[List[StrictStr]]
     excluded_runtimes: Optional[List[StrictStr]]
+    archived_deletion_interval: Optional[int]
     settings: Optional[V1ProjectSettings]
     role: Optional[StrictStr]
     contributors: Optional[Dict[str, Any]]

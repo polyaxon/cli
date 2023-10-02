@@ -2860,6 +2860,10 @@ class OrganizationsV1Api(BaseApi):
             Optional[bool],
             Field(description="Setting to enable viewable metadata on cloud."),
         ] = None,
+        organization_archived_deletion_interval: Annotated[
+            Optional[StrictInt],
+            Field(description="Setting to configure default archived deletion interval.")
+        ] = None,
         **kwargs
     ) -> V1Organization:  # noqa: E501
         """Get organization settings  # noqa: E501
@@ -2867,7 +2871,7 @@ class OrganizationsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_organization_settings(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_preset, organization_is_cloud_viewable, async_req=True)
+        >>> thread = api.get_organization_settings(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_preset, organization_is_cloud_viewable, organization_archived_deletion_interval, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -2896,6 +2900,8 @@ class OrganizationsV1Api(BaseApi):
         :type organization_preset: str
         :param organization_is_cloud_viewable: Setting to enable viewable metadata on cloud.
         :type organization_is_cloud_viewable: bool
+        :param organization_archived_deletion_interval: Setting to configure default archived deletion interval.
+        :type organization_archived_deletion_interval: int
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -2926,6 +2932,7 @@ class OrganizationsV1Api(BaseApi):
             organization_queue,
             organization_preset,
             organization_is_cloud_viewable,
+            organization_archived_deletion_interval,
             **kwargs
         )  # noqa: E501
 
@@ -2974,6 +2981,10 @@ class OrganizationsV1Api(BaseApi):
             Optional[bool],
             Field(description="Setting to enable viewable metadata on cloud."),
         ] = None,
+        organization_archived_deletion_interval: Annotated[
+            Optional[StrictInt],
+            Field(description="Setting to configure default archived deletion interval.")
+        ] = None,
         **kwargs
     ):  # noqa: E501
         """Get organization settings  # noqa: E501
@@ -2981,7 +2992,7 @@ class OrganizationsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_organization_settings_with_http_info(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_preset, organization_is_cloud_viewable, async_req=True)
+        >>> thread = api.get_organization_settings_with_http_info(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_preset, organization_is_cloud_viewable, organization_archived_deletion_interval, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -3010,6 +3021,8 @@ class OrganizationsV1Api(BaseApi):
         :type organization_preset: str
         :param organization_is_cloud_viewable: Setting to enable viewable metadata on cloud.
         :type organization_is_cloud_viewable: bool
+        :param organization_archived_deletion_interval: Setting to configure default archived deletion interval.
+        :type organization_archived_deletion_interval: int
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -3050,6 +3063,7 @@ class OrganizationsV1Api(BaseApi):
             "organization_queue",
             "organization_preset",
             "organization_is_cloud_viewable",
+            "organization_archived_deletion_interval",
         ]
         _all_params.extend(
             [
@@ -3126,6 +3140,13 @@ class OrganizationsV1Api(BaseApi):
                 (
                     "organization.is_cloud_viewable",
                     _params["organization_is_cloud_viewable"],
+                )
+            )
+        if _params.get("organization_archived_deletion_interval") is not None:  # noqa: E501
+            _query_params.append(
+                (
+                    "organization.archived_deletion_interval",
+                    _params["organization_archived_deletion_interval"],
                 )
             )
 

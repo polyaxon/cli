@@ -20,6 +20,7 @@ class V1Organization(BaseAllowSchemaModel):
     queue: Optional[StrictStr]
     preset: Optional[StrictStr]
     is_cloud_viewable: Optional[bool]
+    archived_deletion_interval: Optional[int]
     auth: Optional[Dict[str, Any]]
     plan: Optional[Dict[str, Any]]
     usage: Optional[Dict[str, Any]]
