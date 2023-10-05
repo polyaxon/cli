@@ -275,8 +275,8 @@ class LifeCycle:
             entity.started_at = now()
             # Update wait_time
             if entity.wait_time is None:
-                entity.wait_time = int(
-                    (entity.started_at - entity.created_at).total_seconds()
+                entity.wait_time = round(
+                    (entity.started_at - entity.created_at).total_seconds(), 2
                 )
             return True
 
@@ -290,8 +290,8 @@ class LifeCycle:
                 entity.started_at = entity.created_at
             # Update duration
             if entity.duration is None:
-                entity.duration = int(
-                    (entity.finished_at - entity.started_at).total_seconds()
+                entity.duration = round(
+                    (entity.finished_at - entity.started_at).total_seconds(), 2
                 )
             return True
         return False
