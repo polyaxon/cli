@@ -2862,7 +2862,9 @@ class OrganizationsV1Api(BaseApi):
         ] = None,
         organization_archived_deletion_interval: Annotated[
             Optional[StrictInt],
-            Field(description="Setting to configure default archived deletion interval.")
+            Field(
+                description="Setting to configure default archived deletion interval."
+            ),
         ] = None,
         **kwargs
     ) -> V1Organization:  # noqa: E501
@@ -2983,7 +2985,9 @@ class OrganizationsV1Api(BaseApi):
         ] = None,
         organization_archived_deletion_interval: Annotated[
             Optional[StrictInt],
-            Field(description="Setting to configure default archived deletion interval.")
+            Field(
+                description="Setting to configure default archived deletion interval."
+            ),
         ] = None,
         **kwargs
     ):  # noqa: E501
@@ -3142,7 +3146,9 @@ class OrganizationsV1Api(BaseApi):
                     _params["organization_is_cloud_viewable"],
                 )
             )
-        if _params.get("organization_archived_deletion_interval") is not None:  # noqa: E501
+        if (
+            _params.get("organization_archived_deletion_interval") is not None
+        ):  # noqa: E501
             _query_params.append(
                 (
                     "organization.archived_deletion_interval",
