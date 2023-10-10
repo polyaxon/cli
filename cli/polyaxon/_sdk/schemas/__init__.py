@@ -69,6 +69,8 @@ from polyaxon._sdk.schemas.v1_queue import V1Queue
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_connection import V1RunConnection
 from polyaxon._sdk.schemas.v1_run_edge import V1RunEdge
+from polyaxon._sdk.schemas.v1_run_edge_lineage import V1RunEdgeLineage
+from polyaxon._sdk.schemas.v1_run_edges_graph import V1RunEdgesGraph
 from polyaxon._sdk.schemas.v1_run_reference_catalog import V1RunReferenceCatalog
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._sdk.schemas.v1_search import V1Search

@@ -56,7 +56,7 @@ class V1RunEdgeKind(str, PEnum):
     RUN = "run"
     TB = "tb"
     BUILD = "build"
-    Manual = "manual"
+    MANUAL = "manual"
 
 
 class V1RunPending(str, PEnum):

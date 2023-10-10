@@ -58,6 +58,7 @@ from polyaxon._schemas.lifecycle import (
     V1Statuses,
 )
 from polyaxon._schemas.types import V1ArtifactsType
+from polyaxon._sdk.schemas import V1RunEdgeLineage, V1RunEdgesGraph
 from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
@@ -2119,6 +2120,10 @@ class RunClient:
         if not self._has_meta_key("has_events"):
             self.log_meta(has_events=True)
 
+    def _log_has_traces(self):
+        if not self._has_meta_key("has_traces"):
+            self.log_meta(has_traces=True, has_events=True)
+
     def _log_has_metrics(self):
         data = {}
         if not self._has_meta_key("has_metrics"):
@@ -2647,6 +2652,21 @@ class RunClient:
         )
 
     @client_handler(check_no_op=True, check_offline=True)
+    def set_run_edges_lineage(self, run_edges: List[V1RunEdgeLineage]):
+        """
+        Set run edges lineage.
+
+        Args:
+            run_edges: List[V1RunEdgeLineage], list of run edges.
+        """
+        return self.client.runs_v1.set_run_edges_lineage(
+            self.owner,
+            self.project,
+            self.run_uuid,
+            body=V1RunEdgesGraph(edges=run_edges),
+        )
+
+    @client_handler(check_no_op=True, check_offline=True)
     def promote_to_artifact_version(
         self,
         version: str,
@@ -2669,7 +2689,7 @@ class RunClient:
             description: str, optional, the version description.
             tags: str or List[str], optional.
             content: str or dict, optional, content/metadata (JSON object) of the version.
-            connection: str, optional, a uuid reference to a connection.
+            connection: str, optional, uuid reference to a connection.
             artifacts: List[str], optional, list of artifacts to highlight(requires passing a run)
             force: bool, optional, to force push, i.e. update if exists.
 
