@@ -1,7 +1,7 @@
 ---
 version:  1.1
 kind: component
-tags: [ray]
+tags: [dask]
 termination:
   ttl: 12
 run:
