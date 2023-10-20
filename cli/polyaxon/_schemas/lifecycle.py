@@ -335,6 +335,7 @@ class V1StatusCondition(BaseCondition):
     message: Optional[StrictStr]
     last_update_time: Optional[datetime.datetime]
     last_transition_time: Optional[datetime.datetime]
+    meta_info: Optional[Dict[str, Any]]
 
 
 class V1Status(BaseSchemaModel):
@@ -351,6 +352,7 @@ class V1StageCondition(BaseCondition):
     message: Optional[StrictStr]
     last_update_time: Optional[datetime.datetime]
     last_transition_time: Optional[datetime.datetime]
+    meta_info: Optional[Dict[str, Any]]
 
 
 class V1Stage(BaseSchemaModel):
