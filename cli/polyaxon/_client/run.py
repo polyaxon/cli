@@ -1675,6 +1675,15 @@ class RunClient:
         )
 
     @client_handler(check_no_op=True, check_offline=True)
+    def skip(self):
+        """Skip the current run."""
+        self.client.runs_v1.skip_run(
+            self.owner,
+            self.project,
+            self.run_uuid,
+        )
+
+    @client_handler(check_no_op=True, check_offline=True)
     def approve(self):
         """Approves the current run if it's pending upload or human approval."""
         self.client.runs_v1.approve_run(

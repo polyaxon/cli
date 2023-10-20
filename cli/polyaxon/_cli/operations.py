@@ -740,6 +740,58 @@ def stop(ctx, project, uid, yes):
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
 @click.option(
+    "--yes",
+    "-y",
+    is_flag=True,
+    default=False,
+    help="Automatic yes to prompts. "
+    'Assume "yes" as answer to all prompts and run non-interactively.',
+)
+@click.pass_context
+@clean_outputs
+def skip(ctx, project, uid, yes):
+    """Skip run.
+
+    Uses /docs/core/cli/#caching
+
+    Examples:
+
+    \b
+    $ polyaxon ops skip
+
+    \b
+    $ polyaxon ops skip --uid 8aac02e3a62a4f0aaa257c59da5eab80
+    """
+    owner, project_name, run_uuid = get_project_run_or_local(
+        project or ctx.obj.get("project"),
+        uid or ctx.obj.get("run_uuid"),
+        is_cli=True,
+    )
+    if not yes and not click.confirm(
+        "Are sure you want to stop " "run `{}`".format(run_uuid)
+    ):
+        Printer.print("Exiting without stopping run.")
+        sys.exit(0)
+
+    try:
+        polyaxon_client = RunClient(
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
+        )
+        polyaxon_client.skip()
+    except (ApiException, HTTPError) as e:
+        handle_cli_error(e, message="Could not skip run `{}`.".format(run_uuid))
+        sys.exit(1)
+
+    Printer.success("Run `{}` is skipped.".format(run_uuid))
+
+
+@ops.command()
+@click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
+@click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
+@click.option(
     "--name",
     type=str,
     help="Name to give to this run, must be unique within the project, could be none.",
