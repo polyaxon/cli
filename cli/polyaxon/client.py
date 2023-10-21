@@ -29,5 +29,5 @@ from polyaxon._sdk.api import (
 )
 from polyaxon._sdk.async_client.api_client import AsyncApiClient
 from polyaxon._sdk.configuration import Configuration
-from polyaxon._sdk.schemas import *
 from polyaxon._sdk.sync_client.api_client import ApiClient
+from polyaxon.schemas import *
