@@ -3,6 +3,7 @@ import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 from clipped.utils.dates import parse_datetime
 from clipped.utils.enums import PEnum
 from clipped.utils.tz import now
@@ -297,7 +298,7 @@ class LifeCycle:
         return False
 
 
-class BaseCondition(BaseSchemaModel):
+class BaseCondition(BaseAllowSchemaModel):
     @classmethod
     def get_condition(
         cls,
@@ -307,6 +308,7 @@ class BaseCondition(BaseSchemaModel):
         last_transition_time=None,
         reason=None,
         message=None,
+        meta_info=None,
     ):
         current_time = now()
         last_update_time = last_update_time or current_time
@@ -318,6 +320,7 @@ class BaseCondition(BaseSchemaModel):
             last_transition_time=last_transition_time,
             reason=reason,
             message=message,
+            meta_info=meta_info,
         )
 
     def __eq__(self, other):
