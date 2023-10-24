@@ -1068,10 +1068,10 @@ def execute(ctx, project, uid, executor):
         else:
             polyaxon_client.log_failed(
                 reason="CliDockerExecutor",
-                message="Operation was failed.\n{}".format(result["message"]),
+                message="Operation failed.\n{}".format(result["message"]),
             )
 
-    def execute_on_k8s(response: V1Run):
+    def _execute_on_k8s(response: V1Run):
         from polyaxon._k8s.executor.executor import Executor
 
         polyaxon_client.log_status(
@@ -1171,17 +1171,28 @@ def execute(ctx, project, uid, executor):
         reason="CliExecutor",
         message="Operation is pulled by CLI.",
     )
-    if executor == RunnerKind.DOCKER:
-        _execute_on_docker(polyaxon_client.run_data)
-    elif executor == RunnerKind.K8S:
-        execute_on_k8s(polyaxon_client.run_data)
-    elif executor == RunnerKind.PROCESS:
-        _execute_on_local_process(polyaxon_client.run_data)
-    else:
+
+    def _execute():
+        if executor == RunnerKind.DOCKER:
+            _execute_on_docker(polyaxon_client.run_data)
+        elif executor == RunnerKind.K8S:
+            _execute_on_k8s(polyaxon_client.run_data)
+        elif executor == RunnerKind.PROCESS:
+            _execute_on_local_process(polyaxon_client.run_data)
+        else:
+            polyaxon_client.log_failed(
+                reason="CliExecutor",
+                message="Local executor is not supported {}.".format(executor),
+            )
+
+    try:
+        _execute()
+    except KeyboardInterrupt:
         polyaxon_client.log_failed(
             reason="CliExecutor",
-            message="Local executor is not supported {}.".format(executor),
+            message="Operation was canceled with `KeyboardInterrupt`.",
         )
+        sys.exit(1)
 
 
 @ops.command()
