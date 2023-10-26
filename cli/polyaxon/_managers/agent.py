@@ -14,6 +14,7 @@ class AgentConfigManager(ConfigManager):
     VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".agent"
     CONFIG: Type[AgentConfig] = AgentConfig
+    PERSIST_FORMAT = "yaml"
 
     @classmethod
     def get_config_or_default(cls) -> AgentConfig:

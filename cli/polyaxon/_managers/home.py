@@ -13,6 +13,7 @@ class HomeConfigManager(ConfigManager):
     VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".home"
     CONFIG: Type[HomeConfig] = HomeConfig
+    PERSIST_FORMAT = "yaml"
 
     @classmethod
     def get_config_defaults(cls) -> Dict[str, str]:
