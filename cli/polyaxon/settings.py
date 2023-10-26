@@ -38,7 +38,7 @@ AGENT_CONFIG: Optional[AgentConfig] = None
 PolyaxonServices.set_service_name()
 
 
-def set_agent_config(config: Optional[AgentConfig] = None):
+def set_agent_config(config: Optional[AgentConfig] = None, persist: bool = False):
     from polyaxon._connections import CONNECTION_CONFIG
     from polyaxon._managers.agent import AgentConfigManager
 
@@ -54,6 +54,9 @@ def set_agent_config(config: Optional[AgentConfig] = None):
 
     # Always sync the connections catalog to the current agent config
     CONNECTION_CONFIG.set_connections_catalog(AGENT_CONFIG.all_connections)
+
+    if persist:
+        AgentConfigManager.set_config(AGENT_CONFIG)
 
 
 def set_cli_config():
