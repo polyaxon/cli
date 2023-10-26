@@ -24,7 +24,7 @@ class HomeConfigManager(ConfigManager):
         glob_path = cls.get_global_config_path()
         home_config = cls._CONFIG_READER.read_configs(
             [
-                ConfigSpec(glob_path, config_type=".json", check_if_exists=False),
+                ConfigSpec(glob_path, config_type=".yaml", check_if_exists=False),
                 os.environ,
                 {"dummy": "dummy"},
             ]

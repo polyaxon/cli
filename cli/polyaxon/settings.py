@@ -38,6 +38,12 @@ AGENT_CONFIG: Optional[AgentConfig] = None
 PolyaxonServices.set_service_name()
 
 
+def set_home_config(config: Optional[HomeConfig] = None):
+    global HOME_CONFIG
+
+    HOME_CONFIG = config or HomeConfigManager.get_config_from_env()
+
+
 def set_agent_config(config: Optional[AgentConfig] = None, persist: bool = False):
     from polyaxon._connections import CONNECTION_CONFIG
     from polyaxon._managers.agent import AgentConfigManager

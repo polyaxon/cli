@@ -10,7 +10,6 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_ARTIFACTS_ROOT,
     ENV_KEYS_CONTEXT_ROOT,
     ENV_KEYS_OFFLINE_ROOT,
-    ENV_KEYS_SANDBOX_ROOT,
 )
 
 CONTEXT_RELATED_RUNS = "_related_runs"

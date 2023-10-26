@@ -4,6 +4,7 @@ import click
 
 from clipped.formatting import Printer
 from clipped.utils.dicts import dict_to_tabulate
+from clipped.utils.paths import check_or_create_path
 
 from polyaxon import settings
 from polyaxon._cli.errors import handle_cli_error
@@ -13,6 +14,34 @@ from polyaxon._managers.client import ClientConfigManager
 from polyaxon._managers.home import HomeConfigManager
 from polyaxon._managers.user import UserConfigManager
 from polyaxon.logger import clean_outputs, logger
+
+
+def set_home_path(home_path: str):
+    try:
+        _config = HomeConfigManager.get_config_or_default()
+    except Exception as e:
+        logger.debug(
+            "Home configuration could not be loaded.\n"
+            "Error: %s\n"
+            "Purging home configuration and resetting values.",
+            e,
+        )
+        logger.debug()
+        HomeConfigManager.purge()
+        _config = HomeConfigManager.get_config_or_default()
+    try:
+        check_or_create_path(home_path, is_dir=False)
+    except Exception as e:
+        handle_cli_error(
+            e, message=f"Couldn't create path configuration at {home_path}."
+        )
+        Printer.heading(
+            "Please make sure that that the path is accessible or manually create it."
+        )
+        sys.exit(1)
+    setattr(_config, "path", home_path)
+    HomeConfigManager.set_config(_config)
+    settings.set_home_config(_config)
 
 
 def validate_options(ctx, param, value):
@@ -125,7 +154,7 @@ def get(keys):
 )
 @click.option(
     "--home",
-    type=click.Path(exists=True),
+    type=click.Path(exists=False),
     help="To set POLYAXON_HOME to specify the context where the CLI/Client reads/writes global configuration.",
 )
 @click.option(
@@ -150,20 +179,8 @@ def set(**kwargs):  # pylint:disable=redefined-builtin
     """
     no_purge = kwargs.pop("no_purge", None)
     if kwargs.get("home") is not None:
-        try:
-            _config = HomeConfigManager.get_config_or_default()
-        except Exception as e:
-            logger.debug(
-                "Home configuration could not be loaded.\n"
-                "Error: %s\n"
-                "Purging home configuration and resetting values.",
-                e,
-            )
-            logger.debug()
-            HomeConfigManager.purge()
-            _config = HomeConfigManager.get_config_or_default()
-        setattr(_config, "path", kwargs.pop("home", None))
-        HomeConfigManager.set_config(_config)
+        home_path = kwargs.pop("home", None)
+        set_home_path(home_path)
 
     from polyaxon._managers.auth import AuthConfigManager
 
