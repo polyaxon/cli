@@ -1057,7 +1057,7 @@ def execute(ctx, project, uid, executor):
             )
         polyaxon_client.log_status(
             V1Statuses.RUNNING,
-            reason="CliK8SExecutor",
+            reason="CliDockerExecutor",
             message="Operation is running",
         )
         result = executor.create_from_run(response, default_auth=not is_in_ce())
@@ -1081,7 +1081,7 @@ def execute(ctx, project, uid, executor):
         )
         if not settings.AGENT_CONFIG.namespace:
             polyaxon_client.log_failed(
-                reason="CliDockerExecutor",
+                reason="CliK8SExecutor",
                 message="an agent config with defined namespace is required.",
             )
             raise Printer.error(
@@ -1091,7 +1091,7 @@ def execute(ctx, project, uid, executor):
         executor = Executor(namespace=settings.AGENT_CONFIG.namespace)
         if not executor.manager.get_version():
             polyaxon_client.log_failed(
-                reason="CliDockerExecutor",
+                reason="CliK8SExecutor",
                 message="Kubernetes is required to run this operation.",
             )
             raise Printer.error(
