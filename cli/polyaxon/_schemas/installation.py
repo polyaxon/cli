@@ -11,4 +11,5 @@ class V1Installation(BaseSchemaModel):
     dist: Optional[StrictStr]
     host: Optional[StrictStr]
     hmac: Optional[StrictStr]
+    mode: Optional[StrictStr]
     auth: Optional[List[StrictStr]]

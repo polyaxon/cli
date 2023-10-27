@@ -17,6 +17,7 @@ class PolyaxonServices(str, PEnum):
     GATEWAY = "gateway"
     STREAMS = "streams"
     SANDBOX = "sandbox"
+    VIEWER = "viewer"
     CLI = "cli"
     INITIALIZER = "initializer"
     INIT = "init"
