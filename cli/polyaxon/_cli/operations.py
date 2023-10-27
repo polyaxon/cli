@@ -1940,12 +1940,12 @@ def dashboard(ctx, project, uid, yes, url, offline, path, server_config):
             is_cli=True,
         )
     subpath = "{}/{}/runs/{}".format(owner, project_name, run_uuid)
-    get_dashboard(
-        dashboard_url=get_dashboard_url(subpath=subpath), url_only=url, yes=yes
-    )
+    dashboard_url = get_dashboard_url(subpath=subpath)
+    get_dashboard(dashboard_url=dashboard_url, url_only=url, yes=yes)
     if offline:
         from haupt.cli.viewer import sanitize_server_config, viewer
 
+        os.environ["POLYAXON_DASHBOARD_URL"] = dashboard_url
         server_config = sanitize_server_config(server_config)
         ctx.invoke(viewer, path=path, **server_config)
 
