@@ -3,6 +3,7 @@ import os
 from typing import List, Optional
 
 from clipped.utils.enums import get_enum_value
+from clipped.utils.versions import clean_version_post_suffix
 
 from polyaxon import pkg
 from polyaxon._connections import V1Connection
@@ -158,7 +159,11 @@ class V1PolyaxonCleaner(BaseServiceConfig):
 
     def get_image(self) -> str:
         image = self.image or "polyaxon/polyaxon-init"
-        image_tag = self.image_tag if self.image_tag is not None else pkg.VERSION
+        image_tag = (
+            self.image_tag
+            if self.image_tag is not None
+            else clean_version_post_suffix(pkg.VERSION)
+        )
         return "{}:{}".format(image, image_tag) if image_tag else image
 
     def get_resources(self) -> k8s_schemas.V1ResourceRequirements:
@@ -180,7 +185,7 @@ def get_default_cleaner_container(
         run_uuid, get_enum_value(run_kind)
     )
     image = "polyaxon/polyaxon-init"
-    image_tag = pkg.VERSION
+    image_tag = clean_version_post_suffix(pkg.VERSION)
     image_pull_policy = PullPolicy.IF_NOT_PRESENT.value
     resources = get_cleaner_resources()
     if cleaner:
@@ -210,7 +215,7 @@ def get_batch_cleaner_container(
         store.kind.replace("_", "-"), store.name, subpaths
     )
     image = "polyaxon/polyaxon-init"
-    image_tag = pkg.VERSION
+    image_tag = clean_version_post_suffix(pkg.VERSION)
     image_pull_policy = PullPolicy.IF_NOT_PRESENT.value
     resources = get_cleaner_resources()
     if cleaner:

@@ -1,5 +1,7 @@
 from typing import Optional
 
+from clipped.utils.versions import clean_version_post_suffix
+
 from polyaxon import pkg
 from polyaxon._containers.names import MAIN_JOB_CONTAINER
 from polyaxon._containers.pull_policy import PullPolicy
@@ -154,7 +156,11 @@ class V1PolyaxonNotifier(BaseServiceConfig):
 
     def get_image(self) -> str:
         image = self.image or "polyaxon/polyaxon-events-handlers"
-        image_tag = self.image_tag if self.image_tag is not None else pkg.VERSION
+        image_tag = (
+            self.image_tag
+            if self.image_tag is not None
+            else clean_version_post_suffix(pkg.VERSION)
+        )
         return "{}:{}".format(image, image_tag) if image_tag else image
 
     def get_resources(self) -> k8s_schemas.V1ResourceRequirements:
@@ -165,7 +171,7 @@ def get_default_notification_container(
     notifier: Optional[V1PolyaxonNotifier] = None,
 ) -> k8s_schemas.V1Container:
     image = "polyaxon/polyaxon-events-handlers"
-    image_tag = pkg.VERSION
+    image_tag = clean_version_post_suffix(pkg.VERSION)
     image_pull_policy = PullPolicy.IF_NOT_PRESENT.value
     resources = get_notifier_resources()
     if notifier:

@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Union
 
 from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.utils.versions import clean_version_post_suffix
 
 from polyaxon import pkg
 from polyaxon._containers.pull_policy import PullPolicy
@@ -103,7 +104,11 @@ class V1PolyaxonInitContainer(BaseSchemaModel):
 
     def get_image(self) -> str:
         image = self.image or "polyaxon/polyaxon-init"
-        image_tag = self.image_tag if self.image_tag is not None else pkg.VERSION
+        image_tag = (
+            self.image_tag
+            if self.image_tag is not None
+            else clean_version_post_suffix(pkg.VERSION)
+        )
         return "{}:{}".format(image, image_tag) if image_tag else image
 
     def get_resources(self) -> k8s_schemas.V1ResourceRequirements:
@@ -115,7 +120,7 @@ def get_default_init_container(
 ) -> Union[Dict, V1PolyaxonInitContainer]:
     default = {
         "image": "polyaxon/polyaxon-init",
-        "imageTag": pkg.VERSION,
+        "imageTag": clean_version_post_suffix(pkg.VERSION),
         "imagePullPolicy": PullPolicy.IF_NOT_PRESENT.value,
         "resources": {
             "limits": {"cpu": "1", "memory": "500Mi"},
