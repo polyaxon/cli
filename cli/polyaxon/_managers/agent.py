@@ -13,6 +13,7 @@ class AgentConfigManager(ConfigManager):
 
     VISIBILITY = ConfigManager.Visibility.GLOBAL
     CONFIG_FILE_NAME = ".agent"
+    ALTERNATE_CONFIG_FILE_NAME = ".sandbox"
     CONFIG: Type[AgentConfig] = AgentConfig
     PERSIST_FORMAT = "yaml"
 
