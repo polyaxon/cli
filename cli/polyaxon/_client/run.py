@@ -2611,8 +2611,8 @@ class RunClient:
         """
         params = get_query_params(limit=limit, offset=offset, query=query, sort=sort)
         query = params.get("query")
-        query = query + "&" if query else "?"
-        query += "pipeline={}".format(self.run_uuid)
+        query = query + "," if query else ""
+        query += "pipeline:{}".format(self.run_uuid)
         params["query"] = query
 
         return self.client.runs_v1.list_runs(self.owner, self.project, **params)
