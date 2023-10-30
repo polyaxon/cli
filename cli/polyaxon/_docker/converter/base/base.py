@@ -123,6 +123,14 @@ class BaseConverter(
         if not resources:
             return None
 
+        if isinstance(resources, dict):
+            try:
+                resources = k8s_schemas.V1ResourceRequirements(**resources)
+            except (ValueError, TypeError) as e:
+                raise PolyaxonConverterError(
+                    f"Could not parse resources value `{resources}` from the K8S schema in container section"
+                ) from e
+
         cpus = None
         memory = None
         gpus = None
