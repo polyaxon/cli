@@ -1038,49 +1038,74 @@ def execute(ctx, project, uid, executor):
     $ polyaxon ops execute -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
 
-    def _execute_on_docker(response: V1Run):
+    Printer.warning(
+        "The `ops execute` command is experimental and might change in the future!"
+    )
+
+    def _execute_on_docker(response: V1Run, run_client: RunClient):
         from polyaxon._docker.executor import Executor
 
-        polyaxon_client.log_status(
+        run_client.log_status(
             V1Statuses.STARTING,
             reason="CliDockerExecutor",
             message="Operation is starting",
         )
         executor = Executor()
         if not executor.manager.check():
-            polyaxon_client.log_failed(
+            run_client.log_failed(
                 reason="CliDockerExecutor",
                 message="Docker is required to run this operation.",
             )
             raise Printer.error(
                 "Docker is required to run this command.", sys_exit=True
             )
-        polyaxon_client.log_status(
+        run_client.log_status(
             V1Statuses.RUNNING,
             reason="CliDockerExecutor",
             message="Operation is running",
         )
-        result = executor.create_from_run(response, default_auth=not is_in_ce())
+        if V1RunKind.has_pipeline(response.kind):
+            has_children = True
+            while has_children:
+                pipeline_runs = run_client.list_children(
+                    query="status:created", sort="created_at", limit=1
+                )
+                if pipeline_runs.results:
+                    current_run_client = RunClient(
+                        owner=owner,
+                        project=project_name,
+                        run_uuid=pipeline_runs.results[0].uuid,
+                        manual_exceptions_handling=True,
+                    )
+                    current_run_client.refresh_data()
+                    _execute_on_docker(
+                        current_run_client.run_data, run_client=current_run_client
+                    )
+                else:
+                    has_children = False
+            return
+        else:
+            result = executor.create_from_run(response, default_auth=not is_in_ce())
         if result["status"] == V1Statuses.SUCCEEDED:
-            polyaxon_client.log_succeeded(
+            run_client.log_succeeded(
                 reason="CliDockerExecutor", message="Operation was succeeded"
             )
         else:
-            polyaxon_client.log_failed(
+            run_client.log_failed(
                 reason="CliDockerExecutor",
                 message="Operation failed.\n{}".format(result["message"]),
             )
 
-    def _execute_on_k8s(response: V1Run):
+    def _execute_on_k8s(response: V1Run, run_client: RunClient):
         from polyaxon._k8s.executor.executor import Executor
 
-        polyaxon_client.log_status(
+        run_client.log_status(
             V1Statuses.STARTING,
             reason="CliK8SExecutor",
             message="Operation is starting",
         )
         if not settings.AGENT_CONFIG.namespace:
-            polyaxon_client.log_failed(
+            run_client.log_failed(
                 reason="CliK8SExecutor",
                 message="an agent config with defined namespace is required.",
             )
@@ -1090,24 +1115,24 @@ def execute(ctx, project, uid, executor):
 
         executor = Executor(namespace=settings.AGENT_CONFIG.namespace)
         if not executor.manager.get_version():
-            polyaxon_client.log_failed(
+            run_client.log_failed(
                 reason="CliK8SExecutor",
                 message="Kubernetes is required to run this operation.",
             )
             raise Printer.error(
                 "Kubernetes is required to run this command.", sys_exit=True
             )
-        polyaxon_client.log_status(
+        run_client.log_status(
             V1Statuses.RUNNING,
             reason="CliK8SExecutor",
             message="Operation is running",
         )
         executor.create_from_run(response, default_auth=not is_in_ce())
 
-    def _execute_on_local_process(response: V1Run):
+    def _execute_on_local_process(response: V1Run, run_client: RunClient):
         from polyaxon.process.executor.executor import Executor
 
-        polyaxon_client.log_status(
+        run_client.log_status(
             V1Statuses.STARTING,
             reason="CliProcessExecutor",
             message="Operation is starting",
@@ -1174,11 +1199,11 @@ def execute(ctx, project, uid, executor):
 
     def _execute():
         if executor == RunnerKind.DOCKER:
-            _execute_on_docker(polyaxon_client.run_data)
+            _execute_on_docker(polyaxon_client.run_data, polyaxon_client)
         elif executor == RunnerKind.K8S:
-            _execute_on_k8s(polyaxon_client.run_data)
+            _execute_on_k8s(polyaxon_client.run_data, polyaxon_client)
         elif executor == RunnerKind.PROCESS:
-            _execute_on_local_process(polyaxon_client.run_data)
+            _execute_on_local_process(polyaxon_client.run_data, polyaxon_client)
         else:
             polyaxon_client.log_failed(
                 reason="CliExecutor",

@@ -22,6 +22,10 @@ class V1RunKind(str, PEnum):
     BUILDER = "builder"
 
     @classmethod
+    def has_pipeline(cls, kind: str):
+        return kind in (cls.DAG, cls.MATRIX, cls.SCHEDULE, cls.TUNER)
+
+    @classmethod
     def has_service(cls, kind: str):
         return kind in (
             cls.SERVICE,
