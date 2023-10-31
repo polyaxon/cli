@@ -1078,9 +1078,8 @@ def execute(ctx, project, uid, executor):
                         manual_exceptions_handling=True,
                     )
                     current_run_client.refresh_data()
-                    _execute_on_docker(
-                        current_run_client.run_data, run_client=current_run_client
-                    )
+                    _prepare(current_run_client.run_data, current_run_client)
+                    _execute(current_run_client.run_data, current_run_client)
                 else:
                     has_children = False
             return
@@ -1191,27 +1190,42 @@ def execute(ctx, project, uid, executor):
                 )
             settings.AGENT_CONFIG.set_default_artifacts_store()
 
-    polyaxon_client.log_status(
-        V1Statuses.SCHEDULED,
-        reason="CliExecutor",
-        message="Operation is pulled by CLI.",
-    )
+    def _prepare(response: V1Run, client: RunClient):
+        if response.status == V1Statuses.CREATED:
+            try:
+                client.approve()
+                client.refresh_data()
+            except (ApiException, HTTPError) as e:
+                handle_cli_error(
+                    e, message="Could not approve run `{}`.".format(response.uuid)
+                )
+                sys.exit(1)
 
-    def _execute():
+    def _execute(response: V1Run, client: RunClient):
+        if LifeCycle.is_done(response.status):
+            return
+        if response.status != V1Statuses.COMPILED:
+            Printer.error("Run must be compiled.", sys_exit=True)
+        client.log_status(
+            V1Statuses.SCHEDULED,
+            reason="CliExecutor",
+            message="Operation is pulled by CLI.",
+        )
         if executor == RunnerKind.DOCKER:
-            _execute_on_docker(polyaxon_client.run_data, polyaxon_client)
+            _execute_on_docker(response, client)
         elif executor == RunnerKind.K8S:
-            _execute_on_k8s(polyaxon_client.run_data, polyaxon_client)
+            _execute_on_k8s(response, client)
         elif executor == RunnerKind.PROCESS:
-            _execute_on_local_process(polyaxon_client.run_data, polyaxon_client)
+            _execute_on_local_process(response, client)
         else:
-            polyaxon_client.log_failed(
+            client.log_failed(
                 reason="CliExecutor",
                 message="Local executor is not supported {}.".format(executor),
             )
 
     try:
-        _execute()
+        _prepare(polyaxon_client.run_data, polyaxon_client)
+        _execute(polyaxon_client.run_data, polyaxon_client)
     except KeyboardInterrupt:
         polyaxon_client.log_failed(
             reason="CliExecutor",
