@@ -323,7 +323,7 @@ class RunClient:
             lineages = self.get_artifacts_lineage(limit=1000).results
             self._artifacts_lineage = {l.name: l for l in lineages}
         if load_metrics:
-            self.get_metrics(self.metric_names, force)
+            self.get_metrics(self._metric_names, force=True)
 
     def _throttle_updates(self) -> bool:
         current_time = now().replace(microsecond=0)
