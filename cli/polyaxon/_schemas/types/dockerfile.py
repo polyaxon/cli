@@ -111,8 +111,8 @@ class V1DockerfileType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon.schemas import V1Component, V1Init, V1Job
-    >>> from polyaxon.schemas.types import V1DockerfileType
-    >>> from polyaxon.k8s import k8s_schemas
+    >>> from polyaxon.types import V1DockerfileType
+    >>> from polyaxon import k8s
     >>> component = V1Component(
     >>>     run=V1Job(
     >>>        init=[
@@ -124,7 +124,7 @@ class V1DockerfileType(BaseTypeConfig):
     >>>                 )
     >>>             ),
     >>>        ],
-    >>>        container=k8s_schemas.V1Container(...)
+    >>>        container=k8s.V1Container(...)
     >>>     )
     >>> )
     ```

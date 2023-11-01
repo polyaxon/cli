@@ -39,7 +39,6 @@ class V1XGBoostJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1KFReplica, V1XGBoostJob
-    >>> from polyaxon.k8s import k8s_schemas
     >>> xgb_job = V1XGBoostJob(
     >>>     clean_pod_policy='All',
     >>>     master=V1KFReplica(...),

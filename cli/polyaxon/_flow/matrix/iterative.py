@@ -43,7 +43,6 @@ class V1Iterative(BaseSearchConfig):
     ## Python usage
 
     ```python
-    >>> from polyaxon.k8s import k8s_schemas
     >>> from polyaxon.schemas import (
     >>>     V1Iterative,
     >>>     V1HpLogSpace,

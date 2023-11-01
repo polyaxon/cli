@@ -41,7 +41,6 @@ class V1MPIJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1KFReplica, V1MPIJob
-    >>> from polyaxon.k8s import k8s_schemas
     >>> mpi_job = V1MPIJob(
     >>>     clean_pod_policy='All',
     >>>     launcher=V1KFReplica(...),

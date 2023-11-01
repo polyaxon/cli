@@ -55,7 +55,6 @@ class V1MXJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1KFReplica, V1MXJob
-    >>> from polyaxon.k8s import k8s_schemas
     >>> mx_job = V1MXJob(
     >>>     clean_pod_policy='All',
     >>>     scheduler=V1KFReplica(...),

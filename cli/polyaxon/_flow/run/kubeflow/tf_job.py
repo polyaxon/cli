@@ -45,7 +45,6 @@ class V1TFJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1KFReplica, V1TFJob
-    >>> from polyaxon.k8s import k8s_schemas
     >>> tf_job = V1TFJob(
     >>>     clean_pod_policy='All',
     >>>     chief=V1KFReplica(...),

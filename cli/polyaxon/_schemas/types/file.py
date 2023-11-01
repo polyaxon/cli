@@ -116,8 +116,8 @@ class V1FileType(BaseTypeConfig):
 
     ```python
     >>> from polyaxon.schemas import V1Component, V1Init, V1Job
-    >>> from polyaxon.schemas.types import V1FileType
-    >>> from polyaxon.k8s import k8s_schemas
+    >>> from polyaxon.types import V1FileType
+    >>> from polyaxon import k8s
     >>> component = V1Component(
     >>>     run=V1Job(
     >>>        init=[
@@ -129,7 +129,7 @@ class V1FileType(BaseTypeConfig):
     >>>                 )
     >>>             ),
     >>>        ],
-    >>>        container=k8s_schemas.V1Container(...)
+    >>>        container=k8s.V1Container(...)
     >>>     )
     >>> )
     ```

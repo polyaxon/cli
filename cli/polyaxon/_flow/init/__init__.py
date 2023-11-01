@@ -106,8 +106,8 @@ class V1Init(BaseSchemaModel):
 
     ```python
     >>> from polyaxon.schemas import V1Component, V1Init, V1Job
-    >>> from polyaxon.schemas.types import V1ArtifactsType, V1DockerfileType, V1GitType
-    >>> from polyaxon.k8s import k8s_schemas
+    >>> from polyaxon.types import V1ArtifactsType, V1DockerfileType, V1GitType
+    >>> from polyaxon import k8s
     >>> component = V1Component(
     >>>     run=V1Job(
     >>>        init=[
@@ -132,8 +132,8 @@ class V1Init(BaseSchemaModel):
     >>>             V1Init(
     >>>                 connection="gcs-large-datasets",
     >>>                 artifacts=V1ArtifactsType(dirs=["data"]),
-    >>>                 container=k8s_schemas.V1Container(
-    >>>                     resources=k8s_schemas.V1ResourceRequirements(requests={"memory": "256Mi", "cpu": "500m"}), # noqa
+    >>>                 container=k8s.V1Container(
+    >>>                     resources=k8s.V1ResourceRequirements(requests={"memory": "256Mi", "cpu": "500m"}), # noqa
     >>>                 )
     >>>             ),
     >>>             V1Init(
@@ -163,14 +163,14 @@ class V1Init(BaseSchemaModel):
     >>>                 )
     >>>             ),
     >>>             V1Init(
-    >>>                 container=k8s_schemas.V1Container(
+    >>>                 container=k8s.V1Container(
     >>>                     name="myapp-container",
     >>>                     image="busybox:1.28",
     >>>                     command=['sh', '-c', 'echo custom init container']
     >>>                 )
     >>>             ),
     >>>        ],
-    >>>        container=k8s_schemas.V1Container(...)
+    >>>        container=k8s.V1Container(...)
     >>>     )
     >>> )
     ```

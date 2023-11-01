@@ -46,10 +46,9 @@ class V1RayJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1Environment, V1Init, V1RayJob, V1RayReplica
-    >>> from polyaxon.k8s import k8s_schemas
-    >>> ray_job = V1Ray(
+    >>> ray_job = V1RayJob(
     >>>     connections=["connection-name1"],
-    >>>     volumes=[k8s_schemas.V1Volume(...)],
+    >>>     volumes=[k8s.V1Volume(...)],
     >>>     ray_version="2.5.0",
     >>>     head=V1RayReplica(...),
     >>>     worker=V1RayReplica(...),

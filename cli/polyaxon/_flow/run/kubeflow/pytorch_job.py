@@ -39,7 +39,6 @@ class V1PytorchJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1KFReplica, V1PytorchJob
-    >>> from polyaxon.k8s import k8s_schemas
     >>> pytorch_job = V1PytorchJob(
     >>>     clean_pod_policy='All',
     >>>     master=V1KFReplica(...),

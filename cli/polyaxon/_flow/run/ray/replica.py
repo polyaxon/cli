@@ -46,13 +46,13 @@ class V1RayReplica(BaseSchemaModel):
 
     ```python
     >>> from polyaxon.schemas import V1Environment, V1Init, V1RayReplica
-    >>> from polyaxon.k8s import k8s_schemas
+    >>> from polyaxon import k8s
     >>> replica = V1RayReplica(
     >>>     replicas=2,
     >>>     environment=V1Environment(...),
     >>>     init=[V1Init(...)],
-    >>>     sidecars=[k8s_schemas.V1Container(...)],
-    >>>     container=k8s_schemas.V1Container(...),
+    >>>     sidecars=[k8s.V1Container(...)],
+    >>>     container=k8s.V1Container(...),
     >>> )
     ```
 

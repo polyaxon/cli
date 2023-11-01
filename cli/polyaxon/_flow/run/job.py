@@ -45,14 +45,14 @@ class V1Job(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1Environment, V1Init, V1Job
-    >>> from polyaxon.k8s import k8s_schemas
+    >>> from polyaxon import k8s
     >>> job = V1Job(
     >>>     environment=V1Environment(...),
     >>>     connections=["connection-name1"],
-    >>>     volumes=[k8s_schemas.V1Volume(...)],
+    >>>     volumes=[k8s.V1Volume(...)],
     >>>     init=[V1Init(...)],
-    >>>     sidecars=[k8s_schemas.V1Container(...)],
-    >>>     container=k8s_schemas.V1Container(...),
+    >>>     sidecars=[k8s.V1Container(...)],
+    >>>     container=k8s.V1Container(...),
     >>> )
     ```
 

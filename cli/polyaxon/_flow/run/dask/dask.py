@@ -43,7 +43,6 @@ class V1DaskJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1Environment, V1Init, V1DaskJob, V1DaskReplica
-    >>> from polyaxon.k8s import k8s_schemas
     >>> dask_job = V1DaskJob(
     >>>     job=V1DaskReplica(...),
     >>>     worker=V1DaskReplica(...),

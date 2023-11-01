@@ -83,13 +83,13 @@ class V1Dag(BaseRun):
 
     ```python
     >>> from polyaxon.schemas import V1Dag, V1Component, V1Environment, V1Operation
-    >>> from polyaxon.k8s import k8s_schemas
+    >>> from polyaxon import k8s
     >>> dag = V1Dag(
     >>>     operations=[V1Operation(...)],
     >>>     components=[V1Component(...), V1Component(...)],
     >>>     environment=V1Environment(...),
     >>>     connections=["connection-name1"],
-    >>>     volumes=[k8s_schemas.V1Volume(...)],
+    >>>     volumes=[k8s.V1Volume(...)],
     >>> )
     ```
 

@@ -40,7 +40,6 @@ class V1PaddleJob(BaseRun, DestinationImageMixin):
 
     ```python
     >>> from polyaxon.schemas import V1KFReplica, V1PaddleJob
-    >>> from polyaxon.k8s import k8s_schemas
     >>> paddle_job = V1PaddleJob(
     >>>     clean_pod_policy='All',
     >>>     masterf=V1KFReplica(...),

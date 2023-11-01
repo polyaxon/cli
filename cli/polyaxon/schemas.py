@@ -1,5 +1,11 @@
 from clipped.config.patch_strategy import PatchStrategy as V1PatchStrategy
 
+from polyaxon._auxiliaries import (
+    V1PolyaxonCleaner,
+    V1PolyaxonInitContainer,
+    V1PolyaxonNotifier,
+    V1PolyaxonSidecarContainer,
+)
 from polyaxon._connections.kinds import V1ConnectionKind
 from polyaxon._connections.schemas import (
     V1BucketConnection,
