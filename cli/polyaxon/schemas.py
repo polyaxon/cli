@@ -195,6 +195,7 @@ from polyaxon._sdk.schemas import (
     V1ListTeamMembersResponse,
     V1ListTeamsResponse,
     V1ListTokenResponse,
+    V1MultiEventsResponse,
     V1OperationBody,
     V1Organization,
     V1OrganizationMember,

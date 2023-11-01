@@ -19,7 +19,10 @@ from polyaxon._sdk.schemas.v1_entity_stage_body_request import V1EntityStageBody
 from polyaxon._sdk.schemas.v1_entity_status_body_request import (
     V1EntityStatusBodyRequest,
 )
-from polyaxon._sdk.schemas.v1_events_response import V1EventsResponse
+from polyaxon._sdk.schemas.v1_events_response import (
+    V1EventsResponse,
+    V1MultiEventsResponse,
+)
 from polyaxon._sdk.schemas.v1_list_activities_response import V1ListActivitiesResponse
 from polyaxon._sdk.schemas.v1_list_agents_response import V1ListAgentsResponse
 from polyaxon._sdk.schemas.v1_list_bookmarks_response import V1ListBookmarksResponse

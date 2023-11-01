@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
@@ -15,7 +15,10 @@ from polyaxon._sdk.schemas.v1_entity_notification_body import V1EntityNotificati
 from polyaxon._sdk.schemas.v1_entity_status_body_request import (
     V1EntityStatusBodyRequest,
 )
-from polyaxon._sdk.schemas.v1_events_response import V1EventsResponse
+from polyaxon._sdk.schemas.v1_events_response import (
+    V1EventsResponse,
+    V1MultiEventsResponse,
+)
 from polyaxon._sdk.schemas.v1_list_bookmarks_response import V1ListBookmarksResponse
 from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
     V1ListRunArtifactsResponse,
@@ -3053,7 +3056,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
         **kwargs
-    ) -> V1EventsResponse:  # noqa: E501
+    ) -> V1MultiEventsResponse:  # noqa: E501
         """Get multi runs events  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -3097,7 +3100,7 @@ class RunsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: V1EventsResponse
+        :rtype: V1MultiEventsResponse
         """
         kwargs["_return_http_data_only"] = True
         return self.get_multi_run_events_with_http_info(
@@ -3198,7 +3201,7 @@ class RunsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: tuple(V1EventsResponse, status_code(int), headers(HTTPHeaderDict))
+        :rtype: tuple(V1MultiEventsResponse, status_code(int), headers(HTTPHeaderDict))
         """
 
         _params = locals()
@@ -3287,7 +3290,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1EventsResponse",
+            "200": "V1MultiEventsResponse",
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3296,6 +3299,196 @@ class RunsV1Api(BaseApi):
         return self.api_client.call_api(
             "/streams/v1/{namespace}/{owner}/{project}/runs/multi/events/{kind}",
             "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_arguments
+    def get_multi_run_importance(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        project: Annotated[
+            StrictStr, Field(..., description="Project where the run will be assigned")
+        ],
+        body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
+        **kwargs
+    ) -> V1MultiEventsResponse:  # noqa: E501
+        """Get multi run importance  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_multi_run_importance(namespace, owner, project, body, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param project: Project where the run will be assigned (required)
+        :type project: str
+        :param body: Params/Metrics data (required)
+        :type body: object
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1MultiEventsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_multi_run_importance_with_http_info(
+            namespace, owner, project, body, **kwargs
+        )  # noqa: E501
+
+    @validate_arguments
+    def get_multi_run_importance_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        project: Annotated[
+            StrictStr, Field(..., description="Project where the run will be assigned")
+        ],
+        body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
+        **kwargs
+    ):  # noqa: E501
+        """Get multi run importance  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_multi_run_importance_with_http_info(namespace, owner, project, body, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param project: Project where the run will be assigned (required)
+        :type project: str
+        :param body: Params/Metrics data (required)
+        :type body: object
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1MultiEventsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = ["namespace", "owner", "project", "body"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_multi_run_importance" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["project"]:
+            _path_params["project"] = _params["project"]
+
+        # process the query parameters
+        _query_params = []
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1MultiEventsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/{owner}/{project}/runs/multi/importance",
+            "POST",
             _path_params,
             _query_params,
             _header_params,
@@ -5840,213 +6033,6 @@ class RunsV1Api(BaseApi):
         return self.api_client.call_api(
             "/streams/v1/{namespace}/{owner}/{project}/runs/{uuid}/events/{kind}",
             "GET",
-            _path_params,
-            _query_params,
-            _header_params,
-            body=_body_params,
-            post_params=_form_params,
-            files=_files,
-            response_types_map=_response_types_map,
-            auth_settings=_auth_settings,
-            async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
-            _preload_content=_params.get("_preload_content", True),
-            _request_timeout=_params.get("_request_timeout"),
-            collection_formats=_collection_formats,
-            _request_auth=_params.get("_request_auth"),
-        )
-
-    @validate_arguments
-    def get_run_importance(
-        self,
-        namespace: Annotated[StrictStr, Field(..., description="namespace")],
-        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project where the run will be assigned")
-        ],
-        uuid: Annotated[
-            StrictStr, Field(..., description="Uuid identifier of the entity")
-        ],
-        body: Annotated[
-            Dict[str, StrictStr], Field(..., description="Params/Metrics data")
-        ],
-        **kwargs
-    ) -> V1EventsResponse:  # noqa: E501
-        """Get run importance  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.get_run_importance(namespace, owner, project, uuid, body, async_req=True)
-        >>> result = thread.get()
-
-        :param namespace: namespace (required)
-        :type namespace: str
-        :param owner: Owner of the namespace (required)
-        :type owner: str
-        :param project: Project where the run will be assigned (required)
-        :type project: str
-        :param uuid: Uuid identifier of the entity (required)
-        :type uuid: str
-        :param body: Params/Metrics data (required)
-        :type body: object
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: V1EventsResponse
-        """
-        kwargs["_return_http_data_only"] = True
-        return self.get_run_importance_with_http_info(
-            namespace, owner, project, uuid, body, **kwargs
-        )  # noqa: E501
-
-    @validate_arguments
-    def get_run_importance_with_http_info(
-        self,
-        namespace: Annotated[StrictStr, Field(..., description="namespace")],
-        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project where the run will be assigned")
-        ],
-        uuid: Annotated[
-            StrictStr, Field(..., description="Uuid identifier of the entity")
-        ],
-        body: Annotated[
-            Dict[str, StrictStr], Field(..., description="Params/Metrics data")
-        ],
-        **kwargs
-    ):  # noqa: E501
-        """Get run importance  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.get_run_importance_with_http_info(namespace, owner, project, uuid, body, async_req=True)
-        >>> result = thread.get()
-
-        :param namespace: namespace (required)
-        :type namespace: str
-        :param owner: Owner of the namespace (required)
-        :type owner: str
-        :param project: Project where the run will be assigned (required)
-        :type project: str
-        :param uuid: Uuid identifier of the entity (required)
-        :type uuid: str
-        :param body: Params/Metrics data (required)
-        :type body: object
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _return_http_data_only: response data without head status code
-                                       and headers
-        :type _return_http_data_only: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the authentication
-                              in the spec for a single request.
-        :type _request_auth: dict, optional
-        :type _content_type: string, optional: force content-type for the request
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: tuple(V1EventsResponse, status_code(int), headers(HTTPHeaderDict))
-        """
-
-        _params = locals()
-
-        _all_params = ["namespace", "owner", "project", "uuid", "body"]
-        _all_params.extend(
-            [
-                "async_req",
-                "_return_http_data_only",
-                "_preload_content",
-                "_request_timeout",
-                "_request_auth",
-                "_content_type",
-                "_headers",
-            ]
-        )
-
-        # validate the arguments
-        for _key, _val in _params["kwargs"].items():
-            if _key not in _all_params:
-                raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method get_run_importance" % _key
-                )
-            _params[_key] = _val
-        del _params["kwargs"]
-
-        _collection_formats = {}
-
-        # process the path parameters
-        _path_params = {}
-        if _params["namespace"]:
-            _path_params["namespace"] = _params["namespace"]
-        if _params["owner"]:
-            _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
-        if _params["uuid"]:
-            _path_params["uuid"] = _params["uuid"]
-
-        # process the query parameters
-        _query_params = []
-
-        # process the header parameters
-        _header_params = dict(_params.get("_headers", {}))
-
-        # process the form parameters
-        _form_params = []
-        _files = {}
-
-        # process the body parameter
-        _body_params = None
-        if _params["body"]:
-            _body_params = _params["body"]
-
-        # set the HTTP header `Accept`
-        _header_params["Accept"] = self.api_client.select_header_accept(
-            ["application/json"]
-        )  # noqa: E501
-
-        # set the HTTP header `Content-Type`
-        _content_types_list = _params.get(
-            "_content_type",
-            self.api_client.select_header_content_type(["application/json"]),
-        )
-        if _content_types_list:
-            _header_params["Content-Type"] = _content_types_list
-
-        # authentication setting
-        _auth_settings = ["ApiKey"]  # noqa: E501
-
-        _response_types_map = {
-            "200": "V1EventsResponse",
-            "204": "object",
-            "403": "object",
-            "404": "object",
-        }
-
-        return self.api_client.call_api(
-            "/streams/v1/{namespace}/{owner}/{project}/runs/{uuid}/importance",
-            "POST",
             _path_params,
             _query_params,
             _header_params,
