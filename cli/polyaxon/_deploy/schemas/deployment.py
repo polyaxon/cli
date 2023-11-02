@@ -172,9 +172,7 @@ def validate_deployment_chart(
     agent,
     environment,
 ):
-    if deployment_chart == DeploymentCharts.AGENT and (
-        not agent or agent.enabled is False
-    ):
+    if deployment_chart == DeploymentCharts.AGENT and not agent:
         raise ValueError("Agent deployment requires a valid `agent` key configuration.")
 
     if deployment_chart == DeploymentCharts.PLATFORM and agent and agent.enabled:
