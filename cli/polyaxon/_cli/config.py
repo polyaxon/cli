@@ -121,25 +121,67 @@ def get(keys):
     Examples:
 
     \b
-    $ polyaxon config get host verify-ssl
+    $ polyaxon config get home host verify-ssl
     """
-    _config = ClientConfigManager.get_config_or_default()
 
     if not keys:
         return
 
+    keys = set(keys)
+
+    # Check Home config
+    _config = HomeConfigManager.get_config_or_default()
+    print_values = {}
+    if "home" in keys:
+        if hasattr(_config, "path"):
+            print_values["home"] = getattr(_config, "path")
+            keys.discard("home")
+    if print_values:
+        Printer.heading("Home config:")
+        Printer.dict_tabulate(print_values)
+
+    not_found_keys = set([])
+
+    # Check client config
+    _config = ClientConfigManager.get_config_or_default()
     print_values = {}
     for key in keys:
         key = key.replace("-", "_")
         if hasattr(_config, key):
             print_values[key] = getattr(_config, key)
+            not_found_keys.discard(key)
         else:
-            Printer.print("Key `{}` is not recognised.".format(key))
+            not_found_keys.add(key)
+    if print_values:
+        Printer.heading("Client config:")
+        Printer.dict_tabulate(print_values)
 
-    Printer.dict_tabulate(print_values)
+    keys = not_found_keys
+    not_found_keys = set([])
+
+    # Check cli config
+    _config = CliConfigManager.get_config_or_default()
+    print_values = {}
+    for key in keys:
+        key = key.replace("-", "_")
+        if hasattr(_config, key):
+            print_values[key] = getattr(_config, key)
+            not_found_keys.discard(key)
+        else:
+            not_found_keys.add(key)
+    if print_values:
+        Printer.heading("CLI config:")
+        Printer.dict_tabulate(print_values)
+
+    if not_found_keys:
+        Printer.print(
+            "The following keys `{}` were not found in any configuration.".format(
+                not_found_keys
+            )
+        )
 
 
-@config.command()
+@config.command(name="set")
 @click.option("--debug", type=bool, help="To set the verbosity of the client.")
 @click.option("--host", type=str, help="To set the server endpoint.")
 @click.option(
@@ -169,10 +211,16 @@ def get(keys):
     help="To reconfigure the host without purging auth and other config options.",
 )
 @clean_outputs
-def set(**kwargs):  # pylint:disable=redefined-builtin
+def set_(**kwargs):  # pylint:disable=redefined-builtin
     """Set the global config values.
 
     Examples:
+
+    \b
+    $ polyaxon config set --home=/tmp/.polyaxon
+
+    \b
+    $ polyaxon config set --home=
 
     \b
     $ polyaxon config set --host=localhost
