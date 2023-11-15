@@ -100,7 +100,9 @@ class AuthServicesConfig(BaseSchemaModel):
     gitlab: Optional[ExternalBackend]
     bitbucket: Optional[ExternalBackend]
     google: Optional[ExternalBackend]
-    saml: Optional[ExternalBackend]
+    okta: Optional[ExternalBackend]
+    onelogin: Optional[ExternalBackend]
+    azuread: Optional[ExternalBackend]
 
 
 class ExternalServicesConfig(BaseSchemaModel):
