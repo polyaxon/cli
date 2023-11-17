@@ -5,6 +5,6 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1ArtifactTree(BaseAllowSchemaModel):
-    files: Optional[Dict[str, StrictStr]]
+    files: Optional[Dict[str, int]]
     dirs: Optional[List[StrictStr]]
     is_done: Optional[bool]
