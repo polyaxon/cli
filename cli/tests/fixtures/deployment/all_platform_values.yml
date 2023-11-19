@@ -462,14 +462,14 @@ metrics:
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
   livenessProbe:
     enabled: true
-    initialDelaySeconds: 30
+    initialDelaySeconds: 20
     periodSeconds: 5
     timeoutSeconds: 2
     failureThreshold: 3
     successThreshold: 1
   readinessProbe:
     enabled: true
-    initialDelaySeconds: 30
+    initialDelaySeconds: 20
     periodSeconds: 5
     timeoutSeconds: 2
     failureThreshold: 3
