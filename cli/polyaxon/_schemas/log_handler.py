@@ -3,11 +3,10 @@ import base64
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
+from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon._schemas.base import BaseSchemaModel
 
-
-class V1LogHandler(BaseSchemaModel):
+class V1LogHandler(BaseAllowSchemaModel):
     _IDENTIFIER = "log_handler"
 
     dsn: Optional[StrictStr]

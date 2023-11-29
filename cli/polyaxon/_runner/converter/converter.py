@@ -731,7 +731,7 @@ class BaseConverter:
                     )
                 elif V1ConnectionKind.is_git(connection_spec.kind):
                     if init_connection.git:  # Update the default schema
-                        connection_spec.schema_.patch(init_connection.git)
+                        patch_git(connection_spec.schema_, init_connection.git)
                     containers.append(
                         self._get_git_init_container(
                             run_path=self.run_path,
