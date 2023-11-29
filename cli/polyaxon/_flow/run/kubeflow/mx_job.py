@@ -26,7 +26,7 @@ class V1MXJob(BaseRun, DestinationImageMixin):
     Args:
         kind: str, should be equal `mxjob`
         clean_pod_policy: str, one of [`All`, `Running`, `None`]
-        scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/scheduling-policy/), optional  # noqa
+        scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/kubeflow-scheduling-policy/), optional  # noqa
         mode: str, one of [`MXTrain`, `MXTune`]
         scheduler: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
         server: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional

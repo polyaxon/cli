@@ -7,6 +7,14 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class V1SchedulingPolicy(BaseSchemaModel):
+    """Scheduling policy for Kubeflow distributed runs.
+
+    Args:
+        min_available: int, optional
+        queue: str, optional
+        priority_class: str, optional
+    """
+
     _IDENTIFIER = "schedulingPolicy"
 
     min_available: Optional[IntOrRef] = Field(alias="minAvailable")

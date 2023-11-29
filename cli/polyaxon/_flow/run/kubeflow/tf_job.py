@@ -20,7 +20,7 @@ class V1TFJob(BaseRun, DestinationImageMixin):
     Args:
         kind: str, should be equal `tfjob`
         clean_pod_policy: str, one of [`All`, `Running`, `None`]
-        scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/scheduling-policy/), optional  # noqa
+        scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/kubeflow-scheduling-policy/), optional  # noqa
         enable_dynamic_worker: boolean
         chief: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
         ps: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional

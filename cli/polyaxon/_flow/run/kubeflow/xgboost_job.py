@@ -20,7 +20,7 @@ class V1XGBoostJob(BaseRun, DestinationImageMixin):
     Args:
         kind: str, should be equal `xgbjob`
         clean_pod_policy: str, one of [`All`, `Running`, `None`]
-        scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/scheduling-policy/), optional  # noqa
+        scheduling_policy: [V1SchedulingPolicy](/docs/experimentation/distributed/kubeflow-scheduling-policy/), optional  # noqa
         master: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
         worker: [V1KFReplica](/docs/experimentation/distributed/kubeflow-replica/), optional
 
