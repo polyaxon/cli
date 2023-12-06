@@ -103,6 +103,7 @@ securityContext:
   fsGroupChangePolicy: "Always"
 
 passwordLength: 4
+passwordAuth: true
 
 auth:
   enabled: false

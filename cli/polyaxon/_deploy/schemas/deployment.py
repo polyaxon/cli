@@ -198,6 +198,7 @@ class DeploymentConfig(BaseSchemaModel):
     polyaxon_secret: Optional[StrictStr] = Field(alias="polyaxonSecret")
     internal_token: Optional[StrictStr] = Field(alias="internalToken")
     password_length: Optional[StrictInt] = Field(alias="passwordLength")
+    password_auth: Optional[bool] = Field(alias="passwordAuth")
     ssl: Optional[SSLConfig]
     encryption_secret: Optional[StrictStr] = Field(alias="encryptionSecret")
     platform_secret: Optional[StrictStr] = Field(alias="platformSecret")
@@ -293,6 +294,7 @@ class DeploymentConfig(BaseSchemaModel):
         if values.get("deployment_chart") == DeploymentCharts.AGENT:
             wrong_agent_deployment_keys(
                 password_length=values.get("password_length"),
+                password_auth=values.get("password_auth"),
                 platform_secret=values.get("platform_secret"),
                 encryption_secret=values.get("encryption_secret"),
                 user=values.get("user"),

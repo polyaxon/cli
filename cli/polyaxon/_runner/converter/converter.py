@@ -711,7 +711,9 @@ class BaseConverter:
                     V1ConnectionKind.is_ssh(connection_spec.kind)
                     and init_connection.git
                 ):
-                    connection_spec.schema_ = patch_git(connection_spec.schema_, init_connection.git)
+                    connection_spec.schema_ = patch_git(
+                        connection_spec.schema_, init_connection.git
+                    )
                     containers.append(
                         self._get_git_init_container(
                             run_path=self.run_path,
@@ -731,7 +733,9 @@ class BaseConverter:
                     )
                 elif V1ConnectionKind.is_git(connection_spec.kind):
                     if init_connection.git:  # Update the default schema
-                        connection_spec.schema_ = patch_git(connection_spec.schema_, init_connection.git)
+                        connection_spec.schema_ = patch_git(
+                            connection_spec.schema_, init_connection.git
+                        )
                     containers.append(
                         self._get_git_init_container(
                             run_path=self.run_path,
