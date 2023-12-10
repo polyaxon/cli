@@ -6,6 +6,7 @@ from clipped.utils.tz import now
 from kubernetes_asyncio.client.models import V1Pod
 from kubernetes_asyncio.client.rest import ApiException
 
+from polyaxon._flow import V1RunKind
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 from traceml.logging import V1Log, V1Logs
 
@@ -104,3 +105,30 @@ async def query_k8s_pod_logs(
     if logs:
         last_time = logs[-1].timestamp
     return logs, last_time
+
+
+async def get_op_spec(
+    k8s_manager: AsyncK8sManager,
+    run_uuid: str,
+    run_kind: str,
+):
+    pods = await k8s_manager.list_pods(
+        label_selector=k8s_manager.get_managed_by_polyaxon(run_uuid)
+    )
+    pods_list = {}
+    for pod in pods or []:
+        pods_list[
+            pod.metadata.name
+        ] = k8s_manager.api_client.sanitize_for_serialization(pod)
+    data = {"pods": pods_list}
+    if V1RunKind.has_service(run_kind):
+        services = await k8s_manager.list_services(
+            label_selector=k8s_manager.get_managed_by_polyaxon(run_uuid)
+        )
+        services_list = {}
+        for service in services or []:
+            services_list[
+                service.metadata.name
+            ] = k8s_manager.api_client.sanitize_for_serialization(service)
+        data["services"] = services_list
+    return data

@@ -20,6 +20,7 @@ async def test_monitor_raise_if_no_env_is_set():
             sync_interval=6,
             monitor_outputs=True,
             monitor_logs=False,
+            monitor_spec=False,
         )
     del os.environ[ENV_KEYS_RUN_INSTANCE]
 
@@ -36,5 +37,6 @@ async def test_monitor_raise_if_no_pod_id():
             sync_interval=6,
             monitor_outputs=True,
             monitor_logs=False,
+            monitor_spec=False,
         )
     del os.environ[ENV_KEYS_RUN_INSTANCE]

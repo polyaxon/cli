@@ -33,15 +33,26 @@ class SidecarConverter(_BaseConverter):
 
     @staticmethod
     def _get_sidecar_args(
-        container_id: str, sleep_interval: int, sync_interval: int, monitor_logs: bool
+        container_id: str,
+        sleep_interval: int,
+        sync_interval: int,
+        monitor_logs: bool,
+        monitor_spec: bool,
     ) -> List[str]:
         args = [
             "--container-id={}".format(container_id),
             "--sleep-interval={}".format(sleep_interval),
             "--sync-interval={}".format(sync_interval),
         ]
+        # enable monitor logs and spec by default
+        if monitor_logs is None:
+            monitor_logs = True
+        if monitor_spec is None:
+            monitor_spec = True
         if monitor_logs:
             args.append("--monitor-logs")
+        if monitor_spec:
+            args.append("--monitor-spec")
         return args
 
     @classmethod
@@ -87,6 +98,7 @@ class SidecarConverter(_BaseConverter):
         sleep_interval = polyaxon_sidecar.sleep_interval
         sync_interval = polyaxon_sidecar.sync_interval
         monitor_logs = polyaxon_sidecar.monitor_logs
+        monitor_spec = polyaxon_sidecar.monitor_spec
         if plugins and plugins.sidecar:
             if plugins.sidecar.sleep_interval:
                 sleep_interval = plugins.sidecar.sleep_interval
@@ -94,11 +106,14 @@ class SidecarConverter(_BaseConverter):
                 sync_interval = plugins.sidecar.sync_interval
             if plugins.sidecar.monitor_logs:
                 monitor_logs = plugins.sidecar.monitor_logs
+            if plugins.sidecar.monitor_spec:
+                monitor_spec = plugins.sidecar.monitor_spec
         sidecar_args = cls._get_sidecar_args(
             container_id=container_id,
             sleep_interval=sleep_interval,
             sync_interval=sync_interval,
             monitor_logs=monitor_logs,
+            monitor_spec=monitor_spec,
         )
 
         env_from = []

@@ -36,9 +36,15 @@ from polyaxon.logger import logger
     default=False,
     help="Enable logs monitoring.",
 )
+@click.option(
+    "--monitor-spec",
+    is_flag=True,
+    default=False,
+    help="Enable spec monitoring.",
+)
 @coroutine
 async def sidecar(
-    container_id, max_retries, sleep_interval, sync_interval, monitor_logs
+    container_id, max_retries, sleep_interval, sync_interval, monitor_logs, monitor_spec
 ):
     """
     Start Polyaxon's sidecar command.
@@ -56,6 +62,7 @@ async def sidecar(
                 sync_interval=sync_interval,
                 monitor_outputs=True,
                 monitor_logs=monitor_logs,
+                monitor_spec=monitor_spec,
             )
             return
         except Exception as e:

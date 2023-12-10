@@ -32,6 +32,8 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
         resources: V1ResourceRequirements, optional.
         sleep_interval: int, optional.
         sync_interval: int, optional.
+        monitor_logs: bool, optional.
+        monitor_spec: bool, optional.
 
     ## YAML usage
 
@@ -46,6 +48,8 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
     >>>       cpu: "50m"
     >>>   sleepInterval: 5
     >>>   syncInterval: 60
+    >>>   monitorLogs: true
+    >>>   monitorSpec: true
     ```
 
     ## Fields
@@ -121,6 +125,24 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
     >>> sidecar:
     >>>   syncInterval: 5
     ```
+
+    ### monitorLogs
+
+    Whether or not to monitor the logs, default `true`.
+
+    ```yaml
+    >>> sidecar:
+    >>>   monitorLogs: true
+    ```
+
+    ### monitorSpec
+
+    Whether or not to monitor the spec, default `true`.
+
+    ```yaml
+    >>> sidecar:
+    >>>   monitorSpec: true
+    ```
     """
 
     _IDENTIFIER = "polyaxon_sidecar"
@@ -131,6 +153,7 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
     sleep_interval: Optional[IntOrRef] = Field(alias="sleepInterval")
     sync_interval: Optional[IntOrRef] = Field(alias="syncInterval")
     monitor_logs: Optional[BoolOrRef] = Field(alias="monitorLogs")
+    monitor_spec: Optional[BoolOrRef] = Field(alias="monitorSpec")
     resources: Optional[Union[Dict[str, Any], RefField]]
 
     def get_image(self):

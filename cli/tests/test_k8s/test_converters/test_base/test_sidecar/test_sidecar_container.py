@@ -236,7 +236,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -284,7 +285,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=-212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -329,7 +331,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id="test",
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -395,7 +398,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -444,7 +448,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -490,7 +495,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -552,7 +558,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -602,7 +609,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -649,7 +657,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -709,7 +718,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -754,7 +764,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -796,7 +807,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -852,7 +864,8 @@ class TestSidecarContainer(BaseConverterTest):
             container_id=MAIN_JOB_CONTAINER,
             sleep_interval=213,
             sync_interval=212,
-            monitor_logs=False,
+            monitor_logs=True,
+            monitor_spec=True,
         )
         assert sidecar.env == self.converter._get_sidecar_env_vars(
             env_vars=env_vars,
@@ -956,6 +969,8 @@ class TestSidecarContainer(BaseConverterTest):
             "--container-id=polyaxon-main",
             "--sleep-interval=2",
             "--sync-interval=212",
+            "--monitor-logs",
+            "--monitor-spec",
         ]
 
         plugins = V1Plugins(
@@ -982,6 +997,49 @@ class TestSidecarContainer(BaseConverterTest):
                 image_pull_policy=PullPolicy.ALWAYS,
                 sleep_interval=2,
                 sync_interval=212,
+            ),
+            env=[],
+            artifacts_store=artifacts_store,
+            plugins=plugins,
+            run_path="test",
+        )
+
+        assert sidecar.args == [
+            "--container-id=polyaxon-main",
+            "--sleep-interval=-1",
+            "--sync-interval=-1",
+            "--monitor-logs",
+            "--monitor-spec",
+        ]
+
+        plugins = V1Plugins(
+            auth=True,
+            docker=False,
+            shm=False,
+            mount_artifacts_store=False,
+            collect_logs=True,
+            collect_artifacts=True,
+            collect_resources=True,
+            auto_resume=True,
+            sync_statuses=True,
+            external_host=False,
+            sidecar=V1PolyaxonSidecarContainer(
+                sleep_interval=-1,
+                sync_interval=-1,
+                monitor_logs=False,
+                monitor_spec=False,
+            ),
+        )
+
+        sidecar = self.converter._get_sidecar_container(
+            container_id=MAIN_JOB_CONTAINER,
+            polyaxon_sidecar=V1PolyaxonSidecarContainer(
+                image="foo",
+                image_pull_policy=PullPolicy.ALWAYS,
+                sleep_interval=2,
+                sync_interval=212,
+                monitorLogs=False,
+                monitorSpec=False,
             ),
             env=[],
             artifacts_store=artifacts_store,

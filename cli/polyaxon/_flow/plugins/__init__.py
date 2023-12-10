@@ -329,6 +329,12 @@ class V1Plugins(BaseSchemaModel):
         elif self.collect_logs is None:
             self.collect_logs = default
 
+    def set_collect_spec(self, default: bool = True):
+        if self.no_api():
+            self.collect_spec = False
+        elif self.collect_spec is None:
+            self.collect_spec = default
+
     def set_collect_resources(self, default: bool = True):
         if self.no_api():
             self.collect_resources = False

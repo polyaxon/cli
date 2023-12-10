@@ -56,16 +56,35 @@ class TestSidecarContainer(BaseConverterTest):
 
     def test_get_sidecar_args(self):
         assert self.converter._get_sidecar_args(
-            container_id="job.2", sleep_interval=23, sync_interval=2, monitor_logs=None
+            container_id="job.2",
+            sleep_interval=23,
+            sync_interval=2,
+            monitor_logs=False,
+            monitor_spec=False,
         ) == ["--container-id=job.2", "--sleep-interval=23", "--sync-interval=2"]
         assert self.converter._get_sidecar_args(
-            container_id="job.2", sleep_interval=23, sync_interval=2, monitor_logs=False
-        ) == ["--container-id=job.2", "--sleep-interval=23", "--sync-interval=2"]
-        assert self.converter._get_sidecar_args(
-            container_id="job.2", sleep_interval=23, sync_interval=2, monitor_logs=True
+            container_id="job.2",
+            sleep_interval=23,
+            sync_interval=2,
+            monitor_logs=None,
+            monitor_spec=None,
         ) == [
             "--container-id=job.2",
             "--sleep-interval=23",
             "--sync-interval=2",
             "--monitor-logs",
+            "--monitor-spec",
+        ]
+        assert self.converter._get_sidecar_args(
+            container_id="job.2",
+            sleep_interval=23,
+            sync_interval=2,
+            monitor_logs=True,
+            monitor_spec=True,
+        ) == [
+            "--container-id=job.2",
+            "--sleep-interval=23",
+            "--sync-interval=2",
+            "--monitor-logs",
+            "--monitor-spec",
         ]

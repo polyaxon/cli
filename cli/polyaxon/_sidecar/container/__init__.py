@@ -15,7 +15,7 @@ from polyaxon._fs.fs import (
 from polyaxon._fs.watcher import FSWatcher
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 from polyaxon._sidecar.container.intervals import get_sync_interval
-from polyaxon._sidecar.container.monitors import sync_artifacts, sync_logs
+from polyaxon._sidecar.container.monitors import sync_artifacts, sync_logs, sync_spec
 from polyaxon._sidecar.ignore import CONTAINER_IGNORE_FOLDERS
 from polyaxon.client import RunClient
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonContainerException
@@ -29,6 +29,7 @@ async def start_sidecar(
     sync_interval: int,
     monitor_outputs: bool,
     monitor_logs: bool,
+    monitor_spec: bool,
 ):
     sync_interval = get_sync_interval(
         interval=sync_interval, sleep_interval=sleep_interval
@@ -66,6 +67,12 @@ async def start_sidecar(
     }
 
     async def monitor():
+        if monitor_spec:
+            await sync_spec(
+                k8s_manager=k8s_manager,
+                run_uuid=run_uuid,
+                run_kind=pod.metadata.annotations.get("operation.polyaxon.com/kind"),
+            )
         if monitor_logs:
             await sync_logs(
                 run_uuid=run_uuid,
