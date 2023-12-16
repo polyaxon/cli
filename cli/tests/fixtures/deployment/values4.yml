@@ -8,6 +8,8 @@ ingress:
 
 gateway:
   replicas: 1
+  concurrency: 2
+  perCore: true
   imageTag: latest
   imagePullPolicy: Always
   service:

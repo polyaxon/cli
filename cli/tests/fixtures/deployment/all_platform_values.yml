@@ -47,6 +47,8 @@ gateway:
   imageTag: 1.0.9
   imagePullPolicy: Always
   replicas: 1
+  concurrency: 2
+  perCore: true
   resources:
     limits:
       cpu: 1000m

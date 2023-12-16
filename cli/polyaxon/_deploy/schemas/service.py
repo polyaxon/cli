@@ -12,6 +12,7 @@ class DeploymentService(BaseServiceConfig):
     enabled: Optional[bool]
     replicas: Optional[StrictInt]
     concurrency: Optional[StrictInt]
+    per_core: Optional[bool] = Field(alias="perCore")
     scheme: Optional[StrictStr]
 
 

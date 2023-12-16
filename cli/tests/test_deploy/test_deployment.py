@@ -125,6 +125,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.environment == "staging"
         assert config.ingress.enabled is True
         assert config.gateway.service.type == ServiceTypes.CLUSTER_IP
+        assert config.gateway.concurrency == 2
+        assert config.gateway.per_core is True
         assert config.user.to_dict() == {"password": "test"}
         assert config.node_selector == {"polyaxon": "core"}
         assert config.tolerations is None
@@ -256,6 +258,8 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.external_services.api.port == 443
         assert config.gateway.enabled is None
         assert config.gateway.image == "polyaxon/polyaxon-streams"
+        assert config.gateway.concurrency == 4
+        assert config.gateway.per_core is False
         assert config.auth.enabled is True
         assert config.auth.external == "test"
         assert config.auth.use_resolver is True
