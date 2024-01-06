@@ -72,6 +72,11 @@ def get_fs_from_name(connection_name: str, asynchronous: bool = False, **kwargs)
     )
 
 
+def get_sync_default_fs(**kwargs):
+    connection = get_artifacts_connection()
+    return get_sync_fs_from_connection(connection=connection, **kwargs)
+
+
 async def get_default_fs(**kwargs):
     connection = get_artifacts_connection()
     return await get_async_fs_from_connection(connection=connection, **kwargs)

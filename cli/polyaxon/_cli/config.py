@@ -105,7 +105,7 @@ def show():
     if _config:
         Printer.heading("User config:")
         config_user = dict_to_tabulate(
-            _config.to_dict(),
+            _config,
             humanize_values=True,
             exclude_attrs=["theme"],
         )
