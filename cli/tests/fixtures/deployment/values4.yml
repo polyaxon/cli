@@ -94,6 +94,7 @@ ssl:
 dns:
   backend: "coredns"
   customCluster: "custom.cluster.name"
+  prefix:
 
 securityContext:
   enabled: true

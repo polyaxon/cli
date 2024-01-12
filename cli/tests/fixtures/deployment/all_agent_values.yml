@@ -35,7 +35,11 @@ ingress:
 # To set ssl and serve https with Polyaxon deployed with NodePort service
 ssl: {}
 
-dns: {}
+# Custom cluster dns setup
+dns:
+  customCluster: "cluster.local"
+  backend: "kube-dns"
+  prefix:
 
 # If you enable ingress, please set the gateway service type value to:
 #    * ClusterIP or NodePort (on GKE you cannot use ClusterIP)
@@ -114,6 +118,8 @@ agent:
   token:
   instance:
   isReplica: false
+  additionalNamespaces: [n1, n2]
+  watchCluster: true
   enabled: false
   image: polyaxon/polyaxon-agent
   imageTag: 1.0.9

@@ -170,6 +170,7 @@ class TestDeploymentConfig(BaseTestCase):
         assert config.dns == {
             "backend": "coredns",
             "customCluster": "custom.cluster.name",
+            "prefix": None,
         }
         assert config.security_context is not None
         assert config.security_context.enabled is True

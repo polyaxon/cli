@@ -23,6 +23,8 @@ class WorkerServiceConfig(DeploymentService):
 class AgentServiceConfig(DeploymentService):
     instance: Optional[StrictStr]
     token: Optional[StrictStr]
+    watch_cluster: Optional[bool] = Field(alias="watchCluster")
+    additional_namespaces: Optional[List[str]] = Field(alias="additionalNamespaces")
     is_replica: Optional[bool] = Field(alias="isReplica")
 
 

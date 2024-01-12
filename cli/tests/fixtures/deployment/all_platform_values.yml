@@ -117,6 +117,8 @@ agent:
   token:
   instance:
   isReplica: false
+  additionalNamespaces: [n1, n2]
+  watchCluster: true
   enabled: false
   image: polyaxon/polyaxon-agent
   imageTag: 1.0.9
