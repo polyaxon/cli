@@ -181,7 +181,7 @@ class BaseResolver:
         )
         self.polyaxon_sidecar = agent_env.polyaxon_sidecar
         self.polyaxon_init = agent_env.polyaxon_init
-        self.namespace = agent_env.namespace
+        self.namespace = self.compiled_operation.namespace or agent_env.namespace
         self.secrets = agent_env.secrets
         self.config_maps = agent_env.config_maps
         self.connection_by_names = agent_env.connection_by_names

@@ -501,6 +501,7 @@ class RunClient:
         matrix: Optional[Union[Dict, V1Matrix]] = None,
         presets: Optional[List[str]] = None,
         queue: Optional[str] = None,
+        namespace: Optional[str] = None,
         nocache: Optional[bool] = None,
         cache: Optional[Union[int, str, bool]] = None,
         approved: Optional[Union[int, str, bool]] = None,
@@ -530,6 +531,8 @@ class RunClient:
                  [presets](/docs/core/scheduling-presets/).
             queue: str, optional, the name of the
                  [queue](/docs/core/scheduling-strategies/queues/) to assign the run to.
+            namespace: str, optional, the namespace to create the run under, by default it will
+                 use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
                  [cache check](/docs/automation/helpers/cache/).
@@ -555,6 +558,7 @@ class RunClient:
             matrix=matrix,
             presets=presets,
             queue=queue,
+            namespace=namespace,
             nocache=nocache,
             cache=cache,
             approved=approved,
@@ -576,6 +580,7 @@ class RunClient:
         matrix: Optional[Union[Dict, V1Matrix]] = None,
         presets: Optional[List[str]] = None,
         queue: Optional[str] = None,
+        namespace: Optional[str] = None,
         nocache: Optional[bool] = None,
         cache: Optional[Union[int, str, bool]] = None,
         approved: Optional[Union[int, str, bool]] = None,
@@ -604,6 +609,8 @@ class RunClient:
                  [presets](/docs/core/scheduling-presets/).
             queue: str, optional, the name of the
                  [queue](/docs/core/scheduling-strategies/queues/) to assign the run to.
+            namespace: str, optional, the namespace to create the run under, by default it will
+                 use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
                  [cache check](/docs/automation/helpers/cache/).
@@ -629,6 +636,7 @@ class RunClient:
             matrix=matrix,
             presets=presets,
             queue=queue,
+            namespace=namespace,
             nocache=nocache,
             cache=cache,
             approved=approved,
@@ -650,6 +658,7 @@ class RunClient:
         matrix: Optional[Union[Dict, V1Matrix]] = None,
         presets: Optional[List[str]] = None,
         queue: Optional[str] = None,
+        namespace: Optional[str] = None,
         nocache: Optional[bool] = None,
         cache: Optional[Union[int, str, bool]] = None,
         approved: Optional[Union[int, str, bool]] = None,
@@ -677,6 +686,8 @@ class RunClient:
                  [presets](/docs/core/scheduling-presets/).
             queue: str, optional, the name of the
                  [queue](/docs/core/scheduling-strategies/queues/) to assign the run to.
+            namespace: str, optional, the namespace to create the run under, by default it will
+                 use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
                  [cache check](/docs/automation/helpers/cache/).
@@ -702,6 +713,7 @@ class RunClient:
             matrix=matrix,
             presets=presets,
             queue=queue,
+            namespace=namespace,
             nocache=nocache,
             cache=cache,
             approved=approved,

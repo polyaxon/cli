@@ -43,6 +43,7 @@ class TestPatchSpecifications(BaseTestCase):
                     "disable": False,
                     "ttl": self.DEFAULT_INT_VALUE,
                 },
+                "namespace": self.DEFAULT_STR_VALUE,
                 "termination": {
                     "maxRetries": self.DEFAULT_INT_VALUE,
                     "ttl": self.DEFAULT_INT_VALUE,
@@ -188,6 +189,7 @@ class TestPatchSpecifications(BaseTestCase):
                     "disable": True,
                     "ttl": self.PATCH_INT_VALUE,
                 },
+                "namespace": self.PATCH_STR_VALUE,
                 "termination": {
                     "maxRetries": self.PATCH_INT_VALUE,
                     "ttl": self.PATCH_INT_VALUE,
@@ -311,6 +313,7 @@ class TestPatchSpecifications(BaseTestCase):
                 "presets": [],
                 "queue": "",
                 "cache": {},
+                "namespace": "",
                 "termination": {},
                 "plugins": {},
                 "build": None,
@@ -508,6 +511,7 @@ class TestPatchSpecifications(BaseTestCase):
         result_dict = result.to_dict()
         assert result_dict["description"] == ""
         assert result_dict["queue"] == ""
+        assert result_dict["namespace"] == ""
         assert result_dict.pop("hubRef") == operation.hub_ref
         expected = preset.to_dict()
         assert expected.pop("isPreset") is True
@@ -552,6 +556,8 @@ class TestPatchSpecifications(BaseTestCase):
         result_dict["queue"] = "{}/{}".format(
             self.DEFAULT_STR_VALUE, self.DEFAULT_STR_VALUE
         )
+        assert result_dict["namespace"] == ""
+        result_dict["namespace"] = self.DEFAULT_STR_VALUE
         assert "conditions" not in result_dict
         result_dict["conditions"] = self.DEFAULT_STR_VALUE
         assert "name" not in result_dict

@@ -29,6 +29,7 @@ def get_op_specification(
     matrix: Optional[Union[Dict, V1Matrix]] = None,
     presets: Optional[List[str]] = None,
     queue: Optional[str] = None,
+    namespace: Optional[str] = None,
     nocache: Optional[bool] = None,
     cache: Optional[Union[int, str, bool]] = None,
     approved: Optional[Union[int, str, bool]] = None,
@@ -70,6 +71,8 @@ def get_op_specification(
         # Check only
         get_queue_info(queue)
         op_data["queue"] = queue
+    if namespace:
+        op_data["namespace"] = namespace
     if cache is not None:
         op_data["cache"] = {"disable": not to_bool(cache)}
     if nocache:

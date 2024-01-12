@@ -28,6 +28,7 @@ class V1Build(BaseSchemaModel):
         hub_ref: str
         connection: str
         queue: str, optional
+        namespace: str, optional
         presets: List[str], optional
         cache: [V1Cache](/docs/automation/helpers/cache/), optional
         params: Dict[str, [V1Param](/docs/core/specification/params/)], optional
@@ -94,6 +95,17 @@ class V1Build(BaseSchemaModel):
     ...
     ```
 
+    ### presets
+
+    The [presets](/docs/management/organizations/presets/) to use for the hook operation,
+    if provided, it will override the component's presets otherwise
+    the presets of the component will be used if available.
+
+    ```yaml
+    >>> build:
+    >>>   presets: [test]
+    ```
+
     ### queue
 
     The [queue](/docs/core/scheduling-strategies/queues/) to use.
@@ -112,15 +124,15 @@ class V1Build(BaseSchemaModel):
     >>>   queue: queue-name
     ```
 
-    ### presets
+    ### namespace
 
-    The [presets](/docs/management/organizations/presets/) to use for the hook operation,
-    if provided, it will override the component's presets otherwise
-    the presets of the component will be used if available.
+    > **Note**: Please note that this field is only available in some commercial editions.
+
+    The namespace to use, if not provided, it will default to the agent's namespace.
 
     ```yaml
     >>> build:
-    >>>   presets: [test]
+    >>>   namespace: polyaxon
     ```
 
     ### cache
@@ -211,8 +223,9 @@ class V1Build(BaseSchemaModel):
     _IDENTIFIER = "build"
     hub_ref: StrictStr = Field(alias="hubRef")
     connection: Optional[StrictStr]
-    queue: Optional[StrictStr]
     presets: Optional[Union[List[StrictStr], RefField]]
+    queue: Optional[StrictStr]
+    namespace: Optional[StrictStr]
     cache: Optional[Union[V1Cache, RefField]]
     params: Optional[Dict[str, Union[V1Param, RefField]]]
     run_patch: Optional[Dict[str, Any]] = Field(alias="runPatch")

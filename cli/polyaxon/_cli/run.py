@@ -335,6 +335,12 @@ def _run(
     "queue-name or agent-name/queue-name",
 )
 @click.option(
+    "--namespace",
+    "-ns",
+    type=str,
+    help="Namespace to use for this run. By default it will use the agent's namespace.",
+)
+@click.option(
     "--nocache",
     is_flag=True,
     default=False,
@@ -412,6 +418,7 @@ def run(
     matrix_num_runs,
     presets,
     queue,
+    namespace,
     nocache,
     cache,
     approved,
@@ -533,6 +540,7 @@ def run(
         matrix_num_runs=matrix_num_runs,
         presets=presets,
         queue=queue,
+        namespace=namespace,
         cache=cache,
         nocache=nocache,
         approved=approved,

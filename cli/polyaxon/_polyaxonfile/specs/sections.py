@@ -13,6 +13,7 @@ class Sections:
     QUEUE = "queue"
     CACHE = "cache"
     PLUGINS = "plugins"
+    NAMESPACE = "namespace"
     BUILD = "build"
     HOOKS = "hooks"
     EVENTS = "events"
@@ -55,6 +56,7 @@ class Sections:
         CACHE,
         QUEUE,
         PLUGINS,
+        NAMESPACE,
         BUILD,
         HOOKS,
         EVENTS,
@@ -89,6 +91,7 @@ class Sections:
         CACHE,
         CONNECTIONS,
         PLUGINS,
+        NAMESPACE,
         TERMINATION,
         SCHEDULE,
         DEPENDENCIES,

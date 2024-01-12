@@ -20,6 +20,7 @@ def get_op_from_schedule(
     op_spec.skip_on_upstream_skip = None
     op_spec.cache = compiled_operation.cache
     op_spec.queue = compiled_operation.queue
+    op_spec.namespace = compiled_operation.namespace
     op_spec.component.inputs = compiled_operation.inputs
     op_spec.component.outputs = compiled_operation.outputs
     op_spec.component.run = compiled_operation.run
@@ -59,6 +60,7 @@ def get_ops_from_suggestions(
         op_spec.skip_on_upstream_skip = None
         op_spec.cache = compiled_operation.cache
         op_spec.queue = compiled_operation.queue
+        op_spec.namespace = compiled_operation.namespace
         op_spec.params = params
         op_spec.component.inputs = compiled_operation.inputs
         op_spec.component.outputs = compiled_operation.outputs

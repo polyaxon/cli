@@ -20,6 +20,7 @@ class BaseComponent(BaseSchemaModel):
     tags: Optional[List[StrictStr]]
     presets: Optional[List[StrictStr]]
     queue: Optional[StrictStr]
+    namespace: Optional[StrictStr]
     cache: Optional[Union[V1Cache, RefField]]
     termination: Optional[Union[V1Termination, RefField]]
     plugins: Optional[Union[V1Plugins, RefField]]

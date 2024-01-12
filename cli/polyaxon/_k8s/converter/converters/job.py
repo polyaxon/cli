@@ -39,7 +39,7 @@ class JobConverter(JobMixin, BaseConverter):
             default_sa=default_sa,
         )
         return get_job_custom_resource(
-            namespace=self.namespace,
+            namespace=compiled_operation.namespace or self.namespace,
             main_container=replica_spec.main_container,
             sidecar_containers=replica_spec.sidecar_containers,
             init_containers=replica_spec.init_containers,

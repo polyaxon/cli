@@ -49,7 +49,7 @@ class AgentResolver(BaseSchemaModel):
 
         self.polyaxon_sidecar = agent_config.sidecar or get_default_sidecar_container()
         self.polyaxon_init = agent_config.init or get_default_init_container()
-        self.namespace = agent_config.namespace
+        self.namespace = compiled_operation.namespace or agent_config.namespace
 
     def _resolve_run_connections(
         self, compiled_operation: V1CompiledOperation, agent_config: AgentConfig

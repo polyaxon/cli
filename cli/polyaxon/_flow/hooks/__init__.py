@@ -49,6 +49,7 @@ class V1Hook(BaseSchemaModel):
         hub_ref: str
         conditions: str, optional
         queue: str, optional
+        namespace: str, optional
         presets: List[str], optional
         disableDefaults: bool, optional
         params: Dict[str, [V1Param](/docs/core/specification/params/)], optional
@@ -131,6 +132,17 @@ class V1Hook(BaseSchemaModel):
     In the example above, the hook will only run if a param is passed, or an output is logged and
     is equal to "some-value".
 
+    ### presets
+
+    The [presets](/docs/management/organizations/presets/) to use for the hook operation,
+    if provided, it will override the component's presets otherwise
+    the presets of the component will be used if available.
+
+    ```yaml
+    >>> hook:
+    >>>   presets: [test]
+    ```
+
     ### queue
 
     The [queue](/docs/core/scheduling-strategies/queues/) to use.
@@ -149,15 +161,15 @@ class V1Hook(BaseSchemaModel):
     >>>   queue: queue-name
     ```
 
-    ### presets
+    ### namespace
 
-    The [presets](/docs/management/organizations/presets/) to use for the hook operation,
-    if provided, it will override the component's presets otherwise
-    the presets of the component will be used if available.
+    > **Note**: Please note that this field is only available in some commercial editions.
+
+    The namespace to use, if not provided, it will default to the agent's namespace.
 
     ```yaml
     >>> hook:
-    >>>   presets: [test]
+    >>>   namespace: polyaxon
     ```
 
     ### disableDefaults
@@ -199,8 +211,9 @@ class V1Hook(BaseSchemaModel):
     connection: Optional[StrictStr]
     trigger: Optional[V1Statuses]
     conditions: Optional[StrictStr]
-    queue: Optional[StrictStr]
     presets: Optional[List[StrictStr]]
+    queue: Optional[StrictStr]
+    namespace: Optional[StrictStr]
     params: Optional[Union[Dict[str, V1Param], RefField]]
     disable_defaults: Optional[BoolOrRef] = Field(alias="disableDefaults")
 

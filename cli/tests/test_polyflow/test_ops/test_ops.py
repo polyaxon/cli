@@ -519,6 +519,7 @@ class TestV1Operations(BaseTestCase):
             "params": {"param1": {"value": "foo"}, "param2": {"value": "bar"}},
             "presets": ["pre1", "pre2"],
             "queue": "agent/queue",
+            "namespace": "test",
         }
         hook = V1Hook.from_dict(config_dict)
 
@@ -528,6 +529,7 @@ class TestV1Operations(BaseTestCase):
         assert op.params == hook.params
         assert op.presets == hook.presets
         assert op.queue == hook.queue
+        assert op.namespace == hook.namespace
 
         op = V1Operation.from_hook(
             hook,
@@ -547,6 +549,7 @@ class TestV1Operations(BaseTestCase):
         }
         assert op.presets == hook.presets
         assert op.queue == hook.queue
+        assert op.namespace == hook.namespace
 
     def test_from_build(self):
         config_dict = {
@@ -555,6 +558,7 @@ class TestV1Operations(BaseTestCase):
             "params": {"param1": {"value": "foo"}, "param2": {"value": "bar"}},
             "presets": ["pre1", "pre2"],
             "queue": "agent/queue",
+            "namespace": "test",
             "cache": {
                 "disable": False,
                 "ttl": 100,
@@ -580,6 +584,7 @@ class TestV1Operations(BaseTestCase):
         assert op.presets == build.presets
         assert op.queue == build.queue
         assert op.cache == build.cache
+        assert op.namespace == build.namespace
         assert op.run_patch == build.run_patch
         assert op.patch_strategy == build.patch_strategy
 
@@ -597,6 +602,7 @@ class TestV1Operations(BaseTestCase):
         assert op.presets == build.presets
         assert op.queue == build.queue
         assert op.cache == build.cache
+        assert op.namespace == build.namespace
         assert op.run_patch == build.run_patch
         assert op.patch_strategy == build.patch_strategy
 
@@ -608,6 +614,7 @@ class TestV1Operations(BaseTestCase):
             },
             "presets": ["pre1", "pre2"],
             "queue": "agent/queue",
+            "namespace": "test",
             "cache": {
                 "disable": False,
                 "ttl": 100,
@@ -635,6 +642,7 @@ class TestV1Operations(BaseTestCase):
         assert op.presets == build.presets
         assert op.queue == build.queue
         assert op.cache == build.cache
+        assert op.namespace == build.namespace
         assert op.run_patch == build.run_patch
         assert op.patch_strategy == build.patch_strategy
 
@@ -647,6 +655,7 @@ class TestV1Operations(BaseTestCase):
             },
             "presets": ["pre1", "pre2"],
             "queue": "agent/queue",
+            "namespace": "test",
             "cache": {
                 "disable": False,
                 "ttl": 100,
@@ -674,5 +683,6 @@ class TestV1Operations(BaseTestCase):
         assert op.presets == build.presets
         assert op.queue == build.queue
         assert op.cache == build.cache
+        assert op.namespace == build.namespace
         assert op.run_patch == build.run_patch
         assert op.patch_strategy == build.patch_strategy

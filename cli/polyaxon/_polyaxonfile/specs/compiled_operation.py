@@ -333,6 +333,7 @@ class CompiledOperationSpecification(BaseSpecification):
             "is_approved",
             "presets",
             "queue",
+            "namespace",
             "cache",
             "build",
             "hooks",

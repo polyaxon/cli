@@ -31,6 +31,7 @@ def get_tuner(
 
     return V1Operation(
         queue=tuner.queue,
+        namespace=tuner.namespace,
         joins=[join],
         params=params,
         hub_ref=tuner.hub_ref,

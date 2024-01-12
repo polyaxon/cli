@@ -60,6 +60,17 @@ class V1Tuner(BaseSchemaModel):
     ...
     ```
 
+    ### presets
+
+    The [presets](/docs/management/organizations/presets/) to use for the tuner operation,
+    if provided, it will override the component's presets otherwise
+    the presets of the component will be used if available.
+
+    ```yaml
+    >>> tuner:
+    >>>   presets: [test]
+    ```
+
     ### queue
 
     The [queue](/docs/core/scheduling-strategies/queues/) to use.
@@ -78,15 +89,15 @@ class V1Tuner(BaseSchemaModel):
     >>>   queue: queue-name
     ```
 
-    ### presets
+    ### namespace
 
-    The [presets](/docs/management/organizations/presets/) to use for the tuner operation,
-    if provided, it will override the component's presets otherwise
-    the presets of the component will be used if available.
+    > **Note**: Please note that this field is only available in some commercial editions.
+
+    The namespace to use, if not provided, it will default to the agent's namespace.
 
     ```yaml
     >>> tuner:
-    >>>   presets: [test]
+    >>>   namespace: polyaxon
     ```
 
     ### params
@@ -108,6 +119,7 @@ class V1Tuner(BaseSchemaModel):
     _IDENTIFIER = "tuner"
 
     hub_ref: StrictStr = Field(alias="hubRef")
-    queue: Optional[StrictStr]
     presets: Optional[Union[List[StrictStr], RefField]]
+    queue: Optional[StrictStr]
+    namespace: Optional[StrictStr]
     params: Optional[Union[Dict[str, V1Param], RefField]]

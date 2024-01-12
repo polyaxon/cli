@@ -39,6 +39,7 @@ class V1Component(
         tags: List[str], optional
         presets: List[str], optional
         queue: str, optional
+        namespace: str, optional
         cache: [V1Cache](/docs/automation/helpers/cache/), optional
         termination: [V1Termination](/docs/core/specification/termination/), optional
         plugins: [V1Plugins](/docs/core/specification/plugins/), optional
@@ -60,6 +61,7 @@ class V1Component(
     >>>   tags:
     >>>   presets:
     >>>   queue:
+    >>>   namespace:
     >>>   cache:
     >>>   termination:
     >>>   plugins:
@@ -85,6 +87,7 @@ class V1Component(
     >>>     tags=["test"],
     >>>     presets=["test"],
     >>>     queue="test",
+    >>>     namespace="test",
     >>>     cache=V1Cache(...),
     >>>     termination=V1Termination(...),
     >>>     plugins=V1Plugins(...),
@@ -195,6 +198,17 @@ class V1Component(
     ```yaml
     >>> component:
     >>>   queue: queue-name
+    ```
+
+    ### namespace
+
+    > **Note**: Please note that this field is only available in some commercial editions.
+
+    The namespace to use, if not provided, it will default to the agent's namespace.
+
+    ```yaml
+    >>> component:
+    >>>   namespace: polyaxon
     ```
 
     ### cache
