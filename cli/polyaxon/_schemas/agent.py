@@ -35,6 +35,8 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_ARTIFACTS_STORE_NAME,
     ENV_KEYS_K8S_APP_SECRET_NAME,
     ENV_KEYS_K8S_NAMESPACE,
+    ENV_KEYS_SINGLE_NAMESPACE,
+    ENV_KEYS_WATCH_CLUSTER,
 )
 from polyaxon._fs.utils import get_store_path
 from polyaxon._schemas.base import BaseSchemaModel
@@ -185,6 +187,8 @@ class AgentConfig(BaseAgentConfig):
     _IDENTIFIER = "agent"
 
     is_replica: Optional[bool] = Field(alias=ENV_KEYS_AGENT_IS_REPLICA)
+    watch_cluster: Optional[bool] = Field(alias=ENV_KEYS_WATCH_CLUSTER)
+    single_namespace: Optional[bool] = Field(alias=ENV_KEYS_SINGLE_NAMESPACE)
     sidecar: Optional[V1PolyaxonSidecarContainer] = Field(alias=ENV_KEYS_AGENT_SIDECAR)
     init: Optional[V1PolyaxonInitContainer] = Field(alias=ENV_KEYS_AGENT_INIT)
     notifier: Optional[V1PolyaxonNotifier] = Field(alias=ENV_KEYS_AGENT_NOTIFIER)
@@ -217,6 +221,18 @@ class AgentConfig(BaseAgentConfig):
             and "isReplica" in values
         ):
             values[ENV_KEYS_AGENT_IS_REPLICA] = values["isReplica"]
+        if (
+            not values.get("watch_cluster")
+            and not values.get(ENV_KEYS_WATCH_CLUSTER)
+            and "watchCluster" in values
+        ):
+            values[ENV_KEYS_WATCH_CLUSTER] = values["watchCluster"]
+        if (
+            not values.get("single_namespace")
+            and not values.get(ENV_KEYS_WATCH_CLUSTER)
+            and "singleNamespace" in values
+        ):
+            values[ENV_KEYS_SINGLE_NAMESPACE] = values["singleNamespace"]
         if (
             not values.get("use_proxy_env_vars_use_in_ops")
             and not values.get(ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS)

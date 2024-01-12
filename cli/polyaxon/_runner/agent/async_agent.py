@@ -185,7 +185,7 @@ class BaseAsyncAgent(BaseAgent):
             )
         return None
 
-    async def submit_run(self, run_data: Tuple[str, str, str, str]):
+    async def submit_run(self, run_data: Tuple[str, str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = await self.prepare_run_resource(
             owner_name=run_owner,
@@ -197,9 +197,13 @@ class BaseAsyncAgent(BaseAgent):
         if not resource:
             return
 
+        namespace = None if len(run_data) < 5 else run_data[4]
         try:
             await self.executor.create(
-                run_uuid=run_uuid, run_kind=run_data[1], resource=resource
+                run_uuid=run_uuid,
+                run_kind=run_data[1],
+                resource=resource,
+                namespace=namespace,
             )
         except ApiException as e:
             if e.status == 409:
@@ -222,7 +226,7 @@ class BaseAsyncAgent(BaseAgent):
             )
 
     async def make_and_create_run(
-        self, run_data: Tuple[str, str, str, str], default_auth: bool = False
+        self, run_data: Tuple[str, str, str, str, str], default_auth: bool = False
     ):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = await self.make_run_resource(
@@ -236,9 +240,14 @@ class BaseAsyncAgent(BaseAgent):
         if not resource:
             return
 
+        namepsace = None if len(run_data) < 5 else run_data[4]
+
         try:
             await self.executor.create(
-                run_uuid=run_uuid, run_kind=run_data[1], resource=resource
+                run_uuid=run_uuid,
+                run_kind=run_data[1],
+                resource=resource,
+                namespace=namepsace,
             )
         except ApiException as e:
             if e.status == 409:
@@ -252,7 +261,7 @@ class BaseAsyncAgent(BaseAgent):
                 )
             )
 
-    async def apply_run(self, run_data: Tuple[str, str, str, str]):
+    async def apply_run(self, run_data: Tuple[str, str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = await self.prepare_run_resource(
             owner_name=run_owner,
@@ -264,9 +273,14 @@ class BaseAsyncAgent(BaseAgent):
         if not resource:
             return
 
+        namespace = None if len(run_data) < 5 else run_data[4]
+
         try:
             await self.executor.apply(
-                run_uuid=run_uuid, run_kind=run_data[1], resource=resource
+                run_uuid=run_uuid,
+                run_kind=run_data[1],
+                resource=resource,
+                namespace=namespace,
             )
             await self.client.log_run_running(
                 run_owner=run_owner, run_project=run_project, run_uuid=run_uuid
@@ -275,12 +289,17 @@ class BaseAsyncAgent(BaseAgent):
             await self.client.log_run_failed(
                 run_owner=run_owner, run_project=run_project, run_uuid=run_uuid, exc=e
             )
-            await self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
+            await self.clean_run(
+                run_uuid=run_uuid, run_kind=run_data[1], namespace=namespace
+            )
 
-    async def check_run(self, run_data: Tuple[str, str]):
+    async def check_run(self, run_data: Tuple[str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
+        namespace = None if len(run_data) < 3 else run_data[2]
         try:
-            await self.executor.get(run_uuid=run_uuid, run_kind=run_data[1])
+            await self.executor.get(
+                run_uuid=run_uuid, run_kind=run_data[1], namespace=namespace
+            )
         except ApiException as e:
             if e.status == 404:
                 logger.info(
@@ -290,10 +309,13 @@ class BaseAsyncAgent(BaseAgent):
                     run_owner=run_owner, run_project=run_project, run_uuid=run_uuid
                 )
 
-    async def stop_run(self, run_data: Tuple[str, str]):
+    async def stop_run(self, run_data: Tuple[str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
+        namespace = None if len(run_data) < 3 else run_data[2]
         try:
-            await self.executor.stop(run_uuid=run_uuid, run_kind=run_data[1])
+            await self.executor.stop(
+                run_uuid=run_uuid, run_kind=run_data[1], namespace=namespace
+            )
         except ApiException as e:
             if e.status == 404:
                 logger.info("Run does not exist anymore, it could have been stopped.")
@@ -309,16 +331,24 @@ class BaseAsyncAgent(BaseAgent):
                 message="Agent failed stopping run.\n",
             )
 
-    async def delete_run(self, run_data: Tuple[str, str, str, str]):
+    async def delete_run(self, run_data: Tuple[str, str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
-        await self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
+        namespace = None if len(run_data) < 5 else run_data[4]
         if run_data[3]:
             await self.make_and_create_run(run_data)
+        else:
+            await self.clean_run(
+                run_uuid=run_uuid, run_kind=run_data[1], namespace=namespace
+            )
 
-    async def clean_run(self, run_uuid: str, run_kind: str):
+    async def clean_run(self, run_uuid: str, run_kind: str, namespace: str = None):
         try:
-            await self.executor.clean(run_uuid=run_uuid, run_kind=run_kind)
-            await self.executor.stop(run_uuid=run_uuid, run_kind=run_kind)
+            await self.executor.clean(
+                run_uuid=run_uuid, run_kind=run_kind, namespace=namespace
+            )
+            await self.executor.stop(
+                run_uuid=run_uuid, run_kind=run_kind, namespace=namespace
+            )
         except ApiException as e:
             if e.status == 404:
                 logger.info("Run does not exist.")

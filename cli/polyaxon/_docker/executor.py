@@ -35,6 +35,7 @@ class Executor(BaseExecutor):
         run_uuid: str,
         run_kind: str,
         resource: List[docker_types.V1Container],
+        namespace: str = None,
     ) -> Dict:
         logger.info(f"[Executor] Starting operation {run_uuid} {run_kind}.")
         self._ops[run_uuid] = []
@@ -62,13 +63,15 @@ class Executor(BaseExecutor):
         self._clean_temp_execution_path(run_uuid)
         return {"status": V1Statuses.SUCCEEDED, "tasks": self._ops[run_uuid]}
 
-    def apply(self, run_uuid: str, run_kind: str, resource: Dict) -> Dict:
+    def apply(
+        self, run_uuid: str, run_kind: str, resource: Dict, namespace: str = None
+    ) -> Dict:
         raise PolyaxonAgentError(
             "Docker executor does not support apply method.\n"
             "Run: <kind: {}, uuid: {}>".format(run_kind, run_uuid)
         )
 
-    def stop(self, run_uuid: str, run_kind: str):
+    def stop(self, run_uuid: str, run_kind: str, namespace: str = None):
         proc = self._get_op_proc(run_uuid)
         if proc.poll() is None:
             # Kill the process tree rooted at the child if it's the leader of its own process
@@ -85,7 +88,7 @@ class Executor(BaseExecutor):
                 logger.debug(_msg)
             proc.wait()
 
-    def clean(self, run_uuid: str, run_kind: str):
+    def clean(self, run_uuid: str, run_kind: str, namespace: str = None):
         return self.apply(
             run_uuid=run_uuid,
             run_kind=run_kind,
@@ -100,6 +103,6 @@ class Executor(BaseExecutor):
             return V1Statuses.SUCCEEDED
         return V1Statuses.FAILED
 
-    def get(self, run_uuid: str, run_kind: str) -> V1Statuses:
+    def get(self, run_uuid: str, run_kind: str, namespace: str = None) -> V1Statuses:
         procs = self._get_op_proc(run_uuid)
         return self._get_task_status(procs[-1])

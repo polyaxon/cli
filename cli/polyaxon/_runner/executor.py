@@ -50,19 +50,21 @@ class BaseExecutor:
         self._manager = None
         return self.manager
 
-    def get(self, run_uuid: str, run_kind: str):
+    def get(self, run_uuid: str, run_kind: str, namespace: str = None):
         raise NotImplementedError
 
-    def create(self, run_uuid: str, run_kind: str, resource: Any):
+    def create(
+        self, run_uuid: str, run_kind: str, resource: Any, namespace: str = None
+    ):
         raise NotImplementedError
 
-    def apply(self, run_uuid: str, run_kind: str, resource: Any):
+    def apply(self, run_uuid: str, run_kind: str, resource: Any, namespace: str = None):
         raise NotImplementedError
 
-    def stop(self, run_uuid: str, run_kind: str):
+    def stop(self, run_uuid: str, run_kind: str, namespace: str = None):
         raise NotImplementedError
 
-    def clean(self, run_uuid: str, run_kind: str):
+    def clean(self, run_uuid: str, run_kind: str, namespace: str = None):
         raise NotImplementedError
 
     def _clean_temp_execution_path(self, run_uuid: str):
@@ -154,7 +156,7 @@ class BaseExecutor:
             run_name=run_name,
             run_uuid=run_uuid,
             run_path=run_uuid,
-            namespace=agent_env.namespace,
+            namespace=compiled_operation.namespace or agent_env.namespace,
             compiled_operation=compiled_operation,
             polyaxon_init=agent_env.polyaxon_init,
             polyaxon_sidecar=agent_env.polyaxon_sidecar,
@@ -191,7 +193,7 @@ class BaseExecutor:
             params=operation.params,
         )
         return cls.get_resource(
-            namespace=resolver_obj.namespace,
+            namespace=compiled_operation.namespace or resolver_obj.namespace,
             owner_name=resolver_obj.owner_name,
             project_name=resolver_obj.project_name,
             run_name=resolver_obj.run_name,
@@ -223,4 +225,5 @@ class BaseExecutor:
             run_uuid=response.uuid,
             run_kind=response.kind,
             resource=resource,
+            namespace=response.namespace,
         )

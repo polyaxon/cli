@@ -173,25 +173,25 @@ class BaseAgent:
     ) -> Optional[Any]:
         raise NotImplementedError
 
-    def submit_run(self, run_data: Tuple[str, str, str, str]):
+    def submit_run(self, run_data: Tuple[str, str, str, str, str]):
         raise NotImplementedError
 
     def make_and_create_run(
-        self, run_data: Tuple[str, str, str, str], default_auth: bool = False
+        self, run_data: Tuple[str, str, str, str, str], default_auth: bool = False
     ):
         raise NotImplementedError
 
-    def apply_run(self, run_data: Tuple[str, str, str, str]):
+    def apply_run(self, run_data: Tuple[str, str, str, str, str]):
         raise NotImplementedError
 
-    def check_run(self, run_data: Tuple[str, str]):
+    def check_run(self, run_data: Tuple[str, str, str]):
         raise NotImplementedError
 
-    def stop_run(self, run_data: Tuple[str, str]):
+    def stop_run(self, run_data: Tuple[str, str, str]):
         raise NotImplementedError
 
-    def delete_run(self, run_data: Tuple[str, str, str, str]):
+    def delete_run(self, run_data: Tuple[str, str, str, str, str]):
         raise NotImplementedError
 
-    def clean_run(self, run_uuid: str, run_kind: str):
+    def clean_run(self, run_uuid: str, run_kind: str, namespace: str = None):
         raise NotImplementedError

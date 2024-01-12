@@ -180,7 +180,7 @@ class BaseSyncAgent(BaseAgent):
             )
         return None
 
-    def submit_run(self, run_data: Tuple[str, str, str, str]):
+    def submit_run(self, run_data: Tuple[str, str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.prepare_run_resource(
             owner_name=run_owner,
@@ -194,7 +194,10 @@ class BaseSyncAgent(BaseAgent):
 
         try:
             self.executor.create(
-                run_uuid=run_uuid, run_kind=run_data[1], resource=resource
+                run_uuid=run_uuid,
+                run_kind=run_data[1],
+                resource=resource,
+                namespace=run_data[4],
             )
         except ApiException as e:
             if e.status == 409:
@@ -217,7 +220,7 @@ class BaseSyncAgent(BaseAgent):
             )
 
     def make_and_create_run(
-        self, run_data: Tuple[str, str, str, str], default_auth: bool = False
+        self, run_data: Tuple[str, str, str, str, str], default_auth: bool = False
     ):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.make_run_resource(
@@ -233,7 +236,10 @@ class BaseSyncAgent(BaseAgent):
 
         try:
             self.executor.create(
-                run_uuid=run_uuid, run_kind=run_data[1], resource=resource
+                run_uuid=run_uuid,
+                run_kind=run_data[1],
+                resource=resource,
+                namespace=run_data[4],
             )
         except ApiException as e:
             if e.status == 409:
@@ -247,7 +253,7 @@ class BaseSyncAgent(BaseAgent):
                 )
             )
 
-    def apply_run(self, run_data: Tuple[str, str, str, str]):
+    def apply_run(self, run_data: Tuple[str, str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         resource = self.prepare_run_resource(
             owner_name=run_owner,
@@ -261,7 +267,10 @@ class BaseSyncAgent(BaseAgent):
 
         try:
             self.executor.apply(
-                run_uuid=run_uuid, run_kind=run_data[1], resource=resource
+                run_uuid=run_uuid,
+                run_kind=run_data[1],
+                resource=resource,
+                namespace=run_data[4],
             )
             self.client.log_run_running(
                 run_owner=run_owner, run_project=run_project, run_uuid=run_uuid
@@ -270,12 +279,16 @@ class BaseSyncAgent(BaseAgent):
             self.client.log_run_failed(
                 run_owner=run_owner, run_project=run_project, run_uuid=run_uuid, exc=e
             )
-            self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
+            self.clean_run(
+                run_uuid=run_uuid, run_kind=run_data[1], namespace=run_data[4]
+            )
 
-    def check_run(self, run_data: Tuple[str, str]):
+    def check_run(self, run_data: Tuple[str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
-            self.executor.get(run_uuid=run_uuid, run_kind=run_data[1])
+            self.executor.get(
+                run_uuid=run_uuid, run_kind=run_data[1], namespace=run_data[2]
+            )
         except ApiException as e:
             if e.status == 404:
                 logger.info(
@@ -285,10 +298,12 @@ class BaseSyncAgent(BaseAgent):
                     run_owner=run_owner, run_project=run_project, run_uuid=run_uuid
                 )
 
-    def stop_run(self, run_data: Tuple[str, str]):
+    def stop_run(self, run_data: Tuple[str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
         try:
-            self.executor.stop(run_uuid=run_uuid, run_kind=run_data[1])
+            self.executor.stop(
+                run_uuid=run_uuid, run_kind=run_data[1], namespace=run_data[2]
+            )
         except ApiException as e:
             if e.status == 404:
                 logger.info("Run does not exist anymore, it could have been stopped.")
@@ -304,16 +319,20 @@ class BaseSyncAgent(BaseAgent):
                 message="Agent failed stopping run.\n",
             )
 
-    def delete_run(self, run_data: Tuple[str, str, str, str]):
+    def delete_run(self, run_data: Tuple[str, str, str, str, str]):
         run_owner, run_project, run_uuid = get_run_info(run_instance=run_data[0])
-        self.clean_run(run_uuid=run_uuid, run_kind=run_data[1])
+        self.clean_run(run_uuid=run_uuid, run_kind=run_data[1], namespace=run_data[4])
         if run_data[3]:
             self.make_and_create_run(run_data)
 
-    def clean_run(self, run_uuid: str, run_kind: str):
+    def clean_run(self, run_uuid: str, run_kind: str, namespace: str = None):
         try:
-            self.executor.clean(run_uuid=run_uuid, run_kind=run_kind)
-            self.executor.stop(run_uuid=run_uuid, run_kind=run_kind)
+            self.executor.clean(
+                run_uuid=run_uuid, run_kind=run_kind, namespace=namespace
+            )
+            self.executor.stop(
+                run_uuid=run_uuid, run_kind=run_kind, namespace=namespace
+            )
         except ApiException as e:
             if e.status == 404:
                 logger.info("Run does not exist.")
