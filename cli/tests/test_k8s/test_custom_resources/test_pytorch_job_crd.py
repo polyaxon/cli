@@ -75,7 +75,7 @@ class TestPytorchJobCRD(BaseDistributedCRDTestCase):
             "cleanPodPolicy": "Running",
             "schedulingPolicy": {"minAvailable": 1},
             "elasticPolicy": {"maxReplicas": 2, "minReplicas": 1},
-            "nProcPerNode": 1,
+            "nProcPerNode": "1",
             "replicaSpecs": {
                 "Master": master_replica_template,
                 "Worker": worker_replica_template,
