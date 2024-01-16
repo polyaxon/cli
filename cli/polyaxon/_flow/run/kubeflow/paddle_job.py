@@ -1,8 +1,8 @@
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import Field
-from clipped.types.ref_or_obj import RefField
+from clipped.types.ref_or_obj import IntOrRef, RefField
 
 from polyaxon._flow.run.base import BaseRun
 from polyaxon._flow.run.enums import V1RunKind
@@ -12,6 +12,25 @@ from polyaxon._flow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon._flow.run.resources import V1RunResources
 from polyaxon._flow.run.utils import DestinationImageMixin
 from polyaxon._k8s.k8s_schemas import V1Container
+from polyaxon._schemas.base import BaseSchemaModel
+
+
+class V1PaddleElasticPolicy(BaseSchemaModel):
+    """Elastic policy for Paddle distributed runs.
+
+    Args:
+        minReplicas: int, optional
+        maxReplicas: int, optional
+        maxRestarts: int, optional
+        metrics: List[Dict], optional
+    """
+
+    _IDENTIFIER = "elasticPolicy"
+
+    min_replicas: Optional[IntOrRef] = Field(alias="minReplicas")
+    max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas")
+    max_restarts: Optional[IntOrRef] = Field(alias="maxRestarts")
+    metrics: Optional[List[Dict]] = Field(alias="Metrics")
 
 
 class V1PaddleJob(BaseRun, DestinationImageMixin):
@@ -88,6 +107,18 @@ class V1PaddleJob(BaseRun, DestinationImageMixin):
     >>>  ...
     ```
 
+    ### elasticPolicy
+
+    Elastic policy for Paddle distributed runs.
+
+    ```yaml
+    >>> run:
+    >>>   kind: paddlejob
+    >>>   elasticPolicy:
+    >>>     ...
+    >>>  ...
+    ```
+
     ### master
 
     The ,aster is responsible for orchestrating training and performing
@@ -124,6 +155,7 @@ class V1PaddleJob(BaseRun, DestinationImageMixin):
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
     scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
+    elastic_policy: Optional[V1PaddleElasticPolicy] = Field(alias="elasticPolicy")
     master: Optional[Union[V1KFReplica, RefField]]
     worker: Optional[Union[V1KFReplica, RefField]]
 

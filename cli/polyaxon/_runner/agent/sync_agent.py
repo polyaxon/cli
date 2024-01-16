@@ -113,7 +113,7 @@ class BaseSyncAgent(BaseAgent):
                 self.sync_compatible_updates(agent_state.compatible_updates)
 
             if agent_state:
-                logger.info("Starting runs submission process.")
+                logger.info("Checking agent state.")
             else:
                 logger.info("No state was found.")
                 return V1AgentStateResponse.construct()

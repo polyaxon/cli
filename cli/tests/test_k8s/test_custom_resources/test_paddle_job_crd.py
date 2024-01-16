@@ -1,4 +1,4 @@
-from polyaxon._flow import V1Notification, V1SchedulingPolicy
+from polyaxon._flow import V1Notification, V1PaddleElasticPolicy, V1SchedulingPolicy
 from polyaxon._flow.environment import V1Environment
 from polyaxon._flow.termination import V1Termination
 from polyaxon._k8s.custom_resources.crd import get_custom_object
@@ -47,6 +47,7 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
             worker=None,
             clean_pod_policy=None,
             scheduling_policy=None,
+            elastic_policy=None,
             termination=termination,
             collect_logs=False,
             sync_statuses=False,
@@ -72,6 +73,7 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
         template_spec = {
             "cleanPodPolicy": "Running",
             "schedulingPolicy": {"minAvailable": 1},
+            "elasticPolicy": {"maxReplicas": 2, "minReplicas": 1},
             "replicaSpecs": {
                 "Master": master_replica_template,
                 "Worker": worker_replica_template,
@@ -105,6 +107,7 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
             master=master,
             worker=worker,
             scheduling_policy=V1SchedulingPolicy(min_available=1),
+            elastic_policy=V1PaddleElasticPolicy(min_replicas=1, max_replicas=2),
             clean_pod_policy="Running",
             termination=termination,
             labels=environment.labels,

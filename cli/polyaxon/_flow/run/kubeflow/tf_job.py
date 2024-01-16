@@ -172,8 +172,9 @@ class V1TFJob(BaseRun, DestinationImageMixin):
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
-    enable_dynamic_worker: Optional[bool] = Field(alias="enableDynamicWorker")
     scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
+    enable_dynamic_worker: Optional[bool] = Field(alias="enableDynamicWorker")
+    success_policy: Optional[str] = Field(alias="successPolicy")
     chief: Optional[Union[V1KFReplica, RefField]]
     ps: Optional[Union[V1KFReplica, RefField]]
     worker: Optional[Union[V1KFReplica, RefField]]

@@ -17,8 +17,8 @@ from polyaxon._flow.run.job import V1Job
 from polyaxon._flow.run.kubeflow.clean_pod_policy import V1CleanPodPolicy
 from polyaxon._flow.run.kubeflow.mpi_job import V1MPIJob
 from polyaxon._flow.run.kubeflow.mx_job import MXJobMode, V1MXJob
-from polyaxon._flow.run.kubeflow.paddle_job import V1PaddleJob
-from polyaxon._flow.run.kubeflow.pytorch_job import V1PytorchJob
+from polyaxon._flow.run.kubeflow.paddle_job import V1PaddleElasticPolicy, V1PaddleJob
+from polyaxon._flow.run.kubeflow.pytorch_job import V1PytorchElasticPolicy, V1PytorchJob
 from polyaxon._flow.run.kubeflow.replica import V1KFReplica
 from polyaxon._flow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon._flow.run.kubeflow.tf_job import V1TFJob

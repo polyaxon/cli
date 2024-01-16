@@ -207,14 +207,14 @@ class V1Environment(BaseSchemaModel):
     ```yaml
     >>> rules:
     >>>   - apiGroups: [""]
-    >>>     resources: ["pods"]
+    >>>     resources: ["pods", "services", "events", "pods/status", "pods/log"]
     >>>     verbs: ["get", "watch", "list"]
     >>>   - apiGroups: ["metrics.k8s.io"]
-    >>>     resources: ["pods", "nodes", "apis"]
+    >>>     resources: ["pods", "nodes"]
     >>>     verbs: ["get", "list", "watch"]
-    >>>   - apiGroups: ["", "*"]
-    >>>     resources: ["events", "pods/status", "pods/log"]
-    >>>     verbs: ["watch", "get", "list"]
+    >>>   - apiGroups: ["core.polyaxon.com"]
+    >>>     resources: ["operations"]
+    >>>     verbs: ["get", "watch", "list"]
     ```
 
     ### hostAliases

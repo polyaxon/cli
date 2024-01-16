@@ -67,7 +67,7 @@ async def start_sidecar(
     }
 
     async def monitor():
-        if monitor_spec:
+        if monitor_spec and pod.metadata.annotations:
             await sync_spec(
                 k8s_manager=k8s_manager,
                 run_uuid=run_uuid,
@@ -148,3 +148,12 @@ async def start_sidecar(
     await close_fs(fs)
     # Ensures that the monitors are closed
     await asyncio.sleep(1)
+
+
+container_id = "pytorch"
+sleep_interval=10
+monitor_logs=True
+monitor_spec=True
+monitor_outputs=True
+sleep_interval = 2
+sync_interval  = 2

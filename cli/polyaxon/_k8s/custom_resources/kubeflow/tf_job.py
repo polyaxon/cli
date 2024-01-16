@@ -28,6 +28,7 @@ def get_tf_job_custom_resource(
     clean_pod_policy: Optional[str],
     scheduling_policy: Optional[V1SchedulingPolicy],
     enable_dynamic_worker: bool,
+    success_policy: Optional[str],
     labels: Dict[str, str],
     annotations: Dict[str, str],
 ) -> Dict:
@@ -72,6 +73,9 @@ def get_tf_job_custom_resource(
 
     if enable_dynamic_worker:
         template_spec["enableDynamicWorker"] = enable_dynamic_worker
+
+    if success_policy:
+        template_spec["successPolicy"] = success_policy
 
     template_spec = {"replicaSpecs": template_spec}
 

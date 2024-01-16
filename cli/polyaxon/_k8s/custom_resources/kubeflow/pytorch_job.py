@@ -1,6 +1,11 @@
 from typing import Dict, List, Optional
 
-from polyaxon._flow import V1Notification, V1SchedulingPolicy, V1Termination
+from polyaxon._flow import (
+    V1Notification,
+    V1PytorchElasticPolicy,
+    V1SchedulingPolicy,
+    V1Termination,
+)
 from polyaxon._k8s.custom_resources.kubeflow.common import get_kf_replicas_template
 from polyaxon._k8s.custom_resources.operation import get_operation_custom_object
 from polyaxon._k8s.custom_resources.setter import (
@@ -25,6 +30,8 @@ def get_pytorch_job_custom_resource(
     notifications: List[V1Notification],
     clean_pod_policy: Optional[str],
     scheduling_policy: Optional[V1SchedulingPolicy],
+    elastic_policy: Optional[V1PytorchElasticPolicy],
+    n_proc_per_node: Optional[int],
     labels: Dict[str, str],
     annotations: Dict[str, str],
 ) -> Dict:
@@ -57,6 +64,12 @@ def get_pytorch_job_custom_resource(
     template_spec = set_scheduling_policy(
         template_spec=template_spec, scheduling_policy=scheduling_policy
     )
+
+    if elastic_policy:
+        template_spec["elasticPolicy"] = elastic_policy.to_light_dict()
+
+    if n_proc_per_node is not None:
+        template_spec["nProcPerNode"] = str(n_proc_per_node)
 
     custom_object = {"pytorchJobSpec": template_spec}
     custom_object = set_termination(

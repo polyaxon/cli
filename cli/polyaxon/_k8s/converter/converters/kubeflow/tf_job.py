@@ -63,6 +63,7 @@ class TfJobConverter(TFJobMixin, BaseConverter):
             collect_logs=plugins.collect_logs,
             clean_pod_policy=job.clean_pod_policy,
             scheduling_policy=job.scheduling_policy,
+            success_policy=job.success_policy,
             enable_dynamic_worker=job.enable_dynamic_worker,
             sync_statuses=plugins.sync_statuses,
             notifications=plugins.notifications,
