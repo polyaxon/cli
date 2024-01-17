@@ -149,11 +149,3 @@ async def start_sidecar(
     # Ensures that the monitors are closed
     await asyncio.sleep(1)
 
-
-container_id = "pytorch"
-sleep_interval=10
-monitor_logs=True
-monitor_spec=True
-monitor_outputs=True
-sleep_interval = 2
-sync_interval  = 2
