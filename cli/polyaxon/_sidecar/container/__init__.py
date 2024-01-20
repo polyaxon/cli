@@ -148,4 +148,3 @@ async def start_sidecar(
     await close_fs(fs)
     # Ensures that the monitors are closed
     await asyncio.sleep(1)
-

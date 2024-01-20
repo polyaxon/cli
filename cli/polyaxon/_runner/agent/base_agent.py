@@ -24,6 +24,7 @@ class BaseAgent:
     HEALTH_FILE = "/tmp/.healthz"
     SLEEP_STOP_TIME = 60 * 5
     SLEEP_ARCHIVED_TIME = 60 * 60
+    SLEEP_AGENT_DATA_COLLECT_TIME = 60 * 30
     IS_ASYNC = False
 
     def __init__(
@@ -41,6 +42,7 @@ class BaseAgent:
         self._default_auth = bool(agent_uuid)
         self._executor_refreshed_at = now()
         self._graceful_shutdown = False
+        self._last_data_collected_at = now()
         self.client = AgentClient(
             owner=owner, agent_uuid=agent_uuid, is_async=self.IS_ASYNC
         )
@@ -52,6 +54,15 @@ class BaseAgent:
 
     def cron(self):
         return self.client.cron_agent()
+
+    def collect_agent_data(self):
+        if self._last_data_collected_at > now() - self.SLEEP_AGENT_DATA_COLLECT_TIME:
+            return
+        logger.info("Collecting agent data.")
+        self._last_data_collected_at = now()
+        return self.client.collect_agent_data(
+            namespace=settings.CLIENT_CONFIG.namespace
+        )
 
     def sync_compatible_updates(self, compatible_updates: Dict):
         if compatible_updates and settings.AGENT_CONFIG:

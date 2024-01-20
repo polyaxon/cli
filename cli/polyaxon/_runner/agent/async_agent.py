@@ -91,7 +91,9 @@ class BaseAsyncAgent(BaseAgent):
                     except asyncio.TimeoutError:
                         index += 1
                         await self.refresh_executor()
-                        if not self._default_auth:
+                        if self._default_auth:
+                            await self.collect_agent_data()
+                        else:
                             await self.cron()
                         agent_state = await self.process()
                         if not agent_state:

@@ -28,6 +28,10 @@ class BaseK8sManager:
             instance
         )
 
+    @staticmethod
+    def get_core_polyaxon() -> str:
+        return "app.kubernetes.io/part-of=polyaxon-core"
+
     @classmethod
     def get_config_auth(cls, k8s_config: Optional[Configuration] = None) -> str:
         if not k8s_config or not k8s_config.api_key:

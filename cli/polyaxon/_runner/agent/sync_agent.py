@@ -88,7 +88,9 @@ class BaseSyncAgent(BaseAgent):
                     while not exit_event.wait(timeout=timeout):
                         index += 1
                         self.refresh_executor()
-                        if not self._default_auth:
+                        if self._default_auth:
+                            self.collect_agent_data()
+                        else:
                             self.cron()
                         agent_state = self.process(pool)
                         if not agent_state:

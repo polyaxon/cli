@@ -86,6 +86,17 @@ async def query_k8s_operation_logs(
     return logs, new_time
 
 
+async def collect_agent_service_logs(
+    k8s_manager: AsyncK8sManager, pod: V1Pod, **params
+) -> List[V1Log]:
+    if not pod or not pod.spec.containers:
+        return []
+    container = pod.spec.containers[0]
+    return await handle_container_logs(
+        k8s_manager=k8s_manager, pod=pod, container_name=container.name, **params
+    )
+
+
 async def query_k8s_pod_logs(
     k8s_manager: AsyncK8sManager,
     pod: V1Pod,
@@ -107,7 +118,7 @@ async def query_k8s_pod_logs(
     return logs, last_time
 
 
-async def get_op_spec(
+async def get_op_pos_and_services(
     k8s_manager: AsyncK8sManager,
     run_uuid: str,
     run_kind: str,
@@ -115,20 +126,67 @@ async def get_op_spec(
     pods = await k8s_manager.list_pods(
         label_selector=k8s_manager.get_managed_by_polyaxon(run_uuid)
     )
+    services = []
+    if V1RunKind.has_service(run_kind):
+        services = await k8s_manager.list_services(
+            label_selector=k8s_manager.get_managed_by_polyaxon(run_uuid)
+        )
+
+    return pods, services
+
+
+async def get_op_spec(
+    k8s_manager: AsyncK8sManager,
+    run_uuid: str,
+    run_kind: str,
+):
+    pods, services = await get_op_pos_and_services(
+        k8s_manager=k8s_manager,
+        run_uuid=run_uuid,
+        run_kind=run_kind,
+    )
+    pods_list = {}
+    for pod in pods or []:
+        pods_list[
+            pod.metadata.name
+        ] = k8s_manager.api_client.sanitize_for_serialization(pod)
+    services_list = {}
+    for service in services or []:
+        services_list[
+            service.metadata.name
+        ] = k8s_manager.api_client.sanitize_for_serialization(service)
+    data = {"pods": pods_list, "services": services_list}
+    return data, pods, services
+
+
+async def get_agent_pods_and_services(
+    k8s_manager: AsyncK8sManager,
+):
+    pods = await k8s_manager.list_pods(
+        label_selector=k8s_manager.get_core_polyaxon(),
+    )
+    services = await k8s_manager.list_services(
+        label_selector=k8s_manager.get_core_polyaxon(),
+    )
+    return pods, services
+
+
+async def get_agent_spec(
+    k8s_manager: AsyncK8sManager,
+):
+    pods, services = await get_agent_pods_and_services(
+        k8s_manager=k8s_manager,
+    )
     pods_list = {}
     for pod in pods or []:
         pods_list[
             pod.metadata.name
         ] = k8s_manager.api_client.sanitize_for_serialization(pod)
     data = {"pods": pods_list}
-    if V1RunKind.has_service(run_kind):
-        services = await k8s_manager.list_services(
-            label_selector=k8s_manager.get_managed_by_polyaxon(run_uuid)
-        )
-        services_list = {}
-        for service in services or []:
-            services_list[
-                service.metadata.name
-            ] = k8s_manager.api_client.sanitize_for_serialization(service)
-        data["services"] = services_list
-    return data
+    services_list = {}
+    for service in services or []:
+        services_list[
+            service.metadata.name
+        ] = k8s_manager.api_client.sanitize_for_serialization(service)
+    data["services"] = services_list
+    return data, pods, services

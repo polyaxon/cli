@@ -65,6 +65,13 @@ class AgentClient:
     def cron_agent(self):
         return self.client.agents_v1.cron_agent(owner=self.owner, _request_timeout=10)
 
+    def collect_agent_data(self, namespace: str):
+        return self.client.agents_v1.collect_agent_data(
+            owner=self.owner,
+            uuid=self.agent_uuid,
+            namespace=namespace,
+        )
+
     def log_agent_running(self):
         return self.log_agent_status(status=V1Statuses.RUNNING, reason="AgentLogger")
 

@@ -14,7 +14,7 @@ async def sync_spec(
     k8s_manager: AsyncK8sManager,
     run_kind: V1RunKind,
 ):
-    op_spec = await get_op_spec(
+    op_spec, _, _ = await get_op_spec(
         k8s_manager=k8s_manager, run_uuid=run_uuid, run_kind=run_kind
     )
     path_from = ctx_paths.CONTEXT_MOUNT_ARTIFACTS_FORMAT.format(run_uuid)

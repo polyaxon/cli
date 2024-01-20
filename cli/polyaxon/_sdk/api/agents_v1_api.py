@@ -11,9 +11,181 @@ from polyaxon._sdk.schemas.v1_agent_status_body_request import V1AgentStatusBody
 from polyaxon._sdk.schemas.v1_list_agents_response import V1ListAgentsResponse
 from polyaxon._sdk.schemas.v1_token import V1Token
 from polyaxon.exceptions import ApiTypeError
+from traceml.logging import V1Logs
 
 
 class AgentsV1Api(BaseApi):
+    @validate_arguments
+    def collect_agent_data(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        uuid: Annotated[
+            StrictStr, Field(..., description="Uuid identifier of the entity")
+        ],
+        **kwargs
+    ) -> object:  # noqa: E501
+        """collect agent  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.collect_agent_data(namespace, owner, uuid, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param uuid: Uuid identifier of the entity (required)
+        :type uuid: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: object
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.collect_agent_data_with_http_info(
+            namespace, owner, uuid, **kwargs
+        )  # noqa: E501
+
+    @validate_arguments
+    def collect_agent_data_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        uuid: Annotated[
+            StrictStr, Field(..., description="Uuid identifier of the entity")
+        ],
+        **kwargs
+    ):  # noqa: E501
+        """collect agent  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.collect_agent_data_with_http_info(namespace, owner, uuid, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param uuid: Uuid identifier of the entity (required)
+        :type uuid: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(object, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = ["namespace", "owner", "uuid"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method collect_agent_data" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+        if _params["uuid"]:
+            _path_params["uuid"] = _params["uuid"]
+
+        # process the query parameters
+        _query_params = []
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "object",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/{owner}/agents/{uuid}/collect",
+            "POST",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
     @validate_arguments
     def create_agent(
         self,
@@ -905,6 +1077,230 @@ class AgentsV1Api(BaseApi):
         )
 
     @validate_arguments
+    def get_agent_logs(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        uuid: Annotated[
+            StrictStr, Field(..., description="Uuid identifier of the entity")
+        ],
+        service: Annotated[Optional[StrictStr], Field(description="Service.")] = None,
+        last_file: Annotated[
+            Optional[StrictStr], Field(description="last_file.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        **kwargs
+    ) -> V1Logs:  # noqa: E501
+        """Get run logs  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_agent_logs(namespace, owner, uuid, service, last_file, force, connection, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param uuid: Uuid identifier of the entity (required)
+        :type uuid: str
+        :param service: Service.
+        :type service: str
+        :param last_file: last_file.
+        :type last_file: str
+        :param force: Force query param.
+        :type force: bool
+        :param connection: Connection to use.
+        :type connection: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1Logs
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_agent_logs_with_http_info(
+            namespace, owner, uuid, service, last_file, force, connection, **kwargs
+        )  # noqa: E501
+
+    @validate_arguments
+    def get_agent_logs_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        uuid: Annotated[
+            StrictStr, Field(..., description="Uuid identifier of the entity")
+        ],
+        service: Annotated[Optional[StrictStr], Field(description="Service.")] = None,
+        last_file: Annotated[
+            Optional[StrictStr], Field(description="last_file.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        **kwargs
+    ):  # noqa: E501
+        """Get run logs  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_agent_logs_with_http_info(namespace, owner, uuid, service, last_file, force, connection, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param uuid: Uuid identifier of the entity (required)
+        :type uuid: str
+        :param service: Service.
+        :type service: str
+        :param last_file: last_file.
+        :type last_file: str
+        :param force: Force query param.
+        :type force: bool
+        :param connection: Connection to use.
+        :type connection: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1Logs, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = [
+            "namespace",
+            "owner",
+            "uuid",
+            "service",
+            "last_file",
+            "force",
+            "connection",
+        ]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_agent_logs" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+        if _params["uuid"]:
+            _path_params["uuid"] = _params["uuid"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("service") is not None:  # noqa: E501
+            _query_params.append(("service", _params["service"]))
+        if _params.get("last_file") is not None:  # noqa: E501
+            _query_params.append(("last_file", _params["last_file"]))
+        if _params.get("force") is not None:  # noqa: E501
+            _query_params.append(("force", _params["force"]))
+        if _params.get("connection") is not None:  # noqa: E501
+            _query_params.append(("connection", _params["connection"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1Logs",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/{owner}/agents/{uuid}/logs",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_arguments
     def get_agent_state(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1366,6 +1762,230 @@ class AgentsV1Api(BaseApi):
 
         return self.api_client.call_api(
             "/api/v1/orgs/{owner}/agents/state",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_arguments
+    def inspect_agent(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        uuid: Annotated[
+            StrictStr, Field(..., description="Uuid identifier of the entity")
+        ],
+        service: Annotated[Optional[StrictStr], Field(description="Service.")] = None,
+        last_file: Annotated[
+            Optional[StrictStr], Field(description="last_file.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        **kwargs
+    ) -> object:  # noqa: E501
+        """Inspect an agent's service full conditions  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.inspect_agent(namespace, owner, uuid, service, last_file, force, connection, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param uuid: Uuid identifier of the entity (required)
+        :type uuid: str
+        :param service: Service.
+        :type service: str
+        :param last_file: last_file.
+        :type last_file: str
+        :param force: Force query param.
+        :type force: bool
+        :param connection: Connection to use.
+        :type connection: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: object
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.inspect_agent_with_http_info(
+            namespace, owner, uuid, service, last_file, force, connection, **kwargs
+        )  # noqa: E501
+
+    @validate_arguments
+    def inspect_agent_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        uuid: Annotated[
+            StrictStr, Field(..., description="Uuid identifier of the entity")
+        ],
+        service: Annotated[Optional[StrictStr], Field(description="Service.")] = None,
+        last_file: Annotated[
+            Optional[StrictStr], Field(description="last_file.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        **kwargs
+    ):  # noqa: E501
+        """Inspect an agent's service full conditions  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.inspect_agent_with_http_info(namespace, owner, uuid, service, last_file, force, connection, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param uuid: Uuid identifier of the entity (required)
+        :type uuid: str
+        :param service: Service.
+        :type service: str
+        :param last_file: last_file.
+        :type last_file: str
+        :param force: Force query param.
+        :type force: bool
+        :param connection: Connection to use.
+        :type connection: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(object, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = [
+            "namespace",
+            "owner",
+            "uuid",
+            "service",
+            "last_file",
+            "force",
+            "connection",
+        ]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method inspect_agent" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+        if _params["uuid"]:
+            _path_params["uuid"] = _params["uuid"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("service") is not None:  # noqa: E501
+            _query_params.append(("service", _params["service"]))
+        if _params.get("last_file") is not None:  # noqa: E501
+            _query_params.append(("last_file", _params["last_file"]))
+        if _params.get("force") is not None:  # noqa: E501
+            _query_params.append(("force", _params["force"]))
+        if _params.get("connection") is not None:  # noqa: E501
+            _query_params.append(("connection", _params["connection"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "object",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/{owner}/agents/{uuid}/k8s_inspect",
             "GET",
             _path_params,
             _query_params,
