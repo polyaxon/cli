@@ -1,5 +1,8 @@
 from polyaxon._sdk.schemas.v1_activity import V1Activity
 from polyaxon._sdk.schemas.v1_agent import V1Agent
+from polyaxon._sdk.schemas.v1_agent_reconcile_body_request import (
+    V1AgentReconcileBodyRequest,
+)
 from polyaxon._sdk.schemas.v1_agent_state_response import V1AgentStateResponse
 from polyaxon._sdk.schemas.v1_agent_state_response_agent_state import (
     V1AgentStateResponseAgentState,

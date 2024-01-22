@@ -193,7 +193,7 @@ class ServiceAccountsV1Api(BaseApi):
     def create_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        entity: Annotated[StrictStr, Field(..., description="Rntity")],
+        entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
         **kwargs
     ) -> V1Token:  # noqa: E501
@@ -207,7 +207,7 @@ class ServiceAccountsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Rntity (required)
+        :param entity: Entity (required)
         :type entity: str
         :param body: Token body (required)
         :type body: V1Token
@@ -235,7 +235,7 @@ class ServiceAccountsV1Api(BaseApi):
     def create_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        entity: Annotated[StrictStr, Field(..., description="Rntity")],
+        entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
         **kwargs
     ):  # noqa: E501
@@ -249,7 +249,7 @@ class ServiceAccountsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Rntity (required)
+        :param entity: Entity (required)
         :type entity: str
         :param body: Token body (required)
         :type body: V1Token
@@ -1965,7 +1965,7 @@ class ServiceAccountsV1Api(BaseApi):
     def patch_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        entity: Annotated[StrictStr, Field(..., description="Rntity")],
+        entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
         **kwargs
@@ -1980,7 +1980,7 @@ class ServiceAccountsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Rntity (required)
+        :param entity: Entity (required)
         :type entity: str
         :param token_uuid: UUID (required)
         :type token_uuid: str
@@ -2010,7 +2010,7 @@ class ServiceAccountsV1Api(BaseApi):
     def patch_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        entity: Annotated[StrictStr, Field(..., description="Rntity")],
+        entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
         **kwargs
@@ -2025,7 +2025,7 @@ class ServiceAccountsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Rntity (required)
+        :param entity: Entity (required)
         :type entity: str
         :param token_uuid: UUID (required)
         :type token_uuid: str
@@ -2335,7 +2335,7 @@ class ServiceAccountsV1Api(BaseApi):
     def update_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        entity: Annotated[StrictStr, Field(..., description="Rntity")],
+        entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
         **kwargs
@@ -2350,7 +2350,7 @@ class ServiceAccountsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Rntity (required)
+        :param entity: Entity (required)
         :type entity: str
         :param token_uuid: UUID (required)
         :type token_uuid: str
@@ -2380,7 +2380,7 @@ class ServiceAccountsV1Api(BaseApi):
     def update_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        entity: Annotated[StrictStr, Field(..., description="Rntity")],
+        entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
         **kwargs
@@ -2395,7 +2395,7 @@ class ServiceAccountsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Rntity (required)
+        :param entity: Entity (required)
         :type entity: str
         :param token_uuid: UUID (required)
         :type token_uuid: str
