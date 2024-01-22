@@ -18,6 +18,7 @@ from polyaxon._connections import V1Connection, V1ConnectionKind, V1HostPathConn
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.getters import get_artifacts_store_name
 from polyaxon._env_vars.keys import (
+    ENV_KEYS_ADDITIONAL_NAMESPACES,
     ENV_KEYS_AGENT_ARTIFACTS_STORE,
     ENV_KEYS_AGENT_CLEANER,
     ENV_KEYS_AGENT_CONNECTIONS,
@@ -189,6 +190,9 @@ class AgentConfig(BaseAgentConfig):
     is_replica: Optional[bool] = Field(alias=ENV_KEYS_AGENT_IS_REPLICA)
     watch_cluster: Optional[bool] = Field(alias=ENV_KEYS_WATCH_CLUSTER)
     single_namespace: Optional[bool] = Field(alias=ENV_KEYS_SINGLE_NAMESPACE)
+    additional_namespaces: Optional[List[StrictStr]] = Field(
+        alias=ENV_KEYS_ADDITIONAL_NAMESPACES
+    )
     sidecar: Optional[V1PolyaxonSidecarContainer] = Field(alias=ENV_KEYS_AGENT_SIDECAR)
     init: Optional[V1PolyaxonInitContainer] = Field(alias=ENV_KEYS_AGENT_INIT)
     notifier: Optional[V1PolyaxonNotifier] = Field(alias=ENV_KEYS_AGENT_NOTIFIER)
@@ -229,10 +233,16 @@ class AgentConfig(BaseAgentConfig):
             values[ENV_KEYS_WATCH_CLUSTER] = values["watchCluster"]
         if (
             not values.get("single_namespace")
-            and not values.get(ENV_KEYS_WATCH_CLUSTER)
+            and not values.get(ENV_KEYS_SINGLE_NAMESPACE)
             and "singleNamespace" in values
         ):
             values[ENV_KEYS_SINGLE_NAMESPACE] = values["singleNamespace"]
+        if (
+            not values.get("additional_namespace")
+            and not values.get(ENV_KEYS_ADDITIONAL_NAMESPACES)
+            and "additionalNamespaces" in values
+        ):
+            values[ENV_KEYS_ADDITIONAL_NAMESPACES] = values["additionalNamespaces"]
         if (
             not values.get("use_proxy_env_vars_use_in_ops")
             and not values.get(ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS)
@@ -328,7 +338,7 @@ class AgentConfig(BaseAgentConfig):
                 "Received an invalid {} `{}`".format(field.alias, v)
             ) from e
 
-    @validator("default_image_pull_secrets", pre=True)
+    @validator("additional_namespaces", "default_image_pull_secrets", pre=True)
     def validate_str_list(cls, v, field):
         try:
             return ConfigParser.parse(str)(
