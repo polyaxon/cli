@@ -1,3 +1,5 @@
+import os
+
 from typing import Dict, Optional, Union
 
 import urllib3
@@ -29,6 +31,7 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_NO_API,
     ENV_KEYS_NO_OP,
     ENV_KEYS_RETRIES,
+    ENV_KEYS_SECRET_INTERNAL_TOKEN,
     ENV_KEYS_SSL_CA_CERT,
     ENV_KEYS_TIME_ZONE,
     ENV_KEYS_TIMEOUT,
@@ -137,6 +140,10 @@ class ClientConfig(BaseSchemaModel):
         self.client_header["header_name"] = self.header
         self.client_header["header_value"] = self.header_service
 
+    def get_internal_header(self) -> Dict:
+        header = PolyaxonServiceHeaders.get_header(PolyaxonServiceHeaders.INTERNAL)
+        return {"header_name": header, "header_value": self.header_service}
+
     def get_full_headers(self, headers=None, auth_key="Authorization") -> Dict:
         request_headers = {}
         request_headers.update(headers or {})
@@ -151,7 +158,19 @@ class ClientConfig(BaseSchemaModel):
         return request_headers
 
     @property
-    def sdk_config(self) -> Configuration:
+    def sdk_config(self):
+        return self.get_sdk_config()
+
+    @property
+    def internal_sdk_config(self):
+        return self.get_sdk_config(
+            token=os.environ.get(ENV_KEYS_SECRET_INTERNAL_TOKEN),
+            authentication_type=AuthenticationTypes.INTERNAL_TOKEN,
+        )
+
+    def get_sdk_config(
+        self, token: str = None, authentication_type: AuthenticationTypes = None
+    ) -> Configuration:
         if not self.host and not self.in_cluster:
             raise PolyaxonClientException(
                 "Api config requires at least a host if not running in-cluster."
@@ -171,13 +190,21 @@ class ClientConfig(BaseSchemaModel):
         if self.connection_pool_maxsize:
             config.connection_pool_maxsize = self.connection_pool_maxsize
         if self.token:
-            config.api_key["ApiKey"] = self.token
-            config.api_key_prefix["ApiKey"] = self.authentication_type
+            config.api_key["ApiKey"] = token or self.token
+            config.api_key_prefix["ApiKey"] = (
+                authentication_type or self.authentication_type
+            )
         return config
 
     @property
     def async_sdk_config(self) -> Configuration:
         config = self.sdk_config
+        config.connection_pool_maxsize = 100
+        return config
+
+    @property
+    def async_internal_sdk_config(self) -> Configuration:
+        config = self.internal_sdk_config
         config.connection_pool_maxsize = 100
         return config
 

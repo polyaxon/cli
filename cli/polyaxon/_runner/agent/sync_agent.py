@@ -76,6 +76,39 @@ class BaseSyncAgent(BaseAgent):
             ),
         )
 
+    def reconcile(self):
+        if (
+            now() - self._last_reconciled_at
+        ).total_seconds() > self.SLEEP_AGENT_DATA_COLLECT_TIME:
+            return
+
+        # Collect data
+        self.collect_agent_data()
+
+        # Update reconcile
+        namespaces = [settings.AGENT_CONFIG.namespace]
+        namespaces += settings.AGENT_CONFIG.additional_namespaces or []
+        ops = []
+        for namespace in namespaces:
+            _ops = self.executor.list_ops(namespace=namespace)
+            if _ops:
+                ops += [
+                    (
+                        op["metadata"]["name"],
+                        op["metadata"]["labels"]["app.kubernetes.io/instance"],
+                        op["metadata"]["annotations"]["operation.polyaxon.com/kind"],
+                        namespace,
+                    )
+                    for op in _ops
+                ]
+        if not ops:
+            return None
+
+        logger.info("Reconcile agent.")
+        return self.client.reconcile_agent(
+            reconcile={"ops": ops},
+        )
+
     def start(self):
         try:
             with sync_exit_context() as exit_event:
@@ -89,7 +122,7 @@ class BaseSyncAgent(BaseAgent):
                         index += 1
                         self.refresh_executor()
                         if self._default_auth:
-                            self.collect_agent_data()
+                            self.reconcile()
                         else:
                             self.cron()
                         agent_state = self.process(pool)

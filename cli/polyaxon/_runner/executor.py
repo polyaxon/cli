@@ -227,3 +227,6 @@ class BaseExecutor:
             resource=resource,
             namespace=response.namespace,
         )
+
+    def list_ops(self, namespace: str = None):
+        raise NotImplementedError

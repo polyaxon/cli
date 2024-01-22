@@ -78,6 +78,39 @@ class BaseAsyncAgent(BaseAgent):
             ),
         )
 
+    async def reconcile(self):
+        if (
+            now() - self._last_reconciled_at
+        ).total_seconds() > self.SLEEP_AGENT_DATA_COLLECT_TIME:
+            return
+
+        # Collect data
+        await self.collect_agent_data()
+
+        # Update reconcile
+        namespaces = [settings.AGENT_CONFIG.namespace]
+        namespaces += settings.AGENT_CONFIG.additional_namespaces or []
+        ops = []
+        for namespace in namespaces:
+            _ops = await self.executor.list_ops(namespace=namespace)
+            if _ops:
+                ops += [
+                    (
+                        op["metadata"]["name"],
+                        op["metadata"]["labels"]["app.kubernetes.io/instance"],
+                        op["metadata"]["annotations"]["operation.polyaxon.com/kind"],
+                        namespace,
+                    )
+                    for op in _ops
+                ]
+        if not ops:
+            return None
+
+        logger.info("Reconcile agent.")
+        return await self.client.reconcile_agent(
+            reconcile={"ops": ops},
+        )
+
     async def start(self):
         try:
             async with async_exit_context() as exit_event:
@@ -92,7 +125,7 @@ class BaseAsyncAgent(BaseAgent):
                         index += 1
                         await self.refresh_executor()
                         if self._default_auth:
-                            await self.collect_agent_data()
+                            await self.reconcile()
                         else:
                             await self.cron()
                         agent_state = await self.process()

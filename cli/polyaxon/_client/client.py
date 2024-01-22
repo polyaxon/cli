@@ -92,6 +92,7 @@ class PolyaxonClient:
         self._users_v1 = None
         self._versions_v1 = None
         self._agents_v1 = None
+        self._internal_agents_v1 = None
         self._queues_v1 = None
         self._service_accounts_v1 = None
         self._presets_v1 = None
@@ -109,6 +110,15 @@ class PolyaxonClient:
             )
         return ApiClient(self.config.sdk_config, **self.config.client_header)
 
+    def _get_internal_client(self):
+        if self.is_async:
+            return AsyncApiClient(
+                self.config.internal_sdk_config, **self.config.get_internal_header()
+            )
+        return ApiClient(
+            self.config.internal_sdk_config, **self.config.get_internal_header()
+        )
+
     def reset(self):
         self._projects_v1 = None
         self._runs_v1 = None
@@ -118,6 +128,7 @@ class PolyaxonClient:
         self._users_v1 = None
         self._versions_v1 = None
         self._agents_v1 = None
+        self._internal_agents_v1 = None
         self._queues_v1 = None
         self._service_accounts_v1 = None
         self._presets_v1 = None
@@ -168,6 +179,12 @@ class PolyaxonClient:
         if not self._agents_v1:
             self._agents_v1 = AgentsV1Api(self.api_client)
         return self._agents_v1
+
+    @property
+    def internal_agents_v1(self):
+        if not self._internal_agents_v1:
+            self._internal_agents_v1 = AgentsV1Api(self._get_internal_client())
+        return self._internal_agents_v1
 
     @property
     def queues_v1(self):

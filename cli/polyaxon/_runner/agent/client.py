@@ -1,6 +1,6 @@
 import traceback
 
-from typing import Optional
+from typing import Dict, Optional
 
 from polyaxon._schemas.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon.client import PolyaxonClient, V1Agent, V1AgentStateResponse
@@ -66,10 +66,17 @@ class AgentClient:
         return self.client.agents_v1.cron_agent(owner=self.owner, _request_timeout=10)
 
     def collect_agent_data(self, namespace: str):
-        return self.client.agents_v1.collect_agent_data(
+        return self.client.internal_agents_v1.collect_agent_data(
             owner=self.owner,
             uuid=self.agent_uuid,
             namespace=namespace,
+        )
+
+    def reconcile_agent(self, reconcile: Dict):
+        return self.client.agents_v1.reconcile_agent(
+            owner=self.owner,
+            uuid=self.agent_uuid,
+            body={"reconcile": reconcile},
         )
 
     def log_agent_running(self):

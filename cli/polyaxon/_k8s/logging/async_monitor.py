@@ -87,13 +87,16 @@ async def query_k8s_operation_logs(
 
 
 async def collect_agent_service_logs(
-    k8s_manager: AsyncK8sManager, pod: V1Pod, **params
+    k8s_manager: AsyncK8sManager, pod: V1Pod
 ) -> List[V1Log]:
     if not pod or not pod.spec.containers:
         return []
     container = pod.spec.containers[0]
     return await handle_container_logs(
-        k8s_manager=k8s_manager, pod=pod, container_name=container.name, **params
+        k8s_manager=k8s_manager,
+        pod=pod,
+        container_name=container.name,
+        tail_lines=V1Logs._CHUNK_SIZE * 3,
     )
 
 

@@ -106,3 +106,6 @@ class Executor(BaseExecutor):
     def get(self, run_uuid: str, run_kind: str, namespace: str = None) -> V1Statuses:
         procs = self._get_op_proc(run_uuid)
         return self._get_task_status(procs[-1])
+
+    def list_ops(self, namespace: str = None):
+        return []
