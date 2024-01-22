@@ -70,7 +70,11 @@ class AsyncK8sManager(BaseK8sManager):
     ) -> List:
         try:
             res = await resource_api(namespace=namespace or self.namespace, **kwargs)
-            return [p for p in res.items]
+            if isinstance(res, dict):
+                items = res["items"]
+            else:
+                items = res.items
+            return [p for p in items]
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
