@@ -13,6 +13,7 @@ from urllib3.exceptions import HTTPError
 from polyaxon import pkg, settings
 from polyaxon._env_vars.getters import get_run_info
 from polyaxon._runner.agent.base_agent import BaseAgent
+from polyaxon._utils.fqn_utils import get_run_instance
 from polyaxon.client import V1Agent, V1AgentStateResponse
 from polyaxon.exceptions import ApiException as SDKApiException
 from polyaxon.exceptions import PolyaxonAgentError, PolyaxonConverterError
@@ -94,9 +95,19 @@ class BaseSyncAgent(BaseAgent):
             if _ops:
                 ops += [
                     (
-                        op["metadata"]["name"],
-                        op["metadata"]["labels"]["app.kubernetes.io/instance"],
+                        get_run_instance(
+                            owner=op["metadata"]["annotations"][
+                                "operation.polyaxon.com/owner"
+                            ],
+                            project=op["metadata"]["annotations"][
+                                "operation.polyaxon.com/project"
+                            ],
+                            run_uuid=op["metadata"]["labels"][
+                                "app.kubernetes.io/instance"
+                            ],
+                        ),
                         op["metadata"]["annotations"]["operation.polyaxon.com/kind"],
+                        op["metadata"]["annotations"]["operation.polyaxon.com/name"],
                         namespace,
                     )
                     for op in _ops

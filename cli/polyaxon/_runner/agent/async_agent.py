@@ -14,6 +14,7 @@ from polyaxon._env_vars.getters import get_run_info
 from polyaxon._runner.agent.base_agent import BaseAgent
 from polyaxon._sdk.schemas.v1_agent import V1Agent
 from polyaxon._sdk.schemas.v1_agent_state_response import V1AgentStateResponse
+from polyaxon._utils.fqn_utils import get_run_instance
 from polyaxon.exceptions import ApiException as SDKApiException
 from polyaxon.exceptions import PolyaxonAgentError, PolyaxonConverterError
 from polyaxon.logger import logger
@@ -96,9 +97,19 @@ class BaseAsyncAgent(BaseAgent):
             if _ops:
                 ops += [
                     (
-                        op["metadata"]["name"],
-                        op["metadata"]["labels"]["app.kubernetes.io/instance"],
+                        get_run_instance(
+                            owner=op["metadata"]["annotations"][
+                                "operation.polyaxon.com/owner"
+                            ],
+                            project=op["metadata"]["annotations"][
+                                "operation.polyaxon.com/project"
+                            ],
+                            run_uuid=op["metadata"]["labels"][
+                                "app.kubernetes.io/instance"
+                            ],
+                        ),
                         op["metadata"]["annotations"]["operation.polyaxon.com/kind"],
+                        op["metadata"]["annotations"]["operation.polyaxon.com/name"],
                         namespace,
                     )
                     for op in _ops

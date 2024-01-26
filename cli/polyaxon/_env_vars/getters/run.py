@@ -74,7 +74,10 @@ def get_run_info(run_instance: Optional[str] = None):
             "Could not get run info, "
             "please make sure this is run is correctly started by Polyaxon."
         )
+    return get_run_info_from_instance(run_instance)
 
+
+def get_run_info_from_instance(run_instance: str):
     parts = run_instance.split(".")
     if not len(parts) == 4:
         raise PolyaxonClientException(
