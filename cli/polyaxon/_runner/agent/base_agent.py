@@ -61,9 +61,15 @@ class BaseAgent:
     def collect_agent_data(self):
         logger.info("Collecting agent data.")
         self._last_reconciled_at = now()
-        return self.client.collect_agent_data(
-            namespace=settings.CLIENT_CONFIG.namespace
-        )
+        try:
+            return self.client.collect_agent_data(
+                namespace=settings.CLIENT_CONFIG.namespace
+            )
+        except Exception as e:
+            logger.warning(
+                "Agent failed to collect agent data: {}\n"
+                "Retrying ...".format(repr(e))
+            )
 
     def sync_compatible_updates(self, compatible_updates: Dict):
         if compatible_updates and settings.AGENT_CONFIG:
