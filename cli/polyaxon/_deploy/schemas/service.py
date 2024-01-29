@@ -53,6 +53,7 @@ class HooksConfig(DeploymentService):
     tables: Optional[bool] = Field(alias="tables")
     sync_db: Optional[bool] = Field(alias="syncdb")
     admin_user: Optional[bool] = Field(alias="adminUser")
+    default_org: Optional[bool] = Field(alias="defaultOrg")
 
 
 class ThirdPartyService(DeploymentService):
