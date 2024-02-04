@@ -132,14 +132,14 @@ class BaseAgent:
 
     def _check_status(self, agent_state):
         if agent_state.status == V1Statuses.STOPPED:
-            print(
+            logger.warning(
                 "Agent has been stopped from the platform,"
                 "but the deployment is still running."
                 "Please either set the agent to starting or teardown the agent deployment."
             )
             return self.end(sleep=self.SLEEP_STOP_TIME)
         elif agent_state.live_state < LiveState.LIVE:
-            print(
+            logger.warning(
                 "Agent has been archived from the platform,"
                 "but the deployment is still running."
                 "Please either restore the agent or teardown the agent deployment."
