@@ -26,13 +26,13 @@ class BaseSyncAgent(BaseAgent):
     def _enter(self):
         if not self.client._is_managed:
             return self
-        print("Agent is starting.")
+        logger.warning("Agent is starting.")
         try:
             agent = self.client.get_info()
             self._check_status(agent)
             self.sync()
             self.client.log_agent_running()
-            print("Agent is running.")
+            logger.warning("Agent is running.")
             return self
         except (ApiException, SDKApiException, HTTPError) as e:
             message = "Could not start the agent."

@@ -26,14 +26,14 @@ class BaseAsyncAgent(BaseAgent):
     async def _enter(self):
         if not self.client._is_managed:
             return self
-        print("Agent is starting.")
+        logger.warning("Agent is starting.")
         await self.executor.refresh()
         try:
             agent = await self.client.get_info()
             self._check_status(agent)
             await self.sync()
             await self.client.log_agent_running()
-            print("Agent is running.")
+            logger.warning("Agent is running.")
             return self
         except (ApiException, SDKApiException, HTTPError) as e:
             message = "Could not start the agent."
@@ -153,7 +153,7 @@ class BaseAsyncAgent(BaseAgent):
                         timeout = get_wait(index, max_interval=self.max_interval)
                         logger.info("Sleeping for {} seconds".format(timeout))
         except Exception as e:
-            print(e)
+            logger.warning("Agent failed to start: {}".format(repr(e)))
         finally:
             self.end()
 
