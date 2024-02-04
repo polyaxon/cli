@@ -6,7 +6,7 @@ from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
 
-from polyaxon._schemas.lifecycle import V1Statuses
+from polyaxon._schemas.lifecycle import V1StatusCondition, V1Statuses
 
 
 class V1Agent(BaseAllowSchemaModel):
@@ -22,6 +22,7 @@ class V1Agent(BaseAllowSchemaModel):
     created_at: Optional[datetime.datetime]
     updated_at: Optional[datetime.datetime]
     status: Optional[V1Statuses]
+    status_conditions: Optional[List[V1StatusCondition]]
     is_replica: Optional[bool]
     is_ui_managed: Optional[bool]
     settings: Optional[Dict[str, Any]]
