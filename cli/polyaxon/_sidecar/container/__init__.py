@@ -84,13 +84,18 @@ async def start_sidecar(
             )
         if monitor_outputs:
             last_check = state["last_artifacts_check"]
-            await sync_artifacts(
-                fs=fs,
-                fw=fw,
-                store_path=connection.store_path,
-                run_uuid=run_uuid,
-                exclude=CONTAINER_IGNORE_FOLDERS,
-            )
+            try:
+                await sync_artifacts(
+                    fs=fs,
+                    fw=fw,
+                    store_path=connection.store_path,
+                    run_uuid=run_uuid,
+                    exclude=CONTAINER_IGNORE_FOLDERS,
+                )
+            except Exception as e:
+                logger.debug(
+                    "An error occurred while syncing artifacts, Exception %s" % repr(e)
+                )
             try:
                 client.sync_events_summaries(
                     last_check=last_check,
@@ -106,7 +111,7 @@ async def start_sidecar(
                 )
                 update_last_check = True
             except Exception as e:
-                logger.info(
+                logger.debug(
                     "An error occurred while syncing events summaries, "
                     "Exception %s" % repr(e)
                 )
