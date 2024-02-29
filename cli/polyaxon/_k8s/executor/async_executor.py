@@ -14,6 +14,8 @@ class AsyncExecutor(BaseExecutor):
         )
 
     async def refresh(self):
+        if self._manager:
+            await self._manager.close()
         manager = super().refresh()
         await manager.setup()
         return manager

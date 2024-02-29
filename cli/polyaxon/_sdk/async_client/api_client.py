@@ -1,10 +1,14 @@
 import atexit
+import logging
 import re
 
 from urllib.parse import quote
 
 from polyaxon._sdk.sync_client.api_client import ApiClient
 from polyaxon.exceptions import ApiException
+
+aiohttp_logger = logging.getLogger("aiohttp")
+aiohttp_logger.setLevel(logging.ERROR)
 
 
 class AsyncApiClient(ApiClient):

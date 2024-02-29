@@ -65,7 +65,7 @@ async def start(kind, max_retries, max_interval):
                 await ag.start()
                 return
         except Exception as e:
-            logger.warning("Polyaxon agent retrying, error %s", e)
+            logger.warning("Polyaxon agent retrying, error %r", e)
             retry += 1
 
 
