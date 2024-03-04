@@ -13,6 +13,7 @@ class V1ProjectSettings(BaseAllowSchemaModel):
     queue: Optional[StrictStr]
     queues: Optional[List[StrictStr]]
     agents: Optional[List[StrictStr]]
+    namespaces: Optional[List[StrictStr]]
     user_accesses: Optional[List[V1ProjectUserAccess]]
     teams: Optional[List[StrictStr]]
     projects: Optional[List[StrictStr]]

@@ -174,14 +174,14 @@ class BaseResolver:
     def resolve_access(self):
         pass
 
-    def resolve_connections(self):
+    def resolve_agent_environment(self):
         agent_env = AgentResolver.construct()
         agent_env.resolve(
             compiled_operation=self.compiled_operation, agent_config=self.agent_config
         )
         self.polyaxon_sidecar = agent_env.polyaxon_sidecar
         self.polyaxon_init = agent_env.polyaxon_init
-        self.namespace = self.compiled_operation.namespace or agent_env.namespace
+        self.namespace = agent_env.namespace
         self.secrets = agent_env.secrets
         self.config_maps = agent_env.config_maps
         self.connection_by_names = agent_env.connection_by_names
@@ -281,8 +281,8 @@ class BaseResolver:
         self.apply_operation_contexts()
         self.resolve_io()
         self.resolve_init_refs()
+        self.resolve_agent_environment()
         self.resolve_access()
-        self.resolve_connections()
         self.resolve_artifacts_lineage()
         self.clean_init_refs()
         self.resolve_state()

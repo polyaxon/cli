@@ -85,7 +85,7 @@ class TestResolver(BaseTestCase):
             params=None,
         )
         with self.assertRaises(PolyaxonCompilerError):
-            resolver.resolve_connections()
+            resolver.resolve_agent_environment()
 
     def test_resolve_without_compiled_operation(self):
         with self.assertRaises(PolyaxonCompilerError):
@@ -147,7 +147,7 @@ class TestResolver(BaseTestCase):
             run_path="test",
             params=None,
         )
-        resolver.resolve_connections()
+        resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
         assert resolver.connection_by_names == {connection1.name: connection1}
         assert resolver.artifacts_store == connection1
@@ -188,7 +188,7 @@ class TestResolver(BaseTestCase):
             run_path="test",
             params=None,
         )
-        resolver.resolve_connections()
+        resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
         assert resolver.connection_by_names == {
             connection1.name: connection1,
@@ -233,7 +233,7 @@ class TestResolver(BaseTestCase):
             run_path="test",
             params=None,
         )
-        resolver.resolve_connections()
+        resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
         assert resolver.connection_by_names == {
             connection3.name: connection3,

@@ -49,7 +49,18 @@ class AgentResolver(BaseSchemaModel):
 
         self.polyaxon_sidecar = agent_config.sidecar or get_default_sidecar_container()
         self.polyaxon_init = agent_config.init or get_default_init_container()
-        self.namespace = compiled_operation.namespace or agent_config.namespace
+        if compiled_operation.namespace:
+            namespaces = agent_config.additional_namespaces or []
+            namespaces.append(agent_config.namespace)
+            if compiled_operation.namespace not in namespaces:
+                raise PolyaxonCompilerError(
+                    "The provided namespace `{}` is not managed by the agent.".format(
+                        compiled_operation.namespace
+                    )
+                )
+            self.namespace = compiled_operation.namespace
+        else:
+            self.namespace = agent_config.namespace
 
     def _resolve_run_connections(
         self, compiled_operation: V1CompiledOperation, agent_config: AgentConfig

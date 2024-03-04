@@ -155,7 +155,7 @@ class TestLineageResolver(BaseTestCase):
             run_path="test",
             params=None,
         )
-        resolver.resolve_connections()
+        resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
         assert resolver.connection_by_names == {
             artifacts_store.name: artifacts_store,
