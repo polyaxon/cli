@@ -69,7 +69,6 @@ from polyaxon._sdk.schemas.v1_pipeline import V1Pipeline
 from polyaxon._sdk.schemas.v1_preset import V1Preset
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_project_settings import V1ProjectSettings
-from polyaxon._sdk.schemas.v1_project_user_access import V1ProjectUserAccess
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_queue import V1Queue
 from polyaxon._sdk.schemas.v1_run import V1Run
@@ -91,6 +90,7 @@ from polyaxon._sdk.schemas.v1_team_settings import V1TeamSettings
 from polyaxon._sdk.schemas.v1_token import V1Token
 from polyaxon._sdk.schemas.v1_trial_start import V1TrialStart
 from polyaxon._sdk.schemas.v1_user import V1User
+from polyaxon._sdk.schemas.v1_user_access import V1UserAccess
 from polyaxon._sdk.schemas.v1_user_email import V1UserEmail
 from polyaxon._sdk.schemas.v1_user_singup import V1UserSingup
 from polyaxon._sdk.schemas.v1_uuids import V1Uuids

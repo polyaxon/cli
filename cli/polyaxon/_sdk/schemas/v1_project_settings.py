@@ -3,7 +3,7 @@ from typing import List, Optional
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
 
-from polyaxon._sdk.schemas.v1_project_user_access import V1ProjectUserAccess
+from polyaxon._sdk.schemas.v1_user_access import V1UserAccess
 
 
 class V1ProjectSettings(BaseAllowSchemaModel):
@@ -14,6 +14,7 @@ class V1ProjectSettings(BaseAllowSchemaModel):
     queues: Optional[List[StrictStr]]
     agents: Optional[List[StrictStr]]
     namespaces: Optional[List[StrictStr]]
-    user_accesses: Optional[List[V1ProjectUserAccess]]
+    user_accesses: Optional[List[V1UserAccess]]
     teams: Optional[List[StrictStr]]
     projects: Optional[List[StrictStr]]
+    policy: Optional[StrictStr]
