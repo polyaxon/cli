@@ -96,6 +96,7 @@ class ExternalService(BaseSchemaModel):
 class ExternalBackend(BaseSchemaModel):
     enabled: Optional[bool]
     backend: Optional[StrictStr]
+    url: Optional[StrictStr]
     options: Optional[Dict]
 
 
