@@ -225,7 +225,7 @@ class BaseExecutor:
             run_uuid=response.uuid,
             run_kind=response.kind,
             resource=resource,
-            namespace=response.namespace,
+            namespace=response.settings.namespace if response.settings else None,
         )
 
     def list_ops(self, namespace: str = None):
