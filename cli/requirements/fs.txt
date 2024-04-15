@@ -1,4 +1,5 @@
-adlfs==2024.2.0
+cli/requirements/fs.txt
+adlfs==2024.4.0
 fsspec==2024.3.1
 gcsfs==2024.3.1
 s3fs==2024.3.1

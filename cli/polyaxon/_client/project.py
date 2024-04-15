@@ -4,7 +4,7 @@ from datetime import datetime
 from requests import HTTPError
 from typing import Dict, List, Optional, Tuple, Union
 
-from clipped.utils.json import orjson_dumps
+from clipped.utils.json import orjson_dumps, orjson_loads
 from clipped.utils.paths import check_or_create_path, delete_path
 from clipped.utils.query_params import get_query_params
 from clipped.utils.tz import now
@@ -727,9 +727,12 @@ class ProjectClient:
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
         content: Optional[Union[str, Dict]] = None,
+        readme: Optional[str] = None,
         run: Optional[str] = None,
         connection: Optional[str] = None,
         artifacts: Optional[List[str]] = None,
+        stage: Optional[V1Stages] = None,
+        stage_conditions: Optional[List[V1StageCondition]] = None,
         force: bool = False,
     ) -> V1ProjectVersion:
         """Creates or Updates a project version based on the data passed.
@@ -745,9 +748,12 @@ class ProjectClient:
             description: str, optional, the version description.
             tags: str or List[str], optional.
             content: str or dict, optional, content/metadata (JSON object) of the version.
+            readme: str, optional, the version readme.
             run: str, optional, a uuid reference to the run.
             connection: str, optional, a uuid reference to a connection.
             artifacts: List[str], optional, list of artifacts to highlight(requires passing a run)
+            stage: V1Stages, optional, the version stage.
+            stage_conditions: List[V1StageCondition], optional, the version stage conditions.
             force: bool, optional, to force push, i.e. update if exists.
 
         Returns:
@@ -783,12 +789,18 @@ class ProjectClient:
                 version_config.tags = tags
             if content:
                 version_config.content = content  # type: ignore
+            if readme is not None:
+                version_config.readme = readme
             if run:
                 version_config.run = run
             if artifacts is not None:
                 version_config.artifacts = artifacts
             if connection is not None:
                 version_config.connection = connection
+            if stage is not None:
+                version_config.stage = stage
+            if stage_conditions is not None:
+                version_config.stage_conditions = stage_conditions
             return self.patch_version(
                 kind=kind,
                 version=version,
@@ -800,9 +812,12 @@ class ProjectClient:
                 description=description,
                 tags=tags,
                 run=run,
+                readme=readme,
                 artifacts=artifacts,
                 connection=connection,
                 content=content,
+                stage=stage,
+                stage_conditions=stage_conditions,
             )
             return self.create_version(kind=kind, data=version_config)
 
@@ -1574,4 +1589,184 @@ class ProjectClient:
             version=version,
             path=path,
             download_artifacts=download_artifacts,
+        )
+
+    @classmethod
+    @client_handler(check_no_op=True)
+    def load_offline_version(
+        cls,
+        kind: V1ProjectVersionKind,
+        version: str,
+        path: str,
+        project_client: Optional["ProjectClient"] = None,
+        reset_project: bool = False,
+        raise_if_not_found: bool = False,
+    ) -> Optional["ProjectClient"]:
+        """Loads a project version from a local path.
+
+        Args:
+            kind: V1ProjectVersionKind, kind of the project version.
+            version: str, required, the version name/tag.
+            path: str, local path where to load the version's metadata and artifacts from.
+            project_client: ProjectClient, optional,
+                 a project client to update with the loaded version.
+            reset_project: bool, optional, to reset the project client with the loaded version.
+            raise_if_not_found: bool, optional, to raise an exception if the version is not found.
+
+        Returns:
+            ProjectClient, a project client with the loaded version.
+        """
+        path = ctx_paths.get_offline_path(
+            entity_value=version, entity_kind=kind, path=path
+        )
+        version_path = "{}/{}".format(path, ctx_paths.CONTEXT_LOCAL_VERSION)
+        if not os.path.exists(version_path):
+            if raise_if_not_found:
+                raise PolyaxonClientException(
+                    "Version not found in the provided path: {}".format(path)
+                )
+            else:
+                logger.info(f"Offline data was not found: {version_path}")
+                return None
+
+        with open(version_path, "r") as config_file:
+            config_str = config_file.read()
+            version_config = V1ProjectVersion(**orjson_loads(config_str))
+            owner = version_config.owner
+            project = version_config.project
+            if project_client:
+                if reset_project or not owner:
+                    owner = project_client.owner
+                if reset_project or not project:
+                    project = project_client.project
+                project_client._owner = owner
+                project_client._project = project
+            else:
+                project_client = cls(
+                    owner=owner,
+                    project=project,
+                )
+            logger.info("Loaded version `{}`".format(version_path))
+
+        return project_client
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def push_version(
+        self,
+        kind: V1ProjectVersionKind,
+        version: str,
+        path: str,
+        force: bool = False,
+        clean: bool = False,
+    ):
+        """Pushes a local version from a local path to Polyaxon's API.
+
+        This is a generic function based on the kind passed and pushes a:
+            * component version
+            * model version
+            * artifact version
+
+        Args:
+            kind: V1ProjectVersionKind, kind of the project version.
+            version: str, required, the version name/tag.
+            path: str, optional, defaults to the offline root path,
+                 path where to load the metadata and artifacts from.
+            force: bool, optional, to force push, i.e. update if exists.
+            clean: bool, optional, to clean the version after pushing.
+        """
+        path = ctx_paths.get_offline_path(
+            entity_value=version, entity_kind=kind, path=path
+        )
+        version_path = "{}/{}".format(path, ctx_paths.CONTEXT_LOCAL_VERSION)
+        with open(version_path, "r") as config_file:
+            config_str = config_file.read()
+            version_config = V1ProjectVersion(**orjson_loads(config_str))
+
+        self.register_version(
+            kind=kind,
+            version=version,
+            description=version_config.description,
+            tags=version_config.tags,
+            content=version_config.content,
+            readme=version_config.readme,
+            run=version_config.run,
+            stage=version_config.stage,
+            stage_conditions=version_config.stage_conditions,
+            connection=version_config.connection,
+            artifacts=version_config.artifacts,
+            force=force,
+        )
+        if clean:
+            delete_path(path)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def push_component_version(
+        self,
+        version: str,
+        path: str,
+        force: bool = False,
+        clean: bool = False,
+    ):
+        """Pushes a local component version to a remove server.
+
+        Args:
+            version: str, required, the version name/tag.
+            path: str, local path where to load the metadata and artifacts from.
+            force: bool, optional, to force push, i.e. update if exists.
+            clean: bool, optional, to clean the version after pushing.
+        """
+        return self.push_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            version=version,
+            path=path,
+            force=force,
+            clean=clean,
+        )
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def push_model_version(
+        self,
+        version: str,
+        path: str,
+        force: bool = True,
+        clean: bool = False,
+    ):
+        """Pushes a local model version to a remove server.
+
+        Args:
+            version: str, required, the version name/tag.
+            path: str, local path where to load the metadata and artifacts from.
+            force: bool, optional, to force push, i.e. update if exists.
+            clean: bool, optional, to clean the version after pushing.
+        """
+        return self.pull_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version=version,
+            path=path,
+            force=force,
+            clean=clean,
+        )
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def push_artifact_version(
+        self,
+        version: str,
+        path: str,
+        force: bool = True,
+        clean: bool = False,
+    ):
+        """Pushes a local artifact version to a remote server.
+
+        Args:
+            version: str, required, the version name/tag.
+            path: str, local path where to load the metadata and artifacts from.
+            force: bool, optional, to force push, i.e. update if exists.
+            clean: bool, optional, to clean the version after pushing.
+        """
+        return self.pull_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            version=version,
+            path=path,
+            force=force,
+            clean=clean,
         )

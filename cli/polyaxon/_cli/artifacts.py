@@ -15,6 +15,7 @@ from polyaxon._cli.project_versions import (
     list_project_versions,
     open_project_version_dashboard,
     pull_one_or_many_project_versions,
+    push_one_or_many_project_versions,
     register_project_version,
     stage_project_version,
     transfer_project_version,
@@ -544,6 +545,86 @@ def pull(
         offset=offset,
         path=path,
         download_artifacts=not no_artifacts,
+    )
+
+
+@artifacts.command()
+@click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
+@click.option(*OPTIONS_ARTIFACT_VERSION["args"], **OPTIONS_ARTIFACT_VERSION["kwargs"])
+@click.option(
+    "--all-versions",
+    "-a",
+    is_flag=True,
+    default=False,
+    help="To push all versions.",
+)
+@click.option(
+    "--clean",
+    "-c",
+    is_flag=True,
+    default=False,
+    help="To clean the version(s) local data after syncing.",
+)
+@click.option(
+    "--path",
+    "--path-from",
+    type=click.Path(exists=False),
+    help="Optional path where the artifact versions are persisted, "
+    "default value is taken from the env var: `POLYAXON_OFFLINE_ROOT`.",
+)
+@click.option(
+    "--reset-project",
+    is_flag=True,
+    default=False,
+    help="Optional, to ignore the owner/project of the local "
+    "version and use the owner/project provided or resolved from the current project.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Flag to force register if the version already exists.",
+)
+@click.pass_context
+@clean_outputs
+def push(
+    ctx,
+    project,
+    version,
+    all_versions,
+    clean,
+    path,
+    reset_project,
+    force,
+):
+    """Push local packaged artifact version or multiple artifact versions to a remove server.
+
+    Uses /docs/core/cli/#caching
+
+    Examples:
+
+    \b
+    $ polyaxon artifacts push -ver rc12
+
+    \b
+    $ polyaxon artifacts push -p acme/foobar --path /tmp/versions
+
+    \b
+    $ polyaxon artifacts pull -p acme/foobar -a --path /tmp/versions
+    """
+    owner, project_name = get_project_or_local(
+        project or ctx.obj.get("project"), is_cli=True
+    )
+    push_one_or_many_project_versions(
+        owner=owner,
+        project_name=project_name,
+        kind=V1ProjectVersionKind.ARTIFACT,
+        version=version,
+        all_versions=all_versions,
+        path=path,
+        clean=clean,
+        force=force,
+        reset_project=reset_project,
     )
 
 

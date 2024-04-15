@@ -2259,7 +2259,7 @@ def pull(
 @click.pass_context
 @clean_outputs
 def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
-    """Push an local run to a remove server.
+    """Push a local run (or all runs) to a remove server.
 
     Uses /docs/core/cli/#caching
 

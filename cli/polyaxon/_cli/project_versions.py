@@ -1,3 +1,4 @@
+import os
 import sys
 
 from typing import Callable, List, Optional, Union
@@ -13,6 +14,7 @@ from urllib3.exceptions import HTTPError
 
 from polyaxon._cli.dashboard import get_dashboard_url
 from polyaxon._cli.errors import handle_cli_error
+from polyaxon._contexts.paths import get_offline_base_path
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind
 from polyaxon._utils.fqn_utils import get_versioned_entity_full_name
 from polyaxon.client import PolyaxonClient, ProjectClient
@@ -526,7 +528,7 @@ def pull_one_or_many_project_versions(
     owner: str,
     project_name: str,
     kind: V1ProjectVersionKind,
-    version: str,
+    version: Optional[str] = None,
     all_versions: Optional[bool] = None,
     query: Optional[str] = None,
     limit: Optional[int] = None,
@@ -564,5 +566,115 @@ def pull_one_or_many_project_versions(
         Printer.error(
             "Please provide a version name, provide a query to filter versions to pull, "
             "or pass the flag `-a/--all` to pull versions.",
+            sys_exit=True,
+        )
+
+
+def push_project_version(
+    owner: str,
+    project_name: str,
+    kind: V1ProjectVersionKind,
+    version: str,
+    path: str,
+    reset_project: bool = False,
+    force: bool = False,
+    clean: bool = False,
+    sys_exit: bool = False,
+):
+    fqn_version = get_versioned_entity_full_name(owner, project_name, version)
+    polyaxon_client = ProjectClient(
+        owner=owner, project=project_name, manual_exceptions_handling=True
+    )
+
+    try:
+        try:
+            polyaxon_client.load_offline_version(
+                kind=kind,
+                version=version,
+                path=path,
+                project_client=polyaxon_client,
+                reset_project=reset_project,
+                raise_if_not_found=True,
+            )
+        except Exception as _:
+            Printer.error(
+                "Could not load offline version `{}`.".format(version),
+                sys_exit=sys_exit,
+            )
+            return
+
+        Printer.header(
+            "Pushing {} version [white]`{}`[/white] ...".format(kind, fqn_version),
+        )
+        polyaxon_client.push_version(
+            kind,
+            version,
+            path=path,
+            force=force,
+            clean=clean,
+        )
+        Printer.success(
+            "Finished pushing the {} version `{}` from `{}`".format(
+                kind, fqn_version, path
+            )
+        )
+    except (ApiException, HTTPError) as e:
+        handle_cli_error(
+            e,
+            message="Could not push the {} version `{}`".format(kind, fqn_version),
+        )
+
+
+def push_one_or_many_project_versions(
+    owner: str,
+    project_name: str,
+    kind: V1ProjectVersionKind,
+    path: str,
+    version: Optional[str] = None,
+    all_versions: Optional[bool] = None,
+    reset_project: bool = False,
+    force: bool = False,
+    clean: bool = False,
+):
+    def _push(version_name: str):
+        push_project_version(
+            owner=owner,
+            project_name=project_name,
+            kind=kind,
+            version=version_name,
+            path=path,
+            reset_project=reset_project,
+            force=force,
+            clean=clean,
+        )
+
+    offline_path = get_offline_base_path(
+        entity_kind=kind,
+        path=path,
+    )
+
+    if all_versions:
+        if (
+            not os.path.exists(offline_path)
+            or not os.path.isdir(offline_path)
+            or not os.listdir(offline_path)
+        ):
+            Printer.error(
+                f"Could not push offline {kind} versions, the path `{offline_path}` "
+                f"does not exist, is not a directory, or is empty."
+            )
+            sys.exit(1)
+        version_paths = os.listdir(offline_path)
+        Printer.header(
+            f"Pushing local {kind} versions (total: {len(version_paths)}) ..."
+        )
+        for idx, uid in enumerate(version_paths):
+            Printer.heading(f"Pushing {kind} version {idx + 1}/{len(offline_path)} ...")
+            _push(uid)
+    elif version:
+        _push(version)
+    else:
+        Printer.error(
+            "Please provide a version name, or pass the flag `-a/--all` to pull versions.",
             sys_exit=True,
         )
