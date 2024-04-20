@@ -25,6 +25,9 @@ class AgentServiceConfig(DeploymentService):
     token: Optional[StrictStr]
     watch_cluster: Optional[bool] = Field(alias="watchCluster")
     additional_namespaces: Optional[List[str]] = Field(alias="additionalNamespaces")
+    service_account_annotations: Optional[Dict] = Field(
+        alias="serviceAccountAnnotations"
+    )
     is_replica: Optional[bool] = Field(alias="isReplica")
 
 
