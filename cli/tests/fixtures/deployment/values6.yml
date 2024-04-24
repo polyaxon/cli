@@ -122,5 +122,6 @@ proxy:
   httpsProxy: "foo:34/bar"
   noProxy: "foo:34/bar"
   host: "12.12.12.12"
+  protocol: "http"
   port: 8080
   kind: transparent

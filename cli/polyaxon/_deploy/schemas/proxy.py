@@ -13,4 +13,5 @@ class ProxyConfig(BaseSchemaModel):
     no_proxy: Optional[StrictStr] = Field(alias="noProxy")
     port: Optional[StrictInt]
     host: Optional[StrictStr]
+    protocol: Optional[StrictStr]
     kind: Optional[StrictStr]
