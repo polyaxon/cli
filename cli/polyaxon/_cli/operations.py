@@ -1020,7 +1020,7 @@ def invalidate(ctx, project, uid):
     "--executor",
     "-exc",
     type=str,
-    help="The local executor to use, possible values are: docker, k8s, process.",
+    help="The executor to use, possible values are: docker, k8s, process.",
 )
 @click.pass_context
 @clean_outputs
@@ -1129,7 +1129,7 @@ def execute(ctx, project, uid, executor):
         executor.create_from_run(response, default_auth=not is_in_ce())
 
     def _execute_on_local_process(response: V1Run, run_client: RunClient):
-        from polyaxon.process.executor.executor import Executor
+        from polyaxon._local_process.executor import Executor
 
         run_client.log_status(
             V1Statuses.STARTING,
@@ -1138,25 +1138,50 @@ def execute(ctx, project, uid, executor):
         )
         executor = Executor()
         if not executor.manager.check():
-            raise Printer.error("Conda is required to run this command.", sys_exit=True)
+            run_client.log_failed(
+                reason="CliProcessExecutor",
+                message="Local process can't be used to run this operation.",
+            )
+            raise Printer.error(
+                "Local process can't be used to run this operation.", sys_exit=True
+            )
 
-        # def _check_conda():
-        #     from polyaxon._deploy.operators.conda import CondaOperator
-        #
-        #     conda = CondaOperator()
-        #     if not conda.check():
-        #         raise Printer.error("Conda is required to run this command.", sys_exit=True)
-        #
-        #     envs = conda.execute(["env", "list", "--json"], is_json=True)
-        #     env_names = [os.path.basename(env) for env in envs["envs"]]
-        #     if conda_env not in env_names:
-        #         raise Printer.error(
-        #             "Conda env `{}` is not installed.".format(conda_env), sys_exit=True
-        #         )
-        #
-        #     cmd_bash, cmd_args = specification.run.get_container_cmd()
-        #     cmd_args = ["source activate {}".format(conda_env)] + cmd_args
-        #     subprocess.Popen(cmd_bash + [" && ".join(cmd_args)], close_fds=True)
+        run_client.log_status(
+            V1Statuses.RUNNING,
+            reason="CliProcessExecutor",
+            message="Operation is running",
+        )
+
+        if V1RunKind.has_pipeline(response.kind):
+            has_children = True
+            while has_children:
+                pipeline_runs = run_client.list_children(
+                    query="status:created", sort="created_at", limit=1
+                )
+                if pipeline_runs.results:
+                    current_run_client = RunClient(
+                        owner=owner,
+                        project=project_name,
+                        run_uuid=pipeline_runs.results[0].uuid,
+                        manual_exceptions_handling=True,
+                    )
+                    current_run_client.refresh_data()
+                    _prepare(current_run_client.run_data, current_run_client)
+                    _execute(current_run_client.run_data, current_run_client)
+                else:
+                    has_children = False
+            return
+        else:
+            result = executor.create_from_run(response, default_auth=not is_in_ce())
+        if result["status"] == V1Statuses.SUCCEEDED:
+            run_client.log_succeeded(
+                reason="CliProcessExecutor", message="Operation was succeeded"
+            )
+        else:
+            run_client.log_failed(
+                reason="CliProcessExecutor",
+                message="Operation failed.\n{}".format(result["message"]),
+            )
 
     owner, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
