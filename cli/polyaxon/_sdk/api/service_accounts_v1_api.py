@@ -1308,7 +1308,7 @@ class ServiceAccountsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         entity: Annotated[
-            Optional[StrictStr], Field(description="Entity name under namesapce.")
+            Optional[StrictStr], Field(description="Entity name under namespace.")
         ] = None,
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
@@ -1335,7 +1335,7 @@ class ServiceAccountsV1Api(BaseApi):
         :type owner: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
-        :param entity: Entity name under namesapce.
+        :param entity: Entity name under namespace.
         :type entity: str
         :param offset: Pagination offset.
         :type offset: int
@@ -1373,7 +1373,7 @@ class ServiceAccountsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         entity: Annotated[
-            Optional[StrictStr], Field(description="Entity name under namesapce.")
+            Optional[StrictStr], Field(description="Entity name under namespace.")
         ] = None,
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
@@ -1400,7 +1400,7 @@ class ServiceAccountsV1Api(BaseApi):
         :type owner: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
-        :param entity: Entity name under namesapce.
+        :param entity: Entity name under namespace.
         :type entity: str
         :param offset: Pagination offset.
         :type offset: int

@@ -15,7 +15,7 @@ class ProjectDashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
+            StrictStr, Field(..., description="Project under namespace")
         ],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
         **kwargs
@@ -30,7 +30,7 @@ class ProjectDashboardsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
+        :param project: Project under namespace (required)
         :type project: str
         :param body: Dashboard body (required)
         :type body: V1Dashboard
@@ -59,7 +59,7 @@ class ProjectDashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
+            StrictStr, Field(..., description="Project under namespace")
         ],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
         **kwargs
@@ -74,7 +74,7 @@ class ProjectDashboardsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
+        :param project: Project under namespace (required)
         :type project: str
         :param body: Dashboard body (required)
         :type body: V1Dashboard
@@ -1069,7 +1069,7 @@ class ProjectDashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
+            StrictStr, Field(..., description="Project under namespace")
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
@@ -1085,7 +1085,7 @@ class ProjectDashboardsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
+        :param project: Project under namespace (required)
         :type project: str
         :param dashboard_uuid: UUID (required)
         :type dashboard_uuid: str
@@ -1116,7 +1116,7 @@ class ProjectDashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
+            StrictStr, Field(..., description="Project under namespace")
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
@@ -1132,7 +1132,7 @@ class ProjectDashboardsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
+        :param project: Project under namespace (required)
         :type project: str
         :param dashboard_uuid: UUID (required)
         :type dashboard_uuid: str
@@ -1440,7 +1440,7 @@ class ProjectDashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
+            StrictStr, Field(..., description="Project under namespace")
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
@@ -1456,7 +1456,7 @@ class ProjectDashboardsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
+        :param project: Project under namespace (required)
         :type project: str
         :param dashboard_uuid: UUID (required)
         :type dashboard_uuid: str
@@ -1487,7 +1487,7 @@ class ProjectDashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
+            StrictStr, Field(..., description="Project under namespace")
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
@@ -1503,7 +1503,7 @@ class ProjectDashboardsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
+        :param project: Project under namespace (required)
         :type project: str
         :param dashboard_uuid: UUID (required)
         :type dashboard_uuid: str

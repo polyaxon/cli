@@ -222,9 +222,7 @@ class RunsV1Api(BaseApi):
     def approve_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -233,13 +231,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.approve_runs(owner, project, body, async_req=True)
+        >>> thread = api.approve_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -259,16 +257,14 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.approve_runs_with_http_info(
-            owner, project, body, **kwargs
+            owner, name, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
     def approve_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -277,13 +273,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.approve_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.approve_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -312,7 +308,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -341,8 +337,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -378,7 +374,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/approve",
+            "/api/v1/{owner}/{name}/runs/approve",
             "POST",
             _path_params,
             _query_params,
@@ -580,9 +576,7 @@ class RunsV1Api(BaseApi):
     def archive_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -591,13 +585,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.archive_runs(owner, project, body, async_req=True)
+        >>> thread = api.archive_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -617,16 +611,14 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.archive_runs_with_http_info(
-            owner, project, body, **kwargs
+            owner, name, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
     def archive_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -635,13 +627,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.archive_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.archive_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -670,7 +662,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -699,8 +691,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -736,7 +728,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/archive",
+            "/api/v1/{owner}/{name}/runs/archive",
             "POST",
             _path_params,
             _query_params,
@@ -938,9 +930,7 @@ class RunsV1Api(BaseApi):
     def bookmark_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -949,13 +939,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.bookmark_runs(owner, project, body, async_req=True)
+        >>> thread = api.bookmark_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -975,16 +965,14 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.bookmark_runs_with_http_info(
-            owner, project, body, **kwargs
+            owner, name, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
     def bookmark_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -993,13 +981,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.bookmark_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.bookmark_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -1028,7 +1016,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -1057,8 +1045,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -1094,7 +1082,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/bookmark",
+            "/api/v1/{owner}/{name}/runs/bookmark",
             "POST",
             _path_params,
             _query_params,
@@ -2851,9 +2839,7 @@ class RunsV1Api(BaseApi):
     def delete_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -2867,8 +2853,8 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -2888,16 +2874,14 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.delete_runs_with_http_info(
-            owner, project, body, **kwargs
+            owner, name, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
     def delete_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -2906,13 +2890,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.delete_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.delete_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -2941,7 +2925,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -2970,8 +2954,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -3007,7 +2991,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/delete",
+            "/api/v1/{owner}/{name}/runs/delete",
             "DELETE",
             _path_params,
             _query_params,
@@ -4373,7 +4357,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -4399,7 +4383,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -4438,7 +4422,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -4464,7 +4448,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -4609,7 +4593,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -4635,7 +4619,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -4674,7 +4658,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -4700,7 +4684,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -5056,7 +5040,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -5082,7 +5066,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -5121,7 +5105,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -5147,7 +5131,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -5292,7 +5276,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -5318,7 +5302,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -5357,7 +5341,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -5383,7 +5367,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -5528,7 +5512,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -5554,7 +5538,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -5593,7 +5577,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -5619,7 +5603,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -6966,7 +6950,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -7003,7 +6987,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -7065,7 +7049,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -7102,7 +7086,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -7457,7 +7441,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -7483,7 +7467,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -7522,7 +7506,7 @@ class RunsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[
-            StrictStr, Field(..., description="Entity name under namesapce")
+            StrictStr, Field(..., description="Entity name under namespace")
         ],
         uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
         offset: Annotated[
@@ -7548,7 +7532,7 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param entity: Entity name under namesapce (required)
+        :param entity: Entity name under namespace (required)
         :type entity: str
         :param uuid: SubEntity uuid (required)
         :type uuid: str
@@ -8590,9 +8574,7 @@ class RunsV1Api(BaseApi):
     def invalidate_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -8601,13 +8583,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.invalidate_runs(owner, project, body, async_req=True)
+        >>> thread = api.invalidate_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -8627,16 +8609,14 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.invalidate_runs_with_http_info(
-            owner, project, body, **kwargs
+            owner, name, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
     def invalidate_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -8645,13 +8625,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.invalidate_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.invalidate_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -8680,7 +8660,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -8709,8 +8689,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -8746,7 +8726,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/invalidate",
+            "/api/v1/{owner}/{name}/runs/invalidate",
             "POST",
             _path_params,
             _query_params,
@@ -10195,9 +10175,7 @@ class RunsV1Api(BaseApi):
     def restore_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -10206,13 +10184,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.restore_runs(owner, project, body, async_req=True)
+        >>> thread = api.restore_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -10232,16 +10210,14 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.restore_runs_with_http_info(
-            owner, project, body, **kwargs
+            owner, name, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
     def restore_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -10250,13 +10226,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.restore_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.restore_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -10285,7 +10261,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -10314,8 +10290,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -10351,7 +10327,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/restore",
+            "/api/v1/{owner}/{name}/runs/restore",
             "POST",
             _path_params,
             _query_params,
@@ -10919,9 +10895,7 @@ class RunsV1Api(BaseApi):
     def skip_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -10930,13 +10904,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.skip_runs(owner, project, body, async_req=True)
+        >>> thread = api.skip_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -10955,17 +10929,13 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.skip_runs_with_http_info(
-            owner, project, body, **kwargs
-        )  # noqa: E501
+        return self.skip_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_arguments
     def skip_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -10974,13 +10944,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.skip_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.skip_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -11009,7 +10979,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -11039,8 +11009,8 @@ class RunsV1Api(BaseApi):
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
 
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -11073,7 +11043,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/skip",
+            "/api/v1/{owner}/{name}/runs/skip",
             "POST",
             _path_params,
             _query_params,
@@ -11273,9 +11243,7 @@ class RunsV1Api(BaseApi):
     def stop_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -11284,13 +11252,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.stop_runs(owner, project, body, async_req=True)
+        >>> thread = api.stop_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -11309,17 +11277,13 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.stop_runs_with_http_info(
-            owner, project, body, **kwargs
-        )  # noqa: E501
+        return self.stop_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_arguments
     def stop_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs
     ):  # noqa: E501
@@ -11328,13 +11292,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.stop_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.stop_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Uuids of the entities (required)
         :type body: V1Uuids
         :param async_req: Whether to execute the request asynchronously.
@@ -11363,7 +11327,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -11392,8 +11356,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -11429,7 +11393,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/stop",
+            "/api/v1/{owner}/{name}/runs/stop",
             "POST",
             _path_params,
             _query_params,
@@ -11629,9 +11593,7 @@ class RunsV1Api(BaseApi):
     def tag_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -11645,8 +11607,8 @@ class RunsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Data (required)
         :type body: V1EntitiesTags
         :param async_req: Whether to execute the request asynchronously.
@@ -11665,17 +11627,13 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.tag_runs_with_http_info(
-            owner, project, body, **kwargs
-        )  # noqa: E501
+        return self.tag_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_arguments
     def tag_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
         **kwargs
     ):  # noqa: E501
@@ -11684,13 +11642,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.tag_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.tag_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Data (required)
         :type body: V1EntitiesTags
         :param async_req: Whether to execute the request asynchronously.
@@ -11719,7 +11677,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -11748,8 +11706,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -11785,7 +11743,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/tag",
+            "/api/v1/{owner}/{name}/runs/tag",
             "POST",
             _path_params,
             _query_params,
@@ -11993,9 +11951,7 @@ class RunsV1Api(BaseApi):
     def transfer_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
         **kwargs
     ) -> None:  # noqa: E501
@@ -12004,13 +11960,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.transfer_runs(owner, project, body, async_req=True)
+        >>> thread = api.transfer_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Data (required)
         :type body: V1EntitiesTransfer
         :param async_req: Whether to execute the request asynchronously.
@@ -12030,16 +11986,14 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.transfer_runs_with_http_info(
-            owner, project, body, **kwargs
+            owner, name, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
     def transfer_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project under namesapce")
-        ],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
         **kwargs
     ):  # noqa: E501
@@ -12048,13 +12002,13 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.transfer_runs_with_http_info(owner, project, body, async_req=True)
+        >>> thread = api.transfer_runs_with_http_info(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project under namesapce (required)
-        :type project: str
+        :param name: Entity under namespace (required)
+        :type name: str
         :param body: Data (required)
         :type body: V1EntitiesTransfer
         :param async_req: Whether to execute the request asynchronously.
@@ -12083,7 +12037,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "project", "body"]
+        _all_params = ["owner", "name", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -12112,8 +12066,8 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
@@ -12149,7 +12103,7 @@ class RunsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/{owner}/{project}/runs/transfer",
+            "/api/v1/{owner}/{name}/runs/transfer",
             "POST",
             _path_params,
             _query_params,

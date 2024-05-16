@@ -1270,7 +1270,7 @@ class OrganizationsV1Api(BaseApi):
     def delete_organization_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        name: Annotated[StrictStr, Field(..., description="Component under namesapce")],
+        name: Annotated[StrictStr, Field(..., description="Component under namespace")],
         **kwargs
     ) -> None:  # noqa: E501
         """Delete organization member details  # noqa: E501
@@ -1283,7 +1283,7 @@ class OrganizationsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param name: Component under namesapce (required)
+        :param name: Component under namespace (required)
         :type name: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -1309,7 +1309,7 @@ class OrganizationsV1Api(BaseApi):
     def delete_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        name: Annotated[StrictStr, Field(..., description="Component under namesapce")],
+        name: Annotated[StrictStr, Field(..., description="Component under namespace")],
         **kwargs
     ):  # noqa: E501
         """Delete organization member details  # noqa: E501
@@ -1322,7 +1322,7 @@ class OrganizationsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param name: Component under namesapce (required)
+        :param name: Component under namespace (required)
         :type name: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -2249,7 +2249,7 @@ class OrganizationsV1Api(BaseApi):
     def get_organization_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        name: Annotated[StrictStr, Field(..., description="Component under namesapce")],
+        name: Annotated[StrictStr, Field(..., description="Component under namespace")],
         **kwargs
     ) -> V1OrganizationMember:  # noqa: E501
         """Get organization member details  # noqa: E501
@@ -2262,7 +2262,7 @@ class OrganizationsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param name: Component under namesapce (required)
+        :param name: Component under namespace (required)
         :type name: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -2288,7 +2288,7 @@ class OrganizationsV1Api(BaseApi):
     def get_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        name: Annotated[StrictStr, Field(..., description="Component under namesapce")],
+        name: Annotated[StrictStr, Field(..., description="Component under namespace")],
         **kwargs
     ):  # noqa: E501
         """Get organization member details  # noqa: E501
@@ -2301,7 +2301,7 @@ class OrganizationsV1Api(BaseApi):
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param name: Component under namesapce (required)
+        :param name: Component under namespace (required)
         :type name: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
