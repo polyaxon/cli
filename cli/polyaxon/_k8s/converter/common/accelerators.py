@@ -38,13 +38,13 @@ def requests_gpu(resources: k8s_schemas.V1ResourceRequirements) -> bool:
         return False
 
     if resources.requests:
-        for key in resources.requests.keys():
-            if "gpu" in key:
+        for key, val in resources.requests.items():
+            if "gpu" in key and val is not None and val > 0:
                 return True
 
     if resources.limits:
-        for key in resources.limits.keys():
-            if "gpu" in key:
+        for key, val in resources.limits.items():
+            if "gpu" in key and val is not None and val > 0:
                 return True
 
     return False

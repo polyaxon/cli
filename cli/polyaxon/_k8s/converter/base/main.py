@@ -81,6 +81,7 @@ class MainConverter(_BaseConverter):
             secrets=requested_secrets,
             config_maps=requested_config_maps,
         )
+        env += self._get_resources_env_vars(main_container.resources)
 
         # Env from
         env_from = self._get_env_from_k8s_resources(

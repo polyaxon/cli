@@ -136,7 +136,7 @@ class TestMainContainer(BaseConverterTest):
             service_header=PolyaxonServices.RUNNER,
             external_host=False,
             log_level=None,
-        )
+        ) + self.converter._get_resources_env_vars(None)
         assert container.env_from == []
         assert container.resources is None
         assert container.volume_mounts == []
@@ -296,8 +296,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # One from the artifacts store name env var + base envs
-        assert len(container.env) == 2 + 1 + len(base_env)
+        # One from the artifacts store name env var + gpu visibility env var +  base envs
+        assert len(container.env) == 2 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1
@@ -332,8 +332,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # One from the artifacts store name env var and the schema + base envs
-        assert len(container.env) == 2 + 1 + 1 + len(base_env)
+        # One from the artifacts store name env var and the schema + gpu visibility env var + base envs
+        assert len(container.env) == 2 + 1 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 2
@@ -372,8 +372,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # One from the secret key items + base envs
-        assert len(container.env) == 2 + 1 + len(base_env)
+        # One from the secret key items + gpu visibility env var + base env + base envs
+        assert len(container.env) == 2 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # mount context
@@ -408,8 +408,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # the secret key items are mounted + base envs
-        assert len(container.env) == 2 + len(base_env)
+        # the secret key items are mounted + gpu visibility env var + base envs
+        assert len(container.env) == 2 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # mount resource
@@ -443,8 +443,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # One from the artifacts store name env var + base envs
-        assert len(container.env) == 2 + 1 + len(base_env)
+        # One from the artifacts store name env var + gpu visibility env var + base envs
+        assert len(container.env) == 2 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         # The mount resource1 is not requested
@@ -478,8 +478,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # One from the artifacts store name env var + base envs
-        assert len(container.env) == 2 + 1 + len(base_env)
+        # One from the artifacts store name env var + gpu visibility env var + base envs
+        assert len(container.env) == 2 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         # The mount resource2 is requested
@@ -513,8 +513,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # One from the artifacts store name env var + base envs
-        assert len(container.env) == 1 + 1 + len(base_env)
+        # One from the artifacts store name env var + gpu visibility env var + base envs
+        assert len(container.env) == 1 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1  # outputs context
@@ -547,8 +547,8 @@ class TestMainContainer(BaseConverterTest):
         assert container.command is None
         assert container.args is None
         assert container.ports == []
-        # 2 + 2 env vars from the secret mount + 1 from the artifacts store name env var + base envs
-        assert len(container.env) == 2 + 2 + 1 + len(base_env)
+        # 2 + 2 env vars from the secret mount + gpu visibility env var + 1 from the artifacts store name env var + base envs
+        assert len(container.env) == 2 + 2 + 1 + 1 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 1
@@ -590,8 +590,9 @@ class TestMainContainer(BaseConverterTest):
         assert container.ports == []
         # 2 env vars from the secret mount
         # + 1 for the connections catalog
+        # + gpu visibility env var
         # + all base env vars
-        assert len(container.env) == 3 + len(base_env)
+        assert len(container.env) == 4 + len(base_env)
         assert container.env_from == []
         assert container.resources is None
         assert len(container.volume_mounts) == 4

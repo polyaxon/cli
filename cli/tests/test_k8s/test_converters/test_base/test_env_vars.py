@@ -74,6 +74,12 @@ class TestEnvVars(BaseConverterTest):
         assert env_vars[0].name == "NVIDIA_VISIBLE_DEVICES"
         assert env_vars[0].value == "none"
 
+        resources = k8s_schemas.V1ResourceRequirements(limits={"nvidia.com/gpu": 0})
+        env_vars = EnvMixin._get_resources_env_vars(resources)
+        assert len(env_vars) == 1
+        assert env_vars[0].name == "NVIDIA_VISIBLE_DEVICES"
+        assert env_vars[0].value == "none"
+
         resources = k8s_schemas.V1ResourceRequirements(requests={"nvidia.com/gpu": 1})
         env_vars = EnvMixin._get_resources_env_vars(resources)
         assert len(env_vars) == 0
