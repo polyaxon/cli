@@ -17,6 +17,7 @@ class V1Team(BaseAllowSchemaModel):
     component_hubs: Optional[List[StrictStr]]
     model_registries: Optional[List[StrictStr]]
     settings: Optional[V1TeamSettings]
+    policy: Optional[StrictStr]
     role: Optional[StrictStr]
     created_at: Optional[datetime.datetime]
     updated_at: Optional[datetime.datetime]

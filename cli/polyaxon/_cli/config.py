@@ -44,6 +44,27 @@ def set_home_path(home_path: str):
     settings.set_home_config(_config)
 
 
+def set_owner(owner: str):
+    try:
+        _config = UserConfigManager.get_config_or_default()
+    except Exception as e:
+        logger.debug(
+            "Home configuration could not be loaded.\n"
+            "Error: %s\n"
+            "Purging home configuration and resetting values.",
+            e,
+        )
+        UserConfigManager.purge()
+        _config = UserConfigManager.get_config_or_default()
+
+    data = owner.split("/")
+    if len(data) > 2:
+        Printer.error("Invalid owner format, please provide a valid owner.")
+        sys.exit(1)
+    _config.organization = owner
+    UserConfigManager.set_config(_config)
+
+
 def validate_options(ctx, param, value):
     possible_values = ["verbose", "host"]
     if value and value not in possible_values:
@@ -200,6 +221,11 @@ def get(keys):
     help="To set POLYAXON_HOME to specify the context where the CLI/Client reads/writes global configuration.",
 )
 @click.option(
+    "--owner",
+    type=click.Path(exists=False),
+    help="To set current organization or team space.",
+)
+@click.option(
     "--disable-errors-reporting",
     type=bool,
     help="To set the disable errors reporting.",
@@ -229,6 +255,11 @@ def set_(**kwargs):  # pylint:disable=redefined-builtin
     if kwargs.get("home") is not None:
         home_path = kwargs.pop("home", None)
         set_home_path(home_path)
+
+    if kwargs.get("owner") is not None:
+        owner = kwargs.pop("owner", None)
+        if owner:
+            set_owner(owner)
 
     from polyaxon._managers.auth import AuthConfigManager
 
