@@ -65,7 +65,7 @@ def _run(
         rn = (
             f"[white]{r.name}[/white]@[white]{r.uuid}[/white]"
             if r.name
-            else "[white]{r.uuid}[/white]"
+            else f"[white]{r.uuid}[/white]"
         )
         return f"[white]{owner}[/white]/[white]{project_name}[/white]:{rn}"
 
