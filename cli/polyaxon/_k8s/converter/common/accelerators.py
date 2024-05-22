@@ -37,6 +37,9 @@ def requests_gpu(resources: k8s_schemas.V1ResourceRequirements) -> bool:
     if not resources:
         return False
 
+    if not isinstance(resources, k8s_schemas.V1ResourceRequirements):
+        resources = k8s_schemas.V1ResourceRequirements(**resources)
+
     if resources.requests:
         for key, val in resources.requests.items():
             if "gpu" in key and val is not None and val > 0:
