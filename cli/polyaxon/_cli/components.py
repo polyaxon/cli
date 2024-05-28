@@ -114,7 +114,7 @@ def ls(ctx, project, query, sort, limit, offset):
     \b
     $ polyaxon components ls -p=acme/kaniko
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     polyaxon_client = get_current_or_public_client()
@@ -170,7 +170,7 @@ def register(ctx, polyaxonfile, project, version, description, tags, force):
     $ polyaxon components register -f polyaxonfile.yaml -p owner/name -ver v1 --tags="tag1,tag2"
     """
     version = version or ctx.obj.get("version")
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
 
@@ -188,6 +188,7 @@ def register(ctx, polyaxonfile, project, version, description, tags, force):
 
     register_project_version(
         owner=owner,
+        team=team,
         project_name=project_name,
         version=version,
         kind=V1ProjectVersionKind.COMPONENT,
@@ -256,11 +257,12 @@ def copy(
     $ polyaxon components copy -p owner/name -ver v1 --tags="tag1,tag2" --name new-v1
     """
     version = version or ctx.obj.get("version")
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     copy_project_version(
         owner=owner,
+        team=team,
         project_name=project_name,
         version=version,
         kind=V1ProjectVersionKind.COMPONENT,
@@ -292,13 +294,14 @@ def get(ctx, project, version):
     $ polyaxon components get -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     polyaxon_client = get_current_or_public_client()
 
     get_project_version(
         owner=owner,
+        team=team,
         project_name=project_name,
         kind=V1ProjectVersionKind.COMPONENT,
         version=version,
@@ -327,7 +330,7 @@ def stages(ctx, project, version):
     $ polyaxon components stages -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     polyaxon_client = get_current_or_public_client()
@@ -369,7 +372,7 @@ def delete(ctx, project, version, yes):
     $ polyaxon components get -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     delete_project_version(
@@ -412,7 +415,7 @@ def update(ctx, project, version, name, description, tags):
     $ polyaxon components update --tags="foo, bar"
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     update_project_version(
@@ -461,7 +464,7 @@ def stage(ctx, project, version, to, reason, message):
     $ polyaxon components stage -p acme/foobar -ver rc12 --to=staging --reason GithubAction --message="Use carefully!"
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     stage_project_version(
@@ -499,7 +502,7 @@ def transfer(ctx, project, version, to_project):
     $ polyaxon components transfer -p acme/foobar -ver rc12 --to-project=dest-project
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     transfer_project_version(
@@ -560,7 +563,7 @@ def pull(
     \b
     $ polyaxon components pull -p acme/foobar -a --path /tmp/versions
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     pull_one_or_many_project_versions(
@@ -641,7 +644,7 @@ def push(
     \b
     $ polyaxon components pull -p acme/foobar -a --path /tmp/versions
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     push_one_or_many_project_versions(
@@ -679,11 +682,12 @@ def push(
 def dashboard(ctx, project, version, yes, url):
     """Open this component version's dashboard details in browser."""
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     open_project_version_dashboard(
         owner=owner,
+        team=team,
         project_name=project_name,
         kind=V1ProjectVersionKind.COMPONENT,
         version=version,

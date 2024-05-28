@@ -112,7 +112,7 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
             command_help="polyaxon init",
         )
     if project:
-        owner, project_name = get_project_or_local(project, is_cli=True)
+        owner, _, project_name = get_project_or_local(project, is_cli=True)
         try:
             polyaxon_client = ProjectClient(
                 owner=owner, project=project_name, manual_exceptions_handling=True

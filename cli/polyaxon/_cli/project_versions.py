@@ -12,7 +12,7 @@ from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
-from polyaxon._cli.dashboard import get_dashboard_url
+from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._contexts.paths import get_offline_base_path
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind
@@ -170,6 +170,7 @@ def list_project_versions(
 
 def register_project_version(
     owner: str,
+    team: Optional[str],
     project_name: str,
     version: str,
     kind: V1ProjectVersionKind,
@@ -209,7 +210,9 @@ def register_project_version(
     Printer.print(
         "You can view this version on Polyaxon UI: {}".format(
             get_dashboard_url(
-                subpath="{}/{}/{}s/{}".format(owner, project_name, kind, version)
+                subpath="{}/{}s/{}".format(
+                    get_project_subpath_url(owner, team, project_name), kind, version
+                )
             )
         )
     )
@@ -217,6 +220,7 @@ def register_project_version(
 
 def copy_project_version(
     owner: str,
+    team: Optional[str],
     project_name: str,
     version: str,
     kind: V1ProjectVersionKind,
@@ -261,8 +265,10 @@ def copy_project_version(
     Printer.print(
         "You can view this version on Polyaxon UI: {}".format(
             get_dashboard_url(
-                subpath="{}/{}/{}s/{}".format(
-                    owner, to_project or project_name, kind, _version.name
+                subpath="{}/{}s/{}".format(
+                    get_project_subpath_url(owner, team, to_project or project_name),
+                    kind,
+                    _version.name,
                 )
             )
         )
@@ -271,6 +277,7 @@ def copy_project_version(
 
 def get_project_version(
     owner: str,
+    team: Optional[str],
     project_name: str,
     kind: V1ProjectVersionKind,
     version: str,
@@ -288,6 +295,17 @@ def get_project_version(
     try:
         response = polyaxon_client.get_version(kind, version)
         get_version_details(response, content_callback)
+        Printer.print(
+            "You can view this version on Polyaxon UI: {}".format(
+                get_dashboard_url(
+                    subpath="{}/{}s/{}".format(
+                        get_project_subpath_url(owner, team, project_name),
+                        kind,
+                        version,
+                    )
+                )
+            )
+        )
     except (ApiException, HTTPError) as e:
         handle_cli_error(
             e,
@@ -470,13 +488,16 @@ def stage_project_version(
 
 def open_project_version_dashboard(
     owner: str,
+    team: Optional[str],
     project_name: str,
     kind: V1ProjectVersionKind,
     version: str,
     url: str,
     yes: bool = False,
 ):
-    subpath = "{}/{}/{}s/{}".format(owner, project_name, kind, version)
+    subpath = "{}/{}s/{}".format(
+        get_project_subpath_url(owner, team, project_name), kind, version
+    )
 
     artifact_url = get_dashboard_url(subpath=subpath)
     if url:

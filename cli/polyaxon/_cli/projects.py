@@ -8,7 +8,7 @@ from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
-from polyaxon._cli.dashboard import get_dashboard_url
+from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.init import init as init_project
 from polyaxon._cli.options import OPTIONS_NAME, OPTIONS_OWNER, OPTIONS_PROJECT
@@ -19,6 +19,7 @@ from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon._managers.project import ProjectConfigManager
 from polyaxon._utils import cache
 from polyaxon._utils.cache import get_local_project
+from polyaxon._utils.fqn_utils import get_owner_team_space
 from polyaxon.client import ProjectClient, V1Project
 from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs
@@ -74,7 +75,7 @@ def create(ctx, name, description, tags, public, init):
             command_help="project create",
             sys_exit=True,
         )
-    owner, project_name = resolve_entity_info(
+    owner, team, project_name = resolve_entity_info(
         name or ctx.obj.get("project"), is_cli=True, entity_name="project"
     )
 
@@ -90,7 +91,9 @@ def create(ctx, name, description, tags, public, init):
         project_config = V1Project(
             name=project_name, description=description, tags=tags, is_public=public
         )
-        polyaxon_client = ProjectClient(owner=owner, manual_exceptions_handling=True)
+        polyaxon_client = ProjectClient(
+            owner=get_owner_team_space(owner, team), manual_exceptions_handling=True
+        )
         _project = polyaxon_client.create(project_config)
         config = polyaxon_client.client.sanitize_for_serialization(_project)
         cache.cache(config_manager=ProjectConfigManager, config=config)
@@ -103,7 +106,9 @@ def create(ctx, name, description, tags, public, init):
     Printer.success("Project `{}` was created successfully.".format(_project.name))
     Printer.print(
         "You can view this project on Polyaxon UI: {}".format(
-            get_dashboard_url(subpath="{}/{}".format(owner, _project.name))
+            get_dashboard_url(
+                subpath=get_project_subpath_url(owner, team, _project.name)
+            )
         )
     )
 
@@ -195,7 +200,7 @@ def get(ctx, _project):
     \b
     $ polyaxon project get -p owner/project
     """
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )
 
@@ -214,6 +219,13 @@ def get(ctx, _project):
             project=project_name,
         )
         get_entity_details(polyaxon_client.project_data, "Project")
+        Printer.print(
+            "You can view this project on Polyaxon UI: {}".format(
+                get_dashboard_url(
+                    subpath=get_project_subpath_url(owner, team, project_name)
+                )
+            )
+        )
     except (ApiException, HTTPError) as e:
         handle_cli_error(
             e, message="Could not get project `{}`.".format(project_name), sys_exit=True
@@ -237,7 +249,7 @@ def delete(ctx, _project, yes):
 
     Uses /docs/core/cli/#caching
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )
 
@@ -300,7 +312,7 @@ def update(ctx, _project, name, description, tags, private):
     \b
     $ polyaxon update --tags="foo, bar"
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )
 
@@ -357,10 +369,12 @@ def update(ctx, _project, name, description, tags, private):
 @clean_outputs
 def dashboard(ctx, _project, yes, url):
     """Open this project's dashboard details in browser."""
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )
-    project_url = get_dashboard_url(subpath="{}/{}".format(owner, project_name))
+    project_url = get_dashboard_url(
+        subpath=get_project_subpath_url(owner, team, project_name)
+    )
     if url:
         Printer.header("The dashboard is available at: {}".format(project_url))
         sys.exit(0)

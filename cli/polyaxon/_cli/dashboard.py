@@ -1,5 +1,7 @@
 import sys
 
+from typing import Optional
+
 import click
 
 from clipped.formatting import Printer
@@ -10,10 +12,21 @@ from polyaxon.api import POLYAXON_CLOUD_HOST
 from polyaxon.logger import clean_outputs
 
 
+def get_project_subpath_url(owner: str, team: Optional[str], project: str):
+    if team:
+        return "{}/ts/{}/{}".format(owner, team, project)
+    return "{}/{}".format(owner, project)
+
+
 def get_dashboard_url(
-    base: str = "ui", subpath: str = "", use_cloud: bool = False
+    base: str = "ui", subpath: str = "", use_cloud: bool = False, host: str = None
 ) -> str:
-    host = POLYAXON_CLOUD_HOST if use_cloud else clean_host(settings.CLIENT_CONFIG.host)
+    if not host:
+        host = (
+            POLYAXON_CLOUD_HOST
+            if use_cloud
+            else clean_host(settings.CLIENT_CONFIG.host)
+        )
     dashboard_url = "{}/{}/".format(host, base)
     if subpath:
         return "{}{}/".format(dashboard_url, subpath.rstrip("/"))

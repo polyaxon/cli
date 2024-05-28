@@ -14,4 +14,9 @@ class TestProjectEnvVars(BaseTestCase):
         with self.assertRaises(PolyaxonClientException):
             get_project_or_local(None)
 
-        assert get_project_or_local("owner.project") == ("owner", "project")
+        assert get_project_or_local("owner.project") == ("owner", None, "project")
+        assert get_project_or_local("owner.team.project") == (
+            "owner",
+            "team",
+            "project",
+        )

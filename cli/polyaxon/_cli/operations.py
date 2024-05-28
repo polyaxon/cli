@@ -21,7 +21,11 @@ from clipped.utils.versions import compare_versions
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
-from polyaxon._cli.dashboard import get_dashboard, get_dashboard_url
+from polyaxon._cli.dashboard import (
+    get_dashboard,
+    get_dashboard_url,
+    get_project_subpath_url,
+)
 from polyaxon._cli.errors import handle_cli_error, is_in_ce
 from polyaxon._cli.options import (
     OPTIONS_NAME,
@@ -47,7 +51,7 @@ from polyaxon.api import (
     REWRITE_SERVICES_V1,
     SERVICES_V1,
 )
-from polyaxon.client import RunClient, V1Run, get_run_logs
+from polyaxon.client import RunClient, V1Run, V1RunSettings, get_run_logs
 from polyaxon.exceptions import (
     ApiException,
     PolyaxonClientException,
@@ -80,6 +84,14 @@ DEFAULT_EXCLUDE = [
     "merge",
     "pending",
 ]
+
+
+def get_op_agent_host(runSettings: V1RunSettings):
+    host_kwargs = {}
+    if runSettings and runSettings.agent and runSettings.agent.url:
+        host_kwargs["host"] = runSettings.agent.url
+
+    return host_kwargs
 
 
 def handle_run_statuses(status, conditions, table):
@@ -286,7 +298,7 @@ def ls(
             else:
                 Printer.warning(f"Skipping run {uid}, offline data not found.")
     else:
-        owner, project_name = get_project_or_local(
+        owner, _, project_name = get_project_or_local(
             project or ctx.obj.get("project"), is_cli=True
         )
 
@@ -431,7 +443,7 @@ def get(ctx, project, uid, offline, path, output):
             sys.exit(1)
         run_data = RunConfigManager.read_from_path(offline_path)
     else:
-        owner, project_name, run_uuid = get_project_run_or_local(
+        owner, team, project_name, run_uuid = get_project_run_or_local(
             project or ctx.obj.get("project"),
             uid,
             is_cli=True,
@@ -456,7 +468,9 @@ def get(ctx, project, uid, offline, path, output):
             )
             if output:
                 run_url = get_dashboard_url(
-                    subpath="{}/{}/runs/{}".format(owner, project_name, run_uuid)
+                    subpath="{}/runs/{}".format(
+                        get_project_subpath_url(owner, team, project_name), run_uuid
+                    )
                 )
                 config["url"] = run_url
                 handle_output(config, output)
@@ -529,7 +543,7 @@ def delete(ctx, project, uid, yes, offline, path):
         return
 
     # Resume normal flow
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -624,7 +638,7 @@ def update(ctx, project, uid, name, description, tags, offline, path):
             )
             sys.exit(1)
     else:
-        owner, project_name, run_uuid = get_project_run_or_local(
+        owner, _, project_name, run_uuid = get_project_run_or_local(
             project or ctx.obj.get("project"),
             uid or ctx.obj.get("run_uuid"),
             is_cli=True,
@@ -663,7 +677,7 @@ def approve(ctx, project, uid):
     \b
     $ polyaxon ops approve --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -710,7 +724,7 @@ def stop(ctx, project, uid, yes):
     \b
     $ polyaxon ops stop --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -762,7 +776,7 @@ def skip(ctx, project, uid, yes):
     \b
     $ polyaxon ops skip --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -866,7 +880,7 @@ def restart(
     if polyaxonfile:
         content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
 
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -951,7 +965,7 @@ def resume(
     if polyaxonfile:
         content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
 
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -994,7 +1008,7 @@ def invalidate(ctx, project, uid):
     \b
     $ polyaxon ops invalidate --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1183,7 +1197,7 @@ def execute(ctx, project, uid, executor):
                 message="Operation failed.\n{}".format(result["message"]),
             )
 
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1307,7 +1321,7 @@ def statuses(ctx, project, uid, watch, offline, path):
             sys.exit(1)
         return
 
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1375,7 +1389,7 @@ def statuses(ctx, project, uid, watch, offline, path):
 #             )
 #             sys.exit(1)
 #
-#     owner, project_name, run_uuid = get_project_run_or_local(
+#     owner, team, project_name, run_uuid = get_project_run_or_local(
 #         ctx.obj.get("project"), ctx.obj.get("run_uuid"), is_cli=True,
 #     )
 #
@@ -1467,7 +1481,7 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline
             sys.exit(1)
         return
 
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1513,7 +1527,7 @@ def inspect(ctx, project, uid):
     \b
     $ polyaxon ops inspect -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1572,7 +1586,7 @@ def shell(ctx, project, uid, command, pod, container):
     """
     from polyaxon._vendor.shell_pty import PseudoTerminal
 
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1677,7 +1691,7 @@ def artifacts(
     \b
     $ polyaxon ops artifacts -uid 8aac02e3a62a4f0aaa257c59da5eab80 -l-kind model -l-kind env --path="this/path"
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1855,7 +1869,7 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure):
     \b
     $ polyaxon ops upload -uid 8aac02e3a62a4f0aaa257c59da5eab80 --path-to="path/to/upload/to"
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1929,7 +1943,7 @@ def transfer(ctx, project, uid, to_project):
     \b
     $ polyaxon ops transfer -p acme/foobar -uid 8aac02e3a62a4f0aaa257c59da5eab80 -to=dest-project
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -1997,13 +2011,16 @@ def dashboard(ctx, project, uid, yes, url, offline, path, server_config):
             sys.exit(1)
         run_data = RunConfigManager.read_from_path(offline_path)
         owner, project_name, run_uuid = run_data.owner, run_data.project, run_data.uuid
+        team = None
     else:
-        owner, project_name, run_uuid = get_project_run_or_local(
+        owner, team, project_name, run_uuid = get_project_run_or_local(
             project or ctx.obj.get("project"),
             uid or ctx.obj.get("run_uuid"),
             is_cli=True,
         )
-    subpath = "{}/{}/runs/{}".format(owner, project_name, run_uuid)
+    subpath = "{}/runs/{}".format(
+        get_project_subpath_url(owner, team, project_name), run_uuid
+    )
     dashboard_url = get_dashboard_url(subpath=subpath)
     get_dashboard(dashboard_url=dashboard_url, url_only=url, yes=yes)
     if offline:
@@ -2047,7 +2064,7 @@ def service(ctx, project, uid, yes, external, url):
     You can open the service embedded in Polyaxon UI or using the real service URL,
     please use the `--external` flag.
     """
-    owner, project_name, run_uuid = get_project_run_or_local(
+    owner, team, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
@@ -2080,8 +2097,12 @@ def service(ctx, project, uid, yes, external, url):
 
     wait_for_running_condition(client)
 
+    host_kwargs = get_op_agent_host(client.settings)
     run_url = get_dashboard_url(
-        subpath="{}/{}/runs/{}/service".format(owner, project_name, run_uuid)
+        subpath="{}/runs/{}/service".format(
+            get_project_subpath_url(owner, team, project_name), run_uuid
+        ),
+        **host_kwargs,
     )
 
     namespace = client.run_data.settings.namespace
@@ -2091,8 +2112,8 @@ def service(ctx, project, uid, yes, external, url):
     if rewrite_path:
         service_endpoint = REWRITE_EXTERNAL_V1 if is_external else REWRITE_SERVICES_V1
 
-    service_subpath = "{}/{}/{}/runs/{}/".format(
-        namespace, owner, project_name, run_uuid
+    service_subpath = "{}/{}/runs/{}/".format(
+        get_project_subpath_url(namespace, team, owner), project_name, run_uuid
     )
     port = 80
     if client.settings and client.settings.agent:
@@ -2105,9 +2126,9 @@ def service(ctx, project, uid, yes, external, url):
     if port:
         service_subpath = "{}{}/".format(service_subpath, port)
 
+    host_kwargs = get_op_agent_host(client.settings)
     external_run_url = get_dashboard_url(
-        base=service_endpoint,
-        subpath=service_subpath,
+        base=service_endpoint, subpath=service_subpath, **host_kwargs
     )
 
     if url:
@@ -2188,7 +2209,7 @@ def pull(
     \b
     $ polyaxon ops pull -a
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
 
@@ -2308,7 +2329,7 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
     \b
     $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --reset-project -p send-to-project
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
 

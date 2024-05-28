@@ -12,6 +12,7 @@ from clipped.utils.validation import validate_tags
 
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import client_handler, get_global_or_inline_config
+from polyaxon._client.mixin import ClientMixin
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.getters.user import get_local_owner
@@ -21,13 +22,17 @@ from polyaxon._sdk.schemas.v1_list_project_versions_response import (
 )
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
-from polyaxon._utils.fqn_utils import get_entity_full_name, get_entity_info
+from polyaxon._utils.fqn_utils import (
+    get_entity_full_name,
+    get_entity_info,
+    split_owner_team_space,
+)
 from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.logger import logger
 from traceml.artifacts import V1RunArtifact
 
 
-class ProjectClient:
+class ProjectClient(ClientMixin):
     """ProjectClient is a client to communicate with Polyaxon projects endpoints.
 
     If no values are passed to this class,
@@ -94,25 +99,12 @@ class ProjectClient:
         if not owner:
             raise PolyaxonClientException("Please provide a valid owner.")
 
+        owner, team = split_owner_team_space(owner)
         self._client = client
         self._owner = owner or DEFAULT
+        self._team = team
         self._project = project
         self._project_data = V1Project.construct()
-
-    @property
-    def client(self):
-        if self._client:
-            return self._client
-        self._client = PolyaxonClient()
-        return self._client
-
-    @property
-    def owner(self):
-        return self._owner
-
-    @property
-    def project(self):
-        return self._project
 
     @property
     def project_data(self):
@@ -139,11 +131,19 @@ class ProjectClient:
         Returns:
             V1Project, project instance from the response.
         """
-        self._project_data = self.client.projects_v1.create_project(
-            self.owner,
-            data,
-            async_req=False,
-        )
+        if self.team:
+            self._project_data = self.client.projects_v1.create_team_project(
+                self.owner,
+                self.team,
+                data,
+                async_req=False,
+            )
+        else:
+            self._project_data = self.client.projects_v1.create_project(
+                self.owner,
+                data,
+                async_req=False,
+            )
         self._project_data.owner = self.owner
         self._project = self._project_data.name
         return self._project_data

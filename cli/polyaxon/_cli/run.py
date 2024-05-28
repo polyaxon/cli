@@ -10,10 +10,11 @@ from clipped.utils import git as git_utils
 from clipped.utils.validation import validate_tags
 from urllib3.exceptions import HTTPError
 
-from polyaxon._cli.dashboard import get_dashboard_url
+from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.operations import approve
 from polyaxon._cli.operations import execute as run_execute
+from polyaxon._cli.operations import get_op_agent_host
 from polyaxon._cli.operations import logs as run_logs
 from polyaxon._cli.operations import shell as run_shell
 from polyaxon._cli.operations import statuses
@@ -30,6 +31,7 @@ from polyaxon._polyaxonfile import check_polyaxonfile
 from polyaxon._runner.kinds import RunnerKind
 from polyaxon._schemas.lifecycle import ManagedBy
 from polyaxon._utils import cache
+from polyaxon._utils.fqn_utils import get_owner_team_space
 from polyaxon.client import RunClient
 from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs
@@ -43,6 +45,7 @@ def _run(
     ctx,
     name: str,
     owner: str,
+    team: Optional[str],
     project_name: str,
     description: str,
     tags: List[str],
@@ -60,6 +63,9 @@ def _run(
     polyaxon_client = RunClient(
         owner=owner, project=project_name, manual_exceptions_handling=True
     )
+
+    owner_team = get_owner_team_space(owner, team)
+    project_url = get_project_subpath_url(owner, team, project_name)
 
     def get_instance_info(r):
         rn = (
@@ -93,8 +99,9 @@ def _run(
                 meta_info=meta_info,
                 pending=pending,
             )
+            host_kwargs = get_op_agent_host(response.settings)
             run_url = get_dashboard_url(
-                subpath="{}/{}/runs/{}".format(owner, project_name, response.uuid)
+                subpath="{}/runs/{}".format(project_url, response.uuid), **host_kwargs
             )
             if output:
                 response_data = polyaxon_client.client.sanitize_for_serialization(
@@ -125,26 +132,38 @@ def _run(
 
     def execute_run_locally(run_uuid: str):
         ctx.obj = {
-            "project": "{}/{}".format(owner, project_name),
+            "project": "{}/{}".format(owner_team, project_name),
             "run_uuid": run_uuid,
             "executor": executor,
         }
         ctx.invoke(run_execute)
 
     def watch_run_statuses(run_uuid: str):
-        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.obj = {
+            "project": "{}/{}".format(owner_team, project_name),
+            "run_uuid": run_uuid,
+        }
         ctx.invoke(statuses, watch=True)
 
     def watch_run_logs(run_uuid: str):
-        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.obj = {
+            "project": "{}/{}".format(owner_team, project_name),
+            "run_uuid": run_uuid,
+        }
         ctx.invoke(run_logs)
 
     def start_run_shell(run_uuid: str):
-        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.obj = {
+            "project": "{}/{}".format(owner_team, project_name),
+            "run_uuid": run_uuid,
+        }
         ctx.invoke(run_shell)
 
     def upload_run(run_uuid: str):
-        ctx.obj = {"project": "{}/{}".format(owner, project_name), "run_uuid": run_uuid}
+        ctx.obj = {
+            "project": "{}/{}".format(owner_team, project_name),
+            "run_uuid": run_uuid,
+        }
         ctx.invoke(
             run_upload, path_to=upload_to, path_from=upload_from, sync_failure=True
         )
@@ -555,13 +574,14 @@ def run(
         Printer.print("Please customize the specification or disable the template!")
         sys.exit(1)
 
-    owner, project_name = get_project_or_local(project, is_cli=True)
+    owner, team, project_name = get_project_or_local(project, is_cli=True)
     tags = validate_tags(tags, validate_yaml=True)
 
     _run(
         ctx=ctx,
         name=name,
         owner=owner,
+        team=team,
         project_name=project_name,
         description=description,
         tags=tags,

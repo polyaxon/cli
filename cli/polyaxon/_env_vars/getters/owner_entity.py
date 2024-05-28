@@ -5,7 +5,7 @@ from clipped.utils.strings import validate_slug
 
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._env_vars.getters.user import get_local_owner
-from polyaxon._utils.fqn_utils import get_entity_info
+from polyaxon._utils.fqn_utils import get_entity_info, split_owner_team_space
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
 
 
@@ -31,6 +31,8 @@ def resolve_entity_info(entity: str, entity_name: str, is_cli: bool = False):
     if not owner:
         owner = settings.AUTH_CONFIG.username if settings.AUTH_CONFIG else None
 
+    owner, team = split_owner_team_space(owner)
+
     if not all([owner, entity_value]):
         message = "Please provide a valid {}.".format(entity_name)
         if is_cli:
@@ -49,4 +51,4 @@ def resolve_entity_info(entity: str, entity_name: str, is_cli: bool = False):
                 entity_name, entity_value
             )
         )
-    return owner, entity_value
+    return owner, team, entity_value

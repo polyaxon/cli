@@ -13,7 +13,12 @@ class TestRunEnvVars(BaseTestCase):
     def test_get_project_run_or_local(
         self, get_run_or_local_mock, get_project_or_local_mock
     ):
-        get_project_or_local_mock.return_value = ("owner", "project")
+        get_project_or_local_mock.return_value = ("owner", None, "project")
         get_run_or_local_mock.return_value = "uuid"
 
-        assert get_project_run_or_local() == ("owner", "project", "uuid")
+        assert get_project_run_or_local() == ("owner", None, "project", "uuid")
+
+        get_project_or_local_mock.return_value = ("owner", "team", "project")
+        get_run_or_local_mock.return_value = "uuid"
+
+        assert get_project_run_or_local() == ("owner", "team", "project", "uuid")

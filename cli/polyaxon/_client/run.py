@@ -35,6 +35,7 @@ from polyaxon import settings
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import client_handler, get_global_or_inline_config
+from polyaxon._client.mixin import ClientMixin
 from polyaxon._client.store import PolyaxonStore
 from polyaxon._constants.metadata import META_COPY_ARTIFACTS, META_RECOMPILE
 from polyaxon._containers.names import MAIN_CONTAINER_NAMES
@@ -63,7 +64,11 @@ from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
-from polyaxon._utils.fqn_utils import get_entity_full_name, to_fqn_name
+from polyaxon._utils.fqn_utils import (
+    get_entity_full_name,
+    split_owner_team_space,
+    to_fqn_name,
+)
 from polyaxon._utils.urls_utils import get_proxy_run_url
 from polyaxon.api import K8S_V1_LOCATION, STREAMS_V1_LOCATION
 from polyaxon.exceptions import ApiException, PolyaxonClientException
@@ -80,7 +85,7 @@ if TYPE_CHECKING:
     from traceml.tracking.run import Run
 
 
-class RunClient:
+class RunClient(ClientMixin):
     """RunClient is a client to communicate with Polyaxon runs endpoints.
 
     If no values are passed to this class,
@@ -146,7 +151,7 @@ class RunClient:
             return
 
         try:
-            owner, project = get_project_or_local(
+            owner, _, project = get_project_or_local(
                 get_entity_full_name(owner=owner, entity=project)
             )
         except PolyaxonClientException:
@@ -166,8 +171,10 @@ class RunClient:
         if error_message and not self._is_offline:
             raise PolyaxonClientException(error_message)
 
+        owner, team = split_owner_team_space(owner)
         self._client = client
         self._owner = owner
+        self._team = team
         self._project = project
         self._run_uuid = (
             get_run_or_local(run_uuid)
@@ -218,12 +225,11 @@ class RunClient:
             return client.config.no_op
         return settings.CLIENT_CONFIG.no_op
 
-    @property
-    def client(self):
-        if self._client:
-            return self._client
-        self._client = PolyaxonClient()
-        return self._client
+    def _use_agent_host(self):
+        if self.settings.agent and self.settings.agent.url:
+            self.reset_client(
+                host=self.settings.agent.url, POLYAXON_HOST=self.settings.agent.url
+            )
 
     @property
     def store(self):
@@ -255,20 +261,6 @@ class RunClient:
         if self.settings and self.settings.artifacts_store:
             return self.settings.artifacts_store.name
         return None
-
-    @property
-    def owner(self) -> str:
-        return self._owner or ""
-
-    def set_owner(self, owner: str):
-        self._owner = owner
-
-    @property
-    def project(self) -> str:
-        return self._project or ""
-
-    def set_project(self, project: str):
-        self._project = project
 
     @property
     def run_uuid(self) -> str:
@@ -898,6 +890,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
         params = get_logs_params(
             last_file=last_file, last_time=last_time, connection=self.artifacts_store
         )
@@ -921,6 +914,7 @@ class RunClient:
     def inspect(self):
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
         params = get_streams_params(connection=self.artifacts_store, status=self.status)
         return self.client.runs_v1.inspect_run(
             self.namespace, self.owner, self.project, self.run_uuid, **params
@@ -994,6 +988,10 @@ class RunClient:
                 if not container:
                     container = pod_containers[0]
 
+        if not self.settings:
+            self.refresh_data()
+        self._use_agent_host()
+
         url = get_proxy_run_url(
             service=K8S_V1_LOCATION,
             namespace=self.namespace,
@@ -1039,6 +1037,8 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
+
         params = get_streams_params(self.artifacts_store)
         return self.client.runs_v1.get_run_events(
             self.namespace,
@@ -1074,6 +1074,8 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
+
         params = get_streams_params(self.artifacts_store)
         return self.client.runs_v1.get_multi_run_events(
             self.namespace,
@@ -1310,6 +1312,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
         params = get_streams_params(self.artifacts_store)
         return self.client.runs_v1.get_run_artifact(
             namespace=self.namespace,
@@ -1342,6 +1345,10 @@ class RunClient:
         """
         if not self.run_uuid:
             return
+
+        if not self.settings:
+            self.refresh_data()
+        self._use_agent_host()
 
         lineage_path = lineage.path or ""
         summary = lineage.summary or {}
@@ -1421,6 +1428,8 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
+
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1460,6 +1469,8 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
+
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -1507,6 +1518,7 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
 
         params = get_streams_params(connection=self.artifacts_store)
         url = get_proxy_run_url(
@@ -1596,6 +1608,7 @@ class RunClient:
 
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
 
         params = get_streams_params(connection=self.artifacts_store)
         url = get_proxy_run_url(
@@ -1626,6 +1639,8 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
+
         params = get_streams_params(connection=self.artifacts_store)
         self.client.runs_v1.delete_run_artifact(
             namespace=self.namespace,
@@ -1645,6 +1660,8 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
+
         params = get_streams_params(connection=self.artifacts_store)
         return self.client.runs_v1.delete_run_artifacts(
             namespace=self.namespace,
@@ -1667,6 +1684,8 @@ class RunClient:
         """
         if not self.settings:
             self.refresh_data()
+        self._use_agent_host()
+
         params = get_streams_params(connection=self.artifacts_store)
         return self.client.runs_v1.get_run_artifacts_tree(
             namespace=self.namespace,

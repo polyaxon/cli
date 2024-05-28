@@ -7,7 +7,7 @@ from polyaxon._constants.globals import DEFAULT
 from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon._managers.project import ProjectConfigManager
 from polyaxon._utils.cache import get_local_project
-from polyaxon._utils.fqn_utils import get_entity_info
+from polyaxon._utils.fqn_utils import get_entity_info, split_owner_team_space
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
 
 
@@ -52,6 +52,8 @@ def get_project_or_local(project=None, is_cli: bool = False):
     if not owner and (not settings.CLI_CONFIG or settings.CLI_CONFIG.is_community):
         owner = DEFAULT
 
+    owner, team = split_owner_team_space(owner)
+
     if not all([owner, project_name]):
         error_message = get_project_error_message(owner, project_name)
         if is_cli:
@@ -79,4 +81,4 @@ def get_project_or_local(project=None, is_cli: bool = False):
             sys.exit(1)
         else:
             raise PolyaxonSchemaError(error_message)
-    return owner, project_name
+    return owner, team, project_name

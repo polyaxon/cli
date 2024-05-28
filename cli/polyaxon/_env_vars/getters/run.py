@@ -37,9 +37,9 @@ def get_run_or_local(run_uuid=None, is_cli: bool = False):
 
 
 def get_project_run_or_local(project=None, run_uuid=None, is_cli: bool = True):
-    user, project_name = get_project_or_local(project, is_cli=is_cli)
+    owner, team, project_name = get_project_or_local(project, is_cli=is_cli)
     run_uuid = get_run_or_local(run_uuid, is_cli=is_cli)
-    return user, project_name, run_uuid
+    return owner, team, project_name, run_uuid
 
 
 def get_collect_artifacts(arg: Optional[bool] = None, default: Optional[bool] = None):

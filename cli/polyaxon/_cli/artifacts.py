@@ -73,7 +73,7 @@ def ls(ctx, project, query, sort, limit, offset):
     \b
     $ polyaxon artifacts ls --project=acme/data-versioning
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     list_project_versions(
@@ -146,11 +146,12 @@ def register(
     $ polyaxon artifacts register -p owner/name -ver v1 --tags="tag1,tag2"
     """
     version = version or ctx.obj.get("version")
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     register_project_version(
         owner=owner,
+        team=team,
         project_name=project_name,
         version=version,
         kind=V1ProjectVersionKind.ARTIFACT,
@@ -228,11 +229,12 @@ def copy(
     $ polyaxon artifacts copy -p owner/name -ver v1 --tags="tag1,tag2" --name new-v1
     """
     version = version or ctx.obj.get("version")
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     copy_project_version(
         owner=owner,
+        team=team,
         project_name=project_name,
         version=version,
         kind=V1ProjectVersionKind.ARTIFACT,
@@ -266,11 +268,12 @@ def get(ctx, project, version):
     $ polyaxon artifacts get -p owner/data-versioning -ver rc1
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     get_project_version(
         owner=owner,
+        team=team,
         project_name=project_name,
         kind=V1ProjectVersionKind.ARTIFACT,
         version=version,
@@ -297,7 +300,7 @@ def stages(ctx, project, version):
     $ polyaxon artifacts stages -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     get_project_version_stages(
@@ -333,7 +336,7 @@ def delete(ctx, project, version, yes):
     $ polyaxon artifacts get -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     delete_project_version(
@@ -376,7 +379,7 @@ def update(ctx, project, version, name, description, tags):
     $ polyaxon artifacts update --tags="foo, bar"
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     update_project_version(
@@ -424,7 +427,7 @@ def stage(ctx, project, version, to, reason, message):
     $ polyaxon artifacts stage -p acme/foobar -ver rc12 --to=staging --reason GithubAction --message="Use carefully!"
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     stage_project_version(
@@ -462,7 +465,7 @@ def transfer(ctx, project, version, to_project):
     $ polyaxon artifacts transfer -p acme/foobar -ver rc12 --to-project=dest-project
     """
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     transfer_project_version(
@@ -531,7 +534,7 @@ def pull(
     \b
     $ polyaxon artifacts pull -p acme/foobar -a --path /tmp/versions
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     pull_one_or_many_project_versions(
@@ -612,7 +615,7 @@ def push(
     \b
     $ polyaxon artifacts pull -p acme/foobar -a --path /tmp/versions
     """
-    owner, project_name = get_project_or_local(
+    owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     push_one_or_many_project_versions(
@@ -650,11 +653,12 @@ def push(
 def dashboard(ctx, project, version, yes, url):
     """Open this artifact version's dashboard details in browser."""
     version = version or ctx.obj.get("version") or "latest"
-    owner, project_name = get_project_or_local(
+    owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
     open_project_version_dashboard(
         owner=owner,
+        team=team,
         project_name=project_name,
         kind=V1ProjectVersionKind.ARTIFACT,
         version=version,

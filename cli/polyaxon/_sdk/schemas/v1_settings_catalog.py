@@ -9,3 +9,4 @@ class V1SettingsCatalog(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr]
     name: Optional[StrictStr]
     version: Optional[StrictStr]
+    url: Optional[StrictStr]

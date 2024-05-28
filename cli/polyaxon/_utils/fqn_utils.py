@@ -9,15 +9,32 @@ from clipped.utils.paths import get_relative_path_to
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
+def get_owner_team_space(owner: str, team: Optional[str] = None) -> str:
+    if team:
+        return "{}/{}".format(owner, team)
+    return owner
+
+
+def split_owner_team_space(owner: str) -> Tuple[str, Optional[str]]:
+    return owner.split("/") if owner and "/" in owner else (owner, None)
+
+
+def _remove_team(owner: str) -> str:
+    return split_owner_team_space(owner)[0]
+
+
 def get_project_instance(owner: str, project: str) -> str:
+    owner = _remove_team(owner)
     return "{}.{}".format(owner, project)
 
 
 def get_run_instance(owner: str, project: str, run_uuid: str) -> str:
+    owner = _remove_team(owner)
     return "{}.{}.runs.{}".format(owner, project, run_uuid)
 
 
 def get_cleaner_instance(owner: str, project: str, run_uuid: str) -> str:
+    owner = _remove_team(owner)
     return "{}.{}.cleaners.{}".format(owner, project, run_uuid)
 
 
@@ -53,6 +70,7 @@ def to_fqn_name(name: str) -> str:
 def get_entity_full_name(
     owner: Optional[str] = None, entity: Optional[str] = None
 ) -> str:
+    owner = _remove_team(owner)
     if owner and entity:
         return "{}/{}".format(owner, entity)
     return entity
@@ -65,11 +83,14 @@ def get_entity_info(entity: str) -> Tuple[str, str]:
         )
 
     parts = entity.replace(".", "/").split("/")
-    if len(parts) > 2:
+    if len(parts) > 3:
         raise PolyaxonSchemaError(
             "Received an invalid entity reference: `{}`".format(entity)
         )
-    if len(parts) == 2:
+    if len(parts) == 3:
+        owner = "/".join(parts[:2])
+        entity_name = parts[2]
+    elif len(parts) == 2:
         owner, entity_name = parts
     else:
         owner = None
@@ -81,6 +102,8 @@ def get_entity_info(entity: str) -> Tuple[str, str]:
 def get_versioned_entity_full_name(
     owner: Optional[str], component: str, tag: Optional[str] = None
 ) -> str:
+    owner = _remove_team(owner)
+
     if tag:
         component = "{}:{}".format(component, tag)
     if owner:
