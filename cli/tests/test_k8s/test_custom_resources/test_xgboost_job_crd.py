@@ -20,7 +20,7 @@ class TestXGBoostJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         custom_object = {
-            "xgboostJobSpec": {"cleanPodPolicy": "All", "replicaSpecs": {}},
+            "xgboostJobSpec": {"cleanPodPolicy": "None", "replicaSpecs": {}},
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,

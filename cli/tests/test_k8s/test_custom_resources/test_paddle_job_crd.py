@@ -20,7 +20,7 @@ class TestPaddleJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         custom_object = {
-            "paddleJobSpec": {"cleanPodPolicy": "All", "replicaSpecs": {}},
+            "paddleJobSpec": {"cleanPodPolicy": "None", "replicaSpecs": {}},
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,

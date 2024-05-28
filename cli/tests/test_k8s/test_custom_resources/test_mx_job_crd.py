@@ -20,7 +20,7 @@ class TestMXJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         custom_object = {
-            "mxJobSpec": {"cleanPodPolicy": "All", "replicaSpecs": {}},
+            "mxJobSpec": {"cleanPodPolicy": "None", "replicaSpecs": {}},
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,

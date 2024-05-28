@@ -20,7 +20,7 @@ class TestTFJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         custom_object = {
-            "tfJobSpec": {"cleanPodPolicy": "All", "replicaSpecs": {}},
+            "tfJobSpec": {"cleanPodPolicy": "None", "replicaSpecs": {}},
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,

@@ -46,7 +46,7 @@ def set_notify(custom_object: Dict, notifications: List[V1Notification]) -> Dict
 def set_clean_pod_policy(template_spec: Dict, clean_pod_policy: str) -> Dict:
     if not clean_pod_policy:
         # Sets default clean pod policy
-        clean_pod_policy = "All"
+        clean_pod_policy = "None"
 
     template_spec["cleanPodPolicy"] = clean_pod_policy.capitalize()
     return template_spec

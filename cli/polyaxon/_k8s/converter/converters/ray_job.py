@@ -58,7 +58,9 @@ class RayJobConverter(RayJobMixin, BaseConverter):
             config=compiled_operation.plugins, auth=default_auth
         )
         head = _get_replica(job.head)
-        workers = {n: _get_replica(w) for n, w in job.workers.items()}
+        workers = None
+        if job.workers:
+            workers = {n: _get_replica(w) for n, w in job.workers.items()}
         labels = self.get_labels(version=pkg.VERSION, labels={})
 
         return get_ray_job_custom_resource(
@@ -68,7 +70,7 @@ class RayJobConverter(RayJobMixin, BaseConverter):
             workers=workers,
             entrypoint=job.entrypoint,
             metadata=job.metadata,
-            runtime_env=encode(orjson_dumps(job.runtime_env)),
+            runtime_env=orjson_dumps(job.runtime_env),
             ray_version=job.ray_version,
             termination=compiled_operation.termination,
             collect_logs=plugins.collect_logs,

@@ -20,7 +20,7 @@ class TestPytorchJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         custom_object = {
-            "pytorchJobSpec": {"cleanPodPolicy": "All", "replicaSpecs": {}},
+            "pytorchJobSpec": {"cleanPodPolicy": "None", "replicaSpecs": {}},
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,

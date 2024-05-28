@@ -20,7 +20,7 @@ class TestMPIJobCRD(BaseDistributedCRDTestCase):
             restart_policy="Never",
         )
         custom_object = {
-            "mpiJobSpec": {"cleanPodPolicy": "All", "replicaSpecs": {}},
+            "mpiJobSpec": {"cleanPodPolicy": "None", "replicaSpecs": {}},
             "termination": {
                 "backoffLimit": termination.max_retries,
                 "activeDeadlineSeconds": termination.timeout,

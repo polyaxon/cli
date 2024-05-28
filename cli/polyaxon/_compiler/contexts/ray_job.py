@@ -33,7 +33,9 @@ class RayJobContextsManager(BaseContextsManager):
                 connection_by_names=connection_by_names,
             )
 
-        return {
+        data = {
             "head": _get_replica(job.head),
-            "workers": {wn: _get_replica(job.workers[wn]) for wn in job.workers},
         }
+        if job.workers:
+            data["workers"] = {wn: _get_replica(job.workers[wn]) for wn in job.workers}
+        return data
