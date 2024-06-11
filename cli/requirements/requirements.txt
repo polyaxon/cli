@@ -1,7 +1,7 @@
 click>=7.1.1,<9.0.0
 clipped==0.7.*
 vents==0.4.*
-Jinja2>=2.10.3,<3.1.3
+Jinja2>=2.10.3,<3.1.5
 kubernetes>=10.0.1
 python-dateutil>=2.7.3
 pytz>=2019.2
