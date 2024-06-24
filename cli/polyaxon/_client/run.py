@@ -2136,9 +2136,9 @@ class RunClient(ClientMixin):
         abspath = filepath if is_abs() else os.path.abspath(filepath)
 
         for_patterns = []
-        if getattr(self, "_artifacts_path"):
+        if getattr(self, "_artifacts_path", None):
             for_patterns.append(getattr(self, "_artifacts_path"))
-        if getattr(self, "_store_path"):
+        if getattr(self, "_store_path", None):
             for_patterns.append(getattr(self, "_store_path"))
         context_root = (
             ctx_paths.CONTEXT_OFFLINE_ROOT
