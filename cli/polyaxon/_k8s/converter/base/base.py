@@ -2,6 +2,7 @@ import copy
 
 from typing import Dict, Iterable, List, Optional
 
+from clipped.utils.enums import get_enum_value
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
 
@@ -85,7 +86,7 @@ class BaseConverter(
             "operation.polyaxon.com/name": self.run_name,
             "operation.polyaxon.com/owner": self.owner_name,
             "operation.polyaxon.com/project": self.project_name,
-            "operation.polyaxon.com/kind": self.K8S_ANNOTATIONS_KIND,
+            "operation.polyaxon.com/kind": get_enum_value(self.K8S_ANNOTATIONS_KIND),
         }
 
     def get_annotations(
