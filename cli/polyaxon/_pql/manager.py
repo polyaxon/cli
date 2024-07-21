@@ -13,7 +13,7 @@ class PQLManager:
     FIELDS_PROXY = {}
     FIELDS_TRANS = {}
     FIELDS_ORDERING = None
-    FIELDS_ORDERING_PROXY = None
+    FIELDS_ORDERING_PROXY = None  # Do not set a field on both field and proxy
     FIELDS_DEFAULT_ORDERING = None
     FIELDS_DISTINCT = None
     CHECK_ALIVE = True

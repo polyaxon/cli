@@ -26,6 +26,9 @@ def _get_ray_replicas_template(
     if not replica:
         return
 
+    labels = {**labels, **replica.labels}
+    annotations = {**annotations, **replica.annotations}
+
     metadata, pod_spec = get_pod_spec(
         namespace=namespace,
         main_container=replica.main_container,

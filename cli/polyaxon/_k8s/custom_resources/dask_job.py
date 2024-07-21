@@ -46,6 +46,9 @@ def get_dask_replicas_template(
     if liveness_probe and replica.main_container.liveness_probe is None:
         replica.main_container.liveness_probe = liveness_probe
 
+    labels = {**labels, **replica.labels}
+    annotations = {**annotations, **replica.annotations}
+
     metadata, pod_spec = get_pod_spec(
         namespace=namespace,
         main_container=replica.main_container,
