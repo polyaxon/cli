@@ -3014,8 +3014,8 @@ class RunsV1Api(BaseApi):
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project where the run will be assigned")
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
         kind: Annotated[str, Field(..., description="The artifact kind")],
         names: Annotated[
@@ -3046,15 +3046,15 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_multi_run_events(namespace, owner, project, kind, names, runs, orient, force, sample, connection, status, async_req=True)
+        >>> thread = api.get_multi_run_events(namespace, owner, entity, kind, names, runs, orient, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
         :type namespace: str
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project where the run will be assigned (required)
-        :type project: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
         :param kind: The artifact kind (required)
         :type kind: str
         :param names: Names query param.
@@ -3090,7 +3090,7 @@ class RunsV1Api(BaseApi):
         return self.get_multi_run_events_with_http_info(
             namespace,
             owner,
-            project,
+            entity,
             kind,
             names,
             runs,
@@ -3107,8 +3107,8 @@ class RunsV1Api(BaseApi):
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project where the run will be assigned")
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
         kind: Annotated[str, Field(..., description="The artifact kind")],
         names: Annotated[
@@ -3139,15 +3139,15 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_multi_run_events_with_http_info(namespace, owner, project, kind, names, runs, orient, force, sample, connection, status, async_req=True)
+        >>> thread = api.get_multi_run_events_with_http_info(namespace, owner, entity, kind, names, runs, orient, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
         :type namespace: str
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project where the run will be assigned (required)
-        :type project: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
         :param kind: The artifact kind (required)
         :type kind: str
         :param names: Names query param.
@@ -3193,7 +3193,7 @@ class RunsV1Api(BaseApi):
         _all_params = [
             "namespace",
             "owner",
-            "project",
+            "entity",
             "kind",
             "names",
             "runs",
@@ -3233,8 +3233,8 @@ class RunsV1Api(BaseApi):
             _path_params["namespace"] = _params["namespace"]
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["entity"]:
+            _path_params["entity"] = _params["entity"]
         if _params["kind"]:
             _path_params["kind"] = _params["kind"]
 
@@ -3281,7 +3281,7 @@ class RunsV1Api(BaseApi):
         }
 
         return self.api_client.call_api(
-            "/streams/v1/{namespace}/{owner}/{project}/runs/multi/events/{kind}",
+            "/streams/v1/{namespace}/{owner}/{entity}/runs/multi/events/{kind}",
             "GET",
             _path_params,
             _query_params,
@@ -3304,8 +3304,8 @@ class RunsV1Api(BaseApi):
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project where the run will be assigned")
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
         body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
         **kwargs
@@ -3315,15 +3315,15 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_multi_run_importance(namespace, owner, project, body, async_req=True)
+        >>> thread = api.get_multi_run_importance(namespace, owner, entity, body, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
         :type namespace: str
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project where the run will be assigned (required)
-        :type project: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
         :param body: Params/Metrics data (required)
         :type body: object
         :param async_req: Whether to execute the request asynchronously.
@@ -3343,7 +3343,7 @@ class RunsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.get_multi_run_importance_with_http_info(
-            namespace, owner, project, body, **kwargs
+            namespace, owner, entity, body, **kwargs
         )  # noqa: E501
 
     @validate_arguments
@@ -3351,8 +3351,8 @@ class RunsV1Api(BaseApi):
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        project: Annotated[
-            StrictStr, Field(..., description="Project where the run will be assigned")
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
         body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
         **kwargs
@@ -3362,15 +3362,15 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_multi_run_importance_with_http_info(namespace, owner, project, body, async_req=True)
+        >>> thread = api.get_multi_run_importance_with_http_info(namespace, owner, entity, body, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
         :type namespace: str
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param project: Project where the run will be assigned (required)
-        :type project: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
         :param body: Params/Metrics data (required)
         :type body: object
         :param async_req: Whether to execute the request asynchronously.
@@ -3399,7 +3399,7 @@ class RunsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["namespace", "owner", "project", "body"]
+        _all_params = ["namespace", "owner", "entity", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -3432,8 +3432,8 @@ class RunsV1Api(BaseApi):
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
 
-        if _params["project"]:
-            _path_params["project"] = _params["project"]
+        if _params["entity"]:
+            _path_params["entity"] = _params["entity"]
 
         # process the query parameters
         _query_params = []
@@ -3471,7 +3471,7 @@ class RunsV1Api(BaseApi):
         }
 
         return self.api_client.call_api(
-            "/streams/v1/{namespace}/{owner}/{project}/runs/multi/importance",
+            "/streams/v1/{namespace}/{owner}/{entity}/runs/multi/importance",
             "POST",
             _path_params,
             _query_params,
