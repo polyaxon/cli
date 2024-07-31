@@ -408,9 +408,9 @@ class V1Environment(BaseSchemaModel):
     scheduler_name: Optional[StrictStr] = Field(alias="schedulerName")
     priority_class_name: Optional[StrictStr] = Field(alias="priorityClassName")
     priority: Optional[int]
-    restart_policy: Optional[Literal["Always", "OnFailure", "Never"]] = Field(
-        alias="restartPolicy"
-    )
+    restart_policy: Optional[
+        Literal["Always", "OnFailure", "Never", "ExitCode"]
+    ] = Field(alias="restartPolicy")
 
     @validator("affinity", always=True, pre=True)
     def validate_affinity(cls, v):
