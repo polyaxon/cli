@@ -121,7 +121,7 @@ async def query_k8s_pod_logs(
     return logs, last_time
 
 
-async def get_op_pos_and_services(
+async def get_op_pods_and_services(
     k8s_manager: AsyncK8sManager,
     run_uuid: str,
     run_kind: str,
@@ -138,12 +138,40 @@ async def get_op_pos_and_services(
     return pods, services
 
 
+async def get_resource_events(
+    k8s_manager: AsyncK8sManager, resource_type: str, resource_name: str
+):
+    field_selector = (
+        f"involvedObject.kind={resource_type},involvedObject.name={resource_name}"
+    )
+    try:
+        events = await k8s_manager.list_namespaced_events(field_selector=field_selector)
+
+        all_events = []
+        for event in events:
+            event_data = {
+                "reason": event.reason,
+                "message": event.message,
+                "first_timestamp": event.first_timestamp,
+                "last_timestamp": event.last_timestamp,
+                "count": event.count,
+                "type": event.type,
+            }
+            all_events.append(event_data)
+
+        return all_events
+
+    except ApiException as e:
+        print(f"Exception when calling CoreV1Api->list_namespaced_event: {e}")
+        return []
+
+
 async def get_op_spec(
     k8s_manager: AsyncK8sManager,
     run_uuid: str,
     run_kind: str,
 ):
-    pods, services = await get_op_pos_and_services(
+    pods, services = await get_op_pods_and_services(
         k8s_manager=k8s_manager,
         run_uuid=run_uuid,
         run_kind=run_kind,
@@ -153,11 +181,21 @@ async def get_op_spec(
         pods_list[
             pod.metadata.name
         ] = k8s_manager.api_client.sanitize_for_serialization(pod)
+        pods_list[pod.metadata.name]["events"] = await get_resource_events(
+            k8s_manager=k8s_manager,
+            resource_type="Pod",
+            resource_name=pod.metadata.name,
+        )
     services_list = {}
     for service in services or []:
         services_list[
             service.metadata.name
         ] = k8s_manager.api_client.sanitize_for_serialization(service)
+        services_list[service.metadata.name]["events"] = await get_resource_events(
+            k8s_manager=k8s_manager,
+            resource_type="Service",
+            resource_name=service.metadata.name,
+        )
     data = {"pods": pods_list, "services": services_list}
     return data, pods, services
 
@@ -185,11 +223,21 @@ async def get_agent_spec(
         pods_list[
             pod.metadata.name
         ] = k8s_manager.api_client.sanitize_for_serialization(pod)
+        pods_list[pod.metadata.name]["events"] = await get_resource_events(
+            k8s_manager=k8s_manager,
+            resource_type="Pod",
+            resource_name=pod.metadata.name,
+        )
     data = {"pods": pods_list}
     services_list = {}
     for service in services or []:
         services_list[
             service.metadata.name
         ] = k8s_manager.api_client.sanitize_for_serialization(service)
+        services_list[service.metadata.name]["events"] = await get_resource_events(
+            k8s_manager=k8s_manager,
+            resource_type="Service",
+            resource_name=service.metadata.name,
+        )
     data["services"] = services_list
     return data, pods, services

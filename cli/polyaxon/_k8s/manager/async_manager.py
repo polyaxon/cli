@@ -267,3 +267,18 @@ class AsyncK8sManager(BaseK8sManager):
                 raise PolyaxonK8sError("Connection error: %s" % e) from e
             else:
                 logger.debug("Custom object `{}` was not found".format(name))
+
+    async def list_namespaced_events(
+        self,
+        field_selector: str = None,
+        namespace: str = None,
+        reraise: bool = False,
+        **kwargs
+    ) -> List[client.CoreV1EventList]:
+        return await self._list_namespace_resource(
+            resource_api=self.k8s_api.list_namespaced_event,  # type: ignore[attr-defined]
+            reraise=reraise,
+            namespace=namespace,
+            field_selector=field_selector,
+            **kwargs,
+        )
