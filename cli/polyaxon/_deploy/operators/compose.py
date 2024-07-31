@@ -113,30 +113,6 @@ class ComposeOperator(CmdOperator):
         return env
 
     @staticmethod
-    def _generate_intervals(config):
-        template = "{}={}"
-        env = []
-        if config.intervals:
-            env.append(
-                template.format(
-                    "POLYAXON_INTERVALS_RUNS_SCHEDULER", config.intervals.runs_scheduler
-                )
-            )
-            env.append(
-                template.format(
-                    "POLYAXON_INTERVALS_OPERATIONS_DEFAULT_RETRY_DELAY",
-                    config.intervals.operations_default_retry_delay,
-                )
-            )
-            env.append(
-                template.format(
-                    "POLYAXON_INTERVALS_OPERATIONS_MAX_RETRY_DELAY",
-                    config.intervals.operations_max_retry_delay,
-                )
-            )
-        return env
-
-    @staticmethod
     def _generate_email(config):
         template = "{}={}"
         env = []
@@ -194,8 +170,6 @@ class ComposeOperator(CmdOperator):
             env.append(template.format("POLYAXON_HOST", config.host_name))
         if config.allowed_hosts:
             env.append(template.format("POLYAXON_ALLOWED_HOSTS", config.allowed_hosts))
-
-        env += cls._generate_intervals(config)
 
         if config.log_level:
             env.append(template.format(ENV_KEYS_LOG_LEVEL, config.log_level))

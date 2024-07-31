@@ -255,6 +255,7 @@ class DeploymentConfig(BaseSchemaModel):
     allowed_hosts: Optional[List[StrictStr]] = Field(alias="allowedHosts")
     include_host_ips: Optional[bool] = Field(alias="includeHostIps")
     intervals: Optional[IntervalsConfig]
+    cleaning_intervals: Optional[Dict] = Field(alias="cleaningIntervals")
     artifacts_store: Optional[V1Connection] = Field(alias="artifactsStore")
     connections: Optional[List[V1Connection]]
     mount_connections: Optional[List[str]] = Field(alias="mountConnections")

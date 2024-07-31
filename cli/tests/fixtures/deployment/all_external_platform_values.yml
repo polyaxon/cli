@@ -624,10 +624,10 @@ allowedHosts:
   - 127.0.0.1
   - 159.203.150.212
 
-intervals:  # in seconds
-  runsScheduler: 15
-  operationsDefaultRetryDelay: 60
-  operationsMaxRetryDelay: 3600
+cleaningIntervals:
+  activityLogs: 3600
+  archives: 3600
+  deletion: 3600
 
 auth:
   enabled: false
