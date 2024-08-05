@@ -56,7 +56,7 @@ def _get_fs_from_connection(
 
 async def get_async_fs_from_connection(connection: Optional[V1Connection], **kwargs):
     fs = _get_fs_from_connection(connection=connection, asynchronous=True, **kwargs)
-    if fs.async_impl and hasattr(fs, "set_session"):
+    if hasattr(fs, "async_impl") and hasattr(fs, "set_session"):
         await fs.set_session()
     return fs
 
