@@ -662,14 +662,16 @@ class V1Operation(BaseOp, TemplateMixinConfig):
             for k, v in contexts.items():
                 params[k] = V1Param(value=v, context_only=True)
 
-        return cls.construct(
-            run_patch=run_patch,
-            hub_ref=hook.hub_ref,
-            presets=hook.presets,
-            queue=hook.queue,
-            namespace=hook.namespace,
-            params=params,
-        )
+        content = {"run_patch": run_patch, "params": params}
+        if hook.hub_ref:
+            content["hub_ref"] = hook.hub_ref
+        if hook.presets:
+            content["presets"] = hook.presets
+        if hook.queue:
+            content["queue"] = hook.queue
+        if hook.namespace:
+            content["namespace"] = hook.namespace
+        return cls.construct(**content)
 
     @classmethod
     def from_build(cls, build: V1Build, contexts: Optional[Dict] = None):
@@ -685,17 +687,23 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         if not destination.connection or build.connection:
             destination.connection = build.connection
         params["destination"] = destination
+        content = {
+            "run_patch": build.run_patch,
+            "patch_strategy": build.patch_strategy,
+            "params": params,
+        }
+        if build.hub_ref:
+            content["hub_ref"] = build.hub_ref
+        if build.presets:
+            content["presets"] = build.presets
+        if build.queue:
+            content["queue"] = build.queue
+        if build.namespace:
+            content["namespace"] = build.namespace
+        if build.cache:
+            content["cache"] = build.cache
 
-        return cls.construct(
-            run_patch=build.run_patch,
-            patch_strategy=build.patch_strategy,
-            hub_ref=build.hub_ref,
-            presets=build.presets,
-            queue=build.queue,
-            namespace=build.namespace,
-            cache=build.cache,
-            params=params,
-        )
+        return cls.construct(**content)
 
 
 PartialV1Operation = to_partial(V1Operation)
