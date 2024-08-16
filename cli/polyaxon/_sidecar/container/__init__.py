@@ -34,6 +34,9 @@ async def start_sidecar(
     sync_interval = get_sync_interval(
         interval=sync_interval, sleep_interval=sleep_interval
     )
+    fs_refresh_interval = get_sync_interval(
+        interval=60 * 60 * 2, sleep_interval=sleep_interval
+    )
     try:
         pod_id = os.environ[ENV_KEYS_K8S_POD_ID]
     except KeyError as e:
@@ -61,6 +64,7 @@ async def start_sidecar(
     retry = 0
     is_running = True
     counter = 0
+    fs_refresh_counter = 0
     state = {
         "last_artifacts_check": None,
         "last_logs_check": None,
@@ -136,7 +140,14 @@ async def start_sidecar(
             retry = 0
 
         counter += 1
-        if counter == sync_interval:
+        fs_refresh_counter += 1
+
+        if fs_refresh_counter >= fs_refresh_interval:
+            fs_refresh_counter = 0
+            await close_fs(fs)
+            fs = await get_async_fs_from_connection(connection=connection)
+
+        if counter >= sync_interval:
             counter = 0
             try:
                 await monitor()
