@@ -66,7 +66,7 @@ async def query_k8s_operation_logs(
     new_time = now()
     params = {}
     if last_time:
-        since_seconds = (new_time - last_time).total_seconds() - 1
+        since_seconds = (new_time - last_time).total_seconds()
         params["since_seconds"] = int(since_seconds)
     if stream:
         params["tail_lines"] = V1Logs._CHUNK_SIZE
@@ -83,6 +83,11 @@ async def query_k8s_operation_logs(
             **params,
         )
 
+    if logs and last_time:
+        # make sure to filter logs larger than last_time
+        logs = [log for log in logs if log.timestamp > last_time]
+    if logs and logs[-1].timestamp:
+        new_time = logs[-1].timestamp
     return logs, new_time
 
 
@@ -109,16 +114,19 @@ async def query_k8s_pod_logs(
     new_time = now()
     params = {}
     if last_time:
-        since_seconds = (new_time - last_time).total_seconds() - 1
+        since_seconds = (new_time - last_time).total_seconds()
         params["since_seconds"] = int(since_seconds)
     if stream:
         params["tail_lines"] = V1Logs._CHUNK_SIZE
 
     logs = await handle_pod_logs(k8s_manager=k8s_manager, pod=pod, **params)
 
-    if logs:
-        last_time = logs[-1].timestamp
-    return logs, last_time
+    if logs and last_time:
+        # make sure to filter logs larger than last_time
+        logs = [log for log in logs if log.timestamp > last_time]
+    if logs and logs[-1].timestamp:
+        new_time = logs[-1].timestamp
+    return logs, new_time
 
 
 async def get_op_pods_and_services(
