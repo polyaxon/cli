@@ -21,6 +21,7 @@ from clipped.utils.paths import (
     get_base_filename,
     get_dirs_under_path,
     get_files_in_path_context,
+    set_permissions,
 )
 from clipped.utils.query_params import (
     get_logs_params,
@@ -2896,6 +2897,7 @@ class RunClient(ClientMixin):
             config_file.write(
                 orjson_dumps(self.client.sanitize_for_serialization(self.run_data))
             )
+        set_permissions(run_path)
 
         if not self._artifacts_lineage:
             logger.debug("Persist offline run call did not find any lineage data. ")
@@ -2911,6 +2913,7 @@ class RunClient(ClientMixin):
                     ]
                 )
             )
+        set_permissions(lineages_path)
 
     @classmethod
     @client_handler(check_no_op=True)
