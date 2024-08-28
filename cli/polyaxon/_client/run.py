@@ -64,6 +64,7 @@ from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
+from polyaxon._sdk.schemas.v1_settings_catalog import V1SettingsCatalog
 from polyaxon._utils.fqn_utils import (
     get_entity_full_name,
     split_owner_team_space,
@@ -224,6 +225,18 @@ class RunClient(ClientMixin):
         if client and client.config and client.config.no_op is not None:
             return client.config.no_op
         return settings.CLIENT_CONFIG.no_op
+
+    def _reset_agent(self, agent: Optional[str] = None):
+        if agent:
+            agent = self.client.agents_v1.get_agent(self.owner, agent)
+            self.settings.agent = V1SettingsCatalog(
+                uuid=agent.uuid,
+                name=agent.name,
+                version=agent.version,
+                url=agent.hostname,
+            )
+            self.settings.namespace = agent.namespace
+            self.settings.artifacts_store = None
 
     def _use_agent_host(self):
         if self.settings.agent and self.settings.agent.url:
@@ -1502,6 +1515,7 @@ class RunClient(ClientMixin):
         untar: bool = False,
         overwrite: bool = True,
         show_progress: bool = True,
+        agent: Optional[str] = None,
     ):
         """Uploads a single artifact to the run's artifacts store path.
 
@@ -1512,12 +1526,16 @@ class RunClient(ClientMixin):
                  it should be decompressed on the artifacts store.
             overwrite: bool, optional, if the file uploaded should overwrite any previous content.
             show_progress: bool, to show a progress bar.
+            agent: str, optional, uuid reference of an agent to use.
 
         Returns:
             str
         """
         if not self.settings:
             self.refresh_data()
+        if agent:
+            self._reset_agent(agent)
+
         self._use_agent_host()
 
         params = get_streams_params(connection=self.artifacts_store)
@@ -1548,6 +1566,7 @@ class RunClient(ClientMixin):
         path: str = "",
         overwrite: bool = True,
         relative_to: Optional[str] = None,
+        agent: Optional[str] = None,
     ):
         """Uploads a full directory to the run's artifacts store path.
 
@@ -1560,7 +1579,7 @@ class RunClient(ClientMixin):
             overwrite: bool, optional, if the file uploaded should overwrite any previous content.
             relative_to: str, optional, if the path uploaded is not the current dir,
                  and you want to cancel the relative path.
-
+            agent: str, optional, uuid reference of an agent to use.
         Returns:
             str.
         """
@@ -1580,6 +1599,7 @@ class RunClient(ClientMixin):
             path=path or "",
             overwrite=overwrite,
             relative_to=relative_to,
+            agent=agent,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1589,6 +1609,7 @@ class RunClient(ClientMixin):
         path: str = "",
         overwrite: bool = True,
         relative_to: Optional[str] = None,
+        agent: Optional[str] = None,
     ):
         """Uploads multiple artifacts to the run's artifacts store path.
 
@@ -1598,7 +1619,7 @@ class RunClient(ClientMixin):
             overwrite: bool, optional, if the file uploaded should overwrite any previous content.
             relative_to: str, optional, if the path uploaded is not the current dir,
                  and you want to cancel the relative path.
-
+            agent: str, optional, uuid reference of an agent to use.
         Returns:
             str.
         """
@@ -1608,6 +1629,9 @@ class RunClient(ClientMixin):
 
         if not self.settings:
             self.refresh_data()
+        if agent:
+            self._reset_agent(agent)
+
         self._use_agent_host()
 
         params = get_streams_params(connection=self.artifacts_store)
@@ -2895,6 +2919,8 @@ class RunClient(ClientMixin):
         path: str,
         run_client: Optional[Union["RunClient", "Run"]] = None,
         reset_project: bool = False,
+        reset_uuid: bool = False,
+        name: Optional[str] = None,
         raise_if_not_found: bool = False,
     ) -> Optional[Union["RunClient", "Run"]]:
         """Loads an offline run from a local path.
@@ -2911,6 +2937,8 @@ class RunClient(ClientMixin):
                  from the local run.
             raise_if_not_found: bool, optional, a flag to raise an error if the local path does not
                  contain a persisted run.
+            reset_uuid: bool, optional, a flag to reset the run's uuid.
+            name: str, optional, a name to set for the run.
         """
         run_path = "{}/{}".format(path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.isfile(run_path):
@@ -2925,6 +2953,10 @@ class RunClient(ClientMixin):
             run_config = V1Run(**orjson_loads(config_str))
             owner = run_config.owner
             project = run_config.project
+            if reset_uuid:
+                run_config.uuid = uuid.uuid4().hex
+            if name:
+                run_config.name = name
             if run_client:
                 if reset_project or not owner:
                     owner = run_client.owner
@@ -2983,6 +3015,7 @@ class RunClient(ClientMixin):
         path: str,
         upload_artifacts: bool = True,
         clean: bool = False,
+        agent: Optional[str] = None,
     ):
         """Syncs an offline run to Polyaxon's API and artifacts store.
 
@@ -2991,6 +3024,7 @@ class RunClient(ClientMixin):
             path: str, root path where the run's metadata & artifacts are stored.
             upload_artifacts: bool, optional, flag to trigger artifacts upload.
             clean: bool, optional, flag to clean local path after pushing the run.
+            agent: str, optional, uuid reference of an agent to use.
         """
         # We ensure that the is_offline is False
         is_offline = self._is_offline
@@ -3023,6 +3057,7 @@ class RunClient(ClientMixin):
                 path="/",
                 overwrite=True,
                 relative_to=path,
+                agent=agent,
             )
             logger.info(f"Offline artifacts for run {self.run_data.uuid} uploaded")
 

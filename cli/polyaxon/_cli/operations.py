@@ -1851,9 +1851,12 @@ def artifacts(
     default=False,
     help="To set the run to failed if the upload fails.",
 )
+@click.option(
+    "--agent", "-ag", type=str, help="Optional, uuid reference of an agent to use."
+)
 @click.pass_context
 @clean_outputs
-def upload(ctx, project, uid, path_from, path_to, sync_failure):
+def upload(ctx, project, uid, path_from, path_to, sync_failure, agent):
     """Upload runs' artifacts.
 
     Uses /docs/core/cli/#caching
@@ -1884,7 +1887,7 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure):
         )
         if is_file:
             response = client.upload_artifact(
-                filepath=path_from, path=path_to, overwrite=True
+                filepath=path_from, path=path_to, overwrite=True, agent=agent
             )
         else:
             response = client.upload_artifacts_dir(
@@ -1892,6 +1895,7 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure):
                 path=path_to,
                 overwrite=True,
                 relative_to=path_from,
+                agent=agent,
             )
     except (
         ApiException,
@@ -2302,9 +2306,31 @@ def pull(
     help="Optional, to ignore the owner/project of the local "
     "run and use the owner/project provided or resolved from the current project.",
 )
+@click.option(
+    "--reset-uuid",
+    is_flag=True,
+    default=False,
+    help="Optional, to ignore the uuid of the local " "run and generate a new uuid.",
+)
+@click.option(
+    "--agent", "-ag", type=str, help="Optional, uuid reference of an agent to use."
+)
+@click.option("--name", "-n", type=str, help="Optional, a new name to set for the run.")
 @click.pass_context
 @clean_outputs
-def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
+def push(
+    ctx,
+    project,
+    uid,
+    all_runs,
+    no_artifacts,
+    clean,
+    path,
+    reset_project,
+    reset_uuid,
+    agent,
+    name,
+):
     """Push a local run (or all runs) to a remove server.
 
     Uses /docs/core/cli/#caching
@@ -2352,6 +2378,8 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
                 path=artifacts_path,
                 run_client=client,
                 reset_project=reset_project,
+                name=name,
+                reset_uuid=reset_uuid,
                 raise_if_not_found=True,
             )
         except Exception as e:
@@ -2368,6 +2396,7 @@ def push(ctx, project, uid, all_runs, no_artifacts, clean, path, reset_project):
                 path=artifacts_path,
                 upload_artifacts=not no_artifacts,
                 clean=clean,
+                agent=agent,
             )
             Printer.success(
                 f"Finished pushing offline run {uid} to {client.owner}/{client.project}"
