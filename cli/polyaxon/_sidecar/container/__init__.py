@@ -16,7 +16,7 @@ from polyaxon._fs.watcher import FSWatcher
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 from polyaxon._sidecar.container.intervals import get_sync_interval
 from polyaxon._sidecar.container.monitors import sync_artifacts, sync_logs, sync_spec
-from polyaxon._sidecar.ignore import CONTAINER_IGNORE_FOLDERS
+from polyaxon._sidecar.ignore import IGNORE_FOLDERS
 from polyaxon.client import RunClient
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonContainerException
 from polyaxon.logger import logger
@@ -78,23 +78,21 @@ async def start_sidecar(
                 run_kind=pod.metadata.annotations.get("operation.polyaxon.com/kind"),
             )
         if monitor_logs:
-            await sync_logs(
+            state["last_logs_check"] = await sync_logs(
                 run_uuid=run_uuid,
                 k8s_manager=k8s_manager,
                 pod=pod,
-                last_time=None,
-                stream=True,
-                is_running=is_running,
+                last_time=state["last_logs_check"],
+                stream=False,
             )
         if monitor_outputs:
-            last_check = state["last_artifacts_check"]
             try:
                 await sync_artifacts(
                     fs=fs,
                     fw=fw,
                     store_path=connection.store_path,
                     run_uuid=run_uuid,
-                    exclude=CONTAINER_IGNORE_FOLDERS,
+                    exclude=IGNORE_FOLDERS,
                 )
             except Exception as e:
                 logger.debug(
@@ -102,13 +100,13 @@ async def start_sidecar(
                 )
             try:
                 client.sync_events_summaries(
-                    last_check=last_check,
+                    last_check=state["last_artifacts_check"],
                     events_path=ctx_paths.CONTEXT_MOUNT_RUN_EVENTS_FORMAT.format(
                         run_uuid
                     ),
                 )
                 client.sync_system_events_summaries(
-                    last_check=last_check,
+                    last_check=state["last_artifacts_check"],
                     events_path=ctx_paths.CONTEXT_MOUNT_RUN_SYSTEM_RESOURCES_EVENTS_FORMAT.format(
                         run_uuid
                     ),

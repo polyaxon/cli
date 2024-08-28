@@ -101,7 +101,7 @@ async def collect_agent_service_logs(
         k8s_manager=k8s_manager,
         pod=pod,
         container_name=container.name,
-        tail_lines=V1Logs._CHUNK_SIZE * 3,
+        tail_lines=V1Logs._CHUNK_SIZE,
     )
 
 
