@@ -33,7 +33,7 @@ def agent():
     help="Number of times to retry the process.",
 )
 @coroutine
-async def start(kind, max_retries, max_interval):
+async def start(kind, max_interval, max_retries):
     from polyaxon import settings
     from polyaxon._env_vars.getters import get_agent_info
     from polyaxon._runner.kinds import RunnerKind
