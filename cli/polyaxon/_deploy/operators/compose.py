@@ -5,7 +5,7 @@ from polyaxon._env_vars.keys import ENV_KEYS_LOG_LEVEL, ENV_KEYS_SECRET_KEY
 
 
 class ComposeOperator(CmdOperator):
-    CMD = "docker-compose"
+    CMD = "docker compose"
 
     @classmethod
     def params(cls, args):

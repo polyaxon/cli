@@ -31,7 +31,7 @@ class TestComposeOperator(BaseTestCase):
     def test_docker_compose(self, mock_subprocess):
         mock_subprocess.Popen = self.mock_popen(0, "bar")
         assert self.compose.execute(["up"]) == "bar"
-        assert mock_subprocess.Popen.call_args[0][0] == ["docker-compose", "up"]
+        assert mock_subprocess.Popen.call_args[0][0] == ["docker compose", "up"]
 
     @mock.patch("polyaxon._deploy.operators.cmd_operator.subprocess")
     def test_docker_error(self, mock_subprocess):
@@ -44,7 +44,7 @@ class TestComposeOperator(BaseTestCase):
 
         self.assertEqual(
             exception.exception.message,
-            "`docker-compose` command ('docker-compose', 'down') "
+            "`docker compose` command ('docker compose', 'down') "
             "failed with exit status {}\nstdout:\n{}\nstderr:\n{}".format(
                 return_code, stdout, stderr
             ),
