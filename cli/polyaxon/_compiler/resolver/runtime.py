@@ -46,12 +46,14 @@ class BaseResolver:
         cloning_kind: V1CloningKind = None,
         original_uuid: Optional[str] = None,
         is_independent: bool = True,
+        username: Optional[str] = None,
     ):
         if not compiled_operation:
             raise PolyaxonCompilerError("A run spec is required for resolution.")
         self.run = run
         self.compiled_operation = compiled_operation
         self.owner_name = owner_name
+        self.username = username
         self.project_name = project_name
         self.project_uuid = project_uuid
         self.project_uuid = project_uuid or project_name
@@ -105,6 +107,7 @@ class BaseResolver:
             owner_name=self.owner_name,
             project_name=self.project_name,
             project_uuid=self.project_uuid,
+            username=self.username,
             run_uuid=self.run_uuid,
             run_name=self.run_name,
             run_path=self.run_path,
@@ -232,6 +235,7 @@ class BaseResolver:
             cloning_kind=self.cloning_kind,
             original_uuid=self.original_uuid,
             is_independent=self.is_independent,
+            username=self.username,
         )
 
     def _apply_runtime_contexts(self):
