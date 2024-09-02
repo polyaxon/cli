@@ -1,5 +1,5 @@
 click>=7.1.1,<9.0.0
-clipped==0.7.*
+clipped==0.8.*
 vents==0.4.*
 Jinja2>=2.10.3,<3.1.5
 kubernetes>=10.0.1
