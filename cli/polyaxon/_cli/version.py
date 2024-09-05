@@ -21,7 +21,10 @@ def pip_upgrade(project_name=PROJECT_CLI_NAME):
 
 
 def get_version(package: str, show_error: bool = True):
-    import pkg_resources
+    try:
+        import pkg_resources
+    except ImportError:
+        return
 
     try:
         return pkg_resources.get_distribution(package).version
