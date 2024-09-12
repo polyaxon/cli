@@ -71,7 +71,7 @@ class V1EventTrigger(BaseSchemaModel, ctx_refs.RefMixin):
     ## YAML usage
 
     ```yaml
-    >>> events:
+    >>> event:
     >>>   ref: {{ ops.upstream-operation }}
     >>>   kinds: [run_status_running]
     ```
