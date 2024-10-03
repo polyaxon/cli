@@ -108,7 +108,7 @@ async def collect_agent_service_logs(
 async def query_k8s_pod_logs(
     k8s_manager: AsyncK8sManager,
     pod: V1Pod,
-    last_time: Optional[datetime.datetime],
+    last_time: Optional[datetime.datetime] = None,
     stream: bool = False,
 ) -> Tuple[List[V1Log], Optional[datetime.datetime]]:
     new_time = now()
