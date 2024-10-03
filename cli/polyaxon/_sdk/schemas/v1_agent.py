@@ -26,3 +26,4 @@ class V1Agent(BaseAllowSchemaModel):
     is_replica: Optional[bool]
     is_ui_managed: Optional[bool]
     settings: Optional[Dict[str, Any]]
+    stats: Optional[Dict[str, Any]]
