@@ -45,6 +45,8 @@ pydist/
 .ipynb_checkpoints
 # pyenv
 .python-version
+.venv/
+.virtualenvs/
 """
 
 INIT_FILE_PATH = "polyaxonfile.yaml"
