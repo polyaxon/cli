@@ -24,10 +24,10 @@ class BaseAsyncAgent(BaseAgent):
     IS_ASYNC = True
 
     async def _enter(self):
-        if not self.client._is_managed:
-            return self
         logger.warning("Agent is starting.")
         await self.executor.refresh()
+        if not self.client._is_managed:
+            return self
         try:
             agent = await self.client.get_info()
             self._check_status(agent)
