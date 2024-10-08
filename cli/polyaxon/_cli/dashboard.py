@@ -22,11 +22,8 @@ def get_dashboard_url(
     base: str = "ui", subpath: str = "", use_cloud: bool = False, host: str = None
 ) -> str:
     if not host:
-        host = (
-            POLYAXON_CLOUD_HOST
-            if use_cloud
-            else clean_host(settings.CLIENT_CONFIG.host)
-        )
+        host = POLYAXON_CLOUD_HOST if use_cloud else settings.CLIENT_CONFIG.host
+    host = clean_host(host)
     dashboard_url = "{}/{}/".format(host, base)
     if subpath:
         return "{}{}/".format(dashboard_url, subpath.rstrip("/"))
