@@ -185,7 +185,7 @@ class LifeCycle:
 
     @classmethod
     def is_pending(cls, status: str) -> bool:
-        """Checks if a run with this status is in a pending status."""
+        """Checks if a run with this status is in one of the pending(not compiled or queued yet) statuses."""
         return status in cls.PENDING_VALUES
 
     @classmethod
@@ -220,7 +220,7 @@ class LifeCycle:
 
     @classmethod
     def is_safe_stoppable(cls, status: str) -> bool:
-        """Checks if a run with this status is an be stopped without operator."""
+        """Checks if a run with this status is can be stopped without calling the operator."""
         return status in cls.SAFE_STOP_VALUES
 
     @classmethod
