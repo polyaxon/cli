@@ -43,6 +43,7 @@ class BaseAgent:
         self._default_auth = bool(agent_uuid)
         self._executor_refreshed_at = now()
         self._graceful_shutdown = False
+        self._last_data_collected_at = now()
         self._last_reconciled_at = now()
         self.client = AgentClient(
             owner=owner, agent_uuid=agent_uuid, is_async=self.IS_ASYNC
@@ -61,7 +62,7 @@ class BaseAgent:
 
     def collect_agent_data(self):
         logger.info("Collecting agent data.")
-        self._last_reconciled_at = now()
+        self._last_data_collected_at = now()
         try:
             return self.client.collect_agent_data(
                 namespace=settings.CLIENT_CONFIG.namespace

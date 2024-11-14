@@ -79,17 +79,17 @@ class BaseSyncAgent(BaseAgent):
 
     def reconcile(self):
         if (
-            now() - self._last_reconciled_at
+            now() - self._last_data_collected_at
         ).total_seconds() > self.SLEEP_AGENT_DATA_COLLECT_TIME:
-            # Collect data
             self.collect_agent_data()
-
         if (
             now() - self._last_reconciled_at
         ).total_seconds() < self.SLEEP_AGENT_DATA_RECONCILE_TIME:
             return
 
         # Update reconcile
+        logger.info("Checking cluster state.")
+        self._last_reconciled_at = now()
         namespaces = [settings.AGENT_CONFIG.namespace]
         namespaces += settings.AGENT_CONFIG.additional_namespaces or []
         ops = []
