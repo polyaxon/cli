@@ -930,15 +930,23 @@ class BaseConverter:
 
         # Add outputs
         if plugins and plugins.collect_artifacts:
+            _artifacts_init_env = []
+            if log_level:
+                _artifacts_init_env.append(
+                    self._get_env_var(name=ENV_KEYS_LOG_LEVEL, value=log_level)
+                )
+            proxy_env = self._get_proxy_env_vars(
+                settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops
+            )
+            if proxy_env:
+                _artifacts_init_env += proxy_env
             containers += to_list(
                 self._get_artifacts_path_init_container(
                     polyaxon_init=polyaxon_init,
                     artifacts_store=artifacts_store,
                     run_path=self.run_path,
                     auto_resume=plugins.auto_resume,
-                    env=self._get_proxy_env_vars(
-                        settings.AGENT_CONFIG.use_proxy_env_vars_use_in_ops
-                    ),
+                    env=_artifacts_init_env,
                 ),
                 check_none=True,
             )

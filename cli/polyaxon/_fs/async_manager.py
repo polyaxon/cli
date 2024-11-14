@@ -314,7 +314,7 @@ async def list_files(
 
 
 async def delete_file_or_dir(
-    fs: FSSystem, store_path: str, subpath: Union[str], is_file: bool
+    fs: FSSystem, store_path: str, subpath: Optional[str], is_file: bool
 ) -> bool:
     try:
         await ensure_async_execution(
