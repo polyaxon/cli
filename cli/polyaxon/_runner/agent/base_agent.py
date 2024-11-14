@@ -24,7 +24,8 @@ class BaseAgent:
     HEALTH_FILE = "/tmp/.healthz"
     SLEEP_STOP_TIME = 60 * 5
     SLEEP_ARCHIVED_TIME = 60 * 60
-    SLEEP_AGENT_DATA_COLLECT_TIME = 60 * 30
+    SLEEP_AGENT_DATA_COLLECT_TIME = 60 * 15
+    SLEEP_AGENT_DATA_RECONCILE_TIME = 60 * 5
     IS_ASYNC = False
 
     def __init__(

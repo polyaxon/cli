@@ -81,10 +81,13 @@ class BaseSyncAgent(BaseAgent):
         if (
             now() - self._last_reconciled_at
         ).total_seconds() > self.SLEEP_AGENT_DATA_COLLECT_TIME:
-            return
+            # Collect data
+            self.collect_agent_data()
 
-        # Collect data
-        self.collect_agent_data()
+        if (
+            now() - self._last_reconciled_at
+        ).total_seconds() < self.SLEEP_AGENT_DATA_RECONCILE_TIME:
+            return
 
         # Update reconcile
         namespaces = [settings.AGENT_CONFIG.namespace]
