@@ -4,7 +4,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, Optional, Tuple, Type
 
-from clipped.utils.tz import now
+from clipped.utils.tz import get_datetime_from_now, now
 
 from polyaxon import settings
 from polyaxon._auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
@@ -39,12 +39,13 @@ class BaseAgent:
             self.max_interval = max(max_interval, 3)
         if not agent_uuid and not owner:
             owner = DEFAULT
+        last_hour = get_datetime_from_now(days=0, hours=1)
         self.executor = None
         self._default_auth = bool(agent_uuid)
-        self._executor_refreshed_at = now()
+        self._executor_refreshed_at = last_hour
         self._graceful_shutdown = False
-        self._last_data_collected_at = now()
-        self._last_reconciled_at = now()
+        self._last_data_collected_at = last_hour
+        self._last_reconciled_at = last_hour
         self.client = AgentClient(
             owner=owner, agent_uuid=agent_uuid, is_async=self.IS_ASYNC
         )
