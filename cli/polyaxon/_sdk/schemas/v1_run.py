@@ -53,7 +53,7 @@ class V1Run(BaseAllowSchemaModel):
     pipeline: Optional[V1Pipeline]
     status_conditions: Optional[List[V1StatusCondition]]
     role: Optional[StrictStr]
-    contributors: Optional[Dict[str, Any]]
+    contributors: Optional[List[Dict[str, Any]]]
     settings: Optional[V1RunSettings]
     resources: Optional[V1RunResources]
     graph: Optional[Dict[str, Any]]
