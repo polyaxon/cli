@@ -93,7 +93,7 @@ class PolyaxonfileParser:
         # Check workflow
         for section in Sections.PARSING_SECTIONS:
             config_section = cls._get_section(config, section)
-            if config_section:
+            if config_section is not None:
                 parsed_data[section] = cls.parse_expression(
                     config_section, parsed_params
                 )

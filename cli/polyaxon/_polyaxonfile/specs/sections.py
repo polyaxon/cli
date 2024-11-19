@@ -99,6 +99,14 @@ class Sections:
         CONDITIONS,
         SKIP_ON_UPSTREAM_SKIP,
         PATCH_STRATEGY,
+        "is_approved",
+        "patch_strategy",
+        "is_preset",
+        "hub_ref",
+        "dag_ref",
+        "path_ref",
+        "url_ref",
+        "skip_on_upstream_skip",
     )
 
     REQUIRED_SECTIONS = (VERSION, KIND)
