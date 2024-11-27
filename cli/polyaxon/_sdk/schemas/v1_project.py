@@ -25,5 +25,5 @@ class V1Project(BaseAllowSchemaModel):
     archived_deletion_interval: Optional[int]
     settings: Optional[V1ProjectSettings]
     role: Optional[StrictStr]
-    contributors: Optional[Dict[str, Any]]
+    contributors: Optional[List[Dict[str, Any]]]
     live_state: Optional[int]

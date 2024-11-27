@@ -29,4 +29,4 @@ class V1ProjectVersion(BaseAllowSchemaModel):
     readme: Optional[StrictStr]
     state: Optional[StrictStr]
     role: Optional[StrictStr]
-    contributors: Optional[Dict[str, Any]]
+    contributors: Optional[List[Dict[str, Any]]]
