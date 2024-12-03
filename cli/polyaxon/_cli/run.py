@@ -1,4 +1,5 @@
 import sys
+import time
 
 from collections import namedtuple
 from typing import Dict, List, Optional
@@ -56,6 +57,7 @@ def _run(
     upload_to: str,
     upload_from: str,
     watch: bool,
+    approve_after: Optional[int] = None,
     output: Optional[str] = None,
     local: Optional[bool] = False,
     executor: Optional[RunnerKind] = None,
@@ -167,6 +169,9 @@ def _run(
         ctx.invoke(
             run_upload, path_to=upload_to, path_from=upload_from, sync_failure=True
         )
+        if approve_after and approve_after > 0:
+            Printer.print(f"Waiting {approve_after}s to approve the run...")
+            time.sleep(approve_after)
         ctx.invoke(approve)
 
     if not output:
@@ -375,10 +380,17 @@ def _run(
 )
 @click.option(
     "--approved",
+    "-ap",
     help="To enable/disable human in the loop validation without changing the polyaxonfile, "
     "similar to 'isApproved: true/false'. "
     "Can be used with yes/no, y/n, false/true, f/t, 1/0. "
     "e.g. '--approved=1', '--approved=yes', '--approved=false', '--approved=t', ...",
+)
+@click.option(
+    "--approve-after",
+    "-aa",
+    type=int,
+    help="To delay or automatically approve a run after a certain number of seconds.",
 )
 @click.option(
     "--git-preset",
@@ -441,6 +453,7 @@ def run(
     nocache,
     cache,
     approved,
+    approve_after,
     git_preset,
     git_revision,
     ignore_template,
@@ -591,6 +604,7 @@ def run(
         upload_to=upload_to,
         upload_from=upload_from,
         watch=watch,
+        approve_after=approve_after,
         output=output,
         shell=shell,
         local=local,
