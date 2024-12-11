@@ -78,13 +78,18 @@ async def start_sidecar(
                 run_kind=pod.metadata.annotations.get("operation.polyaxon.com/kind"),
             )
         if monitor_logs:
-            state["last_logs_check"] = await sync_logs(
-                run_uuid=run_uuid,
-                k8s_manager=k8s_manager,
-                pod=pod,
-                last_time=state["last_logs_check"],
-                stream=False,
-            )
+            try:
+                state["last_logs_check"] = await sync_logs(
+                    run_uuid=run_uuid,
+                    k8s_manager=k8s_manager,
+                    pod=pod,
+                    last_time=state["last_logs_check"],
+                    stream=False,
+                )
+            except Exception as exp:
+                logger.log(
+                    "An error occurred while syncing logs, Exception %s" % repr(exp)
+                )
         if monitor_outputs:
             try:
                 await sync_artifacts(
@@ -113,7 +118,7 @@ async def start_sidecar(
                 )
                 update_last_check = True
             except Exception as e:
-                logger.debug(
+                logger.info(
                     "An error occurred while syncing events summaries, "
                     "Exception %s" % repr(e)
                 )
