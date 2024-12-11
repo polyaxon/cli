@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from typing import List, Optional, Tuple
 
@@ -9,6 +10,8 @@ from kubernetes_asyncio.client.rest import ApiException
 from polyaxon._flow import V1RunKind
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 from traceml.logging import V1Log, V1Logs
+
+_logger = logging.getLogger("haupt.k8s.logs")
 
 
 async def handle_container_logs(
@@ -23,8 +26,20 @@ async def handle_container_logs(
             timestamps=True,
             **params,
         )
-    except ApiException:
-        pass
+    except ApiException as e:
+        _logger.warning(
+            "Error collecting logs for %s - container %s: %s",
+            pod.metadata.name,
+            container_name,
+            e,
+        )
+    except Exception as e:
+        _logger.warning(
+            "Unexpected error collecting logs for %s - container %s: %s",
+            pod.metadata.name,
+            container_name,
+            e,
+        )
     if not resp:
         return []
 
