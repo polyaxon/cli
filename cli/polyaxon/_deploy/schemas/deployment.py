@@ -317,7 +317,6 @@ class DeploymentConfig(BaseSchemaModel):
                 intervals=values.get("intervals"),
                 metrics=values.get("metrics"),
                 organization_key=values.get("organization_key"),
-                ui=values.get("ui"),
             )
 
         return values
