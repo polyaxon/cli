@@ -118,3 +118,5 @@ ui:
   offline: true
   staticUrl: https://ffo.com
   adminEnabled: true
+  singleUrl: true
+  defaultStreamsUrl: https://agent.foo.com

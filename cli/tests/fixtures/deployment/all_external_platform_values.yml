@@ -638,6 +638,8 @@ ui:
   enabled: true
   offline: true
   adminEnabled: true
+  singleUrl: true
+  defaultStreamsUrl: https://agent.foo.com
   staticUrl: https://ffo.com
 
 proxy:
