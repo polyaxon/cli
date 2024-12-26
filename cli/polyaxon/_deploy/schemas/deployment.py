@@ -5,8 +5,11 @@ from clipped.compact.pydantic import (
     Field,
     StrictInt,
     StrictStr,
-    root_validator,
-    validator,
+    field_validator,
+    model_validator,
+    validation_after,
+    validation_always,
+    validation_before,
 )
 from clipped.formatting import Printer
 
@@ -187,145 +190,175 @@ class DeploymentConfig(BaseSchemaModel):
         "celeryAffinity",
     ]
 
-    deployment_type: Optional[DeploymentTypes] = Field(alias="deploymentType")
+    deployment_type: Optional[DeploymentTypes] = Field(
+        alias="deploymentType", default=None
+    )
     deployment_chart: Optional[DeploymentCharts] = Field(
         default=DeploymentCharts.PLATFORM, alias="deploymentChart"
     )
-    deployment_version: Optional[StrictStr] = Field(alias="deploymentVersion")
-    release_name: Optional[StrictStr] = Field(alias="releaseName")
-    namespace: Optional[StrictStr]
-    rbac: Optional[RBACConfig]
-    polyaxon_secret: Optional[StrictStr] = Field(alias="polyaxonSecret")
-    internal_token: Optional[StrictStr] = Field(alias="internalToken")
-    password_length: Optional[StrictInt] = Field(alias="passwordLength")
-    password_auth: Optional[bool] = Field(alias="passwordAuth")
-    ssl: Optional[SSLConfig]
-    encryption_secret: Optional[StrictStr] = Field(alias="encryptionSecret")
-    platform_secret: Optional[StrictStr] = Field(alias="platformSecret")
-    agent_secret: Optional[StrictStr] = Field(alias="agentSecret")
-    timezone: Optional[StrictStr]
-    environment: Optional[StrictStr]
-    ingress: Optional[IngressConfig]
-    user: Optional[RootUserConfig]
-    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(alias="nodeSelector")
-    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
-    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
-    labels: Optional[Dict[StrictStr, StrictStr]] = Field(alias="labels")
-    annotations: Optional[Dict[StrictStr, StrictStr]] = Field(alias="annotations")
-    priority_class_name: Optional[StrictStr] = Field(alias="priorityClassName")
+    deployment_version: Optional[StrictStr] = Field(
+        alias="deploymentVersion", default=None
+    )
+    release_name: Optional[StrictStr] = Field(alias="releaseName", default=None)
+    namespace: Optional[StrictStr] = Field(default=None)
+    rbac: Optional[RBACConfig] = None
+    polyaxon_secret: Optional[StrictStr] = Field(alias="polyaxonSecret", default=None)
+    internal_token: Optional[StrictStr] = Field(alias="internalToken", default=None)
+    password_length: Optional[StrictInt] = Field(alias="passwordLength", default=None)
+    password_auth: Optional[bool] = Field(alias="passwordAuth", default=None)
+    ssl: Optional[SSLConfig] = None
+    encryption_secret: Optional[StrictStr] = Field(
+        alias="encryptionSecret", default=None
+    )
+    platform_secret: Optional[StrictStr] = Field(alias="platformSecret", default=None)
+    agent_secret: Optional[StrictStr] = Field(alias="agentSecret", default=None)
+    timezone: Optional[StrictStr] = Field(default=None)
+    environment: Optional[StrictStr] = Field(default=None)
+    ingress: Optional[IngressConfig] = None
+    user: Optional[RootUserConfig] = None
+    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
+        alias="nodeSelector", default=None
+    )
+    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]] = None
+    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]] = None
+    labels: Optional[Dict[StrictStr, StrictStr]] = Field(alias="labels", default=None)
+    annotations: Optional[Dict[StrictStr, StrictStr]] = Field(
+        alias="annotations", default=None
+    )
+    priority_class_name: Optional[StrictStr] = Field(
+        alias="priorityClassName", default=None
+    )
     celery_node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
-        alias="celeryNodeSelector"
+        alias="celeryNodeSelector", default=None
     )
     celery_tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]] = Field(
-        alias="celeryTolerations"
+        alias="celeryTolerations", default=None
     )
     celery_affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]] = Field(
-        alias="celeryAffinity"
+        alias="celeryAffinity", default=None
     )
-    limit_resources: Optional[bool] = Field(alias="limitResources")
-    global_replicas: Optional[StrictInt] = Field(alias="globalReplicas")
-    global_concurrency: Optional[StrictInt] = Field(alias="globalConcurrency")
-    gateway: Optional[ApiServiceConfig]
-    scheduler: Optional[WorkerServiceConfig]
-    compiler: Optional[WorkerServiceConfig]
-    worker: Optional[WorkerServiceConfig]
-    beat: Optional[DeploymentService]
-    agent: Optional[AgentServiceConfig]
-    operator: Optional[OperatorServiceConfig]
-    init: Optional[V1PolyaxonInitContainer]
-    sidecar: Optional[V1PolyaxonSidecarContainer]
-    notifier: Optional[V1PolyaxonNotifier]
-    cleaner: Optional[V1PolyaxonCleaner]
-    default_scheduling: Optional[V1DefaultScheduling] = Field(alias="defaultScheduling")
+    limit_resources: Optional[bool] = Field(alias="limitResources", default=None)
+    global_replicas: Optional[StrictInt] = Field(alias="globalReplicas", default=None)
+    global_concurrency: Optional[StrictInt] = Field(
+        alias="globalConcurrency", default=None
+    )
+    gateway: Optional[ApiServiceConfig] = None
+    scheduler: Optional[WorkerServiceConfig] = None
+    compiler: Optional[WorkerServiceConfig] = None
+    worker: Optional[WorkerServiceConfig] = None
+    beat: Optional[DeploymentService] = None
+    agent: Optional[AgentServiceConfig] = None
+    operator: Optional[OperatorServiceConfig] = None
+    init: Optional[V1PolyaxonInitContainer] = None
+    sidecar: Optional[V1PolyaxonSidecarContainer] = None
+    notifier: Optional[V1PolyaxonNotifier] = None
+    cleaner: Optional[V1PolyaxonCleaner] = None
+    default_scheduling: Optional[V1DefaultScheduling] = Field(
+        alias="defaultScheduling", default=None
+    )
     default_image_pull_secrets: Optional[List[StrictStr]] = Field(
-        alias="defaultImagePullSecrets"
+        alias="defaultImagePullSecrets", default=None
     )
-    clean_hooks: Optional[HooksConfig] = Field(alias="cleanHooks")
-    api_hooks: Optional[HooksConfig] = Field(alias="apiHooks")
-    flower: Optional[DeploymentService]
-    postgresql: Optional[PostgresqlConfig]
-    redis: Optional[RedisConfig]
-    rabbitmq: Optional[RabbitmqConfig]
-    broker: Optional[Literal["redis", "rabbitmq"]]
-    email: Optional[EmailConfig]
-    ldap: Optional[Dict]
-    metrics: Optional[Dict]
-    image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
-    host_name: Optional[StrictStr] = Field(alias="hostName")
-    allowed_hosts: Optional[List[StrictStr]] = Field(alias="allowedHosts")
-    include_host_ips: Optional[bool] = Field(alias="includeHostIps")
-    intervals: Optional[IntervalsConfig]
-    cleaning_intervals: Optional[Dict] = Field(alias="cleaningIntervals")
-    artifacts_store: Optional[V1Connection] = Field(alias="artifactsStore")
-    connections: Optional[List[V1Connection]]
-    mount_connections: Optional[List[str]] = Field(alias="mountConnections")
-    log_level: Optional[StrictStr] = Field(alias="logLevel")
-    security_context: Optional[SecurityContextConfig] = Field(alias="securityContext")
+    clean_hooks: Optional[HooksConfig] = Field(alias="cleanHooks", default=None)
+    api_hooks: Optional[HooksConfig] = Field(alias="apiHooks", default=None)
+    flower: Optional[DeploymentService] = None
+    postgresql: Optional[PostgresqlConfig] = None
+    redis: Optional[RedisConfig] = None
+    rabbitmq: Optional[RabbitmqConfig] = None
+    broker: Optional[Literal["redis", "rabbitmq"]] = None
+    email: Optional[EmailConfig] = None
+    ldap: Optional[Dict] = None
+    metrics: Optional[Dict] = None
+    image_pull_secrets: Optional[List[StrictStr]] = Field(
+        alias="imagePullSecrets", default=None
+    )
+    host_name: Optional[StrictStr] = Field(alias="hostName", default=None)
+    allowed_hosts: Optional[List[StrictStr]] = Field(alias="allowedHosts", default=None)
+    include_host_ips: Optional[bool] = Field(alias="includeHostIps", default=None)
+    intervals: Optional[IntervalsConfig] = None
+    cleaning_intervals: Optional[Dict] = Field(alias="cleaningIntervals", default=None)
+    artifacts_store: Optional[V1Connection] = Field(
+        alias="artifactsStore", default=None
+    )
+    connections: Optional[List[V1Connection]] = Field(default=None)
+    mount_connections: Optional[List[str]] = Field(
+        alias="mountConnections", default=None
+    )
+    log_level: Optional[StrictStr] = Field(alias="logLevel", default=None)
+    security_context: Optional[SecurityContextConfig] = Field(
+        alias="securityContext", default=None
+    )
     external_services: Optional[ExternalServicesConfig] = Field(
-        alias="externalServices"
+        alias="externalServices", default=None
     )
-    debug_mode: Optional[bool] = Field(alias="debugMode")
-    organization_key: Optional[StrictStr] = Field(alias="organizationKey")
-    auth: Optional[AuthConfig]
-    proxy: Optional[ProxyConfig]
-    ui: Optional[UIConfig]
-    include_chart_revision: Optional[bool] = Field(alias="includeChartRevision")
-    operators: Optional[OperatorsConfig]
-    istio: Optional[Dict]
-    dns: Optional[Dict]
+    debug_mode: Optional[bool] = Field(alias="debugMode", default=None)
+    organization_key: Optional[StrictStr] = Field(alias="organizationKey", default=None)
+    auth: Optional[AuthConfig] = None
+    proxy: Optional[ProxyConfig] = None
+    ui: Optional[UIConfig] = None
+    include_chart_revision: Optional[bool] = Field(
+        alias="includeChartRevision", default=None
+    )
+    operators: Optional[OperatorsConfig] = None
+    istio: Optional[Dict] = None
+    dns: Optional[Dict] = None
 
-    @root_validator
+    @model_validator(**validation_after)
     def validate_deployment(cls, values):
         validate_deployment_chart(
-            deployment_chart=values.get("deployment_chart"),
-            agent=values.get("agent"),
-            environment=values.get("environment"),
+            deployment_chart=cls.get_value_for_key("deployment_chart", values),
+            agent=cls.get_value_for_key("agent", values),
+            environment=cls.get_value_for_key("environment", values),
         )
         validate_platform_deployment(
-            postgresql=values.get("postgresql"),
-            redis=values.get("redis"),
-            rabbitmq=values.get("rabbitmq"),
-            broker=values.get("broker"),
-            scheduler=values.get("scheduler"),
-            compiler=values.get("compiler"),
-            worker=values.get("worker"),
-            beat=values.get("beat"),
-            external_services=values.get("external_services"),
+            postgresql=cls.get_value_for_key("postgresql", values),
+            redis=cls.get_value_for_key("redis", values),
+            rabbitmq=cls.get_value_for_key("rabbitmq", values),
+            broker=cls.get_value_for_key("broker", values),
+            scheduler=cls.get_value_for_key("scheduler", values),
+            compiler=cls.get_value_for_key("compiler", values),
+            worker=cls.get_value_for_key("worker", values),
+            beat=cls.get_value_for_key("beat", values),
+            external_services=cls.get_value_for_key("external_services", values),
         )
-        if values.get("deployment_chart") == DeploymentCharts.AGENT:
+        if cls.get_value_for_key("deployment_chart", values) == DeploymentCharts.AGENT:
             wrong_agent_deployment_keys(
-                password_length=values.get("password_length"),
-                password_auth=values.get("password_auth"),
-                platform_secret=values.get("platform_secret"),
-                encryption_secret=values.get("encryption_secret"),
-                user=values.get("user"),
-                global_replicas=values.get("global_replicas"),
-                global_concurrency=values.get("global_concurrency"),
-                scheduler=values.get("scheduler"),
-                compiler=values.get("compiler"),
-                worker=values.get("worker"),
-                beat=values.get("beat"),
-                clean_hook=values.get("clean_hook"),
-                api_hooks=values.get("api_hooks"),
-                flower=values.get("flower"),
-                postgresql=values.get("postgresql"),
-                redis=values.get("redis"),
-                rabbitmq=values.get("rabbitmq"),
-                broker=values.get("broker"),
-                email=values.get("email"),
-                ldap=values.get("ldap"),
-                intervals=values.get("intervals"),
-                metrics=values.get("metrics"),
-                organization_key=values.get("organization_key"),
+                password_length=cls.get_value_for_key("password_length", values),
+                password_auth=cls.get_value_for_key("password_auth", values),
+                platform_secret=cls.get_value_for_key("platform_secret", values),
+                encryption_secret=cls.get_value_for_key("encryption_secret", values),
+                user=cls.get_value_for_key("user", values),
+                global_replicas=cls.get_value_for_key("global_replicas", values),
+                global_concurrency=cls.get_value_for_key("global_concurrency", values),
+                scheduler=cls.get_value_for_key("scheduler", values),
+                compiler=cls.get_value_for_key("compiler", values),
+                worker=cls.get_value_for_key("worker", values),
+                beat=cls.get_value_for_key("beat", values),
+                clean_hook=cls.get_value_for_key("clean_hook", values),
+                api_hooks=cls.get_value_for_key("api_hooks", values),
+                flower=cls.get_value_for_key("flower", values),
+                postgresql=cls.get_value_for_key("postgresql", values),
+                redis=cls.get_value_for_key("redis", values),
+                rabbitmq=cls.get_value_for_key("rabbitmq", values),
+                broker=cls.get_value_for_key("broker", values),
+                email=cls.get_value_for_key("email", values),
+                ldap=cls.get_value_for_key("ldap", values),
+                intervals=cls.get_value_for_key("intervals", values),
+                metrics=cls.get_value_for_key("metrics", values),
+                organization_key=cls.get_value_for_key("organization_key", values),
             )
 
         return values
 
-    @validator("affinity", "celery_affinity", always=True, pre=True)
+    @field_validator(
+        "affinity", "celery_affinity", **validation_always, **validation_before
+    )
     def validate_affinity(cls, v):
         return k8s_validation.validate_k8s_affinity(v)
 
-    @validator("tolerations", "celery_tolerations", always=True, pre=True)
+    @field_validator(
+        "tolerations", "celery_tolerations", **validation_always, **validation_before
+    )
     def validate_tolerations(cls, v):
         if not v:
             return v

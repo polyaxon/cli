@@ -3,36 +3,43 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple
 
+from clipped.compact.pydantic import PYDANTIC_VERSION
 from clipped.utils.dates import path_last_modified
 from clipped.utils.paths import get_files_and_dirs_in_path
 
 from polyaxon._contexts import paths as ctx_paths
-from polyaxon._schemas.base import BaseSchemaModel
+from polyaxon._schemas.base import BaseSchemaModel, RootModel
 
 
-class PathData(BaseSchemaModel):
-    __root__: Tuple[str, datetime, str]
+class PathData(RootModel):
+    if PYDANTIC_VERSION.startswith("2."):
+        root: Tuple[str, datetime, str]
+    else:
+        __root__: Tuple[str, datetime, str]
 
-    class Config(BaseSchemaModel.Config):
+    class Config:
         validate_assignment = False
 
     @property
     def base(self) -> str:
-        return self.__root__[0]
+        return self.get_root()[0]
 
     @property
     def ts(self) -> datetime:
-        if isinstance(self.__root__[1], str):
-            self.__root__ = (
-                self.__root__[0],
-                datetime.fromisoformat(self.__root__[1]),
-                self.__root__[1],
+        root = self.get_root()
+        if isinstance(root[1], str):
+            self.set_root(
+                (
+                    root[0],
+                    datetime.fromisoformat(root[1]),
+                    root[1],
+                )
             )
-        return self.__root__[1]
+        return root[1]
 
     @property
     def op(self) -> str:
-        return self.__root__[2]
+        return self.get_root()[2]
 
 
 class FSWatcher(BaseSchemaModel):
@@ -42,8 +49,8 @@ class FSWatcher(BaseSchemaModel):
     _RM = "rm"
     _NOOP = ""
 
-    dir_mapping: Optional[Dict[str, PathData]]
-    file_mapping: Optional[Dict[str, PathData]]
+    dir_mapping: Optional[Dict[str, PathData]] = None
+    file_mapping: Optional[Dict[str, PathData]] = None
 
     @property
     def dirs_mp(self) -> Dict[str, PathData]:
@@ -71,17 +78,11 @@ class FSWatcher(BaseSchemaModel):
         data = mapping.get(rel_path)
         if data:
             if current_ts > data.ts:
-                mapping[rel_path] = PathData.construct(
-                    __root__=(base_path, current_ts, self._PUT)
-                )
+                mapping[rel_path] = PathData.make((base_path, current_ts, self._PUT))
             else:
-                mapping[rel_path] = PathData.construct(
-                    __root__=(base_path, data.ts, self._NOOP)
-                )
+                mapping[rel_path] = PathData.make((base_path, data.ts, self._NOOP))
         else:
-            mapping[rel_path] = PathData.construct(
-                __root__=(base_path, current_ts, self._PUT)
-            )
+            mapping[rel_path] = PathData.make((base_path, current_ts, self._PUT))
         return mapping
 
     def sync_file(self, path: str, base_path: str):
@@ -92,12 +93,10 @@ class FSWatcher(BaseSchemaModel):
 
     def init(self):
         self.dir_mapping = {
-            p: PathData.construct(__root__=(d.base, d.ts, self._RM))
-            for p, d in self.dirs_mp.items()
+            p: PathData.make((d.base, d.ts, self._RM)) for p, d in self.dirs_mp.items()
         }
         self.file_mapping = {
-            p: PathData.construct(__root__=(d.base, d.ts, self._RM))
-            for p, d in self.files_mp.items()
+            p: PathData.make((d.base, d.ts, self._RM)) for p, d in self.files_mp.items()
         }
 
     def sync(self, path: str, exclude: Optional[List[str]] = None):

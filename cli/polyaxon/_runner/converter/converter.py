@@ -820,7 +820,7 @@ class BaseConverter:
                             connection=V1Connection(
                                 name=git_name,
                                 kind=V1ConnectionKind.GIT,
-                                schema_=init_connection.git,
+                                schema_=init_connection.git.to_connection(),
                                 secret=None,
                             ),
                             container=self._ensure_container(

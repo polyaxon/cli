@@ -99,6 +99,6 @@ class V1Termination(BaseSchemaModel):
 
     _IDENTIFIER = "termination"
 
-    max_retries: Optional[IntOrRef] = Field(alias="maxRetries")
-    ttl: Optional[IntOrRef]
-    timeout: Optional[IntOrRef]
+    max_retries: Optional[IntOrRef] = Field(alias="maxRetries", default=None)
+    ttl: Optional[IntOrRef] = None
+    timeout: Optional[IntOrRef] = None

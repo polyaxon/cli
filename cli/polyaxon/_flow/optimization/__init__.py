@@ -10,7 +10,7 @@ class V1OptimizationMetric(BaseSchemaModel):
     _IDENTIFIER = "optimization_metric"
 
     name: StrictStr
-    optimization: Optional[V1Optimization]
+    optimization: Optional[V1Optimization] = None
 
     def get_for_sort(self):
         if self.optimization == V1Optimization.MINIMIZE:
@@ -22,7 +22,7 @@ class V1OptimizationResource(BaseSchemaModel):
     _IDENTIFIER = "optimization_resource"
 
     name: StrictStr
-    type: Optional[V1ResourceType]
+    type: Optional[V1ResourceType] = None
 
     def cast_value(self, value):
         if V1ResourceType.is_int(self.type):

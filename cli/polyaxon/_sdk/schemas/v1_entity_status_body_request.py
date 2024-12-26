@@ -8,8 +8,8 @@ from polyaxon._schemas.lifecycle import V1StatusCondition
 
 
 class V1EntityStatusBodyRequest(BaseAllowSchemaModel):
-    owner: Optional[StrictStr]
-    project: Optional[StrictStr]
-    uuid: Optional[UUIDStr]
-    condition: Optional[V1StatusCondition]
-    force: Optional[bool]
+    owner: Optional[StrictStr] = None
+    project: Optional[StrictStr] = None
+    uuid: Optional[UUIDStr] = None
+    condition: Optional[V1StatusCondition] = None
+    force: Optional[bool] = None

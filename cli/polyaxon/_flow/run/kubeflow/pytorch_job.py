@@ -34,17 +34,17 @@ class V1PytorchElasticPolicy(BaseSchemaModel):
 
     _IDENTIFIER = "elasticPolicy"
 
-    min_replicas: Optional[IntOrRef] = Field(alias="minReplicas")
-    max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas")
-    rdvz_backend: Optional[StrictStr] = Field(alias="rdvzBackend")
-    rdvz_port: Optional[IntOrRef] = Field(alias="rdvzPort")
-    rdvz_host: Optional[StrictStr] = Field(alias="rdvzHost")
-    rdvz_id: Optional[StrictStr] = Field(alias="rdvzId")
-    rdvz_conf: Optional[List[Dict]] = Field(alias="rdvzConf")
-    standalone: Optional[BoolOrRef]
-    n_proc_per_node: Optional[IntOrRef] = Field(alias="nProcPerNode")
-    max_restarts: Optional[IntOrRef] = Field(alias="maxRestarts")
-    metrics: Optional[List[Dict]] = Field(alias="Metrics")
+    min_replicas: Optional[IntOrRef] = Field(alias="minReplicas", default=None)
+    max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas", default=None)
+    rdvz_backend: Optional[StrictStr] = Field(alias="rdvzBackend", default=None)
+    rdvz_port: Optional[IntOrRef] = Field(alias="rdvzPort", default=None)
+    rdvz_host: Optional[StrictStr] = Field(alias="rdvzHost", default=None)
+    rdvz_id: Optional[StrictStr] = Field(alias="rdvzId", default=None)
+    rdvz_conf: Optional[List[Dict]] = Field(alias="rdvzConf", default=None)
+    standalone: Optional[BoolOrRef] = None
+    n_proc_per_node: Optional[IntOrRef] = Field(alias="nProcPerNode", default=None)
+    max_restarts: Optional[IntOrRef] = Field(alias="maxRestarts", default=None)
+    metrics: Optional[List[Dict]] = Field(alias="Metrics", default=None)
 
 
 class V1PytorchJob(BaseRun, DestinationImageMixin):
@@ -163,14 +163,21 @@ class V1PytorchJob(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.PYTORCHJOB
+    _CUSTOM_DUMP_FIELDS = {"master", "worker"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
-    scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
-    elastic_policy: Optional[V1PytorchElasticPolicy] = Field(alias="elasticPolicy")
-    n_proc_per_node: Optional[IntOrRef] = Field(alias="nProcPerNode")
-    master: Optional[Union[V1KFReplica, RefField]]
-    worker: Optional[Union[V1KFReplica, RefField]]
+    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
+        alias="cleanPodPolicy", default=None
+    )
+    scheduling_policy: Optional[V1SchedulingPolicy] = Field(
+        alias="schedulingPolicy", default=None
+    )
+    elastic_policy: Optional[V1PytorchElasticPolicy] = Field(
+        alias="elasticPolicy", default=None
+    )
+    n_proc_per_node: Optional[IntOrRef] = Field(alias="nProcPerNode", default=None)
+    master: Optional[Union[V1KFReplica, RefField]] = None
+    worker: Optional[Union[V1KFReplica, RefField]] = None
 
     def apply_image_destination(self, image: str):
         if self.master:

@@ -157,12 +157,12 @@ class TestLineageResolver(BaseTestCase):
         )
         resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
-        assert resolver.connection_by_names == {
-            artifacts_store.name: artifacts_store,
-            connection1.name: connection1,
-            connection2.name: connection2,
+        assert {k: v.to_dict() for k, v in resolver.connection_by_names.items()} == {
+            artifacts_store.name: artifacts_store.to_dict(),
+            connection1.name: connection1.to_dict(),
+            connection2.name: connection2.to_dict(),
         }
-        assert resolver.artifacts_store == artifacts_store
+        assert resolver.artifacts_store.to_dict() == artifacts_store.to_dict()
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
         resolver.resolve_artifacts_lineage()

@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import Field, StrictStr, field_validator
 from clipped.types.ref_or_obj import BoolOrRef, RefField
 
 from polyaxon._flow.params import V1Param
@@ -208,16 +208,16 @@ class V1Hook(BaseSchemaModel):
     _IDENTIFIER = "hook"
 
     hub_ref: StrictStr = Field(alias="hubRef")
-    connection: Optional[StrictStr]
-    trigger: Optional[V1Statuses]
-    conditions: Optional[StrictStr]
-    presets: Optional[List[StrictStr]]
-    queue: Optional[StrictStr]
-    namespace: Optional[StrictStr]
-    params: Optional[Union[Dict[str, V1Param], RefField]]
-    disable_defaults: Optional[BoolOrRef] = Field(alias="disableDefaults")
+    connection: Optional[StrictStr] = None
+    trigger: Optional[V1Statuses] = None
+    conditions: Optional[StrictStr] = None
+    presets: Optional[List[StrictStr]] = None
+    queue: Optional[StrictStr] = None
+    namespace: Optional[StrictStr] = None
+    params: Optional[Union[Dict[str, V1Param], RefField]] = None
+    disable_defaults: Optional[BoolOrRef] = Field(alias="disableDefaults", default=None)
 
-    @validator("trigger")
+    @field_validator("trigger")
     def validate_trigger(cls, v):
         if v and v not in V1Statuses.get_allowable_hook_values():
             raise ValueError(

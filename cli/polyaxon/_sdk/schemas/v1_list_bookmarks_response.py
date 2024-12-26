@@ -5,7 +5,7 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1ListBookmarksResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[Dict[str, Any]]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[Dict[str, Any]]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

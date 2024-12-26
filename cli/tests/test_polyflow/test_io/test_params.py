@@ -1,6 +1,6 @@
 import pytest
 
-from clipped.compact.pydantic import ValidationError
+from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.assertions import assert_equal_dict
 
 from polyaxon._flow.params import V1Param
@@ -10,7 +10,14 @@ from polyaxon._utils.test_utils import BaseTestCase
 @pytest.mark.polyflow_mark
 class TestV1Params(BaseTestCase):
     def test_missing_value_param_config(self):
-        param = V1Param.from_dict({})
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(ValidationError):
+                V1Param.from_dict({})
+        else:
+            param = V1Param.from_dict({})
+            assert param.value is None
+
+        param = V1Param.from_dict({"value": None})
         assert param.value is None
 
     def test_wrong_param_with_ref_and_search(self):

@@ -222,13 +222,13 @@ class V1Build(BaseSchemaModel):
 
     _IDENTIFIER = "build"
     hub_ref: StrictStr = Field(alias="hubRef")
-    connection: Optional[StrictStr]
-    presets: Optional[Union[List[StrictStr], RefField]]
-    queue: Optional[StrictStr]
-    namespace: Optional[StrictStr]
-    cache: Optional[Union[V1Cache, RefField]]
-    params: Optional[Dict[str, Union[V1Param, RefField]]]
-    run_patch: Optional[Dict[str, Any]] = Field(alias="runPatch")
+    connection: Optional[StrictStr] = None
+    presets: Optional[Union[List[StrictStr], RefField]] = None
+    queue: Optional[StrictStr] = None
+    namespace: Optional[StrictStr] = None
+    cache: Optional[Union[V1Cache, RefField]] = None
+    params: Optional[Dict[str, Union[V1Param, RefField]]] = None
+    run_patch: Optional[Dict[str, Any]] = Field(alias="runPatch", default=None)
     patch_strategy: Optional[Union[PatchStrategy, RefField]] = Field(
-        alias="patchStrategy"
+        alias="patchStrategy", default=None
     )

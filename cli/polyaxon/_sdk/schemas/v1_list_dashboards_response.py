@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
 
 
 class V1ListDashboardsResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1Dashboard]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1Dashboard]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

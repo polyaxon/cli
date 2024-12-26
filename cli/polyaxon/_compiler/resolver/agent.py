@@ -1,7 +1,8 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from clipped.compact.pydantic import Field
 from clipped.utils.lists import to_list
+from vents.connections import Connection, ConnectionResource
 
 from polyaxon import settings
 from polyaxon._auxiliaries import (
@@ -18,14 +19,14 @@ from polyaxon.exceptions import PolyaxonCompilerError
 
 
 class AgentResolver(BaseSchemaModel):
-    polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer]
-    polyaxon_init: Optional[V1PolyaxonInitContainer]
-    namespace: Optional[str]
-    secrets: Optional[List[V1ConnectionResource]]
-    config_maps: Optional[List[V1ConnectionResource]]
-    connection_by_names: Optional[Dict[str, V1Connection]]
-    artifacts_store: Optional[V1Connection]
-    default_sa: Optional[str]
+    polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer] = None
+    polyaxon_init: Optional[V1PolyaxonInitContainer] = None
+    namespace: Optional[str] = None
+    secrets: Optional[List[Union[V1ConnectionResource, ConnectionResource]]] = None
+    config_maps: Optional[List[Union[V1ConnectionResource, ConnectionResource]]] = None
+    connection_by_names: Optional[Dict[str, Union[V1Connection, Connection]]] = None
+    artifacts_store: Optional[Union[V1Connection, Connection]] = None
+    default_sa: Optional[str] = None
     internal_auth: Optional[bool] = Field(default=False)
 
     def resolve(

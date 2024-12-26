@@ -11,13 +11,11 @@ from polyaxon._schemas.log_handler import V1LogHandler
 
 class CliConfig(ChecksConfig):
     _IDENTIFIER = "cli"
-    _DIST = "dist"
-    _INTERVAL = 30 * 60
 
-    current_version: Optional[StrictStr]
-    installation: Optional[V1Installation]
-    compatibility: Optional[V1Compatibility]
-    log_handler: Optional[V1LogHandler]
+    current_version: Optional[StrictStr] = None
+    installation: Optional[V1Installation] = None
+    compatibility: Optional[V1Compatibility] = None
+    log_handler: Optional[V1LogHandler] = None
 
     @property
     def min_version(self) -> Optional[str]:

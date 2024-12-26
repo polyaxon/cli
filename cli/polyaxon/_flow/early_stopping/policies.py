@@ -13,9 +13,9 @@ class V1MedianStoppingPolicy(BaseSchemaModel):
     _USE_DISCRIMINATOR = True
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
-    min_interval: Optional[IntOrRef] = Field(alias="minInterval")
-    min_samples: Optional[IntOrRef] = Field(alias="minSamples")
+    evaluation_interval: IntOrRef = Field(alias="evaluationInterval", default=None)
+    min_interval: Optional[IntOrRef] = Field(alias="minInterval", default=None)
+    min_samples: Optional[IntOrRef] = Field(alias="minSamples", default=None)
 
 
 class V1TruncationStoppingPolicy(BaseSchemaModel):
@@ -24,9 +24,11 @@ class V1TruncationStoppingPolicy(BaseSchemaModel):
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     percent: FloatOrRef
     evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
-    min_interval: Optional[IntOrRef] = Field(alias="minInterval")
-    min_samples: Optional[IntOrRef] = Field(alias="minSamples")
-    include_succeeded: Optional[BoolOrRef] = Field(alias="includeSucceeded")
+    min_interval: Optional[IntOrRef] = Field(alias="minInterval", default=None)
+    min_samples: Optional[IntOrRef] = Field(alias="minSamples", default=None)
+    include_succeeded: Optional[BoolOrRef] = Field(
+        alias="includeSucceeded", default=None
+    )
 
 
 class V1DiffStoppingPolicy(BaseSchemaModel):
@@ -35,13 +37,13 @@ class V1DiffStoppingPolicy(BaseSchemaModel):
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     percent: FloatOrRef
     evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
-    min_interval: Optional[IntOrRef] = Field(alias="minInterval")
-    min_samples: Optional[IntOrRef] = Field(alias="minSamples")
+    min_interval: Optional[IntOrRef] = Field(alias="minInterval", default=None)
+    min_samples: Optional[IntOrRef] = Field(alias="minSamples", default=None)
 
 
 V1EarlyStoppingPolicy = Annotated[
     Union[V1MedianStoppingPolicy, V1TruncationStoppingPolicy, V1DiffStoppingPolicy],
-    Field(discriminator="kind", alias="earlyStopping"),
+    Field(discriminator="kind"),
 ]
 
 
@@ -150,7 +152,7 @@ class V1MetricEarlyStopping(BaseSchemaModel):
     metric: StrictStr
     value: FloatOrRef
     optimization: Union[StrictFloat, V1Optimization]
-    policy: Optional[V1EarlyStoppingPolicy]
+    policy: Optional[V1EarlyStoppingPolicy] = None
 
 
 class V1FailureEarlyStopping(BaseSchemaModel):

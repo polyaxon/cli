@@ -135,14 +135,17 @@ class V1RayJob(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.RAYJOB
+    _CUSTOM_DUMP_FIELDS = {"head", "workers"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    entrypoint: Optional[str]
-    runtime_env: Optional[Union[Dict[str, Any], RefField]] = Field(alias="runtimeEnv")
-    metadata: Optional[Union[Dict[str, str], RefField]]
-    ray_version: Optional[str] = Field(alias="rayVersion")
-    head: Optional[Union[V1RayReplica, RefField]]
-    workers: Optional[Dict[str, Union[V1RayReplica, RefField]]]
+    entrypoint: Optional[str] = None
+    runtime_env: Optional[Union[Dict[str, Any], RefField]] = Field(
+        alias="runtimeEnv", default=None
+    )
+    metadata: Optional[Union[Dict[str, str], RefField]] = Field(default=None)
+    ray_version: Optional[str] = Field(alias="rayVersion", default=None)
+    head: Optional[Union[V1RayReplica, RefField]] = None
+    workers: Optional[Dict[str, Union[V1RayReplica, RefField]]] = Field(default=None)
 
     def apply_image_destination(self, image: str):
         if self.head:

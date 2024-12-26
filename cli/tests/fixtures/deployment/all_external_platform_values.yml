@@ -362,8 +362,11 @@ externalServices:
   errors:
     enabled: true
     backend: sentry
-    options: {foo: bar}
-
+    options: { platform_dsn: "https://sdf@o148306.ingest.sentry.io/1819183", cli_dsn: "https://sdf@sdf.ingest.sentry.io/sdf", "sample_rate": 0.1 }
+  analytics:
+    enabled: true
+    options: { }
+    url: "https://www.google-analytics.com/mp/collect?api_secret=sdfs&measurement_id=G-sdf"
   postgresql:
     user: polyaxon
     password: polyaxon
@@ -399,6 +402,12 @@ externalServices:
     google:
       enabled: true
       options: {foo: bar}
+    okta:
+      enabled: true
+      options:
+        xml: |-
+          <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://www.okta.com/sdf4t4t6h34546">
+          </md:EntityDescriptor>
 
 broker: redis
 

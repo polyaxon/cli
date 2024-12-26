@@ -80,9 +80,9 @@ class V1Template(BaseSchemaModel):
 
     _IDENTIFIER = "template"
 
-    enabled: Optional[BoolOrRef]
-    description: Optional[StrictStr]
-    fields: Optional[Union[List[StrictStr], RefField]]
+    enabled: Optional[BoolOrRef] = None
+    description: Optional[StrictStr] = None
+    fields: Optional[Union[List[StrictStr], RefField]] = None
 
 
 class TemplateMixinConfig:

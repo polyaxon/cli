@@ -117,8 +117,8 @@ class V1IntervalSchedule(BaseSchemaModel):
     _USE_DISCRIMINATOR = True
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    start_at: Optional[DatetimeOrRef] = Field(alias="startAt")
-    end_at: Optional[DatetimeOrRef] = Field(alias="endAt")
-    max_runs: Optional[IntOrRef] = Field(alias="maxRuns")
+    start_at: Optional[DatetimeOrRef] = Field(alias="startAt", default=None)
+    end_at: Optional[DatetimeOrRef] = Field(alias="endAt", default=None)
+    max_runs: Optional[IntOrRef] = Field(alias="maxRuns", default=None)
     frequency: TimeDeltaOrRef
-    depends_on_past: Optional[BoolOrRef] = Field(alias="dependsOnPast")
+    depends_on_past: Optional[BoolOrRef] = Field(alias="dependsOnPast", default=None)

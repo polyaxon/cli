@@ -272,7 +272,7 @@ class V1Service(V1Job):
     _IDENTIFIER = V1RunKind.SERVICE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    ports: Optional[Union[List[StrictInt], RefField]]
-    rewrite_path: Optional[BoolOrRef] = Field(alias="rewritePath")
-    is_external: Optional[BoolOrRef] = Field(alias="isExternal")
-    replicas: Optional[IntOrRef]
+    ports: Optional[Union[List[StrictInt], RefField]] = None
+    rewrite_path: Optional[BoolOrRef] = Field(alias="rewritePath", default=None)
+    is_external: Optional[BoolOrRef] = Field(alias="isExternal", default=None)
+    replicas: Optional[IntOrRef] = None

@@ -6,6 +6,6 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class SSLConfig(BaseSchemaModel):
-    enabled: Optional[bool]
-    secret_name: Optional[StrictStr] = Field(alias="secretName")
-    path: Optional[StrictStr]
+    enabled: Optional[bool] = None
+    secret_name: Optional[StrictStr] = Field(alias="secretName", default=None)
+    path: Optional[StrictStr] = None

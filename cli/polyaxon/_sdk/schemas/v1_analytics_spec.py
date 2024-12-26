@@ -5,7 +5,7 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1AnalyticsSpec(BaseAllowSchemaModel):
-    view: Optional[StrictStr]
-    trunc: Optional[StrictStr]
-    groupby: Optional[StrictStr]
-    frequency: Optional[StrictStr]
+    view: Optional[StrictStr] = None
+    trunc: Optional[StrictStr] = None
+    groupby: Optional[StrictStr] = None
+    frequency: Optional[StrictStr] = None

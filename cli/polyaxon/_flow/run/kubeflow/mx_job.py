@@ -202,17 +202,33 @@ class V1MXJob(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.MXJOB
+    _CUSTOM_DUMP_FIELDS = {
+        "scheduler",
+        "server",
+        "worker",
+        "tuner",
+        "tunerTracker",
+        "tunerServer",
+    }
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
-    scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
-    mode: Optional[MXJobMode]
-    scheduler: Optional[Union[V1KFReplica, RefField]]
-    server: Optional[Union[V1KFReplica, RefField]]
-    worker: Optional[Union[V1KFReplica, RefField]]
-    tuner: Optional[Union[V1KFReplica, RefField]]
-    tuner_tracker: Optional[Union[V1KFReplica, RefField]] = Field(alias="tunerTracker")
-    tuner_server: Optional[Union[V1KFReplica, RefField]] = Field(alias="tunerServer")
+    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
+        alias="cleanPodPolicy", default=None
+    )
+    scheduling_policy: Optional[V1SchedulingPolicy] = Field(
+        alias="schedulingPolicy", default=None
+    )
+    mode: Optional[MXJobMode] = None
+    scheduler: Optional[Union[V1KFReplica, RefField]] = None
+    server: Optional[Union[V1KFReplica, RefField]] = None
+    worker: Optional[Union[V1KFReplica, RefField]] = None
+    tuner: Optional[Union[V1KFReplica, RefField]] = None
+    tuner_tracker: Optional[Union[V1KFReplica, RefField]] = Field(
+        alias="tunerTracker", default=None
+    )
+    tuner_server: Optional[Union[V1KFReplica, RefField]] = Field(
+        alias="tunerServer", default=None
+    )
 
     def apply_image_destination(self, image: str):
         if self.scheduler:

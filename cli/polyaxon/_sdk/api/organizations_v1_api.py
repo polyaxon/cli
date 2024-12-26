@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
@@ -23,7 +23,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class OrganizationsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def approve_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -60,7 +60,7 @@ class OrganizationsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.approve_organization_runs_with_http_info(owner, body, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def approve_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -187,7 +187,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def archive_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -224,7 +224,7 @@ class OrganizationsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.archive_organization_runs_with_http_info(owner, body, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def archive_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -351,7 +351,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def bookmark_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -390,7 +390,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def bookmark_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -517,7 +517,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_organization(
         self, body: V1Organization, **kwargs
     ) -> V1Organization:  # noqa: E501
@@ -549,7 +549,7 @@ class OrganizationsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_organization_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_organization_with_http_info(
         self, body: V1Organization, **kwargs
     ):  # noqa: E501
@@ -674,7 +674,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_organization_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -720,7 +720,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, email, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -861,7 +861,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_organization(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -902,7 +902,7 @@ class OrganizationsV1Api(BaseApi):
             owner, usage, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_organization_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1023,7 +1023,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_organization_invitation(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1098,7 +1098,7 @@ class OrganizationsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_organization_invitation_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1266,7 +1266,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_organization_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1305,7 +1305,7 @@ class OrganizationsV1Api(BaseApi):
             owner, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1424,7 +1424,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1463,7 +1463,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1590,7 +1590,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1631,7 +1631,7 @@ class OrganizationsV1Api(BaseApi):
             owner, usage, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1757,7 +1757,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization_activities(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1824,7 +1824,7 @@ class OrganizationsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_activities_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1997,7 +1997,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization_invitation(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2072,7 +2072,7 @@ class OrganizationsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_invitation_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2245,7 +2245,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2284,7 +2284,7 @@ class OrganizationsV1Api(BaseApi):
             owner, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2408,7 +2408,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2449,7 +2449,7 @@ class OrganizationsV1Api(BaseApi):
             owner, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2575,7 +2575,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2642,7 +2642,7 @@ class OrganizationsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2815,7 +2815,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization_settings(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2938,7 +2938,7 @@ class OrganizationsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3200,7 +3200,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_organization_stats(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3289,7 +3289,7 @@ class OrganizationsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_organization_stats_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3482,7 +3482,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def invalidate_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3521,7 +3521,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def invalidate_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3648,7 +3648,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_organization_member_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3715,7 +3715,7 @@ class OrganizationsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_organization_member_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3888,7 +3888,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_organization_members(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3955,7 +3955,7 @@ class OrganizationsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_organization_members_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4128,7 +4128,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_organization_names(
         self, **kwargs
     ) -> V1ListOrganizationsResponse:  # noqa: E501
@@ -4158,7 +4158,7 @@ class OrganizationsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.list_organization_names_with_http_info(**kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_organization_names_with_http_info(self, **kwargs):  # noqa: E501
         """List organizations names  # noqa: E501
 
@@ -4269,7 +4269,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_organizations(self, **kwargs) -> V1ListOrganizationsResponse:  # noqa: E501
         """List organizations  # noqa: E501
 
@@ -4297,7 +4297,7 @@ class OrganizationsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.list_organizations_with_http_info(**kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_organizations_with_http_info(self, **kwargs):  # noqa: E501
         """List organizations  # noqa: E501
 
@@ -4408,7 +4408,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def organization_plan(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4447,7 +4447,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def organization_plan_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4579,7 +4579,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def organization_license(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4618,7 +4618,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def organization_license_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4750,7 +4750,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_organization(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4789,7 +4789,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_organization_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4921,7 +4921,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_organization_invitation(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4967,7 +4967,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, email, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_organization_invitation_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5108,7 +5108,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_organization_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5157,7 +5157,7 @@ class OrganizationsV1Api(BaseApi):
             owner, member_user, body, email, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5303,7 +5303,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_organization_settings(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5342,7 +5342,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_organization_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5474,7 +5474,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def resend_organization_invitation(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5520,7 +5520,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, email, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def resend_organization_invitation_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5661,7 +5661,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def restore_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5700,7 +5700,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def restore_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5827,7 +5827,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def skip_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5866,7 +5866,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def skip_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5990,7 +5990,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def stop_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6029,7 +6029,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def stop_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6156,7 +6156,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def tag_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6195,7 +6195,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def tag_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6322,7 +6322,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def transfer_organization_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6361,7 +6361,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def transfer_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6488,7 +6488,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_organization(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6527,7 +6527,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_organization_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6659,7 +6659,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_organization_invitation(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6705,7 +6705,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, email, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_organization_invitation_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6846,7 +6846,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_organization_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6895,7 +6895,7 @@ class OrganizationsV1Api(BaseApi):
             owner, member_user, body, email, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7041,7 +7041,7 @@ class OrganizationsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_organization_settings(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7080,7 +7080,7 @@ class OrganizationsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_organization_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

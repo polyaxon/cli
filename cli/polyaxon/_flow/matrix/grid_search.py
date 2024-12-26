@@ -1,7 +1,13 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import Field, PositiveInt, validator
+from clipped.compact.pydantic import (
+    Field,
+    PositiveInt,
+    field_validator,
+    validation_always,
+    validation_before,
+)
 from clipped.config.schema import skip_partial
 from clipped.types.ref_or_obj import RefField
 
@@ -196,19 +202,22 @@ class V1GridSearch(BaseSearchConfig):
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     params: Union[Dict[str, V1HpParam], RefField]
-    num_runs: Optional[Union[PositiveInt, RefField]] = Field(alias="numRuns")
-    concurrency: Optional[Union[PositiveInt, RefField]]
+    num_runs: Optional[Union[PositiveInt, RefField]] = Field(
+        alias="numRuns", default=None
+    )
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
-    @validator("num_runs", "concurrency", pre=True)
+    @field_validator("num_runs", "concurrency", **validation_before)
     def check_values(cls, v, field):
+        key = cls.get_field_name(field)
         if v and v < 1:
-            raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")
+            raise ValueError(f"{key} must be greater than 1, received `{v}` instead.")
         return v
 
-    @validator("params", always=True)
+    @field_validator("params", **validation_always)
     @skip_partial
     def validate_matrix(cls, params):
         return validate_matrix(params)

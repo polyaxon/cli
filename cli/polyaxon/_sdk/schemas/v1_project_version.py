@@ -10,23 +10,23 @@ from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1StageCondition, 
 
 
 class V1ProjectVersion(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    description: Optional[StrictStr]
-    tags: Optional[List[StrictStr]]
-    owner: Optional[StrictStr]
-    project: Optional[StrictStr]
-    connection: Optional[StrictStr]
-    run: Optional[StrictStr]
-    artifacts: Optional[List[StrictStr]]
-    meta_info: Optional[Dict[str, Any]]
-    created_at: Optional[datetime.datetime]
-    updated_at: Optional[datetime.datetime]
-    stage: Optional[V1Stages]
-    kind: Optional[V1ProjectVersionKind]
-    stage_conditions: Optional[List[V1StageCondition]]
-    content: Optional[StrictStr]
-    readme: Optional[StrictStr]
-    state: Optional[StrictStr]
-    role: Optional[StrictStr]
-    contributors: Optional[List[Dict[str, Any]]]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    tags: Optional[List[StrictStr]] = None
+    owner: Optional[StrictStr] = None
+    project: Optional[StrictStr] = None
+    connection: Optional[StrictStr] = None
+    run: Optional[StrictStr] = None
+    artifacts: Optional[List[StrictStr]] = None
+    meta_info: Optional[Dict[str, Any]] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+    stage: Optional[V1Stages] = None
+    kind: Optional[V1ProjectVersionKind] = None
+    stage_conditions: Optional[List[V1StageCondition]] = None
+    content: Optional[StrictStr] = None
+    readme: Optional[StrictStr] = None
+    state: Optional[StrictStr] = None
+    role: Optional[StrictStr] = None
+    contributors: Optional[List[Dict[str, Any]]] = None

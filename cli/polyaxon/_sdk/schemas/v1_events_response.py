@@ -4,8 +4,8 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1EventsResponse(BaseAllowSchemaModel):
-    data: Optional[List[Dict[str, Any]]]
+    data: Optional[List[Dict[str, Any]]] = None
 
 
 class V1MultiEventsResponse(BaseAllowSchemaModel):
-    data: Optional[Dict[str, Any]]
+    data: Optional[Dict[str, Any]] = None

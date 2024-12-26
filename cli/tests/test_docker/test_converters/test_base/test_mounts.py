@@ -41,7 +41,7 @@ class TestMounts(BaseConverterTest):
             schema_=dict(mount_path="/tmp", volume_claim="test", read_only=True),
         )
         mount = MountsMixin._get_mount_from_store(store=store)
-        assert mount == docker_types.V1VolumeMount(__root__=("-v", "test:/tmp:ro"))
+        assert mount == docker_types.V1VolumeMount.make(("-v", "test:/tmp:ro"))
 
         store = V1Connection(
             name="test",
@@ -51,7 +51,7 @@ class TestMounts(BaseConverterTest):
             ),
         )
         mount = MountsMixin._get_mount_from_store(store=store)
-        assert mount == docker_types.V1VolumeMount(__root__=("-v", "test:/tmp:ro"))
+        assert mount == docker_types.V1VolumeMount.make(("-v", "test:/tmp:ro"))
 
         # Host path
         store = V1Connection(
@@ -60,7 +60,7 @@ class TestMounts(BaseConverterTest):
             schema_=dict(mount_path="/tmp", host_path="/tmp", read_only=True),
         )
         mount = MountsMixin._get_mount_from_store(store=store)
-        assert mount == docker_types.V1VolumeMount(__root__=("-v", "/tmp:/tmp:ro"))
+        assert mount == docker_types.V1VolumeMount.make(("-v", "/tmp:/tmp:ro"))
 
         store = V1Connection(
             name="test",
@@ -70,7 +70,7 @@ class TestMounts(BaseConverterTest):
             ),
         )
         mount = MountsMixin._get_mount_from_store(store=store)
-        assert mount == docker_types.V1VolumeMount(__root__=("-v", "/tmp:/tmp:ro"))
+        assert mount == docker_types.V1VolumeMount.make(("-v", "/tmp:/tmp:ro"))
 
     def test_mount_resources(self):
         # Non mouth resource
@@ -99,7 +99,7 @@ class TestMounts(BaseConverterTest):
             is_requested=False,
         )
         mount = MountsMixin._get_mount_from_resource(resource=resource)
-        assert mount == docker_types.V1VolumeMount(__root__=("-v", "/tmp:/tmp:ro"))
+        assert mount == docker_types.V1VolumeMount.make(("-v", "/tmp:/tmp:ro"))
 
         resource = V1ConnectionResource(
             name="test1",
@@ -109,12 +109,12 @@ class TestMounts(BaseConverterTest):
             is_requested=False,
         )
         mount = MountsMixin._get_mount_from_resource(resource=resource)
-        assert mount == docker_types.V1VolumeMount(__root__=("-v", "/tmp:/tmp:ro"))
+        assert mount == docker_types.V1VolumeMount.make(("-v", "/tmp:/tmp:ro"))
 
     def test_get_docker_context_mount(self):
         mount = MountsMixin._get_docker_context_mount()
-        assert mount == docker_types.V1EnvVar(
-            __root__=(
+        assert mount == docker_types.V1VolumeMount.make(
+            (
                 "-v",
                 f"{ctx_paths.CONTEXT_MOUNT_DOCKER}:{ctx_paths.CONTEXT_MOUNT_DOCKER}:ro",
             )
@@ -122,25 +122,25 @@ class TestMounts(BaseConverterTest):
 
     def test_get_auth_context_mount(self):
         mount = MountsMixin._get_auth_context_mount(run_path="test")
-        assert mount.__root__[0] == "-v"
-        assert ".runs/test" in mount.__root__[1]
-        assert ctx_paths.CONTEXT_MOUNT_CONFIGS in mount.__root__[1]
-        assert "ro" not in mount.__root__[1]
+        assert mount.get_root()[0] == "-v"
+        assert ".runs/test" in mount.get_root()[1]
+        assert ctx_paths.CONTEXT_MOUNT_CONFIGS in mount.get_root()[1]
+        assert "ro" not in mount.get_root()[1]
         mount = MountsMixin._get_auth_context_mount(read_only=True, run_path="test")
-        assert mount.__root__[0] == "-v"
-        assert ".runs/test" in mount.__root__[1]
-        assert ctx_paths.CONTEXT_MOUNT_CONFIGS in mount.__root__[1]
-        assert "ro" in mount.__root__[1]
+        assert mount.get_root()[0] == "-v"
+        assert ".runs/test" in mount.get_root()[1]
+        assert ctx_paths.CONTEXT_MOUNT_CONFIGS in mount.get_root()[1]
+        assert "ro" in mount.get_root()[1]
 
     def test_get_artifacts_context_mount(self):
         mount = MountsMixin._get_artifacts_context_mount()
-        assert mount.__root__[0] == "-v"
-        assert ctx_paths.CONTEXT_MOUNT_ARTIFACTS in mount.__root__[1]
-        assert "ro" not in mount.__root__[1]
+        assert mount.get_root()[0] == "-v"
+        assert ctx_paths.CONTEXT_MOUNT_ARTIFACTS in mount.get_root()[1]
+        assert "ro" not in mount.get_root()[1]
         mount = MountsMixin._get_artifacts_context_mount(read_only=True)
-        assert mount.__root__[0] == "-v"
-        assert ctx_paths.CONTEXT_MOUNT_ARTIFACTS in mount.__root__[1]
-        assert "ro" in mount.__root__[1]
+        assert mount.get_root()[0] == "-v"
+        assert ctx_paths.CONTEXT_MOUNT_ARTIFACTS in mount.get_root()[1]
+        assert "ro" in mount.get_root()[1]
 
     def test_get_connections_context_mount(self):
         mount = MountsMixin._get_connections_context_mount(
@@ -148,14 +148,14 @@ class TestMounts(BaseConverterTest):
             mount_path="/test",
             run_path=self.converter.run_path,
         )
-        assert mount == docker_types.V1VolumeMount(
-            __root__=("-v", "/tmp/plx/.runs/run_uuid:/test")
+        assert mount == docker_types.V1VolumeMount.make(
+            ("-v", "/tmp/plx/.runs/run_uuid:/test")
         )
 
     def test_get_shm_context_mount(self):
         mount = MountsMixin._get_shm_context_mount()
-        assert mount == docker_types.V1VolumeMount(
-            __root__=(
+        assert mount == docker_types.V1VolumeMount.make(
+            (
                 "--mount",
                 f"type=tmpfs,destination={ctx_paths.CONTEXT_MOUNT_SHM}",
             )

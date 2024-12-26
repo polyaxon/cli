@@ -1,7 +1,13 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    validation_always,
+    validation_before,
+)
 
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
@@ -389,52 +395,64 @@ class V1Environment(BaseSchemaModel):
         "dnsConfig",
     ]
 
-    labels: Optional[Dict[StrictStr, StrictStr]]
-    annotations: Optional[Dict[StrictStr, StrictStr]]
-    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(alias="nodeSelector")
-    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
-    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
-    node_name: Optional[StrictStr] = Field(alias="nodeName")
-    service_account_name: Optional[StrictStr] = Field(alias="serviceAccountName")
-    host_aliases: Optional[List[k8s_schemas.V1HostAlias]] = Field(alias="hostAliases")
-    security_context: Optional[Union[k8s_schemas.V1SecurityContext, Dict]] = Field(
-        alias="securityContext"
+    labels: Optional[Dict[StrictStr, StrictStr]] = None
+    annotations: Optional[Dict[StrictStr, StrictStr]] = None
+    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
+        alias="nodeSelector", default=None
     )
-    image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
-    host_network: Optional[bool] = Field(alias="hostNetwork")
-    host_pid: Optional[bool] = Field(alias="hostPID")
-    dns_policy: Optional[StrictStr] = Field(alias="dnsPolicy")
-    dns_config: Optional[k8s_schemas.V1PodDNSConfig] = Field(alias="dnsConfig")
-    scheduler_name: Optional[StrictStr] = Field(alias="schedulerName")
-    priority_class_name: Optional[StrictStr] = Field(alias="priorityClassName")
-    priority: Optional[int]
+    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]] = None
+    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]] = None
+    node_name: Optional[StrictStr] = Field(alias="nodeName", default=None)
+    service_account_name: Optional[StrictStr] = Field(
+        alias="serviceAccountName", default=None
+    )
+    host_aliases: Optional[List[k8s_schemas.V1HostAlias]] = Field(
+        alias="hostAliases", default=None
+    )
+    security_context: Optional[Union[k8s_schemas.V1SecurityContext, Dict]] = Field(
+        alias="securityContext", default=None
+    )
+    image_pull_secrets: Optional[List[StrictStr]] = Field(
+        alias="imagePullSecrets", default=None
+    )
+    host_network: Optional[bool] = Field(alias="hostNetwork", default=None)
+    host_pid: Optional[bool] = Field(alias="hostPID", default=None)
+    dns_policy: Optional[StrictStr] = Field(alias="dnsPolicy", default=None)
+    dns_config: Optional[k8s_schemas.V1PodDNSConfig] = Field(
+        alias="dnsConfig", default=None
+    )
+    scheduler_name: Optional[StrictStr] = Field(alias="schedulerName", default=None)
+    priority_class_name: Optional[StrictStr] = Field(
+        alias="priorityClassName", default=None
+    )
+    priority: Optional[int] = None
     restart_policy: Optional[
         Literal["Always", "OnFailure", "Never", "ExitCode"]
-    ] = Field(alias="restartPolicy")
+    ] = Field(alias="restartPolicy", default=None)
 
-    @validator("affinity", always=True, pre=True)
+    @field_validator("affinity", **validation_always, **validation_before)
     def validate_affinity(cls, v):
         return k8s_validation.validate_k8s_affinity(v)
 
-    @validator("tolerations", always=True, pre=True)
+    @field_validator("tolerations", **validation_always, **validation_before)
     def validate_tolerations(cls, v):
         if not v:
             return v
         return [k8s_validation.validate_k8s_toleration(vi) for vi in v]
 
-    @validator("host_aliases", always=True, pre=True)
+    @field_validator("host_aliases", **validation_always, **validation_before)
     def validate_host_aliases(cls, v):
         if not v:
             return v
         return [k8s_validation.validate_k8s_host_alias(vi) for vi in v]
 
-    @validator("security_context", always=True, pre=True)
+    @field_validator("security_context", **validation_always, **validation_before)
     def validate_security_context(cls, v):
         if not v:
             return v
         return k8s_validation.validate_k8s_security_context(v)
 
-    @validator("dns_config", always=True, pre=True)
+    @field_validator("dns_config", **validation_always, **validation_before)
     def validate_dns_config(cls, v):
         if not v:
             return v

@@ -169,16 +169,23 @@ class V1TFJob(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.TFJOB
+    _CUSTOM_DUMP_FIELDS = {"chief", "ps", "worker", "evaluator"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
-    scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
-    enable_dynamic_worker: Optional[bool] = Field(alias="enableDynamicWorker")
-    success_policy: Optional[str] = Field(alias="successPolicy")
-    chief: Optional[Union[V1KFReplica, RefField]]
-    ps: Optional[Union[V1KFReplica, RefField]]
-    worker: Optional[Union[V1KFReplica, RefField]]
-    evaluator: Optional[Union[V1KFReplica, RefField]]
+    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
+        alias="cleanPodPolicy", default=None
+    )
+    scheduling_policy: Optional[V1SchedulingPolicy] = Field(
+        alias="schedulingPolicy", default=None
+    )
+    enable_dynamic_worker: Optional[bool] = Field(
+        alias="enableDynamicWorker", default=None
+    )
+    success_policy: Optional[str] = Field(alias="successPolicy", default=None)
+    chief: Optional[Union[V1KFReplica, RefField]] = None
+    ps: Optional[Union[V1KFReplica, RefField]] = None
+    worker: Optional[Union[V1KFReplica, RefField]] = None
+    evaluator: Optional[Union[V1KFReplica, RefField]] = None
 
     def apply_image_destination(self, image: str):
         if self.chief:

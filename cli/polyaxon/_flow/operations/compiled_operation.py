@@ -10,12 +10,13 @@ from polyaxon.exceptions import PolyaxonSchemaError
 
 class V1CompiledOperation(BaseOp, RunMixin):
     _IDENTIFIER = "compiled_operation"
+    _CUSTOM_DUMP_FIELDS = {"run"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    inputs: Optional[List[V1IO]]
-    outputs: Optional[List[V1IO]]
-    contexts: Optional[List[V1IO]]
-    run: V1Runtime
+    inputs: Optional[List[V1IO]] = None
+    outputs: Optional[List[V1IO]] = None
+    contexts: Optional[List[V1IO]] = None
+    run: Optional[V1Runtime] = None
 
     def get_run_kind(self):
         return self.run.kind if self.run else None

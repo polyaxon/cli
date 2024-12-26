@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_list_presets_response import V1ListPresetsResponse
@@ -10,7 +10,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class PresetsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_preset(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -47,7 +47,7 @@ class PresetsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_preset_with_http_info(owner, body, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def create_preset_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -179,7 +179,7 @@ class PresetsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_preset(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -226,7 +226,7 @@ class PresetsV1Api(BaseApi):
             owner, uuid, entity, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_preset_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -355,7 +355,7 @@ class PresetsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_preset(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -402,7 +402,7 @@ class PresetsV1Api(BaseApi):
             owner, uuid, entity, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_preset_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -536,7 +536,7 @@ class PresetsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_preset_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -603,7 +603,7 @@ class PresetsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_preset_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -776,7 +776,7 @@ class PresetsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_presets(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -843,7 +843,7 @@ class PresetsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_presets_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1016,7 +1016,7 @@ class PresetsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_preset(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1058,7 +1058,7 @@ class PresetsV1Api(BaseApi):
             owner, preset_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_preset_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1195,7 +1195,7 @@ class PresetsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_preset(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1237,7 +1237,7 @@ class PresetsV1Api(BaseApi):
             owner, preset_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_preset_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

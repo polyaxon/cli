@@ -133,13 +133,18 @@ class V1MPIJob(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.MPIJOB
+    _CUSTOM_DUMP_FIELDS = {"launcher", "worker"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
-    scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
-    slots_per_worker: Optional[IntOrRef] = Field(alias="slotsPerWorker")
-    launcher: Optional[Union[V1KFReplica, RefField]]
-    worker: Optional[Union[V1KFReplica, RefField]]
+    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
+        alias="cleanPodPolicy", default=None
+    )
+    scheduling_policy: Optional[V1SchedulingPolicy] = Field(
+        alias="schedulingPolicy", default=None
+    )
+    slots_per_worker: Optional[IntOrRef] = Field(alias="slotsPerWorker", default=None)
+    launcher: Optional[Union[V1KFReplica, RefField]] = None
+    worker: Optional[Union[V1KFReplica, RefField]] = None
 
     def apply_image_destination(self, image: str):
         if self.launcher:

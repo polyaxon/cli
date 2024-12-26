@@ -1,7 +1,12 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import Field, PositiveInt, validator
+from clipped.compact.pydantic import (
+    Field,
+    PositiveInt,
+    field_validator,
+    validation_before,
+)
 from clipped.types.ref_or_obj import IntOrRef, RefField
 from clipped.utils.enums import PEnum
 
@@ -212,19 +217,19 @@ class V1Hyperopt(BaseSearchConfig):
     _IDENTIFIER = V1MatrixKind.HYPEROPT
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    max_iterations: Optional[IntOrRef] = Field(alias="maxIterations")
+    max_iterations: Optional[IntOrRef] = Field(alias="maxIterations", default=None)
     metric: V1OptimizationMetric
-    algorithm: Optional[V1HyperoptAlgorithms]
+    algorithm: Optional[V1HyperoptAlgorithms] = None
     params: Union[Dict[str, V1HpParam], RefField]
-    num_runs: Union[PositiveInt, RefField] = Field(alias="numRuns")
-    seed: Optional[IntOrRef]
-    concurrency: Optional[Union[PositiveInt, RefField]]
-    tuner: Optional[V1Tuner]
+    num_runs: Union[PositiveInt, RefField] = Field(alias="numRuns", default=None)
+    seed: Optional[IntOrRef] = None
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
+    tuner: Optional[V1Tuner] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
-    @validator("num_runs", "concurrency", pre=True)
+    @field_validator("num_runs", "concurrency", **validation_before)
     def check_values(cls, v, field):
         if v and v < 1:
             raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")

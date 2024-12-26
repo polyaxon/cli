@@ -2,7 +2,14 @@ from copy import copy
 from typing import Dict, Optional
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    model_validator,
+    validation_after,
+    validation_before,
+)
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
 
@@ -508,40 +515,41 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         "run_patch",
         "patch_strategy",
     ]
+    _CUSTOM_DUMP_FIELDS = {"component"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    params: Optional[Dict[StrictStr, V1Param]]
-    hub_ref: Optional[StrictStr] = Field(alias="hubRef")
-    dag_ref: Optional[StrictStr] = Field(alias="dagRef")
-    url_ref: Optional[StrictStr] = Field(alias="urlRef")
-    path_ref: Optional[StrictStr] = Field(alias="pathRef")
-    component: Optional[V1Component]
-    patch_strategy: Optional[PatchStrategy] = Field(alias="patchStrategy")
-    is_preset: Optional[bool] = Field(alias="isPreset")
-    run_patch: Optional[Dict] = Field(alias="runPatch")
-    template: Optional[V1Template]
+    params: Optional[Dict[StrictStr, V1Param]] = None
+    hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
+    dag_ref: Optional[StrictStr] = Field(alias="dagRef", default=None)
+    url_ref: Optional[StrictStr] = Field(alias="urlRef", default=None)
+    path_ref: Optional[StrictStr] = Field(alias="pathRef", default=None)
+    component: Optional[V1Component] = None
+    patch_strategy: Optional[PatchStrategy] = Field(alias="patchStrategy", default=None)
+    is_preset: Optional[bool] = Field(alias="isPreset", default=None)
+    run_patch: Optional[Dict] = Field(alias="runPatch", default=None)
+    template: Optional[V1Template] = None
 
-    @root_validator
+    @model_validator(**validation_after)
     @skip_partial
     def validate_reference(cls, values):
         if not values:
             return values
-        if values.get("is_preset"):
+        if cls.get_value_for_key("is_preset", values):
             return values
         count = 0
-        hub_ref = values.get("hub_ref")
+        hub_ref = cls.get_value_for_key("hub_ref", values)
         if hub_ref:
             count += 1
-        dag_ref = values.get("dag_ref")
+        dag_ref = cls.get_value_for_key("dag_ref", values)
         if dag_ref:
             count += 1
-        url_ref = values.get("url_ref")
+        url_ref = cls.get_value_for_key("url_ref", values)
         if url_ref:
             count += 1
-        path_ref = values.get("path_ref")
+        path_ref = cls.get_value_for_key("path_ref", values)
         if path_ref:
             count += 1
-        component = values.get("component")
+        component = cls.get_value_for_key("component", values)
         if component and count == 0:
             count += 1
 
@@ -552,11 +560,11 @@ class V1Operation(BaseOp, TemplateMixinConfig):
             )
         return values
 
-    @validator("run_patch")
+    @field_validator("run_patch")
     @skip_partial
     def validate_run_patch(cls, run_patch, values):
-        component = values.get("component")
-        if values.get("is_preset"):
+        component = cls.get_value_for_key("component", values)
+        if cls.get_value_for_key("is_preset", values):
             return run_patch
         if not component or not run_patch:
             return run_patch

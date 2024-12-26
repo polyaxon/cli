@@ -1,6 +1,12 @@
 from typing import Dict, List, Optional, Union
 
-from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    validation_always,
+    validation_before,
+)
 
 from polyaxon._containers.pull_policy import PullPolicy
 from polyaxon._k8s import k8s_schemas, k8s_validation
@@ -14,25 +20,31 @@ class BaseServiceConfig(BaseSchemaModel):
         "tolerations",
     }
 
-    image: Optional[StrictStr]
-    image_tag: Optional[StrictStr] = Field(alias="imageTag")
-    image_pull_policy: Optional[PullPolicy] = Field(alias="imagePullPolicy")
-    resources: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]]
-    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(alias="nodeSelector")
-    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
-    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
-    image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
-    hpa: Optional[Dict]
+    image: Optional[StrictStr] = None
+    image_tag: Optional[StrictStr] = Field(default=None, alias="imageTag")
+    image_pull_policy: Optional[PullPolicy] = Field(
+        default=None, alias="imagePullPolicy"
+    )
+    resources: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]] = None
+    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
+        default=None, alias="nodeSelector"
+    )
+    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]] = None
+    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]] = None
+    image_pull_secrets: Optional[List[StrictStr]] = Field(
+        default=None, alias="imagePullSecrets"
+    )
+    hpa: Optional[Dict] = None
 
-    @validator("resources", always=True, pre=True)
+    @field_validator("resources", **validation_always, **validation_before)
     def validate_resources(cls, v):
         return k8s_validation.validate_k8s_resource_requirements(v)
 
-    @validator("affinity", always=True, pre=True)
+    @field_validator("affinity", **validation_always, **validation_before)
     def validate_affinity(cls, v):
         return k8s_validation.validate_k8s_affinity(v)
 
-    @validator("tolerations", always=True, pre=True)
+    @field_validator("tolerations", **validation_always, **validation_before)
     def validate_tolerations(cls, v):
         if not v:
             return v

@@ -5,4 +5,4 @@ from clipped.types.email import EmailStr
 
 
 class V1UserEmail(BaseAllowSchemaModel):
-    email: Optional[EmailStr]
+    email: Optional[EmailStr] = None

@@ -313,17 +313,17 @@ class V1Hyperband(BaseSearchConfig):
     _IDENTIFIER = V1MatrixKind.HYPERBAND
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    params: Optional[Union[Dict[str, V1HpParam], RefField]]
-    max_iterations: Optional[PositiveInt] = Field(alias="maxIterations")
-    eta: Optional[Union[NonNegativeFloat, RefField]]
-    resource: Optional[V1OptimizationResource]
-    metric: Optional[V1OptimizationMetric]
-    resume: Optional[BoolOrRef]
-    seed: Optional[IntOrRef]
-    concurrency: Optional[Union[PositiveInt, RefField]]
-    tuner: Optional[V1Tuner]
+    params: Optional[Union[Dict[str, V1HpParam], RefField]] = None
+    max_iterations: Optional[PositiveInt] = Field(alias="maxIterations", default=None)
+    eta: Optional[Union[NonNegativeFloat, RefField]] = None
+    resource: Optional[V1OptimizationResource] = None
+    metric: Optional[V1OptimizationMetric] = None
+    resume: Optional[BoolOrRef] = None
+    seed: Optional[IntOrRef] = None
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
+    tuner: Optional[V1Tuner] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
     _s_max: Optional[int] = PrivateAttr()

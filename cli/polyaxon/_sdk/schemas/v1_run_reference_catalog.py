@@ -5,7 +5,7 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1RunReferenceCatalog(BaseAllowSchemaModel):
-    owner: Optional[StrictStr]
-    project: Optional[StrictStr]
-    name: Optional[StrictStr]
-    state: Optional[StrictStr]
+    owner: Optional[StrictStr] = None
+    project: Optional[StrictStr] = None
+    name: Optional[StrictStr] = None
+    state: Optional[StrictStr] = None

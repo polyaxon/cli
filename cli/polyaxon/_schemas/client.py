@@ -4,7 +4,7 @@ from typing import Dict, Optional, Union
 
 import urllib3
 
-from clipped.compact.pydantic import Extra, Field, StrictStr
+from clipped.compact.pydantic import Field, StrictStr
 from clipped.utils.http import clean_host
 
 from polyaxon._contexts import paths as ctx_paths
@@ -55,10 +55,10 @@ class ClientConfig(BaseSchemaModel):
     _PAGE_SIZE = 20
     _BASE_URL = "{}/api/{}"
 
-    host: Optional[StrictStr] = Field(alias=ENV_KEYS_HOST)
+    host: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_HOST)
     version: Optional[StrictStr] = Field(default="v1", alias=ENV_KEYS_API_VERSION)
     debug: Optional[bool] = Field(default=False, alias=ENV_KEYS_DEBUG)
-    log_level: Optional[StrictStr] = Field(alias=ENV_KEYS_LOG_LEVEL)
+    log_level: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_LOG_LEVEL)
     authentication_type: Optional[StrictStr] = Field(
         default=AuthenticationTypes.TOKEN, alias=ENV_KEYS_AUTHENTICATION_TYPE
     )
@@ -70,40 +70,42 @@ class ClientConfig(BaseSchemaModel):
     tracking_timeout: Optional[float] = Field(
         default=1, alias=ENV_KEYS_TRACKING_TIMEOUT
     )
-    timezone: Optional[StrictStr] = Field(alias=ENV_KEYS_TIME_ZONE)
+    timezone: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_TIME_ZONE)
     watch_interval: Optional[int] = Field(default=5, alias=ENV_KEYS_WATCH_INTERVAL)
     interval: Optional[float] = Field(default=5, alias=ENV_KEYS_INTERVAL)
-    verify_ssl: Optional[bool] = Field(alias=ENV_KEYS_VERIFY_SSL)
-    ssl_ca_cert: Optional[StrictStr] = Field(alias=ENV_KEYS_SSL_CA_CERT)
-    cert_file: Optional[StrictStr] = Field(alias=ENV_KEYS_CERT_FILE)
-    key_file: Optional[StrictStr] = Field(alias=ENV_KEYS_KEY_FILE)
-    assert_hostname: Optional[bool] = Field(alias=ENV_KEYS_ASSERT_HOSTNAME)
+    verify_ssl: Optional[bool] = Field(default=None, alias=ENV_KEYS_VERIFY_SSL)
+    ssl_ca_cert: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_SSL_CA_CERT)
+    cert_file: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_CERT_FILE)
+    key_file: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_KEY_FILE)
+    assert_hostname: Optional[bool] = Field(
+        default=None, alias=ENV_KEYS_ASSERT_HOSTNAME
+    )
     connection_pool_maxsize: Optional[int] = Field(
-        alias=ENV_KEYS_CONNECTION_POOL_MAXSIZE
+        default=None, alias=ENV_KEYS_CONNECTION_POOL_MAXSIZE
     )
     archives_root: Optional[StrictStr] = Field(
         default=ctx_paths.CONTEXT_ARCHIVES_ROOT, alias=ENV_KEYS_ARCHIVES_ROOT
     )
     header: Optional[Union[StrictStr, PolyaxonServiceHeaders]] = Field(
-        alias=ENV_KEYS_HEADER
+        default=None, alias=ENV_KEYS_HEADER
     )
     header_service: Optional[Union[StrictStr, PolyaxonServices]] = Field(
-        alias=ENV_KEYS_HEADER_SERVICE
+        default=None, alias=ENV_KEYS_HEADER_SERVICE
     )
-    namespace: Optional[StrictStr] = Field(alias=ENV_KEYS_K8S_NAMESPACE)
+    namespace: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_K8S_NAMESPACE)
     no_api: Optional[bool] = Field(default=False, alias=ENV_KEYS_NO_API)
     disable_errors_reporting: Optional[bool] = Field(
         default=False, alias=ENV_KEYS_DISABLE_ERRORS_REPORTING
     )
     compatibility_check_interval: Optional[int] = Field(
-        alias=ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
+        default=None, alias=ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
     )
-    retries: Optional[int] = Field(alias=ENV_KEYS_RETRIES)
-    token: Optional[StrictStr]
-    client_header: Optional[Dict]
+    retries: Optional[int] = Field(default=None, alias=ENV_KEYS_RETRIES)
+    token: Optional[StrictStr] = None
+    client_header: Optional[Dict] = None
 
     class Config:
-        extra = Extra.ignore
+        extra = "ignore"
 
     def __init__(
         self,

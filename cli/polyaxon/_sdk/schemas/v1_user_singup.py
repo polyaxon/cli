@@ -6,8 +6,8 @@ from clipped.types.email import EmailStr
 
 
 class V1UserSingup(BaseAllowSchemaModel):
-    username: Optional[StrictStr]
-    email: Optional[EmailStr]
-    organization: Optional[StrictStr]
-    password: Optional[StrictStr]
-    invitation_key: Optional[StrictStr]
+    username: Optional[StrictStr] = None
+    email: Optional[EmailStr] = None
+    organization: Optional[StrictStr] = None
+    password: Optional[StrictStr] = None
+    invitation_key: Optional[StrictStr] = None

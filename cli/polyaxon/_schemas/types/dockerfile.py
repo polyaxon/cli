@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import Field, StrictStr, field_validator
 from clipped.config.schema import skip_partial
 from clipped.types.docker_image import validate_image
 from clipped.types.ref_or_obj import RefField
@@ -179,31 +179,33 @@ class V1DockerfileType(BaseTypeConfig):
     _IDENTIFIER = "dockerfile"
 
     image: StrictStr
-    env: Optional[Union[Dict[StrictStr, Any], RefField]]
-    path: Optional[Union[List[StrictStr], RefField]]
+    env: Optional[
+        Union[Dict[str, Any], List[Union[Tuple[str, str], List[str]]], RefField]
+    ] = None
+    path: Optional[Union[List[StrictStr], RefField]] = None
     copy_: Optional[
         Union[
             List[Union[StrictStr, List[StrictStr], Tuple[StrictStr, StrictStr]]],
             RefField,
         ]
-    ] = Field(alias="copy")
+    ] = Field(alias="copy", default=None)
     post_run_copy: Optional[
         Union[
             List[Union[StrictStr, List[StrictStr], Tuple[StrictStr, StrictStr]]],
             RefField,
         ]
-    ] = Field(alias="postRunCopy")
-    run: Optional[Union[List[StrictStr], RefField]]
-    lang_env: Optional[StrictStr] = Field(alias="langEnv")
-    uid: Optional[Union[int, RefField]]
-    gid: Optional[Union[int, RefField]]
-    username: Optional[StrictStr]
+    ] = Field(alias="postRunCopy", default=None)
+    run: Optional[Union[List[StrictStr], RefField]] = None
+    lang_env: Optional[StrictStr] = Field(alias="langEnv", default=None)
+    uid: Optional[Union[int, RefField]] = None
+    gid: Optional[Union[int, RefField]] = None
+    username: Optional[StrictStr] = None
     filename: Optional[StrictStr] = Field(default=POLYAXON_DOCKERFILE_NAME)
     workdir: Optional[StrictStr] = Field(default=POLYAXON_DOCKER_WORKDIR)
-    workdir_path: Optional[StrictStr] = Field(alias="workdirPath")
+    workdir_path: Optional[StrictStr] = Field(alias="workdirPath", default=None)
     shell: Optional[StrictStr] = Field(default=POLYAXON_DOCKER_SHELL)
 
-    @validator("image")
+    @field_validator("image")
     @skip_partial
     def check_image(cls, image):
         validate_image(image)

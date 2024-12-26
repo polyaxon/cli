@@ -9,12 +9,12 @@ from vents.providers.kinds import ProviderKind
 
 
 class V1ConnectionResponse(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    agent: Optional[StrictStr]
-    description: Optional[StrictStr]
-    tags: Optional[List[StrictStr]]
-    created_at: Optional[datetime.datetime]
-    updated_at: Optional[datetime.datetime]
-    live_state: Optional[int]
-    kind: Optional[ProviderKind]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    agent: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    tags: Optional[List[StrictStr]] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+    live_state: Optional[int] = None
+    kind: Optional[ProviderKind] = None

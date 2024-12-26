@@ -1,6 +1,14 @@
 from typing import List, Optional, Union
 
-from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    model_validator,
+    validation_after,
+    validation_always,
+    validation_before,
+)
 from clipped.config.schema import skip_partial
 from clipped.types.ref_or_obj import RefField
 
@@ -202,32 +210,40 @@ class V1Init(BaseSchemaModel):
     _IDENTIFIER = "init"
     _SWAGGER_FIELDS = ["container"]
 
-    artifacts: Optional[Union[V1ArtifactsType, RefField]]
-    paths: Optional[Union[List[Union[List[StrictStr], StrictStr]], StrictStr, RefField]]
-    git: Optional[Union[V1GitType, RefField]]
-    dockerfile: Optional[Union[V1DockerfileType, RefField]]
-    file: Optional[Union[V1FileType, RefField]]
-    tensorboard: Optional[Union[V1TensorboardType, RefField]]
-    lineage_ref: Optional[Union[StrictStr, RefField]] = Field(alias="lineageRef")
-    model_ref: Optional[Union[StrictStr, RefField]] = Field(alias="modelRef")
-    artifact_ref: Optional[Union[StrictStr, RefField]] = Field(alias="artifactRef")
-    connection: Optional[StrictStr]
-    path: Optional[StrictStr]
-    container: Optional[Union[k8s_schemas.V1Container, RefField]]
+    artifacts: Optional[Union[V1ArtifactsType, RefField]] = None
+    paths: Optional[
+        Union[List[Union[List[StrictStr], StrictStr]], StrictStr, RefField]
+    ] = None
+    git: Optional[Union[V1GitType, RefField]] = None
+    dockerfile: Optional[Union[V1DockerfileType, RefField]] = None
+    file: Optional[Union[V1FileType, RefField]] = None
+    tensorboard: Optional[Union[V1TensorboardType, RefField]] = None
+    lineage_ref: Optional[Union[StrictStr, RefField]] = Field(
+        alias="lineageRef", default=None
+    )
+    model_ref: Optional[Union[StrictStr, RefField]] = Field(
+        alias="modelRef", default=None
+    )
+    artifact_ref: Optional[Union[StrictStr, RefField]] = Field(
+        alias="artifactRef", default=None
+    )
+    connection: Optional[StrictStr] = None
+    path: Optional[StrictStr] = None
+    container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
 
-    @root_validator
+    @model_validator(**validation_after)
     @skip_partial
     def validate_init(cls, values):
-        artifacts = values.get("artifacts")
-        paths = values.get("paths")
-        git = values.get("git")
-        dockerfile = values.get("dockerfile")
-        file = values.get("file")
-        tensorboard = values.get("tensorboard")
-        lineage_ref = values.get("lineage_ref")
-        model_ref = values.get("model_ref")
-        artifact_ref = values.get("artifact_ref")
-        connection = values.get("connection")
+        artifacts = cls.get_value_for_key("artifacts", values)
+        paths = cls.get_value_for_key("paths", values)
+        git = cls.get_value_for_key("git", values)
+        dockerfile = cls.get_value_for_key("dockerfile", values)
+        file = cls.get_value_for_key("file", values)
+        tensorboard = cls.get_value_for_key("tensorboard", values)
+        lineage_ref = cls.get_value_for_key("lineage_ref", values)
+        model_ref = cls.get_value_for_key("model_ref", values)
+        artifact_ref = cls.get_value_for_key("artifact_ref", values)
+        connection = cls.get_value_for_key("connection", values)
         schemas = 0
         if artifacts:
             schemas += 1
@@ -258,7 +274,7 @@ class V1Init(BaseSchemaModel):
             )
         return values
 
-    @validator("container", always=True, pre=True)
+    @field_validator("container", **validation_always, **validation_before)
     def validate_container(cls, v):
         return k8s_validation.validate_k8s_container(v)
 

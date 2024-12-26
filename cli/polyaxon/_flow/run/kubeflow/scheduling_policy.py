@@ -19,8 +19,10 @@ class V1SchedulingPolicy(BaseSchemaModel):
 
     _IDENTIFIER = "schedulingPolicy"
 
-    min_available: Optional[IntOrRef] = Field(alias="minAvailable")
-    queue: Optional[StrictStr]
-    min_resources: Optional[IntOrRef] = Field(alias="minResources")
-    priority_class: Optional[StrictStr] = Field(alias="priorityClass")
-    schedule_timeout_seconds: Optional[IntOrRef] = Field(alias="scheduleTimeoutSeconds")
+    min_available: Optional[IntOrRef] = Field(alias="minAvailable", default=None)
+    queue: Optional[StrictStr] = Field(default=None)
+    min_resources: Optional[IntOrRef] = Field(alias="minResources", default=None)
+    priority_class: Optional[StrictStr] = Field(alias="priorityClass", default=None)
+    schedule_timeout_seconds: Optional[IntOrRef] = Field(
+        alias="scheduleTimeoutSeconds", default=None
+    )

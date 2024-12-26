@@ -11,12 +11,12 @@ class TestSanitizeContainerEnv(BaseTestCase):
         value = [{"foo": "bar"}]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(__root__={"foo": "bar"})
+        ] == docker_types.V1EnvVar.make({"foo": "bar"})
 
         value = [{"foo": 1}]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(__root__={"foo": "1"})
+        ] == docker_types.V1EnvVar.make({"foo": "1"})
 
         value = [
             {
@@ -26,8 +26,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__={
+        ] == docker_types.V1EnvVar.make(
+            {
                 "name": "secret-name",
                 "value": "true",
             }
@@ -41,8 +41,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__={
+        ] == docker_types.V1EnvVar.make(
+            {
                 "name": "secret-name",
                 "value": "1",
             }
@@ -56,8 +56,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__={
+        ] == docker_types.V1EnvVar.make(
+            {
                 "name": "secret-name",
                 "value": "test",
             }
@@ -71,8 +71,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__={
+        ] == docker_types.V1EnvVar.make(
+            {
                 "name": "secret-name",
                 "value": '{"foo":"bar"}',
             }
@@ -81,7 +81,7 @@ class TestSanitizeContainerEnv(BaseTestCase):
         value = [{"foo": {"key": "value"}}]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(__root__={"foo": '{"key":"value"}'})
+        ] == docker_types.V1EnvVar.make({"foo": '{"key":"value"}'})
 
     def test_sanitize_container_env_value_obj_from_dict(self):
         value = [
@@ -92,8 +92,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__=dict(
+        ] == docker_types.V1EnvVar.make(
+            dict(
                 name="secret-name",
                 value="true",
             )
@@ -107,8 +107,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__=dict(
+        ] == docker_types.V1EnvVar.make(
+            dict(
                 name="secret-name",
                 value="1",
             )
@@ -122,8 +122,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__=dict(
+        ] == docker_types.V1EnvVar.make(
+            dict(
                 name="secret-name",
                 value="test",
             )
@@ -137,8 +137,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__=dict(
+        ] == docker_types.V1EnvVar.make(
+            dict(
                 name="secret-name",
                 value='{"foo":"bar"}',
             )
@@ -150,8 +150,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__=(
+        ] == docker_types.V1EnvVar.make(
+            (
                 "secret-name",
                 "true",
             )
@@ -162,15 +162,15 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(__root__=("secret-name", "1"))
+        ] == docker_types.V1EnvVar.make(("secret-name", "1"))
 
         value = [
             ("secret-name", "test"),
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__=(
+        ] == docker_types.V1EnvVar.make(
+            (
                 "secret-name",
                 "test",
             )
@@ -181,8 +181,8 @@ class TestSanitizeContainerEnv(BaseTestCase):
         ]
         assert ContainerMixin._sanitize_container_env(value)[
             0
-        ] == docker_types.V1EnvVar(
-            __root__=(
+        ] == docker_types.V1EnvVar.make(
+            (
                 "secret-name",
                 '{"foo":"bar"}',
             )

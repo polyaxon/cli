@@ -147,14 +147,16 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
 
     _IDENTIFIER = "polyaxon_sidecar"
 
-    image: Optional[StrictStr]
-    image_tag: Optional[StrictStr] = Field(alias="imageTag")
-    image_pull_policy: Optional[PullPolicy] = Field(alias="imagePullPolicy")
-    sleep_interval: Optional[IntOrRef] = Field(alias="sleepInterval")
-    sync_interval: Optional[IntOrRef] = Field(alias="syncInterval")
-    monitor_logs: Optional[BoolOrRef] = Field(alias="monitorLogs")
-    monitor_spec: Optional[BoolOrRef] = Field(alias="monitorSpec")
-    resources: Optional[Union[Dict[str, Any], RefField]]
+    image: Optional[StrictStr] = None
+    image_tag: Optional[StrictStr] = Field(alias="imageTag", default=None)
+    image_pull_policy: Optional[PullPolicy] = Field(
+        alias="imagePullPolicy", default=None
+    )
+    sleep_interval: Optional[IntOrRef] = Field(alias="sleepInterval", default=None)
+    sync_interval: Optional[IntOrRef] = Field(alias="syncInterval", default=None)
+    monitor_logs: Optional[BoolOrRef] = Field(alias="monitorLogs", default=None)
+    monitor_spec: Optional[BoolOrRef] = Field(alias="monitorSpec", default=None)
+    resources: Optional[Union[Dict[str, Any], RefField]] = None
 
     def get_image(self):
         image = self.image or "polyaxon/polyaxon-sidecar"

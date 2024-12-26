@@ -154,6 +154,6 @@ class V1ArtifactsType(BaseTypeConfig):
 
     _IDENTIFIER = "artifacts"
 
-    files: Optional[Union[List[Union[str, List[str]]], RefField]]
-    dirs: Optional[Union[List[Union[str, List[str]]], RefField]]
-    workers: Optional[Union[StrictInt, RefField]]
+    files: Optional[Union[List[Union[str, List[str]]], RefField]] = None
+    dirs: Optional[Union[List[Union[str, List[str]]], RefField]] = None
+    workers: Optional[Union[StrictInt, RefField]] = None

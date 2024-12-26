@@ -6,7 +6,7 @@ from clipped.types.uuids import UUIDStr
 
 
 class V1SettingsCatalog(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    version: Optional[StrictStr]
-    url: Optional[StrictStr]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    version: Optional[StrictStr] = None
+    url: Optional[StrictStr] = None

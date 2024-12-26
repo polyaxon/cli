@@ -10,12 +10,12 @@ from polyaxon._sdk.schemas.v1_dashboard_spec import V1DashboardSpec
 
 
 class V1Dashboard(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    description: Optional[StrictStr]
-    tags: Optional[List[StrictStr]]
-    live_state: Optional[int]
-    spec: Optional[V1DashboardSpec]
-    org_level: Optional[bool]
-    created_at: Optional[datetime.datetime]
-    updated_at: Optional[datetime.datetime]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    tags: Optional[List[StrictStr]] = None
+    live_state: Optional[int] = None
+    spec: Optional[V1DashboardSpec] = None
+    org_level: Optional[bool] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None

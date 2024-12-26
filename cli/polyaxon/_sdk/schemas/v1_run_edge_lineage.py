@@ -9,6 +9,6 @@ class V1RunEdgeLineage(BaseAllowSchemaModel):
     V1RunEdgeLineage
     """
 
-    uuid: Optional[UUIDStr]
-    is_upstream: Optional[bool]
-    values: Optional[Dict[str, Any]]
+    uuid: Optional[UUIDStr] = None
+    is_upstream: Optional[bool] = None
+    values: Optional[Dict[str, Any]] = None

@@ -1,6 +1,11 @@
 from typing import List, Optional, Union
 
-from clipped.compact.pydantic import StrictStr, validator
+from clipped.compact.pydantic import (
+    StrictStr,
+    field_validator,
+    validation_always,
+    validation_before,
+)
 from clipped.types.ref_or_obj import IntOrRef, RefField
 
 from polyaxon._flow.environment import V1Environment
@@ -202,28 +207,29 @@ class V1KFReplica(BaseSchemaModel):
 
     _IDENTIFIER = "replica"
     _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
+    _CUSTOM_DUMP_FIELDS = {"environment"}
 
-    replicas: Optional[IntOrRef]
-    environment: Optional[Union[V1Environment, RefField]]
-    connections: Optional[Union[List[StrictStr], RefField]]
-    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
-    init: Optional[Union[List[V1Init], RefField]]
-    sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]]
-    container: Optional[Union[k8s_schemas.V1Container, RefField]]
+    replicas: Optional[IntOrRef] = None
+    environment: Optional[Union[V1Environment, RefField]] = None
+    connections: Optional[Union[List[StrictStr], RefField]] = None
+    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]] = None
+    init: Optional[Union[List[V1Init], RefField]] = None
+    sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]] = None
+    container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
 
-    @validator("volumes", always=True, pre=True)
+    @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):
         if not v:
             return v
         return [k8s_validation.validate_k8s_volume(vi) for vi in v]
 
-    @validator("sidecars", always=True, pre=True)
+    @field_validator("sidecars", **validation_always, **validation_before)
     def validate_helper_containers(cls, v):
         if not v:
             return v
         return [k8s_validation.validate_k8s_container(vi) for vi in v]
 
-    @validator("container", always=True, pre=True)
+    @field_validator("container", **validation_always, **validation_before)
     def validate_container(cls, v):
         return k8s_validation.validate_k8s_container(v)
 

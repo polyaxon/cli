@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_connection_response import V1ConnectionResponse
@@ -10,7 +10,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class ConnectionsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_connection(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -51,7 +51,7 @@ class ConnectionsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_connection_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -185,7 +185,7 @@ class ConnectionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_connection(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -226,7 +226,7 @@ class ConnectionsV1Api(BaseApi):
             owner, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_connection_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -347,7 +347,7 @@ class ConnectionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_connection(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -386,7 +386,7 @@ class ConnectionsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_connection_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_connection_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -512,7 +512,7 @@ class ConnectionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_connection_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -579,7 +579,7 @@ class ConnectionsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_connection_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -752,7 +752,7 @@ class ConnectionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_connections(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -819,7 +819,7 @@ class ConnectionsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_connections_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -992,7 +992,7 @@ class ConnectionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_connection(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1036,7 +1036,7 @@ class ConnectionsV1Api(BaseApi):
             owner, connection_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_connection_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1175,7 +1175,7 @@ class ConnectionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_connection(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1219,7 +1219,7 @@ class ConnectionsV1Api(BaseApi):
             owner, connection_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_connection_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

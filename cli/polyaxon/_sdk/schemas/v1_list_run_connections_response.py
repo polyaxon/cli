@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_run_connection import V1RunConnection
 
 
 class V1ListRunConnectionsResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1RunConnection]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1RunConnection]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

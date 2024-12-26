@@ -8,8 +8,8 @@ from polyaxon._sdk.schemas.v1_run import V1Run
 
 
 class V1RunEdge(BaseAllowSchemaModel):
-    upstream: Optional[V1Run]
-    downstream: Optional[V1Run]
-    kind: Optional[V1RunEdgeKind]
-    values: Optional[Dict[str, Any]]
-    statuses: Optional[List[V1Statuses]]
+    upstream: Optional[V1Run] = None
+    downstream: Optional[V1Run] = None
+    kind: Optional[V1RunEdgeKind] = None
+    values: Optional[Dict[str, Any]] = None
+    statuses: Optional[List[V1Statuses]] = None

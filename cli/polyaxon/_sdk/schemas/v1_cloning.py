@@ -8,6 +8,6 @@ from polyaxon._flow import V1CloningKind
 
 
 class V1Cloning(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    kind: Optional[V1CloningKind]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    kind: Optional[V1CloningKind] = None

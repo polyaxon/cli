@@ -124,12 +124,12 @@ class V1DaskJob(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.DASKJOB
-    _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
+    _CUSTOM_DUMP_FIELDS = {"job", "worker", "scheduler"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    job: Optional[Union[V1DaskReplica, RefField]]
-    worker: Optional[Union[V1DaskReplica, RefField]]
-    scheduler: Optional[Union[V1DaskReplica, RefField]]
+    job: Optional[Union[V1DaskReplica, RefField]] = None
+    worker: Optional[Union[V1DaskReplica, RefField]] = None
+    scheduler: Optional[Union[V1DaskReplica, RefField]] = None
 
     def apply_image_destination(self, image: str):
         if self.job:

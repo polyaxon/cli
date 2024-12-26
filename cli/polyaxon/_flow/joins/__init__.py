@@ -205,9 +205,9 @@ class V1Join(BaseSchemaModel):
 
     _IDENTIFIER = "join"
 
-    ref: Optional[StrictStr]
+    ref: Optional[StrictStr] = None
     query: StrictStr
-    sort: Optional[StrictStr]
-    limit: Optional[IntOrRef]
-    offset: Optional[IntOrRef]
-    params: Optional[Union[Dict[str, V1JoinParam], RefField]]
+    sort: Optional[StrictStr] = None
+    limit: Optional[IntOrRef] = None
+    offset: Optional[IntOrRef] = None
+    params: Optional[Union[Dict[str, V1JoinParam], RefField]] = None

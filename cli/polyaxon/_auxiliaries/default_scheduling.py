@@ -1,6 +1,12 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    validation_always,
+    validation_before,
+)
 
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
@@ -13,16 +19,20 @@ class V1DefaultScheduling(BaseSchemaModel):
     _IDENTIFIER = "default_scheduling"
     _SWAGGER_FIELDS = ["affinity", "tolerations"]
 
-    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(alias="nodeSelector")
-    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]]
-    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]]
-    image_pull_secrets: Optional[List[StrictStr]] = Field(alias="imagePullSecrets")
+    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
+        alias="nodeSelector", default=None
+    )
+    affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]] = None
+    tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]] = None
+    image_pull_secrets: Optional[List[StrictStr]] = Field(
+        alias="imagePullSecrets", default=None
+    )
 
-    @validator("affinity", always=True, pre=True)
+    @field_validator("affinity", **validation_always, **validation_before)
     def validate_affinity(cls, v) -> k8s_schemas.V1Affinity:
         return k8s_validation.validate_k8s_affinity(v)
 
-    @validator("tolerations", always=True, pre=True)
+    @field_validator("tolerations", **validation_always, **validation_before)
     def validate_tolerations(cls, v) -> List[k8s_schemas.V1Toleration]:
         if not v:
             return v

@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
@@ -10,7 +10,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class DashboardsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_dashboard(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -47,7 +47,7 @@ class DashboardsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_dashboard_with_http_info(owner, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_dashboard_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -179,7 +179,7 @@ class DashboardsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_dashboard(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -218,7 +218,7 @@ class DashboardsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.delete_dashboard_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_dashboard_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -339,7 +339,7 @@ class DashboardsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_dashboard(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -378,7 +378,7 @@ class DashboardsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_dashboard_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_dashboard_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -504,7 +504,7 @@ class DashboardsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_dashboard_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -571,7 +571,7 @@ class DashboardsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_dashboard_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -744,7 +744,7 @@ class DashboardsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_dashboards(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -811,7 +811,7 @@ class DashboardsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_dashboards_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -984,7 +984,7 @@ class DashboardsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_dashboard(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1026,7 +1026,7 @@ class DashboardsV1Api(BaseApi):
             owner, dashboard_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_dashboard_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1163,7 +1163,7 @@ class DashboardsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_dashboard(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1205,7 +1205,7 @@ class DashboardsV1Api(BaseApi):
             owner, dashboard_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_dashboard_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

@@ -8,10 +8,10 @@ from polyaxon._schemas.lifecycle import V1StatusCondition
 
 
 class V1EntityNotificationBody(BaseAllowSchemaModel):
-    namespace: Optional[StrictStr]
-    owner: Optional[StrictStr]
-    project: Optional[StrictStr]
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    condition: Optional[V1StatusCondition]
-    connections: Optional[List[StrictStr]]
+    namespace: Optional[StrictStr] = None
+    owner: Optional[StrictStr] = None
+    project: Optional[StrictStr] = None
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    condition: Optional[V1StatusCondition] = None
+    connections: Optional[List[StrictStr]] = None

@@ -6,5 +6,5 @@ from clipped.types.uuids import UUIDStr
 
 
 class V1EntitiesTags(BaseAllowSchemaModel):
-    uuids: Optional[List[UUIDStr]]
-    tags: Optional[List[StrictStr]]
+    uuids: Optional[List[UUIDStr]] = None
+    tags: Optional[List[StrictStr]] = None

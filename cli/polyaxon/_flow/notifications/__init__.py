@@ -71,7 +71,7 @@ class V1Notification(BaseSchemaModel):
     _IDENTIFIER = "notification"
 
     connections: List[StrictStr]
-    trigger: Optional[V1Statuses]
+    trigger: Optional[V1Statuses] = None
 
     def to_operator(self):
         data = super().to_dict()

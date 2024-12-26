@@ -6,5 +6,5 @@ from clipped.types.uuids import UUIDStr
 
 
 class V1EntitiesTransfer(BaseAllowSchemaModel):
-    uuids: Optional[List[UUIDStr]]
-    project: Optional[StrictStr]
+    uuids: Optional[List[UUIDStr]] = None
+    project: Optional[StrictStr] = None

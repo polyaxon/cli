@@ -99,7 +99,7 @@ class V1Cache(BaseSchemaModel):
 
     _IDENTIFIER = "cache"
 
-    disable: Optional[BoolOrRef]
-    ttl: Optional[IntOrRef]
-    io: Optional[Union[List[StrictStr], RefField]]
-    sections: Optional[Union[List[CacheSection], RefField]]
+    disable: Optional[BoolOrRef] = None
+    ttl: Optional[IntOrRef] = None
+    io: Optional[Union[List[StrictStr], RefField]] = None
+    sections: Optional[Union[List[CacheSection], RefField]] = None

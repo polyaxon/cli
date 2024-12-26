@@ -1,7 +1,12 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import Field, PositiveInt, validator
+from clipped.compact.pydantic import (
+    Field,
+    PositiveInt,
+    field_validator,
+    validation_before,
+)
 from clipped.types.ref_or_obj import IntOrRef, RefField
 
 from polyaxon._flow.early_stopping import V1EarlyStopping
@@ -224,19 +229,20 @@ class V1Iterative(BaseSearchConfig):
     _IDENTIFIER = V1MatrixKind.ITERATIVE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    params: Optional[Union[Dict[str, V1HpParam], RefField]]
+    params: Optional[Union[Dict[str, V1HpParam], RefField]] = None
     max_iterations: Union[PositiveInt, RefField] = Field(alias="maxIterations")
-    seed: Optional[IntOrRef]
-    concurrency: Optional[Union[PositiveInt, RefField]]
-    tuner: Optional[V1Tuner]
+    seed: Optional[IntOrRef] = None
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
+    tuner: Optional[V1Tuner] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
-    @validator("max_iterations", "concurrency", pre=True)
+    @field_validator("max_iterations", "concurrency", **validation_before)
     def check_values(cls, v, field):
+        key = cls.get_field_name(field)
         if v and v < 1:
-            raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")
+            raise ValueError(f"{key} must be greater than 1, received `{v}` instead.")
         return v
 
     def create_iteration(self, iteration: Optional[int] = None) -> int:

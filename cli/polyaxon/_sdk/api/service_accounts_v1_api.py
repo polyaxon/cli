@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_list_service_accounts_response import (
@@ -14,7 +14,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class ServiceAccountsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_service_account(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -55,7 +55,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_service_account_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -189,7 +189,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -231,7 +231,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, entity, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -368,7 +368,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_service_account(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -409,7 +409,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_service_account_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -530,7 +530,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -579,7 +579,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -710,7 +710,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_service_account(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -751,7 +751,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_service_account_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -877,7 +877,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -926,7 +926,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1062,7 +1062,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_service_account_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1129,7 +1129,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_service_account_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1302,7 +1302,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_service_account_tokens(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1367,7 +1367,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, uuid, entity, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_service_account_tokens_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1538,7 +1538,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_service_accounts(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1605,7 +1605,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_service_accounts_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1778,7 +1778,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_service_account(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1822,7 +1822,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, sa_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_service_account_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1961,7 +1961,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2006,7 +2006,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, entity, token_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2148,7 +2148,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_service_account(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2192,7 +2192,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, sa_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_service_account_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2331,7 +2331,7 @@ class ServiceAccountsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_service_account_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2376,7 +2376,7 @@ class ServiceAccountsV1Api(BaseApi):
             owner, entity, token_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_service_account_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

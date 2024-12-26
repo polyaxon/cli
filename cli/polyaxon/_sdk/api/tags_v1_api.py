@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
@@ -11,7 +11,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class TagsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_tag(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -48,7 +48,7 @@ class TagsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_tag_with_http_info(owner, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_tag_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -180,7 +180,7 @@ class TagsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_tag(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -226,7 +226,7 @@ class TagsV1Api(BaseApi):
             owner, uuid, cascade, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_tag_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -354,7 +354,7 @@ class TagsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_tag(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -393,7 +393,7 @@ class TagsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_tag_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_tag_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -519,7 +519,7 @@ class TagsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_tags(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -586,7 +586,7 @@ class TagsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_tags_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -759,7 +759,7 @@ class TagsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def load_tags(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -826,7 +826,7 @@ class TagsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def load_tags_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -999,7 +999,7 @@ class TagsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_tag(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1041,7 +1041,7 @@ class TagsV1Api(BaseApi):
             owner, tag_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_tag_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1178,7 +1178,7 @@ class TagsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def sync_tags(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1215,7 +1215,7 @@ class TagsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.sync_tags_with_http_info(owner, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def sync_tags_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1342,7 +1342,7 @@ class TagsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_tag(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1384,7 +1384,7 @@ class TagsV1Api(BaseApi):
             owner, tag_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_tag_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

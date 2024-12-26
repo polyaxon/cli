@@ -5,4 +5,4 @@ from clipped.types.uuids import UUIDStr
 
 
 class V1Uuids(BaseAllowSchemaModel):
-    uuids: Optional[List[UUIDStr]]
+    uuids: Optional[List[UUIDStr]] = None

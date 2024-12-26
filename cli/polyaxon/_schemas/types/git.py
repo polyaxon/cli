@@ -1,9 +1,12 @@
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from clipped.compact.pydantic import StrictStr
 from clipped.types.ref_or_obj import RefField
 
 from polyaxon._schemas.types.base import BaseTypeConfig
+
+if TYPE_CHECKING:
+    from polyaxon._connections import V1GitConnection
 
 
 class V1GitType(BaseTypeConfig):
@@ -124,11 +127,16 @@ class V1GitType(BaseTypeConfig):
 
     _IDENTIFIER = "git"
 
-    url: Optional[StrictStr]
-    revision: Optional[StrictStr]
-    flags: Optional[Union[List[StrictStr], RefField]]
+    url: Optional[StrictStr] = None
+    revision: Optional[StrictStr] = None
+    flags: Optional[Union[List[StrictStr], RefField]] = None
 
     def get_name(self):
         if self.url:
             return self.url.split("/")[-1].split(".")[0]
         return None
+
+    def to_connection(self) -> "V1GitConnection":
+        from polyaxon._connections import V1GitConnection
+
+        return V1GitConnection(url=self.url, revision=self.revision, flags=self.flags)

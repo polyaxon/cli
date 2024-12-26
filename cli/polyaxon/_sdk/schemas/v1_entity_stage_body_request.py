@@ -7,8 +7,8 @@ from polyaxon._schemas.lifecycle import V1StageCondition
 
 
 class V1EntityStageBodyRequest(BaseAllowSchemaModel):
-    owner: Optional[StrictStr]
-    entity: Optional[StrictStr]
-    kind: Optional[StrictStr]
-    name: Optional[StrictStr]
-    condition: Optional[V1StageCondition]
+    owner: Optional[StrictStr] = None
+    entity: Optional[StrictStr] = None
+    kind: Optional[StrictStr] = None
+    name: Optional[StrictStr] = None
+    condition: Optional[V1StageCondition] = None

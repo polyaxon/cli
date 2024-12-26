@@ -6,5 +6,5 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class V1Version(BaseSchemaModel):
-    min: Optional[StrictStr]
-    latest: Optional[StrictStr]
+    min: Optional[StrictStr] = None
+    latest: Optional[StrictStr] = None

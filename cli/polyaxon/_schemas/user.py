@@ -10,6 +10,6 @@ class UserConfig(BaseSchemaModel):
     _IDENTIFIER = "user"
 
     username: StrictStr
-    email: Optional[EmailStr]
-    name: Optional[StrictStr]
-    theme: Optional[int]
+    email: Optional[EmailStr] = None
+    name: Optional[StrictStr] = None
+    theme: Optional[int] = None

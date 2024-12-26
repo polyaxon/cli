@@ -7,7 +7,9 @@ from clipped.compact.pydantic import (
     PositiveInt,
     PrivateAttr,
     StrictStr,
-    validator,
+    field_validator,
+    validation_always,
+    validation_before,
 )
 from clipped.types.ref_or_obj import RefField
 
@@ -300,16 +302,17 @@ class V1Dag(BaseRun):
 
     _IDENTIFIER = V1RunKind.DAG
     _SWAGGER_FIELDS = ["volumes"]
+    _CUSTOM_DUMP_FIELDS = {"operations", "components", "environment"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    operations: Optional[Union[List[V1Operation], RefField]]
-    components: Optional[Union[List[V1Component], RefField]]
-    environment: Optional[Union[V1Environment, RefField]]
-    connections: Optional[Union[List[StrictStr], RefField]]
-    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]]
-    concurrency: Optional[Union[PositiveInt, RefField]]
+    operations: Optional[Union[List[V1Operation], RefField]] = None
+    components: Optional[Union[List[V1Component], RefField]] = None
+    environment: Optional[Union[V1Environment, RefField]] = None
+    connections: Optional[Union[List[StrictStr], RefField]] = None
+    volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]] = None
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
     _dag: Dict[str, "DagOpSpec"] = PrivateAttr()
@@ -317,7 +320,7 @@ class V1Dag(BaseRun):
     _op_component_mapping: Dict[str, str] = PrivateAttr()
     _context: Dict[str, Any] = PrivateAttr()
 
-    @validator("volumes", always=True, pre=True)
+    @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):
         if not v:
             return v

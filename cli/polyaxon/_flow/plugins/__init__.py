@@ -259,19 +259,25 @@ class V1Plugins(BaseSchemaModel):
 
     _IDENTIFIER = "plugins"
 
-    auth: Optional[BoolOrRef]
-    docker: Optional[BoolOrRef]
-    shm: Optional[BoolOrRef]
-    mount_artifacts_store: Optional[BoolOrRef] = Field(alias="mountArtifactsStore")
-    collect_artifacts: Optional[BoolOrRef] = Field(alias="collectArtifacts")
-    collect_logs: Optional[BoolOrRef] = Field(alias="collectLogs")
-    collect_resources: Optional[BoolOrRef] = Field(alias="collectResources")
-    sync_statuses: Optional[BoolOrRef] = Field(alias="syncStatuses")
-    auto_resume: Optional[BoolOrRef] = Field(alias="autoResume")
-    log_level: Optional[StrictStr] = Field(alias="logLevel")
-    external_host: Optional[BoolOrRef] = Field(alias="externalHost")
-    sidecar: Optional[Union[V1PolyaxonSidecarContainer, RefField]]
-    notifications: Optional[Union[List[V1Notification], RefField]]
+    auth: Optional[BoolOrRef] = None
+    docker: Optional[BoolOrRef] = None
+    shm: Optional[BoolOrRef] = None
+    mount_artifacts_store: Optional[BoolOrRef] = Field(
+        alias="mountArtifactsStore", default=None
+    )
+    collect_artifacts: Optional[BoolOrRef] = Field(
+        alias="collectArtifacts", default=None
+    )
+    collect_logs: Optional[BoolOrRef] = Field(alias="collectLogs", default=None)
+    collect_resources: Optional[BoolOrRef] = Field(
+        alias="collectResources", default=None
+    )
+    sync_statuses: Optional[BoolOrRef] = Field(alias="syncStatuses", default=None)
+    auto_resume: Optional[BoolOrRef] = Field(alias="autoResume", default=None)
+    log_level: Optional[StrictStr] = Field(alias="logLevel", default=None)
+    external_host: Optional[BoolOrRef] = Field(alias="externalHost", default=None)
+    sidecar: Optional[Union[V1PolyaxonSidecarContainer, RefField]] = None
+    notifications: Optional[Union[List[V1Notification], RefField]] = None
 
     @classmethod
     def get_or_create(

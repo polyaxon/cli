@@ -599,6 +599,7 @@ hostName: polyaxon.foo.com
 allowedHosts:
   - 127.0.0.1
   - 159.203.150.212
+  - foo.bar.com
 
 intervals:  # in seconds
   compatibilityCheck: -1

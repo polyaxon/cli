@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_preset import V1Preset
 
 
 class V1ListPresetsResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1Preset]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1Preset]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

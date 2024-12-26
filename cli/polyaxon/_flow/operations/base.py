@@ -16,14 +16,16 @@ from polyaxon._schemas.lifecycle import V1Statuses
 class BaseOp(BaseComponent, MatrixMixin, ScheduleMixin):
     _FIELDS_SAME_KIND_PATCH = ["schedule", "matrix"]
 
-    schedule: Optional[V1Schedule]
-    events: Optional[Union[List[V1EventTrigger], RefField]]
-    matrix: Optional[V1Matrix]
-    joins: Optional[Union[List[V1Join], RefField]]
-    dependencies: Optional[Union[List[StrictStr], RefField]]
-    trigger: Optional[Union[V1TriggerPolicy, RefField]]
-    conditions: Optional[StrictStr]
-    skip_on_upstream_skip: Optional[bool] = Field(alias="skipOnUpstreamSkip")
+    schedule: Optional[V1Schedule] = None
+    events: Optional[Union[List[V1EventTrigger], RefField]] = None
+    matrix: Optional[V1Matrix] = None
+    joins: Optional[Union[List[V1Join], RefField]] = None
+    dependencies: Optional[Union[List[StrictStr], RefField]] = None
+    trigger: Optional[Union[V1TriggerPolicy, RefField]] = None
+    conditions: Optional[StrictStr] = None
+    skip_on_upstream_skip: Optional[bool] = Field(
+        alias="skipOnUpstreamSkip", default=None
+    )
 
     def get_matrix_kind(self):
         return self.matrix.kind if self.matrix else None

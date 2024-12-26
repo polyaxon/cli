@@ -1,8 +1,15 @@
 from datetime import date, datetime, timedelta
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Union
 from typing_extensions import Annotated, Literal
 
-from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
+from clipped.compact.pydantic import (
+    PYDANTIC_VERSION,
+    Field,
+    StrictStr,
+    field_validator,
+    model_validator,
+    validation_after,
+)
 from clipped.config.schema import skip_partial
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import RefField
@@ -30,9 +37,25 @@ def validate_pchoice(values):
 
 
 class PChoice(tuple):
-    @classmethod
-    def __get_validators__(cls) -> "CallableGenerator":
-        yield cls.validate
+    if PYDANTIC_VERSION.startswith("2."):
+        from pydantic_core import core_schema
+
+        @classmethod
+        def __get_pydantic_core_schema__(
+            cls, *args, **kwargs
+        ) -> core_schema.CoreSchema:
+            from pydantic_core import core_schema
+
+            return core_schema.no_info_after_validator_function(
+                cls.validate,
+                core_schema.any_schema(),
+            )
+
+    else:
+
+        @classmethod
+        def __get_validators__(cls) -> "CallableGenerator":
+            yield cls.validate
 
     @classmethod
     def validate(cls, value):
@@ -70,13 +93,16 @@ def _validate_range(
 
 
 class BaseRange(BaseSchemaModel):
-    _REQUIRED_KEYS = []
-    _OPTIONAL_KEYS = []
-    _CHECK_ORDER = True
+    _REQUIRED_KEYS: ClassVar[str] = []
+    _OPTIONAL_KEYS: ClassVar[str] = []
+    _CHECK_ORDER: ClassVar[bool] = True
 
-    @root_validator
+    @model_validator(**validation_after)
     def validate_range(cls, values):
-        value = list(values.values())
+        if hasattr(values, "to_dict"):
+            value = list(values.to_dict().values())
+        else:
+            value = list(values.values())
         _validate_range(
             value,
             cls._REQUIRED_KEYS,
@@ -90,15 +116,31 @@ class Range(BaseRange):
     start: Union[float]
     stop: Union[float]
     step: StrictIntOrFloat
-    _REQUIRED_KEYS = ["start", "stop", "step"]
+    _REQUIRED_KEYS: ClassVar[str] = ["start", "stop", "step"]
 
 
 class RangeStr(StrictStr):
     _CLASS = Range
 
-    @classmethod
-    def __get_validators__(cls) -> "CallableGenerator":
-        yield cls.validate
+    if PYDANTIC_VERSION.startswith("2."):
+        from pydantic_core import core_schema
+
+        @classmethod
+        def __get_pydantic_core_schema__(
+            cls, *args, **kwargs
+        ) -> core_schema.CoreSchema:
+            from pydantic_core import core_schema
+
+            return core_schema.no_info_after_validator_function(
+                cls.validate,
+                core_schema.str_schema(strict=True),
+            )
+
+    else:
+
+        @classmethod
+        def __get_validators__(cls) -> "CallableGenerator":
+            yield cls.validate
 
     @classmethod
     def validate(cls, value: str):
@@ -119,11 +161,28 @@ class RangeStr(StrictStr):
 
 
 class RangeList(list):
-    _CLASS = Range
+    _CLASS: ClassVar = Range
 
-    @classmethod
-    def __get_validators__(cls) -> "CallableGenerator":
-        yield cls.validate
+    if PYDANTIC_VERSION.startswith("2."):
+        from pydantic import GetCoreSchemaHandler
+        from pydantic_core import core_schema
+
+        @classmethod
+        def __get_pydantic_core_schema__(
+            cls, source_type: Any, handler: GetCoreSchemaHandler
+        ) -> core_schema.CoreSchema:
+            from pydantic_core import core_schema
+
+            return core_schema.no_info_after_validator_function(
+                cls.validate,
+                core_schema.list_schema(),
+            )
+
+    else:
+
+        @classmethod
+        def __get_validators__(cls) -> "CallableGenerator":
+            yield cls.validate
 
     @classmethod
     def validate(cls, value: List):
@@ -149,7 +208,7 @@ class DateRange(Range):
 
 
 class DateRangeList(RangeList):
-    _CLASS = DateRange
+    _CLASS: ClassVar = DateRange
 
 
 class DateTimeRange(Range):
@@ -159,14 +218,14 @@ class DateTimeRange(Range):
 
 
 class DateTimeRangeList(RangeList):
-    _CLASS = DateTimeRange
+    _CLASS: ClassVar = DateTimeRange
 
 
 class Space(BaseRange):
     start: Union[float]
     stop: Union[float]
     num: int
-    _REQUIRED_KEYS = ["start", "stop", "num"]
+    _REQUIRED_KEYS: ClassVar[str] = ["start", "stop", "num"]
 
 
 class LinSpace(Space):
@@ -174,11 +233,11 @@ class LinSpace(Space):
 
 
 class LinSpaceList(RangeList):
-    _CLASS = LinSpace
+    _CLASS: ClassVar = LinSpace
 
 
 class LinSpaceStr(RangeStr):
-    _CLASS = LinSpace
+    _CLASS: ClassVar = LinSpace
 
 
 class GeomSpace(Space):
@@ -186,43 +245,43 @@ class GeomSpace(Space):
 
 
 class GeomSpaceList(RangeList):
-    _CLASS = GeomSpace
+    _CLASS: ClassVar = GeomSpace
 
 
 class GeomSpaceStr(RangeStr):
-    _CLASS = GeomSpace
+    _CLASS: ClassVar = GeomSpace
 
 
 class LogSpace(Space):
-    base: Optional[int]
-    _OPTIONAL_KEYS = ["base"]
+    base: Optional[int] = None
+    _OPTIONAL_KEYS: ClassVar[str] = ["base"]
 
 
 class LogSpaceList(RangeList):
-    _CLASS = LogSpace
+    _CLASS: ClassVar = LogSpace
 
 
 class LogSpaceStr(RangeStr):
-    _CLASS = LogSpace
+    _CLASS: ClassVar = LogSpace
 
 
 class Dist(BaseRange):
     low: Union[float]
     high: Union[float]
-    size: Optional[int]
-    _REQUIRED_KEYS = ["low", "high"]
-    _OPTIONAL_KEYS = ["size"]
-    _CHECK_ORDER = False
+    size: Optional[int] = None
+    _REQUIRED_KEYS: ClassVar[str] = ["low", "high"]
+    _OPTIONAL_KEYS: ClassVar[str] = ["size"]
+    _CHECK_ORDER: ClassVar[bool] = False
 
 
 class QDist(BaseRange):
     low: Union[float]
     high: Union[float]
     q: StrictIntOrFloat
-    size: Optional[int]
-    _REQUIRED_KEYS = ["low", "high", "q"]
-    _OPTIONAL_KEYS = ["size"]
-    _CHECK_ORDER = False
+    size: Optional[int] = None
+    _REQUIRED_KEYS: ClassVar[str] = ["low", "high", "q"]
+    _OPTIONAL_KEYS: ClassVar[str] = ["size"]
+    _CHECK_ORDER: ClassVar[bool] = False
 
 
 class Uniform(Dist):
@@ -230,11 +289,11 @@ class Uniform(Dist):
 
 
 class UniformList(RangeList):
-    _CLASS = Uniform
+    _CLASS: ClassVar = Uniform
 
 
 class UniformStr(RangeStr):
-    _CLASS = Uniform
+    _CLASS: ClassVar = Uniform
 
 
 class QUniform(QDist):
@@ -242,11 +301,11 @@ class QUniform(QDist):
 
 
 class QUniformList(RangeList):
-    _CLASS = QUniform
+    _CLASS: ClassVar = QUniform
 
 
 class QUniformStr(RangeStr):
-    _CLASS = QUniform
+    _CLASS: ClassVar = QUniform
 
 
 class LogUniform(Dist):
@@ -254,11 +313,11 @@ class LogUniform(Dist):
 
 
 class LogUniformList(RangeList):
-    _CLASS = LogUniform
+    _CLASS: ClassVar = LogUniform
 
 
 class LogUniformStr(RangeStr):
-    _CLASS = LogUniform
+    _CLASS: ClassVar = LogUniform
 
 
 class QLogUniform(QDist):
@@ -266,46 +325,46 @@ class QLogUniform(QDist):
 
 
 class QLogUniformList(RangeList):
-    _CLASS = QLogUniform
+    _CLASS: ClassVar = QLogUniform
 
 
 class QLogUniformStr(RangeStr):
-    _CLASS = QLogUniform
+    _CLASS: ClassVar = QLogUniform
 
 
 class Normal(BaseRange):
     loc: Union[float]
     scale: Union[float]
-    size: Optional[int]
-    _REQUIRED_KEYS = ["loc", "scale"]
-    _OPTIONAL_KEYS = ["size"]
-    _CHECK_ORDER = False
+    size: Optional[int] = None
+    _REQUIRED_KEYS: ClassVar[str] = ["loc", "scale"]
+    _OPTIONAL_KEYS: ClassVar[str] = ["size"]
+    _CHECK_ORDER: ClassVar[bool] = False
 
 
 class NormalList(RangeList):
-    _CLASS = Normal
+    _CLASS: ClassVar = Normal
 
 
 class NormalStr(RangeStr):
-    _CLASS = Normal
+    _CLASS: ClassVar = Normal
 
 
 class QNormal(BaseRange):
     loc: Union[float]
     scale: Union[float]
     q: StrictIntOrFloat
-    size: Optional[int]
-    _REQUIRED_KEYS = ["loc", "scale", "q"]
-    _OPTIONAL_KEYS = ["size"]
-    _CHECK_ORDER = False
+    size: Optional[int] = None
+    _REQUIRED_KEYS: ClassVar[str] = ["loc", "scale", "q"]
+    _OPTIONAL_KEYS: ClassVar[str] = ["size"]
+    _CHECK_ORDER: ClassVar[bool] = False
 
 
 class QNormalList(RangeList):
-    _CLASS = QNormal
+    _CLASS: ClassVar = QNormal
 
 
 class QNormalStr(RangeStr):
-    _CLASS = QNormal
+    _CLASS: ClassVar = QNormal
 
 
 class LogNormal(Normal):
@@ -313,11 +372,11 @@ class LogNormal(Normal):
 
 
 class LogNormalList(RangeList):
-    _CLASS = LogNormal
+    _CLASS: ClassVar = LogNormal
 
 
 class LogNormalStr(RangeStr):
-    _CLASS = LogNormal
+    _CLASS: ClassVar = LogNormal
 
 
 class QLogNormal(QNormal):
@@ -325,11 +384,11 @@ class QLogNormal(QNormal):
 
 
 class QLogNormalList(RangeList):
-    _CLASS = QLogNormal
+    _CLASS: ClassVar = QLogNormal
 
 
 class QLogNormalStr(RangeStr):
-    _CLASS = QLogNormal
+    _CLASS: ClassVar = QLogNormal
 
 
 def validate_matrix(values):
@@ -341,7 +400,7 @@ def validate_matrix(values):
 
 
 class BaseHpParamConfig(BaseSchemaModel):
-    _USE_DISCRIMINATOR = True
+    _USE_DISCRIMINATOR: ClassVar[bool] = True
 
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
@@ -432,9 +491,9 @@ class V1HpPChoice(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.PCHOICE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[List[PChoice], RefField]]
+    value: Optional[Union[List[PChoice], RefField]] = None
 
-    @validator("value")
+    @field_validator("value")
     @skip_partial
     def validate_value(cls, value):
         if value and isinstance(value, (list, tuple)):
@@ -494,7 +553,7 @@ class V1HpRange(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.RANGE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[Range, RangeList, RangeStr, RefField]]
+    value: Optional[Union[Range, RangeList, RangeStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -545,7 +604,7 @@ class V1HpDateRange(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.DATERANGE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[DateRange, DateRangeList, RefField]]
+    value: Optional[Union[DateRange, DateRangeList, RefField]] = None
 
     @staticmethod
     def validate_io(io: "V1IO"):  # noqa
@@ -670,7 +729,7 @@ class V1HpLinSpace(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.LINSPACE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[LinSpace, LinSpaceList, LinSpaceStr, RefField]]
+    value: Optional[Union[LinSpace, LinSpaceList, LinSpaceStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -724,7 +783,7 @@ class V1HpLogSpace(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.LOGSPACE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[LogSpace, LogSpaceList, LogSpaceStr, RefField]]
+    value: Optional[Union[LogSpace, LogSpaceList, LogSpaceStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -774,7 +833,7 @@ class V1HpGeomSpace(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.GEOMSPACE
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[GeomSpace, GeomSpaceList, GeomSpaceStr, RefField]]
+    value: Optional[Union[GeomSpace, GeomSpaceList, GeomSpaceStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -824,7 +883,7 @@ class V1HpUniform(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.UNIFORM
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[Uniform, UniformList, UniformStr, RefField]]
+    value: Optional[Union[Uniform, UniformList, UniformStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -876,7 +935,7 @@ class V1HpQUniform(BaseHpParamConfig):
     _IDENTIFIER = "quniform"
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[QUniform, QUniformList, QUniformStr, RefField]]
+    value: Optional[Union[QUniform, QUniformList, QUniformStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -927,7 +986,7 @@ class V1HpLogUniform(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.LOGUNIFORM
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[LogUniform, LogUniformList, LogUniformStr, RefField]]
+    value: Optional[Union[LogUniform, LogUniformList, LogUniformStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -978,7 +1037,9 @@ class V1HpQLogUniform(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.QLOGUNIFORM
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[QLogUniform, QLogUniformList, QLogUniformStr, RefField]]
+    value: Optional[
+        Union[QLogUniform, QLogUniformList, QLogUniformStr, RefField]
+    ] = None
 
     @property
     def is_distribution(self):
@@ -1033,7 +1094,7 @@ class V1HpNormal(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.NORMAL
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[Normal, NormalList, NormalStr, RefField]]
+    value: Optional[Union[Normal, NormalList, NormalStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -1084,7 +1145,7 @@ class V1HpQNormal(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.QNORMAL
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[QNormal, QNormalList, QNormalStr, RefField]]
+    value: Optional[Union[QNormal, QNormalList, QNormalStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -1135,7 +1196,7 @@ class V1HpLogNormal(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.LOGNORMAL
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[LogNormal, LogNormalList, LogNormalStr, RefField]]
+    value: Optional[Union[LogNormal, LogNormalList, LogNormalStr, RefField]] = None
 
     @property
     def is_distribution(self):
@@ -1186,7 +1247,7 @@ class V1HpQLogNormal(BaseHpParamConfig):
     _IDENTIFIER = V1HPKind.QLOGNORMAL
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    value: Optional[Union[QLogNormal, QLogNormalList, QLogNormalStr, RefField]]
+    value: Optional[Union[QLogNormal, QLogNormalList, QLogNormalStr, RefField]] = None
 
     @property
     def is_distribution(self):

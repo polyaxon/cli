@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_token import V1Token
 
 
 class V1ListTokenResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1Token]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1Token]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

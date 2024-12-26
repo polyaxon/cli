@@ -1,7 +1,12 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import Field, PositiveInt, validator
+from clipped.compact.pydantic import (
+    Field,
+    PositiveInt,
+    field_validator,
+    validation_before,
+)
 from clipped.types.ref_or_obj import IntOrRef, RefField
 
 from polyaxon._flow.early_stopping import V1EarlyStopping
@@ -204,13 +209,13 @@ class V1RandomSearch(BaseSearchConfig):
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     params: Union[Dict[str, V1HpParam], RefField]
     num_runs: Union[PositiveInt, RefField] = Field(alias="numRuns")
-    seed: Optional[IntOrRef]
-    concurrency: Optional[Union[PositiveInt, RefField]]
+    seed: Optional[IntOrRef] = None
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
-    @validator("num_runs", "concurrency", pre=True)
+    @field_validator("num_runs", "concurrency", **validation_before)
     def check_values(cls, v, field):
         if v and v < 1:
             raise ValueError(f"{field} must be greater than 1, received `{v}` instead.")

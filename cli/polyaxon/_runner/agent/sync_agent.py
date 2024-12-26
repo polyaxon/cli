@@ -45,7 +45,7 @@ class BaseSyncAgent(BaseAgent):
             self.client.log_agent_failed(message="{} {}".format(message, reason))
             raise PolyaxonAgentError(message="{} {}".format(message, reason))
         except Exception as e:
-            raise PolyaxonAgentError from e
+            raise PolyaxonAgentError(f"Unexpected error: {str(e)}") from e
 
     def _exit(self):
         if not self.client._is_managed:

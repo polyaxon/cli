@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_organization_member import V1OrganizationMember
 
 
 class V1ListOrganizationMembersResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1OrganizationMember]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1OrganizationMember]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

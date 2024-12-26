@@ -4,7 +4,6 @@ import pytest
 from urllib3.exceptions import ReadTimeoutError
 
 from polyaxon._docker.builder import DockerBuilder, DockerPusher, build, build_and_push
-from polyaxon._schemas.types import V1UriType
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonBuildException
 
@@ -49,7 +48,7 @@ class TestDockerBuilder(BaseTestCase):
             destination="image:tag",
             registries=[
                 "https://user:pass@siteweb.ca",
-                V1UriType(url="https://user@pwd:host", scheme="https"),
+                "https://user@pwd:8000",
             ],
         )
         builder.login_private_registries()

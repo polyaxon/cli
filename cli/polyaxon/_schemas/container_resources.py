@@ -25,7 +25,7 @@ class ContainerGPUResourcesConfig(BaseSchemaModel):
     memory_used: StrictIntOrFloat
     memory_total: StrictIntOrFloat
     memory_utilization: StrictIntOrFloat
-    processes: Optional[List[Dict]]
+    processes: Optional[List[Dict]] = None
 
 
 class ContainerResourcesConfig(BaseSchemaModel):

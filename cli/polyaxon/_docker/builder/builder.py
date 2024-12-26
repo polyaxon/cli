@@ -120,8 +120,11 @@ class DockerBuilder(DockerMixin):
         if not self.registries:
             return
         for registry in self.registries:
+            username = (
+                registry.username if hasattr(registry, "username") else registry.user
+            )
             self.docker.login(
-                username=registry.user,
+                username=username,
                 password=registry.password,
                 registry=registry.host_port,
                 reauth=True,

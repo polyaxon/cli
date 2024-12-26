@@ -49,11 +49,8 @@ class ContainerMixin(BaseConverter):
         env: List[docker_types.V1EnvVar],
     ) -> List[docker_types.V1EnvVar]:
         def sanitize_env_dict(d: Dict):
-            return docker_types.V1EnvVar(
-                __root__={
-                    d_k: sanitize_value(d_v, handle_dict=False)
-                    for d_k, d_v in d.items()
-                }
+            return docker_types.V1EnvVar.make(
+                {d_k: sanitize_value(d_v, handle_dict=False) for d_k, d_v in d.items()}
             )
 
         results = []
@@ -63,8 +60,8 @@ class ContainerMixin(BaseConverter):
                 results.append(e)
             elif isinstance(e, tuple):
                 if e[1] is not None:
-                    e = docker_types.V1EnvVar(
-                        __root__=(e[0], sanitize_value(e[1], handle_dict=False))
+                    e = docker_types.V1EnvVar.make(
+                        (e[0], sanitize_value(e[1], handle_dict=False))
                     )
                 results.append(e)
             elif isinstance(e, docker_types.V1EnvVar):

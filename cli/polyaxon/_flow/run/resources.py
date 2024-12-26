@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import ClassVar, Optional, Union, Set
 
 from clipped.compact.pydantic import StrictStr
 from clipped.types.numbers import StrictIntOrFloat
@@ -9,18 +9,19 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class V1RunResources(BaseSchemaModel):
-    cpu: Optional[Union[StrictIntOrFloat, StrictStr]]
-    memory: Optional[Union[StrictIntOrFloat, StrictStr]]
-    gpu: Optional[Union[StrictIntOrFloat, StrictStr]]
-    custom: Optional[Union[StrictIntOrFloat, StrictStr]]
-    cost: Optional[Union[StrictIntOrFloat, StrictStr]]
+    cpu: Optional[Union[StrictIntOrFloat, StrictStr]] = None
+    memory: Optional[Union[StrictIntOrFloat, StrictStr]] = None
+    gpu: Optional[Union[StrictIntOrFloat, StrictStr]] = None
+    custom: Optional[Union[StrictIntOrFloat, StrictStr]] = None
+    cost: Optional[Union[StrictIntOrFloat, StrictStr]] = None
 
-    _MEMORY = "memory"
-    _CPU = "cpu"
-    _GPU = "gpu"
-    _CUSTOM_RESOURCE = "custom"
-    _COST = "cost"
-    _VALUES = {_MEMORY, _CPU, _GPU, _CUSTOM_RESOURCE, _COST}
+    _MEMORY: ClassVar[str] = "memory"
+    _CPU: ClassVar[str] = "cpu"
+    _GPU: ClassVar[str] = "gpu"
+    _CUSTOM_RESOURCE: ClassVar[str] = "custom"
+    _COST: ClassVar[str] = "cost"
+
+    _VALUES: ClassVar[Set[str]] = {_MEMORY, _CPU, _GPU, _CUSTOM_RESOURCE, _COST}
 
     @classmethod
     def validate_memory(cls, value):

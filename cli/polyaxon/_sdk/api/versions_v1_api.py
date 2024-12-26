@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictStr, validate_call
 
 from polyaxon._schemas.compatibility import V1Compatibility
 from polyaxon._schemas.installation import V1Installation
@@ -11,7 +11,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class VersionsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def get_compatibility(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid")],
@@ -51,7 +51,7 @@ class VersionsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_compatibility_with_http_info(uuid, version, service, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def get_compatibility_with_http_info(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid")],
@@ -180,7 +180,7 @@ class VersionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_installation(
         self,
         auth: Annotated[Optional[bool], Field(description="auth.")] = None,
@@ -214,7 +214,7 @@ class VersionsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_installation_with_http_info(auth, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def get_installation_with_http_info(
         self,
         auth: Annotated[Optional[bool], Field(description="auth.")] = None,
@@ -333,7 +333,7 @@ class VersionsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_log_handler(self, **kwargs) -> V1LogHandler:  # noqa: E501
         """Get log handler versions  # noqa: E501
 
@@ -361,7 +361,7 @@ class VersionsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_log_handler_with_http_info(**kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_log_handler_with_http_info(self, **kwargs):  # noqa: E501
         """Get log handler versions  # noqa: E501
 

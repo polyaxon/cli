@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
@@ -23,7 +23,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class TeamsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_team(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -60,7 +60,7 @@ class TeamsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_team_with_http_info(owner, body, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def create_team_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -192,7 +192,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_team_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -234,7 +234,7 @@ class TeamsV1Api(BaseApi):
             owner, team, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_team_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -371,7 +371,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_team(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -408,7 +408,7 @@ class TeamsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.delete_team_with_http_info(owner, name, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_team_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -527,7 +527,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_team_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -569,7 +569,7 @@ class TeamsV1Api(BaseApi):
             owner, team, user, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_team_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -693,7 +693,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -735,7 +735,7 @@ class TeamsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -865,7 +865,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_team(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -902,7 +902,7 @@ class TeamsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_team_with_http_info(owner, name, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_team_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1026,7 +1026,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_team_activities(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1098,7 +1098,7 @@ class TeamsV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_team_activities_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1283,7 +1283,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_team_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1325,7 +1325,7 @@ class TeamsV1Api(BaseApi):
             owner, team, user, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_team_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1454,7 +1454,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_team_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1503,7 +1503,7 @@ class TeamsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_team_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1637,7 +1637,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1709,7 +1709,7 @@ class TeamsV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1894,7 +1894,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_team_stats(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1989,7 +1989,7 @@ class TeamsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_team_stats_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2197,7 +2197,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_team_versions(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2262,7 +2262,7 @@ class TeamsV1Api(BaseApi):
             owner, entity, kind, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_team_versions_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2436,7 +2436,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def invalidate_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2478,7 +2478,7 @@ class TeamsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def invalidate_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2608,7 +2608,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_team_members(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2680,7 +2680,7 @@ class TeamsV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_team_members_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2861,7 +2861,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_team_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2928,7 +2928,7 @@ class TeamsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_team_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3101,7 +3101,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_teams(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3168,7 +3168,7 @@ class TeamsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_teams_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3341,7 +3341,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_team(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3383,7 +3383,7 @@ class TeamsV1Api(BaseApi):
             owner, team_name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_team_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3520,7 +3520,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_team_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3565,7 +3565,7 @@ class TeamsV1Api(BaseApi):
             owner, team, member_user, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_team_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3707,7 +3707,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def restore_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3749,7 +3749,7 @@ class TeamsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def restore_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3879,7 +3879,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def skip_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3921,7 +3921,7 @@ class TeamsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def skip_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4051,7 +4051,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def stop_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4093,7 +4093,7 @@ class TeamsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def stop_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4223,7 +4223,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def tag_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4265,7 +4265,7 @@ class TeamsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def tag_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4395,7 +4395,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def transfer_team_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4437,7 +4437,7 @@ class TeamsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def transfer_team_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4567,7 +4567,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_team(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4609,7 +4609,7 @@ class TeamsV1Api(BaseApi):
             owner, team_name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_team_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4746,7 +4746,7 @@ class TeamsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_team_member(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4791,7 +4791,7 @@ class TeamsV1Api(BaseApi):
             owner, team, member_user, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_team_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

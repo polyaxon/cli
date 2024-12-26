@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_list_activities_response import V1ListActivitiesResponse
@@ -12,7 +12,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class UsersV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_token(
         self, body: Annotated[V1Token, Field(..., description="Token body")], **kwargs
     ) -> V1Token:  # noqa: E501
@@ -44,7 +44,7 @@ class UsersV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_token_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_token_with_http_info(
         self, body: Annotated[V1Token, Field(..., description="Token body")], **kwargs
     ):  # noqa: E501
@@ -166,7 +166,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_token(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
@@ -200,7 +200,7 @@ class UsersV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.delete_token_with_http_info(uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_token_with_http_info(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
@@ -310,7 +310,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_history(
         self,
         offset: Annotated[
@@ -364,7 +364,7 @@ class UsersV1Api(BaseApi):
             offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_history_with_http_info(
         self,
         offset: Annotated[
@@ -510,7 +510,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_suggestions(
         self,
         offset: Annotated[
@@ -564,7 +564,7 @@ class UsersV1Api(BaseApi):
             offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_suggestions_with_http_info(
         self,
         offset: Annotated[
@@ -710,7 +710,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_token(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
@@ -744,7 +744,7 @@ class UsersV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_token_with_http_info(uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_token_with_http_info(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
@@ -859,7 +859,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_user(self, **kwargs) -> V1User:  # noqa: E501
         """Get current user  # noqa: E501
 
@@ -887,7 +887,7 @@ class UsersV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_user_with_http_info(**kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_user_with_http_info(self, **kwargs):  # noqa: E501
         """Get current user  # noqa: E501
 
@@ -994,7 +994,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_workspaces(
         self,
         offset: Annotated[
@@ -1048,7 +1048,7 @@ class UsersV1Api(BaseApi):
             offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_workspaces_with_http_info(
         self,
         offset: Annotated[
@@ -1194,7 +1194,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_tokens(
         self,
         offset: Annotated[
@@ -1248,7 +1248,7 @@ class UsersV1Api(BaseApi):
             offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_tokens_with_http_info(
         self,
         offset: Annotated[
@@ -1394,7 +1394,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_token(
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
@@ -1431,7 +1431,7 @@ class UsersV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.patch_token_with_http_info(token_uuid, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_token_with_http_info(
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
@@ -1560,7 +1560,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_user(self, body: V1User, **kwargs) -> V1User:  # noqa: E501
         """Patch current user  # noqa: E501
 
@@ -1590,7 +1590,7 @@ class UsersV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.patch_user_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_user_with_http_info(self, body: V1User, **kwargs):  # noqa: E501
         """Patch current user  # noqa: E501
 
@@ -1710,7 +1710,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_token(
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
@@ -1749,7 +1749,7 @@ class UsersV1Api(BaseApi):
             token_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_token_with_http_info(
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
@@ -1878,7 +1878,7 @@ class UsersV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_user(self, body: V1User, **kwargs) -> V1User:  # noqa: E501
         """Update current user  # noqa: E501
 
@@ -1908,7 +1908,7 @@ class UsersV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.update_user_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_user_with_http_info(self, body: V1User, **kwargs):  # noqa: E501
         """Update current user  # noqa: E501
 

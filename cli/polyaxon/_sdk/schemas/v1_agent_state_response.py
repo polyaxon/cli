@@ -9,7 +9,7 @@ from polyaxon._sdk.schemas.v1_agent_state_response_agent_state import (
 
 
 class V1AgentStateResponse(BaseAllowSchemaModel):
-    status: Optional[V1Statuses]
-    state: Optional[V1AgentStateResponseAgentState]
-    live_state: Optional[int]
-    compatible_updates: Optional[Dict[str, Any]]
+    status: Optional[V1Statuses] = None
+    state: Optional[V1AgentStateResponseAgentState] = None
+    live_state: Optional[int] = None
+    compatible_updates: Optional[Dict[str, Any]] = None

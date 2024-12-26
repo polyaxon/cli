@@ -1,12 +1,12 @@
 from typing import Optional
 
-from clipped.compact.pydantic import StrictStr, constr
+from clipped.compact.pydantic import NAME_REGEX, StrictStr, patter_constr
 from clipped.types.email import EmailStr
 
-from polyaxon._schemas.base import NAME_REGEX, BaseSchemaModel
+from polyaxon._schemas.base import BaseSchemaModel
 
 
 class RootUserConfig(BaseSchemaModel):
-    username: Optional[constr(regex=NAME_REGEX)]  # type: ignore[valid-type]
-    password: Optional[StrictStr]
-    email: Optional[EmailStr]
+    username: Optional[patter_constr(pattern=NAME_REGEX)] = None  # type: ignore[valid-type]
+    password: Optional[StrictStr] = None
+    email: Optional[EmailStr] = None

@@ -119,7 +119,7 @@ class V1Tuner(BaseSchemaModel):
     _IDENTIFIER = "tuner"
 
     hub_ref: StrictStr = Field(alias="hubRef")
-    presets: Optional[Union[List[StrictStr], RefField]]
-    queue: Optional[StrictStr]
-    namespace: Optional[StrictStr]
-    params: Optional[Union[Dict[str, V1Param], RefField]]
+    presets: Optional[Union[List[StrictStr], RefField]] = None
+    queue: Optional[StrictStr] = None
+    namespace: Optional[StrictStr] = None
+    params: Optional[Union[Dict[str, V1Param], RefField]] = None

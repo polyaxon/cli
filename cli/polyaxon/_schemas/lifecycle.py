@@ -332,36 +332,36 @@ class BaseCondition(BaseAllowSchemaModel):
 
 
 class V1StatusCondition(BaseCondition):
-    type: Optional[V1Statuses]
-    status: Optional[Union[bool, str]]
-    reason: Optional[StrictStr]
-    message: Optional[StrictStr]
-    last_update_time: Optional[datetime.datetime]
-    last_transition_time: Optional[datetime.datetime]
-    meta_info: Optional[Dict[str, Any]]
+    type: Optional[V1Statuses] = None
+    status: Optional[Union[bool, str]] = None
+    reason: Optional[StrictStr] = None
+    message: Optional[StrictStr] = None
+    last_update_time: Optional[datetime.datetime] = None
+    last_transition_time: Optional[datetime.datetime] = None
+    meta_info: Optional[Dict[str, Any]] = None
 
 
 class V1Status(BaseSchemaModel):
-    uuid: Optional[StrictStr]
-    status: Optional[V1Statuses]
-    status_conditions: Optional[List[V1StatusCondition]]
-    meta_info: Optional[Dict[str, Any]]
+    uuid: Optional[StrictStr] = None
+    status: Optional[V1Statuses] = None
+    status_conditions: Optional[List[V1StatusCondition]] = None
+    meta_info: Optional[Dict[str, Any]] = None
 
 
 class V1StageCondition(BaseCondition):
-    type: Optional[V1Stages]
-    status: Optional[Union[bool, str]]
-    reason: Optional[StrictStr]
-    message: Optional[StrictStr]
-    last_update_time: Optional[datetime.datetime]
-    last_transition_time: Optional[datetime.datetime]
-    meta_info: Optional[Dict[str, Any]]
+    type: Optional[V1Stages] = None
+    status: Optional[Union[bool, str]] = None
+    reason: Optional[StrictStr] = None
+    message: Optional[StrictStr] = None
+    last_update_time: Optional[datetime.datetime] = None
+    last_transition_time: Optional[datetime.datetime] = None
+    meta_info: Optional[Dict[str, Any]] = None
 
 
 class V1Stage(BaseSchemaModel):
-    uuid: Optional[StrictStr]
-    stage: Optional[V1Stages]
-    stage_conditions: Optional[List[V1StageCondition]]
+    uuid: Optional[StrictStr] = None
+    stage: Optional[V1Stages] = None
+    stage_conditions: Optional[List[V1StageCondition]] = None
 
 
 class V1ProjectVersionKind(str, PEnum):

@@ -9,4 +9,4 @@ class V1ArtifactsMount(BaseSchemaModel):
     _IDENTIFIER = "artifacts_mount"
 
     name: StrictStr
-    paths: Optional[List[StrictStr]]
+    paths: Optional[List[StrictStr]] = None

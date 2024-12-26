@@ -6,4 +6,6 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class IntervalsConfig(BaseSchemaModel):
-    compatibility_check: Optional[StrictInt] = Field(alias="compatibilityCheck")
+    compatibility_check: Optional[StrictInt] = Field(
+        alias="compatibilityCheck", default=None
+    )

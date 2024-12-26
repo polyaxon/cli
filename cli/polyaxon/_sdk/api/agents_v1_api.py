@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._schemas.lifecycle import V1Status
 from polyaxon._sdk.base_api import BaseApi
@@ -18,7 +18,7 @@ from traceml.logging import V1Logs
 
 
 class AgentsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def collect_agent_data(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -62,7 +62,7 @@ class AgentsV1Api(BaseApi):
             namespace, owner, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def collect_agent_data_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -189,7 +189,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -226,7 +226,7 @@ class AgentsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_agent_with_http_info(owner, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -358,7 +358,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_agent_status(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -402,7 +402,7 @@ class AgentsV1Api(BaseApi):
             owner, uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_agent_status_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -541,7 +541,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -588,7 +588,7 @@ class AgentsV1Api(BaseApi):
             owner, uuid, entity, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -717,7 +717,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -764,7 +764,7 @@ class AgentsV1Api(BaseApi):
             owner, uuid, entity, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -898,7 +898,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_agent_config(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -945,7 +945,7 @@ class AgentsV1Api(BaseApi):
             owner, uuid, entity, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_agent_config_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1079,7 +1079,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_agent_logs(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -1141,7 +1141,7 @@ class AgentsV1Api(BaseApi):
             namespace, owner, uuid, service, last_file, force, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_agent_logs_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -1303,7 +1303,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_agent_state(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1342,7 +1342,7 @@ class AgentsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_agent_state_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_agent_state_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1468,7 +1468,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_agent_statuses(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1515,7 +1515,7 @@ class AgentsV1Api(BaseApi):
             owner, uuid, entity, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_agent_statuses_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1647,7 +1647,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_agent_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1686,7 +1686,7 @@ class AgentsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_agent_token_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_agent_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1812,7 +1812,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_global_state(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1846,7 +1846,7 @@ class AgentsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_global_state_with_http_info(owner, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_global_state_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1961,7 +1961,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def inspect_agent(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -2023,7 +2023,7 @@ class AgentsV1Api(BaseApi):
             namespace, owner, uuid, service, last_file, force, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def inspect_agent_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -2185,7 +2185,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_agent_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2252,7 +2252,7 @@ class AgentsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_agent_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2425,7 +2425,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_agents(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2492,7 +2492,7 @@ class AgentsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_agents_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2665,7 +2665,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2707,7 +2707,7 @@ class AgentsV1Api(BaseApi):
             owner, agent_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2844,7 +2844,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_agent_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2886,7 +2886,7 @@ class AgentsV1Api(BaseApi):
             owner, entity, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_agent_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3023,7 +3023,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def reconcile_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3067,7 +3067,7 @@ class AgentsV1Api(BaseApi):
             owner, uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def reconcile_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3203,7 +3203,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def sync_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3245,7 +3245,7 @@ class AgentsV1Api(BaseApi):
             owner, agent_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def sync_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3377,7 +3377,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def cron_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3414,7 +3414,7 @@ class AgentsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.cron_agent_with_http_info(owner, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def cron_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3542,7 +3542,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_agent(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3584,7 +3584,7 @@ class AgentsV1Api(BaseApi):
             owner, agent_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_agent_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3721,7 +3721,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_agent_config(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3763,7 +3763,7 @@ class AgentsV1Api(BaseApi):
             owner, agent_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_agent_config_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3900,7 +3900,7 @@ class AgentsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_agent_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3942,7 +3942,7 @@ class AgentsV1Api(BaseApi):
             owner, entity, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_agent_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

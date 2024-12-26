@@ -6,6 +6,6 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class AuthConfig(BaseSchemaModel):
-    enabled: Optional[bool]
-    external: Optional[StrictStr]
-    use_resolver: Optional[bool] = Field(alias="useResolver")
+    enabled: Optional[bool] = None
+    external: Optional[StrictStr] = None
+    use_resolver: Optional[bool] = Field(alias="useResolver", default=None)

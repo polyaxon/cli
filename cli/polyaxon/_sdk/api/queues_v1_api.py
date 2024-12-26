@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_list_queues_response import V1ListQueuesResponse
@@ -10,7 +10,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class QueuesV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_queue(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -54,7 +54,7 @@ class QueuesV1Api(BaseApi):
             owner, agent, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_queue_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -193,7 +193,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_queue(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -242,7 +242,7 @@ class QueuesV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_queue_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -373,7 +373,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_queue(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -422,7 +422,7 @@ class QueuesV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_queue_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -558,7 +558,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_organization_queue_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -625,7 +625,7 @@ class QueuesV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_organization_queue_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -798,7 +798,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_organization_queues(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -865,7 +865,7 @@ class QueuesV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_organization_queues_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1038,7 +1038,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_queue_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1110,7 +1110,7 @@ class QueuesV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_queue_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1291,7 +1291,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_queues(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1363,7 +1363,7 @@ class QueuesV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_queues_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1544,7 +1544,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_queue(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1591,7 +1591,7 @@ class QueuesV1Api(BaseApi):
             owner, agent, queue_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_queue_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1735,7 +1735,7 @@ class QueuesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_queue(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1782,7 +1782,7 @@ class QueuesV1Api(BaseApi):
             owner, agent, queue_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_queue_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

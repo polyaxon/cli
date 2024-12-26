@@ -14,7 +14,7 @@ def _validate_schema(value: Optional[Union[Swagger, Dict]], cls: Type[Swagger]):
         return cls(**{to_snake_case(k): value[k] for k in value})
     if isinstance(value, cls):
         return value
-    raise TypeError(
+    raise ValueError(
         "This field expects a dict or an instance of {}.".format(cls.__name__)
     )
 

@@ -8,11 +8,11 @@ from polyaxon._schemas.lifecycle import ManagedBy
 
 
 class V1OperationBody(BaseAllowSchemaModel):
-    content: Optional[StrictStr]
-    is_managed: Optional[bool]
-    managed_by: Optional[ManagedBy]
-    pending: Optional[V1RunPending]
-    name: Optional[StrictStr]
-    description: Optional[StrictStr]
-    tags: Optional[List[StrictStr]]
-    meta_info: Optional[Dict[str, Any]]
+    content: Optional[StrictStr] = None
+    is_managed: Optional[bool] = None
+    managed_by: Optional[ManagedBy] = None
+    pending: Optional[V1RunPending] = None
+    name: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    tags: Optional[List[StrictStr]] = None
+    meta_info: Optional[Dict[str, Any]] = None

@@ -78,7 +78,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert plugins.sync_statuses is False
         assert plugins.external_host is True
 
-    def test_get_from_env(self):
+    def test_read_keys_from_env(self):
         spec = V1Plugins(
             auth=True,
             shm=True,

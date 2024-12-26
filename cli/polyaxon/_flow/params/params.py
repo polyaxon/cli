@@ -2,7 +2,7 @@ from collections import namedtuple
 from collections.abc import Mapping
 from typing import Any, Dict, Optional
 
-from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import Field, StrictStr, field_validator
 from clipped.config.schema import skip_partial
 from clipped.utils.lists import to_list
 from clipped.utils.strings import to_string
@@ -18,7 +18,7 @@ from polyaxon.exceptions import PolyaxonValidationError
 
 def validate_param_value(value, ref):
     if ref and not isinstance(value, str):
-        raise TypeError(
+        raise ValueError(
             "Value must be of type string when a ref is provided, received `{}` instead.".format(
                 value
             )
@@ -387,16 +387,17 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     _IDENTIFIER = "param"
 
     value: Any
-    ref: Optional[StrictStr]
-    context_only: Optional[bool] = Field(alias="contextOnly")
-    connection: Optional[StrictStr]
-    to_init: Optional[bool] = Field(alias="toInit")
-    to_env: Optional[StrictStr] = Field(alias="toEnv")
+    ref: Optional[StrictStr] = None
+    context_only: Optional[bool] = Field(alias="contextOnly", default=False)
+    connection: Optional[StrictStr] = None
+    to_init: Optional[bool] = Field(alias="toInit", default=None)
+    to_env: Optional[StrictStr] = Field(alias="toEnv", default=None)
 
-    @validator("ref")
+    @field_validator("ref")
     @skip_partial
     def check_ref(cls, ref, values):
-        validate_param_value(value=values.get("value"), ref=ref)
+        values = cls.get_data_from_values(values)
+        validate_param_value(value=cls.get_value_for_key("value", values), ref=ref)
         return ref
 
 

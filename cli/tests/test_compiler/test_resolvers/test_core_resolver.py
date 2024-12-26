@@ -149,11 +149,13 @@ class TestResolver(BaseTestCase):
         )
         resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
-        assert resolver.connection_by_names == {connection1.name: connection1}
-        assert resolver.artifacts_store == connection1
-        assert resolver.secrets == [
-            secret1,
-            secret2,
+        assert {k: v.to_dict() for k, v in resolver.connection_by_names.items()} == {
+            connection1.name: connection1.to_dict()
+        }
+        assert resolver.artifacts_store.to_dict() == connection1.to_dict()
+        assert [s.to_dict() for s in resolver.secrets] == [
+            secret1.to_dict(),
+            secret2.to_dict(),
         ]
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
@@ -190,12 +192,15 @@ class TestResolver(BaseTestCase):
         )
         resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
-        assert resolver.connection_by_names == {
-            connection1.name: connection1,
-            connection3.name: connection3,
+        assert {k: v.to_dict() for k, v in resolver.connection_by_names.items()} == {
+            connection1.name: connection1.to_dict(),
+            connection3.name: connection3.to_dict(),
         }
-        assert resolver.secrets == [secret1, secret2]
-        assert resolver.artifacts_store == connection1
+        assert [s.to_dict() for s in resolver.secrets] == [
+            secret1.to_dict(),
+            secret2.to_dict(),
+        ]
+        assert resolver.artifacts_store.to_dict() == connection1.to_dict()
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
 
@@ -235,16 +240,16 @@ class TestResolver(BaseTestCase):
         )
         resolver.resolve_agent_environment()
         assert resolver.namespace == "foo"
-        assert resolver.connection_by_names == {
-            connection3.name: connection3,
-            connection2.name: connection2,
-            connection1.name: connection1,
+        assert {k: v.to_dict() for k, v in resolver.connection_by_names.items()} == {
+            connection3.name: connection3.to_dict(),
+            connection2.name: connection2.to_dict(),
+            connection1.name: connection1.to_dict(),
         }
-        assert resolver.secrets == [
-            secret1,
-            secret2,
+        assert [s.to_dict() for s in resolver.secrets] == [
+            secret1.to_dict(),
+            secret2.to_dict(),
         ]
-        assert resolver.artifacts_store == connection1
+        assert resolver.artifacts_store.to_dict() == connection1.to_dict()
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
         AgentConfigManager.CONFIG_PATH = None

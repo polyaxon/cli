@@ -5,15 +5,15 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1SectionSpec(BaseAllowSchemaModel):
-    name: Optional[StrictStr]
-    is_minimized: Optional[bool]
-    is_frozen: Optional[str]
-    columns: Optional[int]
-    height: Optional[int]
-    xaxis: Optional[str]
-    smoothing: Optional[int]
-    ignore_outliers: Optional[bool]
-    sample_size: Optional[int]
-    widgets: Optional[List[Dict[str, Any]]]
-    page_index: Optional[int]
-    page_size: Optional[int]
+    name: Optional[StrictStr] = None
+    is_minimized: Optional[bool] = None
+    is_frozen: Optional[str] = None
+    columns: Optional[int] = None
+    height: Optional[int] = None
+    xaxis: Optional[str] = None
+    smoothing: Optional[int] = None
+    ignore_outliers: Optional[bool] = None
+    sample_size: Optional[int] = None
+    widgets: Optional[List[Dict[str, Any]]] = None
+    page_index: Optional[int] = None
+    page_size: Optional[int] = None

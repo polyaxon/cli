@@ -26,13 +26,13 @@ class TestEnvVars(BaseConverterTest):
     def test_get_env_vars(self):
         # String value
         env_var = EnvMixin._get_env_var(name="foo", value="bar")
-        assert env_var == docker_types.V1EnvVar(__root__=("foo", "bar"))
+        assert env_var == docker_types.V1EnvVar.make(("foo", "bar"))
         # Int value
         env_var = EnvMixin._get_env_var(name="foo", value=1)
-        assert env_var == docker_types.V1EnvVar(__root__=("foo", "1"))
+        assert env_var == docker_types.V1EnvVar.make(("foo", "1"))
         # Dict value
         env_var = EnvMixin._get_env_var(name="foo", value={"moo": "bar"})
-        assert env_var == docker_types.V1EnvVar(__root__=("foo", '{"moo":"bar"}'))
+        assert env_var == docker_types.V1EnvVar.make(("foo", '{"moo":"bar"}'))
 
     def test_get_kv_env_var(self):
         # Empty value
@@ -46,12 +46,12 @@ class TestEnvVars(BaseConverterTest):
         env_vars = EnvMixin._get_kv_env_vars(
             [["foo", {"moo": "bar"}], ("foo", "bar"), ["foo", 1]]
         )
-        assert env_vars[0].__root__[0] == "foo"
-        assert env_vars[0].__root__[1] == '{"moo":"bar"}'
-        assert env_vars[1].__root__[0] == "foo"
-        assert env_vars[1].__root__[1] == "bar"
-        assert env_vars[2].__root__[0] == "foo"
-        assert env_vars[2].__root__[1] == "1"
+        assert env_vars[0].get_root()[0] == "foo"
+        assert env_vars[0].get_root()[1] == '{"moo":"bar"}'
+        assert env_vars[1].get_root()[0] == "foo"
+        assert env_vars[1].get_root()[1] == "bar"
+        assert env_vars[2].get_root()[0] == "foo"
+        assert env_vars[2].get_root()[1] == "1"
 
     def test_get_from_resource(self):
         assert (
@@ -227,7 +227,7 @@ class TestEnvVars(BaseConverterTest):
             use_proxy_env_vars_use_in_ops=False,
         )
         assert len(env_vars) == 7
-        env_var_names = [env_var.__root__[0] for env_var in env_vars]
+        env_var_names = [env_var.get_root()[0] for env_var in env_vars]
         assert ENV_KEYS_K8S_POD_ID in env_var_names
         assert ENV_KEYS_K8S_NAMESPACE in env_var_names
         assert ENV_KEYS_HOST in env_var_names
@@ -250,7 +250,7 @@ class TestEnvVars(BaseConverterTest):
             use_proxy_env_vars_use_in_ops=False,
         )
         assert len(env_vars) == 10  # Normally 12
-        env_var_names = [env_var.__root__[0] for env_var in env_vars]
+        env_var_names = [env_var.get_root()[0] for env_var in env_vars]
         assert ENV_KEYS_K8S_POD_ID in env_var_names
         assert ENV_KEYS_K8S_NAMESPACE in env_var_names
         assert ENV_KEYS_HOST in env_var_names
@@ -280,7 +280,7 @@ class TestEnvVars(BaseConverterTest):
             use_proxy_env_vars_use_in_ops=False,
         )
         assert len(env_vars) == 10  # Normally 12
-        env_var_names = [env_var.__root__[0] for env_var in env_vars]
+        env_var_names = [env_var.get_root()[0] for env_var in env_vars]
         assert ENV_KEYS_K8S_POD_ID in env_var_names
         assert ENV_KEYS_K8S_NAMESPACE in env_var_names
         assert ENV_KEYS_HOST in env_var_names

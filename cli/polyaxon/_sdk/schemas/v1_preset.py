@@ -10,17 +10,17 @@ from polyaxon._sdk.schemas.v1_settings_catalog import V1SettingsCatalog
 
 
 class V1PresetSettings(BaseAllowSchemaModel):
-    projects: Optional[List[V1SettingsCatalog]]
-    runs: Optional[List[V1SettingsCatalog]]
+    projects: Optional[List[V1SettingsCatalog]] = None
+    runs: Optional[List[V1SettingsCatalog]] = None
 
 
 class V1Preset(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    description: Optional[StrictStr]
-    tags: Optional[List[StrictStr]]
-    created_at: Optional[datetime.datetime]
-    updated_at: Optional[datetime.datetime]
-    live_state: Optional[int]
-    content: Optional[StrictStr]
-    settings: Optional[V1PresetSettings]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    tags: Optional[List[StrictStr]] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+    live_state: Optional[int] = None
+    content: Optional[StrictStr] = None
+    settings: Optional[V1PresetSettings] = None

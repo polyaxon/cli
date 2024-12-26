@@ -4,11 +4,11 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class OperatorsConfig(BaseSchemaModel):
-    tfjob: Optional[bool]
-    pytorchjob: Optional[bool]
-    paddlejob: Optional[bool]
-    mpijob: Optional[bool]
-    mxjob: Optional[bool]
-    xgbjob: Optional[bool]
-    daskjob: Optional[bool]
-    rayjob: Optional[bool]
+    tfjob: Optional[bool] = None
+    pytorchjob: Optional[bool] = None
+    paddlejob: Optional[bool] = None
+    mpijob: Optional[bool] = None
+    mxjob: Optional[bool] = None
+    xgbjob: Optional[bool] = None
+    daskjob: Optional[bool] = None
+    rayjob: Optional[bool] = None

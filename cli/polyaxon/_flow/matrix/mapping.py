@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import Field, PositiveInt, validator
+from clipped.compact.pydantic import Field, PositiveInt, field_validator
 from clipped.types.ref_or_obj import RefField
 
 from polyaxon._contexts.params import is_template_ref
@@ -107,12 +107,12 @@ class V1Mapping(BaseSearchConfig):
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     values: Union[List[Dict], RefField]
-    concurrency: Optional[Union[PositiveInt, RefField]]
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
-    @validator("concurrency")
+    @field_validator("concurrency")
     def check_concurrency(cls, v):
         if v and v < 1:
             raise ValueError(

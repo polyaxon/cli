@@ -6,17 +6,19 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class CeleryConfig(BaseSchemaModel):
-    enabled: Optional[bool]
-    task_track_started: Optional[bool] = Field(alias="taskTrackStarted")
-    broker_pool_limit: Optional[StrictInt] = Field(alias="brokerPoolLimit")
-    confirm_publish: Optional[bool] = Field(alias="confirmPublish")
+    enabled: Optional[bool] = None
+    task_track_started: Optional[bool] = Field(alias="taskTrackStarted", default=None)
+    broker_pool_limit: Optional[StrictInt] = Field(
+        alias="brokerPoolLimit", default=None
+    )
+    confirm_publish: Optional[bool] = Field(alias="confirmPublish", default=None)
     worker_prefetch_multiplier: Optional[StrictInt] = Field(
-        alias="workerPrefetchMultiplier"
+        alias="workerPrefetchMultiplier", default=None
     )
     worker_max_tasks_per_child: Optional[StrictInt] = Field(
-        alias="workerMaxTasksPerChild"
+        alias="workerMaxTasksPerChild", default=None
     )
     worker_max_memory_per_child: Optional[StrictInt] = Field(
-        alias="workerMaxMemoryPerChild"
+        alias="workerMaxMemoryPerChild", default=None
     )
-    task_always_eager: Optional[bool] = Field(alias="taskAlwaysEager")
+    task_always_eager: Optional[bool] = Field(alias="taskAlwaysEager", default=None)

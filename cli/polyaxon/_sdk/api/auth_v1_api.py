@@ -1,4 +1,4 @@
-from clipped.compact.pydantic import validate_arguments
+from clipped.compact.pydantic import validate_call
 
 from polyaxon._schemas.authentication import V1Credentials
 from polyaxon._sdk.base_api import BaseApi
@@ -11,7 +11,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class AuthV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def change_password(self, body: V1PasswordChange, **kwargs) -> None:
         """Change password
 
@@ -41,7 +41,7 @@ class AuthV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.change_password_with_http_info(body, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def change_password_with_http_info(self, body: V1PasswordChange, **kwargs):
         """Change password
 
@@ -159,7 +159,7 @@ class AuthV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def login(self, body: V1Credentials, **kwargs) -> V1Auth:  # noqa: E501
         """Login  # noqa: E501
 
@@ -189,7 +189,7 @@ class AuthV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.login_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def login_with_http_info(self, body: V1Credentials, **kwargs):  # noqa: E501
         """Login  # noqa: E501
 
@@ -311,7 +311,7 @@ class AuthV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def reset_password(self, body: V1UserEmail, **kwargs) -> None:  # noqa: E501
         """Reset password  # noqa: E501
 
@@ -341,7 +341,7 @@ class AuthV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.reset_password_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def reset_password_with_http_info(self, body: V1UserEmail, **kwargs):  # noqa: E501
         """Reset password  # noqa: E501
 
@@ -459,7 +459,7 @@ class AuthV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def reset_password_confirm(
         self, body: V1PasswordChange, **kwargs
     ) -> V1Auth:  # noqa: E501
@@ -491,7 +491,7 @@ class AuthV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.reset_password_confirm_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def reset_password_confirm_with_http_info(
         self, body: V1PasswordChange, **kwargs
     ):  # noqa: E501
@@ -616,7 +616,7 @@ class AuthV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def signup(self, body: V1UserSingup, **kwargs) -> V1Auth:  # noqa: E501
         """Signup  # noqa: E501
 
@@ -646,7 +646,7 @@ class AuthV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.signup_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def signup_with_http_info(self, body: V1UserSingup, **kwargs):  # noqa: E501
         """Signup  # noqa: E501
 
@@ -768,7 +768,7 @@ class AuthV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def trial(self, body: V1TrialStart, **kwargs) -> None:  # noqa: E501
         """Trial Start  # noqa: E501
 
@@ -798,7 +798,7 @@ class AuthV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.trial_with_http_info(body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def trial_with_http_info(self, body: V1TrialStart, **kwargs):  # noqa: E501
         """Trial Start  # noqa: E501
 

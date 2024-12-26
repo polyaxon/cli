@@ -1,6 +1,6 @@
 import pytest
 
-from clipped.compact.pydantic import ValidationError
+from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.tz import now
 
 from polyaxon import types
@@ -328,12 +328,21 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        ops_params.validate_params(
-            params={"param1": {"value": 12.1}},
-            inputs=config.inputs,
-            outputs=config.outputs,
-            is_template=False,
-        )
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(PolyaxonValidationError):
+                ops_params.validate_params(
+                    params={"param1": {"value": 12.1}},
+                    inputs=config.inputs,
+                    outputs=config.outputs,
+                    is_template=False,
+                )
+        else:
+            ops_params.validate_params(
+                params={"param1": {"value": 12.1}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
@@ -342,12 +351,21 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        ops_params.validate_params(
-            params={"param1": {"value": "12.1"}},
-            inputs=config.inputs,
-            outputs=config.outputs,
-            is_template=False,
-        )
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(PolyaxonValidationError):
+                ops_params.validate_params(
+                    params={"param1": {"value": "12.1"}},
+                    inputs=config.inputs,
+                    outputs=config.outputs,
+                    is_template=False,
+                )
+        else:
+            ops_params.validate_params(
+                params={"param1": {"value": "12.1"}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "12.1"}},
@@ -535,12 +553,21 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        ops_params.validate_params(
-            params={"param1": {"value": 12.1}},
-            inputs=config.inputs,
-            outputs=config.outputs,
-            is_template=False,
-        )
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(PolyaxonValidationError):
+                ops_params.validate_params(
+                    params={"param1": {"value": 12.1}},
+                    inputs=config.inputs,
+                    outputs=config.outputs,
+                    is_template=False,
+                )
+        else:
+            ops_params.validate_params(
+                params={"param1": {"value": 12.1}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},

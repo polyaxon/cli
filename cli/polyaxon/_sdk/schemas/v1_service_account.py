@@ -8,12 +8,12 @@ from clipped.types.uuids import UUIDStr
 
 
 class V1ServiceAccount(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    description: Optional[StrictStr]
-    tags: Optional[List[StrictStr]]
-    live_state: Optional[int]
-    created_at: Optional[datetime.datetime]
-    updated_at: Optional[datetime.datetime]
-    scopes: Optional[List[StrictStr]]
-    services: Optional[List[StrictStr]]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    tags: Optional[List[StrictStr]] = None
+    live_state: Optional[int] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+    scopes: Optional[List[StrictStr]] = None
+    services: Optional[List[StrictStr]] = None

@@ -6,12 +6,12 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class ProxyConfig(BaseSchemaModel):
-    enabled: Optional[bool]
-    use_in_ops: Optional[bool] = Field(alias="useInOps")
-    http_proxy: Optional[StrictStr] = Field(alias="httpProxy")
-    https_proxy: Optional[StrictStr] = Field(alias="httpsProxy")
-    no_proxy: Optional[StrictStr] = Field(alias="noProxy")
-    port: Optional[StrictInt]
-    host: Optional[StrictStr]
-    protocol: Optional[StrictStr]
-    kind: Optional[StrictStr]
+    enabled: Optional[bool] = None
+    use_in_ops: Optional[bool] = Field(alias="useInOps", default=None)
+    http_proxy: Optional[StrictStr] = Field(alias="httpProxy", default=None)
+    https_proxy: Optional[StrictStr] = Field(alias="httpsProxy", default=None)
+    no_proxy: Optional[StrictStr] = Field(alias="noProxy", default=None)
+    port: Optional[StrictInt] = None
+    host: Optional[StrictStr] = None
+    protocol: Optional[StrictStr] = None
+    kind: Optional[StrictStr] = None

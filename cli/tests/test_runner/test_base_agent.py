@@ -21,10 +21,18 @@ class TestBaseSyncAgent(BaseTestCase):
     @patch("polyaxon._sdk.api.AgentsV1Api.create_agent_status")
     @patch("polyaxon._sdk.api.AgentsV1Api.get_agent_state")
     @patch("polyaxon._sdk.api.AgentsV1Api.get_agent")
+    @patch("polyaxon._k8s.executor.executor.Executor.manager")
     def test_init_base_agent(
-        self, get_agent, get_agent_state, create_agent_status, sync_agent, agent_check
+        self,
+        _,
+        get_agent,
+        get_agent_state,
+        create_agent_status,
+        sync_agent,
+        agent_check,
     ):
         agent = DummyAgent()
+        agent.executor.manager.get_version.return_value = {}
         assert agent.max_interval == 4
         assert agent.client.owner == DEFAULT
         assert agent.client.agent_uuid is None
@@ -51,6 +59,7 @@ class TestBaseSyncAgent(BaseTestCase):
         assert agent_check.call_count == 0
 
         agent = DummyAgent(max_interval=2, owner="foo", agent_uuid="uuid")
+        agent.executor.manager.get_version.return_value = {}
         assert agent.max_interval == 3
         assert agent.client.owner == "foo"
         assert agent.client.agent_uuid == "uuid"
@@ -79,6 +88,7 @@ class TestBaseSyncAgent(BaseTestCase):
         get_agent.return_value = MagicMock(status=None, live_state=1)
         get_agent_state.return_value = MagicMock(status=None, live_state=1)
         agent = DummyAgent(owner="foo", agent_uuid="uuid")
+        agent.executor.manager.get_version.return_value = {}
         assert agent.max_interval == 6
         assert agent.client.owner == "foo"
         assert agent.client.agent_uuid == "uuid"

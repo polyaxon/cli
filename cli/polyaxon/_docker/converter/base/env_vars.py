@@ -42,7 +42,7 @@ class EnvMixin(BaseConverter):
             except (ValueError, TypeError) as e:
                 raise PolyaxonConverterError(e)
 
-        return docker_types.V1EnvVar(__root__=(name, value))
+        return docker_types.V1EnvVar.make((name, value))
 
     @staticmethod
     def _get_from_json_resource(
@@ -59,7 +59,7 @@ class EnvMixin(BaseConverter):
         except Exception as e:
             raise PolyaxonConverterError from e
 
-        return [docker_types.V1EnvVar(__root__=k) for k in (secret_value.items())]
+        return [docker_types.V1EnvVar.make(k) for k in (secret_value.items())]
 
     @classmethod
     def _get_env_from_json_resources(
@@ -82,10 +82,10 @@ class EnvMixin(BaseConverter):
         try:
             secret_value = orjson_loads(secret)
         except orjson.JSONDecodeError:
-            return docker_types.V1EnvVar(__root__=(key, secret))
+            return docker_types.V1EnvVar.make((key, secret))
 
         value = secret_value.get(key)
-        return docker_types.V1EnvVar(__root__=(key, value))
+        return docker_types.V1EnvVar.make((key, value))
 
     @classmethod
     def _get_items_from_json_resource(
@@ -104,7 +104,7 @@ class EnvMixin(BaseConverter):
         for item in resource.items:
             value = secret_value.get(item)
             if value:
-                items_from.append(docker_types.V1EnvVar(__root__=(item, value)))
+                items_from.append(docker_types.V1EnvVar.make((item, value)))
         return items_from
 
     @classmethod

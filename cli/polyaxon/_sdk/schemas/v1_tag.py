@@ -6,9 +6,9 @@ from clipped.types.uuids import UUIDStr
 
 
 class V1Tag(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    color: Optional[StrictStr]
-    description: Optional[StrictStr]
-    icon: Optional[StrictStr]
-    stats: Optional[Dict[str, Any]]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    color: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    icon: Optional[StrictStr] = None
+    stats: Optional[Dict[str, Any]] = None

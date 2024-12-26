@@ -436,7 +436,9 @@ class TestJobConverter(BaseConverterTest):
         expected_containers = [
             self.converter._get_git_init_container(
                 connection=V1Connection(
-                    name=git1.get_name(), kind=V1ConnectionKind.GIT, schema_=git1
+                    name=git1.get_name(),
+                    kind=V1ConnectionKind.GIT,
+                    schema_=git1.to_connection(),
                 ),
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
                 env=self.converter._get_init_service_env_vars(),
@@ -446,7 +448,9 @@ class TestJobConverter(BaseConverterTest):
             self.converter._get_git_init_container(
                 container=docker_types.V1Container(name="test"),
                 connection=V1Connection(
-                    name=git2.get_name(), kind=V1ConnectionKind.GIT, schema_=git2
+                    name=git2.get_name(),
+                    kind=V1ConnectionKind.GIT,
+                    schema_=git2.to_connection(),
                 ),
                 mount_path="/test",
                 polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),

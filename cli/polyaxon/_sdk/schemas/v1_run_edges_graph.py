@@ -6,4 +6,4 @@ from polyaxon._sdk.schemas.v1_run_edge_lineage import V1RunEdgeLineage
 
 
 class V1RunEdgesGraph(BaseAllowSchemaModel):
-    edges: Optional[List[V1RunEdgeLineage]]
+    edges: Optional[List[V1RunEdgeLineage]] = None

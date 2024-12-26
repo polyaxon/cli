@@ -27,10 +27,10 @@ class V1PaddleElasticPolicy(BaseSchemaModel):
 
     _IDENTIFIER = "elasticPolicy"
 
-    min_replicas: Optional[IntOrRef] = Field(alias="minReplicas")
-    max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas")
-    max_restarts: Optional[IntOrRef] = Field(alias="maxRestarts")
-    metrics: Optional[List[Dict]] = Field(alias="Metrics")
+    min_replicas: Optional[IntOrRef] = Field(alias="minReplicas", default=None)
+    max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas", default=None)
+    max_restarts: Optional[IntOrRef] = Field(alias="maxRestarts", default=None)
+    metrics: Optional[List[Dict]] = Field(alias="Metrics", default=None)
 
 
 class V1PaddleJob(BaseRun, DestinationImageMixin):
@@ -151,13 +151,20 @@ class V1PaddleJob(BaseRun, DestinationImageMixin):
     """
 
     _IDENTIFIER = V1RunKind.PADDLEJOB
+    _CUSTOM_DUMP_FIELDS = {"master", "worker"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(alias="cleanPodPolicy")
-    scheduling_policy: Optional[V1SchedulingPolicy] = Field(alias="schedulingPolicy")
-    elastic_policy: Optional[V1PaddleElasticPolicy] = Field(alias="elasticPolicy")
-    master: Optional[Union[V1KFReplica, RefField]]
-    worker: Optional[Union[V1KFReplica, RefField]]
+    clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
+        alias="cleanPodPolicy", default=None
+    )
+    scheduling_policy: Optional[V1SchedulingPolicy] = Field(
+        alias="schedulingPolicy", default=None
+    )
+    elastic_policy: Optional[V1PaddleElasticPolicy] = Field(
+        alias="elasticPolicy", default=None
+    )
+    master: Optional[Union[V1KFReplica, RefField]] = None
+    worker: Optional[Union[V1KFReplica, RefField]] = None
 
     def apply_image_destination(self, image: str):
         if self.master:

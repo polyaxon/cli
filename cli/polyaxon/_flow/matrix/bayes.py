@@ -5,8 +5,10 @@ from clipped.compact.pydantic import (
     Field,
     PositiveInt,
     StrictInt,
-    root_validator,
-    validator,
+    field_validator,
+    model_validator,
+    validation_after,
+    validation_always,
 )
 from clipped.config.schema import skip_partial
 from clipped.types.ref_or_obj import RefField
@@ -60,19 +62,21 @@ class UtilityFunctionConfig(BaseSchemaModel):  # TODO: Rename to V1UtilityFuncti
     acquisition_function: Optional[AcquisitionFunctions] = Field(
         default=AcquisitionFunctions.UCB, alias="acquisitionFunction"
     )
-    gaussian_process: Optional[GaussianProcessConfig] = Field(alias="gaussianProcess")
-    kappa: Optional[float]
-    eps: Optional[float]
-    num_warmup: Optional[int] = Field(alias="numWarmup")
-    num_iterations: Optional[int] = Field(alias="numIterations")
+    gaussian_process: Optional[GaussianProcessConfig] = Field(
+        alias="gaussianProcess", default=None
+    )
+    kappa: Optional[float] = None
+    eps: Optional[float] = None
+    num_warmup: Optional[int] = Field(alias="numWarmup", default=None)
+    num_iterations: Optional[int] = Field(alias="numIterations", default=None)
 
-    @root_validator
+    @model_validator(**validation_after)
     @skip_partial
     def validate_utility_function(cls, values):
         validate_utility_function(
-            acquisition_function=values.get("acquisition_function"),
-            kappa=values.get("kappa"),
-            eps=values.get("eps"),
+            acquisition_function=cls.get_value_for_key("acquisition_function", values),
+            kappa=cls.get_value_for_key("kappa", values),
+            eps=cls.get_value_for_key("eps", values),
         )
         return values
 
@@ -393,16 +397,18 @@ class V1Bayes(BaseSearchConfig):
     _IDENTIFIER = V1MatrixKind.BAYES
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    utility_function: Optional[UtilityFunctionConfig] = Field(alias="utilityFunction")
+    utility_function: Optional[UtilityFunctionConfig] = Field(
+        alias="utilityFunction", default=None
+    )
     num_initial_runs: Union[PositiveInt, RefField] = Field(alias="numInitialRuns")
     max_iterations: Union[PositiveInt, RefField] = Field(alias="maxIterations")
     metric: V1OptimizationMetric
     params: Union[Dict[str, V1HpParam], RefField]
-    seed: Optional[Union[StrictInt, RefField]]
-    concurrency: Optional[Union[PositiveInt, RefField]]
-    tuner: Optional[Union[V1Tuner, RefField]]
+    seed: Optional[Union[StrictInt, RefField]] = None
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
+    tuner: Optional[Union[V1Tuner, RefField]] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
-        alias="earlyStopping"
+        alias="earlyStopping", default=None
     )
 
     def create_iteration(self, iteration: Optional[int] = None) -> int:
@@ -414,7 +420,7 @@ class V1Bayes(BaseSearchConfig):
         """Return a boolean to indicate if we need to reschedule another iteration."""
         return iteration < self.max_iterations
 
-    @validator("params", always=True)
+    @field_validator("params", **validation_always)
     @skip_partial
     def validate_matrix(cls, params):
         return validate_matrix(params)

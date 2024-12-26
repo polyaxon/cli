@@ -9,8 +9,8 @@ from clipped.config.schema import BaseAllowSchemaModel
 class V1LogHandler(BaseAllowSchemaModel):
     _IDENTIFIER = "log_handler"
 
-    dsn: Optional[StrictStr]
-    environment: Optional[StrictStr]
+    dsn: Optional[StrictStr] = None
+    environment: Optional[StrictStr] = None
 
     @property
     def decoded_dsn(self):

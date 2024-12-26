@@ -8,17 +8,17 @@ from polyaxon._sdk.schemas.v1_dashboard_spec import V1DashboardSpec
 
 
 class V1SearchSpec(BaseAllowSchemaModel):
-    query: Optional[StrictStr]
-    sort: Optional[StrictStr]
-    limit: Optional[int]
-    offset: Optional[int]
-    groupby: Optional[StrictStr]
-    columns: Optional[StrictStr]
-    layout: Optional[StrictStr]
-    sections: Optional[StrictStr]
-    compares: Optional[StrictStr]
-    heat: Optional[StrictStr]
-    events: Optional[V1DashboardSpec]
-    histograms: Optional[Dict[str, Any]]
-    trends: Optional[Dict[str, Any]]
-    analytics: Optional[V1AnalyticsSpec]
+    query: Optional[StrictStr] = None
+    sort: Optional[StrictStr] = None
+    limit: Optional[int] = None
+    offset: Optional[int] = None
+    groupby: Optional[StrictStr] = None
+    columns: Optional[StrictStr] = None
+    layout: Optional[StrictStr] = None
+    sections: Optional[StrictStr] = None
+    compares: Optional[StrictStr] = None
+    heat: Optional[StrictStr] = None
+    events: Optional[V1DashboardSpec] = None
+    histograms: Optional[Dict[str, Any]] = None
+    trends: Optional[Dict[str, Any]] = None
+    analytics: Optional[V1AnalyticsSpec] = None

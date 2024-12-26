@@ -1,6 +1,12 @@
 from typing import Dict, Optional, Union
 
-from clipped.compact.pydantic import Field, StrictStr, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    validation_always,
+    validation_before,
+)
 from clipped.utils.versions import clean_version_post_suffix
 
 from polyaxon import pkg
@@ -93,12 +99,14 @@ class V1PolyaxonInitContainer(BaseSchemaModel):
     _IDENTIFIER = "container"
     _SWAGGER_FIELDS = ["resources"]
 
-    image: Optional[StrictStr]
-    image_tag: Optional[StrictStr] = Field(alias="imageTag")
-    image_pull_policy: Optional[PullPolicy] = Field(alias="imagePullPolicy")
-    resources: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]]
+    image: Optional[StrictStr] = None
+    image_tag: Optional[StrictStr] = Field(alias="imageTag", default=None)
+    image_pull_policy: Optional[PullPolicy] = Field(
+        alias="imagePullPolicy", default=None
+    )
+    resources: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]] = None
 
-    @validator("resources", always=True, pre=True)
+    @field_validator("resources", **validation_always, **validation_before)
     def validate_resources(cls, v) -> k8s_schemas.V1ResourceRequirements:
         return k8s_validation.validate_k8s_resource_requirements(v)
 

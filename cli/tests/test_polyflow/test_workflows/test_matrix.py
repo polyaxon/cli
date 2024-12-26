@@ -3,7 +3,7 @@ import pytest
 
 from datetime import date, datetime, timedelta
 
-from clipped.compact.pydantic import ValidationError
+from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.json import orjson_dumps
 
 from hypertune.matrix.utils import get_length, get_max, get_min, sample, to_numpy
@@ -306,8 +306,8 @@ class TestMatrixConfigs(BaseTestCase):
 
         # as Dict with float step
         config_dict["value"] = {
-            "start": "2019-06-22T12:12:00",
-            "stop": "2019-07-25T13:34:00",
+            "start": "2019-06-22T12:12:00+00:00",
+            "stop": "2019-07-25T13:34:00+00:00",
             "step": 4.0 * 3600,
         }
         config = V1HpDateTimeRange.from_dict(config_dict)
@@ -360,11 +360,15 @@ class TestMatrixConfigs(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1HpLinSpace.from_dict(config_dict)
 
-        # as dict num as float
+        # as dict num as float breaks in v2
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
-        config = V1HpLinSpace.from_dict(config_dict)
-        assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != orjson_dumps(config_dict)
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(ValidationError):
+                V1HpLinSpace.from_dict(config_dict)
+        else:
+            config = V1HpLinSpace.from_dict(config_dict)
+            assert_equal(config, *config_dict["value"].values())
+            assert config.to_json() != orjson_dumps(config_dict)
 
         # as dict num as int
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}
@@ -477,11 +481,15 @@ class TestMatrixConfigs(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1HpLogSpace.from_dict(config_dict)
 
-        # as dict
+        # as dict num as float breaks in v2
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
-        config = V1HpLogSpace.from_dict(config_dict)
-        assert_equal(config, *config_dict["value"].values())
-        assert config.to_json() != orjson_dumps(config_dict)
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(ValidationError):
+                V1HpLogSpace.from_dict(config_dict)
+        else:
+            config = V1HpLogSpace.from_dict(config_dict)
+            assert_equal(config, *config_dict["value"].values())
+            assert config.to_json() != orjson_dumps(config_dict)
 
         # with base
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}

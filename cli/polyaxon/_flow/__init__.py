@@ -1,3 +1,5 @@
+from clipped.compact.pydantic import model_rebuild
+
 from polyaxon._flow.builds import V1Build
 from polyaxon._flow.cache import V1Cache
 from polyaxon._flow.component import V1Component
@@ -106,5 +108,4 @@ from polyaxon._flow.termination import V1Termination
 from polyaxon._flow.trigger_policies import V1TriggerPolicy
 
 # Forward references for operations and components
-V1Dag.update_forward_refs(V1Operation=V1Operation)
-V1Dag.update_forward_refs(V1Component=V1Component)
+model_rebuild(V1Dag, V1Operation=V1Operation, V1Component=V1Component)

@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 
 
 class V1ListProjectVersionsResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1ProjectVersion]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1ProjectVersion]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

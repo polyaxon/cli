@@ -8,9 +8,9 @@ from clipped.types.email import EmailStr
 
 
 class V1OrganizationMember(BaseAllowSchemaModel):
-    user: Optional[StrictStr]
-    user_email: Optional[EmailStr]
-    role: Optional[StrictStr]
-    kind: Optional[StrictStr]
-    created_at: Optional[datetime.datetime]
-    updated_at: Optional[datetime.datetime]
+    user: Optional[StrictStr] = None
+    user_email: Optional[EmailStr] = None
+    role: Optional[StrictStr] = None
+    kind: Optional[StrictStr] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None

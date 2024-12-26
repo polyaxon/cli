@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_list_searches_response import V1ListSearchesResponse
@@ -10,7 +10,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class ProjectSearchesV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_project_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -54,7 +54,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, project, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_project_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -193,7 +193,7 @@ class ProjectSearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_project_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -242,7 +242,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_project_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -373,7 +373,7 @@ class ProjectSearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_project_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -422,7 +422,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_project_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -558,7 +558,7 @@ class ProjectSearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_project_search_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -630,7 +630,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_project_search_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -811,7 +811,7 @@ class ProjectSearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_project_searches(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -883,7 +883,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_project_searches_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1064,7 +1064,7 @@ class ProjectSearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_project_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1111,7 +1111,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, project, search_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_project_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1255,7 +1255,7 @@ class ProjectSearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def promote_project_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1304,7 +1304,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def promote_project_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1435,7 +1435,7 @@ class ProjectSearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_project_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1482,7 +1482,7 @@ class ProjectSearchesV1Api(BaseApi):
             owner, project, search_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_project_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

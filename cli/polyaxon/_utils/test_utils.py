@@ -14,6 +14,7 @@ from polyaxon._schemas.agent import AgentConfig
 from polyaxon._schemas.authentication import AccessTokenConfig
 from polyaxon._schemas.cli import CliConfig
 from polyaxon._schemas.client import ClientConfig
+from polyaxon._schemas.installation import V1Installation
 from polyaxon.settings import set_agent_config
 
 
@@ -76,7 +77,7 @@ def patch_settings(
 
     settings.CLI_CONFIG = None
     if set_cli:
-        settings.CLI_CONFIG = CliConfig(installation={CliConfig._DIST: _dist.EE})
+        settings.CLI_CONFIG = CliConfig(installation=V1Installation(dist=_dist.EE))
 
     settings.AGENT_CONFIG = None
     if set_agent:

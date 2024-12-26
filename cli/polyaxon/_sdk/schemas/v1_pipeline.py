@@ -8,6 +8,6 @@ from polyaxon._flow import V1PipelineKind
 
 
 class V1Pipeline(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    kind: Optional[V1PipelineKind]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    kind: Optional[V1PipelineKind] = None

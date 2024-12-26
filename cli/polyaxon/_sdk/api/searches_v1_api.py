@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_list_searches_response import V1ListSearchesResponse
@@ -10,7 +10,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class SearchesV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def create_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -47,7 +47,7 @@ class SearchesV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_search_with_http_info(owner, body, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def create_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -179,7 +179,7 @@ class SearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -218,7 +218,7 @@ class SearchesV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.delete_search_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -339,7 +339,7 @@ class SearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -378,7 +378,7 @@ class SearchesV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_search_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -504,7 +504,7 @@ class SearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_search_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -571,7 +571,7 @@ class SearchesV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_search_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -744,7 +744,7 @@ class SearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_searches(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -811,7 +811,7 @@ class SearchesV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_searches_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -984,7 +984,7 @@ class SearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1026,7 +1026,7 @@ class SearchesV1Api(BaseApi):
             owner, search_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1163,7 +1163,7 @@ class SearchesV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_search(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1205,7 +1205,7 @@ class SearchesV1Api(BaseApi):
             owner, search_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_search_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

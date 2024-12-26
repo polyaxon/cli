@@ -1,6 +1,12 @@
 from typing import List, Optional, Union
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictInt,
+    StrictStr,
+    field_validator,
+    validation_before,
+)
 from clipped.config.constants import PARAM_REGEX
 from clipped.types.ref_or_obj import RefField
 from clipped.types.uuids import UUIDStr
@@ -129,14 +135,14 @@ class V1TensorboardType(BaseTypeConfig):
 
     _IDENTIFIER = "tensorboard"
 
-    port: Optional[Union[StrictInt, RefField]]
-    uuids: Optional[Union[List[UUIDStr], RefField]]
-    use_names: Optional[Union[bool, RefField]] = Field(alias="useNames")
-    path_prefix: Optional[StrictStr] = Field(alias="pathPrefix")
-    plugins: Optional[Union[List[StrictStr], RefField]]
+    port: Optional[Union[StrictInt, RefField]] = None
+    uuids: Optional[Union[List[UUIDStr], RefField]] = None
+    use_names: Optional[Union[bool, RefField]] = Field(alias="useNames", default=None)
+    path_prefix: Optional[StrictStr] = Field(alias="pathPrefix", default=None)
+    plugins: Optional[Union[List[StrictStr], RefField]] = None
 
-    @validator("uuids", "plugins", pre=True)
-    def validate_str_list(cls, v, field):
+    @field_validator("uuids", "plugins", **validation_before)
+    def validate_str_list(cls, v):
         if isinstance(v, str) and v is not None and not PARAM_REGEX.search(v):
             return to_list(v, check_str=True)
         return v

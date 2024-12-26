@@ -2,7 +2,15 @@ import re
 
 from typing import Any, Dict, List, Optional, Union
 
-from clipped.compact.pydantic import Field, StrictStr, root_validator, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    model_validator,
+    validation_after,
+    validation_always,
+    validation_before,
+)
 from clipped.config.schema import skip_partial
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
@@ -86,7 +94,7 @@ def validate_io(
         )
 
     if is_flag and type != "bool":
-        raise TypeError(
+        raise ValueError(
             "IO type `{}` cannot be a flag, it must be of type `{}`".format(
                 type, "bool"
             )
@@ -241,29 +249,31 @@ class V1Validation(BaseSchemaModel):
     * maxItems - maximum number of items
     """
 
-    delay: Optional[BoolOrRef]
-    gt: Optional[Union[StrictIntOrFloat, RefField]]
-    ge: Optional[Union[StrictIntOrFloat, RefField]]
-    lt: Optional[Union[StrictIntOrFloat, RefField]]
-    le: Optional[Union[StrictIntOrFloat, RefField]]
-    multiple_of: Optional[Union[StrictIntOrFloat, RefField]] = Field(alias="multipleOf")
-    min_digits: Optional[IntOrRef] = Field(alias="minDigits")
-    max_digits: Optional[IntOrRef] = Field(alias="maxDigits")
-    decimal_places: Optional[IntOrRef] = Field(alias="decimalPlaces")
-    regex: Optional[StrictStr]
-    min_length: Optional[IntOrRef] = Field(alias="minLength")
-    max_length: Optional[IntOrRef] = Field(alias="maxLength")
-    contains: Optional[Any]
-    excludes: Optional[Any]
-    options: Optional[Any]
-    min_items: Optional[IntOrRef] = Field(alias="minItems")
-    max_items: Optional[IntOrRef] = Field(alias="maxItems")
-    keys: Optional[Union[List[StrictStr], RefField]]
+    delay: Optional[BoolOrRef] = None
+    gt: Optional[Union[StrictIntOrFloat, RefField]] = None
+    ge: Optional[Union[StrictIntOrFloat, RefField]] = None
+    lt: Optional[Union[StrictIntOrFloat, RefField]] = None
+    le: Optional[Union[StrictIntOrFloat, RefField]] = None
+    multiple_of: Optional[Union[StrictIntOrFloat, RefField]] = Field(
+        alias="multipleOf", default=None
+    )
+    min_digits: Optional[IntOrRef] = Field(alias="minDigits", default=None)
+    max_digits: Optional[IntOrRef] = Field(alias="maxDigits", default=None)
+    decimal_places: Optional[IntOrRef] = Field(alias="decimalPlaces", default=None)
+    regex: Optional[StrictStr] = None
+    min_length: Optional[IntOrRef] = Field(alias="minLength", default=None)
+    max_length: Optional[IntOrRef] = Field(alias="maxLength", default=None)
+    contains: Optional[Any] = None
+    excludes: Optional[Any] = None
+    options: Optional[Any] = None
+    min_items: Optional[IntOrRef] = Field(alias="minItems", default=None)
+    max_items: Optional[IntOrRef] = Field(alias="maxItems", default=None)
+    keys: Optional[Union[List[StrictStr], RefField]] = None
     contains_keys: Optional[Union[List[StrictStr], RefField]] = Field(
-        alias="containsKeys"
+        alias="containsKeys", default=None
     )
     excludes_keys: Optional[Union[List[StrictStr], RefField]] = Field(
-        alias="excludesKeys"
+        alias="excludesKeys", default=None
     )
 
     def _validate_gt(self, value):
@@ -891,27 +901,27 @@ class V1IO(BaseSchemaModel):
     _IDENTIFIER = "io"
 
     name: StrictStr
-    description: Optional[StrictStr]
-    type: Optional[StrictStr]
-    is_optional: Optional[bool] = Field(alias="isOptional")
-    is_list: Optional[bool] = Field(alias="isList")
-    is_flag: Optional[bool] = Field(alias="isFlag")
-    arg_format: Optional[StrictStr] = Field(alias="argFormat")
-    connection: Optional[StrictStr]
-    to_init: Optional[bool] = Field(alias="toInit")
-    to_env: Optional[StrictStr] = Field(alias="toEnv")
-    value: Optional[Any]
-    validation: Optional[V1Validation]
-    delay_validation: Optional[bool] = Field(alias="delayValidation")
-    options: Optional[Any]
+    description: Optional[StrictStr] = None
+    type: Optional[StrictStr] = None
+    is_optional: Optional[bool] = Field(alias="isOptional", default=None)
+    is_list: Optional[bool] = Field(alias="isList", default=None)
+    is_flag: Optional[bool] = Field(alias="isFlag", default=None)
+    arg_format: Optional[StrictStr] = Field(alias="argFormat", default=None)
+    connection: Optional[StrictStr] = None
+    to_init: Optional[bool] = Field(alias="toInit", default=None)
+    to_env: Optional[StrictStr] = Field(alias="toEnv", default=None)
+    value: Optional[Any] = None
+    validation: Optional[V1Validation] = None
+    delay_validation: Optional[bool] = Field(alias="delayValidation", default=None)
+    options: Optional[Any] = None
 
-    @validator("name", always=True)
+    @field_validator("name", **validation_always)
     def validate_name(cls, v):
         if v in IO_NAME_BLACK_LIST:
             raise ValueError(IO_NAME_ERROR)
         return v
 
-    @root_validator(pre=True)
+    @model_validator(**validation_before)
     def handle_validation(cls, values):
         validation = values.get("validation")
         if not validation and (
@@ -926,20 +936,20 @@ class V1IO(BaseSchemaModel):
         if values.get("delay_validation") is not None:
             validation.delay = values.pop("delay_validation")
         if validation:
-            values["validation"] = validation
+            values["validation"] = validation.to_dict()
         return values
 
-    @root_validator
+    @model_validator(**validation_after)
     @skip_partial
     def validate_io(cls, values):
         validate_io(
-            name=values.get("name"),
-            type=values.get("type"),
-            value=values.get("value"),
-            is_list=values.get("is_list"),
-            is_optional=values.get("is_optional"),
-            is_flag=values.get("is_flag"),
-            validation=values.get("validation"),
+            name=cls.get_value_for_key("name", values),
+            type=cls.get_value_for_key("type", values),
+            value=cls.get_value_for_key("value", values),
+            is_list=cls.get_value_for_key("is_list", values),
+            is_optional=cls.get_value_for_key("is_optional", values),
+            is_flag=cls.get_value_for_key("is_flag", values),
+            validation=cls.get_value_for_key("validation", values),
         )
         return values
 

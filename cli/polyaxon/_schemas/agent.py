@@ -2,7 +2,13 @@ import os
 
 from typing import Dict, List, Optional
 
-from clipped.compact.pydantic import Extra, Field, StrictStr, root_validator, validator
+from clipped.compact.pydantic import (
+    Field,
+    StrictStr,
+    field_validator,
+    model_validator,
+    validation_before,
+)
 from clipped.config.schema import skip_partial, to_partial
 from vents.connections import ConnectionCatalog
 
@@ -70,16 +76,18 @@ def validate_agent_config(
 class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
     _REQUIRED_ARTIFACTS_STORE = True
 
-    connections: Optional[List[V1Connection]] = Field(alias=ENV_KEYS_AGENT_CONNECTIONS)
-    artifacts_store: Optional[V1Connection] = Field(
-        alias=ENV_KEYS_AGENT_ARTIFACTS_STORE
+    connections: Optional[List[V1Connection]] = Field(
+        default=None, alias=ENV_KEYS_AGENT_CONNECTIONS
     )
-    namespace: Optional[StrictStr] = Field(alias=ENV_KEYS_K8S_NAMESPACE)
+    artifacts_store: Optional[V1Connection] = Field(
+        default=None, alias=ENV_KEYS_AGENT_ARTIFACTS_STORE
+    )
+    namespace: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_K8S_NAMESPACE)
 
     class Config:
-        extra = Extra.ignore
+        extra = "ignore"
 
-    @root_validator(pre=True)
+    @model_validator(**validation_before)
     def handle_camel_case_artifacts_store(cls, values):
         if (
             not values.get("artifacts_store")
@@ -89,7 +97,7 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
             values[ENV_KEYS_AGENT_ARTIFACTS_STORE] = values["artifactsStore"]
         return values
 
-    @validator("connections", pre=True)
+    @field_validator("connections", **validation_before)
     def validate_json_list(cls, v):
         if not isinstance(v, str):
             return v
@@ -103,7 +111,7 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
         except PolyaxonSchemaError as e:
             raise ValueError("Received an invalid connections") from e
 
-    @validator("artifacts_store", pre=True)
+    @field_validator("artifacts_store", **validation_before)
     def validate_store_json(cls, v):
         if not isinstance(v, str):
             return v
@@ -118,9 +126,10 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
                 "Received an invalid artifacts store `{}`".format(v)
             ) from e
 
-    @validator("artifacts_store")
+    @field_validator("artifacts_store")
     @skip_partial
     def validate_agent_config(cls, artifacts_store, values):
+        values = cls.get_data_from_values(values)
         try:
             validate_agent_config(
                 artifacts_store,
@@ -186,38 +195,59 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
 
 class AgentConfig(BaseAgentConfig):
     _IDENTIFIER = "agent"
+    _CUSTOM_DUMP_FIELDS = {
+        "sidecar",
+        "init",
+        "notifier",
+        "cleaner",
+        "default_scheduling",
+    }
 
-    is_replica: Optional[bool] = Field(alias=ENV_KEYS_AGENT_IS_REPLICA)
-    watch_cluster: Optional[bool] = Field(alias=ENV_KEYS_WATCH_CLUSTER)
-    single_namespace: Optional[bool] = Field(alias=ENV_KEYS_SINGLE_NAMESPACE)
-    additional_namespaces: Optional[List[StrictStr]] = Field(
-        alias=ENV_KEYS_ADDITIONAL_NAMESPACES
+    is_replica: Optional[bool] = Field(default=None, alias=ENV_KEYS_AGENT_IS_REPLICA)
+    watch_cluster: Optional[bool] = Field(default=None, alias=ENV_KEYS_WATCH_CLUSTER)
+    single_namespace: Optional[bool] = Field(
+        default=None, alias=ENV_KEYS_SINGLE_NAMESPACE
     )
-    sidecar: Optional[V1PolyaxonSidecarContainer] = Field(alias=ENV_KEYS_AGENT_SIDECAR)
-    init: Optional[V1PolyaxonInitContainer] = Field(alias=ENV_KEYS_AGENT_INIT)
-    notifier: Optional[V1PolyaxonNotifier] = Field(alias=ENV_KEYS_AGENT_NOTIFIER)
-    cleaner: Optional[V1PolyaxonCleaner] = Field(alias=ENV_KEYS_AGENT_CLEANER)
+    additional_namespaces: Optional[List[StrictStr]] = Field(
+        default=None, alias=ENV_KEYS_ADDITIONAL_NAMESPACES
+    )
+    sidecar: Optional[V1PolyaxonSidecarContainer] = Field(
+        default=None, alias=ENV_KEYS_AGENT_SIDECAR
+    )
+    init: Optional[V1PolyaxonInitContainer] = Field(
+        default=None, alias=ENV_KEYS_AGENT_INIT
+    )
+    notifier: Optional[V1PolyaxonNotifier] = Field(
+        default=None, alias=ENV_KEYS_AGENT_NOTIFIER
+    )
+    cleaner: Optional[V1PolyaxonCleaner] = Field(
+        default=None, alias=ENV_KEYS_AGENT_CLEANER
+    )
     use_proxy_env_vars_use_in_ops: Optional[bool] = Field(
-        alias=ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
+        default=None, alias=ENV_KEYS_AGENT_USE_PROXY_ENV_VARS_IN_OPS
     )
     default_scheduling: Optional[V1DefaultScheduling] = Field(
-        alias=ENV_KEYS_AGENT_DEFAULT_SCHEDULING
+        default=None, alias=ENV_KEYS_AGENT_DEFAULT_SCHEDULING
     )
     default_image_pull_secrets: Optional[List[StrictStr]] = Field(
-        alias=ENV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS
+        default=None, alias=ENV_KEYS_AGENT_DEFAULT_IMAGE_PULL_SECRETS
     )
-    app_secret_name: Optional[StrictStr] = Field(alias=ENV_KEYS_K8S_APP_SECRET_NAME)
-    agent_secret_name: Optional[StrictStr] = Field(alias=ENV_KEYS_AGENT_SECRET_NAME)
-    runs_sa: Optional[StrictStr] = Field(alias=ENV_KEYS_AGENT_RUNS_SA)
+    app_secret_name: Optional[StrictStr] = Field(
+        default=None, alias=ENV_KEYS_K8S_APP_SECRET_NAME
+    )
+    agent_secret_name: Optional[StrictStr] = Field(
+        default=None, alias=ENV_KEYS_AGENT_SECRET_NAME
+    )
+    runs_sa: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_AGENT_RUNS_SA)
     enable_health_checks: Optional[bool] = Field(
-        alias=ENV_KEYS_AGENT_ENABLE_HEALTH_CHECKS
+        default=None, alias=ENV_KEYS_AGENT_ENABLE_HEALTH_CHECKS
     )
     # This refresh logic will mitigate several issues with AKS's numerous networking problems
     executor_refresh_interval: Optional[int] = Field(
-        alias=ENV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL
+        default=None, alias=ENV_KEYS_AGENT_EXECUTOR_REFRESH_INTERVAL
     )
 
-    @root_validator(pre=True)
+    @model_validator(**validation_before)
     def handle_camel_case_agent(cls, values):
         if (
             not values.get("is_replica")
@@ -307,6 +337,8 @@ class AgentConfig(BaseAgentConfig):
     ):
         if not default_scheduling and default_image_pull_secrets:
             default_scheduling = V1DefaultScheduling()
+        if default_scheduling and isinstance(default_scheduling, dict):
+            default_scheduling = V1DefaultScheduling.from_dict(default_scheduling)
         if default_scheduling and not default_scheduling.image_pull_secrets:
             default_scheduling.image_pull_secrets = default_image_pull_secrets
         super().__init__(
@@ -315,42 +347,42 @@ class AgentConfig(BaseAgentConfig):
             **data,
         )
 
-    @validator(
+    @field_validator(
         "artifacts_store",
         "sidecar",
         "init",
         "cleaner",
         "notifier",
         "default_scheduling",
-        pre=True,
+        **validation_before,
     )
     def validate_json(cls, v, field):
         if not isinstance(v, str):
             return v
+        key = cls.get_alias_for_field(field)
         try:
             return ConfigParser.parse(Dict)(
-                key=field.name,
+                key=key,
                 value=v,
                 is_optional=True,
             )
         except PolyaxonSchemaError as e:
-            raise ValueError(
-                "Received an invalid {} `{}`".format(field.alias, v)
-            ) from e
+            raise ValueError("Received an invalid {} `{}`".format(key, v)) from e
 
-    @validator("additional_namespaces", "default_image_pull_secrets", pre=True)
+    @field_validator(
+        "additional_namespaces", "default_image_pull_secrets", **validation_before
+    )
     def validate_str_list(cls, v, field):
+        key = cls.get_alias_for_field(field)
         try:
             return ConfigParser.parse(str)(
-                key=field.alias,
+                key=key,
                 value=v,
                 is_optional=True,
                 is_list=True,
             )
         except PolyaxonSchemaError as e:
-            raise ValueError(
-                "Received an invalid {} `{}`".format(field.alias, v)
-            ) from e
+            raise ValueError("Received an invalid {} `{}`".format(key, v)) from e
 
     def get_executor_refresh_interval(self) -> int:
         return self.executor_refresh_interval or 60 * 5

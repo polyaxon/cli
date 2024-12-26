@@ -4,13 +4,13 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1AgentStateResponseAgentState(BaseAllowSchemaModel):
-    schedules: Optional[List]
-    hooks: Optional[List]
-    watchdogs: Optional[List]
-    tuners: Optional[List]
-    queued: Optional[List]
-    stopping: Optional[List]
-    deleting: Optional[List]
-    apply: Optional[List]
-    checks: Optional[List]
-    full: Optional[bool]
+    schedules: Optional[List] = None
+    hooks: Optional[List] = None
+    watchdogs: Optional[List] = None
+    tuners: Optional[List] = None
+    queued: Optional[List] = None
+    stopping: Optional[List] = None
+    deleting: Optional[List] = None
+    apply: Optional[List] = None
+    checks: Optional[List] = None
+    full: Optional[bool] = None

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._schemas.lifecycle import V1Status
 from polyaxon._sdk.base_api import BaseApi
@@ -38,7 +38,7 @@ from traceml.logging import V1Logs
 
 
 class RunsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def approve_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -87,7 +87,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def approve_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -218,7 +218,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def approve_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -260,7 +260,7 @@ class RunsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def approve_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -392,7 +392,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def archive_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -441,7 +441,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def archive_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -572,7 +572,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def archive_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -614,7 +614,7 @@ class RunsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def archive_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -746,7 +746,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def bookmark_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -795,7 +795,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def bookmark_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -926,7 +926,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def bookmark_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -968,7 +968,7 @@ class RunsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def bookmark_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1100,7 +1100,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def collect_run_logs(
         self,
         namespace: StrictStr,
@@ -1152,7 +1152,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, project, uuid, kind, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def collect_run_logs_with_http_info(
         self,
         namespace: StrictStr,
@@ -1290,7 +1290,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def copy_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1337,7 +1337,7 @@ class RunsV1Api(BaseApi):
             owner, project, run_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def copy_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1481,7 +1481,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1525,7 +1525,7 @@ class RunsV1Api(BaseApi):
             owner, project, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1664,7 +1664,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_run_artifacts_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1713,7 +1713,7 @@ class RunsV1Api(BaseApi):
             owner, project, uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_run_artifacts_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1854,7 +1854,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_run_status(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1903,7 +1903,7 @@ class RunsV1Api(BaseApi):
             owner, project, uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_run_status_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2049,7 +2049,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2098,7 +2098,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2229,7 +2229,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_run_artifact(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -2288,7 +2288,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, project, uuid, path, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_run_artifact_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -2435,7 +2435,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_run_artifact_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2489,7 +2489,7 @@ class RunsV1Api(BaseApi):
             owner, project, uuid, name, namespace, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_run_artifact_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2629,7 +2629,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_run_artifacts(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -2688,7 +2688,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, project, uuid, path, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_run_artifacts_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -2835,7 +2835,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2877,7 +2877,7 @@ class RunsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3009,7 +3009,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_multi_run_events(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -3102,7 +3102,7 @@ class RunsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_multi_run_events_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -3299,7 +3299,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_multi_run_importance(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -3346,7 +3346,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, entity, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_multi_run_importance_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -3489,7 +3489,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3536,7 +3536,7 @@ class RunsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3672,7 +3672,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_artifact(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -3742,7 +3742,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, project, uuid, path, stream, force, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_artifact_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -3918,7 +3918,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_artifact_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3972,7 +3972,7 @@ class RunsV1Api(BaseApi):
             owner, project, uuid, name, namespace, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_artifact_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4117,7 +4117,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -4182,7 +4182,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, project, uuid, path, force, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -4352,7 +4352,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4417,7 +4417,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4588,7 +4588,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts_lineage_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4653,7 +4653,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts_lineage_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4824,7 +4824,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts_tree(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -4883,7 +4883,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, project, uuid, path, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_artifacts_tree_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -5035,7 +5035,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_clones_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5100,7 +5100,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_clones_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5271,7 +5271,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_connections_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5336,7 +5336,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_connections_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5507,7 +5507,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_downstream_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5572,7 +5572,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_downstream_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5743,7 +5743,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_events(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -5836,7 +5836,7 @@ class RunsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_events_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -6033,7 +6033,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_logs(
         self,
         namespace: StrictStr,
@@ -6110,7 +6110,7 @@ class RunsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_logs_with_http_info(
         self,
         namespace: StrictStr,
@@ -6295,7 +6295,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_namespace(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6344,7 +6344,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_namespace_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6480,7 +6480,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_resources(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -6569,7 +6569,7 @@ class RunsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_resources_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -6760,7 +6760,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_settings(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6809,7 +6809,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6945,7 +6945,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_stats(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7044,7 +7044,7 @@ class RunsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_stats_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7251,7 +7251,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_statuses(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7300,7 +7300,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_statuses_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7436,7 +7436,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_run_upstream_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7501,7 +7501,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_run_upstream_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7672,7 +7672,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_runs_artifacts_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7744,7 +7744,7 @@ class RunsV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_runs_artifacts_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7925,7 +7925,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def impersonate_token(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -7974,7 +7974,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def impersonate_token_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -8110,7 +8110,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def inspect_run(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -8199,7 +8199,7 @@ class RunsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def inspect_run_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="namespace")],
@@ -8390,7 +8390,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def invalidate_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -8439,7 +8439,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def invalidate_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -8570,7 +8570,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def invalidate_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -8612,7 +8612,7 @@ class RunsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def invalidate_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -8744,7 +8744,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_archived_runs(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -8801,7 +8801,7 @@ class RunsV1Api(BaseApi):
             user, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_archived_runs_with_http_info(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -8951,7 +8951,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_bookmarked_runs(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -9008,7 +9008,7 @@ class RunsV1Api(BaseApi):
             user, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_bookmarked_runs_with_http_info(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -9158,7 +9158,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -9230,7 +9230,7 @@ class RunsV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -9411,7 +9411,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def notify_run_status(
         self,
         namespace: Annotated[StrictStr, Field(..., description="Na,espace")],
@@ -9463,7 +9463,7 @@ class RunsV1Api(BaseApi):
             namespace, owner, project, uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def notify_run_status_with_http_info(
         self,
         namespace: Annotated[StrictStr, Field(..., description="Na,espace")],
@@ -9609,7 +9609,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -9656,7 +9656,7 @@ class RunsV1Api(BaseApi):
             owner, project, run_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -9800,7 +9800,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def restart_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -9847,7 +9847,7 @@ class RunsV1Api(BaseApi):
             owner, project, run_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def restart_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -9991,7 +9991,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def restore_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10040,7 +10040,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def restore_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10171,7 +10171,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def restore_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10213,7 +10213,7 @@ class RunsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def restore_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10345,7 +10345,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def resume_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10392,7 +10392,7 @@ class RunsV1Api(BaseApi):
             owner, project, run_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def resume_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10536,7 +10536,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def set_run_edges_lineage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10581,7 +10581,7 @@ class RunsV1Api(BaseApi):
             owner, project, uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def set_run_edges_lineage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10715,7 +10715,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def skip_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10762,7 +10762,7 @@ class RunsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.skip_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def skip_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10891,7 +10891,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def skip_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -10931,7 +10931,7 @@ class RunsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.skip_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def skip_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11061,7 +11061,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def stop_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11108,7 +11108,7 @@ class RunsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.stop_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def stop_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11239,7 +11239,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def stop_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11279,7 +11279,7 @@ class RunsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.stop_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def stop_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11411,7 +11411,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def sync_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11455,7 +11455,7 @@ class RunsV1Api(BaseApi):
             owner, project, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def sync_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11589,7 +11589,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def tag_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11629,7 +11629,7 @@ class RunsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.tag_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def tag_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11761,7 +11761,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def transfer_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11808,7 +11808,7 @@ class RunsV1Api(BaseApi):
             owner, project, run_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def transfer_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11947,7 +11947,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def transfer_runs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -11989,7 +11989,7 @@ class RunsV1Api(BaseApi):
             owner, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def transfer_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12121,7 +12121,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def unbookmark_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12170,7 +12170,7 @@ class RunsV1Api(BaseApi):
             owner, entity, uuid, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def unbookmark_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12301,7 +12301,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12348,7 +12348,7 @@ class RunsV1Api(BaseApi):
             owner, project, run_uuid, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_run_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12492,7 +12492,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def upload_run_artifact(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12556,7 +12556,7 @@ class RunsV1Api(BaseApi):
             owner, project, uuid, uploadfile, path, overwrite, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def upload_run_artifact_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12726,7 +12726,7 @@ class RunsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def upload_run_logs(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -12790,7 +12790,7 @@ class RunsV1Api(BaseApi):
             owner, project, uuid, uploadfile, path, overwrite, connection, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def upload_run_logs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

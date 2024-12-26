@@ -8,6 +8,6 @@ from polyaxon._schemas.lifecycle import V1StatusCondition
 
 
 class V1AgentStatusBodyRequest(BaseAllowSchemaModel):
-    owner: Optional[StrictStr]
-    uuid: Optional[UUIDStr]
-    condition: Optional[V1StatusCondition]
+    owner: Optional[StrictStr] = None
+    uuid: Optional[UUIDStr] = None
+    condition: Optional[V1StatusCondition] = None

@@ -375,12 +375,13 @@ class V1Component(
     """
 
     _IDENTIFIER = "component"
+    _CUSTOM_DUMP_FIELDS = {"run"}
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
-    inputs: Optional[List[V1IO]]
-    outputs: Optional[List[V1IO]]
+    inputs: Optional[List[V1IO]] = None
+    outputs: Optional[List[V1IO]] = None
     run: Union[V1Runtime]
-    template: Optional[V1Template]
+    template: Optional[V1Template] = None
 
     def get_run_kind(self):
         return self.run.kind if self.run else None

@@ -4,4 +4,4 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 class RBACConfig(BaseSchemaModel):
-    enabled: Optional[bool]
+    enabled: Optional[bool] = None

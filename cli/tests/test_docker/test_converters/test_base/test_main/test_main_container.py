@@ -8,7 +8,6 @@ from polyaxon._connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon._containers.pull_policy import PullPolicy
 from polyaxon._docker import docker_types
 from polyaxon._flow import V1Init, V1Plugins
 from polyaxon._services.values import PolyaxonServices
@@ -169,7 +168,7 @@ class TestMainContainer(BaseConverterTest):
         assert container.image == "job_docker_image"
         assert container.command == ["cmd", "-p", "-c"]
         assert container.args == ["arg1", "arg2"]
-        assert container.ports[0].__root__ == "23"
+        assert container.ports[0].get_root() == 23
         assert container.resources.to_dict() == {"cpus": "1", "memory": "256Mi"}
         assert container.volume_mounts == []
 

@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_agent import V1Agent
 
 
 class V1ListAgentsResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1Agent]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1Agent]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

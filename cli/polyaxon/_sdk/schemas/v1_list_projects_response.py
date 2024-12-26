@@ -7,7 +7,7 @@ from polyaxon._sdk.schemas.v1_project import V1Project
 
 
 class V1ListProjectsResponse(BaseAllowSchemaModel):
-    count: Optional[int]
-    results: Optional[List[V1Project]]
-    previous: Optional[StrictStr]
-    next: Optional[StrictStr]
+    count: Optional[int] = None
+    results: Optional[List[V1Project]] = None
+    previous: Optional[StrictStr] = None
+    next: Optional[StrictStr] = None

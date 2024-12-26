@@ -13,5 +13,5 @@ from polyaxon._flow.early_stopping.policies import (
 
 V1EarlyStopping = Annotated[
     Union[V1MetricEarlyStopping, V1FailureEarlyStopping],
-    Field(discriminator="kind", alias="earlyStopping"),
+    Field(discriminator="kind"),
 ]

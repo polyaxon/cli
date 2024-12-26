@@ -29,32 +29,43 @@ class TestScheduleConfigs(BaseTestCase):
 
         config_dict = {
             "kind": "cron",
-            "frequency": 2,
             "startAt": now().isoformat(),
             "endAt": now().isoformat(),
+            "frequency": 2.0,
         }
         with self.assertRaises(ValidationError):
             V1IntervalSchedule.from_dict(config_dict)
 
-        config_dict = {"frequency": 2, "startAt": now().isoformat()}
-        V1IntervalSchedule.from_dict(config_dict)
-
         config_dict = {
-            "frequency": 2,
+            "kind": "interval",
             "startAt": now().isoformat(),
-            "endAt": now().isoformat(),
+            "frequency": 2.0,
         }
-        V1IntervalSchedule.from_dict(config_dict)
+        assert V1IntervalSchedule.from_dict(config_dict).to_json() == orjson_dumps(
+            config_dict
+        )
 
         config_dict = {
             "kind": "interval",
-            "frequency": 2,
+            "startAt": now().isoformat(),
+            "endAt": now().isoformat(),
+            "frequency": 2.0,
+        }
+        assert V1IntervalSchedule.from_dict(config_dict).to_json() == orjson_dumps(
+            config_dict
+        )
+
+        config_dict = {
+            "kind": "interval",
             "startAt": now().isoformat(),
             "endAt": now().isoformat(),
             "maxRuns": 123,
+            "frequency": 2.0,
             "dependsOnPast": False,
         }
-        V1IntervalSchedule.from_dict(config_dict)
+        assert V1IntervalSchedule.from_dict(config_dict).to_json() == orjson_dumps(
+            config_dict
+        )
 
     def test_cron_schedule(self):
         config_dict = {"cron": 2, "startAt": "foo"}
@@ -70,15 +81,20 @@ class TestScheduleConfigs(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1CronSchedule.from_dict(config_dict)
 
-        config_dict = {"cron": "0 0 * * *"}
-        V1CronSchedule.from_dict(config_dict)
+        config_dict = {"kind": "cron", "cron": "0 0 * * *"}
+        assert V1CronSchedule.from_dict(config_dict).to_json() == orjson_dumps(
+            config_dict
+        )
 
         config_dict = {
+            "kind": "cron",
             "cron": "0 0 * * *",
             "startAt": now().isoformat(),
             "endAt": now().isoformat(),
         }
-        V1CronSchedule.from_dict(config_dict)
+        assert V1CronSchedule.from_dict(config_dict).to_json() == orjson_dumps(
+            config_dict
+        )
 
         config_dict = {
             "kind": "cron",
@@ -88,7 +104,9 @@ class TestScheduleConfigs(BaseTestCase):
             "maxRuns": 123,
             "dependsOnPast": False,
         }
-        V1CronSchedule.from_dict(config_dict)
+        assert V1CronSchedule.from_dict(config_dict).to_json() == orjson_dumps(
+            config_dict
+        )
 
     def test_date_schedule(self):
         config_dict = {"startAt": "foo"}
@@ -96,7 +114,9 @@ class TestScheduleConfigs(BaseTestCase):
             V1DateTimeSchedule.from_dict(config_dict)
 
         config_dict = {"kind": "datetime", "startAt": now().isoformat()}
-        V1DateTimeSchedule.from_dict(config_dict).to_dict()
+        assert V1DateTimeSchedule.from_dict(config_dict).to_json() == orjson_dumps(
+            config_dict
+        )
 
     def test_schedule(self):
         configs = [
@@ -116,7 +136,7 @@ class TestScheduleConfigs(BaseTestCase):
             },
             {
                 "kind": "datetime",
-                "startAt": "2010-01-01T00:00:00+00:00",
+                "startAt": now().isoformat(),
             },
         ]
 

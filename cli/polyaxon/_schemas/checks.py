@@ -1,7 +1,7 @@
 import os
 
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import ClassVar, Optional
 
 from clipped.utils.tz import now
 
@@ -11,9 +11,9 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 class ChecksConfig(BaseSchemaModel):
     _IDENTIFIER = "checks"
-    _INTERVAL = 30 * 60
+    _INTERVAL: ClassVar[int] = 30 * 60
 
-    last_check: Optional[datetime]
+    last_check: Optional[datetime] = None
 
     def __init__(
         self,

@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from clipped.compact.pydantic import Extra, Field, StrictInt, StrictStr
+from clipped.compact.pydantic import Field, StrictInt, StrictStr
 
 from polyaxon._deploy.schemas.celery import CeleryConfig
 from polyaxon._deploy.schemas.service_types import ServiceTypes
@@ -9,119 +9,123 @@ from polyaxon._schemas.services import BaseServiceConfig
 
 
 class DeploymentService(BaseServiceConfig):
-    enabled: Optional[bool]
-    replicas: Optional[StrictInt]
-    concurrency: Optional[StrictInt]
-    per_core: Optional[bool] = Field(alias="perCore")
-    scheme: Optional[StrictStr]
+    enabled: Optional[bool] = None
+    replicas: Optional[StrictInt] = None
+    concurrency: Optional[StrictInt] = None
+    per_core: Optional[bool] = Field(alias="perCore", default=None)
+    scheme: Optional[StrictStr] = None
 
 
 class WorkerServiceConfig(DeploymentService):
-    celery: Optional[CeleryConfig]
+    celery: Optional[CeleryConfig] = None
 
 
 class AgentServiceConfig(DeploymentService):
-    instance: Optional[StrictStr]
-    token: Optional[StrictStr]
-    watch_cluster: Optional[bool] = Field(alias="watchCluster")
-    additional_namespaces: Optional[List[str]] = Field(alias="additionalNamespaces")
-    service_account_annotations: Optional[Dict] = Field(
-        alias="serviceAccountAnnotations"
+    instance: Optional[StrictStr] = None
+    token: Optional[StrictStr] = None
+    watch_cluster: Optional[bool] = Field(alias="watchCluster", default=None)
+    additional_namespaces: Optional[List[str]] = Field(
+        alias="additionalNamespaces", default=None
     )
-    is_replica: Optional[bool] = Field(alias="isReplica")
+    service_account_annotations: Optional[Dict] = Field(
+        alias="serviceAccountAnnotations", default=None
+    )
+    is_replica: Optional[bool] = Field(alias="isReplica", default=None)
 
 
 class OperatorServiceConfig(DeploymentService):
-    skip_crd: Optional[bool] = Field(alias="skipCRD")
+    skip_crd: Optional[bool] = Field(alias="skipCRD", default=None)
 
 
 class BaseService(BaseSchemaModel):
-    name: Optional[StrictStr]
-    type: Optional[ServiceTypes]
-    port: Optional[StrictInt]
-    target_port: Optional[StrictInt] = Field(alias="targetPort")
-    node_port: Optional[StrictInt] = Field(alias="nodePort")
-    annotations: Optional[Dict]
+    name: Optional[StrictStr] = None
+    type: Optional[ServiceTypes] = None
+    port: Optional[StrictInt] = None
+    target_port: Optional[StrictInt] = Field(alias="targetPort", default=None)
+    node_port: Optional[StrictInt] = Field(alias="nodePort", default=None)
+    annotations: Optional[Dict] = None
 
     class Config:
-        extra = Extra.allow
+        extra = "allow"
 
 
 class ApiServiceConfig(DeploymentService):
-    service: Optional[BaseService]
+    service: Optional[BaseService] = None
 
 
 class HooksConfig(DeploymentService):
-    load_fixtures: Optional[bool] = Field(alias="loadFixtures")
-    tables: Optional[bool] = Field(alias="tables")
-    sync_db: Optional[bool] = Field(alias="syncdb")
-    admin_user: Optional[bool] = Field(alias="adminUser")
-    default_org: Optional[bool] = Field(alias="defaultOrg")
+    load_fixtures: Optional[bool] = Field(alias="loadFixtures", default=None)
+    tables: Optional[bool] = Field(alias="tables", default=None)
+    sync_db: Optional[bool] = Field(alias="syncdb", default=None)
+    admin_user: Optional[bool] = Field(alias="adminUser", default=None)
+    default_org: Optional[bool] = Field(alias="defaultOrg", default=None)
 
 
 class ThirdPartyService(DeploymentService):
-    persistence: Optional[Dict]
+    persistence: Optional[Dict] = None
 
     class Config:
-        extra = Extra.allow
+        extra = "allow"
 
 
 class PostgresqlConfig(ThirdPartyService):
-    auth: Optional[Dict]
-    conn_max_age: Optional[StrictInt] = Field(alias="connMaxAge")
+    auth: Optional[Dict] = None
+    conn_max_age: Optional[StrictInt] = Field(alias="connMaxAge", default=None)
 
 
 class RedisConfig(ThirdPartyService):
-    image: Optional[Dict]  # type: ignore[assignment]
-    non_broker: Optional[bool] = Field(alias="nonBroker")
-    use_password: Optional[bool] = Field(alias="usePassword")
-    auth: Optional[Dict]
+    image: Optional[Dict] = None  # type: ignore[assignment]
+    non_broker: Optional[bool] = Field(alias="nonBroker", default=None)
+    use_password: Optional[bool] = Field(alias="usePassword", default=None)
+    auth: Optional[Dict] = None
 
 
 class RabbitmqConfig(ThirdPartyService):
-    auth: Optional[Dict]
+    auth: Optional[Dict] = None
 
 
 class ExternalService(BaseSchemaModel):
-    user: Optional[StrictStr]
-    password: Optional[StrictStr]
-    host: Optional[StrictStr]
-    port: Optional[StrictInt]
-    database: Optional[StrictStr]
-    use_password: Optional[bool] = Field(alias="usePassword")
-    conn_max_age: Optional[StrictInt] = Field(alias="connMaxAge")
-    pgbouncer: Optional[Dict]
-    options: Optional[Dict]
-    use_resolver: Optional[bool] = Field(alias="useResolver")
-    corporate_proxy: Optional[StrictStr] = Field(alias="corporateProxy")
+    user: Optional[StrictStr] = None
+    password: Optional[StrictStr] = None
+    host: Optional[StrictStr] = None
+    port: Optional[StrictInt] = None
+    database: Optional[StrictStr] = None
+    use_password: Optional[bool] = Field(alias="usePassword", default=None)
+    conn_max_age: Optional[StrictInt] = Field(alias="connMaxAge", default=None)
+    pgbouncer: Optional[Dict] = None
+    options: Optional[Dict] = None
+    use_resolver: Optional[bool] = Field(alias="useResolver", default=None)
+    corporate_proxy: Optional[StrictStr] = Field(alias="corporateProxy", default=None)
 
 
 class ExternalBackend(BaseSchemaModel):
-    enabled: Optional[bool]
-    backend: Optional[StrictStr]
-    url: Optional[StrictStr]
-    options: Optional[Dict]
+    enabled: Optional[bool] = None
+    backend: Optional[StrictStr] = None
+    url: Optional[StrictStr] = None
+    options: Optional[Dict] = None
 
 
 class AuthServicesConfig(BaseSchemaModel):
-    github: Optional[ExternalBackend]
-    gitlab: Optional[ExternalBackend]
-    bitbucket: Optional[ExternalBackend]
-    google: Optional[ExternalBackend]
-    okta: Optional[ExternalBackend]
-    onelogin: Optional[ExternalBackend]
-    azuread: Optional[ExternalBackend]
+    github: Optional[ExternalBackend] = None
+    gitlab: Optional[ExternalBackend] = None
+    bitbucket: Optional[ExternalBackend] = None
+    google: Optional[ExternalBackend] = None
+    okta: Optional[ExternalBackend] = None
+    onelogin: Optional[ExternalBackend] = None
+    azuread: Optional[ExternalBackend] = None
 
 
 class ExternalServicesConfig(BaseSchemaModel):
-    redis: Optional[ExternalService]
-    rabbitmq: Optional[ExternalService]
-    postgresql: Optional[ExternalService]
-    gateway: Optional[ExternalService]
-    api: Optional[ExternalService]
-    transactions: Optional[ExternalBackend]
-    analytics: Optional[ExternalBackend]
-    metrics: Optional[ExternalBackend]
-    errors: Optional[ExternalBackend]
-    auth: Optional[AuthServicesConfig]
-    allowed_versions: Optional[List[StrictStr]] = Field(alias="allowedVersions")
+    redis: Optional[ExternalService] = None
+    rabbitmq: Optional[ExternalService] = None
+    postgresql: Optional[ExternalService] = None
+    gateway: Optional[ExternalService] = None
+    api: Optional[ExternalService] = None
+    transactions: Optional[ExternalBackend] = None
+    analytics: Optional[ExternalBackend] = None
+    metrics: Optional[ExternalBackend] = None
+    errors: Optional[ExternalBackend] = None
+    auth: Optional[AuthServicesConfig] = None
+    allowed_versions: Optional[List[StrictStr]] = Field(
+        alias="allowedVersions", default=None
+    )

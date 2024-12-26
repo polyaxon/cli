@@ -11,13 +11,13 @@ from traceml.events.schemas import SearchView
 
 
 class V1Search(BaseAllowSchemaModel):
-    uuid: Optional[UUIDStr]
-    name: Optional[StrictStr]
-    description: Optional[StrictStr]
-    tags: Optional[List[StrictStr]]
-    live_state: Optional[int]
-    view: Optional[SearchView]
-    spec: Optional[V1SearchSpec]
-    org_level: Optional[bool]
-    created_at: Optional[datetime.datetime]
-    updated_at: Optional[datetime.datetime]
+    uuid: Optional[UUIDStr] = None
+    name: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    tags: Optional[List[StrictStr]] = None
+    live_state: Optional[int] = None
+    view: Optional[SearchView] = None
+    spec: Optional[V1SearchSpec] = None
+    org_level: Optional[bool] = None
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None

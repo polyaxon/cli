@@ -5,13 +5,13 @@ from clipped.config.schema import BaseAllowSchemaModel
 
 
 class V1UserAccessData(BaseAllowSchemaModel):
-    username: Optional[StrictStr]
-    is_sa: Optional[bool]
+    username: Optional[StrictStr] = None
+    is_sa: Optional[bool] = None
 
 
 class V1UserAccess(BaseAllowSchemaModel):
-    user: Optional[StrictStr]
-    user_data: Optional[V1UserAccessData]
-    queue: Optional[StrictStr]
-    preset: Optional[StrictStr]
-    namespace: Optional[StrictStr]
+    user: Optional[StrictStr] = None
+    user_data: Optional[V1UserAccessData] = None
+    queue: Optional[StrictStr] = None
+    preset: Optional[StrictStr] = None
+    namespace: Optional[StrictStr] = None

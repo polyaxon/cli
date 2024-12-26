@@ -1,7 +1,7 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._schemas.lifecycle import V1Stage
 from polyaxon._sdk.base_api import BaseApi
@@ -19,7 +19,7 @@ from polyaxon.exceptions import ApiTypeError
 
 
 class ProjectsV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def archive_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -56,7 +56,7 @@ class ProjectsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.archive_project_with_http_info(owner, name, **kwargs)
 
-    @validate_arguments
+    @validate_call
     def archive_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -175,7 +175,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def bookmark_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -212,7 +212,7 @@ class ProjectsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.bookmark_project_with_http_info(owner, name, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def bookmark_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -331,7 +331,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -368,7 +368,7 @@ class ProjectsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.create_project_with_http_info(owner, body, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -500,7 +500,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_team_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -542,7 +542,7 @@ class ProjectsV1Api(BaseApi):
             owner, team, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_team_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -677,7 +677,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_version(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -727,7 +727,7 @@ class ProjectsV1Api(BaseApi):
             owner, project, version_kind, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_version_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -874,7 +874,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def create_version_stage(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -930,7 +930,7 @@ class ProjectsV1Api(BaseApi):
             owner, entity, kind, name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def create_version_stage_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1085,7 +1085,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1122,7 +1122,7 @@ class ProjectsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.delete_project_with_http_info(owner, name, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1241,7 +1241,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def delete_version(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1291,7 +1291,7 @@ class ProjectsV1Api(BaseApi):
             owner, entity, kind, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def delete_version_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1425,7 +1425,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def disable_project_ci(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1464,7 +1464,7 @@ class ProjectsV1Api(BaseApi):
             owner, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def disable_project_ci_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1583,7 +1583,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def enable_project_ci(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1622,7 +1622,7 @@ class ProjectsV1Api(BaseApi):
             owner, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def enable_project_ci_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1741,7 +1741,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1778,7 +1778,7 @@ class ProjectsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.get_project_with_http_info(owner, name, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1902,7 +1902,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_project_activities(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1974,7 +1974,7 @@ class ProjectsV1Api(BaseApi):
             owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_project_activities_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2155,7 +2155,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_project_settings(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2194,7 +2194,7 @@ class ProjectsV1Api(BaseApi):
             owner, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_project_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2318,7 +2318,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_project_stats(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2413,7 +2413,7 @@ class ProjectsV1Api(BaseApi):
             **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_project_stats_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2614,7 +2614,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_version(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2664,7 +2664,7 @@ class ProjectsV1Api(BaseApi):
             owner, entity, kind, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_version_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2803,7 +2803,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def get_version_stages(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2853,7 +2853,7 @@ class ProjectsV1Api(BaseApi):
             owner, entity, kind, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def get_version_stages_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -2992,7 +2992,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_archived_projects(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -3049,7 +3049,7 @@ class ProjectsV1Api(BaseApi):
             user, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_archived_projects_with_http_info(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -3199,7 +3199,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_bookmarked_projects(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -3256,7 +3256,7 @@ class ProjectsV1Api(BaseApi):
             user, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_bookmarked_projects_with_http_info(
         self,
         user: Annotated[StrictStr, Field(..., description="User")],
@@ -3406,7 +3406,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_project_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3473,7 +3473,7 @@ class ProjectsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_project_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3646,7 +3646,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_projects(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3713,7 +3713,7 @@ class ProjectsV1Api(BaseApi):
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_projects_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3886,7 +3886,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_version_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -3951,7 +3951,7 @@ class ProjectsV1Api(BaseApi):
             owner, entity, kind, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_version_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4122,7 +4122,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def list_versions(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4187,7 +4187,7 @@ class ProjectsV1Api(BaseApi):
             owner, entity, kind, offset, limit, sort, query, no_page, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def list_versions_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4358,7 +4358,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4400,7 +4400,7 @@ class ProjectsV1Api(BaseApi):
             owner, project_name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4537,7 +4537,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_project_settings(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4581,7 +4581,7 @@ class ProjectsV1Api(BaseApi):
             owner, project, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_project_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4720,7 +4720,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def patch_version(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4779,7 +4779,7 @@ class ProjectsV1Api(BaseApi):
             owner, project, version_kind, version_name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def patch_version_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4937,7 +4937,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def restore_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -4974,7 +4974,7 @@ class ProjectsV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.restore_project_with_http_info(owner, name, **kwargs)  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def restore_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5093,7 +5093,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def transfer_version(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5152,7 +5152,7 @@ class ProjectsV1Api(BaseApi):
             owner, project, version_kind, version_name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def transfer_version_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5305,7 +5305,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def unbookmark_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5344,7 +5344,7 @@ class ProjectsV1Api(BaseApi):
             owner, name, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def unbookmark_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5463,7 +5463,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_project(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5505,7 +5505,7 @@ class ProjectsV1Api(BaseApi):
             owner, project_name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5642,7 +5642,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_project_settings(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5686,7 +5686,7 @@ class ProjectsV1Api(BaseApi):
             owner, project, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_project_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5825,7 +5825,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def update_version(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -5884,7 +5884,7 @@ class ProjectsV1Api(BaseApi):
             owner, project, version_kind, version_name, body, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def update_version_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6042,7 +6042,7 @@ class ProjectsV1Api(BaseApi):
             _request_auth=_params.get("_request_auth"),
         )
 
-    @validate_arguments
+    @validate_call
     def upload_project_artifact(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -6101,7 +6101,7 @@ class ProjectsV1Api(BaseApi):
             owner, project, uuid, uploadfile, path, overwrite, **kwargs
         )  # noqa: E501
 
-    @validate_arguments
+    @validate_call
     def upload_project_artifact_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],

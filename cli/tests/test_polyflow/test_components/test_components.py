@@ -1,7 +1,7 @@
 import pytest
 
-from clipped.compact.pydantic import ValidationError
-from clipped.utils.tz import local_datetime, now
+from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
+from clipped.utils.tz import now
 
 from polyaxon import types
 from polyaxon._flow import V1Component, V1RunKind, ops_params
@@ -319,12 +319,21 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        ops_params.validate_params(
-            params={"param1": {"value": 12.1}},
-            inputs=config.inputs,
-            outputs=config.outputs,
-            is_template=False,
-        )
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(PolyaxonValidationError):
+                ops_params.validate_params(
+                    params={"param1": {"value": 12.1}},
+                    inputs=config.inputs,
+                    outputs=config.outputs,
+                    is_template=False,
+                )
+        else:
+            ops_params.validate_params(
+                params={"param1": {"value": 12.1}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
@@ -333,12 +342,21 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        ops_params.validate_params(
-            params={"param1": {"value": "12.1"}},
-            inputs=config.inputs,
-            outputs=config.outputs,
-            is_template=False,
-        )
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(PolyaxonValidationError):
+                ops_params.validate_params(
+                    params={"param1": {"value": "12.1"}},
+                    inputs=config.inputs,
+                    outputs=config.outputs,
+                    is_template=False,
+                )
+        else:
+            ops_params.validate_params(
+                params={"param1": {"value": "12.1"}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "12.1"}},
@@ -487,12 +505,21 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        ops_params.validate_params(
-            params={"param1": {"value": 12.1}},
-            inputs=config.inputs,
-            outputs=config.outputs,
-            is_template=False,
-        )
+        if PYDANTIC_VERSION.startswith("2."):
+            with self.assertRaises(PolyaxonValidationError):
+                ops_params.validate_params(
+                    params={"param1": {"value": 12.1}},
+                    inputs=config.inputs,
+                    outputs=config.outputs,
+                    is_template=False,
+                )
+        else:
+            ops_params.validate_params(
+                params={"param1": {"value": 12.1}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
@@ -699,7 +726,7 @@ class TestComponentsConfigs(BaseTestCase):
             },
             "schedule": {
                 "kind": "datetime",
-                "startAt": local_datetime(now()).isoformat(),
+                "startAt": now().isoformat(),
             },
             "termination": {"timeout": 1000},
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},

@@ -114,7 +114,7 @@ class V1CronSchedule(BaseSchemaModel):
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     cron: StrictStr
-    start_at: Optional[DatetimeOrRef] = Field(alias="startAt")
-    end_at: Optional[DatetimeOrRef] = Field(alias="endAt")
-    max_runs: Optional[IntOrRef] = Field(alias="maxRuns")
-    depends_on_past: Optional[BoolOrRef] = Field(alias="dependsOnPast")
+    start_at: Optional[DatetimeOrRef] = Field(alias="startAt", default=None)
+    end_at: Optional[DatetimeOrRef] = Field(alias="endAt", default=None)
+    max_runs: Optional[IntOrRef] = Field(alias="maxRuns", default=None)
+    depends_on_past: Optional[BoolOrRef] = Field(alias="dependsOnPast", default=None)

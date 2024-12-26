@@ -143,7 +143,7 @@ class V1FileType(BaseTypeConfig):
 
     _IDENTIFIER = "file"
 
-    kind: Optional[Union[V1ArtifactKind, RefField]]
+    kind: Optional[Union[V1ArtifactKind, RefField]] = None
     content: StrictStr
-    filename: Optional[StrictStr]
-    chmod: Optional[StrictStr]
+    filename: Optional[StrictStr] = None
+    chmod: Optional[StrictStr] = None

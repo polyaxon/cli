@@ -8,12 +8,12 @@ from polyaxon._sdk.schemas.v1_settings_catalog import V1SettingsCatalog
 
 
 class V1RunSettings(BaseAllowSchemaModel):
-    namespace: Optional[StrictStr]
-    agent: Optional[V1SettingsCatalog]
-    queue: Optional[V1SettingsCatalog]
-    artifacts_store: Optional[V1SettingsCatalog]
-    tensorboard: Optional[Dict[str, Any]]
-    build: Optional[Dict[str, Any]]
-    component: Optional[Dict[str, Any]]
-    models: Optional[List[V1RunReferenceCatalog]]
-    artifacts: Optional[List[V1RunReferenceCatalog]]
+    namespace: Optional[StrictStr] = None
+    agent: Optional[V1SettingsCatalog] = None
+    queue: Optional[V1SettingsCatalog] = None
+    artifacts_store: Optional[V1SettingsCatalog] = None
+    tensorboard: Optional[Dict[str, Any]] = None
+    build: Optional[Dict[str, Any]] = None
+    component: Optional[Dict[str, Any]] = None
+    models: Optional[List[V1RunReferenceCatalog]] = None
+    artifacts: Optional[List[V1RunReferenceCatalog]] = None

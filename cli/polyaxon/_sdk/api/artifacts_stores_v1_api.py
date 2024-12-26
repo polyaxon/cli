@@ -1,14 +1,14 @@
 from typing import Optional
 from typing_extensions import Annotated
 
-from clipped.compact.pydantic import Field, StrictStr, validate_arguments
+from clipped.compact.pydantic import Field, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon.exceptions import ApiTypeError
 
 
 class ArtifactsStoresV1Api(BaseApi):
-    @validate_arguments
+    @validate_call
     def upload_artifact(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -62,7 +62,7 @@ class ArtifactsStoresV1Api(BaseApi):
             owner, uuid, uploadfile, path, overwrite, **kwargs
         )
 
-    @validate_arguments
+    @validate_call
     def upload_artifact_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
