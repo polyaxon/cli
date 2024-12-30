@@ -11,7 +11,7 @@ def validate(spec, data):
 
     def validate_keys(section, config, section_data):
         extra_args = [
-            key for key in section_data.keys() if key not in config.__fields__.keys()
+            key for key in section_data.keys() if key not in config.model_fields.keys()
         ]
         if extra_args:
             raise PolyaxonfileError(

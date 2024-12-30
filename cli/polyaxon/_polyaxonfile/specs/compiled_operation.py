@@ -348,7 +348,7 @@ class CompiledOperationSpecification(BaseSpecification):
             "conditions",
             "skip_on_upstream_skip",
         }
-        patch_keys = patch_keys.intersection(preset.__fields_set__)
+        patch_keys = patch_keys.intersection(preset.model_fields_set)
         patch_data = {k: getattr(preset, k) for k in patch_keys}
         patch_compiled = V1CompiledOperation.construct(**patch_data)
         return config.patch(patch_compiled, strategy=preset.patch_strategy)

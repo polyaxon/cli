@@ -13,4 +13,6 @@ class UIConfig(BaseSchemaModel):
     assets_version: Optional[StrictStr] = Field(alias="assetsVersion", default=None)
     admin_enabled: Optional[bool] = Field(alias="adminEnabled", default=None)
     single_url: Optional[bool] = Field(alias="singleUrl", default=None)
-    default_streams_url: Optional[StrictStr] = Field(alias="defaultStreamsUrl", default=None)
+    default_streams_url: Optional[StrictStr] = Field(
+        alias="defaultStreamsUrl", default=None
+    )

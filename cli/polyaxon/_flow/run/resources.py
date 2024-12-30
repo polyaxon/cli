@@ -1,4 +1,4 @@
-from typing import ClassVar, Optional, Union, Set
+from typing import ClassVar, Optional, Set, Union
 
 from clipped.compact.pydantic import StrictStr
 from clipped.types.numbers import StrictIntOrFloat

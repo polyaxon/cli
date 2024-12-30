@@ -107,7 +107,7 @@ class OperationSpecification(BaseSpecification):
             "conditions",
             "skip_on_upstream_skip",
         }
-        patch_keys = patch_keys.intersection(config.__fields_set__)
+        patch_keys = patch_keys.intersection(config.model_fields_set)
         patch_data = {k: getattr(config, k) for k in patch_keys}
         patch_compiled = V1CompiledOperation.construct(contexts=contexts, **patch_data)
 
