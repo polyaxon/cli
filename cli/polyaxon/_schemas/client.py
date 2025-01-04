@@ -113,7 +113,7 @@ class ClientConfig(BaseSchemaModel):
         token: Optional[str] = None,
         use_cloud_host: bool = False,
         retries: Optional[int] = None,
-        **data
+        **data,
     ):
         host = (
             clean_host(host or LOCALHOST) if not use_cloud_host else POLYAXON_CLOUD_HOST

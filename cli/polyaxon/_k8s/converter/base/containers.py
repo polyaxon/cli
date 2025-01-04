@@ -73,7 +73,7 @@ class ContainerMixin(BaseConverter):
 
     @staticmethod
     def _sanitize_resources(
-        resources: Union[k8s_schemas.V1ResourceRequirements, Dict]
+        resources: Union[k8s_schemas.V1ResourceRequirements, Dict],
     ) -> Optional[k8s_schemas.V1ResourceRequirements]:
         def validate_resources(r_field: Dict) -> Dict:
             if not r_field:

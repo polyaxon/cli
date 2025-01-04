@@ -16,7 +16,7 @@ class TagsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs
+        **kwargs,
     ) -> V1Tag:  # noqa: E501
         """Create tag  # noqa: E501
 
@@ -53,7 +53,7 @@ class TagsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create tag  # noqa: E501
 
@@ -190,7 +190,7 @@ class TagsV1Api(BaseApi):
         cascade: Annotated[
             Optional[bool], Field(description="Flag to handle sub-entities.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete tag  # noqa: E501
 
@@ -222,9 +222,7 @@ class TagsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_tag_with_http_info(
-            owner, uuid, cascade, **kwargs
-        )  # noqa: E501
+        return self.delete_tag_with_http_info(owner, uuid, cascade, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_tag_with_http_info(
@@ -236,7 +234,7 @@ class TagsV1Api(BaseApi):
         cascade: Annotated[
             Optional[bool], Field(description="Flag to handle sub-entities.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete tag  # noqa: E501
 
@@ -361,7 +359,7 @@ class TagsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Tag:  # noqa: E501
         """Get tag  # noqa: E501
 
@@ -400,7 +398,7 @@ class TagsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get tag  # noqa: E501
 
@@ -540,7 +538,7 @@ class TagsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListTagsResponse:  # noqa: E501
         """List tags  # noqa: E501
 
@@ -607,7 +605,7 @@ class TagsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List tags  # noqa: E501
 
@@ -780,7 +778,7 @@ class TagsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Load tags  # noqa: E501
 
@@ -847,7 +845,7 @@ class TagsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Load tags  # noqa: E501
 
@@ -1005,7 +1003,7 @@ class TagsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs
+        **kwargs,
     ) -> V1Tag:  # noqa: E501
         """Patch tag  # noqa: E501
 
@@ -1037,9 +1035,7 @@ class TagsV1Api(BaseApi):
         :rtype: V1Tag
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_tag_with_http_info(
-            owner, tag_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.patch_tag_with_http_info(owner, tag_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_tag_with_http_info(
@@ -1047,7 +1043,7 @@ class TagsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch tag  # noqa: E501
 
@@ -1183,7 +1179,7 @@ class TagsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Sync tags  # noqa: E501
 
@@ -1220,7 +1216,7 @@ class TagsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Sync tags  # noqa: E501
 
@@ -1348,7 +1344,7 @@ class TagsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs
+        **kwargs,
     ) -> V1Tag:  # noqa: E501
         """Update tag  # noqa: E501
 
@@ -1380,9 +1376,7 @@ class TagsV1Api(BaseApi):
         :rtype: V1Tag
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_tag_with_http_info(
-            owner, tag_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.update_tag_with_http_info(owner, tag_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_tag_with_http_info(
@@ -1390,7 +1384,7 @@ class TagsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update tag  # noqa: E501
 

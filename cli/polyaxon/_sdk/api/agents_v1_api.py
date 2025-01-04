@@ -26,7 +26,7 @@ class AgentsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """collect agent  # noqa: E501
 
@@ -58,9 +58,7 @@ class AgentsV1Api(BaseApi):
         :rtype: object
         """
         kwargs["_return_http_data_only"] = True
-        return self.collect_agent_data_with_http_info(
-            namespace, owner, uuid, **kwargs
-        )  # noqa: E501
+        return self.collect_agent_data_with_http_info(namespace, owner, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def collect_agent_data_with_http_info(
@@ -70,7 +68,7 @@ class AgentsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """collect agent  # noqa: E501
 
@@ -194,7 +192,7 @@ class AgentsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ) -> V1Agent:  # noqa: E501
         """Create agent  # noqa: E501
 
@@ -231,7 +229,7 @@ class AgentsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create agent  # noqa: E501
 
@@ -366,7 +364,7 @@ class AgentsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1AgentStatusBodyRequest,
-        **kwargs
+        **kwargs,
     ) -> V1Status:  # noqa: E501
         """Create new agent status  # noqa: E501
 
@@ -398,9 +396,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Status
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_agent_status_with_http_info(
-            owner, uuid, body, **kwargs
-        )  # noqa: E501
+        return self.create_agent_status_with_http_info(owner, uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_agent_status_with_http_info(
@@ -410,7 +406,7 @@ class AgentsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1AgentStatusBodyRequest,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create new agent status  # noqa: E501
 
@@ -552,7 +548,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete agent  # noqa: E501
 
@@ -584,9 +580,7 @@ class AgentsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_agent_with_http_info(
-            owner, uuid, entity, **kwargs
-        )  # noqa: E501
+        return self.delete_agent_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_agent_with_http_info(
@@ -599,7 +593,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete agent  # noqa: E501
 
@@ -728,7 +722,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Agent:  # noqa: E501
         """Get agent  # noqa: E501
 
@@ -760,9 +754,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Agent
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_agent_with_http_info(
-            owner, uuid, entity, **kwargs
-        )  # noqa: E501
+        return self.get_agent_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
     def get_agent_with_http_info(
@@ -775,7 +767,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get agent  # noqa: E501
 
@@ -909,7 +901,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Agent:  # noqa: E501
         """Get agent config  # noqa: E501
 
@@ -941,9 +933,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Agent
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_agent_config_with_http_info(
-            owner, uuid, entity, **kwargs
-        )  # noqa: E501
+        return self.get_agent_config_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
     def get_agent_config_with_http_info(
@@ -956,7 +946,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get agent config  # noqa: E501
 
@@ -1097,7 +1087,7 @@ class AgentsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Logs:  # noqa: E501
         """Get run logs  # noqa: E501
 
@@ -1159,7 +1149,7 @@ class AgentsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run logs  # noqa: E501
 
@@ -1310,7 +1300,7 @@ class AgentsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1AgentStateResponse:  # noqa: E501
         """Get State (queues/runs)  # noqa: E501
 
@@ -1349,7 +1339,7 @@ class AgentsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get State (queues/runs)  # noqa: E501
 
@@ -1479,7 +1469,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Status:  # noqa: E501
         """Get Agent statuses  # noqa: E501
 
@@ -1511,9 +1501,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Status
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_agent_statuses_with_http_info(
-            owner, uuid, entity, **kwargs
-        )  # noqa: E501
+        return self.get_agent_statuses_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
     def get_agent_statuses_with_http_info(
@@ -1526,7 +1514,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get Agent statuses  # noqa: E501
 
@@ -1654,7 +1642,7 @@ class AgentsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Get agent token  # noqa: E501
 
@@ -1693,7 +1681,7 @@ class AgentsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get agent token  # noqa: E501
 
@@ -1816,7 +1804,7 @@ class AgentsV1Api(BaseApi):
     def get_global_state(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        **kwargs
+        **kwargs,
     ) -> V1AgentStateResponse:  # noqa: E501
         """Get Global State (queues/runs)  # noqa: E501
 
@@ -1850,7 +1838,7 @@ class AgentsV1Api(BaseApi):
     def get_global_state_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get Global State (queues/runs)  # noqa: E501
 
@@ -1979,7 +1967,7 @@ class AgentsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Inspect an agent's service full conditions  # noqa: E501
 
@@ -2041,7 +2029,7 @@ class AgentsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Inspect an agent's service full conditions  # noqa: E501
 
@@ -2206,7 +2194,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListAgentsResponse:  # noqa: E501
         """List agents names  # noqa: E501
 
@@ -2273,7 +2261,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List agents names  # noqa: E501
 
@@ -2446,7 +2434,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListAgentsResponse:  # noqa: E501
         """List agents  # noqa: E501
 
@@ -2513,7 +2501,7 @@ class AgentsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List agents  # noqa: E501
 
@@ -2671,7 +2659,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ) -> V1Agent:  # noqa: E501
         """Patch agent  # noqa: E501
 
@@ -2703,9 +2691,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Agent
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_agent_with_http_info(
-            owner, agent_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.patch_agent_with_http_info(owner, agent_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_agent_with_http_info(
@@ -2713,7 +2699,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch agent  # noqa: E501
 
@@ -2850,7 +2836,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Patch agent token  # noqa: E501
 
@@ -2882,9 +2868,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Token
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_agent_token_with_http_info(
-            owner, entity, body, **kwargs
-        )  # noqa: E501
+        return self.patch_agent_token_with_http_info(owner, entity, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_agent_token_with_http_info(
@@ -2892,7 +2876,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch agent token  # noqa: E501
 
@@ -3031,7 +3015,7 @@ class AgentsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1AgentReconcileBodyRequest,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Reconcile agent  # noqa: E501
 
@@ -3063,9 +3047,7 @@ class AgentsV1Api(BaseApi):
         :rtype: object
         """
         kwargs["_return_http_data_only"] = True
-        return self.reconcile_agent_with_http_info(
-            owner, uuid, body, **kwargs
-        )  # noqa: E501
+        return self.reconcile_agent_with_http_info(owner, uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def reconcile_agent_with_http_info(
@@ -3075,7 +3057,7 @@ class AgentsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1AgentReconcileBodyRequest,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Reconcile agent  # noqa: E501
 
@@ -3209,7 +3191,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Sync agent  # noqa: E501
 
@@ -3241,9 +3223,7 @@ class AgentsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.sync_agent_with_http_info(
-            owner, agent_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.sync_agent_with_http_info(owner, agent_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def sync_agent_with_http_info(
@@ -3251,7 +3231,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Sync agent  # noqa: E501
 
@@ -3382,7 +3362,7 @@ class AgentsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[Optional[Dict], Field(..., description="Cron body")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1AgentStateResponse:  # noqa: E501
         """Global Cron agent  # noqa: E501
 
@@ -3419,7 +3399,7 @@ class AgentsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[Optional[Dict], Field(..., description="Cron body")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Cron agent  # noqa: E501
 
@@ -3548,7 +3528,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ) -> V1Agent:  # noqa: E501
         """Update agent  # noqa: E501
 
@@ -3580,9 +3560,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Agent
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_agent_with_http_info(
-            owner, agent_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.update_agent_with_http_info(owner, agent_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_agent_with_http_info(
@@ -3590,7 +3568,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update agent  # noqa: E501
 
@@ -3727,7 +3705,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ) -> V1Agent:  # noqa: E501
         """Update agent config  # noqa: E501
 
@@ -3769,7 +3747,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         agent_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Agent, Field(..., description="Agent body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update agent config  # noqa: E501
 
@@ -3906,7 +3884,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Update agent token  # noqa: E501
 
@@ -3938,9 +3916,7 @@ class AgentsV1Api(BaseApi):
         :rtype: V1Token
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_agent_token_with_http_info(
-            owner, entity, body, **kwargs
-        )  # noqa: E501
+        return self.update_agent_token_with_http_info(owner, entity, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_agent_token_with_http_info(
@@ -3948,7 +3924,7 @@ class AgentsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update agent token  # noqa: E501
 

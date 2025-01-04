@@ -18,7 +18,7 @@ class ProjectDashboardsV1Api(BaseApi):
             StrictStr, Field(..., description="Project under namespace")
         ],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:
         """Create project dashboard
 
@@ -62,7 +62,7 @@ class ProjectDashboardsV1Api(BaseApi):
             StrictStr, Field(..., description="Project under namespace")
         ],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ):
         """Create project dashboard
 
@@ -206,7 +206,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete project dashboard  # noqa: E501
 
@@ -255,7 +255,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete project dashboard  # noqa: E501
 
@@ -386,7 +386,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:  # noqa: E501
         """Get project dashboard  # noqa: E501
 
@@ -418,9 +418,7 @@ class ProjectDashboardsV1Api(BaseApi):
         :rtype: V1Dashboard
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_project_dashboard_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_project_dashboard_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_project_dashboard_with_http_info(
@@ -435,7 +433,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get project dashboard  # noqa: E501
 
@@ -582,7 +580,7 @@ class ProjectDashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListDashboardsResponse:  # noqa: E501
         """List project dashboard  # noqa: E501
 
@@ -654,7 +652,7 @@ class ProjectDashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List project dashboard  # noqa: E501
 
@@ -835,7 +833,7 @@ class ProjectDashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListDashboardsResponse:  # noqa: E501
         """List project dashboards  # noqa: E501
 
@@ -907,7 +905,7 @@ class ProjectDashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List project dashboards  # noqa: E501
 
@@ -1073,7 +1071,7 @@ class ProjectDashboardsV1Api(BaseApi):
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:  # noqa: E501
         """Patch project dashboard  # noqa: E501
 
@@ -1120,7 +1118,7 @@ class ProjectDashboardsV1Api(BaseApi):
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch project dashboard  # noqa: E501
 
@@ -1268,7 +1266,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Promote project dashboard  # noqa: E501
 
@@ -1317,7 +1315,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Promote project dashboard  # noqa: E501
 
@@ -1444,7 +1442,7 @@ class ProjectDashboardsV1Api(BaseApi):
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:  # noqa: E501
         """Update project dashboard  # noqa: E501
 
@@ -1491,7 +1489,7 @@ class ProjectDashboardsV1Api(BaseApi):
         ],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update project dashboard  # noqa: E501
 

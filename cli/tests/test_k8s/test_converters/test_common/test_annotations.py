@@ -99,5 +99,5 @@ class TestAnnotations(BaseTestCase):
             **store.annotations,
             **init_conn.annotations,
             **conn1.annotations,
-            **conn2.annotations
+            **conn2.annotations,
         )

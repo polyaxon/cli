@@ -170,7 +170,7 @@ class UsersV1Api(BaseApi):
     def delete_token(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete token  # noqa: E501
 
@@ -204,7 +204,7 @@ class UsersV1Api(BaseApi):
     def delete_token_with_http_info(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete token  # noqa: E501
 
@@ -324,7 +324,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListActivitiesResponse:  # noqa: E501
         """User History  # noqa: E501
 
@@ -378,7 +378,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """User History  # noqa: E501
 
@@ -524,7 +524,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """User suggestions  # noqa: E501
 
@@ -578,7 +578,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """User suggestions  # noqa: E501
 
@@ -714,7 +714,7 @@ class UsersV1Api(BaseApi):
     def get_token(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Get token  # noqa: E501
 
@@ -748,7 +748,7 @@ class UsersV1Api(BaseApi):
     def get_token_with_http_info(
         self,
         uuid: Annotated[StrictStr, Field(..., description="UUid of the namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get token  # noqa: E501
 
@@ -1008,7 +1008,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """User workspaces  # noqa: E501
 
@@ -1062,7 +1062,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """User workspaces  # noqa: E501
 
@@ -1208,7 +1208,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListTokenResponse:  # noqa: E501
         """List tokens  # noqa: E501
 
@@ -1262,7 +1262,7 @@ class UsersV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List tokens  # noqa: E501
 
@@ -1399,7 +1399,7 @@ class UsersV1Api(BaseApi):
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Patch token  # noqa: E501
 
@@ -1436,7 +1436,7 @@ class UsersV1Api(BaseApi):
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch token  # noqa: E501
 
@@ -1715,7 +1715,7 @@ class UsersV1Api(BaseApi):
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Update token  # noqa: E501
 
@@ -1745,16 +1745,14 @@ class UsersV1Api(BaseApi):
         :rtype: V1Token
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_token_with_http_info(
-            token_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.update_token_with_http_info(token_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_token_with_http_info(
         self,
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update token  # noqa: E501
 

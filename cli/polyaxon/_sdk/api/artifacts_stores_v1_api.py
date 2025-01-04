@@ -22,7 +22,7 @@ class ArtifactsStoresV1Api(BaseApi):
         overwrite: Annotated[
             Optional[bool], Field(description="File path query params.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Upload artifact to a store
 
@@ -76,7 +76,7 @@ class ArtifactsStoresV1Api(BaseApi):
         overwrite: Annotated[
             Optional[bool], Field(description="File path query params.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):
         """Upload artifact to a store
 

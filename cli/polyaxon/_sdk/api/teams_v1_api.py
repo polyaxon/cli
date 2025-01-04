@@ -28,7 +28,7 @@ class TeamsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Team, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ) -> V1Team:
         """Create team
 
@@ -65,7 +65,7 @@ class TeamsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Team, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ):
         """Create team
 
@@ -198,7 +198,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team")],
         body: Annotated[V1TeamMember, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ) -> V1TeamMember:  # noqa: E501
         """Create team member  # noqa: E501
 
@@ -230,9 +230,7 @@ class TeamsV1Api(BaseApi):
         :rtype: V1TeamMember
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_team_member_with_http_info(
-            owner, team, body, **kwargs
-        )  # noqa: E501
+        return self.create_team_member_with_http_info(owner, team, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_team_member_with_http_info(
@@ -240,7 +238,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team")],
         body: Annotated[V1TeamMember, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create team member  # noqa: E501
 
@@ -376,7 +374,7 @@ class TeamsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete team  # noqa: E501
 
@@ -413,7 +411,7 @@ class TeamsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete team  # noqa: E501
 
@@ -533,7 +531,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team under namespace")],
         user: Annotated[StrictStr, Field(..., description="Member under team")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete team member details  # noqa: E501
 
@@ -565,9 +563,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_team_member_with_http_info(
-            owner, team, user, **kwargs
-        )  # noqa: E501
+        return self.delete_team_member_with_http_info(owner, team, user, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_team_member_with_http_info(
@@ -575,7 +571,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team under namespace")],
         user: Annotated[StrictStr, Field(..., description="Member under team")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete team member details  # noqa: E501
 
@@ -699,7 +695,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete cross-project runs selection  # noqa: E501
 
@@ -731,9 +727,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_team_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.delete_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_team_runs_with_http_info(
@@ -741,7 +735,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete cross-project runs selection  # noqa: E501
 
@@ -870,7 +864,7 @@ class TeamsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> V1Team:  # noqa: E501
         """Get team  # noqa: E501
 
@@ -907,7 +901,7 @@ class TeamsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get team  # noqa: E501
 
@@ -1050,7 +1044,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListActivitiesResponse:  # noqa: E501
         """Get organization activities  # noqa: E501
 
@@ -1122,7 +1116,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization activities  # noqa: E501
 
@@ -1289,7 +1283,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team under namespace")],
         user: Annotated[StrictStr, Field(..., description="Member under team")],
-        **kwargs
+        **kwargs,
     ) -> V1TeamMember:  # noqa: E501
         """Get team member details  # noqa: E501
 
@@ -1321,9 +1315,7 @@ class TeamsV1Api(BaseApi):
         :rtype: V1TeamMember
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_team_member_with_http_info(
-            owner, team, user, **kwargs
-        )  # noqa: E501
+        return self.get_team_member_with_http_info(owner, team, user, **kwargs)  # noqa: E501
 
     @validate_call
     def get_team_member_with_http_info(
@@ -1331,7 +1323,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team under namespace")],
         user: Annotated[StrictStr, Field(..., description="Member under team")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get team member details  # noqa: E501
 
@@ -1467,7 +1459,7 @@ class TeamsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Get a run in a team  # noqa: E501
 
@@ -1499,9 +1491,7 @@ class TeamsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_team_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_team_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_team_run_with_http_info(
@@ -1516,7 +1506,7 @@ class TeamsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get a run in a team  # noqa: E501
 
@@ -1661,7 +1651,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunsResponse:  # noqa: E501
         """Get all runs in a team  # noqa: E501
 
@@ -1733,7 +1723,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get all runs in a team  # noqa: E501
 
@@ -1923,7 +1913,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Get team stats  # noqa: E501
 
@@ -1986,7 +1976,7 @@ class TeamsV1Api(BaseApi):
             aggregate,
             groupby,
             trunc,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -2018,7 +2008,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get team stats  # noqa: E501
 
@@ -2216,7 +2206,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListProjectVersionsResponse:  # noqa: E501
         """Get all runs in a team  # noqa: E501
 
@@ -2281,7 +2271,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get all runs in a team  # noqa: E501
 
@@ -2442,7 +2432,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Invalidate cross-project runs selection  # noqa: E501
 
@@ -2474,9 +2464,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.invalidate_team_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.invalidate_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def invalidate_team_runs_with_http_info(
@@ -2484,7 +2472,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Invalidate cross-project runs selection  # noqa: E501
 
@@ -2632,7 +2620,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListTeamMembersResponse:  # noqa: E501
         """Get team members  # noqa: E501
 
@@ -2704,7 +2692,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get team members  # noqa: E501
 
@@ -2882,7 +2870,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListTeamsResponse:  # noqa: E501
         """List teams names  # noqa: E501
 
@@ -2949,7 +2937,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List teams names  # noqa: E501
 
@@ -3122,7 +3110,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListTeamsResponse:  # noqa: E501
         """List teams  # noqa: E501
 
@@ -3189,7 +3177,7 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List teams  # noqa: E501
 
@@ -3347,7 +3335,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team_name: Annotated[StrictStr, Field(..., description="Name")],
         body: Annotated[V1Team, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ) -> V1Team:  # noqa: E501
         """Patch team  # noqa: E501
 
@@ -3379,9 +3367,7 @@ class TeamsV1Api(BaseApi):
         :rtype: V1Team
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_team_with_http_info(
-            owner, team_name, body, **kwargs
-        )  # noqa: E501
+        return self.patch_team_with_http_info(owner, team_name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_team_with_http_info(
@@ -3389,7 +3375,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team_name: Annotated[StrictStr, Field(..., description="Name")],
         body: Annotated[V1Team, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch team  # noqa: E501
 
@@ -3527,7 +3513,7 @@ class TeamsV1Api(BaseApi):
         team: Annotated[StrictStr, Field(..., description="Team")],
         member_user: Annotated[StrictStr, Field(..., description="User")],
         body: Annotated[V1TeamMember, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ) -> V1TeamMember:  # noqa: E501
         """Patch team member  # noqa: E501
 
@@ -3572,7 +3558,7 @@ class TeamsV1Api(BaseApi):
         team: Annotated[StrictStr, Field(..., description="Team")],
         member_user: Annotated[StrictStr, Field(..., description="User")],
         body: Annotated[V1TeamMember, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch team member  # noqa: E501
 
@@ -3713,7 +3699,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Restore cross-project runs selection  # noqa: E501
 
@@ -3745,9 +3731,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.restore_team_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.restore_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def restore_team_runs_with_http_info(
@@ -3755,7 +3739,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Restore cross-project runs selection  # noqa: E501
 
@@ -3885,7 +3869,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Skip cross-project runs selection  # noqa: E501
 
@@ -3917,9 +3901,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.skip_team_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.skip_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def skip_team_runs_with_http_info(
@@ -3927,7 +3909,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Skip cross-project runs selection  # noqa: E501
 
@@ -4057,7 +4039,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Stop cross-project runs selection  # noqa: E501
 
@@ -4089,9 +4071,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.stop_team_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.stop_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def stop_team_runs_with_http_info(
@@ -4099,7 +4079,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Stop cross-project runs selection  # noqa: E501
 
@@ -4229,7 +4209,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Tag cross-project runs selection  # noqa: E501
 
@@ -4261,9 +4241,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.tag_team_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.tag_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def tag_team_runs_with_http_info(
@@ -4271,7 +4249,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Tag cross-project runs selection  # noqa: E501
 
@@ -4401,7 +4379,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Transfer cross-project runs selection to a new project  # noqa: E501
 
@@ -4433,9 +4411,7 @@ class TeamsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.transfer_team_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.transfer_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def transfer_team_runs_with_http_info(
@@ -4443,7 +4419,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Transfer cross-project runs selection to a new project  # noqa: E501
 
@@ -4573,7 +4549,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team_name: Annotated[StrictStr, Field(..., description="Name")],
         body: Annotated[V1Team, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ) -> V1Team:  # noqa: E501
         """Update team  # noqa: E501
 
@@ -4605,9 +4581,7 @@ class TeamsV1Api(BaseApi):
         :rtype: V1Team
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_team_with_http_info(
-            owner, team_name, body, **kwargs
-        )  # noqa: E501
+        return self.update_team_with_http_info(owner, team_name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_team_with_http_info(
@@ -4615,7 +4589,7 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team_name: Annotated[StrictStr, Field(..., description="Name")],
         body: Annotated[V1Team, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update team  # noqa: E501
 
@@ -4753,7 +4727,7 @@ class TeamsV1Api(BaseApi):
         team: Annotated[StrictStr, Field(..., description="Team")],
         member_user: Annotated[StrictStr, Field(..., description="User")],
         body: Annotated[V1TeamMember, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ) -> V1TeamMember:  # noqa: E501
         """Update team member  # noqa: E501
 
@@ -4798,7 +4772,7 @@ class TeamsV1Api(BaseApi):
         team: Annotated[StrictStr, Field(..., description="Team")],
         member_user: Annotated[StrictStr, Field(..., description="User")],
         body: Annotated[V1TeamMember, Field(..., description="Team body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update team member  # noqa: E501
 

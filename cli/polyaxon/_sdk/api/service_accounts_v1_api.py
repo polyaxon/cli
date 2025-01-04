@@ -21,7 +21,7 @@ class ServiceAccountsV1Api(BaseApi):
         body: Annotated[
             V1ServiceAccount, Field(..., description="ServiceAccount body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ServiceAccount:  # noqa: E501
         """Create service account  # noqa: E501
 
@@ -51,9 +51,7 @@ class ServiceAccountsV1Api(BaseApi):
         :rtype: V1ServiceAccount
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_service_account_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.create_service_account_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_service_account_with_http_info(
@@ -62,7 +60,7 @@ class ServiceAccountsV1Api(BaseApi):
         body: Annotated[
             V1ServiceAccount, Field(..., description="ServiceAccount body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create service account  # noqa: E501
 
@@ -195,7 +193,7 @@ class ServiceAccountsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Create service account token  # noqa: E501
 
@@ -237,7 +235,7 @@ class ServiceAccountsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create service account token  # noqa: E501
 
@@ -375,7 +373,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete service account  # noqa: E501
 
@@ -405,9 +403,7 @@ class ServiceAccountsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_service_account_with_http_info(
-            owner, uuid, **kwargs
-        )  # noqa: E501
+        return self.delete_service_account_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_service_account_with_http_info(
@@ -416,7 +412,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete service account  # noqa: E501
 
@@ -543,7 +539,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete service account token  # noqa: E501
 
@@ -592,7 +588,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete service account token  # noqa: E501
 
@@ -717,7 +713,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ServiceAccount:  # noqa: E501
         """Get service account  # noqa: E501
 
@@ -747,9 +743,7 @@ class ServiceAccountsV1Api(BaseApi):
         :rtype: V1ServiceAccount
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_service_account_with_http_info(
-            owner, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_service_account_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_service_account_with_http_info(
@@ -758,7 +752,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get service account  # noqa: E501
 
@@ -890,7 +884,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Get service account token  # noqa: E501
 
@@ -939,7 +933,7 @@ class ServiceAccountsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get service account token  # noqa: E501
 
@@ -1083,7 +1077,7 @@ class ServiceAccountsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListServiceAccountsResponse:  # noqa: E501
         """List service accounts names  # noqa: E501
 
@@ -1150,7 +1144,7 @@ class ServiceAccountsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List service accounts names  # noqa: E501
 
@@ -1321,7 +1315,7 @@ class ServiceAccountsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListTokenResponse:  # noqa: E501
         """List service account tokens  # noqa: E501
 
@@ -1386,7 +1380,7 @@ class ServiceAccountsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List service account tokens  # noqa: E501
 
@@ -1559,7 +1553,7 @@ class ServiceAccountsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListServiceAccountsResponse:  # noqa: E501
         """List service accounts  # noqa: E501
 
@@ -1626,7 +1620,7 @@ class ServiceAccountsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List service accounts  # noqa: E501
 
@@ -1786,7 +1780,7 @@ class ServiceAccountsV1Api(BaseApi):
         body: Annotated[
             V1ServiceAccount, Field(..., description="ServiceAccount body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ServiceAccount:  # noqa: E501
         """Patch service account  # noqa: E501
 
@@ -1818,9 +1812,7 @@ class ServiceAccountsV1Api(BaseApi):
         :rtype: V1ServiceAccount
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_service_account_with_http_info(
-            owner, sa_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.patch_service_account_with_http_info(owner, sa_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_service_account_with_http_info(
@@ -1830,7 +1822,7 @@ class ServiceAccountsV1Api(BaseApi):
         body: Annotated[
             V1ServiceAccount, Field(..., description="ServiceAccount body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch service account  # noqa: E501
 
@@ -1968,7 +1960,7 @@ class ServiceAccountsV1Api(BaseApi):
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Patch service account token  # noqa: E501
 
@@ -2013,7 +2005,7 @@ class ServiceAccountsV1Api(BaseApi):
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch service account token  # noqa: E501
 
@@ -2156,7 +2148,7 @@ class ServiceAccountsV1Api(BaseApi):
         body: Annotated[
             V1ServiceAccount, Field(..., description="ServiceAccount body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ServiceAccount:  # noqa: E501
         """Update service account  # noqa: E501
 
@@ -2200,7 +2192,7 @@ class ServiceAccountsV1Api(BaseApi):
         body: Annotated[
             V1ServiceAccount, Field(..., description="ServiceAccount body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update service account  # noqa: E501
 
@@ -2338,7 +2330,7 @@ class ServiceAccountsV1Api(BaseApi):
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ) -> V1Token:  # noqa: E501
         """Update service account token  # noqa: E501
 
@@ -2383,7 +2375,7 @@ class ServiceAccountsV1Api(BaseApi):
         entity: Annotated[StrictStr, Field(..., description="Entity")],
         token_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Token, Field(..., description="Token body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update service account token  # noqa: E501
 

@@ -245,9 +245,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -294,9 +292,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -340,9 +336,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -407,9 +401,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -457,9 +449,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -504,9 +494,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -567,9 +555,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -618,9 +604,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )
@@ -666,9 +650,7 @@ class TestSidecarContainer(BaseConverterTest):
             artifacts_store_name=bucket_managed_store.name,
         ) + self.converter._get_items_from_secret(
             secret=resource1
-        ) + self.converter._get_connection_env_var(
-            connection=bucket_managed_store
-        ) + [
+        ) + self.converter._get_connection_env_var(connection=bucket_managed_store) + [
             self.converter._get_connections_catalog_env_var(
                 connections=[bucket_managed_store]
             )

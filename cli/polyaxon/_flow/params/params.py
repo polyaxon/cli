@@ -479,7 +479,7 @@ class ParamSpec(
         raise PolyaxonValidationError(
             "Param `{}` with type `{}`, "
             "cannot be turned to an init container automatically.".format(
-                self.name, self.type, self.param.ref
+                self.name, self.type
             )
         )
 

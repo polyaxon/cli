@@ -62,7 +62,9 @@ class AsyncK8sManager(BaseK8sManager):
     async def is_pod_running(
         self, pod_id: str, container_id: str, namespace: str = None
     ) -> bool:
-        event = await self.k8s_api.read_namespaced_pod_status(pod_id, namespace=namespace or self.namespace)  # type: ignore[attr-defined]
+        event = await self.k8s_api.read_namespaced_pod_status(
+            pod_id, namespace=namespace or self.namespace
+        )  # type: ignore[attr-defined]
         return is_pod_running(event, container_id)
 
     async def _list_namespace_resource(
@@ -108,7 +110,7 @@ class AsyncK8sManager(BaseK8sManager):
         plural,
         reraise: bool = False,
         namespace: str = None,
-        **kwargs
+        **kwargs,
     ) -> List:
         return await self._list_namespace_resource(
             resource_api=self.k8s_custom_object_api.list_namespaced_custom_object,  # type: ignore[attr-defined]
@@ -273,7 +275,7 @@ class AsyncK8sManager(BaseK8sManager):
         field_selector: str = None,
         namespace: str = None,
         reraise: bool = False,
-        **kwargs
+        **kwargs,
     ) -> List[client.CoreV1EventList]:
         return await self._list_namespace_resource(
             resource_api=self.k8s_api.list_namespaced_event,  # type: ignore[attr-defined]

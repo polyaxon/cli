@@ -24,7 +24,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:
         """Archive project
 
@@ -61,7 +61,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):
         """Archive project
 
@@ -180,7 +180,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Bookmark project  # noqa: E501
 
@@ -217,7 +217,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Bookmark project  # noqa: E501
 
@@ -336,7 +336,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ) -> V1Project:  # noqa: E501
         """Create new project  # noqa: E501
 
@@ -373,7 +373,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create new project  # noqa: E501
 
@@ -506,7 +506,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ) -> V1Project:  # noqa: E501
         """Create new project via team space  # noqa: E501
 
@@ -538,9 +538,7 @@ class ProjectsV1Api(BaseApi):
         :rtype: V1Project
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_team_project_with_http_info(
-            owner, team, body, **kwargs
-        )  # noqa: E501
+        return self.create_team_project_with_http_info(owner, team, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_team_project_with_http_info(
@@ -548,7 +546,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         team: Annotated[StrictStr, Field(..., description="Team")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create new project via team space  # noqa: E501
 
@@ -689,7 +687,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ProjectVersion:  # noqa: E501
         """Create version  # noqa: E501
 
@@ -739,7 +737,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create version  # noqa: E501
 
@@ -890,7 +888,7 @@ class ProjectsV1Api(BaseApi):
             Field(..., description="Name of the entity to apply the stage to"),
         ],
         body: V1EntityStageBodyRequest,
-        **kwargs
+        **kwargs,
     ) -> V1Stage:  # noqa: E501
         """Create new artifact version stage  # noqa: E501
 
@@ -946,7 +944,7 @@ class ProjectsV1Api(BaseApi):
             Field(..., description="Name of the entity to apply the stage to"),
         ],
         body: V1EntityStageBodyRequest,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create new artifact version stage  # noqa: E501
 
@@ -1090,7 +1088,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete project  # noqa: E501
 
@@ -1127,7 +1125,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete project  # noqa: E501
 
@@ -1253,7 +1251,7 @@ class ProjectsV1Api(BaseApi):
         ],
         kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete version  # noqa: E501
 
@@ -1287,9 +1285,7 @@ class ProjectsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_version_with_http_info(
-            owner, entity, kind, name, **kwargs
-        )  # noqa: E501
+        return self.delete_version_with_http_info(owner, entity, kind, name, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_version_with_http_info(
@@ -1303,7 +1299,7 @@ class ProjectsV1Api(BaseApi):
         ],
         kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete version  # noqa: E501
 
@@ -1430,7 +1426,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Disbale project CI  # noqa: E501
 
@@ -1460,16 +1456,14 @@ class ProjectsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.disable_project_ci_with_http_info(
-            owner, name, **kwargs
-        )  # noqa: E501
+        return self.disable_project_ci_with_http_info(owner, name, **kwargs)  # noqa: E501
 
     @validate_call
     def disable_project_ci_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Disbale project CI  # noqa: E501
 
@@ -1588,7 +1582,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Enable project CI  # noqa: E501
 
@@ -1618,16 +1612,14 @@ class ProjectsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.enable_project_ci_with_http_info(
-            owner, name, **kwargs
-        )  # noqa: E501
+        return self.enable_project_ci_with_http_info(owner, name, **kwargs)  # noqa: E501
 
     @validate_call
     def enable_project_ci_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Enable project CI  # noqa: E501
 
@@ -1746,7 +1738,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> V1Project:  # noqa: E501
         """Get project  # noqa: E501
 
@@ -1783,7 +1775,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get project  # noqa: E501
 
@@ -1926,7 +1918,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListActivitiesResponse:  # noqa: E501
         """Get project activities  # noqa: E501
 
@@ -1998,7 +1990,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get project activities  # noqa: E501
 
@@ -2160,7 +2152,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> V1ProjectSettings:  # noqa: E501
         """Get Project settings  # noqa: E501
 
@@ -2190,16 +2182,14 @@ class ProjectsV1Api(BaseApi):
         :rtype: V1ProjectSettings
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_project_settings_with_http_info(
-            owner, name, **kwargs
-        )  # noqa: E501
+        return self.get_project_settings_with_http_info(owner, name, **kwargs)  # noqa: E501
 
     @validate_call
     def get_project_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get Project settings  # noqa: E501
 
@@ -2347,7 +2337,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Get project stats  # noqa: E501
 
@@ -2410,7 +2400,7 @@ class ProjectsV1Api(BaseApi):
             aggregate,
             groupby,
             trunc,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -2442,7 +2432,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get project stats  # noqa: E501
 
@@ -2626,7 +2616,7 @@ class ProjectsV1Api(BaseApi):
         ],
         kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
-        **kwargs
+        **kwargs,
     ) -> V1ProjectVersion:  # noqa: E501
         """Get version  # noqa: E501
 
@@ -2660,9 +2650,7 @@ class ProjectsV1Api(BaseApi):
         :rtype: V1ProjectVersion
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_version_with_http_info(
-            owner, entity, kind, name, **kwargs
-        )  # noqa: E501
+        return self.get_version_with_http_info(owner, entity, kind, name, **kwargs)  # noqa: E501
 
     @validate_call
     def get_version_with_http_info(
@@ -2676,7 +2664,7 @@ class ProjectsV1Api(BaseApi):
         ],
         kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get version  # noqa: E501
 
@@ -2815,7 +2803,7 @@ class ProjectsV1Api(BaseApi):
         ],
         kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
-        **kwargs
+        **kwargs,
     ) -> V1Stage:  # noqa: E501
         """Get version stages  # noqa: E501
 
@@ -2865,7 +2853,7 @@ class ProjectsV1Api(BaseApi):
         ],
         kind: Annotated[str, Field(..., description="Version Kind")],
         name: Annotated[StrictStr, Field(..., description="Sub-entity name")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get version stages  # noqa: E501
 
@@ -3007,7 +2995,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListProjectsResponse:  # noqa: E501
         """List archived projects for user  # noqa: E501
 
@@ -3064,7 +3052,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List archived projects for user  # noqa: E501
 
@@ -3214,7 +3202,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListBookmarksResponse:  # noqa: E501
         """List bookmarked projects for user  # noqa: E501
 
@@ -3271,7 +3259,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List bookmarked projects for user  # noqa: E501
 
@@ -3427,7 +3415,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListProjectsResponse:  # noqa: E501
         """List project names  # noqa: E501
 
@@ -3494,7 +3482,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List project names  # noqa: E501
 
@@ -3667,7 +3655,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListProjectsResponse:  # noqa: E501
         """List projects  # noqa: E501
 
@@ -3734,7 +3722,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List projects  # noqa: E501
 
@@ -3905,7 +3893,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListProjectVersionsResponse:  # noqa: E501
         """List versions names  # noqa: E501
 
@@ -3970,7 +3958,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List versions names  # noqa: E501
 
@@ -4141,7 +4129,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListProjectVersionsResponse:  # noqa: E501
         """List versions  # noqa: E501
 
@@ -4206,7 +4194,7 @@ class ProjectsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List versions  # noqa: E501
 
@@ -4364,7 +4352,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project_name: Annotated[StrictStr, Field(..., description="Required name")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ) -> V1Project:  # noqa: E501
         """Patch project  # noqa: E501
 
@@ -4396,9 +4384,7 @@ class ProjectsV1Api(BaseApi):
         :rtype: V1Project
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_project_with_http_info(
-            owner, project_name, body, **kwargs
-        )  # noqa: E501
+        return self.patch_project_with_http_info(owner, project_name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_project_with_http_info(
@@ -4406,7 +4392,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project_name: Annotated[StrictStr, Field(..., description="Required name")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch project  # noqa: E501
 
@@ -4545,7 +4531,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectSettings, Field(..., description="Project settings body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ProjectSettings:  # noqa: E501
         """Patch project settings  # noqa: E501
 
@@ -4589,7 +4575,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectSettings, Field(..., description="Project settings body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch project settings  # noqa: E501
 
@@ -4739,7 +4725,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ProjectVersion:  # noqa: E501
         """Patch version  # noqa: E501
 
@@ -4798,7 +4784,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch version  # noqa: E501
 
@@ -4942,7 +4928,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Restore project  # noqa: E501
 
@@ -4979,7 +4965,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Restore project  # noqa: E501
 
@@ -5112,7 +5098,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Transfer version  # noqa: E501
 
@@ -5171,7 +5157,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Transfer version  # noqa: E501
 
@@ -5310,7 +5296,7 @@ class ProjectsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Unbookmark project  # noqa: E501
 
@@ -5340,16 +5326,14 @@ class ProjectsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.unbookmark_project_with_http_info(
-            owner, name, **kwargs
-        )  # noqa: E501
+        return self.unbookmark_project_with_http_info(owner, name, **kwargs)  # noqa: E501
 
     @validate_call
     def unbookmark_project_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Unbookmark project  # noqa: E501
 
@@ -5469,7 +5453,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project_name: Annotated[StrictStr, Field(..., description="Required name")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ) -> V1Project:  # noqa: E501
         """Update project  # noqa: E501
 
@@ -5501,9 +5485,7 @@ class ProjectsV1Api(BaseApi):
         :rtype: V1Project
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_project_with_http_info(
-            owner, project_name, body, **kwargs
-        )  # noqa: E501
+        return self.update_project_with_http_info(owner, project_name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_project_with_http_info(
@@ -5511,7 +5493,7 @@ class ProjectsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         project_name: Annotated[StrictStr, Field(..., description="Required name")],
         body: Annotated[V1Project, Field(..., description="Project body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update project  # noqa: E501
 
@@ -5650,7 +5632,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectSettings, Field(..., description="Project settings body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ProjectSettings:  # noqa: E501
         """Update project settings  # noqa: E501
 
@@ -5694,7 +5676,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectSettings, Field(..., description="Project settings body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update project settings  # noqa: E501
 
@@ -5844,7 +5826,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ProjectVersion:  # noqa: E501
         """Update version  # noqa: E501
 
@@ -5903,7 +5885,7 @@ class ProjectsV1Api(BaseApi):
         body: Annotated[
             V1ProjectVersion, Field(..., description="Project version body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update version  # noqa: E501
 
@@ -6059,7 +6041,7 @@ class ProjectsV1Api(BaseApi):
         overwrite: Annotated[
             Optional[bool], Field(description="File path query params.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Upload artifact to a store via project access  # noqa: E501
 
@@ -6118,7 +6100,7 @@ class ProjectsV1Api(BaseApi):
         overwrite: Annotated[
             Optional[bool], Field(description="File path query params.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Upload artifact to a store via project access  # noqa: E501
 

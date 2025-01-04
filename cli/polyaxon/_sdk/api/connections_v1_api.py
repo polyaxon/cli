@@ -17,7 +17,7 @@ class ConnectionsV1Api(BaseApi):
         body: Annotated[
             V1ConnectionResponse, Field(..., description="Connection body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ConnectionResponse:  # noqa: E501
         """Create connection  # noqa: E501
 
@@ -47,9 +47,7 @@ class ConnectionsV1Api(BaseApi):
         :rtype: V1ConnectionResponse
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_connection_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.create_connection_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_connection_with_http_info(
@@ -58,7 +56,7 @@ class ConnectionsV1Api(BaseApi):
         body: Annotated[
             V1ConnectionResponse, Field(..., description="Connection body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create connection  # noqa: E501
 
@@ -192,7 +190,7 @@ class ConnectionsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete connection  # noqa: E501
 
@@ -222,9 +220,7 @@ class ConnectionsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_connection_with_http_info(
-            owner, uuid, **kwargs
-        )  # noqa: E501
+        return self.delete_connection_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_connection_with_http_info(
@@ -233,7 +229,7 @@ class ConnectionsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete connection  # noqa: E501
 
@@ -354,7 +350,7 @@ class ConnectionsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ConnectionResponse:  # noqa: E501
         """Get connection  # noqa: E501
 
@@ -393,7 +389,7 @@ class ConnectionsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get connection  # noqa: E501
 
@@ -533,7 +529,7 @@ class ConnectionsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListConnectionsResponse:  # noqa: E501
         """List connections names  # noqa: E501
 
@@ -600,7 +596,7 @@ class ConnectionsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List connections names  # noqa: E501
 
@@ -773,7 +769,7 @@ class ConnectionsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListConnectionsResponse:  # noqa: E501
         """List connections  # noqa: E501
 
@@ -840,7 +836,7 @@ class ConnectionsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List connections  # noqa: E501
 
@@ -1000,7 +996,7 @@ class ConnectionsV1Api(BaseApi):
         body: Annotated[
             V1ConnectionResponse, Field(..., description="Connection body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ConnectionResponse:  # noqa: E501
         """Patch connection  # noqa: E501
 
@@ -1044,7 +1040,7 @@ class ConnectionsV1Api(BaseApi):
         body: Annotated[
             V1ConnectionResponse, Field(..., description="Connection body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch connection  # noqa: E501
 
@@ -1183,7 +1179,7 @@ class ConnectionsV1Api(BaseApi):
         body: Annotated[
             V1ConnectionResponse, Field(..., description="Connection body")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1ConnectionResponse:  # noqa: E501
         """Update connection  # noqa: E501
 
@@ -1227,7 +1223,7 @@ class ConnectionsV1Api(BaseApi):
         body: Annotated[
             V1ConnectionResponse, Field(..., description="Connection body")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update connection  # noqa: E501
 

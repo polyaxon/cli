@@ -61,9 +61,7 @@ class PolyaxonfileParser:
         return parsed_params
 
     @classmethod
-    def parse_operation(
-        cls, config, param_spec: Dict[str, ParamSpec]
-    ):  # pylint:disable=too-many-branches
+    def parse_operation(cls, config, param_spec: Dict[str, ParamSpec]):  # pylint:disable=too-many-branches
         parsed_params = cls.get_parsed_params(param_spec)
 
         parsed_data = {Sections.VERSION: config.version, Sections.KIND: config.kind}

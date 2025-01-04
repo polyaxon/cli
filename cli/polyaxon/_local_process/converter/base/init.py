@@ -50,7 +50,7 @@ class InitConverter(_BaseConverter):
         env_from: List[Any],
         args: List[str],
         command: Optional[List[str]] = None,
-        **kwargs
+        **kwargs,
     ) -> Optional[process_types.V1Container]:
         env = env or []
 

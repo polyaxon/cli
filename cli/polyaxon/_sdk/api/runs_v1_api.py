@@ -51,7 +51,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Approve run  # noqa: E501
 
@@ -83,9 +83,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.approve_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.approve_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def approve_run_with_http_info(
@@ -100,7 +98,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Approve run  # noqa: E501
 
@@ -224,7 +222,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Approve runs  # noqa: E501
 
@@ -256,9 +254,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.approve_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.approve_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def approve_runs_with_http_info(
@@ -266,7 +262,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Approve runs  # noqa: E501
 
@@ -405,7 +401,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Archive run  # noqa: E501
 
@@ -437,9 +433,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.archive_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.archive_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def archive_run_with_http_info(
@@ -454,7 +448,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Archive run  # noqa: E501
 
@@ -578,7 +572,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Archive runs  # noqa: E501
 
@@ -610,9 +604,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.archive_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.archive_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def archive_runs_with_http_info(
@@ -620,7 +612,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Archive runs  # noqa: E501
 
@@ -759,7 +751,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Bookmark run  # noqa: E501
 
@@ -791,9 +783,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.bookmark_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.bookmark_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def bookmark_run_with_http_info(
@@ -808,7 +798,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Bookmark run  # noqa: E501
 
@@ -932,7 +922,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Bookmark runs  # noqa: E501
 
@@ -964,9 +954,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.bookmark_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.bookmark_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def bookmark_runs_with_http_info(
@@ -974,7 +962,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Bookmark runs  # noqa: E501
 
@@ -1112,7 +1100,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         kind: Annotated[str, Field(..., description="Kind of the entity")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Internal API to collect run logs  # noqa: E501
 
@@ -1164,7 +1152,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         kind: Annotated[str, Field(..., description="Kind of the entity")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Internal API to collect run logs  # noqa: E501
 
@@ -1299,7 +1287,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Restart run with copy  # noqa: E501
 
@@ -1333,9 +1321,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.copy_run_with_http_info(
-            owner, project, run_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.copy_run_with_http_info(owner, project, run_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def copy_run_with_http_info(
@@ -1346,7 +1332,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Restart run with copy  # noqa: E501
 
@@ -1489,7 +1475,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Project where the run will be assigned")
         ],
         body: Annotated[V1OperationBody, Field(..., description="operation object")],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Create new run  # noqa: E501
 
@@ -1521,9 +1507,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_run_with_http_info(
-            owner, project, body, **kwargs
-        )  # noqa: E501
+        return self.create_run_with_http_info(owner, project, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_run_with_http_info(
@@ -1533,7 +1517,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Project where the run will be assigned")
         ],
         body: Annotated[V1OperationBody, Field(..., description="operation object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create new run  # noqa: E501
 
@@ -1675,7 +1659,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: Annotated[V1RunArtifacts, Field(..., description="Run Artifacts")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Create bulk run artifacts lineage  # noqa: E501
 
@@ -1724,7 +1708,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: Annotated[V1RunArtifacts, Field(..., description="Run Artifacts")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create bulk run artifacts lineage  # noqa: E501
 
@@ -1865,7 +1849,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1EntityStatusBodyRequest,
-        **kwargs
+        **kwargs,
     ) -> V1Status:  # noqa: E501
         """Create new run status  # noqa: E501
 
@@ -1914,7 +1898,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1EntityStatusBodyRequest,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create new run status  # noqa: E501
 
@@ -2062,7 +2046,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete run  # noqa: E501
 
@@ -2094,9 +2078,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.delete_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_run_with_http_info(
@@ -2111,7 +2093,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete run  # noqa: E501
 
@@ -2246,7 +2228,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete run artifact  # noqa: E501
 
@@ -2305,7 +2287,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete run artifact  # noqa: E501
 
@@ -2449,7 +2431,7 @@ class RunsV1Api(BaseApi):
         namespace: Annotated[
             Optional[StrictStr], Field(description="namespace.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete run artifact lineage  # noqa: E501
 
@@ -2503,7 +2485,7 @@ class RunsV1Api(BaseApi):
         namespace: Annotated[
             Optional[StrictStr], Field(description="namespace.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete run artifact lineage  # noqa: E501
 
@@ -2646,7 +2628,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete run artifacts  # noqa: E501
 
@@ -2705,7 +2687,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete run artifacts  # noqa: E501
 
@@ -2841,7 +2823,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete runs  # noqa: E501
 
@@ -2873,9 +2855,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.delete_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_runs_with_http_info(
@@ -2883,7 +2863,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete runs  # noqa: E501
 
@@ -3039,7 +3019,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1MultiEventsResponse:  # noqa: E501
         """Get multi runs events  # noqa: E501
 
@@ -3099,7 +3079,7 @@ class RunsV1Api(BaseApi):
             sample,
             connection,
             status,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -3132,7 +3112,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get multi runs events  # noqa: E501
 
@@ -3308,7 +3288,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
         body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
-        **kwargs
+        **kwargs,
     ) -> V1MultiEventsResponse:  # noqa: E501
         """Get multi run importance  # noqa: E501
 
@@ -3355,7 +3335,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
         body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get multi run importance  # noqa: E501
 
@@ -3502,7 +3482,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Get run  # noqa: E501
 
@@ -3549,7 +3529,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run  # noqa: E501
 
@@ -3696,7 +3676,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> str:  # noqa: E501
         """Get run artifact  # noqa: E501
 
@@ -3766,7 +3746,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run artifact  # noqa: E501
 
@@ -3932,7 +3912,7 @@ class RunsV1Api(BaseApi):
         namespace: Annotated[
             Optional[StrictStr], Field(description="namespace.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1RunArtifact:  # noqa: E501
         """Get run artifacts lineage  # noqa: E501
 
@@ -3986,7 +3966,7 @@ class RunsV1Api(BaseApi):
         namespace: Annotated[
             Optional[StrictStr], Field(description="namespace.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run artifacts lineage  # noqa: E501
 
@@ -4138,7 +4118,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> str:  # noqa: E501
         """Get run artifacts  # noqa: E501
 
@@ -4203,7 +4183,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run artifacts  # noqa: E501
 
@@ -4371,7 +4351,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunArtifactsResponse:  # noqa: E501
         """Get run artifacts lineage  # noqa: E501
 
@@ -4436,7 +4416,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run artifacts lineage  # noqa: E501
 
@@ -4607,7 +4587,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunArtifactsResponse:  # noqa: E501
         """Get run artifacts lineage names  # noqa: E501
 
@@ -4672,7 +4652,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run artifacts lineage names  # noqa: E501
 
@@ -4841,7 +4821,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ArtifactTree:  # noqa: E501
         """Get run artifacts tree  # noqa: E501
 
@@ -4900,7 +4880,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run artifacts tree  # noqa: E501
 
@@ -5054,7 +5034,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunsResponse:  # noqa: E501
         """Get run clones lineage  # noqa: E501
 
@@ -5119,7 +5099,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run clones lineage  # noqa: E501
 
@@ -5290,7 +5270,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunConnectionsResponse:  # noqa: E501
         """Get run connections lineage  # noqa: E501
 
@@ -5355,7 +5335,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run connections lineage  # noqa: E501
 
@@ -5526,7 +5506,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunEdgesResponse:  # noqa: E501
         """Get run downstream lineage  # noqa: E501
 
@@ -5591,7 +5571,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run downstream lineage  # noqa: E501
 
@@ -5773,7 +5753,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1EventsResponse:  # noqa: E501
         """Get run events  # noqa: E501
 
@@ -5833,7 +5813,7 @@ class RunsV1Api(BaseApi):
             sample,
             connection,
             status,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -5866,7 +5846,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run events  # noqa: E501
 
@@ -6056,7 +6036,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Logs:  # noqa: E501
         """Get run logs  # noqa: E501
 
@@ -6107,7 +6087,7 @@ class RunsV1Api(BaseApi):
             last_file,
             force,
             connection,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -6133,7 +6113,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run logs  # noqa: E501
 
@@ -6308,7 +6288,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1RunSettings:  # noqa: E501
         """Get Run namespace  # noqa: E501
 
@@ -6340,9 +6320,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1RunSettings
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_run_namespace_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_run_namespace_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_run_namespace_with_http_info(
@@ -6357,7 +6335,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get Run namespace  # noqa: E501
 
@@ -6509,7 +6487,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1EventsResponse:  # noqa: E501
         """Get run resources events  # noqa: E501
 
@@ -6566,7 +6544,7 @@ class RunsV1Api(BaseApi):
             sample,
             connection,
             status,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -6598,7 +6576,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run resources events  # noqa: E501
 
@@ -6773,7 +6751,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1RunSettings:  # noqa: E501
         """Get Run settings  # noqa: E501
 
@@ -6805,9 +6783,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1RunSettings
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_run_settings_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_run_settings_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_run_settings_with_http_info(
@@ -6822,7 +6798,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get Run settings  # noqa: E501
 
@@ -6975,7 +6951,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Get run stats  # noqa: E501
 
@@ -7041,7 +7017,7 @@ class RunsV1Api(BaseApi):
             aggregate,
             groupby,
             trunc,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -7074,7 +7050,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run stats  # noqa: E501
 
@@ -7264,7 +7240,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Status:  # noqa: E501
         """Get run statuses  # noqa: E501
 
@@ -7296,9 +7272,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Status
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_run_statuses_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_run_statuses_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_run_statuses_with_http_info(
@@ -7313,7 +7287,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run statuses  # noqa: E501
 
@@ -7455,7 +7429,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunEdgesResponse:  # noqa: E501
         """Get run upstream lineage  # noqa: E501
 
@@ -7520,7 +7494,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get run upstream lineage  # noqa: E501
 
@@ -7696,7 +7670,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunArtifactsResponse:  # noqa: E501
         """Get runs artifacts lineage  # noqa: E501
 
@@ -7768,7 +7742,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get runs artifacts lineage  # noqa: E501
 
@@ -7938,7 +7912,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Auth:  # noqa: E501
         """Impersonate run token  # noqa: E501
 
@@ -7970,9 +7944,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Auth
         """
         kwargs["_return_http_data_only"] = True
-        return self.impersonate_token_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.impersonate_token_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def impersonate_token_with_http_info(
@@ -7987,7 +7959,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Impersonate run token  # noqa: E501
 
@@ -8139,7 +8111,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Inspect an active run full conditions  # noqa: E501
 
@@ -8196,7 +8168,7 @@ class RunsV1Api(BaseApi):
             sample,
             connection,
             status,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -8228,7 +8200,7 @@ class RunsV1Api(BaseApi):
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Inspect an active run full conditions  # noqa: E501
 
@@ -8403,7 +8375,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Invalidate run  # noqa: E501
 
@@ -8435,9 +8407,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.invalidate_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.invalidate_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def invalidate_run_with_http_info(
@@ -8452,7 +8422,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Invalidate run  # noqa: E501
 
@@ -8576,7 +8546,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Invalidate runs  # noqa: E501
 
@@ -8608,9 +8578,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.invalidate_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.invalidate_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def invalidate_runs_with_http_info(
@@ -8618,7 +8586,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Invalidate runs  # noqa: E501
 
@@ -8759,7 +8727,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunsResponse:  # noqa: E501
         """List archived runs for user  # noqa: E501
 
@@ -8816,7 +8784,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List archived runs for user  # noqa: E501
 
@@ -8966,7 +8934,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListBookmarksResponse:  # noqa: E501
         """List bookmarked runs for user  # noqa: E501
 
@@ -9023,7 +8991,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Query filter the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List bookmarked runs for user  # noqa: E501
 
@@ -9182,7 +9150,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunsResponse:  # noqa: E501
         """List runs  # noqa: E501
 
@@ -9254,7 +9222,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List runs  # noqa: E501
 
@@ -9423,7 +9391,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1EntityNotificationBody,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Notify run status  # noqa: E501
 
@@ -9475,7 +9443,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         body: V1EntityNotificationBody,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Notify run status  # noqa: E501
 
@@ -9618,7 +9586,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Patch run  # noqa: E501
 
@@ -9652,9 +9620,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_run_with_http_info(
-            owner, project, run_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.patch_run_with_http_info(owner, project, run_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_run_with_http_info(
@@ -9665,7 +9631,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch run  # noqa: E501
 
@@ -9809,7 +9775,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Restart run  # noqa: E501
 
@@ -9843,9 +9809,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.restart_run_with_http_info(
-            owner, project, run_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.restart_run_with_http_info(owner, project, run_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def restart_run_with_http_info(
@@ -9856,7 +9820,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Restart run  # noqa: E501
 
@@ -10004,7 +9968,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Restore run  # noqa: E501
 
@@ -10036,9 +10000,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.restore_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.restore_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def restore_run_with_http_info(
@@ -10053,7 +10015,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Restore run  # noqa: E501
 
@@ -10177,7 +10139,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Restore runs  # noqa: E501
 
@@ -10209,9 +10171,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.restore_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.restore_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def restore_runs_with_http_info(
@@ -10219,7 +10179,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Restore runs  # noqa: E501
 
@@ -10354,7 +10314,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Resume run  # noqa: E501
 
@@ -10388,9 +10348,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.resume_run_with_http_info(
-            owner, project, run_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.resume_run_with_http_info(owner, project, run_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def resume_run_with_http_info(
@@ -10401,7 +10359,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Resume run  # noqa: E501
 
@@ -10543,7 +10501,7 @@ class RunsV1Api(BaseApi):
         project: Annotated[StrictStr, Field(..., description="Project")],
         uuid: Annotated[StrictStr, Field(..., description="Run uuid")],
         body: Annotated[V1RunEdgesGraph, Field(..., description="Run edges graph")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Set run edges graph lineage  # noqa: E501
 
@@ -10588,7 +10546,7 @@ class RunsV1Api(BaseApi):
         project: Annotated[StrictStr, Field(..., description="Project")],
         uuid: Annotated[StrictStr, Field(..., description="Run uuid")],
         body: Annotated[V1RunEdgesGraph, Field(..., description="Run edges graph")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Set run edges graph lineage  # noqa: E501
 
@@ -10728,7 +10686,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Skip run  # noqa: E501
 
@@ -10775,7 +10733,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Skip run  # noqa: E501
 
@@ -10897,7 +10855,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Skip runs  # noqa: E501
 
@@ -10937,7 +10895,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Skip runs  # noqa: E501
 
@@ -11074,7 +11032,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Stop run  # noqa: E501
 
@@ -11121,7 +11079,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Stop run  # noqa: E501
 
@@ -11245,7 +11203,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Stop runs  # noqa: E501
 
@@ -11285,7 +11243,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Stop runs  # noqa: E501
 
@@ -11419,7 +11377,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Project where the run will be assigned")
         ],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Sync offline run  # noqa: E501
 
@@ -11451,9 +11409,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.sync_run_with_http_info(
-            owner, project, body, **kwargs
-        )  # noqa: E501
+        return self.sync_run_with_http_info(owner, project, body, **kwargs)  # noqa: E501
 
     @validate_call
     def sync_run_with_http_info(
@@ -11463,7 +11419,7 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Project where the run will be assigned")
         ],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Sync offline run  # noqa: E501
 
@@ -11595,7 +11551,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Tag runs  # noqa: E501
 
@@ -11635,7 +11591,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Tag runs  # noqa: E501
 
@@ -11770,7 +11726,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Transfer run  # noqa: E501
 
@@ -11817,7 +11773,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Transfer run  # noqa: E501
 
@@ -11953,7 +11909,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Transfer runs  # noqa: E501
 
@@ -11985,9 +11941,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.transfer_runs_with_http_info(
-            owner, name, body, **kwargs
-        )  # noqa: E501
+        return self.transfer_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
 
     @validate_call
     def transfer_runs_with_http_info(
@@ -11995,7 +11949,7 @@ class RunsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Transfer runs  # noqa: E501
 
@@ -12134,7 +12088,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Unbookmark run  # noqa: E501
 
@@ -12166,9 +12120,7 @@ class RunsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.unbookmark_run_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.unbookmark_run_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def unbookmark_run_with_http_info(
@@ -12183,7 +12135,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Unbookmark run  # noqa: E501
 
@@ -12310,7 +12262,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Update run  # noqa: E501
 
@@ -12344,9 +12296,7 @@ class RunsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_run_with_http_info(
-            owner, project, run_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.update_run_with_http_info(owner, project, run_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_run_with_http_info(
@@ -12357,7 +12307,7 @@ class RunsV1Api(BaseApi):
         ],
         run_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Run, Field(..., description="Run object")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update run  # noqa: E501
 
@@ -12512,7 +12462,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Upload an artifact file to a store via run access  # noqa: E501
 
@@ -12576,7 +12526,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Upload an artifact file to a store via run access  # noqa: E501
 
@@ -12746,7 +12696,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Upload a logs file to a store via run access  # noqa: E501
 
@@ -12810,7 +12760,7 @@ class RunsV1Api(BaseApi):
         connection: Annotated[
             Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Upload a logs file to a store via run access  # noqa: E501
 

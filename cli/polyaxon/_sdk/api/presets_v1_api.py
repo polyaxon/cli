@@ -15,7 +15,7 @@ class PresetsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Preset, Field(..., description="Preset body")],
-        **kwargs
+        **kwargs,
     ) -> V1Preset:
         """Create scheduling presets
 
@@ -52,7 +52,7 @@ class PresetsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Preset, Field(..., description="Preset body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create scheduling presets  # noqa: E501
 
@@ -190,7 +190,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete scheduling preset  # noqa: E501
 
@@ -222,9 +222,7 @@ class PresetsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_preset_with_http_info(
-            owner, uuid, entity, **kwargs
-        )  # noqa: E501
+        return self.delete_preset_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_preset_with_http_info(
@@ -237,7 +235,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete scheduling preset  # noqa: E501
 
@@ -366,7 +364,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Preset:  # noqa: E501
         """Get scheduling preset  # noqa: E501
 
@@ -398,9 +396,7 @@ class PresetsV1Api(BaseApi):
         :rtype: V1Preset
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_preset_with_http_info(
-            owner, uuid, entity, **kwargs
-        )  # noqa: E501
+        return self.get_preset_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
     def get_preset_with_http_info(
@@ -413,7 +409,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr],
             Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get scheduling preset  # noqa: E501
 
@@ -557,7 +553,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListPresetsResponse:  # noqa: E501
         """List scheduling presets names  # noqa: E501
 
@@ -624,7 +620,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List scheduling presets names  # noqa: E501
 
@@ -797,7 +793,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListPresetsResponse:  # noqa: E501
         """List scheduling presets  # noqa: E501
 
@@ -864,7 +860,7 @@ class PresetsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List scheduling presets  # noqa: E501
 
@@ -1022,7 +1018,7 @@ class PresetsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         preset_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Preset, Field(..., description="Preset body")],
-        **kwargs
+        **kwargs,
     ) -> V1Preset:  # noqa: E501
         """Patch scheduling preset  # noqa: E501
 
@@ -1054,9 +1050,7 @@ class PresetsV1Api(BaseApi):
         :rtype: V1Preset
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_preset_with_http_info(
-            owner, preset_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.patch_preset_with_http_info(owner, preset_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_preset_with_http_info(
@@ -1064,7 +1058,7 @@ class PresetsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         preset_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Preset, Field(..., description="Preset body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch scheduling preset  # noqa: E501
 
@@ -1201,7 +1195,7 @@ class PresetsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         preset_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Preset, Field(..., description="Preset body")],
-        **kwargs
+        **kwargs,
     ) -> V1Preset:  # noqa: E501
         """Update scheduling preset  # noqa: E501
 
@@ -1233,9 +1227,7 @@ class PresetsV1Api(BaseApi):
         :rtype: V1Preset
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_preset_with_http_info(
-            owner, preset_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.update_preset_with_http_info(owner, preset_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_preset_with_http_info(
@@ -1243,7 +1235,7 @@ class PresetsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         preset_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Preset, Field(..., description="Preset body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update scheduling preset  # noqa: E501
 

@@ -1,6 +1,5 @@
 from typing import Dict, Iterable, Optional
 
-from clipped.utils.encoding import encode
 from clipped.utils.json import orjson_dumps
 
 from polyaxon import pkg

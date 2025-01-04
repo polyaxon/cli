@@ -24,13 +24,13 @@ def validate_k8s_affinity(value: Optional[Union[k8s_schemas.V1Affinity, Dict]]):
 
 
 def validate_k8s_security_context(
-    value: Optional[Union[k8s_schemas.V1SecurityContext, Dict]]
+    value: Optional[Union[k8s_schemas.V1SecurityContext, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1SecurityContext)
 
 
 def validate_k8s_pod_dns_config(
-    value: Optional[Union[k8s_schemas.V1PodDNSConfig, Dict]]
+    value: Optional[Union[k8s_schemas.V1PodDNSConfig, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1PodDNSConfig)
 
@@ -56,19 +56,19 @@ def validate_k8s_volume_mount(value: Optional[Union[k8s_schemas.V1VolumeMount, D
 
 
 def validate_k8s_container_port(
-    value: Optional[Union[k8s_schemas.V1ContainerPort, Dict]]
+    value: Optional[Union[k8s_schemas.V1ContainerPort, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1ContainerPort)
 
 
 def validate_k8s_resource_requirements(
-    value: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]]
+    value: Optional[Union[k8s_schemas.V1ResourceRequirements, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1ResourceRequirements)
 
 
 def validate_k8s_env_from_source(
-    value: Optional[Union[k8s_schemas.V1EnvFromSource, Dict]]
+    value: Optional[Union[k8s_schemas.V1EnvFromSource, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1EnvFromSource)
 
@@ -78,25 +78,25 @@ def validate_k8s_volume(value: Optional[Union[k8s_schemas.V1Volume, Dict]]):
 
 
 def validate_k8s_object_field_selector(
-    value: Optional[Union[k8s_schemas.V1ObjectFieldSelector, Dict]]
+    value: Optional[Union[k8s_schemas.V1ObjectFieldSelector, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1ObjectFieldSelector)
 
 
 def validate_k8s_env_var_source(
-    value: Optional[Union[k8s_schemas.V1EnvVarSource, Dict]]
+    value: Optional[Union[k8s_schemas.V1EnvVarSource, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1EnvVarSource)
 
 
 def validate_k8s_config_map_selector(
-    value: Optional[Union[k8s_schemas.V1ConfigMapKeySelector, Dict]]
+    value: Optional[Union[k8s_schemas.V1ConfigMapKeySelector, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1ConfigMapKeySelector)
 
 
 def validate_k8s_secret_selector(
-    value: Optional[Union[k8s_schemas.V1SecretKeySelector, Dict]]
+    value: Optional[Union[k8s_schemas.V1SecretKeySelector, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1SecretKeySelector)
 
@@ -110,42 +110,42 @@ def validate_k8s_object_meta(value: Optional[Union[k8s_schemas.V1ObjectMeta, Dic
 
 
 def validate_k8s_pod_template_spec(
-    value: Optional[Union[k8s_schemas.V1PodTemplateSpec, Dict]]
+    value: Optional[Union[k8s_schemas.V1PodTemplateSpec, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1PodTemplateSpec)
 
 
 def validate_k8s_host_path_volume_source(
-    value: Optional[Union[k8s_schemas.V1HostPathVolumeSource, Dict]]
+    value: Optional[Union[k8s_schemas.V1HostPathVolumeSource, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1HostPathVolumeSource)
 
 
 def validate_k8s_empty_dir_volume_source(
-    value: Optional[Union[k8s_schemas.V1EmptyDirVolumeSource, Dict]]
+    value: Optional[Union[k8s_schemas.V1EmptyDirVolumeSource, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1EmptyDirVolumeSource)
 
 
 def validate_k8s_persistent_volume_claim_volume_source(
-    value: Optional[Union[k8s_schemas.V1PersistentVolumeClaimVolumeSource, Dict]]
+    value: Optional[Union[k8s_schemas.V1PersistentVolumeClaimVolumeSource, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1PersistentVolumeClaimVolumeSource)
 
 
 def validate_k8s_secret_volume_source(
-    value: Optional[Union[k8s_schemas.V1SecretVolumeSource, Dict]]
+    value: Optional[Union[k8s_schemas.V1SecretVolumeSource, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1SecretVolumeSource)
 
 
 def validate_k8s_config_map_volume_source(
-    value: Optional[Union[k8s_schemas.V1ConfigMapVolumeSource, Dict]]
+    value: Optional[Union[k8s_schemas.V1ConfigMapVolumeSource, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1ConfigMapVolumeSource)
 
 
 def validate_k8s_local_object_reference(
-    value: Optional[Union[k8s_schemas.V1LocalObjectReference, Dict]]
+    value: Optional[Union[k8s_schemas.V1LocalObjectReference, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1LocalObjectReference)

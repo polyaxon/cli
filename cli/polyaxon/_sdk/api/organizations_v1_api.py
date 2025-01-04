@@ -28,7 +28,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:
         """Approve cross-project runs selection
 
@@ -65,7 +65,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):
         """Approve cross-project runs selection
 
@@ -192,7 +192,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:
         """Archive cross-project runs selection
 
@@ -229,7 +229,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):
         """Archive cross-project runs selection
 
@@ -356,7 +356,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:
         """Bookmark cross-project runs selection
 
@@ -386,16 +386,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.bookmark_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.bookmark_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def bookmark_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Bookmark cross-project runs selection  # noqa: E501
 
@@ -518,9 +516,7 @@ class OrganizationsV1Api(BaseApi):
         )
 
     @validate_call
-    def create_organization(
-        self, body: V1Organization, **kwargs
-    ) -> V1Organization:  # noqa: E501
+    def create_organization(self, body: V1Organization, **kwargs) -> V1Organization:  # noqa: E501
         """Create organization  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -550,9 +546,7 @@ class OrganizationsV1Api(BaseApi):
         return self.create_organization_with_http_info(body, **kwargs)  # noqa: E501
 
     @validate_call
-    def create_organization_with_http_info(
-        self, body: V1Organization, **kwargs
-    ):  # noqa: E501
+    def create_organization_with_http_info(self, body: V1Organization, **kwargs):  # noqa: E501
         """Create organization  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -684,7 +678,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Create organization member  # noqa: E501
 
@@ -730,7 +724,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create organization member  # noqa: E501
 
@@ -868,7 +862,7 @@ class OrganizationsV1Api(BaseApi):
         usage: Annotated[
             Optional[StrictStr], Field(description="Owner usage query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete organization  # noqa: E501
 
@@ -898,9 +892,7 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_organization_with_http_info(
-            owner, usage, **kwargs
-        )  # noqa: E501
+        return self.delete_organization_with_http_info(owner, usage, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_organization_with_http_info(
@@ -909,7 +901,7 @@ class OrganizationsV1Api(BaseApi):
         usage: Annotated[
             Optional[StrictStr], Field(description="Owner usage query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete organization  # noqa: E501
 
@@ -1044,7 +1036,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete organization invitation details  # noqa: E501
 
@@ -1095,7 +1087,7 @@ class OrganizationsV1Api(BaseApi):
             member_created_at,
             member_updated_at,
             email,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -1119,7 +1111,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete organization invitation details  # noqa: E501
 
@@ -1271,7 +1263,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete organization member details  # noqa: E501
 
@@ -1301,16 +1293,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_organization_member_with_http_info(
-            owner, name, **kwargs
-        )  # noqa: E501
+        return self.delete_organization_member_with_http_info(owner, name, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete organization member details  # noqa: E501
 
@@ -1429,7 +1419,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete cross-project runs selection  # noqa: E501
 
@@ -1459,16 +1449,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.delete_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete cross-project runs selection  # noqa: E501
 
@@ -1597,7 +1585,7 @@ class OrganizationsV1Api(BaseApi):
         usage: Annotated[
             Optional[StrictStr], Field(description="Owner usage query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Get organization  # noqa: E501
 
@@ -1627,9 +1615,7 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Organization
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_organization_with_http_info(
-            owner, usage, **kwargs
-        )  # noqa: E501
+        return self.get_organization_with_http_info(owner, usage, **kwargs)  # noqa: E501
 
     @validate_call
     def get_organization_with_http_info(
@@ -1638,7 +1624,7 @@ class OrganizationsV1Api(BaseApi):
         usage: Annotated[
             Optional[StrictStr], Field(description="Owner usage query param.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization  # noqa: E501
 
@@ -1778,7 +1764,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListActivitiesResponse:  # noqa: E501
         """Get organization activities  # noqa: E501
 
@@ -1845,7 +1831,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization activities  # noqa: E501
 
@@ -2018,7 +2004,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Get organization invitation details  # noqa: E501
 
@@ -2069,7 +2055,7 @@ class OrganizationsV1Api(BaseApi):
             member_created_at,
             member_updated_at,
             email,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -2093,7 +2079,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization invitation details  # noqa: E501
 
@@ -2250,7 +2236,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Get organization member details  # noqa: E501
 
@@ -2280,16 +2266,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1OrganizationMember
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_organization_member_with_http_info(
-            owner, name, **kwargs
-        )  # noqa: E501
+        return self.get_organization_member_with_http_info(owner, name, **kwargs)  # noqa: E501
 
     @validate_call
     def get_organization_member_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         name: Annotated[StrictStr, Field(..., description="Component under namespace")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization member details  # noqa: E501
 
@@ -2415,7 +2399,7 @@ class OrganizationsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Run:  # noqa: E501
         """Get a run in an organization  # noqa: E501
 
@@ -2445,9 +2429,7 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Run
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_organization_run_with_http_info(
-            owner, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_organization_run_with_http_info(owner, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_organization_run_with_http_info(
@@ -2456,7 +2438,7 @@ class OrganizationsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get a run in an organization  # noqa: E501
 
@@ -2596,7 +2578,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListRunsResponse:  # noqa: E501
         """Get all runs in an organization  # noqa: E501
 
@@ -2663,7 +2645,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get all runs in an organization  # noqa: E501
 
@@ -2866,7 +2848,7 @@ class OrganizationsV1Api(BaseApi):
                 description="Setting to configure default archived deletion interval."
             ),
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Get organization settings  # noqa: E501
 
@@ -2935,7 +2917,7 @@ class OrganizationsV1Api(BaseApi):
             organization_preset,
             organization_is_cloud_viewable,
             organization_archived_deletion_interval,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -2989,7 +2971,7 @@ class OrganizationsV1Api(BaseApi):
                 description="Setting to configure default archived deletion interval."
             ),
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization settings  # noqa: E501
 
@@ -3146,9 +3128,7 @@ class OrganizationsV1Api(BaseApi):
                     _params["organization_is_cloud_viewable"],
                 )
             )
-        if (
-            _params.get("organization_archived_deletion_interval") is not None
-        ):  # noqa: E501
+        if _params.get("organization_archived_deletion_interval") is not None:  # noqa: E501
             _query_params.append(
                 (
                     "organization.archived_deletion_interval",
@@ -3226,7 +3206,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ) -> object:  # noqa: E501
         """Get organization stats  # noqa: E501
 
@@ -3286,7 +3266,7 @@ class OrganizationsV1Api(BaseApi):
             aggregate,
             groupby,
             trunc,
-            **kwargs
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -3315,7 +3295,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization stats  # noqa: E501
 
@@ -3487,7 +3467,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Invalidate cross-project runs selection  # noqa: E501
 
@@ -3517,16 +3497,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.invalidate_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.invalidate_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def invalidate_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Invalidate cross-project runs selection  # noqa: E501
 
@@ -3669,7 +3647,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListOrganizationMembersResponse:  # noqa: E501
         """Get organization member names  # noqa: E501
 
@@ -3736,7 +3714,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization member names  # noqa: E501
 
@@ -3909,7 +3887,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListOrganizationMembersResponse:  # noqa: E501
         """Get organization members  # noqa: E501
 
@@ -3976,7 +3954,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get organization members  # noqa: E501
 
@@ -4129,9 +4107,7 @@ class OrganizationsV1Api(BaseApi):
         )
 
     @validate_call
-    def list_organization_names(
-        self, **kwargs
-    ) -> V1ListOrganizationsResponse:  # noqa: E501
+    def list_organization_names(self, **kwargs) -> V1ListOrganizationsResponse:  # noqa: E501
         """List organizations names  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -4413,7 +4389,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Organization plan  # noqa: E501
 
@@ -4443,16 +4419,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Organization
         """
         kwargs["_return_http_data_only"] = True
-        return self.organization_plan_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.organization_plan_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def organization_plan_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Organization plan  # noqa: E501
 
@@ -4584,7 +4558,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Organization license  # noqa: E501
 
@@ -4614,16 +4588,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Organization
         """
         kwargs["_return_http_data_only"] = True
-        return self.organization_license_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.organization_license_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def organization_license_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Organization license  # noqa: E501
 
@@ -4755,7 +4727,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Patch organization  # noqa: E501
 
@@ -4785,16 +4757,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Organization
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_organization_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.patch_organization_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_organization_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch organization  # noqa: E501
 
@@ -4931,7 +4901,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Patch organization invitation  # noqa: E501
 
@@ -4977,7 +4947,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch organization invitation  # noqa: E501
 
@@ -5119,7 +5089,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Patch organization member  # noqa: E501
 
@@ -5168,7 +5138,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch organization member  # noqa: E501
 
@@ -5308,7 +5278,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Patch oranization settings  # noqa: E501
 
@@ -5338,16 +5308,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Organization
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_organization_settings_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.patch_organization_settings_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_organization_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch oranization settings  # noqa: E501
 
@@ -5484,7 +5452,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Resend organization invitation  # noqa: E501
 
@@ -5530,7 +5498,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Resend organization invitation  # noqa: E501
 
@@ -5666,7 +5634,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Restore cross-project runs selection  # noqa: E501
 
@@ -5696,16 +5664,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.restore_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.restore_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def restore_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Restore cross-project runs selection  # noqa: E501
 
@@ -5832,7 +5798,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Skip cross-project runs selection  # noqa: E501
 
@@ -5862,16 +5828,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.skip_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.skip_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def skip_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Skip cross-project runs selection  # noqa: E501
 
@@ -5995,7 +5959,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Stop cross-project runs selection  # noqa: E501
 
@@ -6025,16 +5989,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.stop_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.stop_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def stop_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Stop cross-project runs selection  # noqa: E501
 
@@ -6161,7 +6123,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Tag cross-project runs selection  # noqa: E501
 
@@ -6191,16 +6153,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.tag_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.tag_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def tag_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1EntitiesTags, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Tag cross-project runs selection  # noqa: E501
 
@@ -6327,7 +6287,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Transfer cross-project runs selection to a new project  # noqa: E501
 
@@ -6357,16 +6317,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.transfer_organization_runs_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.transfer_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def transfer_organization_runs_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1EntitiesTransfer, Field(..., description="Data")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Transfer cross-project runs selection to a new project  # noqa: E501
 
@@ -6493,7 +6451,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Update organization  # noqa: E501
 
@@ -6523,16 +6481,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Organization
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_organization_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.update_organization_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_organization_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update organization  # noqa: E501
 
@@ -6669,7 +6625,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Update organization invitation  # noqa: E501
 
@@ -6715,7 +6671,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update organization invitation  # noqa: E501
 
@@ -6857,7 +6813,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ) -> V1OrganizationMember:  # noqa: E501
         """Update organization member  # noqa: E501
 
@@ -6906,7 +6862,7 @@ class OrganizationsV1Api(BaseApi):
         email: Annotated[
             Optional[StrictStr], Field(description="Optional email.")
         ] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update organization member  # noqa: E501
 
@@ -7046,7 +7002,7 @@ class OrganizationsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ) -> V1Organization:  # noqa: E501
         """Update organization settings  # noqa: E501
 
@@ -7076,16 +7032,14 @@ class OrganizationsV1Api(BaseApi):
         :rtype: V1Organization
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_organization_settings_with_http_info(
-            owner, body, **kwargs
-        )  # noqa: E501
+        return self.update_organization_settings_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_organization_settings_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update organization settings  # noqa: E501
 

@@ -21,7 +21,7 @@ def get_tensorboard_args(
     if tb_args.use_names:
         args.append("--use-names")
     if tb_args.path_prefix:
-        args.append("--path-prefix={}".format(tb_args.path_prefix)),
+        args.append("--path-prefix={}".format(tb_args.path_prefix))
     if tb_args.plugins:
         plugins = validate_tags(tb_args.plugins, validate_yaml=True)
         args.append("--plugins={}".format(",".join(plugins)))

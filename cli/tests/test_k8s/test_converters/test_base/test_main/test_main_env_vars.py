@@ -216,9 +216,7 @@ class TestMainEnvVars(BaseConverterTest):
             config_maps=None,
         ) == base_env + self.converter._get_items_from_secret(
             secret=self.resource1
-        ) + self.converter._get_items_from_secret(
-            secret=self.resource2
-        )
+        ) + self.converter._get_items_from_secret(secret=self.resource2)
 
         assert self.converter._get_main_env_vars(
             plugins=None,
@@ -238,9 +236,7 @@ class TestMainEnvVars(BaseConverterTest):
             secret=self.resource2
         ) + self.converter._get_items_from_secret(
             secret=self.resource3
-        ) + self.converter._get_items_from_secret(
-            secret=self.resource4
-        )
+        ) + self.converter._get_items_from_secret(secret=self.resource4)
 
     def test_get_env_vars_with_config_maps(self):
         base_env = self.converter._get_service_env_vars(
@@ -257,9 +253,7 @@ class TestMainEnvVars(BaseConverterTest):
             config_maps=[self.resource1, self.resource2],
         ) == base_env + self.converter._get_items_from_config_map(
             config_map=self.resource1
-        ) + self.converter._get_items_from_config_map(
-            config_map=self.resource2
-        )
+        ) + self.converter._get_items_from_config_map(config_map=self.resource2)
 
         assert self.converter._get_main_env_vars(
             plugins=None,
@@ -279,9 +273,7 @@ class TestMainEnvVars(BaseConverterTest):
             config_map=self.resource2
         ) + self.converter._get_items_from_config_map(
             config_map=self.resource3
-        ) + self.converter._get_items_from_config_map(
-            config_map=self.resource4
-        )
+        ) + self.converter._get_items_from_config_map(config_map=self.resource4)
 
     def test_get_env_vars_with_all(self):
         connection = V1Connection(

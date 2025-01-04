@@ -460,9 +460,7 @@ class AuthV1Api(BaseApi):
         )
 
     @validate_call
-    def reset_password_confirm(
-        self, body: V1PasswordChange, **kwargs
-    ) -> V1Auth:  # noqa: E501
+    def reset_password_confirm(self, body: V1PasswordChange, **kwargs) -> V1Auth:  # noqa: E501
         """Reset password confirm  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -492,9 +490,7 @@ class AuthV1Api(BaseApi):
         return self.reset_password_confirm_with_http_info(body, **kwargs)  # noqa: E501
 
     @validate_call
-    def reset_password_confirm_with_http_info(
-        self, body: V1PasswordChange, **kwargs
-    ):  # noqa: E501
+    def reset_password_confirm_with_http_info(self, body: V1PasswordChange, **kwargs):  # noqa: E501
         """Reset password confirm  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an

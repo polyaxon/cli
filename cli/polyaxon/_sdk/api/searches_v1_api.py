@@ -15,7 +15,7 @@ class SearchesV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ) -> V1Search:
         """Create search
 
@@ -52,7 +52,7 @@ class SearchesV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ):
         """Create search
 
@@ -186,7 +186,7 @@ class SearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete search  # noqa: E501
 
@@ -225,7 +225,7 @@ class SearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete search  # noqa: E501
 
@@ -346,7 +346,7 @@ class SearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Search:  # noqa: E501
         """Get search  # noqa: E501
 
@@ -385,7 +385,7 @@ class SearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get search  # noqa: E501
 
@@ -525,7 +525,7 @@ class SearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListSearchesResponse:  # noqa: E501
         """List search names  # noqa: E501
 
@@ -592,7 +592,7 @@ class SearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List search names  # noqa: E501
 
@@ -765,7 +765,7 @@ class SearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListSearchesResponse:  # noqa: E501
         """List searches  # noqa: E501
 
@@ -832,7 +832,7 @@ class SearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List searches  # noqa: E501
 
@@ -990,7 +990,7 @@ class SearchesV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ) -> V1Search:  # noqa: E501
         """Patch search  # noqa: E501
 
@@ -1022,9 +1022,7 @@ class SearchesV1Api(BaseApi):
         :rtype: V1Search
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_search_with_http_info(
-            owner, search_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.patch_search_with_http_info(owner, search_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_search_with_http_info(
@@ -1032,7 +1030,7 @@ class SearchesV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch search  # noqa: E501
 
@@ -1169,7 +1167,7 @@ class SearchesV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ) -> V1Search:  # noqa: E501
         """Update search  # noqa: E501
 
@@ -1201,9 +1199,7 @@ class SearchesV1Api(BaseApi):
         :rtype: V1Search
         """
         kwargs["_return_http_data_only"] = True
-        return self.update_search_with_http_info(
-            owner, search_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.update_search_with_http_info(owner, search_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def update_search_with_http_info(
@@ -1211,7 +1207,7 @@ class SearchesV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update search  # noqa: E501
 

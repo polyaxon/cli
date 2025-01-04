@@ -129,9 +129,7 @@ class RESTClientObject(object):
                 if body is not None:
                     body = orjson_dumps(body)
                 args["data"] = body
-            elif (
-                headers["Content-Type"] == "application/x-www-form-urlencoded"
-            ):  # noqa: E501
+            elif headers["Content-Type"] == "application/x-www-form-urlencoded":  # noqa: E501
                 args["data"] = aiohttp.FormData(post_params)
             elif headers["Content-Type"] == "multipart/form-data":
                 # must del headers['Content-Type'], or the correct

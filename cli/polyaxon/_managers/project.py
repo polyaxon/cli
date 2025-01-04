@@ -22,8 +22,9 @@ class ProjectConfigManager(ConfigManager):
         project = cls.get_config()
         if not project:
             Printer.error(
-                "No project was found, please initialize a project."
-                " {}".format(cli_constants.INIT_COMMAND)
+                "No project was found, please initialize a project." " {}".format(
+                    cli_constants.INIT_COMMAND
+                )
             )
             sys.exit(1)
 

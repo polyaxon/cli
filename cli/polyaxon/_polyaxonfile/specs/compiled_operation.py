@@ -318,9 +318,7 @@ class CompiledOperationSpecification(BaseSpecification):
     ) -> V1CompiledOperation:
         if not preset:
             return config
-        preset = OperationSpecification.read(
-            preset, is_preset=True
-        )  # type: V1Operation
+        preset = OperationSpecification.read(preset, is_preset=True)  # type: V1Operation
         if preset.run_patch:
             config.run = config.run.patch(
                 validate_run_patch(preset.run_patch, config.run.kind),

@@ -1,8 +1,6 @@
 import os
 import pytest
 
-from clipped.compact.pydantic import ValidationError
-
 from polyaxon._flow import V1CompiledOperation, V1Hyperband
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.matrix import V1GridSearch

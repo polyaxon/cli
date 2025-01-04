@@ -1,8 +1,6 @@
 from typing import List, Optional
 
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._contexts import paths as ctx_paths
-from polyaxon._local_process import process_types
 from polyaxon._runner.converter import BaseConverter
 
 

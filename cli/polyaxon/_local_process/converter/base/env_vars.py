@@ -98,7 +98,7 @@ class EnvMixin(BaseConverter):
 
         try:
             secret_value = orjson_loads(resource.name)
-        except orjson.JSONDecodeError as e:
+        except orjson.JSONDecodeError:
             return items_from
 
         for item in resource.items:

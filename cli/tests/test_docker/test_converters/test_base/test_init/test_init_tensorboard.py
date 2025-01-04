@@ -3,7 +3,7 @@ import uuid
 
 from clipped.compact.pydantic import ValidationError
 
-from polyaxon._auxiliaries import V1PolyaxonInitContainer, get_init_resources
+from polyaxon._auxiliaries import V1PolyaxonInitContainer
 from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,

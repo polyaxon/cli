@@ -18,7 +18,7 @@ def _get_fs_from_connection(
     connection: Optional[V1Connection],
     asynchronous: bool = False,
     use_listings_cache: bool = False,
-    **kwargs
+    **kwargs,
 ):
     # We assume that `None` refers to local store as well
     if not connection or connection.kind in {

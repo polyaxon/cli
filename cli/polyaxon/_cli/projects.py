@@ -46,7 +46,7 @@ def project(ctx, _project):  # pylint:disable=redefined-outer-name
 @click.option(
     *OPTIONS_NAME["args"],
     type=str,
-    help="The project name, e.g. 'mnist' or 'acme/mnist'."
+    help="The project name, e.g. 'mnist' or 'acme/mnist'.",
 )
 @click.option("--description", type=str, help="Description of the project.")
 @click.option("--tags", type=str, help="Tags of the project (comma separated values).")
@@ -287,7 +287,7 @@ def delete(ctx, _project, yes):
 @click.option(
     *OPTIONS_NAME["args"],
     type=str,
-    help="Name of the project, must be unique for the same user."
+    help="Name of the project, must be unique for the same user.",
 )
 @click.option("--description", type=str, help="Description of the project.")
 @click.option("--tags", type=str, help="Tags of the project (comma separated values).")

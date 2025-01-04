@@ -18,7 +18,7 @@ class ProjectSearchesV1Api(BaseApi):
             StrictStr, Field(..., description="Project under namespace")
         ],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ) -> V1Search:  # noqa: E501
         """Create project search  # noqa: E501
 
@@ -50,9 +50,7 @@ class ProjectSearchesV1Api(BaseApi):
         :rtype: V1Search
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_project_search_with_http_info(
-            owner, project, body, **kwargs
-        )  # noqa: E501
+        return self.create_project_search_with_http_info(owner, project, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_project_search_with_http_info(
@@ -62,7 +60,7 @@ class ProjectSearchesV1Api(BaseApi):
             StrictStr, Field(..., description="Project under namespace")
         ],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create project search  # noqa: E501
 
@@ -206,7 +204,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete project search  # noqa: E501
 
@@ -238,9 +236,7 @@ class ProjectSearchesV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_project_search_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.delete_project_search_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_project_search_with_http_info(
@@ -255,7 +251,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete project search  # noqa: E501
 
@@ -386,7 +382,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Search:  # noqa: E501
         """Get project search  # noqa: E501
 
@@ -418,9 +414,7 @@ class ProjectSearchesV1Api(BaseApi):
         :rtype: V1Search
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_project_search_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_project_search_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_project_search_with_http_info(
@@ -435,7 +429,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get project search  # noqa: E501
 
@@ -582,7 +576,7 @@ class ProjectSearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListSearchesResponse:  # noqa: E501
         """List project search names  # noqa: E501
 
@@ -654,7 +648,7 @@ class ProjectSearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List project search names  # noqa: E501
 
@@ -835,7 +829,7 @@ class ProjectSearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListSearchesResponse:  # noqa: E501
         """List project searches  # noqa: E501
 
@@ -907,7 +901,7 @@ class ProjectSearchesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List project searches  # noqa: E501
 
@@ -1073,7 +1067,7 @@ class ProjectSearchesV1Api(BaseApi):
         ],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ) -> V1Search:  # noqa: E501
         """Patch project search  # noqa: E501
 
@@ -1120,7 +1114,7 @@ class ProjectSearchesV1Api(BaseApi):
         ],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch project search  # noqa: E501
 
@@ -1268,7 +1262,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Promote project search  # noqa: E501
 
@@ -1300,9 +1294,7 @@ class ProjectSearchesV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.promote_project_search_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.promote_project_search_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def promote_project_search_with_http_info(
@@ -1317,7 +1309,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Promote project search  # noqa: E501
 
@@ -1444,7 +1436,7 @@ class ProjectSearchesV1Api(BaseApi):
         ],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ) -> V1Search:  # noqa: E501
         """Update project search  # noqa: E501
 
@@ -1491,7 +1483,7 @@ class ProjectSearchesV1Api(BaseApi):
         ],
         search_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Search, Field(..., description="Search body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update project search  # noqa: E501
 

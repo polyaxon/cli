@@ -1466,7 +1466,7 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline
             )
 
         try:
-            from traceml.logging.streamer import get_logs_streamer, load_logs_from_path
+            from traceml.logging.streamer import load_logs_from_path
 
             load_logs_from_path(
                 logs_path=logs_path,

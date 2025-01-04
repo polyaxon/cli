@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon._flow import V1HpDateRange, V1Operation
+from polyaxon._flow import V1Operation
 from polyaxon._utils.fixtures.backfill import get_fxt_backfill_with_inputs_outputs
 from polyaxon._utils.test_utils import BaseTestCase
 

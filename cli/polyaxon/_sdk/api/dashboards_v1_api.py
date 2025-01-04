@@ -15,7 +15,7 @@ class DashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:  # noqa: E501
         """Create dashboard  # noqa: E501
 
@@ -52,7 +52,7 @@ class DashboardsV1Api(BaseApi):
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create dashboard  # noqa: E501
 
@@ -186,7 +186,7 @@ class DashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete dashboard  # noqa: E501
 
@@ -225,7 +225,7 @@ class DashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete dashboard  # noqa: E501
 
@@ -346,7 +346,7 @@ class DashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:  # noqa: E501
         """Get dashboard  # noqa: E501
 
@@ -385,7 +385,7 @@ class DashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get dashboard  # noqa: E501
 
@@ -525,7 +525,7 @@ class DashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListDashboardsResponse:  # noqa: E501
         """List dashboard names  # noqa: E501
 
@@ -592,7 +592,7 @@ class DashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List dashboard names  # noqa: E501
 
@@ -765,7 +765,7 @@ class DashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListDashboardsResponse:  # noqa: E501
         """List dashboards  # noqa: E501
 
@@ -832,7 +832,7 @@ class DashboardsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List dashboards  # noqa: E501
 
@@ -990,7 +990,7 @@ class DashboardsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:  # noqa: E501
         """Patch dashboard  # noqa: E501
 
@@ -1032,7 +1032,7 @@ class DashboardsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch dashboard  # noqa: E501
 
@@ -1169,7 +1169,7 @@ class DashboardsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ) -> V1Dashboard:  # noqa: E501
         """Update dashboard  # noqa: E501
 
@@ -1211,7 +1211,7 @@ class DashboardsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         dashboard_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Dashboard, Field(..., description="Dashboard body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update dashboard  # noqa: E501
 

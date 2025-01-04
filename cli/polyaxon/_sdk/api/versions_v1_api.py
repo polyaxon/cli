@@ -17,7 +17,7 @@ class VersionsV1Api(BaseApi):
         uuid: Annotated[StrictStr, Field(..., description="UUid")],
         version: Annotated[StrictStr, Field(..., description="Version")],
         service: Annotated[StrictStr, Field(..., description="Service")],
-        **kwargs
+        **kwargs,
     ) -> V1Compatibility:
         """Get compatibility versions
 
@@ -57,7 +57,7 @@ class VersionsV1Api(BaseApi):
         uuid: Annotated[StrictStr, Field(..., description="UUid")],
         version: Annotated[StrictStr, Field(..., description="Version")],
         service: Annotated[StrictStr, Field(..., description="Service")],
-        **kwargs
+        **kwargs,
     ):
         """Get compatibility versions
 
@@ -184,7 +184,7 @@ class VersionsV1Api(BaseApi):
     def get_installation(
         self,
         auth: Annotated[Optional[bool], Field(description="auth.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1Installation:
         """Get installation versions
 
@@ -218,7 +218,7 @@ class VersionsV1Api(BaseApi):
     def get_installation_with_http_info(
         self,
         auth: Annotated[Optional[bool], Field(description="auth.")] = None,
-        **kwargs
+        **kwargs,
     ):
         """Get installation versions
 

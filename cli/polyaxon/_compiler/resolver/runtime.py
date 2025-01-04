@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from polyaxon import settings
 from polyaxon._compiler.contexts import resolve_contexts, resolve_globals_contexts

@@ -93,8 +93,7 @@ def check_polyaxonfile(
 ):
     if sum([1 for i in [python_module, url, hub] if i]) > 1:
         message = (
-            "You can only use one and only one option: "
-            "hub, url, or a python module.".format(hub)
+            "You can only use one and only one option: hub, url, or a python module."
         )
         if is_cli:
             Printer.error(message, sys_exit=True)
@@ -213,8 +212,9 @@ def check_polyaxonfile(
 def check_polyaxonfile_kind(specification, kind):
     if specification.kind != kind:
         Printer.error(
-            "Your polyaxonfile must be of kind: `{}`, "
-            "received: `{}`.".format(kind, specification.kind),
+            "Your polyaxonfile must be of kind: `{}`, " "received: `{}`.".format(
+                kind, specification.kind
+            ),
             sys_exit=True,
         )
 

@@ -75,7 +75,7 @@ class K8sManager(BaseK8sManager):
         include_uninitialized=True,
         reraise: bool = False,
         namespace: str = None,
-        **kwargs
+        **kwargs,
     ):
         return self._list_namespace_resource(
             resource_api=self.k8s_api.list_namespaced_pod,
@@ -89,7 +89,7 @@ class K8sManager(BaseK8sManager):
         include_uninitialized=True,
         reraise: bool = False,
         namespace: str = None,
-        **kwargs
+        **kwargs,
     ):
         return self._list_namespace_resource(
             resource_api=self.k8s_batch_api.list_namespaced_job,
@@ -105,7 +105,7 @@ class K8sManager(BaseK8sManager):
         plural,
         reraise: bool = False,
         namespace: str = None,
-        **kwargs
+        **kwargs,
     ):
         return self._list_namespace_resource(
             resource_api=self.k8s_custom_object_api.list_namespaced_custom_object,
@@ -747,7 +747,7 @@ class K8sManager(BaseK8sManager):
         include_uninitialized=True,
         reraise: bool = False,
         namespace: str = None,
-        **kwargs
+        **kwargs,
     ):
         objs = self.list_pods(
             include_uninitialized=include_uninitialized,
@@ -765,7 +765,7 @@ class K8sManager(BaseK8sManager):
         include_uninitialized=True,
         reraise: bool = False,
         namespace: str = None,
-        **kwargs
+        **kwargs,
     ):
         objs = self.list_jobs(
             include_uninitialized=include_uninitialized,
@@ -812,7 +812,7 @@ class K8sManager(BaseK8sManager):
         field_selector: str = None,
         namespace: str = None,
         reraise: bool = False,
-        **kwargs
+        **kwargs,
     ) -> List[client.CoreV1EventList]:
         return self._list_namespace_resource(
             resource_api=self.k8s_api.list_namespaced_event,  # type: ignore[attr-defined]

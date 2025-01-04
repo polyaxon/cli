@@ -18,7 +18,7 @@ class QueuesV1Api(BaseApi):
             StrictStr, Field(..., description="Agent that consumes the queue")
         ],
         body: Annotated[V1Queue, Field(..., description="Queue body")],
-        **kwargs
+        **kwargs,
     ) -> V1Queue:  # noqa: E501
         """Create queue  # noqa: E501
 
@@ -50,9 +50,7 @@ class QueuesV1Api(BaseApi):
         :rtype: V1Queue
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_queue_with_http_info(
-            owner, agent, body, **kwargs
-        )  # noqa: E501
+        return self.create_queue_with_http_info(owner, agent, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_queue_with_http_info(
@@ -62,7 +60,7 @@ class QueuesV1Api(BaseApi):
             StrictStr, Field(..., description="Agent that consumes the queue")
         ],
         body: Annotated[V1Queue, Field(..., description="Queue body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Create queue  # noqa: E501
 
@@ -206,7 +204,7 @@ class QueuesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> None:  # noqa: E501
         """Delete queue  # noqa: E501
 
@@ -238,9 +236,7 @@ class QueuesV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_queue_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.delete_queue_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def delete_queue_with_http_info(
@@ -255,7 +251,7 @@ class QueuesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Delete queue  # noqa: E501
 
@@ -386,7 +382,7 @@ class QueuesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ) -> V1Queue:  # noqa: E501
         """Get queue  # noqa: E501
 
@@ -418,9 +414,7 @@ class QueuesV1Api(BaseApi):
         :rtype: V1Queue
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_queue_with_http_info(
-            owner, entity, uuid, **kwargs
-        )  # noqa: E501
+        return self.get_queue_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
 
     @validate_call
     def get_queue_with_http_info(
@@ -435,7 +429,7 @@ class QueuesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Get queue  # noqa: E501
 
@@ -579,7 +573,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListQueuesResponse:  # noqa: E501
         """List organization level queues names  # noqa: E501
 
@@ -646,7 +640,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List organization level queues names  # noqa: E501
 
@@ -819,7 +813,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListQueuesResponse:  # noqa: E501
         """List organization level queues  # noqa: E501
 
@@ -886,7 +880,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List organization level queues  # noqa: E501
 
@@ -1062,7 +1056,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListQueuesResponse:  # noqa: E501
         """List queues names  # noqa: E501
 
@@ -1134,7 +1128,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List queues names  # noqa: E501
 
@@ -1315,7 +1309,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ) -> V1ListQueuesResponse:  # noqa: E501
         """List queues  # noqa: E501
 
@@ -1387,7 +1381,7 @@ class QueuesV1Api(BaseApi):
             Optional[StrictStr], Field(description="Mode of the search.")
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """List queues  # noqa: E501
 
@@ -1553,7 +1547,7 @@ class QueuesV1Api(BaseApi):
         ],
         queue_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Queue, Field(..., description="Queue body")],
-        **kwargs
+        **kwargs,
     ) -> V1Queue:  # noqa: E501
         """Patch queue  # noqa: E501
 
@@ -1587,9 +1581,7 @@ class QueuesV1Api(BaseApi):
         :rtype: V1Queue
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_queue_with_http_info(
-            owner, agent, queue_uuid, body, **kwargs
-        )  # noqa: E501
+        return self.patch_queue_with_http_info(owner, agent, queue_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
     def patch_queue_with_http_info(
@@ -1600,7 +1592,7 @@ class QueuesV1Api(BaseApi):
         ],
         queue_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Queue, Field(..., description="Queue body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Patch queue  # noqa: E501
 
@@ -1744,7 +1736,7 @@ class QueuesV1Api(BaseApi):
         ],
         queue_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Queue, Field(..., description="Queue body")],
-        **kwargs
+        **kwargs,
     ) -> V1Queue:  # noqa: E501
         """Update queue  # noqa: E501
 
@@ -1791,7 +1783,7 @@ class QueuesV1Api(BaseApi):
         ],
         queue_uuid: Annotated[StrictStr, Field(..., description="UUID")],
         body: Annotated[V1Queue, Field(..., description="Queue body")],
-        **kwargs
+        **kwargs,
     ):  # noqa: E501
         """Update queue  # noqa: E501
 

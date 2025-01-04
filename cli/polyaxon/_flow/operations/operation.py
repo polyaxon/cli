@@ -8,7 +8,6 @@ from clipped.compact.pydantic import (
     field_validator,
     model_validator,
     validation_after,
-    validation_before,
 )
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
