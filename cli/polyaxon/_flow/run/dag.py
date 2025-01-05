@@ -444,7 +444,7 @@ class V1Dag(BaseRun):
         for g_context in ctx_sections.GLOBALS_CONTEXTS:
             self._context[
                 "dag.{}.{}".format(ctx_sections.GLOBALS, g_context)
-            ] = V1IO.construct(name=g_context, type="str", value="", is_optional=True)
+            ] = V1IO.construct(name=g_context, type="str", value="", is_optional=True)  # fmt: skip
 
         self._context["dag.{}".format(ctx_sections.INPUTS)] = V1IO.construct(
             name="inputs", type="dict", value={}, is_optional=True
@@ -541,19 +541,19 @@ class V1Dag(BaseRun):
             # We allow to resolve name, status, project, all outputs/inputs, iteration
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.INPUTS)
-            ] = V1IO.construct(name="inputs", type="dict", value={}, is_optional=True)
+            ] = V1IO.construct(name="inputs", type="dict", value={}, is_optional=True)  # fmt: skip
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.OUTPUTS)
-            ] = V1IO.construct(name="outputs", type="dict", value={}, is_optional=True)
+            ] = V1IO.construct(name="outputs", type="dict", value={}, is_optional=True)  # fmt: skip
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.GLOBALS)
-            ] = V1IO.construct(name="globals", type="str", value="", is_optional=True)
+            ] = V1IO.construct(name="globals", type="str", value="", is_optional=True)  # fmt: skip
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.ARTIFACTS)
-            ] = V1IO.construct(name="artifacts", type="str", value="", is_optional=True)
+            ] = V1IO.construct(name="artifacts", type="str", value="", is_optional=True)  # fmt: skip
             self._context[
                 "ops.{}.{}".format(op_name, ctx_sections.INPUTS_OUTPUTS)
-            ] = V1IO.construct(name="io", type="str", value={}, is_optional=True)
+            ] = V1IO.construct(name="io", type="str", value={}, is_optional=True)  # fmt: skip
 
         for op in self.operations:
             if op.has_component_reference:

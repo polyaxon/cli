@@ -1039,7 +1039,7 @@ class V1HpQLogUniform(BaseHpParamConfig):
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     value: Optional[
         Union[QLogUniform, QLogUniformList, QLogUniformStr, RefField]
-    ] = None
+    ] = None  # fmt: skip
 
     @property
     def is_distribution(self):

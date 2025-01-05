@@ -98,24 +98,24 @@ def resolve_globals_contexts(
         run_outputs_path = ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)
         resolved_contexts[ctx_sections.GLOBALS][
             ctx_keys.RUN_ARTIFACTS_PATH
-        ] = run_artifacts_path
+        ] = run_artifacts_path  # fmt: skip
         resolved_contexts[ctx_sections.GLOBALS][
             ctx_keys.RUN_OUTPUTS_PATH
-        ] = run_outputs_path
+        ] = run_outputs_path  # fmt: skip
     elif artifacts_store:
         run_artifacts_path = os.path.join(artifacts_store.store_path, run_path)
         run_outputs_path = os.path.join(run_artifacts_path, "outputs")
         resolved_contexts[ctx_sections.GLOBALS][
             ctx_keys.RUN_ARTIFACTS_PATH
-        ] = run_artifacts_path
+        ] = run_artifacts_path  # fmt: skip
         resolved_contexts[ctx_sections.GLOBALS][
             ctx_keys.RUN_OUTPUTS_PATH
-        ] = run_outputs_path
+        ] = run_outputs_path  # fmt: skip
 
     if plugins.mount_artifacts_store and artifacts_store:
         resolved_contexts[ctx_sections.GLOBALS][
             ctx_keys.STORE_PATH
-        ] = artifacts_store.store_path
+        ] = artifacts_store.store_path  # fmt: skip
     return resolved_contexts
 
 

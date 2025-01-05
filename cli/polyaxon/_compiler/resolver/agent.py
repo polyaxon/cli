@@ -71,7 +71,7 @@ class AgentResolver(BaseSchemaModel):
         if agent_config.artifacts_store:  # Resolve default artifacts store
             self.connection_by_names[
                 agent_config.artifacts_store.name
-            ] = agent_config.artifacts_store
+            ] = agent_config.artifacts_store  # fmt: skip
 
         if (
             compiled_operation.is_job_run

@@ -203,7 +203,7 @@ async def get_op_spec(
     for pod in pods or []:
         pods_list[
             pod.metadata.name
-        ] = k8s_manager.api_client.sanitize_for_serialization(pod)
+        ] = k8s_manager.api_client.sanitize_for_serialization(pod)  # fmt: skip
         pods_list[pod.metadata.name]["events"] = await get_resource_events(
             k8s_manager=k8s_manager,
             resource_type="Pod",
@@ -213,7 +213,7 @@ async def get_op_spec(
     for service in services or []:
         services_list[
             service.metadata.name
-        ] = k8s_manager.api_client.sanitize_for_serialization(service)
+        ] = k8s_manager.api_client.sanitize_for_serialization(service)  # fmt: skip
         services_list[service.metadata.name]["events"] = await get_resource_events(
             k8s_manager=k8s_manager,
             resource_type="Service",
@@ -245,7 +245,7 @@ async def get_agent_spec(
     for pod in pods or []:
         pods_list[
             pod.metadata.name
-        ] = k8s_manager.api_client.sanitize_for_serialization(pod)
+        ] = k8s_manager.api_client.sanitize_for_serialization(pod)  # fmt: skip
         pods_list[pod.metadata.name]["events"] = await get_resource_events(
             k8s_manager=k8s_manager,
             resource_type="Pod",
@@ -256,7 +256,7 @@ async def get_agent_spec(
     for service in services or []:
         services_list[
             service.metadata.name
-        ] = k8s_manager.api_client.sanitize_for_serialization(service)
+        ] = k8s_manager.api_client.sanitize_for_serialization(service)  # fmt: skip
         services_list[service.metadata.name]["events"] = await get_resource_events(
             k8s_manager=k8s_manager,
             resource_type="Service",

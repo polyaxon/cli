@@ -59,7 +59,7 @@ class PQLManager:
             if cls.FIELDS_TRANS[field].get("type"):
                 update_tokenized_query[
                     "{}_type".format(field_trans)
-                ] = cls.FIELDS_TRANS[field]["type"]
+                ] = cls.FIELDS_TRANS[field]["type"]  # fmt: skip
         else:
             update_tokenized_query[key] = tokenized_query[key]
 

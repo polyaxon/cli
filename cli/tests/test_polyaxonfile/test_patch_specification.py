@@ -574,7 +574,7 @@ class TestPatchSpecifications(BaseTestCase):
         assert result_dict["runPatch"]["environment"]["serviceAccountName"] == ""
         result_dict["runPatch"]["environment"][
             "serviceAccountName"
-        ] = operation.run_patch["environment"]["serviceAccountName"]
+        ] = operation.run_patch["environment"]["serviceAccountName"]  # fmt: skip
 
         assert result_dict == operation.to_dict()
 

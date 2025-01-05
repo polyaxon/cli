@@ -428,7 +428,7 @@ class V1Environment(BaseSchemaModel):
     priority: Optional[int] = None
     restart_policy: Optional[
         Literal["Always", "OnFailure", "Never", "ExitCode"]
-    ] = Field(alias="restartPolicy", default=None)
+    ] = Field(alias="restartPolicy", default=None)  # fmt: skip
 
     @field_validator("affinity", **validation_always, **validation_before)
     def validate_affinity(cls, v):

@@ -162,7 +162,7 @@ class BaseConverter(
         if memory:
             docker_resources[
                 "memory"
-            ] = docker_types.V1ResourceRequirements.from_k8s_memory(memory)
+            ] = docker_types.V1ResourceRequirements.from_k8s_memory(memory)  # fmt: skip
         if gpus:
             docker_resources["gpus"] = gpus
         return docker_types.V1ResourceRequirements.from_dict(docker_resources)
