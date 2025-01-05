@@ -20,7 +20,7 @@ class MXJobConverter(MXJobMixin, BaseConverter):
         default_sa: Optional[str] = None,
         default_auth: bool = False,
     ) -> Dict:
-        job = compiled_operation.run  # type: V1MXJob
+        job: V1MXJob = compiled_operation.run
 
         def _get_replica(replica: Optional[V1KFReplica]) -> Optional[ReplicaSpec]:
             if not replica:

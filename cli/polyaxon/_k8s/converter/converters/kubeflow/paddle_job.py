@@ -20,7 +20,7 @@ class PaddleJobConverter(PaddleJobMixin, BaseConverter):
         default_sa: Optional[str] = None,
         default_auth: bool = False,
     ) -> Dict:
-        job = compiled_operation.run  # type: V1PaddleJob
+        job: V1PaddleJob = compiled_operation.run
 
         def _get_replica(replica: Optional[V1KFReplica]) -> Optional[ReplicaSpec]:
             if not replica:

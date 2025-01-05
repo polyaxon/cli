@@ -39,7 +39,7 @@ class OperationSpecification(BaseSpecification):
 
             config = config.patch(preset, preset.patch_strategy)
         # Patch run
-        component = config.component  # type: V1Component
+        component: V1Component = config.component
         if not component:
             raise PolyaxonSchemaError(
                 "Compile operation received an invalid configuration: "

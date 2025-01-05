@@ -18,7 +18,7 @@ class JobConverter(JobMixin, BaseConverter):
         default_sa: Optional[str] = None,
         default_auth: bool = False,
     ) -> List[docker_types.V1Container]:
-        job = compiled_operation.run  # type: V1Job
+        job: V1Job = compiled_operation.run
         plugins = V1Plugins.get_or_create(
             config=compiled_operation.plugins, auth=default_auth
         )

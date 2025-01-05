@@ -87,7 +87,7 @@ class CompiledOperationSpecification(BaseSpecification):
 
     @staticmethod
     def _apply_dag_context(config: V1CompiledOperation) -> V1CompiledOperation:
-        dag_run = config.run  # type: V1Dag
+        dag_run: V1Dag = config.run
         dag_run.process_dag()
         dag_run.validate_dag()
         dag_run.process_components(config.inputs)

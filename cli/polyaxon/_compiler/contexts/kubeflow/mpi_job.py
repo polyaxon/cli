@@ -21,7 +21,7 @@ class MPIJobContextsManager(BaseContextsManager):
     ) -> Dict:
         contexts["init"] = {}
         contexts["connections"] = {}
-        job = compiled_operation.run  # type: V1MPIJob
+        job: V1MPIJob = compiled_operation.run
 
         def _get_replica(replica: Optional[V1KFReplica]) -> Dict:
             if not replica:

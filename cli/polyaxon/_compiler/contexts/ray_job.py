@@ -21,7 +21,7 @@ class RayJobContextsManager(BaseContextsManager):
     ) -> Dict:
         contexts["init"] = {}
         contexts["connections"] = {}
-        job = compiled_operation.run  # type: V1RayJob
+        job: V1RayJob = compiled_operation.run
 
         def _get_replica(replica: Optional[V1RayReplica]) -> Dict:
             if not replica:

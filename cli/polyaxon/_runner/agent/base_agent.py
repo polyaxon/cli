@@ -70,9 +70,7 @@ class BaseAgent:
             )
         except Exception as e:
             logger.warning(
-                "Agent failed to collect agent data: {}\nRetrying ...".format(
-                    repr(e)
-                )
+                "Agent failed to collect agent data: {}\nRetrying ...".format(repr(e))
             )
 
     def sync_compatible_updates(self, compatible_updates: Dict):

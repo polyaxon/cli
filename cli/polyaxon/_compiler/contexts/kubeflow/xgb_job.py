@@ -21,7 +21,7 @@ class XGBoostJobContextsManager(BaseContextsManager):
     ) -> Dict:
         contexts["init"] = {}
         contexts["connections"] = {}
-        job = compiled_operation.run  # type: V1XGBoostJob
+        job: V1XGBoostJob = compiled_operation.run
 
         def _get_replica(replica: Optional[V1KFReplica]) -> Dict:
             if not replica:

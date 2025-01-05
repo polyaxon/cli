@@ -21,7 +21,7 @@ class DaskJobContextsManager(BaseContextsManager):
     ) -> Dict:
         contexts["init"] = {}
         contexts["connections"] = {}
-        job = compiled_operation.run  # type: V1DaskJob
+        job: V1DaskJob = compiled_operation.run
 
         def _get_replica(replica: Optional[V1DaskReplica]) -> Dict:
             if not replica:
