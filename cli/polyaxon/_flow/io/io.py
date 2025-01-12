@@ -46,6 +46,8 @@ def validate_io_value(
             default=default,
         )
         if validation:
+            if isinstance(validation, dict):
+                validation = V1Validation(**validation)
             validation.run_validation(
                 value=parsed_value, type=type, is_optional=is_optional
             )
