@@ -43,6 +43,13 @@ class TestEnvironmentsConfigs(BaseTestCase):
         config = V1Environment.from_dict(config_dict)
         assert_equal_dict(config_dict, config.to_dict())
 
+        # Add complex annotations
+        config_dict["annotations"] = {
+            "k8s.v1.cni.cncf.io/networks": ' [ { "name" : "test", "namespace" : "test" } ]'
+        }
+        config = V1Environment.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+
         # Add toleration
         config_dict["tolerations"] = [{"key": "key", "operator": "Exists"}]
         config = V1Environment.from_dict(config_dict)

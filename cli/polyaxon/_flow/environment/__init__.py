@@ -8,6 +8,7 @@ from clipped.compact.pydantic import (
     validation_always,
     validation_before,
 )
+from clipped.types import GenericStr
 
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
@@ -395,9 +396,9 @@ class V1Environment(BaseSchemaModel):
         "dnsConfig",
     ]
 
-    labels: Optional[Dict[StrictStr, StrictStr]] = None
-    annotations: Optional[Dict[StrictStr, StrictStr]] = None
-    node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
+    labels: Optional[Dict[StrictStr, GenericStr]] = None
+    annotations: Optional[Dict[StrictStr, GenericStr]] = None
+    node_selector: Optional[Dict[StrictStr, GenericStr]] = Field(
         alias="nodeSelector", default=None
     )
     affinity: Optional[Union[k8s_schemas.V1Affinity, Dict]] = None

@@ -41,6 +41,29 @@ class TestSpecifications(BaseTestCase):
                 os.path.abspath("tests/fixtures/plain/job_missing_container.yml")
             )
 
+    def test_job_specification_with_annotations(self):
+        content = {
+            "version": 1.1,
+            "kind": "component",
+            "run": {
+                "kind": V1RunKind.JOB,
+                "environment":
+                    {
+                        "annotations": {
+                            "k8s.v1.cni.cncf.io/networks": ' [ { "name" : "test", "namespace" : "test" } ]',
+                        }
+                    },
+                "container": {
+                    "name": "polyaxon-main",
+                    "image": "test/test:latest",
+                    "command": "train",
+                },
+            },
+        }
+        config = V1Component.read(content)
+        assert config.to_dict() == content
+
+
     def test_spec_without_io_and_params_raises(self):
         content = {
             "version": 1.1,
