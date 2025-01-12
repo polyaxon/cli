@@ -386,7 +386,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
     _IDENTIFIER = "param"
 
-    value: Any
+    value: Optional[Any] = None
     ref: Optional[StrictStr] = None
     context_only: Optional[bool] = Field(alias="contextOnly", default=False)
     connection: Optional[StrictStr] = None

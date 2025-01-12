@@ -10,12 +10,8 @@ from polyaxon._utils.test_utils import BaseTestCase
 @pytest.mark.polyflow_mark
 class TestV1Params(BaseTestCase):
     def test_missing_value_param_config(self):
-        if PYDANTIC_VERSION.startswith("2."):
-            with self.assertRaises(ValidationError):
-                V1Param.from_dict({})
-        else:
-            param = V1Param.from_dict({})
-            assert param.value is None
+        param = V1Param.from_dict({})
+        assert param.value is None
 
         param = V1Param.from_dict({"value": None})
         assert param.value is None
