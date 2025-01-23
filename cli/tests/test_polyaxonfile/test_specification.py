@@ -47,12 +47,11 @@ class TestSpecifications(BaseTestCase):
             "kind": "component",
             "run": {
                 "kind": V1RunKind.JOB,
-                "environment":
-                    {
-                        "annotations": {
-                            "k8s.v1.cni.cncf.io/networks": ' [ { "name" : "test", "namespace" : "test" } ]',
-                        }
-                    },
+                "environment": {
+                    "annotations": {
+                        "k8s.v1.cni.cncf.io/networks": ' [ { "name" : "test", "namespace" : "test" } ]',
+                    }
+                },
                 "container": {
                     "name": "polyaxon-main",
                     "image": "test/test:latest",
@@ -62,7 +61,6 @@ class TestSpecifications(BaseTestCase):
         }
         config = V1Component.read(content)
         assert config.to_dict() == content
-
 
     def test_spec_without_io_and_params_raises(self):
         content = {
