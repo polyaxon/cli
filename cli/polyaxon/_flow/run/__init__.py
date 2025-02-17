@@ -52,6 +52,9 @@ V1Runtime = Annotated[
 
 
 class RunMixin:
+    def get_replica_types(self):
+        raise NotImplementedError
+
     def get_run_kind(self):
         raise NotImplementedError
 

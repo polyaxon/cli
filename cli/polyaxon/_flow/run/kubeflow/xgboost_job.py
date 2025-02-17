@@ -130,63 +130,49 @@ class V1XGBoostJob(BaseRun, DestinationImageMixin):
     worker: Optional[Union[V1KFReplica, RefField]] = None
 
     def apply_image_destination(self, image: str):
-        if self.chief:
-            self.chief.container = self.chief.container or V1Container()
-            self.chief.container.image = image
-        if self.ps:
-            self.ps.container = self.ps.container or V1Container()
-            self.ps.container.image = image
+        if self.master:
+            self.master.container = self.master.container or V1Container()
+            self.master.container.image = image
         if self.worker:
             self.worker.container = self.worker.container or V1Container()
             self.worker.container.image = image
-        if self.evaluator:
-            self.evaluator.container = self.evaluator.container or V1Container()
-            self.evaluator.container.image = image
 
     def get_resources(self):
         resources = V1RunResources()
-        if self.chief:
-            resources += self.chief.get_resources()
-        if self.ps:
-            resources += self.ps.get_resources()
+        if self.master:
+            resources += self.master.get_resources()
         if self.worker:
             resources += self.worker.get_resources()
-        if self.evaluator:
-            resources += self.evaluator.get_resources()
         return resources
 
     def get_all_containers(self):
         containers = []
-        if self.chief:
-            containers += self.chief.get_all_containers()
-        if self.ps:
-            containers += self.ps.get_all_containers()
+        if self.master:
+            containers += self.master.get_all_containers()
         if self.worker:
             containers += self.worker.get_all_containers()
-        if self.evaluator:
-            containers += self.evaluator.get_all_containers()
         return containers
 
     def get_all_connections(self):
         connections = []
-        if self.chief:
-            connections += self.chief.get_all_connections()
-        if self.ps:
-            connections += self.ps.get_all_connections()
+        if self.master:
+            connections += self.master.get_all_connections()
         if self.worker:
             connections += self.worker.get_all_connections()
-        if self.evaluator:
-            connections += self.evaluator.get_all_connections()
         return connections
 
     def get_all_init(self):
         init = []
-        if self.chief:
-            init += self.chief.get_all_init()
-        if self.ps:
-            init += self.ps.get_all_init()
+        if self.master:
+            init += self.master.get_all_init()
         if self.worker:
             init += self.worker.get_all_init()
-        if self.evaluator:
-            init += self.evaluator.get_all_init()
         return init
+
+    def get_replica_types(self):
+        types = []
+        if self.master:
+            types.append(self.master.replicas)
+        if self.worker:
+            types.append(self.worker.replicas)
+        return types

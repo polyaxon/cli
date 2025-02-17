@@ -205,3 +205,11 @@ class V1PaddleJob(BaseRun, DestinationImageMixin):
         if self.worker:
             init += self.worker.get_all_init()
         return init
+
+    def get_replica_types(self):
+        types = []
+        if self.master:
+            types.append("master")
+        if self.worker:
+            types.append("worker")
+        return types

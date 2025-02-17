@@ -313,3 +313,19 @@ class V1MXJob(BaseRun, DestinationImageMixin):
         if self.tuner_server:
             init += self.tuner_server.get_all_init()
         return init
+
+    def get_replica_types(self):
+        types = []
+        if self.scheduler:
+            types.append("scheduler")
+        if self.server:
+            types.append("server")
+        if self.worker:
+            types.append("worker")
+        if self.tuner:
+            types.append("tuner")
+        if self.tuner_tracker:
+            types.append("tuner_tracker")
+        if self.tuner_server:
+            types.append("tuner_server")
+        return types

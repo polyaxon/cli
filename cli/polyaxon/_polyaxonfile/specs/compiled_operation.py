@@ -321,7 +321,11 @@ class CompiledOperationSpecification(BaseSpecification):
         preset = OperationSpecification.read(preset, is_preset=True)  # type: V1Operation
         if preset.run_patch:
             config.run = config.run.patch(
-                validate_run_patch(preset.run_patch, config.run.kind),
+                validate_run_patch(
+                    preset.run_patch,
+                    config.run.kind,
+                    replica_types=config.get_replica_types(),
+                ),
                 strategy=preset.patch_strategy,
             )
         patch_keys = {

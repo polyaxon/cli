@@ -248,3 +248,15 @@ class V1TFJob(BaseRun, DestinationImageMixin):
         if self.evaluator:
             init += self.evaluator.get_all_init()
         return init
+
+    def get_replica_types(self):
+        types = []
+        if self.chief:
+            types.append("chief")
+        if self.ps:
+            types.append("ps")
+        if self.worker:
+            types.append("worker")
+        if self.evaluator:
+            types.append("evaluator")
+        return types

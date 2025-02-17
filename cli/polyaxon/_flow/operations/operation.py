@@ -648,8 +648,11 @@ class V1Operation(BaseOp, TemplateMixinConfig):
             return result
 
         kind = config.component.run.kind
-        value = validate_run_patch(value, kind)
-        current_value = validate_run_patch(current_value, kind)
+        replica_types = config.component.get_replica_types()
+        value = validate_run_patch(value, kind, replica_types=replica_types)
+        current_value = validate_run_patch(
+            current_value, kind, replica_types=replica_types
+        )
         run_patch = current_value.patch(value, strategy)
         run_patch = run_patch.to_dict()
         run_patch.pop("kind")

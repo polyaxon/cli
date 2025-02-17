@@ -54,7 +54,11 @@ class OperationSpecification(BaseSpecification):
                 else config.patch_strategy
             )
             component.run = component.run.patch(
-                validate_run_patch(config.run_patch, component.run.kind),
+                validate_run_patch(
+                    config.run_patch,
+                    component.run.kind,
+                    replica_types=component.get_replica_types(),
+                ),
                 strategy=patch_strategy,
             )
 

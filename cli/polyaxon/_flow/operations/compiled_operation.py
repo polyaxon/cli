@@ -135,3 +135,7 @@ class V1CompiledOperation(BaseOp, RunMixin):
             raise PolyaxonSchemaError(
                 "Operations with dag runtime do not support the `build` section."
             )
+
+    def get_replica_types(self):
+        if self.is_distributed_run:
+            return self.run.get_replica_types()

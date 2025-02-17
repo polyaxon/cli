@@ -396,3 +396,7 @@ class V1Component(
 
     def get_name(self):
         return self.name.split(":")[0] if self.name else None
+
+    def get_replica_types(self):
+        if self.is_distributed_run:
+            return self.run.get_replica_types()

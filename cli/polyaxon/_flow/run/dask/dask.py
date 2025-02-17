@@ -175,3 +175,13 @@ class V1DaskJob(BaseRun, DestinationImageMixin):
         if self.scheduler:
             init += self.scheduler.get_all_init()
         return init
+
+    def get_replica_types(self):
+        types = []
+        if self.job:
+            types.append("job")
+        if self.worker:
+            types.append("worker")
+        if self.scheduler:
+            types.append("scheduler")
+        return types

@@ -196,3 +196,11 @@ class V1RayJob(BaseRun, DestinationImageMixin):
                 worker = self.workers[worker_name]
                 init += worker.get_all_init()
         return init
+
+    def get_replica_types(self):
+        types = []
+        if self.head:
+            types.append("head")
+        if self.workers:
+            types += list(self.workers.keys())
+        return types
