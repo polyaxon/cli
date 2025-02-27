@@ -1,6 +1,6 @@
 import datetime
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
@@ -18,7 +18,8 @@ class V1Organization(BaseAllowSchemaModel):
     expiration: Optional[int] = None
     role: Optional[StrictStr] = None
     queue: Optional[StrictStr] = None
-    preset: Optional[StrictStr] = None
+    default_presets: Optional[List[StrictStr]] = None
+    default_presets_ordered: Optional[List[StrictStr]] = None
     is_cloud_viewable: Optional[bool] = None
     archived_deletion_interval: Optional[int] = None
     auth: Optional[Dict[str, Any]] = None

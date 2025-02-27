@@ -8,7 +8,8 @@ from polyaxon._sdk.schemas.v1_user_access import V1UserAccess
 
 class V1ProjectSettings(BaseAllowSchemaModel):
     connections: Optional[List[StrictStr]] = None
-    preset: Optional[StrictStr] = None
+    default_presets: Optional[List[StrictStr]] = None
+    default_presets_ordered: Optional[List[StrictStr]] = None
     presets: Optional[List[StrictStr]] = None
     queue: Optional[StrictStr] = None
     queues: Optional[List[StrictStr]] = None

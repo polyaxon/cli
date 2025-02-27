@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
@@ -13,5 +13,6 @@ class V1UserAccess(BaseAllowSchemaModel):
     user: Optional[StrictStr] = None
     user_data: Optional[V1UserAccessData] = None
     queue: Optional[StrictStr] = None
-    preset: Optional[StrictStr] = None
+    default_presets: Optional[List[StrictStr]] = None
+    default_presets_ordered: Optional[List[StrictStr]] = None
     namespace: Optional[StrictStr] = None

@@ -1,10 +1,17 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, Any, List
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
+from polyaxon._sdk.schemas.v1_list_project_versions_response import (
+    V1ListProjectVersionsResponse,
+)
+from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
+    V1ListRunArtifactsResponse,
+)
+from polyaxon._sdk.schemas.v1_events_response import V1MultiEventsResponse
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
 from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon._sdk.schemas.v1_list_activities_response import V1ListActivitiesResponse
@@ -29,8 +36,8 @@ class OrganizationsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs,
-    ) -> None:
-        """Approve cross-project runs selection
+    ) -> None:  # noqa: E501
+        """Approve cross-project runs selection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -58,7 +65,7 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.approve_organization_runs_with_http_info(owner, body, **kwargs)
+        return self.approve_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def approve_organization_runs_with_http_info(
@@ -66,8 +73,8 @@ class OrganizationsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs,
-    ):
-        """Approve cross-project runs selection
+    ):  # noqa: E501
+        """Approve cross-project runs selection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -137,14 +144,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -153,7 +157,7 @@ class OrganizationsV1Api(BaseApi):
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
-        )
+        )  # noqa: E501
 
         # set the HTTP header `Content-Type`
         _content_types_list = _params.get(
@@ -164,7 +168,7 @@ class OrganizationsV1Api(BaseApi):
             _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
-        _auth_settings = ["ApiKey"]
+        _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {}
 
@@ -180,7 +184,7 @@ class OrganizationsV1Api(BaseApi):
             response_types_map=_response_types_map,
             auth_settings=_auth_settings,
             async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
             _preload_content=_params.get("_preload_content", True),
             _request_timeout=_params.get("_request_timeout"),
             collection_formats=_collection_formats,
@@ -193,8 +197,8 @@ class OrganizationsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs,
-    ) -> None:
-        """Archive cross-project runs selection
+    ) -> None:  # noqa: E501
+        """Archive cross-project runs selection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -222,7 +226,7 @@ class OrganizationsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.archive_organization_runs_with_http_info(owner, body, **kwargs)
+        return self.archive_organization_runs_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def archive_organization_runs_with_http_info(
@@ -230,8 +234,8 @@ class OrganizationsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs,
-    ):
-        """Archive cross-project runs selection
+    ):  # noqa: E501
+        """Archive cross-project runs selection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -301,14 +305,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -317,7 +318,7 @@ class OrganizationsV1Api(BaseApi):
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
-        )
+        )  # noqa: E501
 
         # set the HTTP header `Content-Type`
         _content_types_list = _params.get(
@@ -328,7 +329,7 @@ class OrganizationsV1Api(BaseApi):
             _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
-        _auth_settings = ["ApiKey"]
+        _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {}
 
@@ -344,7 +345,7 @@ class OrganizationsV1Api(BaseApi):
             response_types_map=_response_types_map,
             auth_settings=_auth_settings,
             async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
             _preload_content=_params.get("_preload_content", True),
             _request_timeout=_params.get("_request_timeout"),
             collection_formats=_collection_formats,
@@ -357,8 +358,8 @@ class OrganizationsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
         **kwargs,
-    ) -> None:
-        """Bookmark cross-project runs selection
+    ) -> None:  # noqa: E501
+        """Bookmark cross-project runs selection  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -465,14 +466,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -613,14 +611,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -803,11 +798,9 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -978,14 +971,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1024,7 +1014,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -1099,7 +1089,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -1206,29 +1196,56 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("member_user") is not None:  # noqa: E501
             _query_params.append(("member.user", _params["member_user"]))
+
         if _params.get("member_user_email") is not None:  # noqa: E501
             _query_params.append(("member.user_email", _params["member_user_email"]))
+
         if _params.get("member_role") is not None:  # noqa: E501
             _query_params.append(("member.role", _params["member_role"]))
+
         if _params.get("member_kind") is not None:  # noqa: E501
             _query_params.append(("member.kind", _params["member_kind"]))
+
         if _params.get("member_created_at") is not None:  # noqa: E501
-            _query_params.append(("member.created_at", _params["member_created_at"]))
+            if isinstance(_params["member_created_at"], datetime):
+                _query_params.append(
+                    (
+                        "member.created_at",
+                        _params["member_created_at"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
+                )
+            else:
+                _query_params.append(
+                    ("member.created_at", _params["member_created_at"])
+                )
+
         if _params.get("member_updated_at") is not None:  # noqa: E501
-            _query_params.append(("member.updated_at", _params["member_updated_at"]))
+            if isinstance(_params["member_updated_at"], datetime):
+                _query_params.append(
+                    (
+                        "member.updated_at",
+                        _params["member_updated_at"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
+                )
+            else:
+                _query_params.append(
+                    ("member.updated_at", _params["member_updated_at"])
+                )
+
         if _params.get("email") is not None:  # noqa: E501
             _query_params.append(("email", _params["email"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1369,22 +1386,19 @@ class OrganizationsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1528,14 +1542,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1701,14 +1712,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1926,29 +1934,32 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1992,7 +2003,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -2067,7 +2078,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Read-only User email.")
         ] = None,
         member_role: Annotated[Optional[StrictStr], Field(description="Role.")] = None,
-        member_kind: Annotated[Optional[str], Field(description="Kind.")] = None,
+        member_kind: Annotated[Optional[StrictStr], Field(description="Kind.")] = None,
         member_created_at: Annotated[
             Optional[datetime],
             Field(description="Optional time when the entity was created."),
@@ -2174,29 +2185,56 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("member_user") is not None:  # noqa: E501
             _query_params.append(("member.user", _params["member_user"]))
+
         if _params.get("member_user_email") is not None:  # noqa: E501
             _query_params.append(("member.user_email", _params["member_user_email"]))
+
         if _params.get("member_role") is not None:  # noqa: E501
             _query_params.append(("member.role", _params["member_role"]))
+
         if _params.get("member_kind") is not None:  # noqa: E501
             _query_params.append(("member.kind", _params["member_kind"]))
+
         if _params.get("member_created_at") is not None:  # noqa: E501
-            _query_params.append(("member.created_at", _params["member_created_at"]))
+            if isinstance(_params["member_created_at"], datetime):
+                _query_params.append(
+                    (
+                        "member.created_at",
+                        _params["member_created_at"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
+                )
+            else:
+                _query_params.append(
+                    ("member.created_at", _params["member_created_at"])
+                )
+
         if _params.get("member_updated_at") is not None:  # noqa: E501
-            _query_params.append(("member.updated_at", _params["member_updated_at"]))
+            if isinstance(_params["member_updated_at"], datetime):
+                _query_params.append(
+                    (
+                        "member.updated_at",
+                        _params["member_updated_at"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
+                )
+            else:
+                _query_params.append(
+                    ("member.updated_at", _params["member_updated_at"])
+                )
+
         if _params.get("email") is not None:  # noqa: E501
             _query_params.append(("email", _params["email"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2342,22 +2380,19 @@ class OrganizationsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2376,6 +2411,496 @@ class OrganizationsV1Api(BaseApi):
         return self.api_client.call_api(
             "/api/v1/orgs/{owner}/members/{name}",
             "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def get_organization_multi_run_events(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity where the run will be assigned."),
+        ] = None,
+        names: Annotated[
+            Optional[StrictStr], Field(description="Names query param.")
+        ] = None,
+        runs: Annotated[
+            Optional[StrictStr], Field(description="Runs query param.")
+        ] = None,
+        orient: Annotated[
+            Optional[StrictStr], Field(description="Orient query param.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        sample: Annotated[
+            Optional[StrictInt], Field(description="Sample query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
+        **kwargs,
+    ) -> V1MultiEventsResponse:  # noqa: E501
+        """Get multi runs events  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_multi_run_events(namespace, owner, kind, entity, names, runs, orient, force, sample, connection, status, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param kind: The artifact kind (required)
+        :type kind: str
+        :param entity: Entity where the run will be assigned.
+        :type entity: str
+        :param names: Names query param.
+        :type names: str
+        :param runs: Runs query param.
+        :type runs: str
+        :param orient: Orient query param.
+        :type orient: str
+        :param force: Force query param.
+        :type force: bool
+        :param sample: Sample query param.
+        :type sample: int
+        :param connection: Connection to use.
+        :type connection: str
+        :param status: Optional status.
+        :type status: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1MultiEventsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_organization_multi_run_events_with_http_info(
+            namespace,
+            owner,
+            kind,
+            entity,
+            names,
+            runs,
+            orient,
+            force,
+            sample,
+            connection,
+            status,
+            **kwargs,
+        )  # noqa: E501
+
+    @validate_call
+    def get_organization_multi_run_events_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity where the run will be assigned."),
+        ] = None,
+        names: Annotated[
+            Optional[StrictStr], Field(description="Names query param.")
+        ] = None,
+        runs: Annotated[
+            Optional[StrictStr], Field(description="Runs query param.")
+        ] = None,
+        orient: Annotated[
+            Optional[StrictStr], Field(description="Orient query param.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        sample: Annotated[
+            Optional[StrictInt], Field(description="Sample query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
+        **kwargs,
+    ):  # noqa: E501
+        """Get multi runs events  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_multi_run_events_with_http_info(namespace, owner, kind, entity, names, runs, orient, force, sample, connection, status, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param kind: The artifact kind (required)
+        :type kind: str
+        :param entity: Entity where the run will be assigned.
+        :type entity: str
+        :param names: Names query param.
+        :type names: str
+        :param runs: Runs query param.
+        :type runs: str
+        :param orient: Orient query param.
+        :type orient: str
+        :param force: Force query param.
+        :type force: bool
+        :param sample: Sample query param.
+        :type sample: int
+        :param connection: Connection to use.
+        :type connection: str
+        :param status: Optional status.
+        :type status: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1MultiEventsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = [
+            "namespace",
+            "owner",
+            "kind",
+            "entity",
+            "names",
+            "runs",
+            "orient",
+            "force",
+            "sample",
+            "connection",
+            "status",
+        ]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_organization_multi_run_events" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["kind"]:
+            _path_params["kind"] = _params["kind"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("entity") is not None:  # noqa: E501
+            _query_params.append(("entity", _params["entity"]))
+
+        if _params.get("names") is not None:  # noqa: E501
+            _query_params.append(("names", _params["names"]))
+
+        if _params.get("runs") is not None:  # noqa: E501
+            _query_params.append(("runs", _params["runs"]))
+
+        if _params.get("orient") is not None:  # noqa: E501
+            _query_params.append(("orient", _params["orient"]))
+
+        if _params.get("force") is not None:  # noqa: E501
+            _query_params.append(("force", _params["force"]))
+
+        if _params.get("sample") is not None:  # noqa: E501
+            _query_params.append(("sample", _params["sample"]))
+
+        if _params.get("connection") is not None:  # noqa: E501
+            _query_params.append(("connection", _params["connection"]))
+
+        if _params.get("status") is not None:  # noqa: E501
+            _query_params.append(("status", _params["status"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1MultiEventsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/orgs/{owner}/runs/multi/events/{kind}",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def get_organization_multi_run_importance(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity where the run will be assigned."),
+        ] = None,
+        **kwargs,
+    ) -> V1MultiEventsResponse:  # noqa: E501
+        """Get multi run importance  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_multi_run_importance(namespace, owner, body, entity, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param body: Params/Metrics data (required)
+        :type body: object
+        :param entity: Entity where the run will be assigned.
+        :type entity: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1MultiEventsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_organization_multi_run_importance_with_http_info(
+            namespace, owner, body, entity, **kwargs
+        )  # noqa: E501
+
+    @validate_call
+    def get_organization_multi_run_importance_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity where the run will be assigned."),
+        ] = None,
+        **kwargs,
+    ):  # noqa: E501
+        """Get multi run importance  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_multi_run_importance_with_http_info(namespace, owner, body, entity, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param body: Params/Metrics data (required)
+        :type body: object
+        :param entity: Entity where the run will be assigned.
+        :type entity: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1MultiEventsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = ["namespace", "owner", "body", "entity"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_organization_multi_run_importance" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("entity") is not None:  # noqa: E501
+            _query_params.append(("entity", _params["entity"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1MultiEventsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/orgs/{owner}/runs/multi/importance",
+            "POST",
             _path_params,
             _query_params,
             _header_params,
@@ -2507,22 +3032,19 @@ class OrganizationsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2740,29 +3262,32 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2780,6 +3305,263 @@ class OrganizationsV1Api(BaseApi):
 
         return self.api_client.call_api(
             "/api/v1/orgs/{owner}/runs",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def get_organization_runs_artifacts_lineage(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[
+            Optional[StrictStr], Field(description="Entity managing the resource.")
+        ] = None,
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        bookmarks: Annotated[
+            Optional[bool], Field(description="Filter by bookmarks.")
+        ] = None,
+        mode: Annotated[
+            Optional[StrictStr], Field(description="Mode of the search.")
+        ] = None,
+        no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
+        **kwargs,
+    ) -> V1ListRunArtifactsResponse:  # noqa: E501
+        """Get runs artifacts lineage  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_runs_artifacts_lineage(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity managing the resource.
+        :type name: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param bookmarks: Filter by bookmarks.
+        :type bookmarks: bool
+        :param mode: Mode of the search.
+        :type mode: str
+        :param no_page: No pagination.
+        :type no_page: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1ListRunArtifactsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_organization_runs_artifacts_lineage_with_http_info(
+            owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
+        )  # noqa: E501
+
+    @validate_call
+    def get_organization_runs_artifacts_lineage_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[
+            Optional[StrictStr], Field(description="Entity managing the resource.")
+        ] = None,
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        bookmarks: Annotated[
+            Optional[bool], Field(description="Filter by bookmarks.")
+        ] = None,
+        mode: Annotated[
+            Optional[StrictStr], Field(description="Mode of the search.")
+        ] = None,
+        no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
+        **kwargs,
+    ):  # noqa: E501
+        """Get runs artifacts lineage  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_runs_artifacts_lineage_with_http_info(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity managing the resource.
+        :type name: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param bookmarks: Filter by bookmarks.
+        :type bookmarks: bool
+        :param mode: Mode of the search.
+        :type mode: str
+        :param no_page: No pagination.
+        :type no_page: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1ListRunArtifactsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = [
+            "owner",
+            "name",
+            "offset",
+            "limit",
+            "sort",
+            "query",
+            "bookmarks",
+            "mode",
+            "no_page",
+        ]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_organization_runs_artifacts_lineage" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("name") is not None:  # noqa: E501
+            _query_params.append(("name", _params["name"]))
+
+        if _params.get("offset") is not None:  # noqa: E501
+            _query_params.append(("offset", _params["offset"]))
+
+        if _params.get("limit") is not None:  # noqa: E501
+            _query_params.append(("limit", _params["limit"]))
+
+        if _params.get("sort") is not None:  # noqa: E501
+            _query_params.append(("sort", _params["sort"]))
+
+        if _params.get("query") is not None:  # noqa: E501
+            _query_params.append(("query", _params["query"]))
+
+        if _params.get("bookmarks") is not None:  # noqa: E501
+            _query_params.append(("bookmarks", _params["bookmarks"]))
+
+        if _params.get("mode") is not None:  # noqa: E501
+            _query_params.append(("mode", _params["mode"]))
+
+        if _params.get("no_page") is not None:  # noqa: E501
+            _query_params.append(("no_page", _params["no_page"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1ListRunArtifactsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/runs/lineage/artifacts",
             "GET",
             _path_params,
             _query_params,
@@ -2835,8 +3617,11 @@ class OrganizationsV1Api(BaseApi):
         organization_queue: Annotated[
             Optional[StrictStr], Field(description="Default queue.")
         ] = None,
-        organization_preset: Annotated[
-            Optional[StrictStr], Field(description="Default preset.")
+        organization_default_presets: Annotated[
+            Optional[List[StrictStr]], Field(description="Default presets.")
+        ] = None,
+        organization_default_presets_ordered: Annotated[
+            Optional[List[StrictStr]], Field(description="Default presets.")
         ] = None,
         organization_is_cloud_viewable: Annotated[
             Optional[bool],
@@ -2855,7 +3640,7 @@ class OrganizationsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_organization_settings(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_preset, organization_is_cloud_viewable, organization_archived_deletion_interval, async_req=True)
+        >>> thread = api.get_organization_settings(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_default_presets, organization_default_presets_ordered, organization_is_cloud_viewable, organization_archived_deletion_interval, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -2880,8 +3665,10 @@ class OrganizationsV1Api(BaseApi):
         :type organization_role: str
         :param organization_queue: Default queue.
         :type organization_queue: str
-        :param organization_preset: Default preset.
-        :type organization_preset: str
+        :param organization_default_presets: Default presets.
+        :type organization_default_presets: List[str]
+        :param organization_default_presets_ordered: Default presets.
+        :type organization_default_presets_ordered: List[str]
         :param organization_is_cloud_viewable: Setting to enable viewable metadata on cloud.
         :type organization_is_cloud_viewable: bool
         :param organization_archived_deletion_interval: Setting to configure default archived deletion interval.
@@ -2914,7 +3701,8 @@ class OrganizationsV1Api(BaseApi):
             organization_expiration,
             organization_role,
             organization_queue,
-            organization_preset,
+            organization_default_presets,
+            organization_default_presets_ordered,
             organization_is_cloud_viewable,
             organization_archived_deletion_interval,
             **kwargs,
@@ -2958,8 +3746,11 @@ class OrganizationsV1Api(BaseApi):
         organization_queue: Annotated[
             Optional[StrictStr], Field(description="Default queue.")
         ] = None,
-        organization_preset: Annotated[
-            Optional[StrictStr], Field(description="Default preset.")
+        organization_default_presets: Annotated[
+            Optional[List[StrictStr]], Field(description="Default presets.")
+        ] = None,
+        organization_default_presets_ordered: Annotated[
+            Optional[List[StrictStr]], Field(description="Default presets.")
         ] = None,
         organization_is_cloud_viewable: Annotated[
             Optional[bool],
@@ -2978,7 +3769,7 @@ class OrganizationsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_organization_settings_with_http_info(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_preset, organization_is_cloud_viewable, organization_archived_deletion_interval, async_req=True)
+        >>> thread = api.get_organization_settings_with_http_info(owner, organization_user, organization_user_email, organization_name, organization_is_public, organization_created_at, organization_updated_at, organization_support_revoke_at, organization_expiration, organization_role, organization_queue, organization_default_presets, organization_default_presets_ordered, organization_is_cloud_viewable, organization_archived_deletion_interval, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -3003,8 +3794,10 @@ class OrganizationsV1Api(BaseApi):
         :type organization_role: str
         :param organization_queue: Default queue.
         :type organization_queue: str
-        :param organization_preset: Default preset.
-        :type organization_preset: str
+        :param organization_default_presets: Default presets.
+        :type organization_default_presets: List[str]
+        :param organization_default_presets_ordered: Default presets.
+        :type organization_default_presets_ordered: List[str]
         :param organization_is_cloud_viewable: Setting to enable viewable metadata on cloud.
         :type organization_is_cloud_viewable: bool
         :param organization_archived_deletion_interval: Setting to configure default archived deletion interval.
@@ -3047,7 +3840,8 @@ class OrganizationsV1Api(BaseApi):
             "organization_expiration",
             "organization_role",
             "organization_queue",
-            "organization_preset",
+            "organization_default_presets",
+            "organization_default_presets_ordered",
             "organization_is_cloud_viewable",
             "organization_archived_deletion_interval",
         ]
@@ -3084,43 +3878,97 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("organization_user") is not None:  # noqa: E501
             _query_params.append(("organization.user", _params["organization_user"]))
+
         if _params.get("organization_user_email") is not None:  # noqa: E501
             _query_params.append(
                 ("organization.user_email", _params["organization_user_email"])
             )
+
         if _params.get("organization_name") is not None:  # noqa: E501
             _query_params.append(("organization.name", _params["organization_name"]))
+
         if _params.get("organization_is_public") is not None:  # noqa: E501
             _query_params.append(
                 ("organization.is_public", _params["organization_is_public"])
             )
+
         if _params.get("organization_created_at") is not None:  # noqa: E501
-            _query_params.append(
-                ("organization.created_at", _params["organization_created_at"])
-            )
-        if _params.get("organization_updated_at") is not None:  # noqa: E501
-            _query_params.append(
-                ("organization.updated_at", _params["organization_updated_at"])
-            )
-        if _params.get("organization_support_revoke_at") is not None:  # noqa: E501
-            _query_params.append(
-                (
-                    "organization.support_revoke_at",
-                    _params["organization_support_revoke_at"],
+            if isinstance(_params["organization_created_at"], datetime):
+                _query_params.append(
+                    (
+                        "organization.created_at",
+                        _params["organization_created_at"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
                 )
-            )
+            else:
+                _query_params.append(
+                    ("organization.created_at", _params["organization_created_at"])
+                )
+
+        if _params.get("organization_updated_at") is not None:  # noqa: E501
+            if isinstance(_params["organization_updated_at"], datetime):
+                _query_params.append(
+                    (
+                        "organization.updated_at",
+                        _params["organization_updated_at"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
+                )
+            else:
+                _query_params.append(
+                    ("organization.updated_at", _params["organization_updated_at"])
+                )
+
+        if _params.get("organization_support_revoke_at") is not None:  # noqa: E501
+            if isinstance(_params["organization_support_revoke_at"], datetime):
+                _query_params.append(
+                    (
+                        "organization.support_revoke_at",
+                        _params["organization_support_revoke_at"].strftime(
+                            self.api_client.configuration.datetime_format
+                        ),
+                    )
+                )
+            else:
+                _query_params.append(
+                    (
+                        "organization.support_revoke_at",
+                        _params["organization_support_revoke_at"],
+                    )
+                )
+
         if _params.get("organization_expiration") is not None:  # noqa: E501
             _query_params.append(
                 ("organization.expiration", _params["organization_expiration"])
             )
+
         if _params.get("organization_role") is not None:  # noqa: E501
             _query_params.append(("organization.role", _params["organization_role"]))
+
         if _params.get("organization_queue") is not None:  # noqa: E501
             _query_params.append(("organization.queue", _params["organization_queue"]))
-        if _params.get("organization_preset") is not None:  # noqa: E501
+
+        if _params.get("organization_default_presets") is not None:  # noqa: E501
             _query_params.append(
-                ("organization.preset", _params["organization_preset"])
+                (
+                    "organization.default_presets",
+                    _params["organization_default_presets"],
+                )
             )
+            _collection_formats["organization.default_presets"] = "multi"
+
+        if _params.get("default_presets_ordered") is not None:  # noqa: E501
+            _query_params.append(
+                (
+                    "organization.default_presets_ordered",
+                    _params["default_presets_ordered"],
+                )
+            )
+            _collection_formats["organization.default_presets_ordered"] = "multi"
+
         if _params.get("organization_is_cloud_viewable") is not None:  # noqa: E501
             _query_params.append(
                 (
@@ -3128,6 +3976,7 @@ class OrganizationsV1Api(BaseApi):
                     _params["organization_is_cloud_viewable"],
                 )
             )
+
         if _params.get("organization_archived_deletion_interval") is not None:  # noqa: E501
             _query_params.append(
                 (
@@ -3138,14 +3987,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -3287,7 +4133,7 @@ class OrganizationsV1Api(BaseApi):
             Optional[bool], Field(description="Filter by bookmarks.")
         ] = None,
         mode: Annotated[Optional[StrictStr], Field(description="Stats Mode.")] = None,
-        kind: Annotated[Optional[str], Field(description="Stats Kind.")] = None,
+        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
         aggregate: Annotated[
             Optional[StrictStr], Field(description="Stats aggregate.")
         ] = None,
@@ -3399,35 +4245,41 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("kind") is not None:  # noqa: E501
             _query_params.append(("kind", _params["kind"]))
+
         if _params.get("aggregate") is not None:  # noqa: E501
             _query_params.append(("aggregate", _params["aggregate"]))
+
         if _params.get("groupby") is not None:  # noqa: E501
             _query_params.append(("groupby", _params["groupby"]))
+
         if _params.get("trunc") is not None:  # noqa: E501
             _query_params.append(("trunc", _params["trunc"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -3445,6 +4297,223 @@ class OrganizationsV1Api(BaseApi):
 
         return self.api_client.call_api(
             "/api/v1/orgs/{owner}/stats",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def get_organization_versions(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
+        **kwargs,
+    ) -> V1ListProjectVersionsResponse:  # noqa: E501
+        """Get all runs in an organization  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_versions(owner, kind, offset, limit, sort, query, no_page, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param kind: Version Kind (required)
+        :type kind: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param no_page: No pagination.
+        :type no_page: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1ListProjectVersionsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_organization_versions_with_http_info(
+            owner, kind, offset, limit, sort, query, no_page, **kwargs
+        )  # noqa: E501
+
+    @validate_call
+    def get_organization_versions_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        kind: Annotated[StrictStr, Field(..., description="Version Kind")],
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
+        **kwargs,
+    ):  # noqa: E501
+        """Get all runs in an organization  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_organization_versions_with_http_info(owner, kind, offset, limit, sort, query, no_page, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param kind: Version Kind (required)
+        :type kind: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param no_page: No pagination.
+        :type no_page: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1ListProjectVersionsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = ["owner", "kind", "offset", "limit", "sort", "query", "no_page"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_organization_versions" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["kind"]:
+            _path_params["kind"] = _params["kind"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("offset") is not None:  # noqa: E501
+            _query_params.append(("offset", _params["offset"]))
+
+        if _params.get("limit") is not None:  # noqa: E501
+            _query_params.append(("limit", _params["limit"]))
+
+        if _params.get("sort") is not None:  # noqa: E501
+            _query_params.append(("sort", _params["sort"]))
+
+        if _params.get("query") is not None:  # noqa: E501
+            _query_params.append(("query", _params["query"]))
+
+        if _params.get("no_page") is not None:  # noqa: E501
+            _query_params.append(("no_page", _params["no_page"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1ListProjectVersionsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/versions/{kind}",
             "GET",
             _path_params,
             _query_params,
@@ -3576,14 +4645,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -3809,29 +4875,32 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4049,29 +5118,32 @@ class OrganizationsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4200,17 +5272,13 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4339,17 +5407,13 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4368,175 +5432,6 @@ class OrganizationsV1Api(BaseApi):
         return self.api_client.call_api(
             "/api/v1/orgs/list",
             "GET",
-            _path_params,
-            _query_params,
-            _header_params,
-            body=_body_params,
-            post_params=_form_params,
-            files=_files,
-            response_types_map=_response_types_map,
-            auth_settings=_auth_settings,
-            async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
-            _preload_content=_params.get("_preload_content", True),
-            _request_timeout=_params.get("_request_timeout"),
-            collection_formats=_collection_formats,
-            _request_auth=_params.get("_request_auth"),
-        )
-
-    @validate_call
-    def organization_plan(
-        self,
-        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs,
-    ) -> V1Organization:  # noqa: E501
-        """Organization plan  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.organization_plan(owner, body, async_req=True)
-        >>> result = thread.get()
-
-        :param owner: Owner of the namespace (required)
-        :type owner: str
-        :param body: Organization body (required)
-        :type body: V1Organization
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: V1Organization
-        """
-        kwargs["_return_http_data_only"] = True
-        return self.organization_plan_with_http_info(owner, body, **kwargs)  # noqa: E501
-
-    @validate_call
-    def organization_plan_with_http_info(
-        self,
-        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        body: Annotated[V1Organization, Field(..., description="Organization body")],
-        **kwargs,
-    ):  # noqa: E501
-        """Organization plan  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.organization_plan_with_http_info(owner, body, async_req=True)
-        >>> result = thread.get()
-
-        :param owner: Owner of the namespace (required)
-        :type owner: str
-        :param body: Organization body (required)
-        :type body: V1Organization
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _return_http_data_only: response data without head status code
-                                       and headers
-        :type _return_http_data_only: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the authentication
-                              in the spec for a single request.
-        :type _request_auth: dict, optional
-        :type _content_type: string, optional: force content-type for the request
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: tuple(V1Organization, status_code(int), headers(HTTPHeaderDict))
-        """
-
-        _params = locals()
-
-        _all_params = ["owner", "body"]
-        _all_params.extend(
-            [
-                "async_req",
-                "_return_http_data_only",
-                "_preload_content",
-                "_request_timeout",
-                "_request_auth",
-                "_content_type",
-                "_headers",
-            ]
-        )
-
-        # validate the arguments
-        for _key, _val in _params["kwargs"].items():
-            if _key not in _all_params:
-                raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method organization_plan" % _key
-                )
-            _params[_key] = _val
-        del _params["kwargs"]
-
-        _collection_formats = {}
-
-        # process the path parameters
-        _path_params = {}
-        if _params["owner"]:
-            _path_params["owner"] = _params["owner"]
-
-        # process the query parameters
-        _query_params = []
-
-        # process the header parameters
-        _header_params = dict(_params.get("_headers", {}))
-
-        # process the form parameters
-        _form_params = []
-        _files = {}
-
-        # process the body parameter
-        _body_params = None
-        if _params["body"]:
-            _body_params = _params["body"]
-
-        # set the HTTP header `Accept`
-        _header_params["Accept"] = self.api_client.select_header_accept(
-            ["application/json"]
-        )  # noqa: E501
-
-        # set the HTTP header `Content-Type`
-        _content_types_list = _params.get(
-            "_content_type",
-            self.api_client.select_header_content_type(["application/json"]),
-        )
-        if _content_types_list:
-            _header_params["Content-Type"] = _content_types_list
-
-        # authentication setting
-        _auth_settings = ["ApiKey"]  # noqa: E501
-
-        _response_types_map = {
-            "200": "V1Organization",
-            "204": "object",
-            "403": "object",
-            "404": "object",
-        }
-
-        return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/plan",
-            "POST",
             _path_params,
             _query_params,
             _header_params,
@@ -4667,14 +5562,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -4705,6 +5597,172 @@ class OrganizationsV1Api(BaseApi):
 
         return self.api_client.call_api(
             "/api/v1/orgs/{owner}/license",
+            "POST",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def organization_plan(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        body: Annotated[V1Organization, Field(..., description="Organization body")],
+        **kwargs,
+    ) -> V1Organization:  # noqa: E501
+        """Organization plan  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.organization_plan(owner, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param body: Organization body (required)
+        :type body: V1Organization
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1Organization
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.organization_plan_with_http_info(owner, body, **kwargs)  # noqa: E501
+
+    @validate_call
+    def organization_plan_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        body: Annotated[V1Organization, Field(..., description="Organization body")],
+        **kwargs,
+    ):  # noqa: E501
+        """Organization plan  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.organization_plan_with_http_info(owner, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param body: Organization body (required)
+        :type body: V1Organization
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1Organization, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = ["owner", "body"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method organization_plan" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        # process the query parameters
+        _query_params = []
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1Organization",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/plan",
             "POST",
             _path_params,
             _query_params,
@@ -4836,14 +5894,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -5026,11 +6081,9 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -5211,6 +6264,7 @@ class OrganizationsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["member_user"]:
             _path_params["member.user"] = _params["member_user"]
 
@@ -5221,11 +6275,9 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -5387,14 +6439,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -5577,11 +6626,9 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -5743,14 +6790,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -6068,14 +7112,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -6232,14 +7273,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -6396,14 +7434,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -6560,14 +7595,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -6750,11 +7782,9 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -6935,6 +7965,7 @@ class OrganizationsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["member_user"]:
             _path_params["member.user"] = _params["member_user"]
 
@@ -6945,11 +7976,9 @@ class OrganizationsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -7111,14 +8140,11 @@ class OrganizationsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
