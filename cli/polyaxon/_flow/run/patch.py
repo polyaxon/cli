@@ -80,7 +80,12 @@ def validate_run_patch(
             patch = V1RayJob.from_dict(run_patch)
         except ValidationError:
             if replica_types:
-                patch = V1RayJob.from_dict({k: run_patch for k in replica_types})
+                replicas = {}
+                if "head" in replica_types:
+                    replicas["head"] = run_patch
+                replica_types = [r for r in replica_types if r != "head"]
+                replicas["workers"] = {replica: run_patch for replica in replica_types}
+                patch = V1RayJob.from_dict(replicas)
             else:
                 patch = V1RayReplica.from_dict(run_patch)
     elif kind == V1RunKind.DASKJOB:

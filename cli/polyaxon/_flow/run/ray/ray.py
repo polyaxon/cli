@@ -136,6 +136,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
 
     _IDENTIFIER = V1RunKind.RAYJOB
     _CUSTOM_DUMP_FIELDS = {"head", "workers"}
+    _FIELDS_DICT_PATCH = ["workers"]
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     entrypoint: Optional[str] = None

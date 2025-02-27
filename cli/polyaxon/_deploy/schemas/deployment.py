@@ -183,6 +183,7 @@ def validate_deployment_chart(
 
 
 class DeploymentConfig(BaseSchemaModel):
+    _SWAGGER_FIELDS_LISTS = ["tolerations", "celeryTolerations"]
     _SWAGGER_FIELDS = [
         "tolerations",
         "affinity",
