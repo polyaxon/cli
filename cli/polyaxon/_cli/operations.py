@@ -730,7 +730,7 @@ def stop(ctx, project, uid, yes):
         is_cli=True,
     )
     if not yes and not click.confirm(
-        "Are sure you want to stop " "run `{}`".format(run_uuid)
+        "Are sure you want to stop run `{}`".format(run_uuid)
     ):
         Printer.print("Exiting without stopping run.")
         sys.exit(0)
@@ -782,7 +782,7 @@ def skip(ctx, project, uid, yes):
         is_cli=True,
     )
     if not yes and not click.confirm(
-        "Are sure you want to stop " "run `{}`".format(run_uuid)
+        "Are sure you want to stop run `{}`".format(run_uuid)
     ):
         Printer.print("Exiting without stopping run.")
         sys.exit(0)
@@ -1854,9 +1854,17 @@ def artifacts(
 @click.option(
     "--agent", "-ag", type=str, help="Optional, uuid reference of an agent to use."
 )
+@click.option(
+    "--ignore-agent-host",
+    is_flag=True,
+    default=False,
+    help="Optional, to ignore the agent host.",
+)
 @click.pass_context
 @clean_outputs
-def upload(ctx, project, uid, path_from, path_to, sync_failure, agent):
+def upload(
+    ctx, project, uid, path_from, path_to, sync_failure, agent, ignore_agent_host
+):
     """Upload runs' artifacts.
 
     Uses /docs/core/cli/#caching
@@ -1887,7 +1895,11 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure, agent):
         )
         if is_file:
             response = client.upload_artifact(
-                filepath=path_from, path=path_to, overwrite=True, agent=agent
+                filepath=path_from,
+                path=path_to,
+                overwrite=True,
+                agent=agent,
+                ignore_agent_host=ignore_agent_host,
             )
         else:
             response = client.upload_artifacts_dir(
@@ -1896,6 +1908,7 @@ def upload(ctx, project, uid, path_from, path_to, sync_failure, agent):
                 overwrite=True,
                 relative_to=path_from,
                 agent=agent,
+                ignore_agent_host=ignore_agent_host,
             )
     except (
         ApiException,
@@ -2310,10 +2323,16 @@ def pull(
     "--reset-uuid",
     is_flag=True,
     default=False,
-    help="Optional, to ignore the uuid of the local " "run and generate a new uuid.",
+    help="Optional, to ignore the uuid of the local run and generate a new uuid.",
 )
 @click.option(
     "--agent", "-ag", type=str, help="Optional, uuid reference of an agent to use."
+)
+@click.option(
+    "--ignore-agent-host",
+    is_flag=True,
+    default=False,
+    help="Optional, to ignore the agent host.",
 )
 @click.option("--name", "-n", type=str, help="Optional, a new name to set for the run.")
 @click.pass_context
@@ -2329,6 +2348,7 @@ def push(
     reset_project,
     reset_uuid,
     agent,
+    ignore_agent_host,
     name,
 ):
     """Push a local run (or all runs) to a remove server.
@@ -2351,6 +2371,9 @@ def push(
 
     \b
     $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --reset-project
+
+    \b
+    $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --ignore-agent-host
 
     \b
     $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --reset-project -p send-to-project
@@ -2397,6 +2420,7 @@ def push(
                 upload_artifacts=not no_artifacts,
                 clean=clean,
                 agent=agent,
+                ignore_agent_host=ignore_agent_host,
             )
             Printer.success(
                 f"Finished pushing offline run {uid} to {client.owner}/{client.project}"

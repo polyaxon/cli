@@ -1517,6 +1517,7 @@ class RunClient(ClientMixin):
         overwrite: bool = True,
         show_progress: bool = True,
         agent: Optional[str] = None,
+        ignore_agent_host: bool = False,
     ):
         """Uploads a single artifact to the run's artifacts store path.
 
@@ -1528,16 +1529,16 @@ class RunClient(ClientMixin):
             overwrite: bool, optional, if the file uploaded should overwrite any previous content.
             show_progress: bool, to show a progress bar.
             agent: str, optional, uuid reference of an agent to use.
-
+            ignore_agent_host: bool, optional, flag to ignore agent host
         Returns:
             str
         """
         if not self.settings:
             self.refresh_data()
-        if agent:
+        if agent and not ignore_agent_host:
             self._reset_agent(agent)
-
-        self._use_agent_host()
+        if not ignore_agent_host:
+            self._use_agent_host()
 
         params = get_streams_params(connection=self.artifacts_store)
         url = get_proxy_run_url(
@@ -1568,6 +1569,7 @@ class RunClient(ClientMixin):
         overwrite: bool = True,
         relative_to: Optional[str] = None,
         agent: Optional[str] = None,
+        ignore_agent_host: bool = False,
     ):
         """Uploads a full directory to the run's artifacts store path.
 
@@ -1581,6 +1583,7 @@ class RunClient(ClientMixin):
             relative_to: str, optional, if the path uploaded is not the current dir,
                  and you want to cancel the relative path.
             agent: str, optional, uuid reference of an agent to use.
+            ignore_agent_host: bool, optional, flag to ignore agent host
         Returns:
             str.
         """
@@ -1601,6 +1604,7 @@ class RunClient(ClientMixin):
             overwrite=overwrite,
             relative_to=relative_to,
             agent=agent,
+            ignore_agent_host=ignore_agent_host,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1611,6 +1615,7 @@ class RunClient(ClientMixin):
         overwrite: bool = True,
         relative_to: Optional[str] = None,
         agent: Optional[str] = None,
+        ignore_agent_host: bool = False,
     ):
         """Uploads multiple artifacts to the run's artifacts store path.
 
@@ -1621,6 +1626,7 @@ class RunClient(ClientMixin):
             relative_to: str, optional, if the path uploaded is not the current dir,
                  and you want to cancel the relative path.
             agent: str, optional, uuid reference of an agent to use.
+            ignore_agent_host: bool, optional, flag to ignore agent host
         Returns:
             str.
         """
@@ -1630,10 +1636,10 @@ class RunClient(ClientMixin):
 
         if not self.settings:
             self.refresh_data()
-        if agent:
+        if agent and not ignore_agent_host:
             self._reset_agent(agent)
-
-        self._use_agent_host()
+        if not ignore_agent_host:
+            self._use_agent_host()
 
         params = get_streams_params(connection=self.artifacts_store)
         url = get_proxy_run_url(
@@ -3019,6 +3025,7 @@ class RunClient(ClientMixin):
         upload_artifacts: bool = True,
         clean: bool = False,
         agent: Optional[str] = None,
+        ignore_agent_host: bool = False,
     ):
         """Syncs an offline run to Polyaxon's API and artifacts store.
 
@@ -3028,6 +3035,7 @@ class RunClient(ClientMixin):
             upload_artifacts: bool, optional, flag to trigger artifacts upload.
             clean: bool, optional, flag to clean local path after pushing the run.
             agent: str, optional, uuid reference of an agent to use.
+            ignore_agent_host: bool, optional, flag to ignore agent host
         """
         # We ensure that the is_offline is False
         is_offline = self._is_offline
@@ -3061,6 +3069,7 @@ class RunClient(ClientMixin):
                 overwrite=True,
                 relative_to=path,
                 agent=agent,
+                ignore_agent_host=ignore_agent_host,
             )
             logger.info(f"Offline artifacts for run {self.run_data.uuid} uploaded")
 
