@@ -1,7 +1,7 @@
 import aiofiles
 
 from clipped.utils.json import orjson_dumps
-from clipped.utils.paths import check_or_create_path
+from clipped.utils.paths import check_or_create_path, set_permissions
 
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._flow import V1RunKind
@@ -20,5 +20,6 @@ async def sync_spec(
     path_from = ctx_paths.CONTEXT_MOUNT_ARTIFACTS_FORMAT.format(run_uuid)
     path_from = "{}/outputs/spec.json".format(path_from)
     check_or_create_path(path_from, is_dir=False)
-    async with aiofiles.open(path_from, "w") as filepath:
-        await filepath.write(orjson_dumps(op_spec))
+    async with aiofiles.open(path_from, "w") as outfile:
+        await outfile.write(orjson_dumps(op_spec))
+    set_permissions(path_from)

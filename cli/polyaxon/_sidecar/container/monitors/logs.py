@@ -4,7 +4,7 @@ from typing import Optional
 
 import aiofiles
 
-from clipped.utils.paths import check_or_create_path
+from clipped.utils.paths import check_or_create_path, set_permissions
 from kubernetes_asyncio.client.models import V1Pod
 
 from polyaxon._contexts import paths as ctx_paths
@@ -34,8 +34,8 @@ async def sync_logs(
 
     path_from = "{}/{}.jsonl".format(path_from, pod.metadata.name)
     check_or_create_path(path_from, is_dir=False)
-    async with aiofiles.open(path_from, "a") as filepath:
+    async with aiofiles.open(path_from, "a") as outfile:
         _logs = V1Logs.construct(logs=logs)
-        await filepath.write(_logs.get_jsonl_events())
-
+        await outfile.write(_logs.get_jsonl_events())
+    set_permissions(path_from)
     return last_time
