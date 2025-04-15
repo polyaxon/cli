@@ -126,7 +126,7 @@ async def start_sidecar(
             if update_last_check:
                 state["last_artifacts_check"] = now()
 
-    while is_running and retry <= 3:
+    while is_running:
         await asyncio.sleep(sleep_interval)
         if retry:
             await asyncio.sleep(retry * 2)
