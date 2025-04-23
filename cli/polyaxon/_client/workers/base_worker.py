@@ -31,7 +31,7 @@ class BaseWorker:
         try:
             if not self.is_alive():
                 self._thread = threading.Thread(target=self._target, name=self.NAME)
-                self._thread.setDaemon(True)
+                self._thread.daemon = True
                 self._thread.start()
                 self._thread_for_pid = os.getpid()
         finally:
