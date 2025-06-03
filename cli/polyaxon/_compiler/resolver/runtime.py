@@ -47,6 +47,7 @@ class BaseResolver:
         original_uuid: Optional[str] = None,
         is_independent: bool = True,
         username: Optional[str] = None,
+        user_email: Optional[str] = None,
     ):
         if not compiled_operation:
             raise PolyaxonCompilerError("A run spec is required for resolution.")
@@ -54,6 +55,7 @@ class BaseResolver:
         self.compiled_operation = compiled_operation
         self.owner_name = owner_name
         self.username = username
+        self.user_email = user_email
         self.project_name = project_name
         self.project_uuid = project_uuid
         self.project_uuid = project_uuid or project_name
@@ -108,6 +110,7 @@ class BaseResolver:
             project_name=self.project_name,
             project_uuid=self.project_uuid,
             username=self.username,
+            user_email=self.user_email,
             run_uuid=self.run_uuid,
             run_name=self.run_name,
             run_path=self.run_path,
@@ -236,6 +239,7 @@ class BaseResolver:
             original_uuid=self.original_uuid,
             is_independent=self.is_independent,
             username=self.username,
+            user_email=self.user_email,
         )
 
     def _apply_runtime_contexts(self):

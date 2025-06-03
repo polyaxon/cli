@@ -62,6 +62,7 @@ def resolve_globals_contexts(
     original_uuid: Optional[str] = None,
     is_independent: bool = True,
     username: Optional[str] = None,
+    user_email: Optional[str] = None,
 ) -> Dict:
     resolved_contexts = {
         ctx_sections.GLOBALS: {
@@ -72,6 +73,7 @@ def resolve_globals_contexts(
             ),
             ctx_keys.PROJECT_UUID: project_uuid,
             ctx_keys.USERNAME: username,
+            ctx_keys.USER_EMAIL: user_email,
             ctx_keys.RUN_INFO: get_run_instance(owner_name, project_name, run_uuid),
             ctx_keys.NAME: run_name,
             ctx_keys.UUID: run_uuid,
@@ -141,6 +143,7 @@ def resolve_contexts(
     original_uuid: Optional[str] = None,
     is_independent: bool = True,
     username: Optional[str] = None,
+    user_email: Optional[str] = None,
 ) -> Dict:
     run_kind = compiled_operation.get_run_kind()
     if run_kind not in CONTEXTS_MANAGERS:
@@ -172,6 +175,7 @@ def resolve_contexts(
         original_uuid=original_uuid,
         is_independent=is_independent,
         username=username,
+        user_email=user_email,
     )
 
     return CONTEXTS_MANAGERS[run_kind].resolve(

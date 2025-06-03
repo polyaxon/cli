@@ -47,6 +47,7 @@ class TestResolveContexts(BaseTestCase):
             created_at=None,
             compiled_at=None,
             username="user",
+            user_email="user@local.com",
         )
         assert spec == {
             "globals": {
@@ -72,6 +73,7 @@ class TestResolveContexts(BaseTestCase):
                 "is_independent": True,
                 "store_path": "",
                 "username": "user",
+                "user_email": "user@local.com",
             },
             "init": {},
             "connections": {},
@@ -149,6 +151,7 @@ class TestResolveContexts(BaseTestCase):
                 "duration": None,
                 "is_independent": False,
                 "username": None,
+                "user_email": None,
                 "cloning_kind": V1CloningKind.COPY,
                 "original_uuid": "uuid-copy",
                 "store_path": "/claim/path",
@@ -227,6 +230,7 @@ class TestResolveContexts(BaseTestCase):
                 "original_uuid": None,
                 "is_independent": True,
                 "username": None,
+                "user_email": None,
                 "store_path": "",
             },
             "init": {"test_claim": store.schema_.to_dict()},
@@ -302,6 +306,7 @@ class TestResolveContexts(BaseTestCase):
                 "original_uuid": None,
                 "is_independent": True,
                 "username": None,
+                "user_email": None,
                 "store_path": "/claim/path",
             },
             "init": {"test_claim": store.schema_.to_dict()},
@@ -374,6 +379,7 @@ class TestResolveContexts(BaseTestCase):
                 "original_uuid": None,
                 "is_independent": True,
                 "username": None,
+                "user_email": None,
                 "store_path": "",
             },
             "init": {},
