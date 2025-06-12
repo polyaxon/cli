@@ -129,7 +129,7 @@ async def start_sidecar(
     while is_running:
         await asyncio.sleep(sleep_interval)
         if retry:
-            await asyncio.sleep(retry ** 2)
+            await asyncio.sleep(retry**2)
         try:
             is_running = await k8s_manager.is_pod_running(pod_id, container_id)
         except ApiException as e:

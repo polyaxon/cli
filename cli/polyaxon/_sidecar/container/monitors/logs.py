@@ -11,6 +11,7 @@ from polyaxon._contexts import paths as ctx_paths
 from polyaxon._k8s.logging.async_monitor import query_k8s_pod_logs
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 from traceml.logging import V1Logs
+from traceml.events import get_logs_path
 
 
 async def sync_logs(
@@ -20,9 +21,6 @@ async def sync_logs(
     last_time: Optional[datetime.datetime],
     stream: bool = False,
 ) -> Optional[datetime.datetime]:
-    path_from = ctx_paths.CONTEXT_MOUNT_ARTIFACTS_FORMAT.format(run_uuid)
-    path_from = "{}/plxlogs".format(path_from)
-
     logs, last_time = await query_k8s_pod_logs(
         k8s_manager=k8s_manager,
         pod=pod,
@@ -32,7 +30,10 @@ async def sync_logs(
     if not logs:
         return last_time
 
-    path_from = "{}/{}.jsonl".format(path_from, pod.metadata.name)
+    path_from = get_logs_path(
+        run_path=ctx_paths.CONTEXT_MOUNT_ARTIFACTS_FORMAT.format(run_uuid),
+        filename=pod.metadata.name,
+    )
     check_or_create_path(path_from, is_dir=False)
     async with aiofiles.open(path_from, "a") as outfile:
         _logs = V1Logs.construct(logs=logs)

@@ -59,6 +59,7 @@ from polyaxon.exceptions import (
     PolyaxonShouldExitError,
 )
 from polyaxon.logger import clean_outputs
+from traceml.events import get_logs_path
 
 DEFAULT_EXCLUDE = [
     "owner",
@@ -1449,7 +1450,7 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline
         offline_path = ctx_paths.get_offline_path(
             entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
         )
-        logs_path = "{}/plxlogs".format(offline_path)
+        logs_path = get_logs_path(run_path=offline_path, full_path=False)
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
             Printer.error(
