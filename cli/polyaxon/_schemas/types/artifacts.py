@@ -44,7 +44,7 @@ class V1ArtifactsType(BaseTypeConfig):
     >>>   some-file-names: {value: {files: ["file1", "/path/to/file2"]}}
     >>>   custom-file-paths: {value: {files: [["file1", "to/this/path/file1"], "/path/to/file2"]}}
     >>>   tensorboard-log-dir: {value: {dirs: ["/tensorboard-logs"]}, connection: "foo", toInit: True}
-    >>>   dataset1: {value: {value: {dirs: ["/"]}, connection: "s3-dataset", init: True}
+    >>>   dataset1: {value: {value: {dirs: ["/"]}, connection: "s3-dataset", toInit: True}
     ```
 
     The first param will be just a list of files definition that
