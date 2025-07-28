@@ -30,8 +30,12 @@ class AgentServiceConfig(DeploymentService):
     service_account_annotations: Optional[Dict] = Field(
         alias="serviceAccountAnnotations", default=None
     )
-    enable_status_finalizers: Optional[bool] = Field(alias="enableStatusFinalizers", default=None)
-    enable_logs_finalizers: Optional[bool] = Field(alias="enableLogsFinalizers", default=None)
+    enable_status_finalizers: Optional[bool] = Field(
+        alias="enableStatusFinalizers", default=None
+    )
+    enable_logs_finalizers: Optional[bool] = Field(
+        alias="enableLogsFinalizers", default=None
+    )
     is_replica: Optional[bool] = Field(alias="isReplica", default=None)
 
 
