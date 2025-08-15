@@ -45,7 +45,7 @@ class AsyncK8sManager(BaseK8sManager):
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
-                raise PolyaxonK8sError("Connection error: %s" % e) from e
+                raise e
 
     async def get_pod(
         self, name, reraise: bool = False, namespace: str = None
@@ -56,7 +56,7 @@ class AsyncK8sManager(BaseK8sManager):
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8sError("Connection error: %s" % e) from e
+                raise e
             return None
 
     async def is_pod_running(
@@ -80,7 +80,7 @@ class AsyncK8sManager(BaseK8sManager):
         except ApiException as e:
             logger.error("K8S error: {}".format(e))
             if reraise:
-                raise PolyaxonK8sError("Connection error: %s" % e) from e
+                raise e
             return []
 
     async def list_pods(
@@ -242,7 +242,7 @@ class AsyncK8sManager(BaseK8sManager):
             )
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8sError("Connection error: %s" % e) from e
+                raise e
             return None
 
     async def delete_custom_object(
@@ -266,7 +266,7 @@ class AsyncK8sManager(BaseK8sManager):
             logger.debug("Custom object `{}` deleted".format(name))
         except ApiException as e:
             if reraise:
-                raise PolyaxonK8sError("Connection error: %s" % e) from e
+                raise e
             else:
                 logger.debug("Custom object `{}` was not found".format(name))
 

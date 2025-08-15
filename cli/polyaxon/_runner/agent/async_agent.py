@@ -6,7 +6,7 @@ from typing import Any, Optional, Tuple
 from clipped.utils.tz import now
 from clipped.utils.versions import clean_version_for_check
 from clipped.utils.workers import async_exit_context, get_wait
-from kubernetes.client.rest import ApiException
+from kubernetes_asyncio.client.rest import ApiException
 from urllib3.exceptions import HTTPError
 
 from polyaxon import pkg, settings

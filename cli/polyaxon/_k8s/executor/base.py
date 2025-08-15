@@ -93,6 +93,7 @@ class BaseExecutor(_BaseExecutor):
             version=mixin.API_VERSION,
             plural=mixin.PLURAL,
             namespace=namespace,
+            reraise=True,
         )
 
     def clean(self, run_uuid: str, run_kind: str, namespace: str = None):
