@@ -13,6 +13,7 @@ STORE_PATH = "store_path"
 
 RUN_ARTIFACTS_PATH = "run_artifacts_path"
 RUN_OUTPUTS_PATH = "run_outputs_path"
+RUN_RELATIVE_OUTPUTS_PATH = "run_relative_outputs_path"
 RUN_INFO = "run_info"
 STATUS = "status"
 CONDITION = "condition"

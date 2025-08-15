@@ -95,6 +95,9 @@ def resolve_globals_contexts(
     }
 
     plugins = V1Plugins.get_or_create(plugins)
+    resolved_contexts[ctx_sections.GLOBALS][ctx_keys.RUN_RELATIVE_OUTPUTS_PATH] = (
+        "{}/outputs".format(run_path)
+    )
     if plugins.collect_artifacts:
         run_artifacts_path = ctx_paths.CONTEXT_MOUNT_ARTIFACTS_FORMAT.format(run_path)
         run_outputs_path = ctx_paths.CONTEXT_MOUNT_RUN_OUTPUTS_FORMAT.format(run_path)
