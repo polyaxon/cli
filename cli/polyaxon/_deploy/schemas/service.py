@@ -30,6 +30,9 @@ class AgentServiceConfig(DeploymentService):
     service_account_annotations: Optional[Dict] = Field(
         alias="serviceAccountAnnotations", default=None
     )
+    service_account_image_pull_secrets: Optional[List[StrictStr]] = Field(
+        alias="serviceAccountImagePullSecrets", default=None
+    )
     enable_status_finalizers: Optional[bool] = Field(
         alias="enableStatusFinalizers", default=None
     )
