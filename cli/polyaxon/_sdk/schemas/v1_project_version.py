@@ -16,6 +16,7 @@ class V1ProjectVersion(BaseAllowSchemaModel):
     tags: Optional[List[StrictStr]] = None
     owner: Optional[StrictStr] = None
     project: Optional[StrictStr] = None
+    user: Optional[StrictStr] = None
     connection: Optional[StrictStr] = None
     run: Optional[StrictStr] = None
     artifacts: Optional[List[StrictStr]] = None

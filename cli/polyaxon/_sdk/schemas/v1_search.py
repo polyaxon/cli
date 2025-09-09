@@ -15,6 +15,7 @@ class V1Search(BaseAllowSchemaModel):
     name: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
+    user: Optional[StrictStr] = None
     live_state: Optional[int] = None
     view: Optional[SearchView] = None
     spec: Optional[V1SearchSpec] = None

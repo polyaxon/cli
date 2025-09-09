@@ -12,6 +12,7 @@ from polyaxon._sdk.schemas.v1_project_settings import V1ProjectSettings
 class V1Project(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr] = None
     owner: Optional[StrictStr] = None
+    user: Optional[StrictStr] = None
     name: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None

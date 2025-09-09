@@ -13,6 +13,7 @@ class V1Dashboard(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr] = None
     name: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
+    user: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
     live_state: Optional[int] = None
     spec: Optional[V1DashboardSpec] = None

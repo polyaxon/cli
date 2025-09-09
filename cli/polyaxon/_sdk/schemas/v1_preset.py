@@ -19,6 +19,7 @@ class V1Preset(BaseAllowSchemaModel):
     name: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
+    user: Optional[StrictStr] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
     live_state: Optional[int] = None

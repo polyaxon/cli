@@ -13,6 +13,7 @@ class V1Team(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr] = None
     owner: Optional[StrictStr] = None
     name: Optional[StrictStr] = None
+    user: Optional[StrictStr] = None
     projects: Optional[List[StrictStr]] = None
     component_hubs: Optional[List[StrictStr]] = None
     model_registries: Optional[List[StrictStr]] = None

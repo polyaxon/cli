@@ -15,6 +15,7 @@ class V1Agent(BaseAllowSchemaModel):
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
     live_state: Optional[int] = None
+    user: Optional[StrictStr] = None
     namespace: Optional[StrictStr] = None
     version_api: Optional[Dict[str, Any]] = None
     version: Optional[StrictStr] = None

@@ -13,6 +13,7 @@ class V1Queue(BaseAllowSchemaModel):
     name: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
+    user: Optional[StrictStr] = None
     priority: Optional[int] = None
     concurrency: Optional[int] = None
     resource: Optional[StrictStr] = None
