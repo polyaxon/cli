@@ -11,6 +11,7 @@ from vents.providers.kinds import ProviderKind
 class V1ConnectionResponse(BaseAllowSchemaModel):
     uuid: Optional[UUIDStr] = None
     name: Optional[StrictStr] = None
+    user: Optional[StrictStr] = None
     agent: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
