@@ -17,7 +17,7 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 class V1KFReplica(BaseSchemaModel):
     """Kubeflow-Replica provides an interface to define a replica for
-    TFJob/MPIJob/PytorchJob/PaddleJob/MXJob/XGBoostJob.
+    TFJob/MPIJob/PytorchJob.
 
     Args:
         replicas: int

@@ -10,9 +10,6 @@ class V1RunKind(str, PEnum):
     MPIJOB = "mpijob"
     TFJOB = "tfjob"
     PYTORCHJOB = "pytorchjob"
-    PADDLEJOB = "paddlejob"
-    MXJOB = "mxjob"
-    XGBJOB = "xgbjob"
     MATRIX = "matrix"
     SCHEDULE = "schedule"
     TUNER = "tuner"
@@ -34,9 +31,6 @@ class V1RunKind(str, PEnum):
             cls.MPIJOB,
             cls.TFJOB,
             cls.PYTORCHJOB,
-            cls.PADDLEJOB,
-            cls.MXJOB,
-            cls.XGBJOB,
         )
 
 

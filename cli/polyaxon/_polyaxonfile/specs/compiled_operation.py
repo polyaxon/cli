@@ -169,17 +169,7 @@ class CompiledOperationSpecification(BaseSpecification):
             config.run.worker = _resolve_replica(config.run.worker)
             config.run.ps = _resolve_replica(config.run.ps)
             config.run.evaluator = _resolve_replica(config.run.evaluator)
-        elif config.is_pytorch_job_run or config.is_paddle_job_run:
-            config.run.master = _resolve_replica(config.run.master)
-            config.run.worker = _resolve_replica(config.run.worker)
-        elif config.is_mx_job_run:
-            config.run.scheduler = _resolve_replica(config.run.scheduler)
-            config.run.worker = _resolve_replica(config.run.worker)
-            config.run.server = _resolve_replica(config.run.server)
-            config.run.tuner = _resolve_replica(config.run.tuner)
-            config.run.tuner_tracker = _resolve_replica(config.run.tuner_tracker)
-            config.run.tuner_server = _resolve_replica(config.run.tuner_server)
-        elif config.is_xgb_job_run:
+        elif config.is_pytorch_job_run:
             config.run.master = _resolve_replica(config.run.master)
             config.run.worker = _resolve_replica(config.run.worker)
         return config
@@ -387,36 +377,7 @@ class CompiledOperationSpecification(BaseSpecification):
             init_connection_names = _get_resolve_connections(
                 compiled_operation.run.evaluator
             )
-        elif (
-            compiled_operation.is_pytorch_job_run
-            or compiled_operation.is_paddle_job_run
-        ):
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.master
-            )
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.worker
-            )
-        elif compiled_operation.is_mx_job_run:
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.scheduler
-            )
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.worker
-            )
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.server
-            )
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.tuner
-            )
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.tuner_tracker
-            )
-            init_connection_names = _get_resolve_connections(
-                compiled_operation.run.tuner_server
-            )
-        elif compiled_operation.is_xgb_job_run:
+        elif compiled_operation.is_pytorch_job_run:
             init_connection_names = _get_resolve_connections(
                 compiled_operation.run.master
             )
@@ -477,26 +438,7 @@ class CompiledOperationSpecification(BaseSpecification):
             connections_names = _get_resolve_connections(
                 compiled_operation.run.evaluator
             )
-        elif (
-            compiled_operation.is_pytorch_job_run
-            or compiled_operation.is_paddle_job_run
-        ):
-            connections_names = _get_resolve_connections(compiled_operation.run.master)
-            connections_names = _get_resolve_connections(compiled_operation.run.worker)
-        elif compiled_operation.is_mx_job_run:
-            connections_names = _get_resolve_connections(
-                compiled_operation.run.scheduler
-            )
-            connections_names = _get_resolve_connections(compiled_operation.run.worker)
-            connections_names = _get_resolve_connections(compiled_operation.run.server)
-            connections_names = _get_resolve_connections(compiled_operation.run.tuner)
-            connections_names = _get_resolve_connections(
-                compiled_operation.run.tuner_tracker
-            )
-            connections_names = _get_resolve_connections(
-                compiled_operation.run.tuner_server
-            )
-        elif compiled_operation.is_xgb_job_run:
+        elif compiled_operation.is_pytorch_job_run:
             connections_names = _get_resolve_connections(compiled_operation.run.master)
             connections_names = _get_resolve_connections(compiled_operation.run.worker)
 
@@ -556,34 +498,7 @@ class CompiledOperationSpecification(BaseSpecification):
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.evaluator
             )
-        elif (
-            compiled_operation.is_pytorch_job_run
-            or compiled_operation.is_paddle_job_run
-        ):
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.master
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.worker
-            )
-        elif compiled_operation.is_mx_job_run:
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.scheduler
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.worker
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.server
-            )
-            init_model_version_names = _get_resolve_models(compiled_operation.run.tuner)
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.tuner_tracker
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.tuner_server
-            )
-        elif compiled_operation.is_xgb_job_run:
+        elif compiled_operation.is_pytorch_job_run:
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.master
             )
@@ -654,34 +569,7 @@ class CompiledOperationSpecification(BaseSpecification):
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.evaluator
             )
-        elif (
-            compiled_operation.is_pytorch_job_run
-            or compiled_operation.is_paddle_job_run
-        ):
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.master
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.worker
-            )
-        elif compiled_operation.is_mx_job_run:
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.scheduler
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.worker
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.server
-            )
-            init_model_version_names = _get_resolve_models(compiled_operation.run.tuner)
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.tuner_tracker
-            )
-            init_model_version_names = _get_resolve_models(
-                compiled_operation.run.tuner_server
-            )
-        elif compiled_operation.is_xgb_job_run:
+        elif compiled_operation.is_pytorch_job_run:
             init_model_version_names = _get_resolve_models(
                 compiled_operation.run.master
             )
@@ -752,36 +640,7 @@ class CompiledOperationSpecification(BaseSpecification):
             init_artifact_version_names = _get_resolve_artifacts(
                 compiled_operation.run.evaluator
             )
-        elif (
-            compiled_operation.is_pytorch_job_run
-            or compiled_operation.is_paddle_job_run
-        ):
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.master
-            )
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.worker
-            )
-        elif compiled_operation.is_mx_job_run:
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.scheduler
-            )
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.worker
-            )
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.server
-            )
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.tuner
-            )
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.tuner_tracker
-            )
-            init_artifact_version_names = _get_resolve_artifacts(
-                compiled_operation.run.tuner_server
-            )
-        elif compiled_operation.is_xgb_job_run:
+        elif compiled_operation.is_pytorch_job_run:
             init_artifact_version_names = _get_resolve_artifacts(
                 compiled_operation.run.master
             )
@@ -859,36 +718,7 @@ class CompiledOperationSpecification(BaseSpecification):
             compiled_operation.run.evaluator = _clean_resolve_refs(
                 compiled_operation.run.evaluator
             )
-        elif (
-            compiled_operation.is_pytorch_job_run
-            or compiled_operation.is_paddle_job_run
-        ):
-            compiled_operation.run.master = _clean_resolve_refs(
-                compiled_operation.run.master
-            )
-            compiled_operation.run.worker = _clean_resolve_refs(
-                compiled_operation.run.worker
-            )
-        elif compiled_operation.is_mx_job_run:
-            compiled_operation.run.scheduler = _clean_resolve_refs(
-                compiled_operation.run.scheduler
-            )
-            compiled_operation.run.worker = _clean_resolve_refs(
-                compiled_operation.run.worker
-            )
-            compiled_operation.run.server = _clean_resolve_refs(
-                compiled_operation.run.server
-            )
-            compiled_operation.run.tuner = _clean_resolve_refs(
-                compiled_operation.run.tuner
-            )
-            compiled_operation.run.tuner_tracker = _clean_resolve_refs(
-                compiled_operation.run.tuner_tracker
-            )
-            compiled_operation.run.tuner_server = _clean_resolve_refs(
-                compiled_operation.run.tuner_server
-            )
-        elif compiled_operation.is_xgb_job_run:
+        elif compiled_operation.is_pytorch_job_run:
             compiled_operation.run.master = _clean_resolve_refs(
                 compiled_operation.run.master
             )

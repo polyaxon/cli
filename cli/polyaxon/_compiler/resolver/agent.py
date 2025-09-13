@@ -140,19 +140,6 @@ class AgentResolver(BaseSchemaModel):
             _resolve_replica(compiled_operation.run.worker)
             _resolve_replica(compiled_operation.run.ps)
             _resolve_replica(compiled_operation.run.evaluator)
-        elif (
-            compiled_operation.is_pytorch_job_run
-            or compiled_operation.is_paddle_job_run
-        ):
-            _resolve_replica(compiled_operation.run.master)
-            _resolve_replica(compiled_operation.run.worker)
-        elif compiled_operation.is_mx_job_run:
-            _resolve_replica(compiled_operation.run.scheduler)
-            _resolve_replica(compiled_operation.run.worker)
-            _resolve_replica(compiled_operation.run.server)
-            _resolve_replica(compiled_operation.run.tuner)
-            _resolve_replica(compiled_operation.run.tuner_tracker)
-            _resolve_replica(compiled_operation.run.tuner_server)
-        elif compiled_operation.is_xgb_job_run:
+        elif compiled_operation.is_pytorch_job_run:
             _resolve_replica(compiled_operation.run.master)
             _resolve_replica(compiled_operation.run.worker)

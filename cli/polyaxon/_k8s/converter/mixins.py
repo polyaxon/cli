@@ -2,11 +2,8 @@ from typing import Dict
 
 from polyaxon._containers.names import (
     MAIN_JOB_CONTAINER,
-    MXJOBS_CONTAINER,
-    PADDLEJOBS_CONTAINER,
     PYTORCHJOBS_CONTAINER,
     TFJOBS_CONTAINER,
-    XGBJOBS_CONTAINER,
 )
 from polyaxon._flow import V1RunKind
 from polyaxon._k8s.custom_resources import operation
@@ -62,24 +59,6 @@ class PytorchJobMixin(BaseMixin):
     MAIN_CONTAINER_ID = PYTORCHJOBS_CONTAINER
 
 
-class PaddleJobMixin(BaseMixin):
-    K8S_ANNOTATIONS_KIND = V1RunKind.PADDLEJOB
-    K8S_LABELS_COMPONENT = "polyaxon-paddle-jobs"
-    MAIN_CONTAINER_ID = PADDLEJOBS_CONTAINER
-
-
-class MXJobMixin(BaseMixin):
-    K8S_ANNOTATIONS_KIND = V1RunKind.MXJOB
-    K8S_LABELS_COMPONENT = "polyaxon-mxjobs"
-    MAIN_CONTAINER_ID = MXJOBS_CONTAINER
-
-
-class XGBoostJobMixin(BaseMixin):
-    K8S_ANNOTATIONS_KIND = V1RunKind.XGBJOB
-    K8S_LABELS_COMPONENT = "polyaxon-xgbjobs"
-    MAIN_CONTAINER_ID = XGBJOBS_CONTAINER
-
-
 class MPIJobMixin(BaseMixin):
     K8S_ANNOTATIONS_KIND = V1RunKind.MPIJOB
     K8S_LABELS_COMPONENT = "polyaxon-mpi-jobs"
@@ -106,9 +85,6 @@ MIXIN_MAPPING: Dict = {
     V1RunKind.SERVICE: ServiceMixin,
     V1RunKind.TFJOB: TFJobMixin,
     V1RunKind.PYTORCHJOB: PytorchJobMixin,
-    V1RunKind.PADDLEJOB: PaddleJobMixin,
-    V1RunKind.MXJOB: MXJobMixin,
-    V1RunKind.XGBJOB: XGBoostJobMixin,
     V1RunKind.MPIJOB: MPIJobMixin,
     V1RunKind.RAYJOB: RayJobMixin,
     V1RunKind.DASKJOB: DaskJobMixin,

@@ -629,40 +629,6 @@ class TestPolyaxonfiles(BaseTestCase):
             "limits": {"cpu": 3, "memory": "256Mi"},
         }
 
-    def test_paddle_passes(self):
-        run_config = CompiledOperationSpecification.read(
-            [
-                os.path.abspath("tests/fixtures/plain/distributed_paddle_file.yml"),
-                {"kind": "compiled_operation"},
-            ]
-        )
-        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
-        assert run_config.version == 1.1
-
-        assert run_config.termination is not None
-        assert run_config.termination.ttl == 12
-
-        assert run_config.is_paddle_job_run
-        assert run_config.run.master.replicas == 5
-        assert run_config.run.master.environment.to_dict() == {
-            "restartPolicy": "OnFailure",
-            "nodeName": "foo",
-            "serviceAccountName": "sa1",
-        }
-        assert run_config.run.master.container.image == "my_image"
-        assert run_config.run.master.container.resources == {
-            "requests": {"memory": "300Mi"},
-            "limits": {"memory": "300Mi"},
-        }
-        assert run_config.run.worker.replicas == 10
-        assert run_config.run.worker.environment.affinity is None
-        assert run_config.run.worker.environment.restart_policy == "OnFailure"
-        assert isinstance(run_config.run.worker.environment.tolerations, list)
-        assert run_config.run.worker.container.resources == {
-            "requests": {"cpu": 3, "memory": "256Mi"},
-            "limits": {"cpu": 3, "memory": "256Mi"},
-        }
-
     def test_mpi_passes(self):
         run_config = CompiledOperationSpecification.read(
             [

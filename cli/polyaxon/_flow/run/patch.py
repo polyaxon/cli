@@ -8,12 +8,9 @@ from polyaxon._flow.run.dask import V1DaskJob, V1DaskReplica
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.job import V1Job
 from polyaxon._flow.run.kubeflow.mpi_job import V1MPIJob
-from polyaxon._flow.run.kubeflow.mx_job import V1MXJob
-from polyaxon._flow.run.kubeflow.paddle_job import V1PaddleJob
 from polyaxon._flow.run.kubeflow.pytorch_job import V1PytorchJob
 from polyaxon._flow.run.kubeflow.replica import V1KFReplica
 from polyaxon._flow.run.kubeflow.tf_job import V1TFJob
-from polyaxon._flow.run.kubeflow.xgboost_job import V1XGBoostJob
 from polyaxon._flow.run.notifier import V1NotifierJob
 from polyaxon._flow.run.ray import V1RayJob, V1RayReplica
 from polyaxon._flow.run.service import V1Service
@@ -43,36 +40,12 @@ def validate_run_patch(
                 patch = V1PytorchJob.from_dict({k: run_patch for k in replica_types})
             else:
                 patch = V1KFReplica.from_dict(run_patch)
-    elif kind == V1RunKind.PADDLEJOB:
-        try:
-            patch = V1PaddleJob.from_dict(run_patch)
-        except ValidationError:
-            if replica_types:
-                patch = V1PaddleJob.from_dict({k: run_patch for k in replica_types})
-            else:
-                patch = V1KFReplica.from_dict(run_patch)
     elif kind == V1RunKind.TFJOB:
         try:
             patch = V1TFJob.from_dict(run_patch)
         except ValidationError:
             if replica_types:
                 patch = V1TFJob.from_dict({k: run_patch for k in replica_types})
-            else:
-                patch = V1KFReplica.from_dict(run_patch)
-    elif kind == V1RunKind.MXJOB:
-        try:
-            patch = V1MXJob.from_dict(run_patch)
-        except ValidationError:
-            if replica_types:
-                patch = V1MXJob.from_dict({k: run_patch for k in replica_types})
-            else:
-                patch = V1KFReplica.from_dict(run_patch)
-    elif kind == V1RunKind.XGBJOB:
-        try:
-            patch = V1XGBoostJob.from_dict(run_patch)
-        except ValidationError:
-            if replica_types:
-                patch = V1XGBoostJob.from_dict({k: run_patch for k in replica_types})
             else:
                 patch = V1KFReplica.from_dict(run_patch)
     elif kind == V1RunKind.RAYJOB:

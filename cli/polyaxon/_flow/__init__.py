@@ -64,7 +64,6 @@ from polyaxon._flow.params import ParamSpec, V1Param, ops_params
 from polyaxon._flow.plugins import V1Plugins
 from polyaxon._flow.references import RefMixin, V1DagRef, V1HubRef, V1PathRef, V1UrlRef
 from polyaxon._flow.run import (
-    MXJobMode,
     RunMixin,
     V1CleanerJob,
     V1CleanPodPolicy,
@@ -75,10 +74,7 @@ from polyaxon._flow.run import (
     V1Job,
     V1KFReplica,
     V1MPIJob,
-    V1MXJob,
     V1NotifierJob,
-    V1PaddleElasticPolicy,
-    V1PaddleJob,
     V1PipelineKind,
     V1PytorchElasticPolicy,
     V1PytorchJob,
@@ -93,7 +89,6 @@ from polyaxon._flow.run import (
     V1Service,
     V1TFJob,
     V1TunerJob,
-    V1XGBoostJob,
     validate_run_patch,
 )
 from polyaxon._flow.schedules import (

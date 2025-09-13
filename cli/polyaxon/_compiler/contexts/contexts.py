@@ -7,11 +7,8 @@ from polyaxon._compiler.contexts.dask_job import DaskJobContextsManager
 from polyaxon._compiler.contexts.job import JobContextsManager
 from polyaxon._compiler.contexts.kubeflow import (
     MPIJobContextsManager,
-    MXJobContextsManager,
-    PaddleJobContextsManager,
     PytorchJobContextsManager,
     TfJobContextsManager,
-    XGBoostJobContextsManager,
 )
 from polyaxon._compiler.contexts.ray_job import RayJobContextsManager
 from polyaxon._compiler.contexts.service import ServiceContextsManager
@@ -32,10 +29,7 @@ CONTEXTS_MANAGERS = {
     V1RunKind.SERVICE: ServiceContextsManager,
     V1RunKind.MPIJOB: MPIJobContextsManager,
     V1RunKind.TFJOB: TfJobContextsManager,
-    V1RunKind.MXJOB: MXJobContextsManager,
-    V1RunKind.XGBJOB: XGBoostJobContextsManager,
     V1RunKind.PYTORCHJOB: PytorchJobContextsManager,
-    V1RunKind.PADDLEJOB: PaddleJobContextsManager,
     V1RunKind.RAYJOB: RayJobContextsManager,
     V1RunKind.DASKJOB: DaskJobContextsManager,
 }
