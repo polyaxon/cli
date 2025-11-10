@@ -358,8 +358,8 @@ class V1Operation(BaseOp, TemplateMixinConfig):
      * [V1TFJob](/docs/experimentation/distributed/tf-jobs/): for running distributed Tensorflow training job.  # noqa
      * [V1PytorchJob](/docs/experimentation/distributed/pytorch-jobs/): for running distributed Pytorch training job.  # noqa
      * [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/): for running distributed MPI job.  # noqa
-     * [V1RayJob](/docs/experimentation/distributed/ray-jobs/): for running a Ray job.
-     * [V1DaskJob](/docs/experimentation/distributed/dask-jobs/): for running a Dask job.
+     * [V1RayCluster](/docs/experimentation/distributed/ray-jobs/): for running a Ray cluster.
+     * [V1DaskCluster](/docs/experimentation/distributed/dask-jobs/): for running a Dask cluster.
      * [V1Dag](/docs/automation/flow-engine/specification/): for running a DAG/workflow.
 
     For example, if we define a generic component for running Jupyter Notebook:

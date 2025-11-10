@@ -259,7 +259,7 @@ def get_fxt_tf_job():
     }
 
 
-def get_fxt_ray_job():
+def get_fxt_ray_cluster():
     return {
         "version": 1.1,
         "kind": "operation",
@@ -269,7 +269,7 @@ def get_fxt_ray_job():
             "name": "ray-job",
             "tags": ["tag1", "tag2"],
             "run": {
-                "kind": "rayjob",
+                "kind": "raycluster",
                 "entrypoint": "python sample_code.py",
                 "runtimeEnv": {
                     "pip": ["requests==2.26.0", "pendulum==2.1.2"],

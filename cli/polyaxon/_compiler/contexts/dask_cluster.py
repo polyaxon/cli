@@ -4,10 +4,10 @@ from typing import Dict, Optional
 
 from polyaxon._compiler.contexts.base import BaseContextsManager
 from polyaxon._connections import V1Connection
-from polyaxon._flow import V1CompiledOperation, V1RayJob, V1RayReplica
+from polyaxon._flow import V1CompiledOperation, V1DaskCluster, V1DaskReplica
 
 
-class RayJobContextsManager(BaseContextsManager):
+class DaskClusterContextsManager(BaseContextsManager):
     @classmethod
     def resolve(
         cls,
@@ -21,9 +21,9 @@ class RayJobContextsManager(BaseContextsManager):
     ) -> Dict:
         contexts["init"] = {}
         contexts["connections"] = {}
-        job: V1RayJob = compiled_operation.run
+        cluster: V1DaskCluster = compiled_operation.run
 
-        def _get_replica(replica: Optional[V1RayReplica]) -> Dict:
+        def _get_replica(replica: Optional[V1DaskReplica]) -> Dict:
             if not replica:
                 return contexts
             return cls._resolver_replica(
@@ -33,9 +33,7 @@ class RayJobContextsManager(BaseContextsManager):
                 connection_by_names=connection_by_names,
             )
 
-        data = {
-            "head": _get_replica(job.head),
+        return {
+            "worker": _get_replica(cluster.worker),
+            "scheduler": _get_replica(cluster.scheduler),
         }
-        if job.workers:
-            data["workers"] = {wn: _get_replica(job.workers[wn]) for wn in job.workers}
-        return data

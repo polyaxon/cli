@@ -22,8 +22,8 @@ class BaseResolver:
         V1RunKind.TUNER,
         V1RunKind.WATCHDOG,
         V1RunKind.DAG,
-        V1RunKind.DASKJOB,
-        V1RunKind.RAYJOB,
+        V1RunKind.DASKCLUSTER,
+        V1RunKind.RAYCLUSTER,
         V1RunKind.TUNER,
     }
 

@@ -10,7 +10,7 @@ from polyaxon._utils.fixtures.jobs import (
     get_fxt_job_with_inputs_and_conditions,
     get_fxt_job_with_inputs_and_joins,
     get_fxt_job_with_inputs_outputs,
-    get_fxt_ray_job,
+    get_fxt_ray_cluster,
     get_fxt_tf_job,
 )
 from polyaxon._utils.fixtures.mapping import (

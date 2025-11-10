@@ -3,14 +3,14 @@ import os
 from datetime import datetime
 from typing import Dict, Optional
 
-from polyaxon._compiler.contexts.dask_job import DaskJobContextsManager
+from polyaxon._compiler.contexts.dask_cluster import DaskClusterContextsManager
 from polyaxon._compiler.contexts.job import JobContextsManager
 from polyaxon._compiler.contexts.kubeflow import (
     MPIJobContextsManager,
     PytorchJobContextsManager,
     TfJobContextsManager,
 )
-from polyaxon._compiler.contexts.ray_job import RayJobContextsManager
+from polyaxon._compiler.contexts.ray_cluster import RayClusterContextsManager
 from polyaxon._compiler.contexts.service import ServiceContextsManager
 from polyaxon._connections import V1Connection
 from polyaxon._contexts import keys as ctx_keys
@@ -30,8 +30,8 @@ CONTEXTS_MANAGERS = {
     V1RunKind.MPIJOB: MPIJobContextsManager,
     V1RunKind.TFJOB: TfJobContextsManager,
     V1RunKind.PYTORCHJOB: PytorchJobContextsManager,
-    V1RunKind.RAYJOB: RayJobContextsManager,
-    V1RunKind.DASKJOB: DaskJobContextsManager,
+    V1RunKind.RAYCLUSTER: RayClusterContextsManager,
+    V1RunKind.DASKCLUSTER: DaskClusterContextsManager,
 }
 
 

@@ -3,7 +3,10 @@ from typing import Dict, List, Optional
 from polyaxon._flow import V1Environment, V1Notification, V1Termination
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
-from polyaxon._k8s.custom_resources.operation import get_operation_custom_object
+from polyaxon._k8s.custom_resources.operation import (
+    get_operation_custom_object,
+    JOB_KIND,
+)
 from polyaxon._k8s.custom_resources.setter import (
     set_collect_logs,
     set_notify,
@@ -58,6 +61,7 @@ def get_job_custom_resource(
     return get_operation_custom_object(
         namespace=namespace,
         resource_name=resource_name,
+        kind=JOB_KIND,
         labels=labels,
         annotations=annotations,
         custom_object=custom_object,

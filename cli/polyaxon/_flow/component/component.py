@@ -47,7 +47,7 @@ class V1Component(
         hooks: List[[V1Hook](/docs/automation/hooks/)], optional
         inputs: [V1IO](/docs/core/specification/io/), optional
         outputs: [V1IO](/docs/core/specification/io/), optional
-        run: Union[[V1Job](/docs/experimentation/jobs/), [V1Service](/docs/experimentation/services/), [V1TFJob](/docs/experimentation/distributed/tf-jobs/), [V1PytorchJob](/docs/experimentation/distributed/pytorch-jobs/), [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/), [V1RayJob](/docs/experimentation/distributed/ray-jobs/), [V1DaskJob](/docs/experimentation/distributed/dask-jobs/), [V1Dag](/docs/automation/flow-engine/specification/)]  # noqa
+        run: Union[[V1Job](/docs/experimentation/jobs/), [V1Service](/docs/experimentation/services/), [V1TFJob](/docs/experimentation/distributed/tf-jobs/), [V1PytorchJob](/docs/experimentation/distributed/pytorch-jobs/), [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/), [V1RayCluster](/docs/experimentation/distributed/ray-jobs/), [V1DaskCluster](/docs/experimentation/distributed/dask-jobs/), [V1Dag](/docs/automation/flow-engine/specification/)]  # noqa
         template: [V1Template](/docs/core/specification/template/), optional
 
     ## YAML usage
@@ -346,8 +346,8 @@ class V1Component(
      * [V1PytorchJob](/docs/experimentation/distributed/pytorch-jobs/): for running distributed
        Pytorch training job.
      * [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/): for running distributed MPI job.
-     * [V1RayJob](/docs/experimentation/distributed/ray-jobs/): for running a ray job.
-     * [V1DaskJob](/docs/experimentation/distributed/dask-jobs/): for running a Dask job.
+     * [V1RayCluster](/docs/experimentation/distributed/ray-jobs/): for running a ray job.
+     * [V1DaskCluster](/docs/experimentation/distributed/dask-jobs/): for running a Dask job.
      * [V1Dag](/docs/automation/flow-engine/specification/): for running a DAG/workflow.
 
     ### isApproved

@@ -33,8 +33,8 @@ class TestMPIJobCRD(BaseDistributedCRDTestCase):
         expected_crd = get_custom_object(
             namespace="default",
             resource_name="foo",
-            kind="Operation",
-            api_version="core.polyaxon.com/v1",
+            kind="KfJob",
+            api_version="polyaxon.com/v1",
             labels={"foo": "bar"},
             annotations={"foo": "long-foo-bar" * 300},
             custom_object=custom_object,
@@ -94,8 +94,8 @@ class TestMPIJobCRD(BaseDistributedCRDTestCase):
         expected_crd = get_custom_object(
             namespace="default",
             resource_name="foo",
-            kind="Operation",
-            api_version="core.polyaxon.com/v1",
+            kind="KfJob",
+            api_version="polyaxon.com/v1",
             labels={"foo": "bar"},
             annotations={"foo": "bar"},
             custom_object=custom_object,

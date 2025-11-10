@@ -217,10 +217,10 @@ class V1Environment(BaseSchemaModel):
     >>>     resources: ["pods", "services", "events", "pods/status", "pods/log"]
     >>>     verbs: ["get", "watch", "list"]
     >>>   - apiGroups: ["metrics.k8s.io"]
-    >>>     resources: ["pods", "nodes"]
+    >>>     resources: ["pods"]
     >>>     verbs: ["get", "list", "watch"]
-    >>>   - apiGroups: ["core.polyaxon.com"]
-    >>>     resources: ["operations"]
+    >>>   - apiGroups: ["polyaxon.com"]
+    >>>     resources: ["clusters" , "jobs", "kfjobs", "services"]
     >>>     verbs: ["get", "watch", "list"]
     ```
 

@@ -4,9 +4,10 @@ from clipped.utils.enums import PEnum
 class V1RunKind(str, PEnum):
     JOB = "job"
     SERVICE = "service"
+    CLUSTER = "cluster"
     DAG = "dag"
-    DASKJOB = "daskjob"
-    RAYJOB = "rayjob"
+    DASKCLUSTER = "daskcluster"
+    RAYCLUSTER = "raycluster"
     MPIJOB = "mpijob"
     TFJOB = "tfjob"
     PYTORCHJOB = "pytorchjob"
@@ -26,8 +27,8 @@ class V1RunKind(str, PEnum):
     def has_service(cls, kind: str):
         return kind in (
             cls.SERVICE,
-            cls.DASKJOB,
-            cls.RAYJOB,
+            cls.DASKCLUSTER,
+            cls.RAYCLUSTER,
             cls.MPIJOB,
             cls.TFJOB,
             cls.PYTORCHJOB,

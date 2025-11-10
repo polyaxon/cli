@@ -1,5 +1,5 @@
 from polyaxon._flow import V1RunKind
-from polyaxon._k8s.converter.converters.dask_job import DaskJobConverter
+from polyaxon._k8s.converter.converters.dask_cluster import DaskClusterConverter
 from polyaxon._k8s.converter.converters.helpers import (
     CleanerConverter,
     NotifierConverter,
@@ -11,7 +11,7 @@ from polyaxon._k8s.converter.converters.kubeflow import (
     PytorchJobConverter,
     TfJobConverter,
 )
-from polyaxon._k8s.converter.converters.ray_job import RayJobConverter
+from polyaxon._k8s.converter.converters.ray_cluster import RayClusterConverter
 from polyaxon._k8s.converter.converters.service import ServiceConverter
 
 CONVERTERS = {
@@ -23,6 +23,6 @@ CONVERTERS = {
     V1RunKind.MPIJOB: MPIJobConverter,
     V1RunKind.TFJOB: TfJobConverter,
     V1RunKind.PYTORCHJOB: PytorchJobConverter,
-    V1RunKind.RAYJOB: RayJobConverter,
-    V1RunKind.DASKJOB: DaskJobConverter,
+    V1RunKind.RAYCLUSTER: RayClusterConverter,
+    V1RunKind.DASKCLUSTER: DaskClusterConverter,
 }

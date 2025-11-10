@@ -1,15 +1,17 @@
 from typing import Dict, Iterable, Optional
 
+from clipped.utils.json import orjson_dumps
+
 from polyaxon import pkg
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1CompiledOperation, V1DaskJob, V1DaskReplica, V1Plugins
+from polyaxon._flow import V1CompiledOperation, V1Plugins, V1RayCluster, V1RayReplica
 from polyaxon._k8s.converter.base import BaseConverter
-from polyaxon._k8s.converter.mixins import DaskJobMixin
-from polyaxon._k8s.custom_resources.dask_job import get_dask_job_custom_resource
+from polyaxon._k8s.converter.mixins import RayClusterMixin
+from polyaxon._k8s.custom_resources.ray_cluster import get_ray_cluster_custom_resource
 from polyaxon._k8s.replica import ReplicaSpec
 
 
-class DaskJobConverter(DaskJobMixin, BaseConverter):
+class RayClusterConverter(RayClusterMixin, BaseConverter):
     def get_resource(
         self,
         compiled_operation: V1CompiledOperation,
@@ -20,11 +22,18 @@ class DaskJobConverter(DaskJobMixin, BaseConverter):
         default_sa: Optional[str] = None,
         default_auth: bool = False,
     ) -> Dict:
-        job: V1DaskJob = compiled_operation.run
+        cluster: V1RayCluster = compiled_operation.run
 
-        def _get_replica(replica: Optional[V1DaskReplica]) -> Optional[ReplicaSpec]:
+        def _get_replica(replica: Optional[V1RayReplica]) -> Optional[ReplicaSpec]:
             if not replica:
                 return None
+            custom = {}
+            if replica.min_replicas:
+                custom["min_replicas"] = replica.min_replicas
+            if replica.max_replicas:
+                custom["max_replicas"] = replica.max_replicas
+            if replica.ray_start_params:
+                custom["ray_start_params"] = replica.ray_start_params
             return self.get_replica_resource(
                 plugins=plugins,
                 environment=replica.environment,
@@ -40,26 +49,28 @@ class DaskJobConverter(DaskJobMixin, BaseConverter):
                 kv_env_vars=kv_env_vars,
                 default_sa=default_sa,
                 num_replicas=replica.replicas,
+                custom=custom,
             )
 
         kv_env_vars = compiled_operation.get_env_io()
         plugins = V1Plugins.get_or_create(
             config=compiled_operation.plugins, auth=default_auth
         )
-        job_replica = _get_replica(job.job)
-        worker = _get_replica(job.worker)
-        scheduler = _get_replica(job.scheduler)
+        head = _get_replica(cluster.head)
+        workers = None
+        if cluster.workers:
+            workers = {n: _get_replica(w) for n, w in cluster.workers.items()}
         labels = self.get_labels(version=pkg.VERSION, labels={})
 
-        return get_dask_job_custom_resource(
+        return get_ray_cluster_custom_resource(
             namespace=self.namespace,
-            owner_name=self.owner_name,
-            project_name=self.project_name,
-            run_uuid=self.run_uuid,
             resource_name=self.resource_name,
-            job=job_replica,
-            worker=worker,
-            scheduler=scheduler,
+            head=head,
+            workers=workers,
+            entrypoint=cluster.entrypoint,
+            metadata=cluster.metadata,
+            runtime_env=orjson_dumps(cluster.runtime_env),
+            ray_version=cluster.ray_version,
             termination=compiled_operation.termination,
             collect_logs=plugins.collect_logs,
             sync_statuses=plugins.sync_statuses,

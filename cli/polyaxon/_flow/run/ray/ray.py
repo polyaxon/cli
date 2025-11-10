@@ -12,15 +12,15 @@ from polyaxon._flow.run.utils import DestinationImageMixin
 from polyaxon._k8s.k8s_schemas import V1Container
 
 
-class V1RayJob(BaseRun, DestinationImageMixin):
-    """Ray jobs are used to run Ray applications on Kubernetes.
+class V1RayCluster(BaseRun, DestinationImageMixin):
+    """Ray clusters are used to run Ray applications on Kubernetes.
 
     [Ray](https://www.ray.io/) Ray is an open-source unified compute framework that makes
     it easy to scale AI and Python workloads,
     from reinforcement learning to deep learning to tuning, and model serving.
 
     Args:
-        kind: str, should be equal `rayjob`
+        kind: str, should be equal `raycluster`
         entrypoint: str, optional
         runtime_env: Dict, optional
         metadata: int, Dict, optional
@@ -33,7 +33,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
 
     ```yaml
     >>> run:
-    >>>   kind: rayjob
+    >>>   kind: raycluster
     >>>   entrypoint:
     >>>   runtimeEnv:
     >>>   metadata:
@@ -45,8 +45,8 @@ class V1RayJob(BaseRun, DestinationImageMixin):
     ## Python usage
 
     ```python
-    >>> from polyaxon.schemas import V1Environment, V1Init, V1RayJob, V1RayReplica
-    >>> ray_job = V1RayJob(
+    >>> from polyaxon.schemas import V1Environment, V1Init, V1RayCluster, V1RayReplica
+    >>> ray_cluster = V1RayCluster(
     >>>     connections=["connection-name1"],
     >>>     volumes=[k8s.V1Volume(...)],
     >>>     ray_version="2.5.0",
@@ -59,33 +59,33 @@ class V1RayJob(BaseRun, DestinationImageMixin):
 
     ### kind
 
-    The kind signals to the CLI, client, and other tools that this component's runtime is a job.
+    The kind signals to the CLI, client, and other tools that this component's runtime is a cluster.
 
     If you are using the python client to create the runtime,
     this field is not required and is set by default.
 
     ```yaml
     >>> run:
-    >>>   kind: rayjob
+    >>>   kind: raycluster
     ```
 
     ### entrypoint
 
-    The entrypoint command for this job.
+    The entrypoint command for this cluster.
 
     ```yaml
     >>> run:
-    >>>   kind: rayjob
+    >>>   kind: raycluster
     >>>   entrypoint: python train.py
     ```
 
     ### runtimeEnv
 
-    The runtime environment for this job.
+    The runtime environment for this cluster.
 
     ```yaml
     >>> run:
-    >>>   kind: rayjob
+    >>>   kind: raycluster
     >>>   runtimeEnv:
     >>>     pip: ["requests==2.26.0", "pendulum==2.1.2"]
     >>>     env_vars: {"counter_name": "test_counter"}
@@ -97,7 +97,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
 
     ```yaml
     >>> run:
-    >>>   kind: rayjob
+    >>>   kind: raycluster
     >>>   rayVersion: 2.5.0
     >>>   ...
     ```
@@ -108,7 +108,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
 
     ```yaml
     >>> run:
-    >>>   kind: rayjob
+    >>>   kind: raycluster
     >>>   head:
     >>>     rayStartParams:
     >>>       dashboard-host: '0.0.0.0'
@@ -123,7 +123,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
 
     ```yaml
     >>> run:
-    >>>   kind: rayjob
+    >>>   kind: raycluster
     >>>   workers:
     >>>     small-group:
     >>>       replicas: 1
@@ -134,7 +134,7 @@ class V1RayJob(BaseRun, DestinationImageMixin):
     ```
     """
 
-    _IDENTIFIER = V1RunKind.RAYJOB
+    _IDENTIFIER = V1RunKind.RAYCLUSTER
     _CUSTOM_DUMP_FIELDS = {"head", "workers"}
     _FIELDS_DICT_PATCH = ["workers"]
 

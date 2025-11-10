@@ -5,7 +5,7 @@ tags: [ray]
 termination:
   ttl: 12
 run:
-  kind: rayjob
+  kind: raycluster
   entrypoint: python /home/ray/samples/sample_code.py
   runtimeEnv:
     "pip": [

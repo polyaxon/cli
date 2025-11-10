@@ -7,7 +7,7 @@ from polyaxon._utils.fixtures import (
     get_fxt_job_with_inputs_and_conditions,
     get_fxt_job_with_inputs_and_joins,
     get_fxt_job_with_inputs_outputs,
-    get_fxt_ray_job,
+    get_fxt_ray_cluster,
     get_fxt_tf_job,
 )
 from polyaxon._utils.test_utils import BaseTestCase
@@ -39,6 +39,6 @@ class TestJobsFixtures(BaseTestCase):
         config = get_fxt_tf_job()
         assert V1Operation.read(config).to_dict() == config
 
-    def test_fxt_ray_job(self):
-        config = get_fxt_ray_job()
+    def test_fxt_ray_cluster(self):
+        config = get_fxt_ray_cluster()
         assert V1Operation.read(config).to_dict() == config

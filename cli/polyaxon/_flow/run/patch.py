@@ -4,7 +4,7 @@ from clipped.compact.pydantic import ValidationError
 
 from polyaxon._flow.run.cleaner import V1CleanerJob
 from polyaxon._flow.run.dag import V1Dag
-from polyaxon._flow.run.dask import V1DaskJob, V1DaskReplica
+from polyaxon._flow.run.dask import V1DaskCluster, V1DaskReplica
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.job import V1Job
 from polyaxon._flow.run.kubeflow.mpi_job import V1MPIJob
@@ -12,7 +12,7 @@ from polyaxon._flow.run.kubeflow.pytorch_job import V1PytorchJob
 from polyaxon._flow.run.kubeflow.replica import V1KFReplica
 from polyaxon._flow.run.kubeflow.tf_job import V1TFJob
 from polyaxon._flow.run.notifier import V1NotifierJob
-from polyaxon._flow.run.ray import V1RayJob, V1RayReplica
+from polyaxon._flow.run.ray import V1RayCluster, V1RayReplica
 from polyaxon._flow.run.service import V1Service
 from polyaxon._flow.run.tuner import V1TunerJob
 from polyaxon.exceptions import PolyaxonValidationError
@@ -48,9 +48,9 @@ def validate_run_patch(
                 patch = V1TFJob.from_dict({k: run_patch for k in replica_types})
             else:
                 patch = V1KFReplica.from_dict(run_patch)
-    elif kind == V1RunKind.RAYJOB:
+    elif kind == V1RunKind.RAYCLUSTER:
         try:
-            patch = V1RayJob.from_dict(run_patch)
+            patch = V1RayCluster.from_dict(run_patch)
         except ValidationError:
             if replica_types:
                 replicas = {}
@@ -58,15 +58,15 @@ def validate_run_patch(
                     replicas["head"] = run_patch
                 replica_types = [r for r in replica_types if r != "head"]
                 replicas["workers"] = {replica: run_patch for replica in replica_types}
-                patch = V1RayJob.from_dict(replicas)
+                patch = V1RayCluster.from_dict(replicas)
             else:
                 patch = V1RayReplica.from_dict(run_patch)
-    elif kind == V1RunKind.DASKJOB:
+    elif kind == V1RunKind.DASKCLUSTER:
         try:
-            patch = V1DaskJob.from_dict(run_patch)
+            patch = V1DaskCluster.from_dict(run_patch)
         except ValidationError:
             if replica_types:
-                patch = V1DaskJob.from_dict({k: run_patch for k in replica_types})
+                patch = V1DaskCluster.from_dict({k: run_patch for k in replica_types})
             else:
                 patch = V1DaskReplica.from_dict(run_patch)
     elif kind == V1RunKind.NOTIFIER:

@@ -2,7 +2,10 @@ from typing import Dict, List, Optional
 
 from polyaxon._flow import V1Notification, V1SchedulingPolicy, V1Termination
 from polyaxon._k8s.custom_resources.kubeflow.common import get_kf_replicas_template
-from polyaxon._k8s.custom_resources.operation import get_operation_custom_object
+from polyaxon._k8s.custom_resources.operation import (
+    get_operation_custom_object,
+    KFJOB_KIND,
+)
 from polyaxon._k8s.custom_resources.setter import (
     set_clean_pod_policy,
     set_collect_logs,
@@ -77,6 +80,7 @@ def get_mpi_job_custom_resource(
     return get_operation_custom_object(
         namespace=namespace,
         resource_name=resource_name,
+        kind=KFJOB_KIND,
         labels=labels,
         annotations=annotations,
         custom_object=custom_object,

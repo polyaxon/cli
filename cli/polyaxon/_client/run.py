@@ -906,7 +906,10 @@ class RunClient(ClientMixin):
             self.refresh_data()
         self._use_agent_host()
         params = get_logs_params(
-            last_file=last_file, last_time=last_time, connection=self.artifacts_store
+            last_file=last_file,
+            last_time=last_time,
+            connection=self.artifacts_store,
+            kind=self.run_data.kind,
         )
         return self.client.runs_v1.get_run_logs(
             self.namespace, self.owner, self.project, self.run_uuid, **params
@@ -931,7 +934,12 @@ class RunClient(ClientMixin):
         self._use_agent_host()
         params = get_streams_params(connection=self.artifacts_store, status=self.status)
         return self.client.runs_v1.inspect_run(
-            self.namespace, self.owner, self.project, self.run_uuid, **params
+            self.namespace,
+            self.owner,
+            self.project,
+            self.run_uuid,
+            self.run_data.kind,
+            **params,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -2627,6 +2635,7 @@ class RunClient(ClientMixin):
         sort: Optional[str] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
+        all_projects: bool = False,
     ):
         """Lists runs under the current owner - project.
 
@@ -2639,6 +2648,7 @@ class RunClient(ClientMixin):
                  [Run PQL](/docs/core/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
+            all_projects: bool, optional, default: False
 
         Returns:
             List[V1Run], list of run instances.
@@ -2646,6 +2656,10 @@ class RunClient(ClientMixin):
         params = get_query_params(
             limit=limit or 20, offset=offset, query=query, sort=sort
         )
+        if all_projects:
+            return self.client.organizations_v1.get_organization_runs(
+                self.owner, **params
+            )
         return self.client.runs_v1.list_runs(self.owner, self.project, **params)
 
     @client_handler(check_no_op=True, check_offline=True)

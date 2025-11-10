@@ -6024,6 +6024,9 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
+        kind: Annotated[
+            Optional[StrictStr], Field(..., description="Kind of the entity")
+        ],
         last_time: Annotated[
             Optional[datetime], Field(description="last time.")
         ] = None,
@@ -6043,7 +6046,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_logs(namespace, owner, project, uuid, last_time, last_file, force, connection, async_req=True)
+        >>> thread = api.get_run_logs(namespace, owner, project, uuid, kind, last_time, last_file, force, connection, async_req=True)
         >>> result = thread.get()
 
         :param namespace: (required)
@@ -6054,6 +6057,8 @@ class RunsV1Api(BaseApi):
         :type project: str
         :param uuid: Uuid identifier of the entity (required)
         :type uuid: str
+        :param kind: Kind of the entity.
+        :type kind: str
         :param last_time: last time.
         :type last_time: datetime
         :param last_file: last file.
@@ -6083,6 +6088,7 @@ class RunsV1Api(BaseApi):
             owner,
             project,
             uuid,
+            kind,
             last_time,
             last_file,
             force,
@@ -6100,6 +6106,9 @@ class RunsV1Api(BaseApi):
         ],
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
+        ],
+        kind: Annotated[
+            Optional[StrictStr], Field(..., description="Kind of the entity")
         ],
         last_time: Annotated[
             Optional[datetime], Field(description="last time.")
@@ -6120,7 +6129,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_logs_with_http_info(namespace, owner, project, uuid, last_time, last_file, force, connection, async_req=True)
+        >>> thread = api.get_run_logs_with_http_info(namespace, owner, project, uuid, kind, last_time, last_file, force, connection, async_req=True)
         >>> result = thread.get()
 
         :param namespace: (required)
@@ -6131,6 +6140,8 @@ class RunsV1Api(BaseApi):
         :type project: str
         :param uuid: Uuid identifier of the entity (required)
         :type uuid: str
+        :param kind: Kind of the entity.
+        :type kind: str
         :param last_time: last time.
         :type last_time: datetime
         :param last_file: last file.
@@ -6170,6 +6181,7 @@ class RunsV1Api(BaseApi):
             "owner",
             "project",
             "uuid",
+            "kind",
             "last_time",
             "last_file",
             "force",
@@ -6212,6 +6224,8 @@ class RunsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
+        if _params.get("kind") is not None:  # noqa: E501
+            _query_params.append(("kind", _params["kind"]))
         if _params.get("last_time") is not None:  # noqa: E501
             if isinstance(_params["last_time"], datetime):
                 _query_params.append(
@@ -6469,6 +6483,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
+        kind: Annotated[str, Field(..., description="The entity kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -6494,7 +6509,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_resources(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
+        >>> thread = api.get_run_resources(namespace, owner, project, uuid, kind, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -6505,6 +6520,8 @@ class RunsV1Api(BaseApi):
         :type project: str
         :param uuid: Uuid identifier of the entity (required)
         :type uuid: str
+        :param kind: The entity kind.
+        :type kind: str
         :param names: Names query param.
         :type names: str
         :param tail: Query param flag to tail the values.
@@ -6538,6 +6555,7 @@ class RunsV1Api(BaseApi):
             owner,
             project,
             uuid,
+            kind,
             names,
             tail,
             force,
@@ -6558,6 +6576,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
+        kind: Annotated[str, Field(..., description="The entity kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -6583,7 +6602,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_resources_with_http_info(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
+        >>> thread = api.get_run_resources_with_http_info(namespace, owner, project, uuid, kind, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -6594,6 +6613,8 @@ class RunsV1Api(BaseApi):
         :type project: str
         :param uuid: Uuid identifier of the entity (required)
         :type uuid: str
+        :param kind: The entity kind.
+        :type kind: str
         :param names: Names query param.
         :type names: str
         :param tail: Query param flag to tail the values.
@@ -6637,6 +6658,7 @@ class RunsV1Api(BaseApi):
             "owner",
             "project",
             "uuid",
+            "kind",
             "names",
             "tail",
             "force",
@@ -6681,6 +6703,8 @@ class RunsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
+        if _params.get("kind") is not None:  # noqa: E501
+            _query_params.append(("kind", _params["kind"]))
         if _params.get("names") is not None:  # noqa: E501
             _query_params.append(("names", _params["names"]))
         if _params.get("tail") is not None:  # noqa: E501
@@ -8093,6 +8117,9 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
+        kind: Annotated[
+            Optional[StrictStr], Field(description="The entity kind.")
+        ] = None,
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -8118,7 +8145,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.inspect_run(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
+        >>> thread = api.inspect_run(namespace, owner, project, uuid, kind, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -8129,6 +8156,8 @@ class RunsV1Api(BaseApi):
         :type project: str
         :param uuid: Uuid identifier of the entity (required)
         :type uuid: str
+        :param kind: The entity kind.
+        :type kind: str
         :param names: Names query param.
         :type names: str
         :param tail: Query param flag to tail the values.
@@ -8162,6 +8191,7 @@ class RunsV1Api(BaseApi):
             owner,
             project,
             uuid,
+            kind,
             names,
             tail,
             force,
@@ -8182,6 +8212,9 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
+        kind: Annotated[
+            Optional[StrictStr], Field(description="The entity kind.")
+        ] = None,
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -8207,7 +8240,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.inspect_run_with_http_info(namespace, owner, project, uuid, names, tail, force, sample, connection, status, async_req=True)
+        >>> thread = api.inspect_run_with_http_info(namespace, owner, project, uuid, kind, names, tail, force, sample, connection, status, async_req=True)
         >>> result = thread.get()
 
         :param namespace: namespace (required)
@@ -8218,6 +8251,8 @@ class RunsV1Api(BaseApi):
         :type project: str
         :param uuid: Uuid identifier of the entity (required)
         :type uuid: str
+        :param kind: The entity kind.
+        :type kind: str
         :param names: Names query param.
         :type names: str
         :param tail: Query param flag to tail the values.
@@ -8261,6 +8296,7 @@ class RunsV1Api(BaseApi):
             "owner",
             "project",
             "uuid",
+            "kind",
             "names",
             "tail",
             "force",
@@ -8305,6 +8341,8 @@ class RunsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
+        if _params.get("kind") is not None:  # noqa: E501
+            _query_params.append(("kind", _params["kind"]))
         if _params.get("names") is not None:  # noqa: E501
             _query_params.append(("names", _params["names"]))
         if _params.get("tail") is not None:  # noqa: E501

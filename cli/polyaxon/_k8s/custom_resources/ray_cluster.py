@@ -3,7 +3,10 @@ from typing import Dict, List, Optional
 from polyaxon._flow import V1Notification, V1Termination
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
-from polyaxon._k8s.custom_resources.operation import get_operation_custom_object
+from polyaxon._k8s.custom_resources.operation import (
+    get_operation_custom_object,
+    CLUSTER_KIND,
+)
 from polyaxon._k8s.custom_resources.setter import (
     set_collect_logs,
     set_notify,
@@ -135,7 +138,7 @@ def get_ray_worker_replicas_template(
         template_spec["workers"] = workers
 
 
-def get_ray_job_custom_resource(
+def get_ray_cluster_custom_resource(
     resource_name: str,
     namespace: str,
     head: Optional[ReplicaSpec],
@@ -178,7 +181,7 @@ def get_ray_job_custom_resource(
     if ray_version:
         template_spec["rayVersion"] = ray_version
 
-    custom_object = {"rayJobSpec": template_spec}
+    custom_object = {"rayClusterSpec": template_spec}
     custom_object = set_termination(
         custom_object=custom_object, termination=termination
     )
@@ -193,6 +196,7 @@ def get_ray_job_custom_resource(
     return get_operation_custom_object(
         namespace=namespace,
         resource_name=resource_name,
+        kind=CLUSTER_KIND,
         labels=labels,
         annotations=annotations,
         custom_object=custom_object,

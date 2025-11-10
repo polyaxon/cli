@@ -5,7 +5,7 @@ from clipped.compact.pydantic import Field
 
 from polyaxon._flow.run.cleaner import V1CleanerJob
 from polyaxon._flow.run.dag import V1Dag
-from polyaxon._flow.run.dask import V1DaskJob, V1DaskReplica
+from polyaxon._flow.run.dask import V1DaskCluster, V1DaskReplica
 from polyaxon._flow.run.enums import (
     V1CloningKind,
     V1PipelineKind,
@@ -22,7 +22,7 @@ from polyaxon._flow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon._flow.run.kubeflow.tf_job import V1TFJob
 from polyaxon._flow.run.notifier import V1NotifierJob
 from polyaxon._flow.run.patch import validate_run_patch
-from polyaxon._flow.run.ray import V1RayJob, V1RayReplica
+from polyaxon._flow.run.ray import V1RayCluster, V1RayReplica
 from polyaxon._flow.run.resources import V1RunResources
 from polyaxon._flow.run.service import V1Service
 from polyaxon._flow.run.tuner import V1TunerJob
@@ -35,8 +35,8 @@ V1Runtime = Annotated[
         V1MPIJob,
         V1PytorchJob,
         V1TFJob,
-        V1DaskJob,
-        V1RayJob,
+        V1DaskCluster,
+        V1RayCluster,
         V1NotifierJob,
         V1CleanerJob,
         V1TunerJob,
@@ -73,12 +73,12 @@ class RunMixin:
         return self.get_run_kind() == V1RunKind.TFJOB
 
     @property
-    def is_ray_job_run(self):
-        return self.get_run_kind() == V1RunKind.RAYJOB
+    def is_ray_cluster_run(self):
+        return self.get_run_kind() == V1RunKind.RAYCLUSTER
 
     @property
-    def is_dask_job_run(self):
-        return self.get_run_kind() == V1RunKind.DASKJOB
+    def is_dask_cluster_run(self):
+        return self.get_run_kind() == V1RunKind.DASKCLUSTER
 
     @property
     def is_dag_run(self):
@@ -110,6 +110,6 @@ class RunMixin:
             self.is_mpi_job_run
             or self.is_pytorch_job_run
             or self.is_tf_job_run
-            or self.is_ray_job_run
-            or self.is_dask_job_run
+            or self.is_ray_cluster_run
+            or self.is_dask_cluster_run
         )

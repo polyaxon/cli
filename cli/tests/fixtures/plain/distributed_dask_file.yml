@@ -5,25 +5,7 @@ tags: [dask]
 termination:
   ttl: 12
 run:
-  kind: daskjob
-  job:
-    environment:
-      restartPolicy: OnFailure
-      tolerations:
-        - key: "key"
-          operator: "Exists"
-          effect: "NoSchedule"
-    container:
-      image: "ghcr.io/dask/dask:latest"
-      args:
-        - python
-        - -c
-        - "from dask.distributed import Client; client = Client(); # Do some work..."
-      resources:
-        limits:
-          cpu: "1"
-        requests:
-          cpu: "200m"
+  kind: daskcluster
   worker:
     replicas: 5
     environment:

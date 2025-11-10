@@ -674,7 +674,7 @@ class TestPolyaxonfiles(BaseTestCase):
         assert run_config.version == 1.1
         assert run_config.termination is not None
         assert run_config.termination.ttl == 12
-        assert run_config.is_ray_job_run
+        assert run_config.is_ray_cluster_run
         assert run_config.run.workers["small-group"].replicas == 5
         assert run_config.run.workers["small-group"].min_replicas == 5
         assert run_config.run.workers["small-group"].max_replicas == 15
@@ -709,18 +709,10 @@ class TestPolyaxonfiles(BaseTestCase):
         assert run_config.version == 1.1
         assert run_config.termination is not None
         assert run_config.termination.ttl == 12
-        assert run_config.is_dask_job_run
+        assert run_config.is_dask_cluster_run
         assert run_config.run.worker.replicas == 5
         assert run_config.run.worker.environment.restart_policy == "OnFailure"
         assert run_config.run.worker.container.resources == {
-            "limits": {"cpu": "1"},
-            "requests": {"cpu": "200m"},
-        }
-        assert run_config.run.job.replicas is None
-        assert run_config.run.job.environment.affinity is None
-        assert isinstance(run_config.run.job.environment.tolerations, list)
-        assert run_config.run.job.environment.restart_policy == "OnFailure"
-        assert run_config.run.job.container.resources == {
             "limits": {"cpu": "1"},
             "requests": {"cpu": "200m"},
         }

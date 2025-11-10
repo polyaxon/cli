@@ -40,6 +40,7 @@ class TestConverter(BaseTestCase):
             "app.kubernetes.io/part-of": self.converter.K8S_LABELS_PART_OF,
             "app.kubernetes.io/component": self.converter.K8S_LABELS_COMPONENT,
             "app.kubernetes.io/managed-by": "polyaxon",
+            "operation.polyaxon.com/uuid": self.converter.run_uuid,
         }
 
     def test_recommended_labels_with_long_name(self):
@@ -51,6 +52,7 @@ class TestConverter(BaseTestCase):
             "app.kubernetes.io/part-of": self.converter.K8S_LABELS_PART_OF,
             "app.kubernetes.io/component": self.converter.K8S_LABELS_COMPONENT,
             "app.kubernetes.io/managed-by": "polyaxon",
+            "operation.polyaxon.com/uuid": self.converter.run_uuid,
         }
 
     def test_run_instance(self):

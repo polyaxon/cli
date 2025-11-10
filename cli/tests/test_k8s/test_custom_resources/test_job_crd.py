@@ -50,8 +50,8 @@ class TestJobCRD(BaseTestCase):
         expected_crd = get_custom_object(
             namespace="default",
             resource_name="foo",
-            kind="Operation",
-            api_version="core.polyaxon.com/v1",
+            kind="Job",
+            api_version="polyaxon.com/v1",
             labels={"foo": "bar"},
             custom_object=custom_object,
             annotations={"foo": "long-foo-bar" * 300},
