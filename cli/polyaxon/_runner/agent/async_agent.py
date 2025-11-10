@@ -289,14 +289,14 @@ class BaseAsyncAgent(BaseAgent):
         if not resource:
             return
 
-        namepsace = None if len(run_data) < 5 else run_data[4]
+        namespace = None if len(run_data) < 5 else run_data[4]
 
         try:
             await self.executor.create(
                 run_uuid=run_uuid,
                 run_kind=run_data[1],
                 resource=resource,
-                namespace=namepsace,
+                namespace=namespace,
             )
         except ApiException as e:
             if e.status == 409:

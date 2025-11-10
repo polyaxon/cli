@@ -78,6 +78,7 @@ class BaseConverter(
             "app.kubernetes.io/part-of": self.K8S_LABELS_PART_OF,
             "app.kubernetes.io/component": self.K8S_LABELS_COMPONENT,
             "app.kubernetes.io/managed-by": "polyaxon",
+            "operation.polyaxon.com/uuid": self.run_uuid,
         }
 
     @property
