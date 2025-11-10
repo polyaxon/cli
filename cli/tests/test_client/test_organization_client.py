@@ -392,7 +392,7 @@ class TestOrganizationClient(BaseTestCase):
 
         client = OrganizationClient(owner=f"{self.owner}/{self.team}")
         result = client.list_versions(
-            kind=V1ProjectVersionKind.MODEL, limit=10, no_page=True
+            kind=V1ProjectVersionKind.MODEL, limit=10,
         )
 
         assert mock_list.call_count == 1
@@ -401,7 +401,6 @@ class TestOrganizationClient(BaseTestCase):
             self.team,
             V1ProjectVersionKind.MODEL,
             limit=10,
-            no_page=True,
         )
         assert result == mock_response
 
