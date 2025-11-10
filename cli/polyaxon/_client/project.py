@@ -17,11 +17,13 @@ from polyaxon._constants.globals import DEFAULT
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1StageCondition, V1Stages
+from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon._sdk.schemas.v1_list_project_versions_response import (
     V1ListProjectVersionsResponse,
 )
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
+from polyaxon._sdk.schemas.v1_uuids import V1Uuids
 from polyaxon._utils.fqn_utils import (
     get_entity_full_name,
     get_entity_info,
@@ -236,8 +238,155 @@ class ProjectClient(ClientMixin):
         )
         return self.client.runs_v1.list_runs(self.owner, self.project, **params)
 
+    @client_handler(check_no_op=True, check_offline=True)
+    def transfer_runs(
+        self,
+        uuids: Union[List[str], V1Uuids],
+        to_project: str,
+    ):
+        """Transfers multiple runs to another project under the same owner/organization.
+
+        [Run API](/docs/api/#operation/TransferRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to transfer.
+            to_project: str, required, the destination project to transfer the runs to.
+        """
+        if isinstance(uuids, list):
+            transfer_data = V1EntitiesTransfer(uuids=uuids, project=to_project)
+        else:
+            transfer_data = V1EntitiesTransfer(uuids=uuids.uuids, project=to_project)
+
+        logger.info(
+            "Transferring {} runs to project {}".format(
+                len(transfer_data.uuids), to_project
+            )
+        )
+        return self.client.runs_v1.transfer_runs(
+            self.owner,
+            self.project,
+            body=transfer_data,
+            async_req=False,
+        )
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def approve_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Approves multiple runs in the project.
+
+        [Run API](/docs/api/#operation/ApproveRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to approve.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return self.client.runs_v1.approve_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def archive_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Archives multiple runs in the project.
+
+        [Run API](/docs/api/#operation/ArchiveRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to archive.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return self.client.runs_v1.archive_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def restore_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Restores multiple runs in the project.
+
+        [Run API](/docs/api/#operation/RestoreRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to restore.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return self.client.runs_v1.restore_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def delete_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Deletes multiple runs in the project.
+
+        [Run API](/docs/api/#operation/DeleteRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to delete.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        logger.info("Deleting {} runs".format(len(uuids.uuids)))
+        return self.client.runs_v1.delete_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def stop_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Stops multiple runs in the project.
+
+        [Run API](/docs/api/#operation/StopRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to stop.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return self.client.runs_v1.stop_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def skip_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Skips multiple runs in the project.
+
+        [Run API](/docs/api/#operation/SkipRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to skip.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return self.client.runs_v1.skip_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def invalidate_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Invalidates multiple runs in the project.
+
+        [Run API](/docs/api/#operation/InvalidateRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to invalidate.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return self.client.runs_v1.invalidate_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def bookmark_runs(self, uuids: Union[List[str], V1Uuids]):
+        """Bookmarks multiple runs in the project.
+
+        [Run API](/docs/api/#operation/BookmarkRuns)
+
+        Args:
+            uuids: List[str] or V1Uuids, required, list of run uuids to bookmark.
+        """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return self.client.runs_v1.bookmark_runs(self.owner, self.project, body=uuids)
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def tag_runs(self, data: Dict):
+        """Tags multiple runs in the project.
+
+        [Run API](/docs/api/#operation/TagRuns)
+
+        Args:
+            data: Dict, required, must include 'uuids' and 'tags' fields.
+        """
+        return self.client.runs_v1.tag_runs(self.owner, self.project, body=data)
+
     def _validate_kind(self, kind: V1ProjectVersionKind):
-        if kind not in V1ProjectVersionKind:
+        if kind not in V1ProjectVersionKind.to_set():
             raise ValueError(
                 "The kind `{}` is not supported, it must be one of the values `{}`".format(
                     kind, V1ProjectVersionKind.to_list()
