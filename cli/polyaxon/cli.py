@@ -156,6 +156,7 @@ cli.add_command(config)
 cli.add_command(check)
 cli.add_command(init)
 cli.add_command(project)
+cli.add_command(project, name='projects')  # Alias for project command
 cli.add_command(ops)
 cli.add_command(artifacts)
 cli.add_command(components)

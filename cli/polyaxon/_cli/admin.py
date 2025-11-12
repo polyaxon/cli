@@ -246,6 +246,7 @@ def dashboard(yes, url):
 )
 def clean_ops(namespace, in_cluster, delete, uuids):
     """clean-ops command."""
+    # TODO(Operator): Use new correct plural when available
     from polyaxon._k8s.custom_resources import operation
     from polyaxon._k8s.manager.manager import K8sManager
 
