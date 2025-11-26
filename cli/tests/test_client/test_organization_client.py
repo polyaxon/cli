@@ -331,24 +331,30 @@ class TestOrganizationClient(BaseTestCase):
     @mock.patch("polyaxon._sdk.api.OrganizationsV1Api.tag_organization_runs")
     def test_tag_runs(self, mock_tag):
         """Test batch tagging runs"""
-        data = {"uuids": [self.uuid1, self.uuid2], "tags": ["production", "validated"]}
+        uuids = [self.uuid1, self.uuid2]
+        tags = ["production", "validated"]
 
         client = OrganizationClient(owner=self.owner)
-        client.tag_runs(data)
+        client.tag_runs(uuids, tags)
 
         assert mock_tag.call_count == 1
-        mock_tag.assert_called_with(self.owner, body=data)
+        call_args = mock_tag.call_args
+        assert call_args[1]["body"].uuids == uuids
+        assert call_args[1]["body"].tags == tags
 
     @mock.patch("polyaxon._sdk.api.OrganizationsV1Api.transfer_organization_runs")
     def test_transfer_runs(self, mock_transfer):
         """Test transferring runs to different project"""
-        data = {"uuids": [self.uuid1, self.uuid2], "project": "destination-project"}
+        uuids = [self.uuid1, self.uuid2]
+        to_project = "destination-project"
 
         client = OrganizationClient(owner=self.owner)
-        client.transfer_runs(data)
+        client.transfer_runs(uuids, to_project)
 
         assert mock_transfer.call_count == 1
-        mock_transfer.assert_called_with(self.owner, body=data)
+        call_args = mock_transfer.call_args
+        assert call_args[1]["body"].uuids == uuids
+        assert call_args[1]["body"].project == to_project
 
     # Version Management Tests
     def test_validate_kind(self):

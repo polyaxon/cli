@@ -258,13 +258,16 @@ class TestProjectClient(BaseTestCase):
     @mock.patch("polyaxon._sdk.api.RunsV1Api.tag_runs")
     def test_tag_runs(self, mock_tag):
         """Test batch tagging runs"""
-        data = {"uuids": [self.uuid1, self.uuid2], "tags": ["production", "validated"]}
+        uuids = [self.uuid1, self.uuid2]
+        tags = ["production", "validated"]
 
         client = ProjectClient(owner=self.owner, project=self.project)
-        client.tag_runs(data)
+        client.tag_runs(uuids, tags)
 
         assert mock_tag.call_count == 1
-        mock_tag.assert_called_with(self.owner, self.project, body=data)
+        call_args = mock_tag.call_args
+        assert call_args[1]["body"].uuids == uuids
+        assert call_args[1]["body"].tags == tags
 
     # Version Management Tests - Validation
     def test_validate_kind(self):
