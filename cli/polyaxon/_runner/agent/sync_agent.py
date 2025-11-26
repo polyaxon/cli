@@ -165,7 +165,7 @@ class BaseSyncAgent(BaseAgent):
                 logger.info("Checking agent state.")
             else:
                 logger.info("No state was found.")
-                return V1AgentStateResponse.construct()
+                return V1AgentStateResponse.model_construct()
 
             state = agent_state.state
             if not state:
@@ -191,7 +191,7 @@ class BaseSyncAgent(BaseAgent):
             return agent_state
         except Exception as exc:
             logger.error(exc)
-            return V1AgentStateResponse.construct()
+            return V1AgentStateResponse.model_construct()
 
     def prepare_run_resource(
         self,

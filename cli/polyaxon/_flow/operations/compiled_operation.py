@@ -87,7 +87,7 @@ class V1CompiledOperation(BaseOp, RunMixin):
             for p in context_params:
                 current_param = param_specs[p].param
                 contexts.append(
-                    V1IO.construct(
+                    V1IO.model_construct(
                         name=p,
                         value=current_param.value,
                         is_optional=True,

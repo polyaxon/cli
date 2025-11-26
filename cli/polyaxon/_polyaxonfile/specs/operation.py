@@ -69,7 +69,7 @@ class OperationSpecification(BaseSpecification):
                 return
 
             contexts.append(
-                V1IO.construct(
+                V1IO.model_construct(
                     name=c_name,
                     to_init=c_io.to_init,
                     to_env=c_io.to_env,
@@ -113,7 +113,9 @@ class OperationSpecification(BaseSpecification):
         }
         patch_keys = patch_keys.intersection(config.model_fields_set)
         patch_data = {k: getattr(config, k) for k in patch_keys}
-        patch_compiled = V1CompiledOperation.construct(contexts=contexts, **patch_data)
+        patch_compiled = V1CompiledOperation.model_construct(
+            contexts=contexts, **patch_data
+        )
 
         values = [
             {cls.VERSION: config.version},

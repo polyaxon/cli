@@ -182,7 +182,7 @@ def create_code_repo(
         return
 
     code_ref = get_code_reference(path=repo_path, url=url)
-    artifact_run = V1RunArtifact.construct(
+    artifact_run = V1RunArtifact.model_construct(
         name=code_ref.get("commit"),
         kind=V1ArtifactKind.CODEREF,
         connection=connection,

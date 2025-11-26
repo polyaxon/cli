@@ -143,7 +143,7 @@ class BaseExecutor:
         default_auth: bool,
         agent_content: Optional[str] = None,
     ) -> Optional[Any]:
-        agent_env = AgentResolver.construct()
+        agent_env = AgentResolver.model_construct()
         compiled_operation = CompiledOperationSpecification.read(content)
 
         agent_env.resolve(

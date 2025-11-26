@@ -70,7 +70,7 @@ def resolve_hooks(
     if run:
         # Add outputs to compiled operation
         compiled_operation.outputs = [
-            V1IO.construct(name=k, type=None, value=v, is_optional=True)
+            V1IO.model_construct(name=k, type=None, value=v, is_optional=True)
             for k, v in (run.outputs or {}).items()
         ]
     return resolver_cls(

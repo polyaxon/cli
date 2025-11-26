@@ -116,7 +116,7 @@ class OrganizationClient(ClientMixin):
         self._client = client
         self._owner = owner or DEFAULT
         self._team = team
-        self._organization_data = V1Organization.construct()
+        self._organization_data = V1Organization.model_construct()
 
     @property
     def organization_data(self):

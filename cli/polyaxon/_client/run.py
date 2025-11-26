@@ -188,7 +188,7 @@ class RunClient(ClientMixin):
             if self._is_offline or not settings.CLIENT_CONFIG.is_managed
             else None
         )
-        self._run_data = V1Run.construct(
+        self._run_data = V1Run.model_construct(
             owner=self._owner,
             project=self._project,
             uuid=self._run_uuid,
@@ -483,7 +483,7 @@ class RunClient(ClientMixin):
                 content = V1Operation.from_dict(content)
             if isinstance(content, V1Operation):
                 content = content.to_json()
-        data = V1OperationBody.construct(
+        data = V1OperationBody.model_construct(
             name=name,
             description=description,
             tags=tags,
@@ -765,7 +765,7 @@ class RunClient(ClientMixin):
         reason = reason or "PolyaxonClient"
         self._run_data.status = status  # type: ignore
         current_date = now()
-        status_condition = V1StatusCondition.construct(
+        status_condition = V1StatusCondition.model_construct(
             type=status,
             status=True,
             reason=reason,
@@ -1805,7 +1805,7 @@ class RunClient(ClientMixin):
             content = V1Operation.from_dict(content)
         if isinstance(content, V1Operation):
             content = content.to_json()
-        body = V1Run.construct(content=content)
+        body = V1Run.model_construct(content=content)
         if name:
             body.name = name
         if description:
@@ -1816,7 +1816,7 @@ class RunClient(ClientMixin):
             if copy_dirs or copy_files:
                 copy_dirs = to_list(copy_dirs, check_none=True)
                 copy_files = to_list(copy_files, check_none=True)
-                copy_artifacts = V1ArtifactsType.construct()
+                copy_artifacts = V1ArtifactsType.model_construct()
                 if copy_dirs:
                     copy_artifacts.dirs = [
                         "{}/{}".format(self.run_uuid, cp) for cp in copy_dirs
@@ -2257,7 +2257,7 @@ class RunClient(ClientMixin):
         """
         code_ref = code_ref or get_code_reference()
         if code_ref and "commit" in code_ref:
-            artifact_run = V1RunArtifact.construct(
+            artifact_run = V1RunArtifact.model_construct(
                 name=code_ref.get("commit"),
                 kind=V1ArtifactKind.CODEREF,
                 summary=code_ref,
@@ -2411,7 +2411,7 @@ class RunClient(ClientMixin):
             name = name or get_base_filename(path)
             rel_path = self._sanitize_filepath(filepath=path, rel_path=rel_path)
         if name:
-            artifact_run = V1RunArtifact.construct(
+            artifact_run = V1RunArtifact.model_construct(
                 name=self._sanitize_filename(name),
                 kind=kind,
                 path=rel_path,
@@ -2821,7 +2821,7 @@ class RunClient(ClientMixin):
                 # Get only the relpath from run uuid
                 event_rel_path = self._sanitize_filepath(filepath=f)
                 summary = event.get_summary()
-                run_artifact = V1RunArtifact.construct(
+                run_artifact = V1RunArtifact.model_construct(
                     name=event_name,
                     kind=V1ArtifactKind.SYSTEM if is_system_resource else events_kind,
                     connection=connection_name,

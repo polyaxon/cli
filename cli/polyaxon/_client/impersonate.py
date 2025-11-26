@@ -24,7 +24,7 @@ def impersonate(
         response = client.runs_v1.impersonate_token(owner, project, run_uuid)
         polyaxon_client = PolyaxonClient(token=response.token)
         user = polyaxon_client.users_v1.get_user()
-        access_token = AccessTokenConfig.construct(
+        access_token = AccessTokenConfig.model_construct(
             username=user.username, token=response.token
         )
         create_context_auth(access_token)

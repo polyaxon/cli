@@ -36,7 +36,7 @@ async def sync_logs(
     )
     check_or_create_path(path_from, is_dir=False)
     async with aiofiles.open(path_from, "a") as outfile:
-        _logs = V1Logs.construct(logs=logs)
+        _logs = V1Logs.model_construct(logs=logs)
         await outfile.write(_logs.get_jsonl_events())
     set_permissions(path_from)
     return last_time

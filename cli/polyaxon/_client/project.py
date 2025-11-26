@@ -119,7 +119,7 @@ class ProjectClient(ClientMixin):
         self._owner = owner or DEFAULT
         self._team = team
         self._project = project
-        self._project_data = V1Project.construct()
+        self._project_data = V1Project.model_construct()
 
     @property
     def project_data(self):
@@ -950,7 +950,7 @@ class ProjectClient(ClientMixin):
             artifacts = validate_tags(artifacts, validate_yaml=True)
 
         if to_update:
-            version_config = V1ProjectVersion.construct()
+            version_config = V1ProjectVersion.model_construct()
             if description is not None:
                 version_config.description = description
             if tags:
@@ -975,7 +975,7 @@ class ProjectClient(ClientMixin):
                 data=version_config,
             )
         else:
-            version_config = V1ProjectVersion.construct(
+            version_config = V1ProjectVersion.model_construct(
                 name=version,
                 description=description,
                 tags=tags,
@@ -1199,7 +1199,7 @@ class ProjectClient(ClientMixin):
         """
         self._validate_kind(kind)
         current_date = now()
-        stage_condition = V1StageCondition.construct(
+        stage_condition = V1StageCondition.model_construct(
             type=stage,
             status=True,
             reason=reason or "ClientStageUpdate",

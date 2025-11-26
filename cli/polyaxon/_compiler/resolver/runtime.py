@@ -178,7 +178,7 @@ class BaseResolver:
         pass
 
     def resolve_agent_environment(self):
-        agent_env = AgentResolver.construct()
+        agent_env = AgentResolver.model_construct()
         agent_env.resolve(
             compiled_operation=self.compiled_operation, agent_config=self.agent_config
         )

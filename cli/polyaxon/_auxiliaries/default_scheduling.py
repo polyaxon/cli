@@ -45,7 +45,7 @@ class V1DefaultScheduling(BaseSchemaModel):
     ) -> "V1Environment":
         from polyaxon._flow import V1Environment
 
-        env = V1Environment.construct()
+        env = V1Environment.model_construct()
         if service and service.node_selector:
             env.node_selector = service.node_selector
         elif default_scheduling and default_scheduling.node_selector:

@@ -678,7 +678,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
             content["queue"] = hook.queue
         if hook.namespace:
             content["namespace"] = hook.namespace
-        return cls.construct(**content)
+        return cls.model_construct(**content)
 
     @classmethod
     def from_build(cls, build: V1Build, contexts: Optional[Dict] = None):
@@ -710,7 +710,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         if build.cache:
             content["cache"] = build.cache
 
-        return cls.construct(**content)
+        return cls.model_construct(**content)
 
 
 PartialV1Operation = to_partial(V1Operation)
