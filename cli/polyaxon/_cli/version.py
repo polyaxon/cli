@@ -69,14 +69,15 @@ def check_cli_version(config, is_cli: bool = True):
             )
         )
         if click.confirm(
-            "Do you want to upgrade to " "version {} now?".format(config.latest_version)
+            "Do you want to upgrade to version {} now?".format(config.latest_version)
         ):
             pip_upgrade()
             sys.exit(0)
         else:
             indentation.puts(
-                "To upgrade to the latest version `{}`, "
-                "you can manually run:".format(config.latest_version)
+                "To upgrade to the latest version `{}`, you can manually run:".format(
+                    config.latest_version
+                )
             )
             with indentation.indent(4):
                 indentation.puts("pip install -U polyaxon")

@@ -53,7 +53,7 @@ class PolyaxonStore:
 
         try:
             logger.error(
-                "Request to %s failed with status code %s. \n" "Reason: %s",
+                "Request to %s failed with status code %s. \nReason: %s",
                 endpoint,
                 response.status_code,
                 response.text,

@@ -17,7 +17,7 @@ class TestEmailConfig(BaseTestCase):
             EmailConfig.from_dict(config_dict)
 
         config_dict = {
-            "emailFrom" "host": "dsf",
+            "emailFrom host": "dsf",
             "port": "sdf",
             "useTls": True,
             "hostUser": "sdf",

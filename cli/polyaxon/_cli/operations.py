@@ -438,8 +438,7 @@ def get(ctx, project, uid, offline, path, output):
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
             Printer.error(
-                f"Could not get offline run, the path `{offline_path}` "
-                f"does not exist."
+                f"Could not get offline run, the path `{offline_path}` does not exist."
             )
             sys.exit(1)
         run_data = RunConfigManager.read_from_path(offline_path)
@@ -529,16 +528,14 @@ def delete(ctx, project, uid, yes, offline, path):
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
             Printer.error(
-                f"Could not get offline run, the path `{offline_path}` "
-                f"does not exist."
+                f"Could not get offline run, the path `{offline_path}` does not exist."
             )
             sys.exit(1)
         try:
             os.remove(offline_path)
         except OSError as e:
             Printer.error(
-                f"Could not delete offline run, the path `{offline_path}` "
-                f"Error %s." % e
+                f"Could not delete offline run, the path `{offline_path}` Error %s." % e
             )
             sys.exit(1)
         return
@@ -621,8 +618,7 @@ def update(ctx, project, uid, name, description, tags, offline, path):
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
             Printer.error(
-                f"Could not get offline run, the path `{offline_path}` "
-                f"does not exist."
+                f"Could not get offline run, the path `{offline_path}` does not exist."
             )
             sys.exit(1)
         try:
@@ -634,8 +630,7 @@ def update(ctx, project, uid, name, description, tags, offline, path):
             run_uuid = uid or response.uuid
         except OSError as e:
             Printer.error(
-                f"Could not delete offline run, the path `{offline_path}` "
-                f"Error %s." % e
+                f"Could not delete offline run, the path `{offline_path}` Error %s." % e
             )
             sys.exit(1)
     else:
@@ -1304,8 +1299,7 @@ def statuses(ctx, project, uid, watch, offline, path):
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
             Printer.error(
-                f"Could not get offline run, the path `{offline_path}` "
-                f"does not exist."
+                f"Could not get offline run, the path `{offline_path}` does not exist."
             )
             sys.exit(1)
         table = Printer.get_table()
@@ -1316,8 +1310,7 @@ def statuses(ctx, project, uid, watch, offline, path):
             Printer.print(table)
         except OSError as e:
             Printer.error(
-                f"Could not get offline run, the path `{offline_path}` "
-                f"Error %s." % e
+                f"Could not get offline run, the path `{offline_path}` Error %s." % e
             )
             sys.exit(1)
         return
@@ -1454,8 +1447,7 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
             Printer.error(
-                f"Could not get offline run, the path `{offline_path}` "
-                f"does not exist."
+                f"Could not get offline run, the path `{offline_path}` does not exist."
             )
             sys.exit(1)
         else:
@@ -1477,7 +1469,7 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline
             )
         except OSError as e:
             Printer.error(
-                f"Could not get offline run, the path `{logs_path}` " f"Error %s." % e
+                f"Could not get offline run, the path `{logs_path}` Error %s." % e
             )
             sys.exit(1)
         return
@@ -2023,8 +2015,7 @@ def dashboard(ctx, project, uid, yes, url, offline, path, server_config):
         offline_path = "{}/{}".format(offline_path, ctx_paths.CONTEXT_LOCAL_RUN)
         if not os.path.exists(offline_path):
             Printer.error(
-                f"Could not get offline run, the path `{offline_path}` "
-                f"does not exist."
+                f"Could not get offline run, the path `{offline_path}` does not exist."
             )
             sys.exit(1)
         run_data = RunConfigManager.read_from_path(offline_path)

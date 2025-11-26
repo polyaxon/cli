@@ -244,7 +244,7 @@ class AuthV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'" " to method login" % _key
+                    "Got an unexpected keyword argument '%s' to method login" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -697,7 +697,7 @@ class AuthV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'" " to method signup" % _key
+                    "Got an unexpected keyword argument '%s' to method signup" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -849,7 +849,7 @@ class AuthV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'" " to method trial" % _key
+                    "Got an unexpected keyword argument '%s' to method trial" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]

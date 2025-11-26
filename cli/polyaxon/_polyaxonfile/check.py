@@ -212,7 +212,7 @@ def check_polyaxonfile(
 def check_polyaxonfile_kind(specification, kind):
     if specification.kind != kind:
         Printer.error(
-            "Your polyaxonfile must be of kind: `{}`, " "received: `{}`.".format(
+            "Your polyaxonfile must be of kind: `{}`, received: `{}`.".format(
                 kind, specification.kind
             ),
             sys_exit=True,

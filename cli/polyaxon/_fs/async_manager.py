@@ -172,7 +172,7 @@ async def download_files(
             pkg_files.append(file_to_path)
         except Exception as e:
             logger.warning(
-                "The file download for path %s failed. " "Error %s" % (subpath, e)
+                "The file download for path %s failed. Error %s" % (subpath, e)
             )
 
     return pkg_files
@@ -265,7 +265,7 @@ async def download_dirs(
             pkg_files.append(file_to_path)
         except Exception as e:
             logger.warning(
-                "The file download for path %s failed. " "Error %s" % (subpath, e)
+                "The file download for path %s failed. Error %s" % (subpath, e)
             )
 
     if to_tar:
