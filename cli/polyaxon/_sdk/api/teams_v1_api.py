@@ -1,9 +1,13 @@
-from typing import Optional
+from typing import Optional, Any, Dict
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
+from polyaxon._sdk.schemas.v1_events_response import V1MultiEventsResponse
+from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
+    V1ListRunArtifactsResponse,
+)
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
 from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon._sdk.schemas.v1_list_activities_response import V1ListActivitiesResponse
@@ -24,13 +28,523 @@ from polyaxon.exceptions import ApiTypeError
 
 class TeamsV1Api(BaseApi):
     @validate_call
+    def approve_team_runs(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
+        body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
+        **kwargs,
+    ) -> None:  # noqa: E501
+        """Approve cross-project runs selection  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.approve_team_runs(owner, name, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity under namespace (required)
+        :type name: str
+        :param body: Uuids of the entities (required)
+        :type body: V1Uuids
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.approve_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
+
+    @validate_call
+    def approve_team_runs_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
+        body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
+        **kwargs,
+    ):  # noqa: E501
+        """Approve cross-project runs selection  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.approve_team_runs_with_http_info(owner, name, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity under namespace (required)
+        :type name: str
+        :param body: Uuids of the entities (required)
+        :type body: V1Uuids
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+
+        _params = locals()
+
+        _all_params = ["owner", "name", "body"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method approve_team_runs" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
+
+        # process the query parameters
+        _query_params = []
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {}
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/teams/{name}/runs/approve",
+            "POST",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def archive_team_runs(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
+        body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
+        **kwargs,
+    ) -> None:  # noqa: E501
+        """Archive cross-project runs selection  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.archive_team_runs(owner, name, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity under namespace (required)
+        :type name: str
+        :param body: Uuids of the entities (required)
+        :type body: V1Uuids
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.archive_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
+
+    @validate_call
+    def archive_team_runs_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
+        body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
+        **kwargs,
+    ):  # noqa: E501
+        """Archive cross-project runs selection  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.archive_team_runs_with_http_info(owner, name, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity under namespace (required)
+        :type name: str
+        :param body: Uuids of the entities (required)
+        :type body: V1Uuids
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+
+        _params = locals()
+
+        _all_params = ["owner", "name", "body"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method archive_team_runs" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
+
+        # process the query parameters
+        _query_params = []
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {}
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/teams/{name}/runs/archive",
+            "POST",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def bookmark_team_runs(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
+        body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
+        **kwargs,
+    ) -> None:  # noqa: E501
+        """Bookmark cross-project runs selection  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.bookmark_team_runs(owner, name, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity under namespace (required)
+        :type name: str
+        :param body: Uuids of the entities (required)
+        :type body: V1Uuids
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.bookmark_team_runs_with_http_info(owner, name, body, **kwargs)  # noqa: E501
+
+    @validate_call
+    def bookmark_team_runs_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[StrictStr, Field(..., description="Entity under namespace")],
+        body: Annotated[V1Uuids, Field(..., description="Uuids of the entities")],
+        **kwargs,
+    ):  # noqa: E501
+        """Bookmark cross-project runs selection  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.bookmark_team_runs_with_http_info(owner, name, body, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity under namespace (required)
+        :type name: str
+        :param body: Uuids of the entities (required)
+        :type body: V1Uuids
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+
+        _params = locals()
+
+        _all_params = ["owner", "name", "body"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method bookmark_team_runs" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
+
+        # process the query parameters
+        _query_params = []
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {}
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/teams/{name}/runs/bookmark",
+            "POST",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
     def create_team(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Team, Field(..., description="Team body")],
         **kwargs,
-    ) -> V1Team:
-        """Create team
+    ) -> V1Team:  # noqa: E501
+        """Create team  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -58,7 +572,7 @@ class TeamsV1Api(BaseApi):
         :rtype: V1Team
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_team_with_http_info(owner, body, **kwargs)
+        return self.create_team_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_team_with_http_info(
@@ -66,8 +580,8 @@ class TeamsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Team, Field(..., description="Team body")],
         **kwargs,
-    ):
-        """Create team
+    ):  # noqa: E501
+        """Create team  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -153,7 +667,7 @@ class TeamsV1Api(BaseApi):
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
-        )
+        )  # noqa: E501
 
         # set the HTTP header `Content-Type`
         _content_types_list = _params.get(
@@ -164,7 +678,7 @@ class TeamsV1Api(BaseApi):
             _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
-        _auth_settings = ["ApiKey"]
+        _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
             "200": "V1Team",
@@ -185,7 +699,7 @@ class TeamsV1Api(BaseApi):
             response_types_map=_response_types_map,
             auth_settings=_auth_settings,
             async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
             _preload_content=_params.get("_preload_content", True),
             _request_timeout=_params.get("_request_timeout"),
             collection_formats=_collection_formats,
@@ -958,8 +1472,7 @@ class TeamsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method get_team" % _key
+                    "Got an unexpected keyword argument '%s' to method get_team" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -1447,6 +1960,492 @@ class TeamsV1Api(BaseApi):
         )
 
     @validate_call
+    def get_team_multi_run_events(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
+        ],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        names: Annotated[
+            Optional[StrictStr], Field(description="Names query param.")
+        ] = None,
+        runs: Annotated[
+            Optional[StrictStr], Field(description="Runs query param.")
+        ] = None,
+        orient: Annotated[
+            Optional[StrictStr], Field(description="Orient query param.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        sample: Annotated[
+            Optional[StrictInt], Field(description="Sample query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
+        **kwargs,
+    ) -> V1MultiEventsResponse:  # noqa: E501
+        """Get multi runs events  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_team_multi_run_events(namespace, owner, entity, kind, names, runs, orient, force, sample, connection, status, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
+        :param kind: The artifact kind (required)
+        :type kind: str
+        :param names: Names query param.
+        :type names: str
+        :param runs: Runs query param.
+        :type runs: str
+        :param orient: Orient query param.
+        :type orient: str
+        :param force: Force query param.
+        :type force: bool
+        :param sample: Sample query param.
+        :type sample: int
+        :param connection: Connection to use.
+        :type connection: str
+        :param status: Optional status.
+        :type status: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1MultiEventsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_team_multi_run_events_with_http_info(
+            namespace,
+            owner,
+            entity,
+            kind,
+            names,
+            runs,
+            orient,
+            force,
+            sample,
+            connection,
+            status,
+            **kwargs,
+        )  # noqa: E501
+
+    @validate_call
+    def get_team_multi_run_events_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
+        ],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
+        names: Annotated[
+            Optional[StrictStr], Field(description="Names query param.")
+        ] = None,
+        runs: Annotated[
+            Optional[StrictStr], Field(description="Runs query param.")
+        ] = None,
+        orient: Annotated[
+            Optional[StrictStr], Field(description="Orient query param.")
+        ] = None,
+        force: Annotated[
+            Optional[bool], Field(description="Force query param.")
+        ] = None,
+        sample: Annotated[
+            Optional[StrictInt], Field(description="Sample query param.")
+        ] = None,
+        connection: Annotated[
+            Optional[StrictStr], Field(description="Connection to use.")
+        ] = None,
+        status: Annotated[
+            Optional[StrictStr], Field(description="Optional status.")
+        ] = None,
+        **kwargs,
+    ):  # noqa: E501
+        """Get multi runs events  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_team_multi_run_events_with_http_info(namespace, owner, entity, kind, names, runs, orient, force, sample, connection, status, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
+        :param kind: The artifact kind (required)
+        :type kind: str
+        :param names: Names query param.
+        :type names: str
+        :param runs: Runs query param.
+        :type runs: str
+        :param orient: Orient query param.
+        :type orient: str
+        :param force: Force query param.
+        :type force: bool
+        :param sample: Sample query param.
+        :type sample: int
+        :param connection: Connection to use.
+        :type connection: str
+        :param status: Optional status.
+        :type status: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1MultiEventsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = [
+            "namespace",
+            "owner",
+            "entity",
+            "kind",
+            "names",
+            "runs",
+            "orient",
+            "force",
+            "sample",
+            "connection",
+            "status",
+        ]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_team_multi_run_events" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["entity"]:
+            _path_params["entity"] = _params["entity"]
+
+        if _params["kind"]:
+            _path_params["kind"] = _params["kind"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("names") is not None:  # noqa: E501
+            _query_params.append(("names", _params["names"]))
+
+        if _params.get("runs") is not None:  # noqa: E501
+            _query_params.append(("runs", _params["runs"]))
+
+        if _params.get("orient") is not None:  # noqa: E501
+            _query_params.append(("orient", _params["orient"]))
+
+        if _params.get("force") is not None:  # noqa: E501
+            _query_params.append(("force", _params["force"]))
+
+        if _params.get("sample") is not None:  # noqa: E501
+            _query_params.append(("sample", _params["sample"]))
+
+        if _params.get("connection") is not None:  # noqa: E501
+            _query_params.append(("connection", _params["connection"]))
+
+        if _params.get("status") is not None:  # noqa: E501
+            _query_params.append(("status", _params["status"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1MultiEventsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/orgs/{owner}/teams/{entity}/runs/multi/events/{kind}",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def get_team_multi_run_importance(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
+        ],
+        body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
+        **kwargs,
+    ) -> V1MultiEventsResponse:  # noqa: E501
+        """Get multi run importance  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_team_multi_run_importance(namespace, owner, entity, body, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
+        :param body: Params/Metrics data (required)
+        :type body: object
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1MultiEventsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_team_multi_run_importance_with_http_info(
+            namespace, owner, entity, body, **kwargs
+        )  # noqa: E501
+
+    @validate_call
+    def get_team_multi_run_importance_with_http_info(
+        self,
+        namespace: Annotated[StrictStr, Field(..., description="namespace")],
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity where the run will be assigned")
+        ],
+        body: Annotated[Dict[str, Any], Field(..., description="Params/Metrics data")],
+        **kwargs,
+    ):  # noqa: E501
+        """Get multi run importance  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_team_multi_run_importance_with_http_info(namespace, owner, entity, body, async_req=True)
+        >>> result = thread.get()
+
+        :param namespace: namespace (required)
+        :type namespace: str
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param entity: Entity where the run will be assigned (required)
+        :type entity: str
+        :param body: Params/Metrics data (required)
+        :type body: object
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1MultiEventsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = ["namespace", "owner", "entity", "body"]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_team_multi_run_importance" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["namespace"]:
+            _path_params["namespace"] = _params["namespace"]
+
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["entity"]:
+            _path_params["entity"] = _params["entity"]
+
+        # process the query parameters
+        _query_params = []
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1MultiEventsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/streams/v1/{namespace}/orgs/{owner}/teams/{entity}/runs/multi/importance",
+            "POST",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
     def get_team_run(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1885,6 +2884,263 @@ class TeamsV1Api(BaseApi):
         )
 
     @validate_call
+    def get_team_runs_artifacts_lineage(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[
+            StrictStr, Field(..., description="Entity managing the resource")
+        ],
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        bookmarks: Annotated[
+            Optional[bool], Field(description="Filter by bookmarks.")
+        ] = None,
+        mode: Annotated[
+            Optional[StrictStr], Field(description="Mode of the search.")
+        ] = None,
+        no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
+        **kwargs,
+    ) -> V1ListRunArtifactsResponse:  # noqa: E501
+        """Get runs artifacts lineage  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_team_runs_artifacts_lineage(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity managing the resource (required)
+        :type name: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param bookmarks: Filter by bookmarks.
+        :type bookmarks: bool
+        :param mode: Mode of the search.
+        :type mode: str
+        :param no_page: No pagination.
+        :type no_page: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: V1ListRunArtifactsResponse
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_team_runs_artifacts_lineage_with_http_info(
+            owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
+        )  # noqa: E501
+
+    @validate_call
+    def get_team_runs_artifacts_lineage_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        name: Annotated[
+            StrictStr, Field(..., description="Entity managing the resource")
+        ],
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        bookmarks: Annotated[
+            Optional[bool], Field(description="Filter by bookmarks.")
+        ] = None,
+        mode: Annotated[
+            Optional[StrictStr], Field(description="Mode of the search.")
+        ] = None,
+        no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
+        **kwargs,
+    ):  # noqa: E501
+        """Get runs artifacts lineage  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_team_runs_artifacts_lineage_with_http_info(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param name: Entity managing the resource (required)
+        :type name: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param bookmarks: Filter by bookmarks.
+        :type bookmarks: bool
+        :param mode: Mode of the search.
+        :type mode: str
+        :param no_page: No pagination.
+        :type no_page: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(V1ListRunArtifactsResponse, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = [
+            "owner",
+            "name",
+            "offset",
+            "limit",
+            "sort",
+            "query",
+            "bookmarks",
+            "mode",
+            "no_page",
+        ]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_team_runs_artifacts_lineage" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["name"]:
+            _path_params["name"] = _params["name"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("offset") is not None:  # noqa: E501
+            _query_params.append(("offset", _params["offset"]))
+
+        if _params.get("limit") is not None:  # noqa: E501
+            _query_params.append(("limit", _params["limit"]))
+
+        if _params.get("sort") is not None:  # noqa: E501
+            _query_params.append(("sort", _params["sort"]))
+
+        if _params.get("query") is not None:  # noqa: E501
+            _query_params.append(("query", _params["query"]))
+
+        if _params.get("bookmarks") is not None:  # noqa: E501
+            _query_params.append(("bookmarks", _params["bookmarks"]))
+
+        if _params.get("mode") is not None:  # noqa: E501
+            _query_params.append(("mode", _params["mode"]))
+
+        if _params.get("no_page") is not None:  # noqa: E501
+            _query_params.append(("no_page", _params["no_page"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "V1ListRunArtifactsResponse",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/teams/{name}/runs/lineage/artifacts",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
     def get_team_stats(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
@@ -1913,6 +3169,15 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
+        start_date: Annotated[
+            Optional[StrictStr], Field(description="Stats start date.")
+        ] = None,
+        end_date: Annotated[
+            Optional[StrictStr], Field(description="Stats end date.")
+        ] = None,
+        boundary: Annotated[
+            Optional[bool], Field(description="Stats boundary.")
+        ] = None,
         **kwargs,
     ) -> object:  # noqa: E501
         """Get team stats  # noqa: E501
@@ -1920,7 +3185,7 @@ class TeamsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_team_stats(owner, name, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, async_req=True)
+        >>> thread = api.get_team_stats(owner, name, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, start_date, end_date, boundary, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -1947,6 +3212,12 @@ class TeamsV1Api(BaseApi):
         :type groupby: str
         :param trunc: Stats trunc.
         :type trunc: str
+        :param start_date: Stats start date.
+        :type start_date: str
+        :param end_date: Stats end date.
+        :type end_date: str
+        :param boundary: Stats boundary.
+        :type boundary: bool
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -1976,6 +3247,9 @@ class TeamsV1Api(BaseApi):
             aggregate,
             groupby,
             trunc,
+            start_date,
+            end_date,
+            boundary,
             **kwargs,
         )  # noqa: E501
 
@@ -2008,6 +3282,15 @@ class TeamsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
+        start_date: Annotated[
+            Optional[StrictStr], Field(description="Stats start date.")
+        ] = None,
+        end_date: Annotated[
+            Optional[StrictStr], Field(description="Stats end date.")
+        ] = None,
+        boundary: Annotated[
+            Optional[bool], Field(description="Stats boundary.")
+        ] = None,
         **kwargs,
     ):  # noqa: E501
         """Get team stats  # noqa: E501
@@ -2015,7 +3298,7 @@ class TeamsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_team_stats_with_http_info(owner, name, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, async_req=True)
+        >>> thread = api.get_team_stats_with_http_info(owner, name, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, start_date, end_date, boundary, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -2042,6 +3325,12 @@ class TeamsV1Api(BaseApi):
         :type groupby: str
         :param trunc: Stats trunc.
         :type trunc: str
+        :param start_date: Stats start date.
+        :type start_date: str
+        :param end_date: Stats end date.
+        :type end_date: str
+        :param boundary: Stats boundary.
+        :type boundary: bool
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -2081,6 +3370,9 @@ class TeamsV1Api(BaseApi):
             "aggregate",
             "groupby",
             "trunc",
+            "start_date",
+            "end_date",
+            "boundary",
         ]
         _all_params.extend(
             [
@@ -2145,6 +3437,15 @@ class TeamsV1Api(BaseApi):
 
         if _params.get("trunc") is not None:  # noqa: E501
             _query_params.append(("trunc", _params["trunc"]))
+
+        if _params.get("start_date") is not None:  # noqa: E501
+            _query_params.append(("start_date", _params["start_date"]))
+
+        if _params.get("end_date") is not None:  # noqa: E501
+            _query_params.append(("end_date", _params["end_date"]))
+
+        if _params.get("boundary") is not None:  # noqa: E501
+            _query_params.append(("boundary", _params["boundary"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))

@@ -17,6 +17,7 @@ from polyaxon._constants.globals import DEFAULT
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1StageCondition, V1Stages
+from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
 from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon._sdk.schemas.v1_list_project_versions_response import (
     V1ListProjectVersionsResponse,
@@ -48,14 +49,26 @@ class ProjectClient(ClientMixin):
     If you intend to create a new project instance or to list projects,
     only the `owner` parameter is required.
 
+    Team Scoping:
+        Projects can be scoped to a specific team within an organization by providing
+        the owner in the format "owner/team". When a team is specified, the project
+        will be created under that team using the team projects API.
+
+        Examples:
+            ProjectClient(owner="my-org", project="my-project")              # Organization project
+            ProjectClient(owner="my-org/engineering", project="my-project")  # Team project
+
     Properties:
         project: str.
         owner: str.
+        team: str.
         project_data: V1Project.
 
     Args:
         owner: str, optional, the owner is the username or
              the organization name owning this project.
+             Can be specified as "owner" for organization scope or "owner/team"
+             for team-scoped projects.
         project: str, optional, project name.
         client: [PolyaxonClient](/docs/core/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
@@ -375,7 +388,7 @@ class ProjectClient(ClientMixin):
         return self.client.runs_v1.bookmark_runs(self.owner, self.project, body=uuids)
 
     @client_handler(check_no_op=True, check_offline=True)
-    def tag_runs(self, data: Dict):
+    def tag_runs(self, uuids: Union[List[str], V1Uuids], tags: List[str]):
         """Tags multiple runs in the project.
 
         [Run API](/docs/api/#operation/TagRuns)
@@ -383,6 +396,12 @@ class ProjectClient(ClientMixin):
         Args:
             data: Dict, required, must include 'uuids' and 'tags' fields.
         """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        data = V1EntitiesTags(
+            uuids=uuids.uuids,
+            tags=tags,
+        )
         return self.client.runs_v1.tag_runs(self.owner, self.project, body=data)
 
     def _validate_kind(self, kind: V1ProjectVersionKind):

@@ -8,6 +8,8 @@ from polyaxon._client.mixin import ClientMixin
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind
+from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
+from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
 from polyaxon._sdk.schemas.v1_list_organization_members_response import (
     V1ListOrganizationMembersResponse,
 )
@@ -40,15 +42,28 @@ class OrganizationClient(ClientMixin):
      * If you use this client in the context of a job or a service managed by Polyaxon,
        a configuration will be available to resolve the values based on that run.
 
-    Team Scoping:
-        Operations can be scoped to a specific team within an organization by providing
-        the owner in the format "owner/team". When a team is specified, methods like
-        list_runs, get_run, delete_runs, stop_runs, invalidate_runs, and list_versions
-        will operate only within that team's scope rather than organization-wide.
+    Team Scoping (Using as a Team Client):
+        This client can be used as a **Team Client** by providing the owner in the
+        format "owner/team". When a team is specified, all applicable methods will
+        operate within that team's scope rather than organization-wide.
+
+        Team-scoped methods include:
+            * Runs: list_runs, get_run, approve_runs, archive_runs, restore_runs,
+              delete_runs, stop_runs, skip_runs, invalidate_runs, bookmark_runs,
+              tag_runs, transfer_runs
+            * Versions: list_versions, list_component_versions, list_model_versions,
+              list_artifact_versions
+            * Artifacts: list_runs_artifacts_lineage
 
         Examples:
-            OrganizationClient(owner="my-org")              # Organization-wide operations
-            OrganizationClient(owner="my-org/engineering")  # Team-scoped operations
+            # Organization-wide operations
+            org_client = OrganizationClient(owner="my-org")
+            org_client.list_runs()  # All runs across the organization
+
+            # Team-scoped operations (effectively a "Team Client")
+            team_client = OrganizationClient(owner="my-org/engineering")
+            team_client.list_runs()  # Only runs within the engineering team
+            team_client.list_model_versions()  # Only model versions within the team
 
     Properties:
         owner: str.
@@ -358,6 +373,8 @@ class OrganizationClient(ClientMixin):
         """
         if isinstance(uuids, list):
             uuids = V1Uuids(uuids=uuids)
+        if self.team:
+            return self.client.teams_v1.approve_team_runs(self.owner, self.team, uuids)
         return self.client.organizations_v1.approve_organization_runs(
             self.owner, body=uuids
         )
@@ -373,6 +390,8 @@ class OrganizationClient(ClientMixin):
         """
         if isinstance(uuids, list):
             uuids = V1Uuids(uuids=uuids)
+        if self.team:
+            return self.client.teams_v1.archive_team_runs(self.owner, self.team, uuids)
         return self.client.organizations_v1.archive_organization_runs(
             self.owner, body=uuids
         )
@@ -388,6 +407,8 @@ class OrganizationClient(ClientMixin):
         """
         if isinstance(uuids, list):
             uuids = V1Uuids(uuids=uuids)
+        if self.team:
+            return self.client.teams_v1.restore_team_runs(self.owner, self.team, uuids)
         return self.client.organizations_v1.restore_organization_runs(
             self.owner, body=uuids
         )
@@ -444,6 +465,10 @@ class OrganizationClient(ClientMixin):
         """
         if isinstance(uuids, list):
             uuids = V1Uuids(uuids=uuids)
+        if self.team:
+            return self.client.teams_v1.skip_team_runs(
+                self.owner, self.team, body=uuids
+            )
         return self.client.organizations_v1.skip_organization_runs(
             self.owner, body=uuids
         )
@@ -479,12 +504,16 @@ class OrganizationClient(ClientMixin):
         """
         if isinstance(uuids, list):
             uuids = V1Uuids(uuids=uuids)
+        if self.team:
+            return self.client.teams_v1.bookmark_team_runs(
+                self.owner, self.team, body=uuids
+            )
         return self.client.organizations_v1.bookmark_organization_runs(
             self.owner, body=uuids
         )
 
     @client_handler(check_no_op=True, check_offline=True)
-    def tag_runs(self, data: Dict):
+    def tag_runs(self, uuids: Union[List[str], V1Uuids], tags: List[str]):
         """Tags multiple runs in the organization.
 
         [Organization API](/docs/api/#operation/TagOrganizationRuns)
@@ -492,19 +521,46 @@ class OrganizationClient(ClientMixin):
         Args:
             data: Dict, required, must include 'uuids' and 'tags' fields.
         """
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        data = V1EntitiesTags(
+            uuids=uuids.uuids,
+            tags=tags,
+        )
+        if self.team:
+            return self.client.teams_v1.tag_team_runs(self.owner, self.team, body=data)
         return self.client.organizations_v1.tag_organization_runs(self.owner, body=data)
 
     @client_handler(check_no_op=True, check_offline=True)
-    def transfer_runs(self, data: Dict):
+    def transfer_runs(
+        self,
+        uuids: Union[List[str], V1Uuids],
+        to_project: str,
+    ):
         """Transfers multiple runs to another project in the organization.
 
         [Organization API](/docs/api/#operation/TransferOrganizationRuns)
 
         Args:
-            data: Dict, required, must include 'uuids' and 'project' fields.
+            uuids: List[str] or V1Uuids, required, list of run uuids to transfer.
+            to_project: str, required, the destination project to transfer the runs to.
         """
+        if isinstance(uuids, list):
+            transfer_data = V1EntitiesTransfer(uuids=uuids, project=to_project)
+        else:
+            transfer_data = V1EntitiesTransfer(uuids=uuids.uuids, project=to_project)
+
+        logger.info(
+            "Transferring {} runs to project {}".format(
+                len(transfer_data.uuids), to_project
+            )
+        )
+        if self.team:
+            return self.client.teams_v1.transfer_team_runs(
+                self.owner, self.team, body=transfer_data
+            )
         return self.client.organizations_v1.transfer_organization_runs(
-            self.owner, body=data
+            self.owner, body=transfer_data
         )
 
     # Organization Versions Management
@@ -685,6 +741,11 @@ class OrganizationClient(ClientMixin):
             params["bookmarks"] = bookmarks
         if mode:
             params["mode"] = mode
+
+        if self.team:
+            return self.client.teams_v1.get_team_runs_artifacts_lineage(
+                self.owner, self.team, **params
+            )
         return self.client.organizations_v1.get_organization_runs_artifacts_lineage(
             self.owner, **params
         )
