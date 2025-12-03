@@ -1394,10 +1394,10 @@ def statuses(ctx, project, uid, watch, offline, path):
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
 @click.option(
-    "--follow",
-    "-f",
+    "--no-follow",
+    "-nf",
     is_flag=True,
-    default=True,
+    default=False,
     help="Stream logs after showing past logs.",
 )
 @click.option(
@@ -1426,7 +1426,9 @@ def statuses(ctx, project, uid, watch, offline, path):
 )
 @click.pass_context
 @clean_outputs
-def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline, path):
+def logs(
+    ctx, project, uid, no_follow, hide_time, all_containers, all_info, offline, path
+):
     """Get run's logs.
 
     Uses /docs/core/cli/#caching
@@ -1492,7 +1494,7 @@ def logs(ctx, project, uid, follow, hide_time, all_containers, all_info, offline
             hide_time=hide_time,
             all_containers=all_containers,
             all_info=all_info,
-            follow=follow,
+            follow=not no_follow,
         )
     except (ApiException, HTTPError, PolyaxonClientException) as e:
         handle_cli_error(
