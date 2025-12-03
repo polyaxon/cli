@@ -20,30 +20,6 @@ def pip_upgrade(project_name=PROJECT_CLI_NAME):
     Printer.print("polyaxon upgraded!")
 
 
-def get_version(package: str, show_error: bool = True):
-    try:
-        import pkg_resources
-    except ImportError:
-        return
-
-    try:
-        return pkg_resources.get_distribution(package).version
-    except pkg_resources.DistributionNotFound:
-        if show_error:
-            logger.error("`%s` is not installed", package)
-
-
-def check_old_packages():
-    pkg = "polyaxon-cli"
-    if get_version(package=pkg, show_error=False):
-        Printer.error(
-            "Legacy package `{pkg}` is installed. Please run `pip uninstall {pkg}`".format(
-                pkg=pkg
-            ),
-            sys_exit=True,
-        )
-
-
 def get_current_version():
     return pkg.VERSION
 
@@ -112,7 +88,6 @@ def check_cli_version(config, is_cli: bool = True):
 @clean_outputs
 def version(check):
     """Print the current version of the cli and platform."""
-    check_old_packages()
     Printer.heading("Current cli version: {}".format(pkg.VERSION))
     if check:
         config = set_versions_config()
