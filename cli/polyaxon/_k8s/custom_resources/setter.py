@@ -14,6 +14,26 @@ def set_termination(custom_object: Dict, termination: V1Termination) -> Dict:
         termination_spec["activeDeadlineSeconds"] = termination.timeout
     if termination.ttl:
         termination_spec["ttlSecondsAfterFinished"] = termination.ttl
+    if termination.culling:
+        culling_spec = {}
+        if termination.culling.timeout:
+            culling_spec["timeout"] = termination.culling.timeout
+        termination_spec["culling"] = culling_spec
+    if termination.probe:
+        probe_spec = {}
+        if termination.probe.var_exec:
+            exec_spec = {}
+            if termination.probe.var_exec.command:
+                exec_spec["command"] = termination.probe.var_exec.command
+            probe_spec["exec"] = exec_spec
+        if termination.probe.http:
+            http_spec = {}
+            if termination.probe.http.path:
+                http_spec["path"] = termination.probe.http.path
+            if termination.probe.http.port:
+                http_spec["port"] = termination.probe.http.port
+            probe_spec["http"] = http_spec
+        termination_spec["probe"] = probe_spec
 
     custom_object["termination"] = termination_spec
     return custom_object
