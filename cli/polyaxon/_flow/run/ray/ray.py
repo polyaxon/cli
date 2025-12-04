@@ -2,10 +2,11 @@ from typing import Any, Dict, Optional, Union
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import Field
-from clipped.types.ref_or_obj import RefField
+from clipped.types.ref_or_obj import BoolOrRef, RefField
 
 from polyaxon._flow.run.base import BaseRun
 from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._flow.run.ray.autoscaler import V1RayAutoscalerOptions
 from polyaxon._flow.run.ray.replica import V1RayReplica
 from polyaxon._flow.run.resources import V1RunResources
 from polyaxon._flow.run.utils import DestinationImageMixin
@@ -27,6 +28,8 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
         ray_version: str, optional
         head: [V1RayReplica](/docs/experimentation/distributed/ray-replica/), optional
         workers: Dict[str, [V1RayReplica](/docs/experimentation/distributed/ray-replica/)], optional
+        enable_in_tree_autoscaling: bool, optional
+        autoscaler_options: [V1RayAutoscalerOptions](/docs/experimentation/distributed/ray-autoscaler/), optional
 
 
     ## YAML usage
@@ -40,6 +43,8 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
     >>>   rayVersion:
     >>>   head:
     >>>   workers:
+    >>>   enableInTreeAutoscaling:
+    >>>   autoscalerOptions:
     ```
 
     ## Python usage
@@ -52,6 +57,7 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
     >>>     ray_version="2.5.0",
     >>>     head=V1RayReplica(...),
     >>>     worker=V1RayReplica(...),
+    >>>     enable_in_tree_autoscaling=True,
     >>> )
     ```
 
@@ -132,10 +138,42 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
     >>>     ...
     >>>   ...
     ```
+
+    ### enableInTreeAutoscaling
+
+    Enable the KubeRay in-tree autoscaler for automatic worker scaling.
+    When enabled, the Ray autoscaler will automatically scale workers based on workload demands.
+
+    > **Note**: The `idleTimeoutSeconds` for the autoscaler is derived from `termination.culling.timeout`.
+
+    ```yaml
+    >>> run:
+    >>>   kind: raycluster
+    >>>   enableInTreeAutoscaling: true
+    >>>   workers:
+    >>>     gpu-workers:
+    >>>       minReplicas: 0
+    >>>       maxReplicas: 10
+    >>>   ...
+    ```
+
+    ### autoscalerOptions
+
+    Optional configuration for the Ray autoscaler behavior.
+
+    ```yaml
+    >>> run:
+    >>>   kind: raycluster
+    >>>   enableInTreeAutoscaling: true
+    >>>   autoscalerOptions:
+    >>>     upscalingMode: Default
+    >>>     imagePullPolicy: IfNotPresent
+    >>>   ...
+    ```
     """
 
     _IDENTIFIER = V1RunKind.RAYCLUSTER
-    _CUSTOM_DUMP_FIELDS = {"head", "workers"}
+    _CUSTOM_DUMP_FIELDS = {"head", "workers", "autoscaler_options"}
     _FIELDS_DICT_PATCH = ["workers"]
 
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
@@ -147,6 +185,12 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
     ray_version: Optional[str] = Field(alias="rayVersion", default=None)
     head: Optional[Union[V1RayReplica, RefField]] = None
     workers: Optional[Dict[str, Union[V1RayReplica, RefField]]] = Field(default=None)
+    enable_in_tree_autoscaling: Optional[BoolOrRef] = Field(
+        alias="enableInTreeAutoscaling", default=None
+    )
+    autoscaler_options: Optional[Union[V1RayAutoscalerOptions, RefField]] = Field(
+        alias="autoscalerOptions", default=None
+    )
 
     def apply_image_destination(self, image: str):
         if self.head:

@@ -77,4 +77,6 @@ class RayClusterConverter(RayClusterMixin, BaseConverter):
             notifications=plugins.notifications,
             labels=labels,
             annotations=self.annotations,
+            enable_in_tree_autoscaling=cluster.enable_in_tree_autoscaling,
+            autoscaler_options=cluster.autoscaler_options,
         )

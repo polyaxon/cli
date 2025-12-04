@@ -64,4 +64,6 @@ class DaskClusterConverter(DaskClusterMixin, BaseConverter):
             notifications=plugins.notifications,
             labels=labels,
             annotations=self.annotations,
+            min_replicas=cluster.min_replicas,
+            max_replicas=cluster.max_replicas,
         )

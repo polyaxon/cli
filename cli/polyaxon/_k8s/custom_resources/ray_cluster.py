@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 from polyaxon._flow import V1Notification, V1Termination
+from polyaxon._flow.run.ray.autoscaler import V1RayAutoscalerOptions
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon._k8s.custom_resources.operation import (
@@ -138,6 +139,24 @@ def get_ray_worker_replicas_template(
         template_spec["workers"] = workers
 
 
+def _get_autoscaler_options(
+    autoscaler_options: Optional[V1RayAutoscalerOptions],
+) -> Optional[Dict]:
+    """Build autoscaler options dict from user-provided options."""
+    if not autoscaler_options:
+        return None
+
+    result = {}
+    if autoscaler_options.upscaling_mode:
+        result["upscalingMode"] = autoscaler_options.upscaling_mode
+    if autoscaler_options.image_pull_policy:
+        result["imagePullPolicy"] = autoscaler_options.image_pull_policy
+    if autoscaler_options.resources:
+        result["resources"] = autoscaler_options.resources
+
+    return result if result else None
+
+
 def get_ray_cluster_custom_resource(
     resource_name: str,
     namespace: str,
@@ -153,6 +172,8 @@ def get_ray_cluster_custom_resource(
     ray_version: Optional[str],
     labels: Dict[str, str],
     annotations: Dict[str, str],
+    enable_in_tree_autoscaling: Optional[bool] = None,
+    autoscaler_options: Optional[V1RayAutoscalerOptions] = None,
 ) -> Dict:
     template_spec = {}
 
@@ -180,6 +201,14 @@ def get_ray_cluster_custom_resource(
         template_spec["runtimeEnv"] = runtime_env
     if ray_version:
         template_spec["rayVersion"] = ray_version
+
+    # Add autoscaling configuration
+    if enable_in_tree_autoscaling is not None:
+        template_spec["enableInTreeAutoscaling"] = enable_in_tree_autoscaling
+
+    autoscaler_opts = _get_autoscaler_options(autoscaler_options)
+    if autoscaler_opts:
+        template_spec["autoscalerOptions"] = autoscaler_opts
 
     custom_object = {"rayClusterSpec": template_spec}
     custom_object = set_termination(

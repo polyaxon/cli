@@ -1,7 +1,8 @@
 from typing import Optional, Union
 from typing_extensions import Literal
 
-from clipped.types.ref_or_obj import RefField
+from clipped.compact.pydantic import Field
+from clipped.types.ref_or_obj import IntOrRef, RefField
 
 from polyaxon._flow.run.base import BaseRun
 from polyaxon._flow.run.dask.replica import V1DaskReplica
@@ -22,6 +23,8 @@ class V1DaskCluster(BaseRun, DestinationImageMixin):
         kind: str, should be equal `daskcluster`
         worker: V1DaskReplica, optional - Worker replica specification
         scheduler: V1DaskReplica, optional - Scheduler replica specification
+        min_replicas: int, optional - Minimum number of workers for autoscaling
+        max_replicas: int, optional - Maximum number of workers for autoscaling
 
     ## YAML usage
 
@@ -44,6 +47,25 @@ class V1DaskCluster(BaseRun, DestinationImageMixin):
     >>>           memory: 1Gi
     >>>           cpu: 1
     ```
+
+    ## Autoscaling
+
+    Enable autoscaling by setting `minReplicas` and `maxReplicas`.
+    When both are set, a DaskAutoscaler resource will be created.
+
+    ```yaml
+    >>> run:
+    >>>   kind: daskcluster
+    >>>   minReplicas: 1
+    >>>   maxReplicas: 10
+    >>>   worker:
+    >>>     replicas: 2
+    >>>     container:
+    >>>       image: daskdev/dask:latest
+    >>>   scheduler:
+    >>>     container:
+    >>>       image: daskdev/dask:latest
+    ```
     """
 
     _IDENTIFIER = V1RunKind.DASKCLUSTER
@@ -52,6 +74,8 @@ class V1DaskCluster(BaseRun, DestinationImageMixin):
     kind: Literal[_IDENTIFIER] = _IDENTIFIER
     worker: Optional[Union[V1DaskReplica, RefField]] = None
     scheduler: Optional[Union[V1DaskReplica, RefField]] = None
+    min_replicas: Optional[IntOrRef] = Field(alias="minReplicas", default=None)
+    max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas", default=None)
 
     def apply_image_destination(self, image: str):
         if self.worker:

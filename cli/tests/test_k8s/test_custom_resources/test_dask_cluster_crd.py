@@ -117,3 +117,73 @@ class TestDaskClusterCRD(BaseDistributedCRDTestCase):
 
         assert crd["daskClusterSpec"].pop("service") is not None
         assert crd == expected_crd
+
+    def test_get_dask_cluster_custom_resource_with_autoscaling(self):
+        """Test that autoscaling config is passed through when min/max replicas are set."""
+        termination = V1Termination(max_retries=5, ttl=10, timeout=10)
+        environment = V1Environment(
+            labels={"foo": "bar"},
+            annotations={"foo": "bar"},
+            node_selector={"foo": "bar"},
+            node_name="foo",
+            restart_policy="Never",
+        )
+        worker, worker_replica_template = self.get_replica(environment)
+        scheduler, scheduler_replica_template = self.get_replica(environment)
+
+        crd = get_dask_cluster_custom_resource(
+            namespace="default",
+            owner_name="foo",
+            project_name="foo",
+            run_uuid="foo",
+            resource_name="foo",
+            worker=worker,
+            scheduler=scheduler,
+            termination=termination,
+            collect_logs=True,
+            sync_statuses=True,
+            notifications=None,
+            labels=environment.labels,
+            annotations={"foo": "bar"},
+            min_replicas=1,
+            max_replicas=10,
+        )
+
+        # Verify autoscaling config is set
+        assert crd["daskClusterSpec"]["minReplicas"] == 1
+        assert crd["daskClusterSpec"]["maxReplicas"] == 10
+
+    def test_get_dask_cluster_custom_resource_without_autoscaling(self):
+        """Test that autoscaling config is not set when min/max replicas are None."""
+        termination = V1Termination(max_retries=5, ttl=10, timeout=10)
+        environment = V1Environment(
+            labels={"foo": "bar"},
+            annotations={"foo": "bar"},
+            node_selector={"foo": "bar"},
+            node_name="foo",
+            restart_policy="Never",
+        )
+        worker, worker_replica_template = self.get_replica(environment)
+        scheduler, scheduler_replica_template = self.get_replica(environment)
+
+        crd = get_dask_cluster_custom_resource(
+            namespace="default",
+            owner_name="foo",
+            project_name="foo",
+            run_uuid="foo",
+            resource_name="foo",
+            worker=worker,
+            scheduler=scheduler,
+            termination=termination,
+            collect_logs=True,
+            sync_statuses=True,
+            notifications=None,
+            labels=environment.labels,
+            annotations={"foo": "bar"},
+            min_replicas=None,
+            max_replicas=None,
+        )
+
+        # Verify autoscaling config is not set
+        assert "minReplicas" not in crd["daskClusterSpec"]
+        assert "maxReplicas" not in crd["daskClusterSpec"]

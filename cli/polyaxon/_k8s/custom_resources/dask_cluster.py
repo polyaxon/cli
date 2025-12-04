@@ -85,6 +85,8 @@ def get_dask_cluster_custom_resource(
     notifications: List[V1Notification],
     labels: Dict[str, str],
     annotations: Dict[str, str],
+    min_replicas: Optional[int] = None,
+    max_replicas: Optional[int] = None,
 ) -> Dict:
     template_spec = {}
     get_dask_replicas_template(
@@ -160,6 +162,10 @@ def get_dask_cluster_custom_resource(
         ],
     )
     template_spec = {"replicaSpecs": template_spec, "service": service}
+    # Add autoscaling configuration if both min and max replicas are set
+    if min_replicas is not None and max_replicas is not None:
+        template_spec["minReplicas"] = min_replicas
+        template_spec["maxReplicas"] = max_replicas
     custom_object = {"daskClusterSpec": template_spec}
     custom_object = set_termination(
         custom_object=custom_object, termination=termination
