@@ -4,7 +4,6 @@ from clipped.utils.enums import PEnum
 class V1RunKind(str, PEnum):
     JOB = "job"
     SERVICE = "service"
-    CLUSTER = "cluster"
     DAG = "dag"
     DASKCLUSTER = "daskcluster"
     RAYCLUSTER = "raycluster"
