@@ -968,6 +968,11 @@ class BaseConverter:
         plugins: V1Plugins,
         artifacts_store: V1Connection,
         sidecar_containers: List[Container],
+        connections: Optional[List[str]] = None,
+        connection_by_names: Optional[Dict[str, V1Connection]] = None,
+        secrets: Optional[Iterable[V1ConnectionResource]] = None,
+        config_maps: Optional[Iterable[V1ConnectionResource]] = None,
+        kv_env_vars: Optional[List[List]] = None,
         log_level: Optional[str] = None,
         volumes: Optional[List[k8s_schemas.V1Volume]] = None,
     ) -> List[Container]:
@@ -987,8 +992,36 @@ class BaseConverter:
             run_path=self.run_path,
         )
         containers = to_list(polyaxon_sidecar_container, check_none=True)
-        containers += sidecar_containers
+
+        # Handle user sidecars with connections
+        for sidecar in sidecar_containers:
+            _sidecar = self._get_user_sidecar_container(
+                sidecar=sidecar,
+                plugins=plugins,
+                artifacts_store=artifacts_store,
+                connections=connections,
+                connection_by_names=connection_by_names,
+                secrets=secrets,
+                config_maps=config_maps,
+                kv_env_vars=kv_env_vars,
+            )
+            if _sidecar:
+                containers.append(sidecar)
+
         return [self._ensure_container(c, volumes) for c in containers]
+
+    def _get_user_sidecar_container(
+        self,
+        sidecar: Container,
+        plugins: V1Plugins,
+        artifacts_store: Optional[V1Connection],
+        connections: Optional[List[str]],
+        connection_by_names: Optional[Dict[str, V1Connection]],
+        secrets: Optional[Iterable[V1ConnectionResource]],
+        config_maps: Optional[Iterable[V1ConnectionResource]],
+        kv_env_vars: Optional[List[List]],
+    ) -> Optional[Container]:
+        return None
 
     def get_main_container(
         self,

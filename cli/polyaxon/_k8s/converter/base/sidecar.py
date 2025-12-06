@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.lists import to_list
 
 from polyaxon._auxiliaries import V1PolyaxonSidecarContainer
-from polyaxon._connections import V1Connection
+from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._containers.names import SIDECAR_CONTAINER
 from polyaxon._env_vars.keys import ENV_KEYS_ARTIFACTS_STORE_NAME, ENV_KEYS_CONTAINER_ID
 from polyaxon._flow import V1Plugins
@@ -165,3 +165,93 @@ class SidecarConverter(_BaseConverter):
         )
 
         return cls._patch_container(container)
+
+    def _get_user_sidecar_container(
+        self,
+        sidecar: k8s_schemas.V1Container,
+        plugins: V1Plugins,
+        artifacts_store: Optional[V1Connection],
+        connections: Optional[List[str]],
+        connection_by_names: Optional[Dict[str, V1Connection]],
+        secrets: Optional[Iterable[V1ConnectionResource]],
+        config_maps: Optional[Iterable[V1ConnectionResource]],
+        kv_env_vars: Optional[List[List]],
+    ) -> k8s_schemas.V1Container:
+        """Apply connections and context volumes to a user-defined sidecar container."""
+        if plugins and plugins.sidecar and plugins.sidecar.no_connections:
+            return sidecar
+
+        connections = connections or []
+        connection_by_names = connection_by_names or {}
+        secrets = secrets or []
+        config_maps = config_maps or []
+
+        if artifacts_store and (
+            not plugins.collect_artifacts or plugins.mount_artifacts_store
+        ):
+            if artifacts_store.name not in connection_by_names:
+                connection_by_names[artifacts_store.name] = artifacts_store
+            if artifacts_store.name not in connections:
+                connections.append(artifacts_store.name)
+
+        requested_connections = [connection_by_names[c] for c in connections]
+        requested_config_maps = V1Connection.get_requested_resources(
+            resources=config_maps,
+            connections=requested_connections,
+            resource_key="config_map",
+        )
+        requested_secrets = V1Connection.get_requested_resources(
+            resources=secrets, connections=requested_connections, resource_key="secret"
+        )
+
+        # Volume mounts
+        volume_mounts = (
+            self._get_mounts(
+                use_auth_context=plugins.auth,
+                use_artifacts_context=False,
+                use_docker_context=plugins.docker,
+                use_shm_context=plugins.shm,
+                run_path=self.run_path,
+            )
+            if plugins
+            else []
+        )
+        volume_mounts = volume_mounts + self._get_main_volume_mounts(
+            plugins=plugins,
+            init=[],
+            connections=requested_connections,
+            secrets=requested_secrets,
+            config_maps=requested_config_maps,
+            run_path=self.run_path,
+        )
+
+        # Env vars
+        env = self._get_main_env_vars(
+            plugins=plugins,
+            kv_env_vars=kv_env_vars,
+            artifacts_store_name=artifacts_store.name if artifacts_store else None,
+            connections=requested_connections,
+            secrets=requested_secrets,
+            config_maps=requested_config_maps,
+        )
+        env += self._get_resources_env_vars(sidecar.resources)
+        if sidecar.env:
+            sidecar.env = list(sidecar.env) + env
+        else:
+            sidecar.env = env
+
+        # Env from
+        env_from = self._get_env_from_k8s_resources(
+            secrets=requested_secrets, config_maps=requested_config_maps
+        )
+        if env_from:
+            if sidecar.env_from:
+                sidecar.env_from = list(sidecar.env_from) + env_from
+            else:
+                sidecar.env_from = env_from
+        if sidecar.volume_mounts:
+            sidecar.volume_mounts = list(sidecar.volume_mounts) + volume_mounts
+        else:
+            sidecar.volume_mounts = volume_mounts
+
+        return sidecar

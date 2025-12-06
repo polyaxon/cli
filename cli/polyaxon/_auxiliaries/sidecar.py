@@ -143,6 +143,15 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
     >>> sidecar:
     >>>   monitorSpec: true
     ```
+
+    ### noConnections
+
+    Whether to prevent mounting connections and context volumes to sidecars, default `None` (false).
+
+    ```yaml
+    >>> sidecar:
+    >>>   noConnections: true
+    ```
     """
 
     _IDENTIFIER = "polyaxon_sidecar"
@@ -156,6 +165,7 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
     sync_interval: Optional[IntOrRef] = Field(alias="syncInterval", default=None)
     monitor_logs: Optional[BoolOrRef] = Field(alias="monitorLogs", default=None)
     monitor_spec: Optional[BoolOrRef] = Field(alias="monitorSpec", default=None)
+    no_connections: Optional[BoolOrRef] = Field(alias="noConnections", default=None)
     resources: Optional[Union[Dict[str, Any], RefField]] = None
 
     def get_image(self):

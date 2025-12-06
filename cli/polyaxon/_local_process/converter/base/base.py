@@ -120,6 +120,11 @@ class BaseConverter(
             plugins=plugins,
             artifacts_store=artifacts_store,
             sidecar_containers=sidecars,
+            connections=connections,
+            connection_by_names=connection_by_names,
+            secrets=secrets,
+            config_maps=config_maps,
+            kv_env_vars=kv_env_vars,
             log_level=plugins.log_level,
             volumes=volumes,
         )
