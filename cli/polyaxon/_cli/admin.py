@@ -240,13 +240,13 @@ def dashboard(yes, url):
 @click.option("--delete", "-d", is_flag=True, default=False)
 @click.option(
     "--uuids",
-    "--uids",
+    "-uids",
+    "-ids",
     type=str,
     help="List of uuid of operations to clean/delete (comma separated values).",
 )
 def clean_ops(namespace, in_cluster, delete, uuids):
     """clean-ops command."""
-    # TODO(Operator): Use new correct plural when available
     from polyaxon._k8s.custom_resources import operation
     from polyaxon._k8s.manager.manager import K8sManager
 
@@ -255,17 +255,17 @@ def clean_ops(namespace, in_cluster, delete, uuids):
 
     manager = K8sManager(namespace=namespace, in_cluster=in_cluster)
 
-    def _patch_op():
+    def _patch_op(name, group, version, plural):
         retry = 0
         while retry < 3:
             if retry:
                 time.sleep(retry * 2)
             try:
                 manager.update_custom_object(
-                    name=op,
-                    group=operation.GROUP,
-                    version=operation.API_VERSION,
-                    plural=operation.PLURAL,
+                    name=name,
+                    group=group,
+                    version=version,
+                    plural=plural,
                     body={"metadata": {"finalizers": None}},
                 )
                 return
@@ -274,17 +274,17 @@ def clean_ops(namespace, in_cluster, delete, uuids):
                 print("retrying")
                 retry += 1
 
-    def _delete_op():
+    def _delete_op(name, group, version, plural):
         retry = 0
         while retry <= 2:
             if retry:
                 time.sleep(retry)
             try:
                 manager.delete_custom_object(
-                    name=op,
-                    group=operation.GROUP,
-                    version=operation.API_VERSION,
-                    plural=operation.PLURAL,
+                    name=name,
+                    group=group,
+                    version=version,
+                    plural=plural,
                 )
                 return
             except Exception as e:
@@ -292,25 +292,56 @@ def clean_ops(namespace, in_cluster, delete, uuids):
                 print("retrying")
                 retry += 1
 
-    uuids = validate_tags(uuids, validate_yaml=True)
-    if uuids:
-        ops = [o if "plx-operation-" in o else get_resource_name(o) for o in uuids]
-    else:
-        ops = [
-            o["metadata"]["name"]
-            for o in manager.list_custom_objects(
-                group=operation.GROUP,
-                version=operation.API_VERSION,
-                plural=operation.PLURAL,
+    def _get_op(name, group, version, plural):
+        try:
+            return manager.get_custom_object(
+                name=name,
+                group=group,
+                version=version,
+                plural=plural,
             )
-        ]
+        except Exception:
+            return None
+
+    uuids = validate_tags(uuids, validate_yaml=True)
+
+    kinds = [
+        (operation.JOB_KIND, operation.JOB_PLURAL),
+        (operation.SERVICES_KIND, operation.SERVICES_PLURAL),
+        (operation.CLUSTER_KIND, operation.CLUSTER_PLURAL),
+        (operation.KFJOB_KIND, operation.KFJOB_PLURAL),
+    ]
+
+    ops = []
+
+    if uuids:
+        names = [o if "plx-operation-" in o else get_resource_name(o) for o in uuids]
+        for name in names:
+            for kind, plural in kinds:
+                if _get_op(name, operation.GROUP, operation.API_VERSION, plural):
+                    ops.append((name, kind, plural))
+                    break
+    else:
+        for kind, plural in kinds:
+            try:
+                objs = manager.list_custom_objects(
+                    group=operation.GROUP,
+                    version=operation.API_VERSION,
+                    plural=plural,
+                )
+                for o in objs:
+                    ops.append((o["metadata"]["name"], kind, plural))
+            except Exception as e:
+                Printer.warning(f"Could not list {plural}: {e}")
+
     if not ops:
+        Printer.print("No operations found.")
         return
 
     Printer.header(f"Cleaning {len(ops)} ops ...")
-    for idx, op in enumerate(ops):
+    for idx, (name, kind, plural) in enumerate(ops):
         with Printer.console.status(f"Cleaning operation {idx + 1}/{len(ops)} ..."):
-            _patch_op()
+            _patch_op(name, operation.GROUP, operation.API_VERSION, plural)
             if delete:
-                _delete_op()
-        Printer.success(f"Operation {op} was cleaned")
+                _delete_op(name, operation.GROUP, operation.API_VERSION, plural)
+        Printer.success(f"Operation {name} was cleaned")
