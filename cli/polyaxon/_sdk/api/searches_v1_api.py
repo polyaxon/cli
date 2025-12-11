@@ -16,8 +16,8 @@ class SearchesV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Search, Field(..., description="Search body")],
         **kwargs,
-    ) -> V1Search:
-        """Create search
+    ) -> V1Search:  # noqa: E501
+        """Create search  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -45,7 +45,7 @@ class SearchesV1Api(BaseApi):
         :rtype: V1Search
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_search_with_http_info(owner, body, **kwargs)
+        return self.create_search_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_search_with_http_info(
@@ -53,8 +53,8 @@ class SearchesV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Search, Field(..., description="Search body")],
         **kwargs,
-    ):
-        """Create search
+    ):  # noqa: E501
+        """Create search  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -124,14 +124,11 @@ class SearchesV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -140,7 +137,7 @@ class SearchesV1Api(BaseApi):
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
-        )
+        )  # noqa: E501
 
         # set the HTTP header `Content-Type`
         _content_types_list = _params.get(
@@ -151,7 +148,7 @@ class SearchesV1Api(BaseApi):
             _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
-        _auth_settings = ["ApiKey"]
+        _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
             "200": "V1Search",
@@ -172,7 +169,7 @@ class SearchesV1Api(BaseApi):
             response_types_map=_response_types_map,
             auth_settings=_auth_settings,
             async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
             _preload_content=_params.get("_preload_content", True),
             _request_timeout=_params.get("_request_timeout"),
             collection_formats=_collection_formats,
@@ -294,22 +291,19 @@ class SearchesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -454,22 +448,19 @@ class SearchesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -687,29 +678,32 @@ class SearchesV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -927,29 +921,32 @@ class SearchesV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1101,19 +1098,17 @@ class SearchesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["search_uuid"]:
             _path_params["search.uuid"] = _params["search_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1278,19 +1273,17 @@ class SearchesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["search_uuid"]:
             _path_params["search.uuid"] = _params["search_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:

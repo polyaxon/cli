@@ -169,24 +169,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -333,19 +331,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -519,24 +515,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -683,19 +677,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -869,24 +861,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1033,19 +1023,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1099,7 +1087,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[str, Field(..., description="Kind of the entity")],
+        kind: Annotated[StrictStr, Field(..., description="Kind of the entity")],
         **kwargs,
     ) -> None:  # noqa: E501
         """Internal API to collect run logs  # noqa: E501
@@ -1151,7 +1139,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[str, Field(..., description="Kind of the entity")],
+        kind: Annotated[StrictStr, Field(..., description="Kind of the entity")],
         **kwargs,
     ):  # noqa: E501
         """Internal API to collect run logs  # noqa: E501
@@ -1227,28 +1215,28 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
+
         if _params["kind"]:
             _path_params["kind"] = _params["kind"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1393,7 +1381,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method copy_run" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method copy_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -1404,21 +1393,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["run_uuid"]:
             _path_params["run.uuid"] = _params["run_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1587,19 +1575,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1780,21 +1766,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1970,21 +1955,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -2163,24 +2147,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2225,7 +2207,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Path query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         **kwargs,
     ) -> None:  # noqa: E501
@@ -2247,7 +2229,7 @@ class RunsV1Api(BaseApi):
         :type uuid: str
         :param path: Path query param.
         :type path: str
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -2284,7 +2266,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Path query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         **kwargs,
     ):  # noqa: E501
@@ -2306,7 +2288,7 @@ class RunsV1Api(BaseApi):
         :type uuid: str
         :param path: Path query param.
         :type path: str
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -2363,10 +2345,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -2374,19 +2359,17 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("path") is not None:  # noqa: E501
             _query_params.append(("path", _params["path"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2559,10 +2542,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
@@ -2573,14 +2559,11 @@ class RunsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2625,7 +2608,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Path query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         **kwargs,
     ) -> None:  # noqa: E501
@@ -2647,7 +2630,7 @@ class RunsV1Api(BaseApi):
         :type uuid: str
         :param path: Path query param.
         :type path: str
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -2684,7 +2667,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Path query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         **kwargs,
     ):  # noqa: E501
@@ -2706,7 +2689,7 @@ class RunsV1Api(BaseApi):
         :type uuid: str
         :param path: Path query param.
         :type path: str
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -2763,10 +2746,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -2774,19 +2760,17 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("path") is not None:  # noqa: E501
             _query_params.append(("path", _params["path"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -2829,7 +2813,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.delete_runs(owner, project, body, async_req=True)
+        >>> thread = api.delete_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -2933,19 +2917,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -2996,7 +2978,7 @@ class RunsV1Api(BaseApi):
         entity: Annotated[
             StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
-        kind: Annotated[str, Field(..., description="The artifact kind")],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -3013,7 +2995,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
@@ -3046,7 +3028,7 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param status: Optional status.
         :type status: str
@@ -3089,7 +3071,7 @@ class RunsV1Api(BaseApi):
         entity: Annotated[
             StrictStr, Field(..., description="Entity where the run will be assigned")
         ],
-        kind: Annotated[str, Field(..., description="The artifact kind")],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -3106,7 +3088,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
@@ -3139,7 +3121,7 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param status: Optional status.
         :type status: str
@@ -3210,10 +3192,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["kind"]:
             _path_params["kind"] = _params["kind"]
 
@@ -3221,29 +3206,32 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("names") is not None:  # noqa: E501
             _query_params.append(("names", _params["names"]))
+
         if _params.get("runs") is not None:  # noqa: E501
             _query_params.append(("runs", _params["runs"]))
+
         if _params.get("orient") is not None:  # noqa: E501
             _query_params.append(("orient", _params["orient"]))
+
         if _params.get("force") is not None:  # noqa: E501
             _query_params.append(("force", _params["force"]))
+
         if _params.get("sample") is not None:  # noqa: E501
             _query_params.append(("sample", _params["sample"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
+
         if _params.get("status") is not None:  # noqa: E501
             _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -3587,7 +3575,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method get_run" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -3598,24 +3587,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -3834,10 +3821,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -3845,23 +3835,23 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("path") is not None:  # noqa: E501
             _query_params.append(("path", _params["path"]))
+
         if _params.get("stream") is not None:  # noqa: E501
             _query_params.append(("stream", _params["stream"]))
+
         if _params.get("force") is not None:  # noqa: E501
             _query_params.append(("force", _params["force"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4039,10 +4029,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
@@ -4053,14 +4046,11 @@ class RunsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4504,8 +4494,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -4513,25 +4505,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4740,8 +4733,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -4749,25 +4744,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -4817,7 +4813,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Path query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         **kwargs,
     ) -> V1ArtifactTree:  # noqa: E501
@@ -4839,7 +4835,7 @@ class RunsV1Api(BaseApi):
         :type uuid: str
         :param path: Path query param.
         :type path: str
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -4876,7 +4872,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Path query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         **kwargs,
     ):  # noqa: E501
@@ -4898,7 +4894,7 @@ class RunsV1Api(BaseApi):
         :type uuid: str
         :param path: Path query param.
         :type path: str
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
@@ -4955,10 +4951,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -4966,19 +4965,17 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("path") is not None:  # noqa: E501
             _query_params.append(("path", _params["path"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -5187,8 +5184,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -5196,25 +5195,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -5423,8 +5423,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -5432,25 +5434,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -5659,8 +5662,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -5668,25 +5673,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -5732,7 +5738,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[str, Field(..., description="The artifact kind")],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -5746,7 +5752,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
@@ -5779,7 +5785,7 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param status: Optional status.
         :type status: str
@@ -5825,7 +5831,7 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[str, Field(..., description="The artifact kind")],
+        kind: Annotated[StrictStr, Field(..., description="The artifact kind")],
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -5839,7 +5845,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
@@ -5872,7 +5878,7 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param status: Optional status.
         :type status: str
@@ -5943,12 +5949,16 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
+
         if _params["kind"]:
             _path_params["kind"] = _params["kind"]
 
@@ -5956,27 +5966,29 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("names") is not None:  # noqa: E501
             _query_params.append(("names", _params["names"]))
+
         if _params.get("orient") is not None:  # noqa: E501
             _query_params.append(("orient", _params["orient"]))
+
         if _params.get("force") is not None:  # noqa: E501
             _query_params.append(("force", _params["force"]))
+
         if _params.get("sample") is not None:  # noqa: E501
             _query_params.append(("sample", _params["sample"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
+
         if _params.get("status") is not None:  # noqa: E501
             _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -6023,8 +6035,8 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         kind: Annotated[
-            Optional[StrictStr], Field(..., description="Kind of the entity")
-        ],
+            Optional[StrictStr], Field(description="Kind of the entity.")
+        ] = None,
         last_time: Annotated[
             Optional[datetime], Field(description="last time.")
         ] = None,
@@ -6106,8 +6118,8 @@ class RunsV1Api(BaseApi):
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
         kind: Annotated[
-            Optional[StrictStr], Field(..., description="Kind of the entity")
-        ],
+            Optional[StrictStr], Field(description="Kind of the entity.")
+        ] = None,
         last_time: Annotated[
             Optional[datetime], Field(description="last time.")
         ] = None,
@@ -6213,10 +6225,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -6224,6 +6239,7 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("kind") is not None:  # noqa: E501
             _query_params.append(("kind", _params["kind"]))
+
         if _params.get("last_time") is not None:  # noqa: E501
             if isinstance(_params["last_time"], datetime):
                 _query_params.append(
@@ -6236,23 +6252,23 @@ class RunsV1Api(BaseApi):
                 )
             else:
                 _query_params.append(("last_time", _params["last_time"]))
+
         if _params.get("last_file") is not None:  # noqa: E501
             _query_params.append(("last_file", _params["last_file"]))
+
         if _params.get("force") is not None:  # noqa: E501
             _query_params.append(("force", _params["force"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -6418,24 +6434,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -6481,7 +6495,9 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[str, Field(..., description="The entity kind")],
+        kind: Annotated[
+            Optional[StrictStr], Field(description="The entity kind.")
+        ] = None,
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -6495,7 +6511,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
@@ -6528,7 +6544,7 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param status: Optional status.
         :type status: str
@@ -6574,7 +6590,9 @@ class RunsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the entity")
         ],
-        kind: Annotated[str, Field(..., description="The entity kind")],
+        kind: Annotated[
+            Optional[StrictStr], Field(description="The entity kind.")
+        ] = None,
         names: Annotated[
             Optional[StrictStr], Field(description="Names query param.")
         ] = None,
@@ -6588,7 +6606,7 @@ class RunsV1Api(BaseApi):
             Optional[StrictInt], Field(description="Sample query param.")
         ] = None,
         connection: Annotated[
-            Optional[StrictStr], Field(description="Connection query param.")
+            Optional[StrictStr], Field(description="Connection to use.")
         ] = None,
         status: Annotated[
             Optional[StrictStr], Field(description="Optional status.")
@@ -6621,7 +6639,7 @@ class RunsV1Api(BaseApi):
         :type force: bool
         :param sample: Sample query param.
         :type sample: int
-        :param connection: Connection query param.
+        :param connection: Connection to use.
         :type connection: str
         :param status: Optional status.
         :type status: str
@@ -6692,10 +6710,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -6703,29 +6724,32 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("kind") is not None:  # noqa: E501
             _query_params.append(("kind", _params["kind"]))
+
         if _params.get("names") is not None:  # noqa: E501
             _query_params.append(("names", _params["names"]))
+
         if _params.get("tail") is not None:  # noqa: E501
             _query_params.append(("tail", _params["tail"]))
+
         if _params.get("force") is not None:  # noqa: E501
             _query_params.append(("force", _params["force"]))
+
         if _params.get("sample") is not None:  # noqa: E501
             _query_params.append(("sample", _params["sample"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
+
         if _params.get("status") is not None:  # noqa: E501
             _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -6891,24 +6915,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -6973,6 +6995,15 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
+        start_date: Annotated[
+            Optional[StrictStr], Field(description="Stats start date.")
+        ] = None,
+        end_date: Annotated[
+            Optional[StrictStr], Field(description="Stats end date.")
+        ] = None,
+        boundary: Annotated[
+            Optional[bool], Field(description="Stats boundary.")
+        ] = None,
         **kwargs,
     ) -> object:  # noqa: E501
         """Get run stats  # noqa: E501
@@ -6980,7 +7011,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_stats(owner, entity, uuid, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, async_req=True)
+        >>> thread = api.get_run_stats(owner, entity, uuid, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, start_date, end_date, boundary, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -7009,6 +7040,12 @@ class RunsV1Api(BaseApi):
         :type groupby: str
         :param trunc: Stats trunc.
         :type trunc: str
+        :param start_date: Stats start date.
+        :type start_date: str
+        :param end_date: Stats end date.
+        :type end_date: str
+        :param boundary: Stats boundary.
+        :type boundary: bool
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -7039,6 +7076,9 @@ class RunsV1Api(BaseApi):
             aggregate,
             groupby,
             trunc,
+            start_date,
+            end_date,
+            boundary,
             **kwargs,
         )  # noqa: E501
 
@@ -7072,6 +7112,15 @@ class RunsV1Api(BaseApi):
             Optional[StrictStr], Field(description="Stats group.")
         ] = None,
         trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
+        start_date: Annotated[
+            Optional[StrictStr], Field(description="Stats start date.")
+        ] = None,
+        end_date: Annotated[
+            Optional[StrictStr], Field(description="Stats end date.")
+        ] = None,
+        boundary: Annotated[
+            Optional[bool], Field(description="Stats boundary.")
+        ] = None,
         **kwargs,
     ):  # noqa: E501
         """Get run stats  # noqa: E501
@@ -7079,7 +7128,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_run_stats_with_http_info(owner, entity, uuid, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, async_req=True)
+        >>> thread = api.get_run_stats_with_http_info(owner, entity, uuid, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, start_date, end_date, boundary, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -7108,6 +7157,12 @@ class RunsV1Api(BaseApi):
         :type groupby: str
         :param trunc: Stats trunc.
         :type trunc: str
+        :param start_date: Stats start date.
+        :type start_date: str
+        :param end_date: Stats end date.
+        :type end_date: str
+        :param boundary: Stats boundary.
+        :type boundary: bool
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -7148,6 +7203,9 @@ class RunsV1Api(BaseApi):
             "aggregate",
             "groupby",
             "trunc",
+            "start_date",
+            "end_date",
+            "boundary",
         ]
         _all_params.extend(
             [
@@ -7177,8 +7235,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -7186,35 +7246,50 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("kind") is not None:  # noqa: E501
             _query_params.append(("kind", _params["kind"]))
+
         if _params.get("aggregate") is not None:  # noqa: E501
             _query_params.append(("aggregate", _params["aggregate"]))
+
         if _params.get("groupby") is not None:  # noqa: E501
             _query_params.append(("groupby", _params["groupby"]))
+
         if _params.get("trunc") is not None:  # noqa: E501
             _query_params.append(("trunc", _params["trunc"]))
 
+        if _params.get("start_date") is not None:  # noqa: E501
+            _query_params.append(("start_date", _params["start_date"]))
+
+        if _params.get("end_date") is not None:  # noqa: E501
+            _query_params.append(("end_date", _params["end_date"]))
+
+        if _params.get("boundary") is not None:  # noqa: E501
+            _query_params.append(("boundary", _params["boundary"]))
+
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -7380,24 +7455,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -7606,8 +7679,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -7615,25 +7690,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -7857,6 +7933,7 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
@@ -7864,29 +7941,32 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -8052,24 +8132,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -8330,10 +8408,13 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -8341,29 +8422,32 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("kind") is not None:  # noqa: E501
             _query_params.append(("kind", _params["kind"]))
+
         if _params.get("names") is not None:  # noqa: E501
             _query_params.append(("names", _params["names"]))
+
         if _params.get("tail") is not None:  # noqa: E501
             _query_params.append(("tail", _params["tail"]))
+
         if _params.get("force") is not None:  # noqa: E501
             _query_params.append(("force", _params["force"]))
+
         if _params.get("sample") is not None:  # noqa: E501
             _query_params.append(("sample", _params["sample"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
+
         if _params.get("status") is not None:  # noqa: E501
             _query_params.append(("status", _params["status"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -8529,24 +8613,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -8693,19 +8775,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -8902,25 +8982,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -9109,25 +9190,26 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -9339,7 +9421,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method list_runs" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method list_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -9350,6 +9433,7 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
@@ -9357,29 +9441,32 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -9553,23 +9640,23 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["namespace"]:
             _path_params["namespace"] = _params["namespace"]
+
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -9727,7 +9814,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method patch_run" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method patch_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -9738,21 +9826,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["run_uuid"]:
             _path_params["run.uuid"] = _params["run_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -9927,21 +10014,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["run_uuid"]:
             _path_params["run.uuid"] = _params["run_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -10120,24 +10206,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -10284,19 +10368,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -10466,21 +10548,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["run_uuid"]:
             _path_params["run.uuid"] = _params["run_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -10653,8 +10734,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -10826,7 +10909,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method skip_run" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method skip_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -10987,7 +11071,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method skip_runs" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method skip_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11170,7 +11255,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method stop_run" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method stop_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11181,24 +11267,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -11333,7 +11417,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method stop_runs" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method stop_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11344,19 +11429,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -11508,7 +11591,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method sync_run" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method sync_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11519,19 +11603,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -11587,7 +11669,7 @@ class RunsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.tag_runs(owner, project, body, async_req=True)
+        >>> thread = api.tag_runs(owner, name, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -11679,7 +11761,8 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method tag_runs" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method tag_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11690,19 +11773,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -11874,21 +11955,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["run_uuid"]:
             _path_params["run.uuid"] = _params["run_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -12048,19 +12128,17 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -12234,24 +12312,22 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -12408,21 +12484,20 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["run_uuid"]:
             _path_params["run.uuid"] = _params["run_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -12641,8 +12716,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -12650,14 +12727,15 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("path") is not None:  # noqa: E501
             _query_params.append(("path", _params["path"]))
+
         if _params.get("overwrite") is not None:  # noqa: E501
             _query_params.append(("overwrite", _params["overwrite"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
@@ -12666,7 +12744,6 @@ class RunsV1Api(BaseApi):
 
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -12875,8 +12952,10 @@ class RunsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["project"]:
             _path_params["project"] = _params["project"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -12884,14 +12963,15 @@ class RunsV1Api(BaseApi):
         _query_params = []
         if _params.get("path") is not None:  # noqa: E501
             _query_params.append(("path", _params["path"]))
+
         if _params.get("overwrite") is not None:  # noqa: E501
             _query_params.append(("overwrite", _params["overwrite"]))
+
         if _params.get("connection") is not None:  # noqa: E501
             _query_params.append(("connection", _params["connection"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
@@ -12900,7 +12980,6 @@ class RunsV1Api(BaseApi):
 
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]

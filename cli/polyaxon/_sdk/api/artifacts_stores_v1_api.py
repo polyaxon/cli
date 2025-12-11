@@ -23,8 +23,8 @@ class ArtifactsStoresV1Api(BaseApi):
             Optional[bool], Field(description="File path query params.")
         ] = None,
         **kwargs,
-    ) -> None:
-        """Upload artifact to a store
+    ) -> None:  # noqa: E501
+        """Upload artifact to a store  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -37,7 +37,7 @@ class ArtifactsStoresV1Api(BaseApi):
         :param uuid: Unique integer identifier of the entity (required)
         :type uuid: str
         :param uploadfile: The file to upload. (required)
-        :type uploadfile: str
+        :type uploadfile: bytearray
         :param path: File path query params.
         :type path: str
         :param overwrite: File path query params.
@@ -60,7 +60,7 @@ class ArtifactsStoresV1Api(BaseApi):
         kwargs["_return_http_data_only"] = True
         return self.upload_artifact_with_http_info(
             owner, uuid, uploadfile, path, overwrite, **kwargs
-        )
+        )  # noqa: E501
 
     @validate_call
     def upload_artifact_with_http_info(
@@ -77,8 +77,8 @@ class ArtifactsStoresV1Api(BaseApi):
             Optional[bool], Field(description="File path query params.")
         ] = None,
         **kwargs,
-    ):
-        """Upload artifact to a store
+    ):  # noqa: E501
+        """Upload artifact to a store  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -91,7 +91,7 @@ class ArtifactsStoresV1Api(BaseApi):
         :param uuid: Unique integer identifier of the entity (required)
         :type uuid: str
         :param uploadfile: The file to upload. (required)
-        :type uploadfile: str
+        :type uploadfile: bytearray
         :param path: File path query params.
         :type path: str
         :param overwrite: File path query params.
@@ -151,19 +151,20 @@ class ArtifactsStoresV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-        if _params.get("path") is not None:
+        if _params.get("path") is not None:  # noqa: E501
             _query_params.append(("path", _params["path"]))
-        if _params.get("overwrite") is not None:
+
+        if _params.get("overwrite") is not None:  # noqa: E501
             _query_params.append(("overwrite", _params["overwrite"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
@@ -172,11 +173,10 @@ class ArtifactsStoresV1Api(BaseApi):
 
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
-        )
+        )  # noqa: E501
 
         # set the HTTP header `Content-Type`
         _content_types_list = _params.get(
@@ -187,7 +187,7 @@ class ArtifactsStoresV1Api(BaseApi):
             _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
-        _auth_settings = ["ApiKey"]
+        _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {}
 
@@ -203,7 +203,7 @@ class ArtifactsStoresV1Api(BaseApi):
             response_types_map=_response_types_map,
             auth_settings=_auth_settings,
             async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
             _preload_content=_params.get("_preload_content", True),
             _request_timeout=_params.get("_request_timeout"),
             collection_formats=_collection_formats,

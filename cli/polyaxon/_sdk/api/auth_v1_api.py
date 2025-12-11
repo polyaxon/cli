@@ -12,8 +12,8 @@ from polyaxon.exceptions import ApiTypeError
 
 class AuthV1Api(BaseApi):
     @validate_call
-    def change_password(self, body: V1PasswordChange, **kwargs) -> None:
-        """Change password
+    def change_password(self, body: V1PasswordChange, **kwargs) -> None:  # noqa: E501
+        """Change password  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -39,11 +39,11 @@ class AuthV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.change_password_with_http_info(body, **kwargs)
+        return self.change_password_with_http_info(body, **kwargs)  # noqa: E501
 
     @validate_call
-    def change_password_with_http_info(self, body: V1PasswordChange, **kwargs):
-        """Change password
+    def change_password_with_http_info(self, body: V1PasswordChange, **kwargs):  # noqa: E501
+        """Change password  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -109,14 +109,11 @@ class AuthV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -125,7 +122,7 @@ class AuthV1Api(BaseApi):
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
-        )
+        )  # noqa: E501
 
         # set the HTTP header `Content-Type`
         _content_types_list = _params.get(
@@ -244,7 +241,7 @@ class AuthV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method login" % _key
+                    "Got an unexpected keyword argument '%s'" " to method login" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -256,14 +253,11 @@ class AuthV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -409,14 +403,11 @@ class AuthV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -557,14 +548,11 @@ class AuthV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -697,7 +685,7 @@ class AuthV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method signup" % _key
+                    "Got an unexpected keyword argument '%s'" " to method signup" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -709,14 +697,11 @@ class AuthV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -849,7 +834,7 @@ class AuthV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method trial" % _key
+                    "Got an unexpected keyword argument '%s'" " to method trial" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -861,14 +846,11 @@ class AuthV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:

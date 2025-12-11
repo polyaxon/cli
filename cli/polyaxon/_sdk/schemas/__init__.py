@@ -17,6 +17,8 @@ from polyaxon._sdk.schemas.v1_connection_response import V1ConnectionResponse
 from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
 from polyaxon._sdk.schemas.v1_dashboard_spec import V1DashboardSpec
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
+from polyaxon._sdk.schemas.v1_policy import V1Policy
+from polyaxon._sdk.schemas.v1_list_policies_response import V1ListPoliciesResponse
 from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon._sdk.schemas.v1_entity_notification_body import V1EntityNotificationBody
 from polyaxon._sdk.schemas.v1_entity_stage_body_request import V1EntityStageBodyRequest

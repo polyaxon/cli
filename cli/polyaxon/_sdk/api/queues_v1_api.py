@@ -131,19 +131,17 @@ class QueuesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["agent"]:
             _path_params["agent"] = _params["agent"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -322,24 +320,22 @@ class QueuesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -488,7 +484,8 @@ class QueuesV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s' to method get_queue" % _key
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_queue" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -499,24 +496,22 @@ class QueuesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["entity"]:
             _path_params["entity"] = _params["entity"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -534,6 +529,365 @@ class QueuesV1Api(BaseApi):
 
         return self.api_client.call_api(
             "/api/v1/orgs/{owner}/agents/{entity}/queues/{uuid}",
+            "GET",
+            _path_params,
+            _query_params,
+            _header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            response_types_map=_response_types_map,
+            auth_settings=_auth_settings,
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
+            collection_formats=_collection_formats,
+            _request_auth=_params.get("_request_auth"),
+        )
+
+    @validate_call
+    def get_queue_stats(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity name under namespace")
+        ],
+        uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        bookmarks: Annotated[
+            Optional[bool], Field(description="Filter by bookmarks.")
+        ] = None,
+        mode: Annotated[Optional[StrictStr], Field(description="Stats Mode.")] = None,
+        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        aggregate: Annotated[
+            Optional[StrictStr], Field(description="Stats aggregate.")
+        ] = None,
+        groupby: Annotated[
+            Optional[StrictStr], Field(description="Stats group.")
+        ] = None,
+        trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
+        start_date: Annotated[
+            Optional[StrictStr], Field(description="Stats start date.")
+        ] = None,
+        end_date: Annotated[
+            Optional[StrictStr], Field(description="Stats end date.")
+        ] = None,
+        boundary: Annotated[
+            Optional[bool], Field(description="Stats boundary.")
+        ] = None,
+        **kwargs,
+    ) -> object:  # noqa: E501
+        """Get queue stats  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_queue_stats(owner, entity, uuid, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, start_date, end_date, boundary, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param entity: Entity name under namespace (required)
+        :type entity: str
+        :param uuid: SubEntity uuid (required)
+        :type uuid: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param bookmarks: Filter by bookmarks.
+        :type bookmarks: bool
+        :param mode: Stats Mode.
+        :type mode: str
+        :param kind: Stats Kind.
+        :type kind: str
+        :param aggregate: Stats aggregate.
+        :type aggregate: str
+        :param groupby: Stats group.
+        :type groupby: str
+        :param trunc: Stats trunc.
+        :type trunc: str
+        :param start_date: Stats start date.
+        :type start_date: str
+        :param end_date: Stats end date.
+        :type end_date: str
+        :param boundary: Stats boundary.
+        :type boundary: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: object
+        """
+        kwargs["_return_http_data_only"] = True
+        return self.get_queue_stats_with_http_info(
+            owner,
+            entity,
+            uuid,
+            offset,
+            limit,
+            sort,
+            query,
+            bookmarks,
+            mode,
+            kind,
+            aggregate,
+            groupby,
+            trunc,
+            start_date,
+            end_date,
+            boundary,
+            **kwargs,
+        )  # noqa: E501
+
+    @validate_call
+    def get_queue_stats_with_http_info(
+        self,
+        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
+        entity: Annotated[
+            StrictStr, Field(..., description="Entity name under namespace")
+        ],
+        uuid: Annotated[StrictStr, Field(..., description="SubEntity uuid")],
+        offset: Annotated[
+            Optional[StrictInt], Field(description="Pagination offset.")
+        ] = None,
+        limit: Annotated[Optional[StrictInt], Field(description="Limit size.")] = None,
+        sort: Annotated[
+            Optional[StrictStr], Field(description="Sort to order the search.")
+        ] = None,
+        query: Annotated[
+            Optional[StrictStr], Field(description="Query filter the search.")
+        ] = None,
+        bookmarks: Annotated[
+            Optional[bool], Field(description="Filter by bookmarks.")
+        ] = None,
+        mode: Annotated[Optional[StrictStr], Field(description="Stats Mode.")] = None,
+        kind: Annotated[Optional[StrictStr], Field(description="Stats Kind.")] = None,
+        aggregate: Annotated[
+            Optional[StrictStr], Field(description="Stats aggregate.")
+        ] = None,
+        groupby: Annotated[
+            Optional[StrictStr], Field(description="Stats group.")
+        ] = None,
+        trunc: Annotated[Optional[StrictStr], Field(description="Stats trunc.")] = None,
+        start_date: Annotated[
+            Optional[StrictStr], Field(description="Stats start date.")
+        ] = None,
+        end_date: Annotated[
+            Optional[StrictStr], Field(description="Stats end date.")
+        ] = None,
+        boundary: Annotated[
+            Optional[bool], Field(description="Stats boundary.")
+        ] = None,
+        **kwargs,
+    ):  # noqa: E501
+        """Get queue stats  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.get_queue_stats_with_http_info(owner, entity, uuid, offset, limit, sort, query, bookmarks, mode, kind, aggregate, groupby, trunc, start_date, end_date, boundary, async_req=True)
+        >>> result = thread.get()
+
+        :param owner: Owner of the namespace (required)
+        :type owner: str
+        :param entity: Entity name under namespace (required)
+        :type entity: str
+        :param uuid: SubEntity uuid (required)
+        :type uuid: str
+        :param offset: Pagination offset.
+        :type offset: int
+        :param limit: Limit size.
+        :type limit: int
+        :param sort: Sort to order the search.
+        :type sort: str
+        :param query: Query filter the search.
+        :type query: str
+        :param bookmarks: Filter by bookmarks.
+        :type bookmarks: bool
+        :param mode: Stats Mode.
+        :type mode: str
+        :param kind: Stats Kind.
+        :type kind: str
+        :param aggregate: Stats aggregate.
+        :type aggregate: str
+        :param groupby: Stats group.
+        :type groupby: str
+        :param trunc: Stats trunc.
+        :type trunc: str
+        :param start_date: Stats start date.
+        :type start_date: str
+        :param end_date: Stats end date.
+        :type end_date: str
+        :param boundary: Stats boundary.
+        :type boundary: bool
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :type _content_type: string, optional: force content-type for the request
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: tuple(object, status_code(int), headers(HTTPHeaderDict))
+        """
+
+        _params = locals()
+
+        _all_params = [
+            "owner",
+            "entity",
+            "uuid",
+            "offset",
+            "limit",
+            "sort",
+            "query",
+            "bookmarks",
+            "mode",
+            "kind",
+            "aggregate",
+            "groupby",
+            "trunc",
+            "start_date",
+            "end_date",
+            "boundary",
+        ]
+        _all_params.extend(
+            [
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
+            ]
+        )
+
+        # validate the arguments
+        for _key, _val in _params["kwargs"].items():
+            if _key not in _all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_queue_stats" % _key
+                )
+            _params[_key] = _val
+        del _params["kwargs"]
+
+        _collection_formats = {}
+
+        # process the path parameters
+        _path_params = {}
+        if _params["owner"]:
+            _path_params["owner"] = _params["owner"]
+
+        if _params["entity"]:
+            _path_params["entity"] = _params["entity"]
+
+        if _params["uuid"]:
+            _path_params["uuid"] = _params["uuid"]
+
+        # process the query parameters
+        _query_params = []
+        if _params.get("offset") is not None:  # noqa: E501
+            _query_params.append(("offset", _params["offset"]))
+
+        if _params.get("limit") is not None:  # noqa: E501
+            _query_params.append(("limit", _params["limit"]))
+
+        if _params.get("sort") is not None:  # noqa: E501
+            _query_params.append(("sort", _params["sort"]))
+
+        if _params.get("query") is not None:  # noqa: E501
+            _query_params.append(("query", _params["query"]))
+
+        if _params.get("bookmarks") is not None:  # noqa: E501
+            _query_params.append(("bookmarks", _params["bookmarks"]))
+
+        if _params.get("mode") is not None:  # noqa: E501
+            _query_params.append(("mode", _params["mode"]))
+
+        if _params.get("kind") is not None:  # noqa: E501
+            _query_params.append(("kind", _params["kind"]))
+
+        if _params.get("aggregate") is not None:  # noqa: E501
+            _query_params.append(("aggregate", _params["aggregate"]))
+
+        if _params.get("groupby") is not None:  # noqa: E501
+            _query_params.append(("groupby", _params["groupby"]))
+
+        if _params.get("trunc") is not None:  # noqa: E501
+            _query_params.append(("trunc", _params["trunc"]))
+
+        if _params.get("start_date") is not None:  # noqa: E501
+            _query_params.append(("start_date", _params["start_date"]))
+
+        if _params.get("end_date") is not None:  # noqa: E501
+            _query_params.append(("end_date", _params["end_date"]))
+
+        if _params.get("boundary") is not None:  # noqa: E501
+            _query_params.append(("boundary", _params["boundary"]))
+
+        # process the header parameters
+        _header_params = dict(_params.get("_headers", {}))
+        # process the form parameters
+        _form_params = []
+        _files = {}
+        # process the body parameter
+        _body_params = None
+        # set the HTTP header `Accept`
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
+
+        # authentication setting
+        _auth_settings = ["ApiKey"]  # noqa: E501
+
+        _response_types_map = {
+            "200": "object",
+            "204": "object",
+            "403": "object",
+            "404": "object",
+        }
+
+        return self.api_client.call_api(
+            "/api/v1/orgs/{owner}/agents/{entity}/queues/{uuid}/stats",
             "GET",
             _path_params,
             _query_params,
@@ -734,29 +1088,32 @@ class QueuesV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -974,29 +1331,32 @@ class QueuesV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1220,6 +1580,7 @@ class QueuesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
@@ -1227,29 +1588,32 @@ class QueuesV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1473,6 +1837,7 @@ class QueuesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["name"]:
             _path_params["name"] = _params["name"]
 
@@ -1480,29 +1845,32 @@ class QueuesV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1664,21 +2032,20 @@ class QueuesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["agent"]:
             _path_params["agent"] = _params["agent"]
+
         if _params["queue_uuid"]:
             _path_params["queue.uuid"] = _params["queue_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1855,21 +2222,20 @@ class QueuesV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["agent"]:
             _path_params["agent"] = _params["agent"]
+
         if _params["queue_uuid"]:
             _path_params["queue.uuid"] = _params["queue_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:

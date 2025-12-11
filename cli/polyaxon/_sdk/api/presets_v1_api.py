@@ -16,8 +16,8 @@ class PresetsV1Api(BaseApi):
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         body: Annotated[V1Preset, Field(..., description="Preset body")],
         **kwargs,
-    ) -> V1Preset:
-        """Create scheduling presets
+    ) -> V1Preset:  # noqa: E501
+        """Create scheduling presets  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -45,7 +45,7 @@ class PresetsV1Api(BaseApi):
         :rtype: V1Preset
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_preset_with_http_info(owner, body, **kwargs)
+        return self.create_preset_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
     def create_preset_with_http_info(
@@ -124,14 +124,11 @@ class PresetsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -306,6 +303,7 @@ class PresetsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -316,14 +314,11 @@ class PresetsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -480,6 +475,7 @@ class PresetsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
 
@@ -490,14 +486,11 @@ class PresetsV1Api(BaseApi):
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -715,29 +708,32 @@ class PresetsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -955,29 +951,32 @@ class PresetsV1Api(BaseApi):
         _query_params = []
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
+
         if _params.get("limit") is not None:  # noqa: E501
             _query_params.append(("limit", _params["limit"]))
+
         if _params.get("sort") is not None:  # noqa: E501
             _query_params.append(("sort", _params["sort"]))
+
         if _params.get("query") is not None:  # noqa: E501
             _query_params.append(("query", _params["query"]))
+
         if _params.get("bookmarks") is not None:  # noqa: E501
             _query_params.append(("bookmarks", _params["bookmarks"]))
+
         if _params.get("mode") is not None:  # noqa: E501
             _query_params.append(("mode", _params["mode"]))
+
         if _params.get("no_page") is not None:  # noqa: E501
             _query_params.append(("no_page", _params["no_page"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -1129,19 +1128,17 @@ class PresetsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["preset_uuid"]:
             _path_params["preset.uuid"] = _params["preset_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:
@@ -1306,19 +1303,17 @@ class PresetsV1Api(BaseApi):
         _path_params = {}
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
+
         if _params["preset_uuid"]:
             _path_params["preset.uuid"] = _params["preset_uuid"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
         if _params["body"]:

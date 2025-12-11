@@ -18,8 +18,8 @@ class VersionsV1Api(BaseApi):
         version: Annotated[StrictStr, Field(..., description="Version")],
         service: Annotated[StrictStr, Field(..., description="Service")],
         **kwargs,
-    ) -> V1Compatibility:
-        """Get compatibility versions
+    ) -> V1Compatibility:  # noqa: E501
+        """Get compatibility versions  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -49,7 +49,7 @@ class VersionsV1Api(BaseApi):
         :rtype: V1Compatibility
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_compatibility_with_http_info(uuid, version, service, **kwargs)
+        return self.get_compatibility_with_http_info(uuid, version, service, **kwargs)  # noqa: E501
 
     @validate_call
     def get_compatibility_with_http_info(
@@ -58,8 +58,8 @@ class VersionsV1Api(BaseApi):
         version: Annotated[StrictStr, Field(..., description="Version")],
         service: Annotated[StrictStr, Field(..., description="Service")],
         **kwargs,
-    ):
-        """Get compatibility versions
+    ):  # noqa: E501
+        """Get compatibility versions  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
@@ -128,31 +128,29 @@ class VersionsV1Api(BaseApi):
         _path_params = {}
         if _params["uuid"]:
             _path_params["uuid"] = _params["uuid"]
+
         if _params["version"]:
             _path_params["version"] = _params["version"]
+
         if _params["service"]:
             _path_params["service"] = _params["service"]
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
-        )
+        )  # noqa: E501
 
         # authentication setting
-        _auth_settings = ["ApiKey"]
+        _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
             "200": "V1Compatibility",
@@ -173,7 +171,7 @@ class VersionsV1Api(BaseApi):
             response_types_map=_response_types_map,
             auth_settings=_auth_settings,
             async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
             _preload_content=_params.get("_preload_content", True),
             _request_timeout=_params.get("_request_timeout"),
             collection_formats=_collection_formats,
@@ -184,18 +182,21 @@ class VersionsV1Api(BaseApi):
     def get_installation(
         self,
         auth: Annotated[Optional[bool], Field(description="auth.")] = None,
+        orgs: Annotated[Optional[bool], Field(description="orgs.")] = None,
         **kwargs,
-    ) -> V1Installation:
-        """Get installation versions
+    ) -> V1Installation:  # noqa: E501
+        """Get installation versions  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_installation(auth, async_req=True)
+        >>> thread = api.get_installation(auth, orgs, async_req=True)
         >>> result = thread.get()
 
         :param auth: auth.
         :type auth: bool
+        :param orgs: orgs.
+        :type orgs: bool
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -212,24 +213,27 @@ class VersionsV1Api(BaseApi):
         :rtype: V1Installation
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_installation_with_http_info(auth, **kwargs)
+        return self.get_installation_with_http_info(auth, orgs, **kwargs)  # noqa: E501
 
     @validate_call
     def get_installation_with_http_info(
         self,
         auth: Annotated[Optional[bool], Field(description="auth.")] = None,
+        orgs: Annotated[Optional[bool], Field(description="orgs.")] = None,
         **kwargs,
-    ):
-        """Get installation versions
+    ):  # noqa: E501
+        """Get installation versions  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_installation_with_http_info(auth, async_req=True)
+        >>> thread = api.get_installation_with_http_info(auth, orgs, async_req=True)
         >>> result = thread.get()
 
         :param auth: auth.
         :type auth: bool
+        :param orgs: orgs.
+        :type orgs: bool
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -256,7 +260,7 @@ class VersionsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["auth"]
+        _all_params = ["auth", "orgs"]
         _all_params.extend(
             [
                 "async_req",
@@ -289,16 +293,16 @@ class VersionsV1Api(BaseApi):
         if _params.get("auth") is not None:  # noqa: E501
             _query_params.append(("auth", _params["auth"]))
 
+        if _params.get("orgs") is not None:  # noqa: E501
+            _query_params.append(("orgs", _params["orgs"]))
+
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
@@ -427,17 +431,13 @@ class VersionsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
-
         # process the form parameters
         _form_params = []
         _files = {}
-
         # process the body parameter
         _body_params = None
-
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]

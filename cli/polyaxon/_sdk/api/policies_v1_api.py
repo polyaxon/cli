@@ -3,33 +3,32 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
+from polyaxon._sdk.schemas.v1_list_policies_response import V1ListPoliciesResponse
+from polyaxon._sdk.schemas.v1_policy import V1Policy
 from polyaxon._sdk.base_api import BaseApi
-from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
-from polyaxon._sdk.schemas.v1_list_tags_response import V1ListTagsResponse
-from polyaxon._sdk.schemas.v1_tag import V1Tag
 from polyaxon.exceptions import ApiTypeError
 
 
-class TagsV1Api(BaseApi):
+class PoliciesV1Api(BaseApi):
     @validate_call
-    def create_tag(
+    def create_policy(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        body: Annotated[V1Tag, Field(..., description="Tag body")],
+        body: Annotated[V1Policy, Field(..., description="Policy body")],
         **kwargs,
-    ) -> V1Tag:  # noqa: E501
-        """Create tag  # noqa: E501
+    ) -> V1Policy:  # noqa: E501
+        """Create Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.create_tag(owner, body, async_req=True)
+        >>> thread = api.create_policy(owner, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param body: Tag body (required)
-        :type body: V1Tag
+        :param body: Policy body (required)
+        :type body: V1Policy
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -43,30 +42,30 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: V1Tag
+        :rtype: V1Policy
         """
         kwargs["_return_http_data_only"] = True
-        return self.create_tag_with_http_info(owner, body, **kwargs)  # noqa: E501
+        return self.create_policy_with_http_info(owner, body, **kwargs)  # noqa: E501
 
     @validate_call
-    def create_tag_with_http_info(
+    def create_policy_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        body: Annotated[V1Tag, Field(..., description="Tag body")],
+        body: Annotated[V1Policy, Field(..., description="Policy body")],
         **kwargs,
     ):  # noqa: E501
-        """Create tag  # noqa: E501
+        """Create Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.create_tag_with_http_info(owner, body, async_req=True)
+        >>> thread = api.create_policy_with_http_info(owner, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param body: Tag body (required)
-        :type body: V1Tag
+        :param body: Policy body (required)
+        :type body: V1Policy
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -88,7 +87,7 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: tuple(V1Tag, status_code(int), headers(HTTPHeaderDict))
+        :rtype: tuple(V1Policy, status_code(int), headers(HTTPHeaderDict))
         """
 
         _params = locals()
@@ -111,7 +110,7 @@ class TagsV1Api(BaseApi):
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method create_tag" % _key
+                    " to method create_policy" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -152,14 +151,14 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": "V1Policy",
             "204": "object",
             "403": "object",
             "404": "object",
         }
 
         return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags",
+            "/api/v1/orgs/{owner}/policies",
             "POST",
             _path_params,
             _query_params,
@@ -178,31 +177,32 @@ class TagsV1Api(BaseApi):
         )
 
     @validate_call
-    def delete_tag(
+    def delete_policy(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         uuid: Annotated[
-            StrictStr, Field(..., description="Uuid identifier of the entity")
+            StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        cascade: Annotated[
-            Optional[bool], Field(description="Flag to handle sub-entities.")
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
         **kwargs,
     ) -> None:  # noqa: E501
-        """Delete tag  # noqa: E501
+        """Delete scheduling preset  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.delete_tag(owner, uuid, cascade, async_req=True)
+        >>> thread = api.delete_policy(owner, uuid, entity, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param uuid: Uuid identifier of the entity (required)
+        :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
-        :param cascade: Flag to handle sub-entities.
-        :type cascade: bool
+        :param entity: Entity: project name, hub name, registry name, ...
+        :type entity: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -219,34 +219,35 @@ class TagsV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.delete_tag_with_http_info(owner, uuid, cascade, **kwargs)  # noqa: E501
+        return self.delete_policy_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
-    def delete_tag_with_http_info(
+    def delete_policy_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         uuid: Annotated[
-            StrictStr, Field(..., description="Uuid identifier of the entity")
+            StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
-        cascade: Annotated[
-            Optional[bool], Field(description="Flag to handle sub-entities.")
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity: project name, hub name, registry name, ..."),
         ] = None,
         **kwargs,
     ):  # noqa: E501
-        """Delete tag  # noqa: E501
+        """Delete scheduling preset  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.delete_tag_with_http_info(owner, uuid, cascade, async_req=True)
+        >>> thread = api.delete_policy_with_http_info(owner, uuid, entity, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param uuid: Uuid identifier of the entity (required)
+        :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
-        :param cascade: Flag to handle sub-entities.
-        :type cascade: bool
+        :param entity: Entity: project name, hub name, registry name, ...
+        :type entity: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -273,7 +274,7 @@ class TagsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "uuid", "cascade"]
+        _all_params = ["owner", "uuid", "entity"]
         _all_params.extend(
             [
                 "async_req",
@@ -291,7 +292,7 @@ class TagsV1Api(BaseApi):
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method delete_tag" % _key
+                    " to method delete_policy" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -308,8 +309,8 @@ class TagsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
-        if _params.get("cascade") is not None:  # noqa: E501
-            _query_params.append(("cascade", _params["cascade"]))
+        if _params.get("entity") is not None:  # noqa: E501
+            _query_params.append(("entity", _params["entity"]))
 
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
@@ -329,7 +330,7 @@ class TagsV1Api(BaseApi):
         _response_types_map = {}
 
         return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags/{uuid}",
+            "/api/v1/orgs/{owner}/policies/{uuid}",
             "DELETE",
             _path_params,
             _query_params,
@@ -348,26 +349,32 @@ class TagsV1Api(BaseApi):
         )
 
     @validate_call
-    def get_tag(
+    def get_policy(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         uuid: Annotated[
-            StrictStr, Field(..., description="Uuid identifier of the entity")
+            StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity: project name, hub name, registry name, ..."),
+        ] = None,
         **kwargs,
-    ) -> V1Tag:  # noqa: E501
-        """Get tag  # noqa: E501
+    ) -> V1Policy:  # noqa: E501
+        """Get Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_tag(owner, uuid, async_req=True)
+        >>> thread = api.get_policy(owner, uuid, entity, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param uuid: Uuid identifier of the entity (required)
+        :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
+        :param entity: Entity: project name, hub name, registry name, ...
+        :type entity: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -381,32 +388,38 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: V1Tag
+        :rtype: V1Policy
         """
         kwargs["_return_http_data_only"] = True
-        return self.get_tag_with_http_info(owner, uuid, **kwargs)  # noqa: E501
+        return self.get_policy_with_http_info(owner, uuid, entity, **kwargs)  # noqa: E501
 
     @validate_call
-    def get_tag_with_http_info(
+    def get_policy_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         uuid: Annotated[
-            StrictStr, Field(..., description="Uuid identifier of the entity")
+            StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
+        entity: Annotated[
+            Optional[StrictStr],
+            Field(description="Entity: project name, hub name, registry name, ..."),
+        ] = None,
         **kwargs,
     ):  # noqa: E501
-        """Get tag  # noqa: E501
+        """Get Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_tag_with_http_info(owner, uuid, async_req=True)
+        >>> thread = api.get_policy_with_http_info(owner, uuid, entity, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param uuid: Uuid identifier of the entity (required)
+        :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
+        :param entity: Entity: project name, hub name, registry name, ...
+        :type entity: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -428,12 +441,12 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: tuple(V1Tag, status_code(int), headers(HTTPHeaderDict))
+        :rtype: tuple(V1Policy, status_code(int), headers(HTTPHeaderDict))
         """
 
         _params = locals()
 
-        _all_params = ["owner", "uuid"]
+        _all_params = ["owner", "uuid", "entity"]
         _all_params.extend(
             [
                 "async_req",
@@ -451,7 +464,7 @@ class TagsV1Api(BaseApi):
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method get_tag" % _key
+                    " to method get_policy" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -468,6 +481,9 @@ class TagsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
+        if _params.get("entity") is not None:  # noqa: E501
+            _query_params.append(("entity", _params["entity"]))
+
         # process the header parameters
         _header_params = dict(_params.get("_headers", {}))
         # process the form parameters
@@ -484,14 +500,14 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": "V1Policy",
             "204": "object",
             "403": "object",
             "404": "object",
         }
 
         return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags/{uuid}",
+            "/api/v1/orgs/{owner}/policies/{uuid}",
             "GET",
             _path_params,
             _query_params,
@@ -510,7 +526,7 @@ class TagsV1Api(BaseApi):
         )
 
     @validate_call
-    def list_tags(
+    def list_policies(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         offset: Annotated[
@@ -531,13 +547,13 @@ class TagsV1Api(BaseApi):
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
         **kwargs,
-    ) -> V1ListTagsResponse:  # noqa: E501
-        """List tags  # noqa: E501
+    ) -> V1ListPoliciesResponse:  # noqa: E501
+        """List Policies  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.list_tags(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_policies(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -569,15 +585,15 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: V1ListTagsResponse
+        :rtype: V1ListPoliciesResponse
         """
         kwargs["_return_http_data_only"] = True
-        return self.list_tags_with_http_info(
+        return self.list_policies_with_http_info(
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
     @validate_call
-    def list_tags_with_http_info(
+    def list_policies_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         offset: Annotated[
@@ -599,12 +615,12 @@ class TagsV1Api(BaseApi):
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
         **kwargs,
     ):  # noqa: E501
-        """List tags  # noqa: E501
+        """List Policies  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.list_tags_with_http_info(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_policies_with_http_info(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -644,7 +660,7 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: tuple(V1ListTagsResponse, status_code(int), headers(HTTPHeaderDict))
+        :rtype: tuple(V1ListPoliciesResponse, status_code(int), headers(HTTPHeaderDict))
         """
 
         _params = locals()
@@ -676,7 +692,7 @@ class TagsV1Api(BaseApi):
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method list_tags" % _key
+                    " to method list_policies" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -727,14 +743,14 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListTagsResponse",
+            "200": "V1ListPoliciesResponse",
             "204": "object",
             "403": "object",
             "404": "object",
         }
 
         return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags",
+            "/api/v1/orgs/{owner}/policies",
             "GET",
             _path_params,
             _query_params,
@@ -753,7 +769,7 @@ class TagsV1Api(BaseApi):
         )
 
     @validate_call
-    def load_tags(
+    def list_policy_names(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         offset: Annotated[
@@ -774,13 +790,13 @@ class TagsV1Api(BaseApi):
         ] = None,
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
         **kwargs,
-    ) -> object:  # noqa: E501
-        """Load tags  # noqa: E501
+    ) -> V1ListPoliciesResponse:  # noqa: E501
+        """List scheduling policies names  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.load_tags(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_policy_names(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -812,15 +828,15 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: object
+        :rtype: V1ListPoliciesResponse
         """
         kwargs["_return_http_data_only"] = True
-        return self.load_tags_with_http_info(
+        return self.list_policy_names_with_http_info(
             owner, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
         )  # noqa: E501
 
     @validate_call
-    def load_tags_with_http_info(
+    def list_policy_names_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
         offset: Annotated[
@@ -842,12 +858,12 @@ class TagsV1Api(BaseApi):
         no_page: Annotated[Optional[bool], Field(description="No pagination.")] = None,
         **kwargs,
     ):  # noqa: E501
-        """Load tags  # noqa: E501
+        """List scheduling policies names  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.load_tags_with_http_info(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_policy_names_with_http_info(owner, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -887,7 +903,7 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: tuple(object, status_code(int), headers(HTTPHeaderDict))
+        :rtype: tuple(V1ListPoliciesResponse, status_code(int), headers(HTTPHeaderDict))
         """
 
         _params = locals()
@@ -919,7 +935,7 @@ class TagsV1Api(BaseApi):
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method load_tags" % _key
+                    " to method list_policy_names" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -970,14 +986,14 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "object",
+            "200": "V1ListPoliciesResponse",
             "204": "object",
             "403": "object",
             "404": "object",
         }
 
         return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags/load",
+            "/api/v1/orgs/{owner}/policies/names",
             "GET",
             _path_params,
             _query_params,
@@ -996,27 +1012,27 @@ class TagsV1Api(BaseApi):
         )
 
     @validate_call
-    def patch_tag(
+    def patch_policy(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
-        body: Annotated[V1Tag, Field(..., description="Tag body")],
+        policy_uuid: Annotated[StrictStr, Field(..., description="UUID")],
+        body: Annotated[V1Policy, Field(..., description="Policy body")],
         **kwargs,
-    ) -> V1Tag:  # noqa: E501
-        """Patch tag  # noqa: E501
+    ) -> V1Policy:  # noqa: E501
+        """Patch Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.patch_tag(owner, tag_uuid, body, async_req=True)
+        >>> thread = api.patch_policy(owner, policy_uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param tag_uuid: UUID (required)
-        :type tag_uuid: str
-        :param body: Tag body (required)
-        :type body: V1Tag
+        :param policy_uuid: UUID (required)
+        :type policy_uuid: str
+        :param body: Policy body (required)
+        :type body: V1Policy
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -1030,33 +1046,33 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: V1Tag
+        :rtype: V1Policy
         """
         kwargs["_return_http_data_only"] = True
-        return self.patch_tag_with_http_info(owner, tag_uuid, body, **kwargs)  # noqa: E501
+        return self.patch_policy_with_http_info(owner, policy_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
-    def patch_tag_with_http_info(
+    def patch_policy_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
-        body: Annotated[V1Tag, Field(..., description="Tag body")],
+        policy_uuid: Annotated[StrictStr, Field(..., description="UUID")],
+        body: Annotated[V1Policy, Field(..., description="Policy body")],
         **kwargs,
     ):  # noqa: E501
-        """Patch tag  # noqa: E501
+        """Patch Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.patch_tag_with_http_info(owner, tag_uuid, body, async_req=True)
+        >>> thread = api.patch_policy_with_http_info(owner, policy_uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param tag_uuid: UUID (required)
-        :type tag_uuid: str
-        :param body: Tag body (required)
-        :type body: V1Tag
+        :param policy_uuid: UUID (required)
+        :type policy_uuid: str
+        :param body: Policy body (required)
+        :type body: V1Policy
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -1078,12 +1094,12 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: tuple(V1Tag, status_code(int), headers(HTTPHeaderDict))
+        :rtype: tuple(V1Policy, status_code(int), headers(HTTPHeaderDict))
         """
 
         _params = locals()
 
-        _all_params = ["owner", "tag_uuid", "body"]
+        _all_params = ["owner", "policy_uuid", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -1101,7 +1117,7 @@ class TagsV1Api(BaseApi):
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method patch_tag" % _key
+                    " to method patch_policy" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -1113,8 +1129,8 @@ class TagsV1Api(BaseApi):
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
 
-        if _params["tag_uuid"]:
-            _path_params["tag.uuid"] = _params["tag_uuid"]
+        if _params["policy_uuid"]:
+            _path_params["policy.uuid"] = _params["policy_uuid"]
 
         # process the query parameters
         _query_params = []
@@ -1145,14 +1161,14 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": "V1Policy",
             "204": "object",
             "403": "object",
             "404": "object",
         }
 
         return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags/{tag.uuid}",
+            "/api/v1/orgs/{owner}/policies/{policy.uuid}",
             "PATCH",
             _path_params,
             _query_params,
@@ -1171,24 +1187,27 @@ class TagsV1Api(BaseApi):
         )
 
     @validate_call
-    def sync_tags(
+    def update_policy(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        body: Annotated[V1EntitiesTags, Field(..., description="Data")],
+        policy_uuid: Annotated[StrictStr, Field(..., description="UUID")],
+        body: Annotated[V1Policy, Field(..., description="Policy body")],
         **kwargs,
-    ) -> None:  # noqa: E501
-        """Sync tags  # noqa: E501
+    ) -> V1Policy:  # noqa: E501
+        """Update Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.sync_tags(owner, body, async_req=True)
+        >>> thread = api.update_policy(owner, policy_uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param body: Data (required)
-        :type body: V1EntitiesTags
+        :param policy_uuid: UUID (required)
+        :type policy_uuid: str
+        :param body: Policy body (required)
+        :type body: V1Policy
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -1202,30 +1221,33 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: None
+        :rtype: V1Policy
         """
         kwargs["_return_http_data_only"] = True
-        return self.sync_tags_with_http_info(owner, body, **kwargs)  # noqa: E501
+        return self.update_policy_with_http_info(owner, policy_uuid, body, **kwargs)  # noqa: E501
 
     @validate_call
-    def sync_tags_with_http_info(
+    def update_policy_with_http_info(
         self,
         owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        body: Annotated[V1EntitiesTags, Field(..., description="Data")],
+        policy_uuid: Annotated[StrictStr, Field(..., description="UUID")],
+        body: Annotated[V1Policy, Field(..., description="Policy body")],
         **kwargs,
     ):  # noqa: E501
-        """Sync tags  # noqa: E501
+        """Update Policy  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.sync_tags_with_http_info(owner, body, async_req=True)
+        >>> thread = api.update_policy_with_http_info(owner, policy_uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
-        :param body: Data (required)
-        :type body: V1EntitiesTags
+        :param policy_uuid: UUID (required)
+        :type policy_uuid: str
+        :param body: Policy body (required)
+        :type body: V1Policy
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -1247,12 +1269,12 @@ class TagsV1Api(BaseApi):
         :return: Returns the result object.
                  If the method is called asynchronously,
                  returns the request thread.
-        :rtype: None
+        :rtype: tuple(V1Policy, status_code(int), headers(HTTPHeaderDict))
         """
 
         _params = locals()
 
-        _all_params = ["owner", "body"]
+        _all_params = ["owner", "policy_uuid", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -1270,7 +1292,7 @@ class TagsV1Api(BaseApi):
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method sync_tags" % _key
+                    " to method update_policy" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -1282,175 +1304,8 @@ class TagsV1Api(BaseApi):
         if _params["owner"]:
             _path_params["owner"] = _params["owner"]
 
-        # process the query parameters
-        _query_params = []
-        # process the header parameters
-        _header_params = dict(_params.get("_headers", {}))
-        # process the form parameters
-        _form_params = []
-        _files = {}
-        # process the body parameter
-        _body_params = None
-        if _params["body"]:
-            _body_params = _params["body"]
-
-        # set the HTTP header `Accept`
-        _header_params["Accept"] = self.api_client.select_header_accept(
-            ["application/json"]
-        )  # noqa: E501
-
-        # set the HTTP header `Content-Type`
-        _content_types_list = _params.get(
-            "_content_type",
-            self.api_client.select_header_content_type(["application/json"]),
-        )
-        if _content_types_list:
-            _header_params["Content-Type"] = _content_types_list
-
-        # authentication setting
-        _auth_settings = ["ApiKey"]  # noqa: E501
-
-        _response_types_map = {}
-
-        return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags/sync",
-            "POST",
-            _path_params,
-            _query_params,
-            _header_params,
-            body=_body_params,
-            post_params=_form_params,
-            files=_files,
-            response_types_map=_response_types_map,
-            auth_settings=_auth_settings,
-            async_req=_params.get("async_req"),
-            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
-            _preload_content=_params.get("_preload_content", True),
-            _request_timeout=_params.get("_request_timeout"),
-            collection_formats=_collection_formats,
-            _request_auth=_params.get("_request_auth"),
-        )
-
-    @validate_call
-    def update_tag(
-        self,
-        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
-        body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs,
-    ) -> V1Tag:  # noqa: E501
-        """Update tag  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.update_tag(owner, tag_uuid, body, async_req=True)
-        >>> result = thread.get()
-
-        :param owner: Owner of the namespace (required)
-        :type owner: str
-        :param tag_uuid: UUID (required)
-        :type tag_uuid: str
-        :param body: Tag body (required)
-        :type body: V1Tag
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: V1Tag
-        """
-        kwargs["_return_http_data_only"] = True
-        return self.update_tag_with_http_info(owner, tag_uuid, body, **kwargs)  # noqa: E501
-
-    @validate_call
-    def update_tag_with_http_info(
-        self,
-        owner: Annotated[StrictStr, Field(..., description="Owner of the namespace")],
-        tag_uuid: Annotated[StrictStr, Field(..., description="UUID")],
-        body: Annotated[V1Tag, Field(..., description="Tag body")],
-        **kwargs,
-    ):  # noqa: E501
-        """Update tag  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.update_tag_with_http_info(owner, tag_uuid, body, async_req=True)
-        >>> result = thread.get()
-
-        :param owner: Owner of the namespace (required)
-        :type owner: str
-        :param tag_uuid: UUID (required)
-        :type tag_uuid: str
-        :param body: Tag body (required)
-        :type body: V1Tag
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _return_http_data_only: response data without head status code
-                                       and headers
-        :type _return_http_data_only: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the authentication
-                              in the spec for a single request.
-        :type _request_auth: dict, optional
-        :type _content_type: string, optional: force content-type for the request
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: tuple(V1Tag, status_code(int), headers(HTTPHeaderDict))
-        """
-
-        _params = locals()
-
-        _all_params = ["owner", "tag_uuid", "body"]
-        _all_params.extend(
-            [
-                "async_req",
-                "_return_http_data_only",
-                "_preload_content",
-                "_request_timeout",
-                "_request_auth",
-                "_content_type",
-                "_headers",
-            ]
-        )
-
-        # validate the arguments
-        for _key, _val in _params["kwargs"].items():
-            if _key not in _all_params:
-                raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method update_tag" % _key
-                )
-            _params[_key] = _val
-        del _params["kwargs"]
-
-        _collection_formats = {}
-
-        # process the path parameters
-        _path_params = {}
-        if _params["owner"]:
-            _path_params["owner"] = _params["owner"]
-
-        if _params["tag_uuid"]:
-            _path_params["tag.uuid"] = _params["tag_uuid"]
+        if _params["policy_uuid"]:
+            _path_params["policy.uuid"] = _params["policy_uuid"]
 
         # process the query parameters
         _query_params = []
@@ -1481,14 +1336,14 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": "V1Policy",
             "204": "object",
             "403": "object",
             "404": "object",
         }
 
         return self.api_client.call_api(
-            "/api/v1/orgs/{owner}/tags/{tag.uuid}",
+            "/api/v1/orgs/{owner}/policies/{policy.uuid}",
             "PUT",
             _path_params,
             _query_params,
