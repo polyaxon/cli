@@ -59,6 +59,42 @@ class AsyncK8sManager(BaseK8sManager):
                 raise e
             return None
 
+    async def delete_pod(self, name, reraise: bool = False, namespace: str = None):
+        try:
+            await self.k8s_api.delete_namespaced_pod(  # type: ignore[attr-defined]
+                name=name,
+                namespace=namespace or self.namespace,
+                body=client.V1DeleteOptions(),
+            )
+            logger.debug("Pod `{}` deleted".format(name))
+        except ApiException as e:
+            if reraise:
+                raise e
+            else:
+                logger.debug("Pod `{}` was not found".format(name))
+
+    async def delete_pods(
+        self,
+        label_selector: str,
+        reraise: bool = False,
+        namespace: str = None,
+    ):
+        try:
+            await self.k8s_api.delete_collection_namespaced_pod(  # type: ignore[attr-defined]
+                namespace=namespace or self.namespace,
+                label_selector=label_selector,
+            )
+            logger.debug("Pods with label selector `{}` deleted".format(label_selector))
+        except ApiException as e:
+            if reraise:
+                raise e
+            else:
+                logger.debug(
+                    "Pods with label selector `{}` were not found".format(
+                        label_selector
+                    )
+                )
+
     async def is_pod_running(
         self, pod_id: str, container_id: str, namespace: str = None
     ) -> bool:
