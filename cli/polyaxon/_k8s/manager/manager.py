@@ -744,39 +744,40 @@ class K8sManager(BaseK8sManager):
 
     def delete_pods(
         self,
-        include_uninitialized=True,
         reraise: bool = False,
         namespace: str = None,
         **kwargs,
     ):
-        objs = self.list_pods(
-            include_uninitialized=include_uninitialized,
-            reraise=reraise,
-            namespace=namespace,
-            **kwargs,
-        )
-        for obj in objs:
-            self.delete_pod(
-                name=obj.metadata.name, reraise=reraise, namespace=namespace
+        try:
+            self.k8s_api.delete_collection_namespaced_pod(
+                namespace=namespace or self.namespace,
+                **kwargs,
             )
+            logger.debug("Pods deleted! kwargs: `{}` ".format(kwargs))
+        except ApiException as e:
+            if reraise:
+                raise e
+            else:
+                logger.debug("Pods were not found. kwargs: `{}` ".format(kwargs))
 
     def delete_jobs(
         self,
-        include_uninitialized=True,
         reraise: bool = False,
         namespace: str = None,
         **kwargs,
     ):
-        objs = self.list_jobs(
-            include_uninitialized=include_uninitialized,
-            reraise=reraise,
-            namespace=namespace,
-            **kwargs,
-        )
-        for obj in objs:
-            self.delete_job(
-                name=obj.metadata.name, reraise=reraise, namespace=namespace
+        try:
+            self.k8s_batch_api.delete_collection_namespaced_job(
+                namespace=namespace or self.namespace,
+                propagation_policy="Foreground",
+                **kwargs,
             )
+            logger.debug("Jobs deleted. kwargs: `{}` ".format(kwargs))
+        except ApiException as e:
+            if reraise:
+                raise e
+            else:
+                logger.debug("Jobs were not found. kwargs: `{}` ".format(kwargs))
 
     def delete_services(self, reraise: bool = False, namespace: str = None, **kwargs):
         objs = self.list_services(reraise=reraise, **kwargs)
@@ -788,18 +789,32 @@ class K8sManager(BaseK8sManager):
     def delete_deployments(
         self, reraise: bool = False, namespace: str = None, **kwargs
     ):
-        objs = self.list_deployments(reraise=reraise, **kwargs)
-        for obj in objs:
-            self.delete_deployment(
-                name=obj.metadata.name, reraise=reraise, namespace=namespace
+        try:
+            self.k8s_apps_api.delete_collection_namespaced_deployment(
+                namespace=namespace or self.namespace,
+                propagation_policy="Foreground",
+                **kwargs,
             )
+            logger.debug("Deployments deleted. kwargs: `{}` ".format(kwargs))
+        except ApiException as e:
+            if reraise:
+                raise e
+            else:
+                logger.debug("Deployments were not found. kwargs: `{}` ".format(kwargs))
 
     def delete_ingresses(self, reraise: bool = False, namespace: str = None, **kwargs):
-        objs = self.list_services(reraise=reraise, **kwargs)
-        for obj in objs:
-            self.delete_ingress(
-                name=obj.metadata.name, reraise=reraise, namespace=namespace
+        try:
+            self.networking_v1_beta1_api.delete_collection_namespaced_ingress(
+                namespace=namespace or self.namespace,
+                propagation_policy="Foreground",
+                **kwargs,
             )
+            logger.debug("Ingresses deleted. kwargs: `{}` ".format(kwargs))
+        except ApiException as e:
+            if reraise:
+                raise e
+            else:
+                logger.debug("Ingresses were not found. kwargs: `{}` ".format(kwargs))
 
     def is_pod_running(self, pod_id: str, container_id: str, namespace: str = None):
         event = self.k8s_api.read_namespaced_pod_status(
