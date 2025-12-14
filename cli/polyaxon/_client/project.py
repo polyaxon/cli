@@ -50,13 +50,17 @@ class ProjectClient(ClientMixin):
     only the `owner` parameter is required.
 
     Team Scoping:
+
         Projects can be scoped to a specific team within an organization by providing
         the owner in the format "owner/team". When a team is specified, the project
         will be created under that team using the team projects API.
 
         Examples:
-            ProjectClient(owner="my-org", project="my-project")              # Organization project
-            ProjectClient(owner="my-org/engineering", project="my-project")  # Team project
+
+    ```python
+    >>> ProjectClient(owner="my-org", project="my-project")              # Organization project
+    >>> ProjectClient(owner="my-org/engineering", project="my-project")  # Team project
+    ```
 
     Properties:
         project: str.

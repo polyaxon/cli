@@ -56,14 +56,15 @@ class OrganizationClient(ClientMixin):
             * Artifacts: list_runs_artifacts_lineage
 
         Examples:
-            # Organization-wide operations
-            org_client = OrganizationClient(owner="my-org")
-            org_client.list_runs()  # All runs across the organization
-
-            # Team-scoped operations (effectively a "Team Client")
-            team_client = OrganizationClient(owner="my-org/engineering")
-            team_client.list_runs()  # Only runs within the engineering team
-            team_client.list_model_versions()  # Only model versions within the team
+        ```python
+        >>> # Organization-wide operations
+        >>> org_client = OrganizationClient(owner="my-org")
+        >>> org_client.list_runs()  # All runs across the organization
+        >>> # Team-scoped operations (effectively a "Team Client")
+        >>> team_client = OrganizationClient(owner="my-org/engineering")
+        >>> team_client.list_runs()  # Only runs within the engineering team
+        >>> team_client.list_model_versions()  # Only model versions within the team
+        ```
 
     Properties:
         owner: str.
