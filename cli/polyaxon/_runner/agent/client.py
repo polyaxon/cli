@@ -63,7 +63,9 @@ class AgentClient:
         )
 
     def cron_agent(self):
-        return self.client.agents_v1.cron_agent(owner=self.owner, _request_timeout=10)
+        return self.client.agents_v1.cron_agent(
+            owner=self.owner, body={}, _request_timeout=10
+        )
 
     def collect_agent_data(self, namespace: str):
         return self.client.internal_agents_v1.collect_agent_data(
