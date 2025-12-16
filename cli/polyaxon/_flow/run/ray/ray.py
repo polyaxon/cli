@@ -176,7 +176,7 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
     _CUSTOM_DUMP_FIELDS = {"head", "workers", "autoscaler_options"}
     _FIELDS_DICT_PATCH = ["workers"]
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.RAYCLUSTER] = _IDENTIFIER
     entrypoint: Optional[str] = None
     runtime_env: Optional[Union[Dict[str, Any], RefField]] = Field(
         alias="runtimeEnv", default=None

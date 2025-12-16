@@ -171,7 +171,7 @@ class V1TFJob(BaseRun, DestinationImageMixin):
     _IDENTIFIER = V1RunKind.TFJOB
     _CUSTOM_DUMP_FIELDS = {"chief", "ps", "worker", "evaluator"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.TFJOB] = _IDENTIFIER
     clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
         alias="cleanPodPolicy", default=None
     )

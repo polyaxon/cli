@@ -105,7 +105,7 @@ class V1Mapping(BaseSearchConfig):
 
     _IDENTIFIER = V1MatrixKind.MAPPING
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.MAPPING] = _IDENTIFIER
     values: Union[List[Dict], RefField]
     concurrency: Optional[Union[PositiveInt, RefField]] = None
     early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(

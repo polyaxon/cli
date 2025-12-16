@@ -216,7 +216,7 @@ class V1Hyperopt(BaseSearchConfig):
 
     _IDENTIFIER = V1MatrixKind.HYPEROPT
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.HYPEROPT] = _IDENTIFIER
     max_iterations: Optional[IntOrRef] = Field(alias="maxIterations", default=None)
     metric: V1OptimizationMetric
     algorithm: Optional[V1HyperoptAlgorithms] = None

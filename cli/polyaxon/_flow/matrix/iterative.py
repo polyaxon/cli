@@ -228,7 +228,7 @@ class V1Iterative(BaseSearchConfig):
 
     _IDENTIFIER = V1MatrixKind.ITERATIVE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.ITERATIVE] = _IDENTIFIER
     params: Optional[Union[Dict[str, V1HpParam], RefField]] = None
     max_iterations: Union[PositiveInt, RefField] = Field(alias="maxIterations")
     seed: Optional[IntOrRef] = None

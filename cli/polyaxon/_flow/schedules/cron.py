@@ -112,7 +112,7 @@ class V1CronSchedule(BaseSchemaModel):
     _IDENTIFIER = V1ScheduleKind.CRON
     _USE_DISCRIMINATOR = True
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1ScheduleKind.CRON] = _IDENTIFIER
     cron: StrictStr
     start_at: Optional[DatetimeOrRef] = Field(alias="startAt", default=None)
     end_at: Optional[DatetimeOrRef] = Field(alias="endAt", default=None)

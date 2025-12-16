@@ -396,7 +396,7 @@ class V1Bayes(BaseSearchConfig):
 
     _IDENTIFIER = V1MatrixKind.BAYES
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.BAYES] = _IDENTIFIER
     utility_function: Optional[UtilityFunctionConfig] = Field(
         alias="utilityFunction", default=None
     )

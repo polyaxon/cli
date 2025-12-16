@@ -135,7 +135,7 @@ class V1MPIJob(BaseRun, DestinationImageMixin):
     _IDENTIFIER = V1RunKind.MPIJOB
     _CUSTOM_DUMP_FIELDS = {"launcher", "worker"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.MPIJOB] = _IDENTIFIER
     clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
         alias="cleanPodPolicy", default=None
     )

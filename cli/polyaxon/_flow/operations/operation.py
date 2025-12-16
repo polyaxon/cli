@@ -513,7 +513,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     ]
     _CUSTOM_DUMP_FIELDS = {"component"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["operation"] = _IDENTIFIER
     params: Optional[Dict[StrictStr, V1Param]] = None
     hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
     dag_ref: Optional[StrictStr] = Field(alias="dagRef", default=None)

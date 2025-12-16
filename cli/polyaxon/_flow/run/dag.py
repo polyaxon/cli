@@ -304,7 +304,7 @@ class V1Dag(BaseRun):
     _SWAGGER_FIELDS = ["volumes"]
     _CUSTOM_DUMP_FIELDS = {"operations", "components", "environment"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.DAG] = _IDENTIFIER
     operations: Optional[Union[List[V1Operation], RefField]] = None
     components: Optional[Union[List[V1Component], RefField]] = None
     environment: Optional[Union[V1Environment, RefField]] = None

@@ -10,7 +10,7 @@ class V1PathRef(BaseSchemaModel, RefMixin):
     _IDENTIFIER = "path_ref"
     _USE_DISCRIMINATOR = True
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["path_ref"] = _IDENTIFIER
     path: StrictStr
 
     def get_kind_value(self):

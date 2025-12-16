@@ -71,7 +71,7 @@ class V1DaskCluster(BaseRun, DestinationImageMixin):
     _IDENTIFIER = V1RunKind.DASKCLUSTER
     _CUSTOM_DUMP_FIELDS = {"worker", "scheduler"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.DASKCLUSTER] = _IDENTIFIER
     worker: Optional[Union[V1DaskReplica, RefField]] = None
     scheduler: Optional[Union[V1DaskReplica, RefField]] = None
     min_replicas: Optional[IntOrRef] = Field(alias="minReplicas", default=None)

@@ -312,7 +312,7 @@ class V1Hyperband(BaseSearchConfig):
 
     _IDENTIFIER = V1MatrixKind.HYPERBAND
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.HYPERBAND] = _IDENTIFIER
     params: Optional[Union[Dict[str, V1HpParam], RefField]] = None
     max_iterations: Optional[PositiveInt] = Field(alias="maxIterations", default=None)
     eta: Optional[Union[NonNegativeFloat, RefField]] = None

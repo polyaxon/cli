@@ -220,7 +220,7 @@ class V1Job(BaseRun, DestinationImageMixin):
     _SWAGGER_FIELDS = ["volumes", "sidecars", "container"]
     _CUSTOM_DUMP_FIELDS = {"environment", "init"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.JOB] = _IDENTIFIER
     environment: Optional[Union[V1Environment, RefField]] = None
     connections: Optional[Union[List[StrictStr], RefField]] = None
     volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]] = None

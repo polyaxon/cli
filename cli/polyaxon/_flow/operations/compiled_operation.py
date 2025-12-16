@@ -12,7 +12,7 @@ class V1CompiledOperation(BaseOp, RunMixin):
     _IDENTIFIER = "compiled_operation"
     _CUSTOM_DUMP_FIELDS = {"run"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["compiled_operation"] = _IDENTIFIER
     inputs: Optional[List[V1IO]] = None
     outputs: Optional[List[V1IO]] = None
     contexts: Optional[List[V1IO]] = None

@@ -7,4 +7,4 @@ from polyaxon._flow.run.job import V1Job
 class V1TunerJob(V1Job):
     _IDENTIFIER = V1RunKind.TUNER
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.TUNER] = _IDENTIFIER

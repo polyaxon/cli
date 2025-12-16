@@ -206,7 +206,7 @@ class V1RandomSearch(BaseSearchConfig):
 
     _IDENTIFIER = V1MatrixKind.RANDOM
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.RANDOM] = _IDENTIFIER
     params: Union[Dict[str, V1HpParam], RefField]
     num_runs: Union[PositiveInt, RefField] = Field(alias="numRuns")
     seed: Optional[IntOrRef] = None

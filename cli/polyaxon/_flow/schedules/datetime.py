@@ -61,7 +61,7 @@ class V1DateTimeSchedule(BaseSchemaModel):
     _IDENTIFIER = V1ScheduleKind.DATETIME
     _USE_DISCRIMINATOR = True
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1ScheduleKind.DATETIME] = _IDENTIFIER
     start_at: DatetimeOrRef = Field(alias="startAt")
 
     @property

@@ -7,4 +7,4 @@ from polyaxon._flow.run.job import V1Job
 class V1CleanerJob(V1Job):
     _IDENTIFIER = V1RunKind.CLEANER
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.CLEANER] = _IDENTIFIER

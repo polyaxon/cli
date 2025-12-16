@@ -375,7 +375,7 @@ class V1Component(
     _IDENTIFIER = "component"
     _CUSTOM_DUMP_FIELDS = {"run"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["component"] = _IDENTIFIER
     inputs: Optional[List[V1IO]] = None
     outputs: Optional[List[V1IO]] = None
     run: Union[V1Runtime]

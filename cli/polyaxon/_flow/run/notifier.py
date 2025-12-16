@@ -7,4 +7,4 @@ from polyaxon._flow.run.job import V1Job
 class V1NotifierJob(V1Job):
     _IDENTIFIER = V1RunKind.NOTIFIER
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.NOTIFIER] = _IDENTIFIER

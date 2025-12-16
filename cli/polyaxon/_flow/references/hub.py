@@ -10,7 +10,7 @@ class V1HubRef(BaseSchemaModel, RefMixin):
     _IDENTIFIER = "hub_ref"
     _USE_DISCRIMINATOR = True
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["hub_ref"] = _IDENTIFIER
     name: StrictStr
 
     def get_kind_value(self):

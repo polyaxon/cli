@@ -116,7 +116,7 @@ class V1IntervalSchedule(BaseSchemaModel):
     _IDENTIFIER = V1ScheduleKind.INTERVAL
     _USE_DISCRIMINATOR = True
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1ScheduleKind.INTERVAL] = _IDENTIFIER
     start_at: Optional[DatetimeOrRef] = Field(alias="startAt", default=None)
     end_at: Optional[DatetimeOrRef] = Field(alias="endAt", default=None)
     max_runs: Optional[IntOrRef] = Field(alias="maxRuns", default=None)

@@ -10,7 +10,7 @@ class V1DagRef(BaseSchemaModel, RefMixin):
     _IDENTIFIER = "dag_ref"
     _USE_DISCRIMINATOR = True
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["dag_ref"] = _IDENTIFIER
     name: StrictStr
 
     def get_kind_value(self):

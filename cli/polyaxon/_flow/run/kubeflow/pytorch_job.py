@@ -165,7 +165,7 @@ class V1PytorchJob(BaseRun, DestinationImageMixin):
     _IDENTIFIER = V1RunKind.PYTORCHJOB
     _CUSTOM_DUMP_FIELDS = {"master", "worker"}
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1RunKind.PYTORCHJOB] = _IDENTIFIER
     clean_pod_policy: Optional[V1CleanPodPolicy] = Field(
         alias="cleanPodPolicy", default=None
     )

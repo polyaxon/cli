@@ -12,7 +12,7 @@ class V1MedianStoppingPolicy(BaseSchemaModel):
     _IDENTIFIER = "median"
     _USE_DISCRIMINATOR = True
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["median"] = _IDENTIFIER
     evaluation_interval: IntOrRef = Field(alias="evaluationInterval", default=None)
     min_interval: Optional[IntOrRef] = Field(alias="minInterval", default=None)
     min_samples: Optional[IntOrRef] = Field(alias="minSamples", default=None)
@@ -21,7 +21,7 @@ class V1MedianStoppingPolicy(BaseSchemaModel):
 class V1TruncationStoppingPolicy(BaseSchemaModel):
     _IDENTIFIER = "truncation"
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["truncation"] = _IDENTIFIER
     percent: FloatOrRef
     evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
     min_interval: Optional[IntOrRef] = Field(alias="minInterval", default=None)
@@ -34,7 +34,7 @@ class V1TruncationStoppingPolicy(BaseSchemaModel):
 class V1DiffStoppingPolicy(BaseSchemaModel):
     _IDENTIFIER = "diff"
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["diff"] = _IDENTIFIER
     percent: FloatOrRef
     evaluation_interval: IntOrRef = Field(alias="evaluationInterval")
     min_interval: Optional[IntOrRef] = Field(alias="minInterval", default=None)
@@ -148,7 +148,7 @@ class V1MetricEarlyStopping(BaseSchemaModel):
 
     _IDENTIFIER = "metric_early_stopping"
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["metric_early_stopping"] = _IDENTIFIER
     metric: StrictStr
     value: FloatOrRef
     optimization: Union[StrictFloat, V1Optimization]
@@ -213,5 +213,5 @@ class V1FailureEarlyStopping(BaseSchemaModel):
 
     _IDENTIFIER = "failure_early_stopping"
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal["failure_early_stopping"] = _IDENTIFIER
     percent: FloatOrRef

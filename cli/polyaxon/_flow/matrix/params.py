@@ -433,7 +433,7 @@ class V1HpChoice(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.CHOICE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.CHOICE] = _IDENTIFIER
     value: Optional[Union[List[Any], RefField]]
 
     @staticmethod
@@ -490,7 +490,7 @@ class V1HpPChoice(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.PCHOICE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.PCHOICE] = _IDENTIFIER
     value: Optional[Union[List[PChoice], RefField]] = None
 
     @field_validator("value")
@@ -552,7 +552,7 @@ class V1HpRange(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.RANGE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.RANGE] = _IDENTIFIER
     value: Optional[Union[Range, RangeList, RangeStr, RefField]] = None
 
     @property
@@ -603,7 +603,7 @@ class V1HpDateRange(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.DATERANGE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.DATERANGE] = _IDENTIFIER
     value: Optional[Union[DateRange, DateRangeList, RefField]] = None
 
     @staticmethod
@@ -666,7 +666,7 @@ class V1HpDateTimeRange(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.DATETIMERANGE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.DATETIMERANGE] = _IDENTIFIER
     value: Optional[Union[DateTimeRange, DateTimeRangeList, RefField]]
 
     @staticmethod
@@ -728,7 +728,7 @@ class V1HpLinSpace(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.LINSPACE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.LINSPACE] = _IDENTIFIER
     value: Optional[Union[LinSpace, LinSpaceList, LinSpaceStr, RefField]] = None
 
     @property
@@ -782,7 +782,7 @@ class V1HpLogSpace(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.LOGSPACE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.LOGSPACE] = _IDENTIFIER
     value: Optional[Union[LogSpace, LogSpaceList, LogSpaceStr, RefField]] = None
 
     @property
@@ -832,7 +832,7 @@ class V1HpGeomSpace(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.GEOMSPACE
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.GEOMSPACE] = _IDENTIFIER
     value: Optional[Union[GeomSpace, GeomSpaceList, GeomSpaceStr, RefField]] = None
 
     @property
@@ -882,7 +882,7 @@ class V1HpUniform(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.UNIFORM
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.UNIFORM] = _IDENTIFIER
     value: Optional[Union[Uniform, UniformList, UniformStr, RefField]] = None
 
     @property
@@ -932,9 +932,9 @@ class V1HpQUniform(BaseHpParamConfig):
     ```
     """
 
-    _IDENTIFIER = "quniform"
+    _IDENTIFIER = V1HPKind.QUNIFORM
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.QUNIFORM] = _IDENTIFIER
     value: Optional[Union[QUniform, QUniformList, QUniformStr, RefField]] = None
 
     @property
@@ -985,7 +985,7 @@ class V1HpLogUniform(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.LOGUNIFORM
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.LOGUNIFORM] = _IDENTIFIER
     value: Optional[Union[LogUniform, LogUniformList, LogUniformStr, RefField]] = None
 
     @property
@@ -1036,7 +1036,7 @@ class V1HpQLogUniform(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.QLOGUNIFORM
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.QLOGUNIFORM] = _IDENTIFIER
     value: Optional[
         Union[QLogUniform, QLogUniformList, QLogUniformStr, RefField]
     ] = None  # fmt: skip
@@ -1093,7 +1093,7 @@ class V1HpNormal(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.NORMAL
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.NORMAL] = _IDENTIFIER
     value: Optional[Union[Normal, NormalList, NormalStr, RefField]] = None
 
     @property
@@ -1144,7 +1144,7 @@ class V1HpQNormal(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.QNORMAL
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.QNORMAL] = _IDENTIFIER
     value: Optional[Union[QNormal, QNormalList, QNormalStr, RefField]] = None
 
     @property
@@ -1195,7 +1195,7 @@ class V1HpLogNormal(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.LOGNORMAL
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.LOGNORMAL] = _IDENTIFIER
     value: Optional[Union[LogNormal, LogNormalList, LogNormalStr, RefField]] = None
 
     @property
@@ -1246,7 +1246,7 @@ class V1HpQLogNormal(BaseHpParamConfig):
 
     _IDENTIFIER = V1HPKind.QLOGNORMAL
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1HPKind.QLOGNORMAL] = _IDENTIFIER
     value: Optional[Union[QLogNormal, QLogNormalList, QLogNormalStr, RefField]] = None
 
     @property

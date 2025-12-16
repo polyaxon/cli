@@ -200,7 +200,7 @@ class V1GridSearch(BaseSearchConfig):
 
     _IDENTIFIER = V1MatrixKind.GRID
 
-    kind: Literal[_IDENTIFIER] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.GRID] = _IDENTIFIER
     params: Union[Dict[str, V1HpParam], RefField]
     num_runs: Optional[Union[PositiveInt, RefField]] = Field(
         alias="numRuns", default=None
