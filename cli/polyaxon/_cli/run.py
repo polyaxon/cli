@@ -28,7 +28,7 @@ from polyaxon._env_vars.getters import get_project_or_local
 from polyaxon._flow import V1Operation, V1RunPending
 from polyaxon._managers.git import GitConfigManager
 from polyaxon._managers.run import RunConfigManager
-from polyaxon._polyaxonfile import check_polyaxonfile
+from polyaxon._polyaxonfile import check_polyaxonfile, CompiledOperationSpecification
 from polyaxon._runner.kinds import RunnerKind
 from polyaxon._schemas.lifecycle import ManagedBy
 from polyaxon._utils import cache
@@ -161,14 +161,31 @@ def _run(
         }
         ctx.invoke(run_shell)
 
-    def upload_run(run_uuid: str):
+    def upload_run(run_uuid: str, path_from: str, path_to: str):
         ctx.obj = {
             "project": "{}/{}".format(owner_team, project_name),
             "run_uuid": run_uuid,
         }
         ctx.invoke(
-            run_upload, path_to=upload_to, path_from=upload_from, sync_failure=True
+            run_upload,
+            path_to=path_to,
+            path_from=path_from,
+            sync_failure=True,
         )
+
+    def upload_mounts(run_uuid: str):
+        if upload:
+            upload_run(
+                build_uuid or run_instance.uuid,
+                path_to=upload_to,
+                path_from=upload_from,
+            )
+
+        compiled_spec = CompiledOperationSpecification.read(run_instance.content)
+        mounts = compiled_spec.get_resolved_mount()
+        for mount in mounts:
+            upload_run(run_uuid, path_from=mount.path_from, path_to=mount.path_to)
+
         if approve_after and approve_after > 0:
             Printer.print(f"Waiting {approve_after}s to approve the run...")
             time.sleep(approve_after)
@@ -184,10 +201,12 @@ def _run(
         upload_to = upload_to or DEFAULT_UPLOADS_PATH
         run_meta_info = run_meta_info or {}
         run_meta_info[META_UPLOAD_ARTIFACTS] = upload_to
+
+    is_uploading = upload or op_spec.has_mount()
     run_instance = create_run(
         managed_by=managed_by,
         meta_info=run_meta_info,
-        pending=V1RunPending.UPLOAD if upload else None,
+        pending=V1RunPending.UPLOAD if is_uploading else None,
     )
     if not run_instance:
         return
@@ -200,8 +219,8 @@ def _run(
         build_name = run_instance.settings.build.get("name")
         runs_to_watch.insert(0, RunWatchSpec(build_uuid, build_name))
 
-    if upload:
-        upload_run(build_uuid or run_instance.uuid)
+    if is_uploading:
+        upload_mounts(build_uuid or run_instance.uuid)
 
     if local:
         for instance in runs_to_watch:
@@ -277,8 +296,20 @@ def _run(
     "-u",
     is_flag=True,
     default=False,
-    help="To upload the working dir to run's artifacts path "
-    "as an init context before scheduling the run.",
+    help="Upload the current working directory to run's artifacts path "
+    "as an init context before scheduling the run. "
+    "Uploads to 'uploads/' by default.",
+)
+@click.option(
+    "--mount",
+    "-m",
+    "mounts",
+    multiple=True,
+    type=str,
+    help="Mount local paths to run artifacts. "
+    "Syntax: './src:dest' or './src' (defaults to 'uploads/' destination). "
+    "Can be specified multiple times. "
+    "Examples: -m ./code -m ./data:datasets -m ./models:models",
 )
 @click.option(
     "--upload-from",
@@ -437,6 +468,7 @@ def run(
     shell,
     log,
     upload,
+    mounts,
     upload_from,
     upload_to,
     watch,
@@ -498,21 +530,20 @@ def run(
     $ polyaxon run -pm path/to/my-component.py:componentA
 
 
-    Uploading from everything in the current folder to the default uploads path
+    Uploading current folder to the default uploads path
 
     \b
     $ polyaxon run ... -u
 
-
-    Uploading from everything in the current folder to a custom path, e.g. code
-
-    \b
-    $ polyaxon run ... -u-to code
-
-    Uploading from everything from a sub-folder, e.g. ./code to the a custom path, e.g. new-code
+    Uploading from a subfolder to a custom path
 
     \b
-    $ polyaxon run ... -u-from ./code -u-to new-code
+    $ polyaxon run ... -u -u-from ./code -u-to code
+
+    Mounting multiple paths using -m
+
+    \b
+    $ polyaxon run ... -m ./src:code -m ./data:datasets -m ./models
     """
     if log and shell:
         Printer.error(
@@ -589,6 +620,13 @@ def run(
 
     owner, team, project_name = get_project_or_local(project, is_cli=True)
     tags = validate_tags(tags, validate_yaml=True)
+
+    # Handle CLI uploads - merge with polyaxonfile mount section
+    cli_mounts = list(mounts) if mounts else []
+
+    if cli_mounts:
+        existing_mount = list(op_spec.mount) if op_spec.mount else []
+        op_spec.mount = existing_mount + cli_mounts
 
     _run(
         ctx=ctx,

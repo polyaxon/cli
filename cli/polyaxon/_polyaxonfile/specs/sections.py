@@ -39,6 +39,7 @@ class Sections:
     PATH_REF = "pathRef"
     URL_REF = "urlRef"
     COMPONENT = "component"
+    MOUNT = "mount"
 
     SECTIONS = (
         VERSION,
@@ -80,6 +81,7 @@ class Sections:
         CONTEXTS,
         RUN,
         RUN_PATCH,
+        MOUNT,
     )
 
     PARSING_SECTIONS = (
@@ -97,6 +99,7 @@ class Sections:
         DEPENDENCIES,
         TRIGGER,
         CONDITIONS,
+        MOUNT,
         SKIP_ON_UPSTREAM_SKIP,
         PATCH_STRATEGY,
         "is_approved",

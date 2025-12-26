@@ -332,6 +332,7 @@ class CompiledOperationSpecification(BaseSpecification):
             "events",
             "plugins",
             "termination",
+            "mount",
             "matrix",
             "joins",
             "schedule",

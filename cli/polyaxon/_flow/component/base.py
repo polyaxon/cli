@@ -14,6 +14,7 @@ from clipped.utils.lists import to_list
 from polyaxon._flow.builds import V1Build
 from polyaxon._flow.cache import V1Cache
 from polyaxon._flow.hooks import V1Hook
+from polyaxon._schemas.types.mounts import V1Mount
 from polyaxon._flow.plugins import V1Plugins
 from polyaxon._flow.termination import V1Termination
 from polyaxon._schemas.base import BaseSchemaModel
@@ -35,9 +36,25 @@ class BaseComponent(BaseSchemaModel):
     hooks: Optional[Union[List[V1Hook], RefField]] = None
     is_approved: Optional[BoolOrRef] = Field(alias="isApproved", default=None)
     cost: Optional[FloatOrRef] = None
+    mount: Optional[List[Union[StrictStr, V1Mount]]] = None
 
     @field_validator("tags", "presets", **validation_before)
     def validate_str_list(cls, v):
         if isinstance(v, str):
             return to_list(v, check_str=True)
         return v
+
+    def get_resolved_mount(self):
+        if not self.mount:
+            return []
+        resolved_mounts = []
+        for mount in self.mount:
+            if isinstance(mount, str):
+                if ":" in mount:
+                    p_from, p_to = mount.split(":", 1)
+                else:
+                    p_from, p_to = mount, None
+                resolved_mounts.append(V1Mount(path_from=p_from, path_to=p_to))
+            else:
+                resolved_mounts.append(mount)
+        return resolved_mounts

@@ -110,6 +110,7 @@ class OperationSpecification(BaseSpecification):
             "trigger",
             "conditions",
             "skip_on_upstream_skip",
+            "mount",
         }
         patch_keys = patch_keys.intersection(config.model_fields_set)
         patch_data = {k: getattr(config, k) for k in patch_keys}

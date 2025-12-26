@@ -58,6 +58,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         params: Dict[str, [V1Param](/docs/core/specification/params/)], optional
         schedule: Union[[V1CronSchedule](/docs/automation/schedules/cron/), [V1IntervalSchedule](/docs/automation/schedules/interval/), [V1DateTimeSchedule](/docs/automation/schedules/datetime/)], optional  # noqa
         events: List[[V1EventTrigger](/docs/automation/events/)], optional
+        mount: List[[V1Mount](/docs/core/specification/mount/)], optional
         build: [V1Build](/docs/automation/builds/), optional
         hooks: List[[V1Hook](/docs/automation/hooks/)], optional
         matrix: Union[[V1Mapping](/docs/automation/mapping/), [V1GridSearch](/docs/automation/optimization-engine/grid-search/), [V1RandomSearch](/docs/automation/optimization-engine/random-search/), [V1Hyperband](/docs/automation/optimization-engine/hyperband/), [V1Bayes](/docs/automation/optimization-engine/bayesian-optimization/), [V1Hyperopt](/docs/automation/optimization-engine/hyperopt/), [V1Iterative](/docs/automation/optimization-engine/iterative/)], optional  # noqa
@@ -96,6 +97,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     >>>   actions:
     >>>   hooks:
     >>>   params:
+    >>>   mount:
     >>>   build:
     >>>   runPatch:
     >>>   hubRef:
@@ -126,6 +128,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     >>>     events=["event-ref1", "event-ref2"],
     >>>     hooks=[V1Hook(...)],
     >>>     outputs={"param1": V1Param(...), ...},
+    >>>     mount=[V1Mount(...)],
     >>>     build=V1Build(...),
     >>>     component=V1Component(...),
     >>> )
@@ -325,6 +328,22 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     >>>     param1: {value: 1.1}
     >>>     param2: {value: test}
     >>>     param3: {ref: ops.upstream-operation, value: outputs.metric}
+    >>>   ...
+    ```
+
+    ### mount
+
+    > **Note**: ver 2.13+. Please check [V1Mount](/docs/core/specification/mount/) for more details.
+
+    This section defines a list of mounts to be used for this operation.
+    Mounts can be defined either as strings or as full objects.
+    ```yaml
+    >>> operation:
+    >>>   ...
+    >>>   mount:
+    >>>     - /path/in/host:/path/in/container  # defined as string
+    >>>     - path_from: /path/in/host          # defined as object
+    >>>       path_to: /path/in/container
     >>>   ...
     ```
 
@@ -711,6 +730,13 @@ class V1Operation(BaseOp, TemplateMixinConfig):
             content["cache"] = build.cache
 
         return cls.model_construct(**content)
+
+    def has_mount(self):
+        if self.mount:
+            return True
+        if self.component and self.component.mount:
+            return True
+        return False
 
 
 PartialV1Operation = to_partial(V1Operation)

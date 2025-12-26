@@ -43,6 +43,7 @@ class V1Component(
         cache: [V1Cache](/docs/automation/helpers/cache/), optional
         termination: [V1Termination](/docs/core/specification/termination/), optional
         plugins: [V1Plugins](/docs/core/specification/plugins/), optional
+        mount: List[[V1Mount](/docs/core/specification/mount/)], optional
         build: [V1Build](/docs/automation/builds/), optional
         hooks: List[[V1Hook](/docs/automation/hooks/)], optional
         inputs: [V1IO](/docs/core/specification/io/), optional
@@ -69,6 +70,7 @@ class V1Component(
     >>>   hooks:
     >>>   inputs:
     >>>   outputs:
+    >>>   mount:
     >>>   build:
     >>>   run:
     >>>   isApproved:
@@ -94,6 +96,7 @@ class V1Component(
     >>>     hooks=[V1Hook(...)],
     >>>     inputs=[V1IO(...)],
     >>>     outputs=[V1IO(...)],
+    >>>     mount=[V1Mount(...)],
     >>>     build=V1Build(...),
     >>>     run=...
     >>> )
@@ -314,6 +317,22 @@ class V1Component(
     >>>     - name: image
     >>>       type: str
     >>>       delayValidation: false
+    >>>   ...
+    ```
+
+    ### mount
+
+    > **Note**: ver 2.13+. Please check [V1Mount](/docs/core/specification/mount/) for more details.
+
+    This section defines a list of mounts to be used for this operation.
+    Mounts can be defined either as strings or as full objects.
+    ```yaml
+    >>> operation:
+    >>>   ...
+    >>>   mount:
+    >>>     - /path/in/host:/path/in/container  # defined as string
+    >>>     - path_from: /path/in/host          # defined as object
+    >>>       path_to: /path/in/container
     >>>   ...
     ```
 

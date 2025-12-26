@@ -14,7 +14,7 @@ from polyaxon._schemas.lifecycle import V1Statuses
 
 
 class BaseOp(BaseComponent, MatrixMixin, ScheduleMixin):
-    _FIELDS_SAME_KIND_PATCH = ["schedule", "matrix"]
+    _FIELDS_SAME_KIND_PATCH = ["schedule", "matrix", "mount"]
 
     schedule: Optional[V1Schedule] = None
     events: Optional[Union[List[V1EventTrigger], RefField]] = None
