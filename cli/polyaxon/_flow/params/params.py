@@ -16,6 +16,81 @@ from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonValidationError
 
 
+# V1Param fields that indicate full-form param definition
+# If a dict contains any of these keys, it's a full-form V1Param, not a short-form value
+V1_PARAM_KEYS = {
+    "value",
+    "ref",
+    "toInit",
+    "to_init",
+    "toEnv",
+    "to_env",
+    "contextOnly",
+    "context_only",
+    "connection",
+}
+
+
+def is_short_form_param(value: Any) -> bool:
+    """
+    Determines if a value is in short-form (direct value) or full-form (V1Param dict).
+
+    A value is considered "short-form" if it's NOT a dict containing V1Param keys.
+
+    Examples of short-form values:
+        - 32 (int)
+        - "adam" (str)
+        - 0.8 (float)
+        - [1, 2, 3] (list)
+        - {"key1": "val1", "key2": "val2"} (dict without V1Param keys)
+
+    Examples of full-form values:
+        - {} (empty dict - treated as full-form for backward compatibility)
+        - {"value": 32}
+        - {"value": "outputs.path", "ref": "ops.upstream"}
+        - {"value": "data.csv", "toInit": True}
+
+    Args:
+        value: The value to check
+
+    Returns:
+        True if the value is in short-form, False if it's a full-form V1Param dict
+    """
+    if not isinstance(value, Mapping):
+        # Non-dict values are always short-form
+        return True
+
+    # Empty dict is treated as full-form for backward compatibility
+    # (passing {} means "no value specified", not "value is empty dict")
+    if not value:
+        return False
+
+    # A dict is short-form if it has NO V1Param keys
+    return not bool(V1_PARAM_KEYS & set(value.keys()))
+
+
+def normalize_param_value(value: Any) -> Dict:
+    """
+    Normalizes a param value to full-form V1Param dict.
+
+    If the value is already in full-form, returns it as-is.
+    If the value is in short-form, wraps it in {"value": <value>}.
+
+    Args:
+        value: The value to normalize (can be short-form or full-form)
+
+    Returns:
+        A dict suitable for V1Param.from_dict()
+    """
+    if value is None:
+        return {"value": None}
+
+    if is_short_form_param(value):
+        return {"value": value}
+
+    return value
+
+
 def validate_param_value(value, ref):
     if ref and not isinstance(value, str):
         raise ValueError(
@@ -201,6 +276,30 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
     ## YAML usage
 
+    Polyaxon supports two syntaxes for defining params: **short-form** and **full-form**.
+
+    ### Short-form syntax
+
+    > **N.B**: Requires Polyaxon CLI version `>= 2.13`
+
+    For simple literal values, you can use the concise short-form syntax:
+
+    ```yaml
+    >>> params:
+    >>>   loss: MeanSquaredError
+    >>>   preprocess: true
+    >>>   accuracy: 0.1
+    >>>   batch_size: 32
+    >>>   layers: [64, 128, 256]
+    >>>   config:
+    >>>     optimizer: adam
+    >>>     lr: 0.001
+    ```
+
+    ### Full-form syntax
+
+    The full-form syntax is required when using advanced features like `ref`, `toInit`, `toEnv`, `connection`, or `contextOnly`:
+
     ```yaml
     >>> params:
     >>>   loss:
@@ -212,6 +311,22 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     >>>   outputs_path:
     >>>     ref: ops.upstream-job1
     >>>     value: outputs.images_path
+    ```
+
+    You can mix both syntaxes in the same params section:
+
+    ```yaml
+    >>> params:
+    >>>   # Short-form for simple values
+    >>>   batch_size: 32
+    >>>   learning_rate: 0.001
+    >>>   # Full-form when using refs or other options
+    >>>   upstream_output:
+    >>>     ref: ops.training
+    >>>     value: outputs.model_path
+    >>>   data_path:
+    >>>     value: /data/train
+    >>>     toInit: true
     ```
 
     ## Python usage
@@ -399,6 +514,34 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
         values = cls.get_data_from_values(values)
         validate_param_value(value=cls.get_value_for_key("value", values), ref=ref)
         return ref
+
+    @classmethod
+    def read(
+        cls, values: Any, partial: bool = False, config_type: str = None
+    ) -> "V1Param":
+        """Create a V1Param, supporting both short-form and full-form.
+
+        Short-form allows simple literal values without the verbose `value:` wrapper:
+            - 32 (int)
+            - "adam" (str)
+            - [1, 2, 3] (list)
+            - {"key": "val"} (dict without V1Param keys)
+
+        Full-form requires explicit V1Param fields:
+            - {"value": 32}
+            - {"value": "outputs.path", "ref": "ops.upstream"}
+            - {"value": "data.csv", "toInit": True}
+
+        Args:
+            values: The value to convert (short-form or full-form)
+            partial: If True, skip validation
+            config_type: Optional config type for reading
+
+        Returns:
+            V1Param instance
+        """
+        normalized = normalize_param_value(values)
+        return super().read(normalized, partial=partial, config_type=config_type)
 
 
 class ParamSpec(

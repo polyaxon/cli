@@ -50,6 +50,7 @@ class TestComponentsConfigs(BaseTestCase):
         }
         component = V1Component.from_dict(config_dict)
 
+        # Full-form params (with explicit "value" key)
         params = {
             "param1": {"value": "text"},
             "param2": {"value": 12},
@@ -65,6 +66,28 @@ class TestComponentsConfigs(BaseTestCase):
         validated_params = ops_params.validate_params(
             params=params, inputs=component.inputs, outputs=None, is_template=False
         )
+        assert params == {p.name: {"value": p.param.value} for p in validated_params}
+
+        # Short-form params (direct values without "value" wrapper) - GitHub issue #895
+        short_form_params = {
+            "param1": "text",
+            "param2": 12,
+            "param3": 13.3,
+            "param4": False,
+            "param5": {"foo": "bar"},
+            "param6": [1, 3, 45, 5],
+            "param7": "gs://bucket/path/to/blob/",
+            "param8": "s3://test/this/is/bad/key.txt",
+            "param9": "wasbs://container@user.blob.core.windows.net/",
+            "param10": "/foo/bar",
+        }
+        validated_params = ops_params.validate_params(
+            params=short_form_params,
+            inputs=component.inputs,
+            outputs=None,
+            is_template=False,
+        )
+        # Short-form params should validate to the same values as full-form
         assert params == {p.name: {"value": p.param.value} for p in validated_params}
 
         # Passing missing params
@@ -96,6 +119,7 @@ class TestComponentsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         component = V1Component.from_dict(config_dict)
+        # Full-form params (with explicit "value" key)
         params = {
             "param1": {"value": "text"},
             "param2": {"value": 12},
@@ -117,6 +141,32 @@ class TestComponentsConfigs(BaseTestCase):
         )
         assert params == {p.name: {"value": p.param.value} for p in validated_params}
 
+        # Short-form params (direct values without "value" wrapper) - GitHub issue #895
+        short_form_params = {
+            "param1": "text",
+            "param2": 12,
+            "param3": 13.3,
+            "param4": False,
+            "param5": {"foo": "bar"},
+            "param6": [1, 3, 45, 5],
+            "param7": "gs://bucket/path/to/blob/",
+            "param8": "s3://test/this/is/bad/key.txt",
+            "param9": "wasbs://container@user.blob.core.windows.net/",
+            "param10": "/foo/bar",
+            "param11": 124.4,
+            "param12": {"foo": 124.4},
+            "param13": {"foo": "bar"},
+            "param14": {"foo": ["foo", 124.4]},
+        }
+        validated_params = ops_params.validate_params(
+            params=short_form_params,
+            inputs=None,
+            outputs=component.outputs,
+            is_template=False,
+        )
+        # Short-form params should validate to the same values as full-form
+        assert params == {p.name: {"value": p.param.value} for p in validated_params}
+
         # Passing missing params
         params.pop("param1")
         params.pop("param2")
@@ -128,7 +178,7 @@ class TestComponentsConfigs(BaseTestCase):
         assert params == {p.name: {"value": p.param.value} for p in validated_params}
 
     def test_required_input_no_param_only_validated_on_run(self):
-        # Inputs
+        # Inputs - full-form
         config_dict = {
             "inputs": [
                 {"name": "param1", "type": "str"},
@@ -144,8 +194,16 @@ class TestComponentsConfigs(BaseTestCase):
                 outputs=config.outputs,
                 is_template=False,
             )
+        # Inputs - short-form (GitHub issue #895)
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": "text"},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
 
-        # Outputs
+        # Outputs - full-form
         config_dict = {
             "outputs": [
                 {"name": "param1", "type": "str"},
@@ -161,8 +219,15 @@ class TestComponentsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
+        # Outputs - short-form (GitHub issue #895)
+        ops_params.validate_params(
+            params={"param1": "text"},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
 
-        # IO
+        # IO - full-form
         config_dict = {
             "inputs": [{"name": "param1", "type": "str"}],
             "outputs": [{"name": "param10", "type": types.PATH}],
@@ -171,6 +236,13 @@ class TestComponentsConfigs(BaseTestCase):
         config = V1Component.from_dict(config_dict)
         ops_params.validate_params(
             params={"param1": {"value": "text"}},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
+        # IO - short-form (GitHub issue #895)
+        ops_params.validate_params(
+            params={"param1": "text"},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
@@ -185,9 +257,18 @@ class TestComponentsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1Component.from_dict(config_dict)
+        # Full-form
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 1}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
+        # Short-form (GitHub issue #895)
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": 1},
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
@@ -201,15 +282,23 @@ class TestComponentsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1Component.from_dict(config_dict)
+        # Full-form
         ops_params.validate_params(
             params={"param1": {"value": 1}},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
         )
+        # Short-form (GitHub issue #895)
+        ops_params.validate_params(
+            params={"param1": 1},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
 
     def test_extra_params(self):
-        # inputs
+        # inputs - full-form
         config_dict = {
             "inputs": [{"name": "param1", "type": "int"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -222,8 +311,16 @@ class TestComponentsConfigs(BaseTestCase):
                 outputs=config.outputs,
                 is_template=False,
             )
+        # inputs - short-form (GitHub issue #895)
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": 1, "param2": 2},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
 
-        # outputs
+        # outputs - full-form
         config_dict = {
             "outputs": [{"name": "param1", "type": "int"}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -232,6 +329,14 @@ class TestComponentsConfigs(BaseTestCase):
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 1}, "param2": {"value": 2}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
+        # outputs - short-form (GitHub issue #895)
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": 1, "param2": 2},
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
@@ -409,9 +514,9 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
-                params={"param2": {"foo": "bar"}},
+                params={"param2": {"value": {"foo": "bar"}}},
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
@@ -483,7 +588,19 @@ class TestComponentsConfigs(BaseTestCase):
             is_template=False,
         )
         ops_params.validate_params(
+            params={"param1": 1},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
+        ops_params.validate_params(
             params={"param1": {"value": 12.0}},
+            inputs=config.inputs,
+            outputs=config.outputs,
+            is_template=False,
+        )
+        ops_params.validate_params(
+            params={"param1": 12.0},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
@@ -491,6 +608,13 @@ class TestComponentsConfigs(BaseTestCase):
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.0}},
+                inputs=strict_config.inputs,
+                outputs=strict_config.outputs,
+                is_template=False,
+            )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": 12.0},
                 inputs=strict_config.inputs,
                 outputs=strict_config.outputs,
                 is_template=False,
@@ -504,6 +628,13 @@ class TestComponentsConfigs(BaseTestCase):
                 outputs=config.outputs,
                 is_template=False,
             )
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params={"param1": "text"},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
 
         if PYDANTIC_VERSION.startswith("2."):
             with self.assertRaises(PolyaxonValidationError):
@@ -513,9 +644,22 @@ class TestComponentsConfigs(BaseTestCase):
                     outputs=config.outputs,
                     is_template=False,
                 )
+            with self.assertRaises(PolyaxonValidationError):
+                ops_params.validate_params(
+                    params={"param1": 12.1},
+                    inputs=config.inputs,
+                    outputs=config.outputs,
+                    is_template=False,
+                )
         else:
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
+                inputs=config.inputs,
+                outputs=config.outputs,
+                is_template=False,
+            )
+            ops_params.validate_params(
+                params={"param1": 12.1},
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
@@ -637,6 +781,7 @@ class TestComponentsConfigs(BaseTestCase):
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         op = V1Component.from_dict(config_dict)
+        # Full-form params (refs require full-form)
         params = {
             "param1": {
                 "ref": "runs.64332180bfce46eba80a65caf73c5396",
@@ -671,6 +816,42 @@ class TestComponentsConfigs(BaseTestCase):
             },
         }
 
+        # Mixed: refs in full-form, literal param9 in short-form (GitHub issue #895)
+        params_mixed = {
+            "param1": {
+                "ref": "runs.64332180bfce46eba80a65caf73c5396",
+                "value": "outputs.foo",
+            },
+            "param2": {
+                "ref": "runs.0de53b5bf8b04a219d12a39c6b92bcce",
+                "value": "outputs.foo",
+            },
+            "param9": "wasbs://container@user.blob.core.windows.net/",  # short-form
+            "param11": {
+                "ref": "runs.fcc462d764104eb698d3cca509f34154",
+                "value": "outputs.accuracy",
+            },
+        }
+        validated_params = ops_params.validate_params(
+            params=params_mixed, inputs=op.inputs, outputs=None, is_template=False
+        )
+        # Short-form param9 should have the same result
+        assert {p.name: p.param.to_dict() for p in validated_params} == {
+            "param1": {
+                "ref": "runs.64332180bfce46eba80a65caf73c5396",
+                "value": "outputs.foo",
+            },
+            "param2": {
+                "ref": "runs.0de53b5bf8b04a219d12a39c6b92bcce",
+                "value": "outputs.foo",
+            },
+            "param9": {"value": "wasbs://container@user.blob.core.windows.net/"},
+            "param11": {
+                "ref": "runs.fcc462d764104eb698d3cca509f34154",
+                "value": "outputs.accuracy",
+            },
+        }
+
     def test_job_refs_params(self):
         config_dict = {
             "inputs": [
@@ -679,6 +860,7 @@ class TestComponentsConfigs(BaseTestCase):
             ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
+        # Full-form
         params = {
             "param1": {"ref": "job.A", "value": "outputs.foo"},
             "param9": {"value": 13.1},
@@ -688,6 +870,20 @@ class TestComponentsConfigs(BaseTestCase):
         with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params=params, inputs=config.inputs, outputs=None, is_template=False
+            )
+
+        # Mixed: ref in full-form, literal param9 in short-form (GitHub issue #895)
+        params_mixed = {
+            "param1": {"ref": "job.A", "value": "outputs.foo"},
+            "param9": 13.1,  # short-form
+        }
+        # Validation outside the context of a pipeline (still fails due to ref)
+        with self.assertRaises(PolyaxonValidationError):
+            ops_params.validate_params(
+                params=params_mixed,
+                inputs=config.inputs,
+                outputs=None,
+                is_template=False,
             )
 
     def test_component_base_attrs(self):

@@ -33,7 +33,7 @@ def validate_params(
 
     def parse_param(k, v) -> V1Param:
         if not isinstance(v, V1Param):
-            v = V1Param.read(v, config_type=".yaml") if v else V1Param()
+            v = V1Param.read(v, config_type=".yaml") if v is not None else V1Param()
         if v and k in contexts_by_keys:
             v.context_only = True
             if v.to_init is None:
