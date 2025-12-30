@@ -44,7 +44,7 @@ OPTIONS_ARTIFACT_VERSION = {
 }
 
 OPTIONS_RUN_UID = {
-    "args": ["--uid", "-uid"],
+    "args": ["--uid", "--uuid", "-uid", "-id"],
     "kwargs": dict(type=str, help="The run uuid."),
 }
 
