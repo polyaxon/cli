@@ -10,7 +10,7 @@ from polyaxon.exceptions import PolyaxonSchemaError
 
 class V1CompiledOperation(BaseOp, RunMixin):
     _IDENTIFIER = "compiled_operation"
-    _CUSTOM_DUMP_FIELDS = {"run"}
+    _CUSTOM_DUMP_FIELDS = {"run", "termination"}
 
     kind: Literal["compiled_operation"] = _IDENTIFIER
     inputs: Optional[List[V1IO]] = None

@@ -1,9 +1,14 @@
 from typing import Optional, Union
 
-from clipped.compact.pydantic import Field
+from clipped.compact.pydantic import (
+    Field,
+    field_validator,
+    validation_before,
+    validation_always,
+)
 from clipped.types.ref_or_obj import RefField
 
-from polyaxon._k8s import k8s_schemas
+from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
 
 
@@ -77,7 +82,14 @@ class V1RayAutoscalerOptions(BaseSchemaModel):
     """
 
     _IDENTIFIER = "ray_autoscaler_options"
+    _SWAGGER_FIELDS = [
+        "resources",
+    ]
 
     upscaling_mode: Optional[str] = Field(alias="upscalingMode", default=None)
     image_pull_policy: Optional[str] = Field(alias="imagePullPolicy", default=None)
     resources: Optional[Union[k8s_schemas.V1ResourceRequirements, RefField]] = None
+
+    @field_validator("resources", **validation_always, **validation_before)
+    def validate_container(cls, v):
+        return k8s_validation.validate_k8s_resource_requirements(v)

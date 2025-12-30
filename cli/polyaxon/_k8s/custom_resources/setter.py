@@ -34,6 +34,8 @@ def set_termination(custom_object: Dict, termination: V1Termination) -> Dict:
                 http_spec["port"] = termination.probe.http.port
             probe_spec["http"] = http_spec
         termination_spec["probe"] = probe_spec
+    if termination.pod_failure_policy:
+        termination_spec["podFailurePolicy"] = termination.pod_failure_policy.to_dict()
 
     custom_object["termination"] = termination_spec
     return custom_object

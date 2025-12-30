@@ -28,3 +28,6 @@ V1PersistentVolumeClaimVolumeSource = client.V1PersistentVolumeClaimVolumeSource
 V1SecretVolumeSource = client.V1SecretVolumeSource
 V1ConfigMapVolumeSource = client.V1ConfigMapVolumeSource
 V1LocalObjectReference = client.V1LocalObjectReference
+V1PodFailurePolicy = client.V1PodFailurePolicy
+V1ExecAction = client.V1ExecAction
+V1HTTPGetAction = client.V1HTTPGetAction

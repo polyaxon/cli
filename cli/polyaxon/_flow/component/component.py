@@ -392,7 +392,7 @@ class V1Component(
     """
 
     _IDENTIFIER = "component"
-    _CUSTOM_DUMP_FIELDS = {"run"}
+    _CUSTOM_DUMP_FIELDS = {"run", "termination"}
 
     kind: Literal["component"] = _IDENTIFIER
     inputs: Optional[List[V1IO]] = None

@@ -1,116 +1,15 @@
-from typing import Optional, List
+from typing import Optional, Union
 
-from clipped.compact.pydantic import Field
-from clipped.types.ref_or_obj import IntOrRef
+from clipped.compact.pydantic import (
+    Field,
+    field_validator,
+    validation_always,
+    validation_before,
+)
+from clipped.types.ref_or_obj import IntOrRef, RefField
+from polyaxon._k8s import k8s_schemas, k8s_validation
 
 from polyaxon._schemas.base import BaseSchemaModel
-
-
-class V1ActivityProbeHttp(BaseSchemaModel):
-    """HTTP-based activity probe configuration for detecting service activity.
-
-    Used with service culling to check for activity by polling an HTTP endpoint.
-    Commonly used with Jupyter notebooks to poll the `/api/status` endpoint.
-
-    Args:
-        path: str, optional - The HTTP path to poll for activity status
-        port: int, optional - The port number where the service is listening
-
-    ## YAML usage
-
-    ```yaml
-    >>> probe:
-    >>>   http:
-    >>>     path: "/api/status"
-    >>>     port: 8888
-    ```
-
-    ## Python usage
-
-    ```python
-    >>> from polyaxon.schemas import V1ActivityProbeHttp
-    >>> probe = V1ActivityProbeHttp(
-    >>>     path="/api/status",
-    >>>     port=8888
-    >>> )
-    ```
-
-    ## Fields
-
-    ### path
-
-    The HTTP path to the activity status endpoint. For Jupyter notebooks,
-    this is typically `/api/status` which returns information about
-    last activity, active kernels, and connections.
-
-    ```yaml
-    >>> probe:
-    >>>   http:
-    >>>     path: "/api/status"
-    ```
-
-    ### port
-
-    The port number where the service is listening. For Jupyter notebooks,
-    this is typically 8888.
-
-    ```yaml
-    >>> probe:
-    >>>   http:
-    >>>     port: 8888
-    ```
-    """
-
-    path: Optional[str] = None
-    port: Optional[int] = None
-
-
-class V1ActivityProbeExec(BaseSchemaModel):
-    """Command-based activity probe configuration for detecting service activity.
-
-    Used with service culling to check for activity by executing a custom command.
-    The command should return exit code 0 if there was activity, or exit code 1 if idle.
-
-    Args:
-        command: List[str], optional - The command to execute for checking activity
-
-    ## YAML usage
-
-    ```yaml
-    >>> probe:
-    >>>   exec:
-    >>>     command: ["bash", "-c", "check-activity.sh"]
-    ```
-
-    ## Python usage
-
-    ```python
-    >>> from polyaxon.schemas import V1ActivityProbeExec
-    >>> probe = V1ActivityProbeExec(
-    >>>     command=["bash", "-c", "check-activity.sh"]
-    >>> )
-    ```
-
-    ## Fields
-
-    ### command
-
-    The command to execute inside the container to check for activity.
-    The command should return:
-    - Exit code 0: Activity detected (service is active)
-    - Exit code 1: No activity detected (service is idle)
-
-    The command is executed directly (not in a shell) unless you explicitly
-    invoke a shell as shown in the example.
-
-    ```yaml
-    >>> probe:
-    >>>   exec:
-    >>>     command: ["bash", "-c", "test -f /tmp/activity && exit 0 || exit 1"]
-    ```
-    """
-
-    command: Optional[List[str]] = None
 
 
 class V1ActivityProbe(BaseSchemaModel):
@@ -178,8 +77,21 @@ class V1ActivityProbe(BaseSchemaModel):
     ```
     """
 
-    var_exec: Optional[V1ActivityProbeExec] = Field(None, alias="exec")
-    http: Optional[V1ActivityProbeHttp] = None
+    _IDENTIFIER = "probe"
+    _SWAGGER_FIELDS = [
+        "exec",
+        "http",
+    ]
+    var_exec: Optional[k8s_schemas.V1ExecAction] = Field(None, alias="exec")
+    http: Optional[k8s_schemas.V1HTTPGetAction] = None
+
+    @field_validator("var_exec", **validation_always, **validation_before)
+    def validate_var_exec(cls, v):
+        return k8s_validation.validate_k8s_exec_action(v)
+
+    @field_validator("http", **validation_always, **validation_before)
+    def validate_http(cls, v):
+        return k8s_validation.validate_k8s_http_get_action(v)
 
 
 class V1Culling(BaseSchemaModel):
@@ -244,6 +156,7 @@ class V1Termination(BaseSchemaModel):
         timeout: int, optional
         culling: V1Culling, optional
         probe: V1ActivityProbe, optional
+        pod_failure_policy: V1PodFailurePolicy, optional
 
     ## YAML usage
 
@@ -258,6 +171,11 @@ class V1Termination(BaseSchemaModel):
     >>>     http:
     >>>       path: "/api/status"
     >>>       port: 8888
+    >>>   podFailurePolicy:
+    >>>     rules:
+    >>>       - action: Ignore
+    >>>         onPodConditions:
+    >>>           - type: DisruptionTarget
     ```
 
     ## Python usage
@@ -399,12 +317,59 @@ class V1Termination(BaseSchemaModel):
 
     See [services timeout preset documentation](/docs/core/scheduling-presets/services-timeout/)
     for detailed examples and use cases.
+
+    ### podFailurePolicy
+
+    > **Note**: Available from v2.13. Requires Kubernetes v1.25+.
+
+    Pod failure policy configuration that defines fine-grained rules for how pod failures
+    should be handled. This feature allows you to:
+    - Fail jobs immediately on certain exit codes (non-retriable errors)
+    - Ignore failures due to involuntary disruptions (preemption, eviction)
+    - Control which failures count towards the backoff limit
+
+    ```yaml
+    >>> termination:
+    >>>   maxRetries: 3
+    >>>   podFailurePolicy:
+    >>>     rules:
+    >>>       # Fail immediately on exit code 42 (non-retriable error)
+    >>>       - action: FailJob
+    >>>         onExitCodes:
+    >>>           containerName: main
+    >>>           operator: In
+    >>>           values: [42]
+    >>>       # Ignore pod disruptions (preemption, eviction)
+    >>>       - action: Ignore
+    >>>         onPodConditions:
+    >>>           - type: DisruptionTarget
+    ```
+
+    Available actions:
+    - `FailJob`: Mark the job as failed immediately without further retries
+    - `Ignore`: Don't count this failure towards the backoff limit
+    - `Count`: Count towards backoff limit (default behavior)
+    - `FailIndex`: Fail the index for indexed jobs
+
+    See [Kubernetes Pod Failure Policy](https://kubernetes.io/docs/tasks/job/pod-failure-policy/)
+    for more details.
     """
 
     _IDENTIFIER = "termination"
+    _SWAGGER_FIELDS = [
+        "podFailurePolicy",
+    ]
+    _CUSTOM_DUMP_FIELDS = {"probe"}
 
     max_retries: Optional[IntOrRef] = Field(alias="maxRetries", default=None)
     ttl: Optional[IntOrRef] = None
     timeout: Optional[IntOrRef] = None
     culling: Optional[V1Culling] = None
     probe: Optional[V1ActivityProbe] = None
+    pod_failure_policy: Optional[Union[k8s_schemas.V1PodFailurePolicy, RefField]] = (
+        Field(None, alias="podFailurePolicy")
+    )
+
+    @field_validator("pod_failure_policy", **validation_always, **validation_before)
+    def validate_pod_failure_policy(cls, v):
+        return k8s_validation.validate_k8s_pod_failure_policy(v)

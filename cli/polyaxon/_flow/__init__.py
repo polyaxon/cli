@@ -99,7 +99,11 @@ from polyaxon._flow.schedules import (
     V1ScheduleKind,
 )
 from polyaxon._flow.templates import V1Template
-from polyaxon._flow.termination import V1Termination
+from polyaxon._flow.termination import (
+    V1Termination,
+    V1Culling,
+    V1ActivityProbe,
+)
 from polyaxon._flow.trigger_policies import V1TriggerPolicy
 
 # Forward references for operations and components

@@ -530,7 +530,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         "run_patch",
         "patch_strategy",
     ]
-    _CUSTOM_DUMP_FIELDS = {"component"}
+    _CUSTOM_DUMP_FIELDS = {"component", "termination"}
 
     kind: Literal["operation"] = _IDENTIFIER
     params: Optional[Dict[StrictStr, V1Param]] = None

@@ -149,3 +149,21 @@ def validate_k8s_local_object_reference(
     value: Optional[Union[k8s_schemas.V1LocalObjectReference, Dict]],
 ):
     return _validate_schema(value, k8s_schemas.V1LocalObjectReference)
+
+
+def validate_k8s_pod_failure_policy(
+    value: Optional[Union[k8s_schemas.V1PodFailurePolicy, Dict]],
+):
+    return _validate_schema(value, k8s_schemas.V1PodFailurePolicy)
+
+
+def validate_k8s_exec_action(
+    value: Optional[Union[k8s_schemas.V1ExecAction, Dict]],
+):
+    return _validate_schema(value, k8s_schemas.V1ExecAction)
+
+
+def validate_k8s_http_get_action(
+    value: Optional[Union[k8s_schemas.V1HTTPGetAction, Dict]],
+):
+    return _validate_schema(value, k8s_schemas.V1HTTPGetAction)
