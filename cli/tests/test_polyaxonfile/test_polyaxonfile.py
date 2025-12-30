@@ -227,6 +227,35 @@ class TestPolyaxonfiles(BaseTestCase):
             == "video_prediction_train --loss=some-loss --flag"
         )
 
+    def test_passing_short_params_overrides_polyaxonfiles(self):
+        # Test that short form params (without the "value" wrapper) are parsed correctly
+        op_config = OperationSpecification.read(
+            [
+                os.path.abspath(
+                    "tests/fixtures/typing/required_inputs_with_short_params.yml"
+                ),
+            ]
+        )
+
+        # Verify params are parsed correctly from short form
+        assert op_config.params["loss"].value == "MeanSquaredError"
+        assert op_config.params["flag"].value is True
+
+        # Compile the operation and apply params
+        run_config = OperationSpecification.compile_operation(op_config)
+        # Apply the params from the operation to the compiled operation
+        run_config.apply_params(params=op_config.params)
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(run_config)
+        assert run_config.version == 1.1
+        assert run_config.tags == ["foo", "bar"]
+        assert run_config.run.container.image == "my_image"
+        assert run_config.run.container.command == ["/bin/sh", "-c"]
+        assert (
+            run_config.run.container.args
+            == "video_prediction_train --loss=MeanSquaredError --flag"
+        )
+
     def test_passing_wrong_params_raises(self):
         with self.assertRaises(PolyaxonfileError):
             check_polyaxonfile(
@@ -830,3 +859,4 @@ class TestPolyaxonfiles(BaseTestCase):
             run_config, contexts=contexts
         )
         assert run_config.run.to_dict() == expected_run
+

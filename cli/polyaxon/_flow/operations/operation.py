@@ -7,7 +7,7 @@ from clipped.compact.pydantic import (
     StrictStr,
     field_validator,
     model_validator,
-    validation_after,
+    validation_after, validation_before,
 )
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
@@ -16,7 +16,7 @@ from polyaxon._flow.builds import V1Build
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.hooks import V1Hook
 from polyaxon._flow.operations.base import BaseOp
-from polyaxon._flow.params import V1Param
+from polyaxon._flow.params import V1Param, normalize_param_value
 from polyaxon._flow.references import V1DagRef, V1HubRef, V1PathRef, V1UrlRef
 from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
@@ -543,6 +543,13 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     is_preset: Optional[bool] = Field(alias="isPreset", default=None)
     run_patch: Optional[Dict] = Field(alias="runPatch", default=None)
     template: Optional[V1Template] = None
+
+    @field_validator("params", **validation_before)
+    @classmethod
+    def validate_params(cls, params):
+        if not params:
+            return params
+        return {k: normalize_param_value(v) for k, v in params.items()}
 
     @model_validator(**validation_after)
     @skip_partial

@@ -56,6 +56,9 @@ def is_short_form_param(value: Any) -> bool:
     Returns:
         True if the value is in short-form, False if it's a full-form V1Param dict
     """
+    if isinstance(value, V1Param):
+        return False
+
     if not isinstance(value, Mapping):
         # Non-dict values are always short-form
         return True
