@@ -859,4 +859,3 @@ class TestPolyaxonfiles(BaseTestCase):
             run_config, contexts=contexts
         )
         assert run_config.run.to_dict() == expected_run
-
