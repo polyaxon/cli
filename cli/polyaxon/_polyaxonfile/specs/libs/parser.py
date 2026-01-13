@@ -1,5 +1,4 @@
 import ast
-import jinja2
 
 from collections.abc import Mapping
 from datetime import date, datetime, timedelta
@@ -15,9 +14,8 @@ from clipped.utils.serialization import (
 )
 
 from polyaxon._flow import ParamSpec
-from polyaxon._polyaxonfile.specs.libs.engine import get_engine
+from polyaxon._polyaxonfile.specs.libs.engine import render_template
 from polyaxon._polyaxonfile.specs.sections import Sections
-from polyaxon.exceptions import PolyaxonSchemaError
 
 try:
     import numpy as np
@@ -27,8 +25,6 @@ except (ImportError, ModuleNotFoundError):
 
 class PolyaxonfileParser:
     """Parses the Polyaxonfile."""
-
-    engine = get_engine()
 
     @staticmethod
     def _get_section_data(section_data):
@@ -194,19 +190,6 @@ class PolyaxonfileParser:
     def parse_expression(  # pylint:disable=too-many-branches
         cls, expression, params: Dict, check_operators: bool = False
     ):
-        try:
-            return cls._parse_expression(expression, params, check_operators)
-        except jinja2.exceptions.TemplateError as e:
-            raise PolyaxonSchemaError(
-                "Encountered a problem parsing the template, "
-                "please make sure your variables are resolvable. "
-                "Error: {}".format(repr(e))
-            )
-
-    @classmethod
-    def _parse_expression(  # pylint:disable=too-many-branches
-        cls, expression, params: Dict, check_operators: bool = False
-    ):
         if isinstance(expression, (int, float, complex, type(None))):
             return expression
         if isinstance(expression, Enum):
@@ -227,7 +210,7 @@ class PolyaxonfileParser:
             if len(expression) == 1:
                 old_key, value = list(expression.items())[0]
                 # always parse the keys, they must be base object or evaluate to base objects
-                key = cls._parse_expression(old_key, params)
+                key = cls.parse_expression(old_key, params)
                 if check_operators and cls.is_operator(key):
                     return cls._parse_operator({key: value}, params)
                 else:
@@ -236,7 +219,7 @@ class PolyaxonfileParser:
             new_expression = {}
             for k, v in expression.items():
                 new_expression.update(
-                    cls._parse_expression({k: v}, params, check_operators)
+                    cls.parse_expression({k: v}, params, check_operators)
                 )
             return new_expression
 
@@ -253,14 +236,7 @@ class PolyaxonfileParser:
 
     @classmethod
     def _evaluate_expression(cls, expression, params, check_operators):
-        try:
-            result = cls.engine.from_string(expression).render(**params)
-        except (ValueError, TypeError) as e:
-            raise PolyaxonSchemaError(
-                "Encountered a problem parsing the template, "
-                "please make sure your variables are resolvable. "
-                "Error: {}".format(repr(e))
-            )
+        result = render_template(expression, params)
         if result == expression:
             try:
                 return ast.literal_eval(result)
