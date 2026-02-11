@@ -297,7 +297,7 @@ async def list_files(
             is_async=fs.async_impl,
             path=store_path,
             detail=True,
-            force=force,
+            refresh=force,
         )
         results: Dict[str, Any] = {"files": {}, "dirs": []}
         for p in paths:
