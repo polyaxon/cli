@@ -1,6 +1,6 @@
 import datetime
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
@@ -13,9 +13,12 @@ class V1ConnectionResponse(BaseAllowSchemaModel):
     name: Optional[StrictStr] = None
     user: Optional[StrictStr] = None
     agent: Optional[StrictStr] = None
+    project: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
     live_state: Optional[int] = None
     kind: Optional[ProviderKind] = None
+    secret: Optional[Dict[str, Any]] = None
+    spec: Optional[Dict[str, Any]] = None
