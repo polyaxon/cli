@@ -16,6 +16,7 @@ class V1ProjectSettings(BaseAllowSchemaModel):
     agents: Optional[List[StrictStr]] = None
     namespaces: Optional[List[StrictStr]] = None
     user_accesses: Optional[List[V1UserAccess]] = None
+    automations: Optional[List[StrictStr]] = None
     teams: Optional[List[StrictStr]] = None
     projects: Optional[List[StrictStr]] = None
     policy: Optional[StrictStr] = None

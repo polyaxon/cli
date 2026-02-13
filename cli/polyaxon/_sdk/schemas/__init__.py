@@ -12,11 +12,36 @@ from polyaxon._sdk.schemas.v1_agent_status_body_request import V1AgentStatusBody
 from polyaxon._sdk.schemas.v1_analytics_spec import V1AnalyticsSpec
 from polyaxon._sdk.schemas.v1_artifact_tree import V1ArtifactTree
 from polyaxon._sdk.schemas.v1_auth import V1Auth
+from polyaxon._sdk.schemas.v1_automation import (
+    AutomationStateKind,
+    AutomationActionKind,
+    AutomationExecutionKind,
+    AutomationTargetKind,
+    AutomationExecutionStatus,
+    AutomationFailStrategy,
+    AutomationTriggerStateKind,
+    MetricTriggerConfigCondition,
+    TriggerConfig,
+    AutomationTriggerPosture,
+    AutomationTriggerKind,
+    V1Automation,
+    V1AutomationAction,
+    V1CompoundTriggerConfig,
+    V1EventTriggerConfig,
+    V1MetricTriggerConfig,
+    V1QueryTriggerConfig,
+    V1SequenceTriggerConfig,
+    V1SubTriggerConfig,
+)
+from polyaxon._sdk.schemas.v1_automation_test_request import V1AutomationTestRequest
 from polyaxon._sdk.schemas.v1_cloning import V1Cloning
 from polyaxon._sdk.schemas.v1_connection_response import V1ConnectionResponse
 from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
 from polyaxon._sdk.schemas.v1_dashboard_spec import V1DashboardSpec
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
+from polyaxon._sdk.schemas.v1_list_automation_executions_response import (
+    V1ListAutomationExecutionsResponse,
+)
 from polyaxon._sdk.schemas.v1_policy import V1Policy
 from polyaxon._sdk.schemas.v1_list_policies_response import V1ListPoliciesResponse
 from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
