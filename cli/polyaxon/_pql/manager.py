@@ -366,6 +366,8 @@ class PQLManager:
         trigger_distinct = False
 
         if isinstance(node, ExpressionNode):
+            if node.operation.strip() == "_any_":
+                return None, False
             return cls._build_expression_q(node.field, node.operation, request)
 
         elif isinstance(node, AndNode):
