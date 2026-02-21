@@ -2328,6 +2328,12 @@ def pull(
     default=False,
     help="Optional, to ignore the agent host.",
 )
+@click.option(
+    "--ignore-store",
+    is_flag=True,
+    default=False,
+    help="Optional, to ignore the store information of the run and use the default store of the server.",
+)
 @click.option("--name", "-n", type=str, help="Optional, a new name to set for the run.")
 @click.pass_context
 @clean_outputs
@@ -2343,6 +2349,7 @@ def push(
     reset_uuid,
     agent,
     ignore_agent_host,
+    ignore_store,
     name,
 ):
     """Push a local run (or all runs) to a remove server.
@@ -2367,7 +2374,7 @@ def push(
     $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --reset-project
 
     \b
-    $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --ignore-agent-host
+    $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --ignore-agent-host --ignore-store
 
     \b
     $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --reset-project -p send-to-project
@@ -2415,6 +2422,7 @@ def push(
                 clean=clean,
                 agent=agent,
                 ignore_agent_host=ignore_agent_host,
+                ignore_store=ignore_store,
             )
             Printer.success(
                 f"Finished pushing offline run {uid} to {client.owner}/{client.project}"

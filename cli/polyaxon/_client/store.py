@@ -137,7 +137,7 @@ class PolyaxonStore:
             return _upload_impl()
 
         with Printer.get_progress() as progress:
-            task = progress.add_task("[cyan]Uploading contents:", total=files_size)
+            task = progress.add_task("[cyan]Uploading content:", total=files_size)
 
             def progress_callback(monitor):
                 progress.update(task, completed=monitor.bytes_read)
@@ -219,7 +219,7 @@ class PolyaxonStore:
                 if show_progress:
                     with Printer.get_progress() as progress:
                         task = progress.add_task(
-                            "Writing contents:", total=content_length
+                            "Writing content:", total=content_length
                         )
                         _download_impl()
                 else:

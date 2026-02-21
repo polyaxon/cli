@@ -1578,6 +1578,7 @@ class RunClient(ClientMixin):
         relative_to: Optional[str] = None,
         agent: Optional[str] = None,
         ignore_agent_host: bool = False,
+        ignore_store: Optional[bool] = None,
     ):
         """Uploads a full directory to the run's artifacts store path.
 
@@ -1592,6 +1593,7 @@ class RunClient(ClientMixin):
                  and you want to cancel the relative path.
             agent: str, optional, uuid reference of an agent to use.
             ignore_agent_host: bool, optional, flag to ignore agent host
+            ignore_store: bool, optional, flag to ignore the ignore store and upload all files under the dirpath.
         Returns:
             str.
         """
@@ -1613,6 +1615,7 @@ class RunClient(ClientMixin):
             relative_to=relative_to,
             agent=agent,
             ignore_agent_host=ignore_agent_host,
+            ignore_store=ignore_store,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1624,6 +1627,7 @@ class RunClient(ClientMixin):
         relative_to: Optional[str] = None,
         agent: Optional[str] = None,
         ignore_agent_host: bool = False,
+        ignore_store: Optional[bool] = None,
     ):
         """Uploads multiple artifacts to the run's artifacts store path.
 
@@ -1635,6 +1639,7 @@ class RunClient(ClientMixin):
                  and you want to cancel the relative path.
             agent: str, optional, uuid reference of an agent to use.
             ignore_agent_host: bool, optional, flag to ignore agent host
+            ignore_store: bool, optional, flag to ignore the ignore store and upload all files under the dirpath.
         Returns:
             str.
         """
@@ -1648,8 +1653,11 @@ class RunClient(ClientMixin):
             self._reset_agent(agent)
         if not ignore_agent_host:
             self._use_agent_host()
-
-        params = get_streams_params(connection=self.artifacts_store)
+        params = (
+            get_streams_params(connection=self.artifacts_store)
+            if not ignore_store
+            else {}
+        )
         url = get_proxy_run_url(
             service=STREAMS_V1_LOCATION,
             namespace=self.namespace,
@@ -3040,6 +3048,7 @@ class RunClient(ClientMixin):
         clean: bool = False,
         agent: Optional[str] = None,
         ignore_agent_host: bool = False,
+        ignore_store: bool = False,
     ):
         """Syncs an offline run to Polyaxon's API and artifacts store.
 
@@ -3050,6 +3059,7 @@ class RunClient(ClientMixin):
             clean: bool, optional, flag to clean local path after pushing the run.
             agent: str, optional, uuid reference of an agent to use.
             ignore_agent_host: bool, optional, flag to ignore agent host
+            ignore_store: bool, optional, flag to ignore artifacts store and only push the run metadata and lineage.
         """
         # We ensure that the is_offline is False
         is_offline = self._is_offline
@@ -3084,6 +3094,7 @@ class RunClient(ClientMixin):
                 relative_to=path,
                 agent=agent,
                 ignore_agent_host=ignore_agent_host,
+                ignore_store=ignore_store,
             )
             logger.info(f"Offline artifacts for run {self.run_data.uuid} uploaded")
 
