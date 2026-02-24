@@ -285,7 +285,7 @@ class DateTimeCondition(ComparisonCondition):
     def _eq_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
         # Special handling for constant last_month
         if params == "last_month":
-            params_value = get_datetime_from_now(days=30)
+            params_value = get_datetime_from_now(days=30).replace(microsecond=0)
             filters = {
                 f"{name}__gte": params_value,
             }
