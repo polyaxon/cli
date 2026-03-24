@@ -1381,8 +1381,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method copy_run" % _key
+                    "Got an unexpected keyword argument '%s' to method copy_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -3575,8 +3574,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method get_run" % _key
+                    "Got an unexpected keyword argument '%s' to method get_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -9421,8 +9419,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method list_runs" % _key
+                    "Got an unexpected keyword argument '%s' to method list_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -9814,8 +9811,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method patch_run" % _key
+                    "Got an unexpected keyword argument '%s' to method patch_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -10909,8 +10905,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method skip_run" % _key
+                    "Got an unexpected keyword argument '%s' to method skip_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11071,8 +11066,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method skip_runs" % _key
+                    "Got an unexpected keyword argument '%s' to method skip_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11255,8 +11249,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method stop_run" % _key
+                    "Got an unexpected keyword argument '%s' to method stop_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11417,8 +11410,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method stop_runs" % _key
+                    "Got an unexpected keyword argument '%s' to method stop_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11591,8 +11583,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method sync_run" % _key
+                    "Got an unexpected keyword argument '%s' to method sync_run" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
@@ -11761,8 +11752,7 @@ class RunsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method tag_runs" % _key
+                    "Got an unexpected keyword argument '%s' to method tag_runs" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]

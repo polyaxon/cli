@@ -252,8 +252,8 @@ class TestMatrixConfigs(BaseTestCase):
         assert config.to_json() == orjson_dumps(config_dict)
 
     def test_matrix_datetime_range_option(self):
-        deserialize_datetime = (
-            lambda x: datetime.fromisoformat(x) if isinstance(x, str) else x
+        deserialize_datetime = lambda x: (
+            datetime.fromisoformat(x) if isinstance(x, str) else x
         )
 
         def assert_equal(config, _v1, _v2, _v3):

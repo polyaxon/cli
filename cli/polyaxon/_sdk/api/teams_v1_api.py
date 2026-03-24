@@ -1462,8 +1462,7 @@ class TeamsV1Api(BaseApi):
         for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method get_team" % _key
+                    "Got an unexpected keyword argument '%s' to method get_team" % _key
                 )
             _params[_key] = _val
         del _params["kwargs"]
