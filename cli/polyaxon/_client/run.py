@@ -326,7 +326,7 @@ class RunClient(ClientMixin):
             _, conditions = self.get_statuses()
             self._run_data.status_conditions = conditions
         if load_artifacts_lineage:
-            lineages = self.get_artifacts_lineage(limit=1000).results
+            lineages = self.get_artifacts_lineage(limit=5000).results
             self._artifacts_lineage = {l.name: l for l in lineages}
         if load_metrics:
             self.get_metrics(self._metric_names, force=True)
