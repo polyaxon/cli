@@ -82,7 +82,8 @@ async def query_k8s_operation_logs(
     params = {}
     if last_time:
         since_seconds = (new_time - last_time).total_seconds()
-        params["since_seconds"] = int(since_seconds)
+        since_seconds = int(since_seconds) if since_seconds else 1
+        params["since_seconds"] = since_seconds
     if stream:
         params["tail_lines"] = V1Logs._CHUNK_SIZE
     logs = []
@@ -130,7 +131,8 @@ async def query_k8s_pod_logs(
     params = {}
     if last_time:
         since_seconds = (new_time - last_time).total_seconds()
-        params["since_seconds"] = int(since_seconds)
+        since_seconds = int(since_seconds) if since_seconds else 1
+        params["since_seconds"] = since_seconds
     if stream:
         params["tail_lines"] = V1Logs._CHUNK_SIZE
 
