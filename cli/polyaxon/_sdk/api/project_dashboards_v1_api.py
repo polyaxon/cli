@@ -4,6 +4,9 @@ from typing_extensions import Annotated
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
+from polyaxon._sdk.schemas.v1_owner_sub_entity_resource_promote_request import (
+    V1OwnerSubEntityResourcePromoteRequest,
+)
 from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
 from polyaxon._sdk.schemas.v1_list_dashboards_response import V1ListDashboardsResponse
 from polyaxon.exceptions import ApiTypeError
@@ -557,6 +560,7 @@ class ProjectDashboardsV1Api(BaseApi):
         name: Annotated[
             StrictStr, Field(..., description="Entity managing the resource")
         ],
+        run: Annotated[Optional[StrictStr], Field(description="Run.")] = None,
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -581,13 +585,15 @@ class ProjectDashboardsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.list_project_dashboard_names(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_project_dashboard_names(owner, name, run, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
         :param name: Entity managing the resource (required)
         :type name: str
+        :param run: Run.
+        :type run: str
         :param offset: Pagination offset.
         :type offset: int
         :param limit: Limit size.
@@ -619,7 +625,17 @@ class ProjectDashboardsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.list_project_dashboard_names_with_http_info(
-            owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
+            owner,
+            name,
+            run,
+            offset,
+            limit,
+            sort,
+            query,
+            bookmarks,
+            mode,
+            no_page,
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -629,6 +645,7 @@ class ProjectDashboardsV1Api(BaseApi):
         name: Annotated[
             StrictStr, Field(..., description="Entity managing the resource")
         ],
+        run: Annotated[Optional[StrictStr], Field(description="Run.")] = None,
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -653,13 +670,15 @@ class ProjectDashboardsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.list_project_dashboard_names_with_http_info(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_project_dashboard_names_with_http_info(owner, name, run, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
         :param name: Entity managing the resource (required)
         :type name: str
+        :param run: Run.
+        :type run: str
         :param offset: Pagination offset.
         :type offset: int
         :param limit: Limit size.
@@ -703,6 +722,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _all_params = [
             "owner",
             "name",
+            "run",
             "offset",
             "limit",
             "sort",
@@ -745,6 +765,9 @@ class ProjectDashboardsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
+        if _params.get("run") is not None:  # noqa: E501
+            _query_params.append(("run", _params["run"]))
+
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
 
@@ -814,6 +837,7 @@ class ProjectDashboardsV1Api(BaseApi):
         name: Annotated[
             StrictStr, Field(..., description="Entity managing the resource")
         ],
+        run: Annotated[Optional[StrictStr], Field(description="Run.")] = None,
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -838,13 +862,15 @@ class ProjectDashboardsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.list_project_dashboards(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_project_dashboards(owner, name, run, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
         :param name: Entity managing the resource (required)
         :type name: str
+        :param run: Run.
+        :type run: str
         :param offset: Pagination offset.
         :type offset: int
         :param limit: Limit size.
@@ -876,7 +902,17 @@ class ProjectDashboardsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.list_project_dashboards_with_http_info(
-            owner, name, offset, limit, sort, query, bookmarks, mode, no_page, **kwargs
+            owner,
+            name,
+            run,
+            offset,
+            limit,
+            sort,
+            query,
+            bookmarks,
+            mode,
+            no_page,
+            **kwargs,
         )  # noqa: E501
 
     @validate_call
@@ -886,6 +922,7 @@ class ProjectDashboardsV1Api(BaseApi):
         name: Annotated[
             StrictStr, Field(..., description="Entity managing the resource")
         ],
+        run: Annotated[Optional[StrictStr], Field(description="Run.")] = None,
         offset: Annotated[
             Optional[StrictInt], Field(description="Pagination offset.")
         ] = None,
@@ -910,13 +947,15 @@ class ProjectDashboardsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.list_project_dashboards_with_http_info(owner, name, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
+        >>> thread = api.list_project_dashboards_with_http_info(owner, name, run, offset, limit, sort, query, bookmarks, mode, no_page, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
         :type owner: str
         :param name: Entity managing the resource (required)
         :type name: str
+        :param run: Run.
+        :type run: str
         :param offset: Pagination offset.
         :type offset: int
         :param limit: Limit size.
@@ -960,6 +999,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _all_params = [
             "owner",
             "name",
+            "run",
             "offset",
             "limit",
             "sort",
@@ -1002,6 +1042,9 @@ class ProjectDashboardsV1Api(BaseApi):
 
         # process the query parameters
         _query_params = []
+        if _params.get("run") is not None:  # noqa: E501
+            _query_params.append(("run", _params["run"]))
+
         if _params.get("offset") is not None:  # noqa: E501
             _query_params.append(("offset", _params["offset"]))
 
@@ -1267,6 +1310,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
+        body: V1OwnerSubEntityResourcePromoteRequest,
         **kwargs,
     ) -> None:  # noqa: E501
         """Promote project dashboard  # noqa: E501
@@ -1274,7 +1318,7 @@ class ProjectDashboardsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.promote_project_dashboard(owner, entity, uuid, async_req=True)
+        >>> thread = api.promote_project_dashboard(owner, entity, uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -1283,6 +1327,8 @@ class ProjectDashboardsV1Api(BaseApi):
         :type entity: str
         :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
+        :param body: (required)
+        :type body: V1OwnerSubEntityResourcePromoteRequest
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -1300,7 +1346,7 @@ class ProjectDashboardsV1Api(BaseApi):
         """
         kwargs["_return_http_data_only"] = True
         return self.promote_project_dashboard_with_http_info(
-            owner, entity, uuid, **kwargs
+            owner, entity, uuid, body, **kwargs
         )  # noqa: E501
 
     @validate_call
@@ -1316,6 +1362,7 @@ class ProjectDashboardsV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
+        body: V1OwnerSubEntityResourcePromoteRequest,
         **kwargs,
     ):  # noqa: E501
         """Promote project dashboard  # noqa: E501
@@ -1323,7 +1370,7 @@ class ProjectDashboardsV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.promote_project_dashboard_with_http_info(owner, entity, uuid, async_req=True)
+        >>> thread = api.promote_project_dashboard_with_http_info(owner, entity, uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -1332,6 +1379,8 @@ class ProjectDashboardsV1Api(BaseApi):
         :type entity: str
         :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
+        :param body: (required)
+        :type body: V1OwnerSubEntityResourcePromoteRequest
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -1358,7 +1407,7 @@ class ProjectDashboardsV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "entity", "uuid"]
+        _all_params = ["owner", "entity", "uuid", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -1403,10 +1452,21 @@ class ProjectDashboardsV1Api(BaseApi):
         _files = {}
         # process the body parameter
         _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
         )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
         _auth_settings = ["ApiKey"]  # noqa: E501

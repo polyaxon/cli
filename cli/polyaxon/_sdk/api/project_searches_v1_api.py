@@ -4,6 +4,9 @@ from typing_extensions import Annotated
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 
 from polyaxon._sdk.base_api import BaseApi
+from polyaxon._sdk.schemas.v1_owner_sub_entity_resource_promote_request import (
+    V1OwnerSubEntityResourcePromoteRequest,
+)
 from polyaxon._sdk.schemas.v1_list_searches_response import V1ListSearchesResponse
 from polyaxon._sdk.schemas.v1_search import V1Search
 from polyaxon.exceptions import ApiTypeError
@@ -1263,6 +1266,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
+        body: V1OwnerSubEntityResourcePromoteRequest,
         **kwargs,
     ) -> None:  # noqa: E501
         """Promote project search  # noqa: E501
@@ -1270,7 +1274,7 @@ class ProjectSearchesV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.promote_project_search(owner, entity, uuid, async_req=True)
+        >>> thread = api.promote_project_search(owner, entity, uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -1279,6 +1283,8 @@ class ProjectSearchesV1Api(BaseApi):
         :type entity: str
         :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
+        :param body: (required)
+        :type body: V1OwnerSubEntityResourcePromoteRequest
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -1295,7 +1301,9 @@ class ProjectSearchesV1Api(BaseApi):
         :rtype: None
         """
         kwargs["_return_http_data_only"] = True
-        return self.promote_project_search_with_http_info(owner, entity, uuid, **kwargs)  # noqa: E501
+        return self.promote_project_search_with_http_info(
+            owner, entity, uuid, body, **kwargs
+        )  # noqa: E501
 
     @validate_call
     def promote_project_search_with_http_info(
@@ -1310,6 +1318,7 @@ class ProjectSearchesV1Api(BaseApi):
         uuid: Annotated[
             StrictStr, Field(..., description="Uuid identifier of the sub-entity")
         ],
+        body: V1OwnerSubEntityResourcePromoteRequest,
         **kwargs,
     ):  # noqa: E501
         """Promote project search  # noqa: E501
@@ -1317,7 +1326,7 @@ class ProjectSearchesV1Api(BaseApi):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.promote_project_search_with_http_info(owner, entity, uuid, async_req=True)
+        >>> thread = api.promote_project_search_with_http_info(owner, entity, uuid, body, async_req=True)
         >>> result = thread.get()
 
         :param owner: Owner of the namespace (required)
@@ -1326,6 +1335,8 @@ class ProjectSearchesV1Api(BaseApi):
         :type entity: str
         :param uuid: Uuid identifier of the sub-entity (required)
         :type uuid: str
+        :param body: (required)
+        :type body: V1OwnerSubEntityResourcePromoteRequest
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -1352,7 +1363,7 @@ class ProjectSearchesV1Api(BaseApi):
 
         _params = locals()
 
-        _all_params = ["owner", "entity", "uuid"]
+        _all_params = ["owner", "entity", "uuid", "body"]
         _all_params.extend(
             [
                 "async_req",
@@ -1397,10 +1408,21 @@ class ProjectSearchesV1Api(BaseApi):
         _files = {}
         # process the body parameter
         _body_params = None
+        if _params["body"]:
+            _body_params = _params["body"]
+
         # set the HTTP header `Accept`
         _header_params["Accept"] = self.api_client.select_header_accept(
             ["application/json"]
         )  # noqa: E501
+
+        # set the HTTP header `Content-Type`
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
+        if _content_types_list:
+            _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
         _auth_settings = ["ApiKey"]  # noqa: E501

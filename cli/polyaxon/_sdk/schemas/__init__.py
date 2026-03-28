@@ -39,6 +39,9 @@ from polyaxon._sdk.schemas.v1_connection_response import V1ConnectionResponse
 from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
 from polyaxon._sdk.schemas.v1_dashboard_spec import V1DashboardSpec
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
+from polyaxon._sdk.schemas.v1_owner_sub_entity_resource_promote_request import (
+    V1OwnerSubEntityResourcePromoteRequest,
+)
 from polyaxon._sdk.schemas.v1_list_automation_executions_response import (
     V1ListAutomationExecutionsResponse,
 )
@@ -87,6 +90,7 @@ from polyaxon._sdk.schemas.v1_list_tags_response import V1ListTagsResponse
 from polyaxon._sdk.schemas.v1_list_team_members_response import (
     V1ListTeamMembersResponse,
 )
+from polyaxon._sdk.schemas.v1_entity_level import V1EntityLevel
 from polyaxon._sdk.schemas.v1_list_teams_response import V1ListTeamsResponse
 from polyaxon._sdk.schemas.v1_list_token_response import V1ListTokenResponse
 from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
