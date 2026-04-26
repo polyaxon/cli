@@ -3,6 +3,6 @@ VERSION = "2.15.1"
 SCHEMA_VERSION = 1.1
 DESC = "Command Line Interface (CLI) and client to interact with Polyaxon API."
 URL = "https://github.com/polyaxon/polyaxon"
-AUTHOR = "Polyaxon, Inc."
+AUTHOR = "Polyaxon authors"
 EMAIL = "contact@polyaxon.com"
 LICENSE = "Apache 2.0"
