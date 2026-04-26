@@ -38,7 +38,7 @@ from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import client_handler, get_global_or_inline_config
 from polyaxon._client.mixin import ClientMixin
 from polyaxon._client.store import PolyaxonStore
-from polyaxon._constants.metadata import META_COPY_ARTIFACTS, META_RECOMPILE
+from polyaxon._constants.metadata import META_COPY_ARTIFACTS, META_RECOMPILE, META_TMUX
 from polyaxon._containers.names import MAIN_CONTAINER_NAMES
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.getters import (
@@ -976,6 +976,7 @@ class RunClient(ClientMixin):
                     "The shell command is only usable for operations managed by Polyaxon "
                     "and actively running."
                 )
+            inspection = inspection.get("pods", {})
             if not pod:
                 pod = next(iter(inspection.keys()))
             pod_content = inspection.get(pod, {})
@@ -1027,7 +1028,12 @@ class RunClient(ClientMixin):
         )
         url = absolute_uri(url=url, host=self.client.config.host)
 
-        command = command or "/bin/bash"
+        if not command:
+            command = (
+                "/opt/polyaxon/bin/tmux new-session -A -s terminal"
+                if self._has_meta_key(META_TMUX)
+                else "/bin/bash"
+            )
         return ws_client.websocket_call(
             self.client.config.sdk_config,
             url,

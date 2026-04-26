@@ -17,4 +17,9 @@ from polyaxon._auxiliaries.sidecar import (
     get_default_sidecar_container,
     get_sidecar_resources,
 )
+from polyaxon._auxiliaries.tmux import (
+    V1PolyaxonTmuxContainer,
+    get_default_tmux_container,
+    get_tmux_resources,
+)
 from polyaxon._auxiliaries.tuner import get_default_tuner_container

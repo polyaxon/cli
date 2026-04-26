@@ -139,12 +139,23 @@ class MountsMixin(BaseConverter):
         return cls._get_volume(mount_path=ctx_paths.CONTEXT_MOUNT_SHM, read_only=False)
 
     @classmethod
+    def _get_tmux_bin_context_mount(
+        cls,
+        read_only: bool = True,
+    ) -> docker_types.V1VolumeMount:
+        return cls._get_volume(
+            mount_path=ctx_paths.CONTEXT_MOUNT_TMUX_BIN,
+            read_only=read_only,
+        )
+
+    @classmethod
     def _get_mounts(
         cls,
         use_auth_context: bool,
         use_docker_context: bool,
         use_shm_context: bool,
         use_artifacts_context: bool,
+        use_tmux_context: bool = False,
         run_path: Optional[str] = None,
     ) -> List[docker_types.V1VolumeMount]:
         mounts = []
@@ -160,5 +171,7 @@ class MountsMixin(BaseConverter):
             mounts.append(cls._get_docker_context_mount())
         if use_shm_context:
             mounts.append(cls._get_shm_context_mount())
+        if use_tmux_context:
+            mounts.append(cls._get_tmux_bin_context_mount(read_only=True))
 
         return mounts

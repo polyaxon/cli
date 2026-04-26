@@ -18,6 +18,7 @@ from polyaxon._auxiliaries import (
     V1PolyaxonInitContainer,
     V1PolyaxonNotifier,
     V1PolyaxonSidecarContainer,
+    V1PolyaxonTmuxContainer,
 )
 from polyaxon._config.parser import ConfigParser
 from polyaxon._connections import V1Connection, V1ConnectionKind, V1HostPathConnection
@@ -35,6 +36,7 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_AGENT_INIT,
     ENV_KEYS_AGENT_IS_REPLICA,
     ENV_KEYS_AGENT_NOTIFIER,
+    ENV_KEYS_AGENT_TMUX,
     ENV_KEYS_AGENT_RUNS_SA,
     ENV_KEYS_AGENT_SECRET_NAME,
     ENV_KEYS_AGENT_SIDECAR,
@@ -198,6 +200,7 @@ class AgentConfig(BaseAgentConfig):
     _CUSTOM_DUMP_FIELDS = {
         "sidecar",
         "init",
+        "tmux",
         "notifier",
         "cleaner",
         "default_scheduling",
@@ -216,6 +219,9 @@ class AgentConfig(BaseAgentConfig):
     )
     init: Optional[V1PolyaxonInitContainer] = Field(
         default=None, alias=ENV_KEYS_AGENT_INIT
+    )
+    tmux: Optional[V1PolyaxonTmuxContainer] = Field(
+        default=None, alias=ENV_KEYS_AGENT_TMUX
     )
     notifier: Optional[V1PolyaxonNotifier] = Field(
         default=None, alias=ENV_KEYS_AGENT_NOTIFIER
@@ -351,6 +357,7 @@ class AgentConfig(BaseAgentConfig):
         "artifacts_store",
         "sidecar",
         "init",
+        "tmux",
         "cleaner",
         "notifier",
         "default_scheduling",

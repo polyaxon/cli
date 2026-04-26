@@ -5,6 +5,7 @@ from polyaxon._auxiliaries import (
     V1PolyaxonInitContainer,
     V1PolyaxonNotifier,
     V1PolyaxonSidecarContainer,
+    V1PolyaxonTmuxContainer,
 )
 from polyaxon._connections.kinds import V1ConnectionKind
 from polyaxon._connections.schemas import (

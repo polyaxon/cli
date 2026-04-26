@@ -8,8 +8,10 @@ from polyaxon import settings
 from polyaxon._auxiliaries import (
     V1PolyaxonInitContainer,
     V1PolyaxonSidecarContainer,
+    V1PolyaxonTmuxContainer,
     get_default_init_container,
     get_default_sidecar_container,
+    get_default_tmux_container,
 )
 from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._flow import V1CompiledOperation, V1Init
@@ -21,6 +23,7 @@ from polyaxon.exceptions import PolyaxonCompilerError
 class AgentResolver(BaseSchemaModel):
     polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer] = None
     polyaxon_init: Optional[V1PolyaxonInitContainer] = None
+    polyaxon_tmux: Optional[V1PolyaxonTmuxContainer] = None
     namespace: Optional[str] = None
     secrets: Optional[List[Union[V1ConnectionResource, ConnectionResource]]] = None
     config_maps: Optional[List[Union[V1ConnectionResource, ConnectionResource]]] = None
@@ -50,6 +53,7 @@ class AgentResolver(BaseSchemaModel):
 
         self.polyaxon_sidecar = agent_config.sidecar or get_default_sidecar_container()
         self.polyaxon_init = agent_config.init or get_default_init_container()
+        self.polyaxon_tmux = agent_config.tmux or get_default_tmux_container()
         if compiled_operation.namespace:
             namespaces = agent_config.additional_namespaces or []
             namespaces.append(agent_config.namespace)

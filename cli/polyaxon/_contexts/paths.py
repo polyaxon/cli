@@ -42,6 +42,7 @@ CONTEXT_MOUNT_RUN_SYSTEM_RESOURCES_EVENTS_FORMAT = "{}/resources".format(
     CONTEXT_MOUNT_ARTIFACTS_FORMAT
 )
 CONTEXT_MOUNT_SHM = "/dev/shm"
+CONTEXT_MOUNT_TMUX_BIN = "/opt/polyaxon/bin"
 CONTEXT_MOUNT_DOCKER = "/var/run/docker.sock"
 
 CONTEXT_TMP_POLYAXON_PATH = get_temp_path(".polyaxon")

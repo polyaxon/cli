@@ -7,7 +7,11 @@ from clipped.utils.lists import to_list
 from vents.connections.connection_schema import patch_git
 
 from polyaxon import settings
-from polyaxon._auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
+from polyaxon._auxiliaries import (
+    V1PolyaxonInitContainer,
+    V1PolyaxonSidecarContainer,
+    V1PolyaxonTmuxContainer,
+)
 from polyaxon._connections import (
     CONNECTION_CONFIG,
     V1Connection,
@@ -69,6 +73,7 @@ class BaseConverter:
         internal_auth: bool = False,
         polyaxon_sidecar: V1PolyaxonSidecarContainer = None,
         polyaxon_init: V1PolyaxonInitContainer = None,
+        polyaxon_tmux: V1PolyaxonTmuxContainer = None,
         base_env_vars: bool = False,
     ):
         self.is_valid()
@@ -84,6 +89,7 @@ class BaseConverter:
         self.base_env_vars = base_env_vars
         self.polyaxon_sidecar = polyaxon_sidecar
         self.polyaxon_init = polyaxon_init
+        self.polyaxon_tmux = polyaxon_tmux
 
     def get_instance(self) -> str:
         return get_run_instance(
@@ -472,6 +478,10 @@ class BaseConverter:
     def _get_shm_context_mount() -> VolumeMount:
         raise NotImplementedError
 
+    @staticmethod
+    def _get_tmux_bin_context_mount(read_only: bool = True) -> VolumeMount:
+        raise NotImplementedError
+
     @classmethod
     def _get_mount_from_store(cls, store: V1Connection) -> Optional[VolumeMount]:
         raise NotImplementedError
@@ -493,6 +503,7 @@ class BaseConverter:
         use_docker_context: bool,
         use_shm_context: bool,
         use_artifacts_context: bool,
+        use_tmux_context: bool = False,
         run_path: Optional[str] = None,
     ) -> List[VolumeMount]:
         raise NotImplementedError
@@ -666,6 +677,13 @@ class BaseConverter:
         container: Optional[Container] = None,
         env: List[EnvVar] = None,
         mount_path: Optional[str] = None,
+    ) -> Container:
+        raise NotImplementedError
+
+    @classmethod
+    def _get_tmux_init_container(
+        cls,
+        polyaxon_tmux: "V1PolyaxonTmuxContainer",
     ) -> Container:
         raise NotImplementedError
 
@@ -926,6 +944,12 @@ class BaseConverter:
                         external_host=plugins.external_host
                     ),
                 )
+            )
+
+        # Add tmux binary
+        if plugins and plugins.tmux:
+            containers.append(
+                self._get_tmux_init_container(polyaxon_tmux=self.polyaxon_tmux)
             )
 
         # Add outputs

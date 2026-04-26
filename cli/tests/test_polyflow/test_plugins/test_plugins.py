@@ -41,6 +41,11 @@ class TestPluginsConfigs(BaseTestCase):
         config = V1Plugins.from_dict(config_dict)
         assert_equal_dict(config_dict, config.to_dict())
 
+        # Add tmux bool
+        config_dict["tmux"] = True
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+
         # Add notifications
         config_dict["notifications"] = [
             {"connections": ["test1"], "trigger": "succeeded"},
@@ -49,6 +54,17 @@ class TestPluginsConfigs(BaseTestCase):
         ]
         config = V1Plugins.from_dict(config_dict)
         assert_equal_dict(config_dict, config.to_dict())
+
+    def test_plugins_tmux_config(self):
+        config_dict = {"tmux": True}
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+        assert config.tmux is True
+
+        config_dict = {"tmux": False}
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+        assert config.tmux is False
 
     def test_get_from_spec(self):
         compiled_operation = V1CompiledOperation.read(
@@ -77,6 +93,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert plugins.collect_logs is False
         assert plugins.sync_statuses is False
         assert plugins.external_host is True
+        assert plugins.tmux is False
 
     def test_read_keys_from_env(self):
         spec = V1Plugins(
@@ -88,6 +105,7 @@ class TestPluginsConfigs(BaseTestCase):
             collect_logs=True,
             sync_statuses=True,
             external_host=True,
+            tmux=True,
         )
         spec = V1Plugins.get_or_create(spec)
         assert spec.auth is True
@@ -98,6 +116,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert spec.collect_logs is True
         assert spec.sync_statuses is True
         assert spec.external_host is True
+        assert spec.tmux is True
 
     def test_get_from_empty_env(self):
         spec = V1Plugins()
@@ -110,6 +129,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert spec.collect_logs is True
         assert spec.sync_statuses is True
         assert spec.external_host is False
+        assert spec.tmux is False
 
         spec = V1Plugins()
         spec = V1Plugins.get_or_create(spec)
@@ -121,3 +141,4 @@ class TestPluginsConfigs(BaseTestCase):
         assert spec.collect_logs is True
         assert spec.sync_statuses is True
         assert spec.external_host is False
+        assert spec.tmux is False

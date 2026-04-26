@@ -20,11 +20,14 @@ class V1Plugins(BaseSchemaModel):
         auth: bool, optional, default: True
         docker: bool, optional, default: False
         shm: bool, optional, default: True
+        tmux: bool, optional, default: False
         mount_artifacts_store: bool, optional, default: True
         collect_artifacts: bool, optional, default: True
         collect_logs: bool, optional, default: True
         collect_resources: bool, optional, default: True
+        sync_statuses: bool, optional, default: True
         auto_resume: bool, optional, default: True
+        external_host: bool, optional, default: False
         log_level: str, optional
         sidecar: V1PolyaxonSidecarContainer, optional
 
@@ -35,10 +38,12 @@ class V1Plugins(BaseSchemaModel):
     >>>   auth:
     >>>   docker:
     >>>   shm:
+    >>>   tmux:
     >>>   mountArtifactsStore:
     >>>   collectArtifacts:
     >>>   collectLogs:
     >>>   collectResources:
+    >>>   syncStatuses:
     >>>   autoResume:
     >>>   externalHost:
     >>>   logLevel:
@@ -52,11 +57,13 @@ class V1Plugins(BaseSchemaModel):
     >>> plugins = V1Plugins(
     >>>     auth=False,
     >>>     docker=True,
-    >>>     shm=True.
+    >>>     shm=True,
+    >>>     tmux=True,
     >>>     mount_artifacts_store=True,
     >>>     collect_artifacts=False,
     >>>     collect_logs=False,
-    >>>     collect_resources=False
+    >>>     collect_resources=False,
+    >>>     sync_statuses=True,
     >>>     auto_resume=False,
     >>>     external_host=False,
     >>>     log_level="INFO",
@@ -262,6 +269,7 @@ class V1Plugins(BaseSchemaModel):
     auth: Optional[BoolOrRef] = None
     docker: Optional[BoolOrRef] = None
     shm: Optional[BoolOrRef] = None
+    tmux: Optional[BoolOrRef] = None
     mount_artifacts_store: Optional[BoolOrRef] = Field(
         alias="mountArtifactsStore", default=None
     )
@@ -297,6 +305,7 @@ class V1Plugins(BaseSchemaModel):
         config.set_sync_statuses()
         config.set_auto_resume()
         config.set_external_host()
+        config.set_tmux()
         return config
 
     @staticmethod
@@ -362,3 +371,7 @@ class V1Plugins(BaseSchemaModel):
     def set_external_host(self, default: bool = False):
         if self.external_host is None:
             self.external_host = default
+
+    def set_tmux(self, default: bool = False):
+        if self.tmux is None:
+            self.tmux = default

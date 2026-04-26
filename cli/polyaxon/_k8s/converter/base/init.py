@@ -6,6 +6,7 @@ from clipped.utils.lists import to_list
 from polyaxon._auxiliaries import V1PolyaxonInitContainer
 from polyaxon._connections import V1Connection, V1ConnectionKind
 from polyaxon._constants.globals import DEFAULT
+from polyaxon._auxiliaries.tmux import V1PolyaxonTmuxContainer
 from polyaxon._containers.names import (
     INIT_ARTIFACTS_CONTAINER_PREFIX,
     INIT_AUTH_CONTAINER,
@@ -14,6 +15,7 @@ from polyaxon._containers.names import (
     INIT_FILE_CONTAINER_PREFIX,
     INIT_GIT_CONTAINER_PREFIX,
     INIT_TENSORBOARD_CONTAINER_PREFIX,
+    INIT_TMUX_CONTAINER,
     generate_container_name,
 )
 from polyaxon._contexts import paths as ctx_paths
@@ -509,6 +511,22 @@ class InitConverter(_BaseConverter):
             ],
         )
         return cls._patch_container(container)
+
+    @classmethod
+    def _get_tmux_init_container(
+        cls,
+        polyaxon_tmux: V1PolyaxonTmuxContainer,
+    ) -> k8s_schemas.V1Container:
+        return cls._patch_container(
+            container=k8s_schemas.V1Container(
+                name=INIT_TMUX_CONTAINER,
+                image=polyaxon_tmux.get_image(),
+                image_pull_policy=polyaxon_tmux.image_pull_policy,
+                command=["cp", "/usr/bin/tmux", "/opt/polyaxon/bin/tmux"],
+                resources=polyaxon_tmux.get_resources(),
+                volume_mounts=[cls._get_tmux_bin_context_mount(read_only=False)],
+            )
+        )
 
     @classmethod
     def _get_artifacts_path_init_container(

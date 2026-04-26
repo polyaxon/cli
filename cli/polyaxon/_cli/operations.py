@@ -1547,7 +1547,7 @@ def inspect(ctx, project, uid):
     "--command",
     "-cmd",
     type=str,
-    help="Path to download, if not provided the full run's  artifacts will downloaded.",
+    help="The command to execute, default: /bin/bash (or tmux if the plugin is enabled).",
 )
 @click.option(
     "--pod",
@@ -1600,7 +1600,7 @@ def shell(ctx, project, uid, command, pod, container):
         pty = PseudoTerminal(
             client_shell=client.shell(command=command, pod=pod, container=container)
         )
-        pty.start(sys.argv[1:])
+        pty.start()
     except (ApiException, HTTPError) as e:
         handle_cli_error(e, message="Could not inspect the run `{}`.".format(run_uuid))
         sys.exit(1)

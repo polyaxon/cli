@@ -11,6 +11,7 @@ from polyaxon._k8s.converter.common.volumes import (
     get_connections_context_volume,
     get_docker_context_volume,
     get_shm_context_volume,
+    get_tmux_bin_context_volume,
     get_volume_from_config_map,
     get_volume_from_connection,
     get_volume_from_secret,
@@ -113,4 +114,6 @@ def get_pod_volumes(
         volumes.append(get_configs_context_volume())
     if plugins and plugins.docker:
         volumes.append(get_docker_context_volume())
+    if plugins and plugins.tmux:
+        volumes.append(get_tmux_bin_context_volume())
     return volumes

@@ -18,6 +18,7 @@ from polyaxon._auxiliaries import (
     V1PolyaxonInitContainer,
     V1PolyaxonNotifier,
     V1PolyaxonSidecarContainer,
+    V1PolyaxonTmuxContainer,
 )
 from polyaxon._auxiliaries.default_scheduling import V1DefaultScheduling
 from polyaxon._connections import V1Connection
@@ -252,6 +253,7 @@ class DeploymentConfig(BaseSchemaModel):
     operator: Optional[OperatorServiceConfig] = None
     init: Optional[V1PolyaxonInitContainer] = None
     sidecar: Optional[V1PolyaxonSidecarContainer] = None
+    tmux: Optional[V1PolyaxonTmuxContainer] = None
     notifier: Optional[V1PolyaxonNotifier] = None
     cleaner: Optional[V1PolyaxonCleaner] = None
     default_scheduling: Optional[V1DefaultScheduling] = Field(
