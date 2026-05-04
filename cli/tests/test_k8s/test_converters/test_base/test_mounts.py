@@ -161,15 +161,15 @@ class TestMounts(BaseConverterTest):
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_SHM
         assert mount.read_only is None
 
-    def test_get_tmux_bin_context_mount(self):
-        mount = MountsMixin._get_tmux_bin_context_mount()
-        assert mount.name == constants.VOLUME_MOUNT_TMUX_BIN
-        assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_TMUX_BIN
+    def test_get_tools_bin_context_mount(self):
+        mount = MountsMixin._get_tools_bin_context_mount()
+        assert mount.name == constants.VOLUME_MOUNT_TOOLS_BIN
+        assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_TOOLS_BIN
         assert mount.read_only is True
 
-        mount = MountsMixin._get_tmux_bin_context_mount(read_only=False)
-        assert mount.name == constants.VOLUME_MOUNT_TMUX_BIN
-        assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_TMUX_BIN
+        mount = MountsMixin._get_tools_bin_context_mount(read_only=False)
+        assert mount.name == constants.VOLUME_MOUNT_TOOLS_BIN
+        assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_TOOLS_BIN
         assert mount.read_only is False
 
     def test_get_mounts(self):
@@ -203,7 +203,7 @@ class TestMounts(BaseConverterTest):
             use_shm_context=False,
             use_tmux_context=True,
         ) == [
-            MountsMixin._get_tmux_bin_context_mount(read_only=True),
+            MountsMixin._get_tools_bin_context_mount(read_only=True),
         ]
         assert MountsMixin._get_mounts(
             use_auth_context=True,
@@ -219,5 +219,5 @@ class TestMounts(BaseConverterTest):
             MountsMixin._get_artifacts_context_mount(read_only=False),
             MountsMixin._get_docker_context_mount(),
             MountsMixin._get_shm_context_mount(),
-            MountsMixin._get_tmux_bin_context_mount(read_only=True),
+            MountsMixin._get_tools_bin_context_mount(read_only=True),
         ]

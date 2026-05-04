@@ -10,7 +10,7 @@ MAIN_CONTAINER_NAMES = [
     PYTORCHJOBS_CONTAINER,
 ]
 INIT_AUTH_CONTAINER = "polyaxon-init-auth"
-INIT_TMUX_CONTAINER = "polyaxon-init-tmux"
+INIT_TOOLS_CONTAINER = "polyaxon-init-tools"
 INIT_DOCKERFILE_CONTAINER_PREFIX = "polyaxon-init-dockerfile"
 INIT_FILE_CONTAINER_PREFIX = "polyaxon-init-file"
 INIT_TENSORBOARD_CONTAINER_PREFIX = "polyaxon-init-tb"

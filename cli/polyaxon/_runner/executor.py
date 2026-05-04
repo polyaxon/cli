@@ -7,7 +7,6 @@ from polyaxon import settings
 from polyaxon._auxiliaries import (
     V1PolyaxonInitContainer,
     V1PolyaxonSidecarContainer,
-    V1PolyaxonTmuxContainer,
 )
 from polyaxon._compiler import resolver
 from polyaxon._compiler.resolver import AgentResolver
@@ -90,7 +89,6 @@ class BaseExecutor:
         config_maps: Optional[Iterable[V1ConnectionResource]],
         polyaxon_sidecar: Optional[V1PolyaxonSidecarContainer] = None,
         polyaxon_init: Optional[V1PolyaxonInitContainer] = None,
-        polyaxon_tmux: Optional[V1PolyaxonTmuxContainer] = None,
         default_sa: Optional[str] = None,
         internal_auth: bool = False,
         default_auth: bool = False,
@@ -123,7 +121,6 @@ class BaseExecutor:
             namespace=namespace,
             polyaxon_init=polyaxon_init,
             polyaxon_sidecar=polyaxon_sidecar,
-            polyaxon_tmux=polyaxon_tmux,
             internal_auth=internal_auth,
             run_path=run_path,
         )
@@ -166,7 +163,6 @@ class BaseExecutor:
             compiled_operation=compiled_operation,
             polyaxon_init=agent_env.polyaxon_init,
             polyaxon_sidecar=agent_env.polyaxon_sidecar,
-            polyaxon_tmux=agent_env.polyaxon_tmux,
             artifacts_store=agent_env.artifacts_store,
             connection_by_names=agent_env.connection_by_names,
             secrets=agent_env.secrets,
@@ -214,7 +210,6 @@ class BaseExecutor:
             config_maps=resolver_obj.config_maps,
             polyaxon_sidecar=resolver_obj.polyaxon_sidecar,
             polyaxon_init=resolver_obj.polyaxon_init,
-            polyaxon_tmux=resolver_obj.polyaxon_tmux,
             default_sa=default_sa,
             default_auth=default_auth,
         )

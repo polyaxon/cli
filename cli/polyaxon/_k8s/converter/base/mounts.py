@@ -81,12 +81,12 @@ class MountsMixin(BaseConverter):
         )
 
     @staticmethod
-    def _get_tmux_bin_context_mount(
+    def _get_tools_bin_context_mount(
         read_only: bool = True,
     ) -> k8s_schemas.V1VolumeMount:
         return k8s_schemas.V1VolumeMount(
-            name=constants.VOLUME_MOUNT_TMUX_BIN,
-            mount_path=ctx_paths.CONTEXT_MOUNT_TMUX_BIN,
+            name=constants.VOLUME_MOUNT_TOOLS_BIN,
+            mount_path=ctx_paths.CONTEXT_MOUNT_TOOLS_BIN,
             read_only=read_only,
         )
 
@@ -114,6 +114,6 @@ class MountsMixin(BaseConverter):
         if use_shm_context:
             mounts.append(cls._get_shm_context_mount())
         if use_tmux_context:
-            mounts.append(cls._get_tmux_bin_context_mount(read_only=True))
+            mounts.append(cls._get_tools_bin_context_mount(read_only=True))
 
         return mounts

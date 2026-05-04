@@ -110,8 +110,8 @@ def get_shm_context_volume() -> k8s_schemas.V1Volume:
     )
 
 
-def get_tmux_bin_context_volume() -> k8s_schemas.V1Volume:
+def get_tools_bin_context_volume() -> k8s_schemas.V1Volume:
     return k8s_schemas.V1Volume(
-        name=constants.VOLUME_MOUNT_TMUX_BIN,
+        name=constants.VOLUME_MOUNT_TOOLS_BIN,
         empty_dir=k8s_schemas.V1EmptyDirVolumeSource(),
     )

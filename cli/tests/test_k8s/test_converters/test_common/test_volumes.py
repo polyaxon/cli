@@ -16,7 +16,7 @@ from polyaxon._k8s.converter.common.volumes import (
     get_connections_context_volume,
     get_docker_context_volume,
     get_shm_context_volume,
-    get_tmux_bin_context_volume,
+    get_tools_bin_context_volume,
     get_volume,
     get_volume_from_config_map,
     get_volume_from_connection,
@@ -157,7 +157,7 @@ class TestVolumes(BaseTestCase):
         assert volume.name == constants.VOLUME_MOUNT_SHM
         assert isinstance(volume.empty_dir, k8s_schemas.V1EmptyDirVolumeSource)
 
-    def test_get_tmux_bin_context_volume(self):
-        volume = get_tmux_bin_context_volume()
-        assert volume.name == constants.VOLUME_MOUNT_TMUX_BIN
+    def test_get_tools_bin_context_volume(self):
+        volume = get_tools_bin_context_volume()
+        assert volume.name == constants.VOLUME_MOUNT_TOOLS_BIN
         assert isinstance(volume.empty_dir, k8s_schemas.V1EmptyDirVolumeSource)

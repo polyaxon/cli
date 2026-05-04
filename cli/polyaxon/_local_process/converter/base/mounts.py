@@ -69,7 +69,7 @@ class MountsMixin(BaseConverter):
         pass
 
     @classmethod
-    def _get_tmux_bin_context_mount(cls, read_only: bool = True):
+    def _get_tools_bin_context_mount(cls, read_only: bool = True):
         pass
 
     @classmethod
