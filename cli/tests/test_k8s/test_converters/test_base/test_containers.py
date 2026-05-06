@@ -6,6 +6,30 @@ from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.k8s_mark
+class TestPatchContainer(BaseTestCase):
+    def test_patch_container_normalizes_and_dedupes_ports(self):
+        existing = k8s_schemas.V1ContainerPort(
+            name="sandbox", container_port=9090
+        )
+        http = k8s_schemas.V1ContainerPort(name="http", container_port=8080)
+        container = ContainerMixin._patch_container(
+            container=k8s_schemas.V1Container(name="main", ports=[existing]),
+            ports=[
+                9090,
+                http,
+                {"name": "http-dup", "containerPort": 8080},
+                {"name": "admin", "containerPort": 8081},
+            ],
+        )
+
+        assert container.ports == [
+            existing,
+            http,
+            k8s_schemas.V1ContainerPort(name="admin", container_port=8081),
+        ]
+
+
+@pytest.mark.k8s_mark
 class TestSanitizeContainerEnv(BaseTestCase):
     def test_sanitize_container_env_value(self):
         value = [{"foo": "bar"}]

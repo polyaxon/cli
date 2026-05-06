@@ -206,6 +206,15 @@ class TestMounts(BaseConverterTest):
             MountsMixin._get_tools_bin_context_mount(read_only=True),
         ]
         assert MountsMixin._get_mounts(
+            use_auth_context=False,
+            use_artifacts_context=False,
+            use_docker_context=False,
+            use_shm_context=False,
+            use_sandbox_context=True,
+        ) == [
+            MountsMixin._get_tools_bin_context_mount(read_only=True),
+        ]
+        assert MountsMixin._get_mounts(
             use_auth_context=True,
             use_artifacts_context=True,
             use_docker_context=True,

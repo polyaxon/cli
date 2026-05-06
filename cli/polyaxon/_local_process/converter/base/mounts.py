@@ -80,6 +80,7 @@ class MountsMixin(BaseConverter):
         use_shm_context: bool,
         use_artifacts_context: bool,
         use_tmux_context: bool = False,
+        use_sandbox_context: bool = False,
         run_path: Optional[str] = None,
     ) -> List:
         return []

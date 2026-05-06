@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from polyaxon._connections import (
@@ -9,8 +11,14 @@ from polyaxon._connections import (
     V1HostPathConnection,
 )
 from polyaxon._containers.pull_policy import PullPolicy
+from polyaxon._env_vars.keys import (
+    ENV_KEYS_SANDBOX_TOKEN,
+    ENV_KEYS_SECRET_INTERNAL_TOKEN,
+)
 from polyaxon._flow import V1Init, V1Plugins
 from polyaxon._k8s import k8s_schemas
+from polyaxon._sandbox.auth import derive_sandbox_token
+from polyaxon._sandbox.constants import SANDBOX_BOOTSTRAP_PATH, SANDBOX_PORT
 from polyaxon._services.values import PolyaxonServices
 from polyaxon.exceptions import PolyaxonConverterError
 from tests.test_k8s.test_converters.base import BaseConverterTest
@@ -76,6 +84,20 @@ class TestMainContainer(BaseConverterTest):
             name="test_path",
             kind=V1ConnectionKind.HOST_PATH,
             schema_=V1HostPathConnection(mount_path="/tmp", host_path="/tmp"),
+        )
+
+    @staticmethod
+    def get_sandbox_plugins():
+        return V1Plugins(
+            sandbox=True,
+            auth=False,
+            docker=False,
+            shm=False,
+            tmux=False,
+            collect_artifacts=False,
+            collect_logs=False,
+            collect_resources=False,
+            mount_artifacts_store=False,
         )
 
     def assert_artifacts_store_raises(self, store, run_path):
@@ -177,6 +199,164 @@ class TestMainContainer(BaseConverterTest):
         assert container.env_from == []
         assert container.resources == resources
         assert container.volume_mounts == []
+
+    def test_get_main_container_with_container_port_object(self):
+        container = self.converter._get_main_container(
+            container_id="new-name",
+            main_container=k8s_schemas.V1Container(
+                name="main",
+                image="job_docker_image",
+            ),
+            plugins=None,
+            artifacts_store=None,
+            init=None,
+            connection_by_names=None,
+            connections=None,
+            secrets=None,
+            config_maps=None,
+            kv_env_vars=None,
+            ports=[8080],
+            run_path=None,
+        )
+
+        assert [p.container_port for p in container.ports] == [8080]
+
+    def test_get_main_container_with_sandbox_command(self):
+        with patch.dict(
+            "os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: "internal-token"}
+        ):
+            container = self.converter._get_main_container(
+                container_id="new-name",
+                main_container=k8s_schemas.V1Container(
+                    name="main",
+                    image="job_docker_image",
+                    command=["python"],
+                    args=["app.py", "--debug"],
+                ),
+                plugins=self.get_sandbox_plugins(),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=[8080],
+                run_path=None,
+            )
+
+        env_by_name = {e.name: e for e in container.env}
+        assert container.command == [SANDBOX_BOOTSTRAP_PATH]
+        assert container.args == ["python", "app.py", "--debug"]
+        assert env_by_name[ENV_KEYS_SANDBOX_TOKEN].value == derive_sandbox_token(
+            "internal-token", self.converter.run_uuid
+        )
+        assert self.converter._get_tools_bin_context_mount(read_only=True) in (
+            container.volume_mounts
+        )
+        assert [p.container_port for p in container.ports] == [8080, SANDBOX_PORT]
+
+    def test_get_main_container_with_sandbox_only(self):
+        with patch.dict(
+            "os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: "internal-token"}
+        ):
+            container = self.converter._get_main_container(
+                container_id="new-name",
+                main_container=k8s_schemas.V1Container(
+                    name="main",
+                    image="job_docker_image",
+                ),
+                plugins=self.get_sandbox_plugins(),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=None,
+                run_path=None,
+            )
+
+        assert container.command == [SANDBOX_BOOTSTRAP_PATH]
+        assert container.args == []
+        assert [p.container_port for p in container.ports] == [SANDBOX_PORT]
+
+    def test_get_main_container_with_sandbox_args_only_raises(self):
+        with self.assertRaises(PolyaxonConverterError) as ctx:
+            self.converter._get_main_container(
+                container_id="new-name",
+                main_container=k8s_schemas.V1Container(
+                    name="main",
+                    image="job_docker_image",
+                    args=["--debug"],
+                ),
+                plugins=self.get_sandbox_plugins(),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=None,
+                run_path=None,
+            )
+        assert "args without command" in str(ctx.exception)
+
+    def test_get_main_container_with_sandbox_requires_internal_token(self):
+        with patch.dict("os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: ""}):
+            with self.assertRaises(PolyaxonConverterError) as ctx:
+                self.converter._get_main_container(
+                    container_id="new-name",
+                    main_container=k8s_schemas.V1Container(
+                        name="main",
+                        image="job_docker_image",
+                        command=["python"],
+                    ),
+                    plugins=self.get_sandbox_plugins(),
+                    artifacts_store=None,
+                    init=None,
+                    connection_by_names=None,
+                    connections=None,
+                    secrets=None,
+                    config_maps=None,
+                    kv_env_vars=None,
+                    ports=None,
+                    run_path=None,
+                )
+        assert ENV_KEYS_SECRET_INTERNAL_TOKEN in str(ctx.exception)
+
+    def test_get_main_container_with_sandbox_port_dedupe(self):
+        with patch.dict(
+            "os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: "internal-token"}
+        ):
+            container = self.converter._get_main_container(
+                container_id="new-name",
+                main_container=k8s_schemas.V1Container(
+                    name="main",
+                    image="job_docker_image",
+                    command=["python"],
+                    ports=[
+                        k8s_schemas.V1ContainerPort(
+                            name="sandbox", container_port=SANDBOX_PORT
+                        )
+                    ],
+                ),
+                plugins=self.get_sandbox_plugins(),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=[SANDBOX_PORT],
+                run_path=None,
+            )
+
+        assert [p.container_port for p in container.ports] == [SANDBOX_PORT]
+        assert container.ports[0].name == "sandbox"
 
     def test_get_main_container_with_mounted_artifacts_store(self):
         container = self.converter._get_main_container(

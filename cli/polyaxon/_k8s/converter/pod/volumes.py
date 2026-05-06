@@ -114,6 +114,6 @@ def get_pod_volumes(
         volumes.append(get_configs_context_volume())
     if plugins and plugins.docker:
         volumes.append(get_docker_context_volume())
-    if plugins and plugins.tmux:
+    if plugins and (plugins.tmux or plugins.sandbox):
         volumes.append(get_tools_bin_context_volume())
     return volumes

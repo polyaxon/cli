@@ -232,6 +232,25 @@ class TestPodVolumes(BaseTestCase):
             volumes=[],
         ) == [get_tools_bin_context_volume()]
 
+    def test_sandbox_context(self):
+        assert get_pod_volumes(
+            plugins=V1Plugins(
+                docker=False,
+                shm=False,
+                auth=False,
+                collect_artifacts=False,
+                collect_logs=False,
+                sandbox=True,
+            ),
+            artifacts_store=None,
+            init_connections=[],
+            connections=[],
+            connection_by_names={},
+            secrets=[],
+            config_maps=[],
+            volumes=[],
+        ) == [get_tools_bin_context_volume()]
+
     def test_passing_volumes(self):
         assert get_pod_volumes(
             plugins=V1Plugins(

@@ -159,6 +159,12 @@ class V1Plugins(BaseSchemaModel):
     This plugin enables the sandbox daemon for programmatic exec, filesystem,
     and PTY access from SDKs, agents, and UIs.
 
+    Sandbox is supported for service runs only. When enabled, Polyaxon wraps the
+    main container command with `/opt/polyaxon/bin/bootstrap-sandbox.sh`. If no
+    command is provided, `plx-exec` runs as PID 1. If a workload is needed, set
+    an explicit `command`; args without command are not supported in v0. The
+    user image must provide `/bin/sh`.
+
     To enable this plugin:
 
     ```yaml

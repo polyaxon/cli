@@ -501,6 +501,7 @@ class BaseConverter:
         use_shm_context: bool,
         use_artifacts_context: bool,
         use_tmux_context: bool = False,
+        use_sandbox_context: bool = False,
         run_path: Optional[str] = None,
     ) -> List[VolumeMount]:
         raise NotImplementedError
@@ -681,6 +682,8 @@ class BaseConverter:
     def _get_tools_init_container(
         cls,
         polyaxon_init: "V1PolyaxonInitContainer",
+        use_tmux: bool = False,
+        use_sandbox: bool = False,
     ) -> Container:
         raise NotImplementedError
 
@@ -943,10 +946,14 @@ class BaseConverter:
                 )
             )
 
-        # Add tmux binary
-        if plugins and plugins.tmux:
+        # Add tool binaries
+        if plugins and (plugins.tmux or plugins.sandbox):
             containers.append(
-                self._get_tools_init_container(polyaxon_init=self.polyaxon_init)
+                self._get_tools_init_container(
+                    polyaxon_init=polyaxon_init,
+                    use_tmux=plugins.tmux,
+                    use_sandbox=plugins.sandbox,
+                )
             )
 
         # Add outputs

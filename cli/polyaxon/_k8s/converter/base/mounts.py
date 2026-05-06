@@ -98,6 +98,7 @@ class MountsMixin(BaseConverter):
         use_shm_context: bool,
         use_artifacts_context: bool,
         use_tmux_context: bool = False,
+        use_sandbox_context: bool = False,
         run_path: Optional[str] = None,
     ) -> List[k8s_schemas.V1VolumeMount]:
         mounts = []
@@ -113,7 +114,7 @@ class MountsMixin(BaseConverter):
             mounts.append(cls._get_docker_context_mount())
         if use_shm_context:
             mounts.append(cls._get_shm_context_mount())
-        if use_tmux_context:
+        if use_tmux_context or use_sandbox_context:
             mounts.append(cls._get_tools_bin_context_mount(read_only=True))
 
         return mounts

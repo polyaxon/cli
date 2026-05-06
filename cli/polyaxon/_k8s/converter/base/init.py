@@ -515,13 +515,31 @@ class InitConverter(_BaseConverter):
     def _get_tools_init_container(
         cls,
         polyaxon_init: V1PolyaxonInitContainer,
+        use_tmux: bool = False,
+        use_sandbox: bool = False,
     ) -> k8s_schemas.V1Container:
+        if not use_tmux and not use_sandbox:
+            raise PolyaxonConverterError("Init tools container requires a tool.")
+
+        copy_commands = []
+        if use_tmux:
+            copy_commands.append("cp /usr/bin/tmux /opt/polyaxon/bin/tmux")
+        if use_sandbox:
+            copy_commands += [
+                "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec",
+                "cp /usr/bin/bootstrap-sandbox.sh "
+                "/opt/polyaxon/bin/bootstrap-sandbox.sh",
+            ]
+        command = ["sh", "-c", " && ".join(copy_commands)]
+        if use_tmux and not use_sandbox:
+            command = ["cp", "/usr/bin/tmux", "/opt/polyaxon/bin/tmux"]
+
         return cls._patch_container(
             container=k8s_schemas.V1Container(
                 name=INIT_TOOLS_CONTAINER,
                 image=polyaxon_init.get_image(),
                 image_pull_policy=polyaxon_init.image_pull_policy,
-                command=["cp", "/usr/bin/tmux", "/opt/polyaxon/bin/tmux"],
+                command=command,
                 resources=polyaxon_init.get_resources(),
                 volume_mounts=[cls._get_tools_bin_context_mount(read_only=False)],
             )

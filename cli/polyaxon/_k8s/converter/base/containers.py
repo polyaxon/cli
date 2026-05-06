@@ -35,8 +35,9 @@ class ContainerMixin(BaseConverter):
         container.volume_mounts = to_list(
             container.volume_mounts, check_none=True
         ) + to_list(volume_mounts, check_none=True)
-        container.ports = to_list(container.ports, check_none=True) + to_list(
-            ports, check_none=True
+        container.ports = cls._merge_container_ports(
+            to_list(container.ports, check_none=True),
+            to_list(ports, check_none=True),
         )
         container.resources = container.resources or resources
         container._image_pull_policy = container.image_pull_policy or image_pull_policy
@@ -47,6 +48,41 @@ class ContainerMixin(BaseConverter):
             container.args = args
 
         return cls._sanitize_container(container)
+
+    @staticmethod
+    def _normalize_port(port) -> Optional[k8s_schemas.V1ContainerPort]:
+        if isinstance(port, k8s_schemas.V1ContainerPort):
+            return port
+        if isinstance(port, dict):
+            value = port.get("containerPort")
+            if value is None:
+                value = port.get("container_port")
+            if value is None:
+                return None
+            return k8s_schemas.V1ContainerPort(
+                container_port=int(value),
+                name=port.get("name"),
+                host_ip=port.get("hostIP") or port.get("host_ip"),
+                host_port=port.get("hostPort") or port.get("host_port"),
+                protocol=port.get("protocol"),
+            )
+        if isinstance(port, int):
+            return k8s_schemas.V1ContainerPort(container_port=port)
+        return None
+
+    @classmethod
+    def _merge_container_ports(
+        cls, existing: List, incoming: List
+    ) -> List[k8s_schemas.V1ContainerPort]:
+        merged: List[k8s_schemas.V1ContainerPort] = []
+        seen: set = set()
+        for port in list(existing) + list(incoming):
+            normalized = cls._normalize_port(port)
+            if normalized is None or normalized.container_port in seen:
+                continue
+            seen.add(normalized.container_port)
+            merged.append(normalized)
+        return merged
 
     @staticmethod
     def _sanitize_container_env(
