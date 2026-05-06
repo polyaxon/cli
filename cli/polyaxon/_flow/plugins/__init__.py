@@ -21,6 +21,7 @@ class V1Plugins(BaseSchemaModel):
         docker: bool, optional, default: False
         shm: bool, optional, default: True
         tmux: bool, optional, default: False
+        sandbox: bool, optional, default: False
         mount_artifacts_store: bool, optional, default: True
         collect_artifacts: bool, optional, default: True
         collect_logs: bool, optional, default: True
@@ -39,6 +40,7 @@ class V1Plugins(BaseSchemaModel):
     >>>   docker:
     >>>   shm:
     >>>   tmux:
+    >>>   sandbox:
     >>>   mountArtifactsStore:
     >>>   collectArtifacts:
     >>>   collectLogs:
@@ -59,6 +61,7 @@ class V1Plugins(BaseSchemaModel):
     >>>     docker=True,
     >>>     shm=True,
     >>>     tmux=True,
+    >>>     sandbox=True,
     >>>     mount_artifacts_store=True,
     >>>     collect_artifacts=False,
     >>>     collect_logs=False,
@@ -131,6 +134,36 @@ class V1Plugins(BaseSchemaModel):
     ```yaml
     >>> plugins:
     >>>   shm: false
+    ```
+
+    ### tmux
+
+    <blockquote class="light">This plugin is disabled by default.</blockquote>
+
+    This plugin ships a statically-linked `tmux` into the user container so
+    that the in-cluster shell session opened by `polyaxon ops shell` can attach
+    to a persistent terminal. Without it, `shell` falls back to `/bin/bash` and
+    the session ends as soon as the websocket disconnects.
+
+    To enable this plugin:
+
+    ```yaml
+    >>> plugins:
+    >>>   tmux: true
+    ```
+
+    ### sandbox
+
+    <blockquote class="light">This plugin is disabled by default.</blockquote>
+
+    This plugin enables the sandbox daemon for programmatic exec, filesystem,
+    and PTY access from SDKs, agents, and UIs.
+
+    To enable this plugin:
+
+    ```yaml
+    >>> plugins:
+    >>>   sandbox: true
     ```
 
     ### mountArtifactsStore
@@ -270,6 +303,7 @@ class V1Plugins(BaseSchemaModel):
     docker: Optional[BoolOrRef] = None
     shm: Optional[BoolOrRef] = None
     tmux: Optional[BoolOrRef] = None
+    sandbox: Optional[BoolOrRef] = None
     mount_artifacts_store: Optional[BoolOrRef] = Field(
         alias="mountArtifactsStore", default=None
     )
@@ -306,6 +340,7 @@ class V1Plugins(BaseSchemaModel):
         config.set_auto_resume()
         config.set_external_host()
         config.set_tmux()
+        config.set_sandbox()
         return config
 
     @staticmethod
@@ -375,3 +410,7 @@ class V1Plugins(BaseSchemaModel):
     def set_tmux(self, default: bool = False):
         if self.tmux is None:
             self.tmux = default
+
+    def set_sandbox(self, default: bool = False):
+        if self.sandbox is None:
+            self.sandbox = default

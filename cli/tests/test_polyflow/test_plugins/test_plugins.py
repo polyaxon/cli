@@ -2,7 +2,7 @@ import pytest
 
 from clipped.utils.assertions import assert_equal_dict
 
-from polyaxon._flow import V1CompiledOperation, V1Plugins, V1RunKind
+from polyaxon.schemas import V1CompiledOperation, V1Plugins, V1RunKind
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._utils.test_utils import BaseTestCase
 
@@ -46,6 +46,11 @@ class TestPluginsConfigs(BaseTestCase):
         config = V1Plugins.from_dict(config_dict)
         assert_equal_dict(config_dict, config.to_dict())
 
+        # Add sandbox bool
+        config_dict["sandbox"] = True
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+
         # Add notifications
         config_dict["notifications"] = [
             {"connections": ["test1"], "trigger": "succeeded"},
@@ -66,6 +71,17 @@ class TestPluginsConfigs(BaseTestCase):
         assert_equal_dict(config_dict, config.to_dict())
         assert config.tmux is False
 
+    def test_plugins_sandbox_config(self):
+        config_dict = {"sandbox": True}
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+        assert config.sandbox is True
+
+        config_dict = {"sandbox": False}
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+        assert config.sandbox is False
+
     def test_get_from_spec(self):
         compiled_operation = V1CompiledOperation.read(
             {
@@ -79,6 +95,7 @@ class TestPluginsConfigs(BaseTestCase):
                     "collectArtifacts": False,
                     "syncStatuses": False,
                     "externalHost": True,
+                    "sandbox": True,
                 },
                 "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
             }
@@ -94,6 +111,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert plugins.sync_statuses is False
         assert plugins.external_host is True
         assert plugins.tmux is False
+        assert plugins.sandbox is True
 
     def test_read_keys_from_env(self):
         spec = V1Plugins(
@@ -106,6 +124,7 @@ class TestPluginsConfigs(BaseTestCase):
             sync_statuses=True,
             external_host=True,
             tmux=True,
+            sandbox=True,
         )
         spec = V1Plugins.get_or_create(spec)
         assert spec.auth is True
@@ -117,6 +136,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert spec.sync_statuses is True
         assert spec.external_host is True
         assert spec.tmux is True
+        assert spec.sandbox is True
 
     def test_get_from_empty_env(self):
         spec = V1Plugins()
@@ -130,6 +150,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert spec.sync_statuses is True
         assert spec.external_host is False
         assert spec.tmux is False
+        assert spec.sandbox is False
 
         spec = V1Plugins()
         spec = V1Plugins.get_or_create(spec)
@@ -142,3 +163,4 @@ class TestPluginsConfigs(BaseTestCase):
         assert spec.sync_statuses is True
         assert spec.external_host is False
         assert spec.tmux is False
+        assert spec.sandbox is False
