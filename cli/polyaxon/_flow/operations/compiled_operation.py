@@ -1,10 +1,13 @@
 from typing import Dict, List, Optional
 from typing_extensions import Literal
 
+from clipped.compact.pydantic import model_validator, validation_after
+from clipped.config.schema import skip_partial
+
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import ParamSpec, ops_params
-from polyaxon._flow.run import RunMixin, V1Runtime
+from polyaxon._flow.run import RunMixin, V1RunKind, V1Runtime
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
@@ -20,6 +23,23 @@ class V1CompiledOperation(BaseOp, RunMixin):
 
     def get_run_kind(self):
         return self.run.kind if self.run else None
+
+    @model_validator(**validation_after)
+    @skip_partial
+    def validate_sandbox_kind(cls, values):
+        plugins = cls.get_value_for_key("plugins", values)
+        sandbox = cls.get_value_for_key("sandbox", plugins) if plugins else None
+        if sandbox is None or sandbox is False:
+            return values
+
+        run = cls.get_value_for_key("run", values)
+        if not run or run.kind != V1RunKind.SERVICE:
+            got = run.kind if run else "unset"
+            raise ValueError(
+                "plugins.sandbox is only supported on kind: service in this version. "
+                f"Got kind: {got}."
+            )
+        return values
 
     def validate_params(
         self,

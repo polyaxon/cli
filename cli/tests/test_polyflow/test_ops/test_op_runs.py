@@ -864,6 +864,35 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 params=params, inputs=config.inputs, outputs=None, is_template=False
             )
 
+    def test_sandbox_requires_service(self):
+        config_dict = {
+            "plugins": {"sandbox": True},
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        with self.assertRaises(ValidationError) as ctx:
+            V1CompiledOperation.from_dict(config_dict)
+        assert "plugins.sandbox is only supported" in str(ctx.exception)
+
+        config_dict = {
+            "plugins": {"sandbox": "{{ inputs.sandbox }}"},
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        with self.assertRaises(ValidationError) as ctx:
+            V1CompiledOperation.from_dict(config_dict)
+        assert "plugins.sandbox is only supported" in str(ctx.exception)
+
+        config_dict = {
+            "plugins": {"sandbox": False},
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        V1CompiledOperation.from_dict(config_dict)
+
+        config_dict = {
+            "plugins": {"sandbox": True},
+            "run": {"kind": V1RunKind.SERVICE, "container": {"image": "test"}},
+        }
+        V1CompiledOperation.from_dict(config_dict)
+
     def test_executable(self):
         config_dict = {
             "startAt": "foo",

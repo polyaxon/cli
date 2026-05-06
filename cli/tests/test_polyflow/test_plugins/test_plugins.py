@@ -97,7 +97,7 @@ class TestPluginsConfigs(BaseTestCase):
                     "externalHost": True,
                     "sandbox": True,
                 },
-                "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+                "run": {"kind": V1RunKind.SERVICE, "container": {"image": "test"}},
             }
         )
         plugins = compiled_operation.plugins
