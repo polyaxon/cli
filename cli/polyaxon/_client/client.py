@@ -113,7 +113,7 @@ class PolyaxonClient:
     def _get_internal_client(self):
         if self.is_async:
             return AsyncApiClient(
-                self.config.internal_sdk_config, **self.config.get_internal_header()
+                self.config.async_internal_sdk_config, **self.config.get_internal_header()
             )
         return ApiClient(
             self.config.internal_sdk_config, **self.config.get_internal_header()
