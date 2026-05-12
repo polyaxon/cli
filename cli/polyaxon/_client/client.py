@@ -23,6 +23,7 @@ from polyaxon._sdk.api import (
 )
 from polyaxon._sdk.async_client.api_client import AsyncApiClient
 from polyaxon._sdk.sync_client.api_client import ApiClient
+from polyaxon.exceptions import PolyaxonClientException
 
 if TYPE_CHECKING:
     from polyaxon._schemas.client import ClientConfig
@@ -86,6 +87,9 @@ class PolyaxonClient:
         self.is_async = is_async
         self.is_internal = is_internal
         self.api_client = self._get_client()
+        self._reset_api_wrappers()
+
+    def _reset_api_wrappers(self):
         self._projects_v1 = None
         self._runs_v1 = None
         self._project_dashboards_v1 = None
@@ -118,24 +122,46 @@ class PolyaxonClient:
         return ApiClient(self.config.sdk_config, **self.config.client_header)
 
     def reset(self):
-        self._projects_v1 = None
-        self._runs_v1 = None
-        self._project_dashboards_v1 = None
-        self._project_searches_v1 = None
-        self._auth_v1 = None
-        self._users_v1 = None
-        self._versions_v1 = None
-        self._agents_v1 = None
-        self._queues_v1 = None
-        self._service_accounts_v1 = None
-        self._presets_v1 = None
-        self._tags_v1 = None
-        self._teams_v1 = None
-        self._connections_v1 = None
-        self._dashboards_v1 = None
-        self._searches_v1 = None
-        self._organizations_v1 = None
+        if self.is_async:
+            raise PolyaxonClientException("Use `await areset()` for async clients.")
+        previous_client = self.api_client
         self.api_client = self._get_client()
+        self._reset_api_wrappers()
+        previous_client.close()
+
+    async def areset(self):
+        if not self.is_async:
+            raise PolyaxonClientException("Use `reset()` for sync clients.")
+        previous_client = self.api_client
+        self.api_client = self._get_client()
+        self._reset_api_wrappers()
+        await previous_client.close()
+
+    def close(self):
+        if self.is_async:
+            raise PolyaxonClientException("Use `await aclose()` for async clients.")
+        self.api_client.close()
+
+    async def aclose(self):
+        if not self.is_async:
+            raise PolyaxonClientException("Use `close()` for sync clients.")
+        await self.api_client.close()
+
+    def __enter__(self):
+        if self.is_async:
+            raise PolyaxonClientException("Use `async with` for async clients.")
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    async def __aenter__(self):
+        if not self.is_async:
+            raise PolyaxonClientException("Use `with` for sync clients.")
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.aclose()
 
     @property
     def config(self):

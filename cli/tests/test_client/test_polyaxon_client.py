@@ -3,18 +3,47 @@ import tempfile
 
 from mock import patch
 
+from clipped.utils.paths import delete_path
+
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
+from polyaxon._contexts import paths as ctx_paths
 from polyaxon._constants.globals import NO_AUTH
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._sdk.api import (
+    AgentsV1Api,
     AuthV1Api,
     ProjectsV1Api,
     RunsV1Api,
     UsersV1Api,
-    VersionsV1Api, AgentsV1Api,
+    VersionsV1Api,
 )
-from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase, patch_settings
+from polyaxon.exceptions import PolyaxonClientException
+
+
+class SDKClientMock:
+    def __init__(self, name=None, events=None):
+        self.name = name
+        self.events = events
+        self.close_calls = 0
+
+    def close(self):
+        self.close_calls += 1
+        if self.events is not None:
+            self.events.append("{}:close".format(self.name))
+
+
+class AsyncSDKClientMock(SDKClientMock):
+    async def close(self):
+        self.close_calls += 1
+        if self.events is not None:
+            self.events.append("{}:close".format(self.name))
+
+
+def setup_async_test_settings():
+    delete_path(ctx_paths.CONTEXT_USER_POLYAXON_PATH)
+    patch_settings()
 
 
 @pytest.mark.client_mark
@@ -104,3 +133,149 @@ class TestPolyaxonClient(BaseTestCase):
         assert client.config.is_managed is False
         assert client.config.host == "http://localhost:8000"
         assert client.config.token == "test2"
+
+    def test_close_raises_on_async_instance(self):
+        sdk_client = AsyncSDKClientMock()
+        with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+            client = PolyaxonClient(is_async=True)
+
+        with pytest.raises(PolyaxonClientException):
+            client.close()
+
+    def test_reset_raises_on_async_instance(self):
+        sdk_client = AsyncSDKClientMock()
+        with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+            client = PolyaxonClient(is_async=True)
+
+        with pytest.raises(PolyaxonClientException):
+            client.reset()
+
+    def test_close_calls_api_client_close(self):
+        sdk_client = SDKClientMock()
+        with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+            client = PolyaxonClient()
+            client.close()
+
+        assert sdk_client.close_calls == 1
+
+    def test_reset_closes_previous_after_replacement(self):
+        events = []
+        previous = SDKClientMock(name="previous", events=events)
+        replacement = SDKClientMock(name="replacement", events=events)
+
+        def get_client(client):
+            if not events:
+                events.append("previous:make")
+                return previous
+            events.append("replacement:make")
+            return replacement
+
+        with patch.object(PolyaxonClient, "_get_client", autospec=True) as mock_get:
+            mock_get.side_effect = get_client
+            client = PolyaxonClient()
+            client.reset()
+
+        assert client.api_client is replacement
+        assert events == ["previous:make", "replacement:make", "previous:close"]
+
+    def test_supports_sync_context_manager(self):
+        sdk_client = SDKClientMock()
+        with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+            with PolyaxonClient() as client:
+                assert client.api_client is sdk_client
+
+        assert sdk_client.close_calls == 1
+
+    def test_sync_context_manager_raises_on_async_instance(self):
+        sdk_client = AsyncSDKClientMock()
+        with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+            client = PolyaxonClient(is_async=True)
+
+        with pytest.raises(PolyaxonClientException):
+            with client:
+                pass
+
+
+@pytest.mark.client_mark
+@pytest.mark.asyncio
+async def test_aclose_raises_on_sync_instance():
+    setup_async_test_settings()
+    sdk_client = SDKClientMock()
+    with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+        client = PolyaxonClient()
+
+    with pytest.raises(PolyaxonClientException):
+        await client.aclose()
+
+
+@pytest.mark.client_mark
+@pytest.mark.asyncio
+async def test_areset_raises_on_sync_instance():
+    setup_async_test_settings()
+    sdk_client = SDKClientMock()
+    with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+        client = PolyaxonClient()
+
+    with pytest.raises(PolyaxonClientException):
+        await client.areset()
+
+
+@pytest.mark.client_mark
+@pytest.mark.asyncio
+async def test_aclose_awaits_api_client_close():
+    setup_async_test_settings()
+    sdk_client = AsyncSDKClientMock()
+    with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+        client = PolyaxonClient(is_async=True)
+        await client.aclose()
+
+    assert sdk_client.close_calls == 1
+
+
+@pytest.mark.client_mark
+@pytest.mark.asyncio
+async def test_areset_closes_previous_after_replacement():
+    setup_async_test_settings()
+    events = []
+    previous = AsyncSDKClientMock(name="previous", events=events)
+    replacement = AsyncSDKClientMock(name="replacement", events=events)
+
+    def get_client(client):
+        if not events:
+            events.append("previous:make")
+            return previous
+        events.append("replacement:make")
+        return replacement
+
+    with patch.object(PolyaxonClient, "_get_client", autospec=True) as mock_get:
+        mock_get.side_effect = get_client
+        client = PolyaxonClient(is_async=True)
+        await client.areset()
+
+    assert client.api_client is replacement
+    assert events == ["previous:make", "replacement:make", "previous:close"]
+
+
+@pytest.mark.client_mark
+@pytest.mark.asyncio
+async def test_supports_async_context_manager():
+    setup_async_test_settings()
+    sdk_client = AsyncSDKClientMock()
+    with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+        async with PolyaxonClient(is_async=True) as client:
+            assert client.api_client is sdk_client
+
+    assert sdk_client.close_calls == 1
+
+
+@pytest.mark.client_mark
+@pytest.mark.asyncio
+async def test_async_context_manager_raises_on_sync_instance():
+    setup_async_test_settings()
+    sdk_client = SDKClientMock()
+    with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
+        client = PolyaxonClient()
+
+    with pytest.raises(PolyaxonClientException):
+        async with client:
+            pass
