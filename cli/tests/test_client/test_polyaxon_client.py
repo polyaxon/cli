@@ -1,6 +1,8 @@
 import pytest
 import tempfile
 
+from mock import patch
+
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._constants.globals import NO_AUTH
@@ -10,9 +12,10 @@ from polyaxon._sdk.api import (
     ProjectsV1Api,
     RunsV1Api,
     UsersV1Api,
-    VersionsV1Api,
+    VersionsV1Api, AgentsV1Api,
 )
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonClientException
 
 
 @pytest.mark.client_mark
@@ -24,6 +27,7 @@ class TestPolyaxonClient(BaseTestCase):
     def test_client_services(self):
         settings.AUTH_CONFIG.token = None
         client = PolyaxonClient(token=None)
+        assert client.is_internal is False
         assert client.config.token is None
 
         assert isinstance(client.config, ClientConfig)
@@ -33,6 +37,36 @@ class TestPolyaxonClient(BaseTestCase):
         assert isinstance(client.projects_v1, ProjectsV1Api)
         assert isinstance(client.runs_v1, RunsV1Api)
         assert isinstance(client.users_v1, UsersV1Api)
+
+    def test_internal_client_services(self):
+        client = PolyaxonClient(is_internal=True)
+        assert client.is_internal is True
+        assert isinstance(client.agents_v1, AgentsV1Api)
+
+    def test_sync_internal_client_uses_internal_config(self):
+        settings.CLIENT_CONFIG.token = "token"
+        with patch("polyaxon._client.client.ApiClient") as api_client:
+            PolyaxonClient(is_internal=True)
+
+        sdk_config = api_client.call_args.args[0]
+        assert sdk_config.api_key_prefix["ApiKey"] == "InternalToken"
+        assert (
+            api_client.call_args.kwargs
+            == settings.CLIENT_CONFIG.get_internal_header()
+        )
+
+    def test_async_internal_client_uses_async_internal_config(self):
+        settings.CLIENT_CONFIG.token = "token"
+        with patch("polyaxon._client.client.AsyncApiClient") as api_client:
+            PolyaxonClient(is_async=True, is_internal=True)
+
+        sdk_config = api_client.call_args.args[0]
+        assert sdk_config.api_key_prefix["ApiKey"] == "InternalToken"
+        assert sdk_config.connection_pool_maxsize == 100
+        assert (
+            api_client.call_args.kwargs
+            == settings.CLIENT_CONFIG.get_internal_header()
+        )
 
     def test_from_config(self):
         settings.CLIENT_CONFIG.host = "localhost"

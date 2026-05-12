@@ -13,12 +13,14 @@ class AgentClient:
         owner: Optional[str] = None,
         agent_uuid: Optional[str] = None,
         client: Optional[PolyaxonClient] = None,
+        internal_client: Optional[PolyaxonClient] = None,
         is_async: bool = False,
     ):
         self.owner = owner
         self.agent_uuid = agent_uuid
         self.is_async = is_async
         self._client = client
+        self._internal_client = internal_client
 
     @property
     def client(self):
@@ -26,6 +28,16 @@ class AgentClient:
             return self._client
         self._client = PolyaxonClient(is_async=self.is_async)
         return self._client
+
+    @property
+    def internal_client(self):
+        if self._internal_client:
+            return self._internal_client
+        self._internal_client = PolyaxonClient(
+            is_async=self.is_async,
+            is_internal=True,
+        )
+        return self._internal_client
 
     @property
     def _is_managed(self):
@@ -68,7 +80,7 @@ class AgentClient:
         )
 
     def collect_agent_data(self, namespace: str):
-        return self.client.internal_agents_v1.collect_agent_data(
+        return self.internal_client.agents_v1.collect_agent_data(
             owner=self.owner,
             uuid=self.agent_uuid,
             namespace=namespace,

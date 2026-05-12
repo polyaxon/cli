@@ -23,6 +23,7 @@ from polyaxon._sdk.api import (
 )
 from polyaxon._sdk.async_client.api_client import AsyncApiClient
 from polyaxon._sdk.sync_client.api_client import ApiClient
+from polyaxon.exceptions import PolyaxonClientException
 
 if TYPE_CHECKING:
     from polyaxon._schemas.client import ClientConfig
@@ -72,6 +73,7 @@ class PolyaxonClient:
         config: Optional["ClientConfig"] = None,
         token: Optional[str] = None,
         is_async: bool = False,
+        is_internal: bool = False,
     ):
         self._config = config or settings.CLIENT_CONFIG
         token = token or self._config.token
@@ -83,6 +85,7 @@ class PolyaxonClient:
             self._config.token = token
 
         self.is_async = is_async
+        self.is_internal = is_internal
         self.api_client = self._get_client()
         self._projects_v1 = None
         self._runs_v1 = None
@@ -92,7 +95,6 @@ class PolyaxonClient:
         self._users_v1 = None
         self._versions_v1 = None
         self._agents_v1 = None
-        self._internal_agents_v1 = None
         self._queues_v1 = None
         self._service_accounts_v1 = None
         self._presets_v1 = None
@@ -104,20 +106,17 @@ class PolyaxonClient:
         self._organizations_v1 = None
 
     def _get_client(self):
+        if self.is_internal:
+            headers = self.config.get_internal_header()
+            if self.is_async:
+                return AsyncApiClient(self.config.async_internal_sdk_config, **headers)
+            return ApiClient(self.config.internal_sdk_config, **headers)
+
         if self.is_async:
             return AsyncApiClient(
                 self.config.async_sdk_config, **self.config.client_header
             )
         return ApiClient(self.config.sdk_config, **self.config.client_header)
-
-    def _get_internal_client(self):
-        if self.is_async:
-            return AsyncApiClient(
-                self.config.async_internal_sdk_config, **self.config.get_internal_header()
-            )
-        return ApiClient(
-            self.config.internal_sdk_config, **self.config.get_internal_header()
-        )
 
     def reset(self):
         self._projects_v1 = None
@@ -128,7 +127,6 @@ class PolyaxonClient:
         self._users_v1 = None
         self._versions_v1 = None
         self._agents_v1 = None
-        self._internal_agents_v1 = None
         self._queues_v1 = None
         self._service_accounts_v1 = None
         self._presets_v1 = None
@@ -179,12 +177,6 @@ class PolyaxonClient:
         if not self._agents_v1:
             self._agents_v1 = AgentsV1Api(self.api_client)
         return self._agents_v1
-
-    @property
-    def internal_agents_v1(self):
-        if not self._internal_agents_v1:
-            self._internal_agents_v1 = AgentsV1Api(self._get_internal_client())
-        return self._internal_agents_v1
 
     @property
     def queues_v1(self):

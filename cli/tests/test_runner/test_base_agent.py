@@ -127,3 +127,30 @@ class TestBaseSyncAgent(BaseTestCase):
         assert isinstance(agent.executor, MagicMock)
         assert isinstance(agent.client, AgentClient)
         assert register.call_count == 1
+
+    def test_agent_client_uses_internal_client_for_collect_agent_data(self):
+        public_client = MagicMock()
+        internal_client = MagicMock()
+        client = AgentClient(
+            owner="foo",
+            agent_uuid="uuid",
+            client=public_client,
+            internal_client=internal_client,
+        )
+
+        client.collect_agent_data(namespace="default")
+
+        assert public_client.agents_v1.collect_agent_data.call_count == 0
+        internal_client.agents_v1.collect_agent_data.assert_called_once_with(
+            owner="foo",
+            uuid="uuid",
+            namespace="default",
+        )
+
+    @patch("polyaxon._runner.agent.client.PolyaxonClient")
+    def test_agent_client_creates_internal_client_with_internal_mode(self, client_cls):
+        client = AgentClient(owner="foo", agent_uuid="uuid", is_async=True)
+
+        _ = client.internal_client
+
+        client_cls.assert_called_once_with(is_async=True, is_internal=True)
