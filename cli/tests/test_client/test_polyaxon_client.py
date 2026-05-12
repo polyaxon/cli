@@ -15,7 +15,6 @@ from polyaxon._sdk.api import (
     VersionsV1Api, AgentsV1Api,
 )
 from polyaxon._utils.test_utils import BaseTestCase
-from polyaxon.exceptions import PolyaxonClientException
 
 
 @pytest.mark.client_mark
