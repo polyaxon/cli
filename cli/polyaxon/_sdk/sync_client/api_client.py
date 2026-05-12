@@ -77,6 +77,7 @@ class ApiClient(object):
         self.close()
 
     def close(self):
+        self.rest_client.close()
         if self._pool:
             self._pool.close()
             self._pool.join()

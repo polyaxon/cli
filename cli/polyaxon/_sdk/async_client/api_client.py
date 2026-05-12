@@ -5,7 +5,7 @@ import re
 from urllib.parse import quote
 
 from polyaxon._sdk.sync_client.api_client import ApiClient
-from polyaxon.exceptions import ApiException
+from polyaxon.exceptions import ApiException, ApiValueError
 
 aiohttp_logger = logging.getLogger("aiohttp")
 aiohttp_logger.setLevel(logging.ERROR)
@@ -109,46 +109,26 @@ class AsyncApiClient(ApiClient):
             If parameter async_req is False or missing,
             then the method will return the response directly.
         """
-        if not async_req:
-            return self.__call_api(
-                resource_path,
-                method,
-                path_params,
-                query_params,
-                header_params,
-                body,
-                post_params,
-                files,
-                response_types_map,
-                auth_settings,
-                _return_http_data_only,
-                collection_formats,
-                _preload_content,
-                _request_timeout,
-                _host,
-                _request_auth,
-            )
+        if async_req:
+            raise ApiValueError("async_req=True is not supported by AsyncApiClient.")
 
-        return self.pool.apply_async(
-            self.__call_api,
-            (
-                resource_path,
-                method,
-                path_params,
-                query_params,
-                header_params,
-                body,
-                post_params,
-                files,
-                response_types_map,
-                auth_settings,
-                _return_http_data_only,
-                collection_formats,
-                _preload_content,
-                _request_timeout,
-                _host,
-                _request_auth,
-            ),
+        return self.__call_api(
+            resource_path,
+            method,
+            path_params,
+            query_params,
+            header_params,
+            body,
+            post_params,
+            files,
+            response_types_map,
+            auth_settings,
+            _return_http_data_only,
+            collection_formats,
+            _preload_content,
+            _request_timeout,
+            _host,
+            _request_auth,
         )
 
     async def __call_api(

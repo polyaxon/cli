@@ -89,6 +89,14 @@ class RESTClientObject(object):
                 **addition_pool_args,
             )
 
+    def close(self):
+        # urllib3.PoolManager has no close(); clear() empties the LRU cache of
+        # HTTPConnectionPool objects, each of which closes its TCP sockets via
+        # the container's dispose callback. Idempotent. Matches urllib3's own
+        # context-manager __exit__ behavior. Subsequent requests re-allocate
+        # pools on demand.
+        self.pool_manager.clear()
+
     def request(
         self,
         method,

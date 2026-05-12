@@ -36,22 +36,30 @@ class RESTClientObject(object):
         if maxsize is None:
             maxsize = configuration.connection_pool_maxsize
 
-        ssl_context = ssl.create_default_context(cafile=configuration.ssl_ca_cert)
-        if configuration.cert_file:
+        self.configuration = configuration
+        self.pools_size = pools_size
+        self.maxsize = maxsize
+        self.proxy = configuration.proxy
+        self.proxy_headers = configuration.proxy_headers
+        self.pool_manager = None
+
+    def _get_pool_manager(self):
+        if self.pool_manager and not self.pool_manager.closed:
+            return self.pool_manager
+
+        ssl_context = ssl.create_default_context(
+            cafile=self.configuration.ssl_ca_cert
+        )
+        if self.configuration.cert_file:
             ssl_context.load_cert_chain(
-                configuration.cert_file, keyfile=configuration.key_file
+                self.configuration.cert_file, keyfile=self.configuration.key_file
             )
 
-        if not configuration.verify_ssl:
+        if not self.configuration.verify_ssl:
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
 
-        connector = aiohttp.TCPConnector(limit=maxsize, ssl=ssl_context)
-
-        self.proxy = configuration.proxy
-        self.proxy_headers = configuration.proxy_headers
-
-        # https pool manager
+        connector = aiohttp.TCPConnector(limit=self.maxsize, ssl=ssl_context)
         self.pool_manager = aiohttp.ClientSession(
             connector=connector,
             trust_env=True,
@@ -63,9 +71,12 @@ class RESTClientObject(object):
             # https://github.com/kubernetes/kubernetes/issues/19781
             read_bufsize=2**21,
         )
+        return self.pool_manager
 
     async def close(self):
-        await self.pool_manager.close()
+        if self.pool_manager:
+            await self.pool_manager.close()
+            self.pool_manager = None
 
     async def request(
         self,
@@ -156,7 +167,7 @@ class RESTClientObject(object):
                          declared content type."""
                 raise ApiException(status=0, reason=msg)
 
-        r = await self.pool_manager.request(**args)
+        r = await self._get_pool_manager().request(**args)
         if _preload_content:
             data = await r.read()
             r = RESTResponse(r, data)
