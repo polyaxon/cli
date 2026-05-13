@@ -39,6 +39,70 @@ from polyaxon.logger import logger
 from traceml.artifacts import V1RunArtifact
 
 
+def _prepare_version_registration_values(
+    content: Optional[Union[str, Dict]],
+    tags: Optional[Union[str, List[str]]],
+    artifacts: Optional[List[str]],
+):
+    if content:
+        content = content if isinstance(content, str) else orjson_dumps(content)
+    if tags is not None:
+        tags = validate_tags(tags, validate_yaml=True)
+    if artifacts is not None:
+        artifacts = validate_tags(artifacts, validate_yaml=True)
+    return content, tags, artifacts
+
+
+def _build_version_registration_config(
+    *,
+    to_update: bool,
+    version: str,
+    description: Optional[str] = None,
+    tags: Optional[Union[str, List[str]]] = None,
+    content: Optional[Union[str, Dict]] = None,
+    readme: Optional[str] = None,
+    run: Optional[str] = None,
+    connection: Optional[str] = None,
+    artifacts: Optional[List[str]] = None,
+    stage: Optional[V1Stages] = None,
+    stage_conditions: Optional[List[V1StageCondition]] = None,
+) -> V1ProjectVersion:
+    if to_update:
+        version_config = V1ProjectVersion.model_construct()
+        if description is not None:
+            version_config.description = description
+        if tags:
+            version_config.tags = tags
+        if content:
+            version_config.content = content  # type: ignore
+        if readme is not None:
+            version_config.readme = readme
+        if run:
+            version_config.run = run
+        if artifacts is not None:
+            version_config.artifacts = artifacts
+        if connection is not None:
+            version_config.connection = connection
+        if stage is not None:
+            version_config.stage = stage
+        if stage_conditions is not None:
+            version_config.stage_conditions = stage_conditions
+        return version_config
+
+    return V1ProjectVersion.model_construct(
+        name=version,
+        description=description,
+        tags=tags,
+        run=run,
+        readme=readme,
+        artifacts=artifacts,
+        connection=connection,
+        content=content,
+        stage=stage,
+        stage_conditions=stage_conditions,
+    )
+
+
 class ProjectClient(ClientMixin):
     """ProjectClient is a client to communicate with Polyaxon projects endpoints.
 
@@ -947,55 +1011,31 @@ class ProjectClient(ClientMixin):
         except (ApiException, HTTPError, AttributeError):
             to_update = False
 
-        def _get_content() -> str:
-            return content if isinstance(content, str) else orjson_dumps(content)
-
-        if content:
-            content = _get_content()
-        if tags is not None:
-            tags = validate_tags(tags, validate_yaml=True)
-        if artifacts is not None:
-            artifacts = validate_tags(artifacts, validate_yaml=True)
-
+        content, tags, artifacts = _prepare_version_registration_values(
+            content=content,
+            tags=tags,
+            artifacts=artifacts,
+        )
+        version_config = _build_version_registration_config(
+            to_update=to_update,
+            version=version,
+            description=description,
+            tags=tags,
+            content=content,
+            readme=readme,
+            run=run,
+            connection=connection,
+            artifacts=artifacts,
+            stage=stage,
+            stage_conditions=stage_conditions,
+        )
         if to_update:
-            version_config = V1ProjectVersion.model_construct()
-            if description is not None:
-                version_config.description = description
-            if tags:
-                version_config.tags = tags
-            if content:
-                version_config.content = content  # type: ignore
-            if readme is not None:
-                version_config.readme = readme
-            if run:
-                version_config.run = run
-            if artifacts is not None:
-                version_config.artifacts = artifacts
-            if connection is not None:
-                version_config.connection = connection
-            if stage is not None:
-                version_config.stage = stage
-            if stage_conditions is not None:
-                version_config.stage_conditions = stage_conditions
             return self.patch_version(
                 kind=kind,
                 version=version,
                 data=version_config,
             )
-        else:
-            version_config = V1ProjectVersion.model_construct(
-                name=version,
-                description=description,
-                tags=tags,
-                run=run,
-                readme=readme,
-                artifacts=artifacts,
-                connection=connection,
-                content=content,
-                stage=stage,
-                stage_conditions=stage_conditions,
-            )
-            return self.create_version(kind=kind, data=version_config)
+        return self.create_version(kind=kind, data=version_config)
 
     @client_handler(check_no_op=True, check_offline=True)
     def register_component_version(
@@ -2378,54 +2418,30 @@ class AsyncProjectClient(ProjectClient):
         except (ApiException, AttributeError):
             to_update = False
 
-        def _get_content() -> str:
-            return content if isinstance(content, str) else orjson_dumps(content)
-
-        if content:
-            content = _get_content()
-        if tags is not None:
-            tags = validate_tags(tags, validate_yaml=True)
-        if artifacts is not None:
-            artifacts = validate_tags(artifacts, validate_yaml=True)
-
+        content, tags, artifacts = _prepare_version_registration_values(
+            content=content,
+            tags=tags,
+            artifacts=artifacts,
+        )
+        version_config = _build_version_registration_config(
+            to_update=to_update,
+            version=version,
+            description=description,
+            tags=tags,
+            content=content,
+            readme=readme,
+            run=run,
+            connection=connection,
+            artifacts=artifacts,
+            stage=stage,
+            stage_conditions=stage_conditions,
+        )
         if to_update:
-            version_config = V1ProjectVersion.model_construct()
-            if description is not None:
-                version_config.description = description
-            if tags:
-                version_config.tags = tags
-            if content:
-                version_config.content = content  # type: ignore
-            if readme is not None:
-                version_config.readme = readme
-            if run:
-                version_config.run = run
-            if artifacts is not None:
-                version_config.artifacts = artifacts
-            if connection is not None:
-                version_config.connection = connection
-            if stage is not None:
-                version_config.stage = stage
-            if stage_conditions is not None:
-                version_config.stage_conditions = stage_conditions
             return await self.patch_version(
                 kind=kind,
                 version=version,
                 data=version_config,
             )
-
-        version_config = V1ProjectVersion.model_construct(
-            name=version,
-            description=description,
-            tags=tags,
-            run=run,
-            readme=readme,
-            artifacts=artifacts,
-            connection=connection,
-            content=content,
-            stage=stage,
-            stage_conditions=stage_conditions,
-        )
         return await self.create_version(kind=kind, data=version_config)
 
     @async_client_handler(check_no_op=True, check_offline=True)
