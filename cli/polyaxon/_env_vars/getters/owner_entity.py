@@ -2,7 +2,6 @@ import sys
 
 from clipped.formatting import Printer
 from clipped.utils.strings import validate_slug
-
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon._utils.fqn_utils import get_entity_info, split_owner_team_space

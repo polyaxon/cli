@@ -1,10 +1,8 @@
-import pytest
-
 from collections import OrderedDict
+import pytest
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
-
 from polyaxon import types
 from polyaxon._flow.io import V1IO
 from polyaxon._utils.test_utils import BaseTestCase

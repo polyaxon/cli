@@ -1,5 +1,4 @@
 import pytest
-
 from unittest import TestCase
 
 from polyaxon._utils.fqn_utils import (

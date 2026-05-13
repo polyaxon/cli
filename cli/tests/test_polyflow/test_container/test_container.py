@@ -1,6 +1,5 @@
-import pytest
-
 from mock import MagicMock
+import pytest
 
 from polyaxon._flow.containers import get_container_command_args
 from polyaxon._k8s import k8s_schemas

@@ -1,5 +1,4 @@
 import os
-
 from typing import Type
 
 from polyaxon._config.manager import ConfigManager

@@ -2,6 +2,7 @@
 
 from traceml.integrations.fastai import Callback
 
+
 # alias
 PolyaxonCallback = Callback
 PolyaxonFastaiCallback = Callback

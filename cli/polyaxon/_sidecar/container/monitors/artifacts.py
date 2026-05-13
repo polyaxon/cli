@@ -1,14 +1,13 @@
 import os
-
 from typing import List, Optional
+
+from fsspec.asyn import _run_coros_in_chunks  # noqa
 
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._fs.async_manager import ensure_async_execution
 from polyaxon._fs.types import FSSystem
 from polyaxon._fs.watcher import FSWatcher
 from polyaxon.logger import logger
-
-from fsspec.asyn import _run_coros_in_chunks  # noqa
 
 
 async def sync_fs(

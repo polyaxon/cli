@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
-
 from polyaxon._sdk.schemas.v1_token import V1Token
 
 

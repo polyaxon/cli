@@ -6,10 +6,8 @@ from clipped.compact.pydantic import Field, StrictStr, field_validator
 from clipped.config.schema import skip_partial
 from clipped.utils.lists import to_list
 from clipped.utils.strings import to_string
-
 from polyaxon import types
-from polyaxon._contexts import refs as ctx_refs
-from polyaxon._contexts import sections as ctx_sections
+from polyaxon._contexts import refs as ctx_refs, sections as ctx_sections
 from polyaxon._contexts.params import PARAM_REGEX
 from polyaxon._flow.init import V1Init
 from polyaxon._schemas.base import BaseSchemaModel

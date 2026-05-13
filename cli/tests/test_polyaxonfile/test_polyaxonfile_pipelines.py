@@ -1,7 +1,6 @@
+from mock import patch
 import os
 import pytest
-
-from mock import patch
 
 from polyaxon._flow import V1IO, V1CompiledOperation, V1Component, V1Job, V1RunKind
 from polyaxon._flow.early_stopping import V1FailureEarlyStopping, V1MetricEarlyStopping

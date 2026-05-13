@@ -3,7 +3,6 @@ from typing_extensions import Literal
 
 from clipped.compact.pydantic import model_validator, validation_after
 from clipped.config.schema import skip_partial
-
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import ParamSpec, ops_params

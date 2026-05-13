@@ -2,7 +2,6 @@ from typing import Optional
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictStr, validate_call
-
 from polyaxon._schemas.compatibility import V1Compatibility
 from polyaxon._schemas.installation import V1Installation
 from polyaxon._schemas.log_handler import V1LogHandler

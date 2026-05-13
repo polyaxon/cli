@@ -1,10 +1,9 @@
 import os
-
 from typing import Optional
 
 from clipped.utils.enums import PEnum
-
 from polyaxon._env_vars.keys import ENV_KEYS_SERVICE
+
 
 SERVICE = None
 

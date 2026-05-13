@@ -1,7 +1,6 @@
 import click
 
 from clipped.formatting import Printer
-
 from polyaxon._cli.options import (
     OPTIONS_ARTIFACT_VERSION,
     OPTIONS_NAME,

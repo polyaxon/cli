@@ -2,7 +2,6 @@ from typing import Optional, Union
 
 from clipped.compact.pydantic import StrictStr
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._schemas.types.base import BaseTypeConfig
 from traceml.artifacts import V1ArtifactKind
 

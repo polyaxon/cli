@@ -1,11 +1,10 @@
 import sys
 
 import click
+from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from clipped.utils.dicts import dict_to_tabulate
-from urllib3.exceptions import HTTPError
-
 from polyaxon import settings
 from polyaxon._cli.dashboard import get_dashboard_url
 from polyaxon._cli.errors import handle_cli_error, handle_command_not_in_ce, not_in_ce

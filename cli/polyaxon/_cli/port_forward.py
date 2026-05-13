@@ -3,7 +3,6 @@ import sys
 import click
 
 from clipped.formatting import Printer
-
 from polyaxon import settings
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._deploy.schemas.deployment_types import DeploymentTypes

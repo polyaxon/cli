@@ -1,7 +1,6 @@
 import uuid
 
 from clipped.utils.tz import now
-
 from polyaxon._notifiers import NotificationSpec
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.schemas import StatusColor, V1StatusCondition, V1Statuses

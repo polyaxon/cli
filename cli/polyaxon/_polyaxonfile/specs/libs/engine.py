@@ -1,5 +1,4 @@
 import jinja2
-
 from typing import Any, Dict, Optional
 
 from markupsafe import soft_str

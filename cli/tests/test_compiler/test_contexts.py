@@ -1,7 +1,6 @@
 import pytest
 
 from clipped.utils.tz import now
-
 from polyaxon._compiler.contexts import resolve_contexts
 from polyaxon._connections import V1ClaimConnection, V1Connection, V1ConnectionKind
 from polyaxon._contexts import paths as ctx_paths

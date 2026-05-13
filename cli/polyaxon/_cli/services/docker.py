@@ -6,7 +6,6 @@ from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.types.docker_image import validate_image
 from clipped.utils.paths import copy_file
-
 from polyaxon._cli.check import check_polyaxonfile
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._config.spec import ConfigSpec
@@ -65,7 +64,6 @@ def generate(
 ):
     """Generate a dockerfile given the polyaxonfile."""
     from clipped.utils.hashing import hash_value
-
     from polyaxon._docker.builder import DockerFileGenerator
     from polyaxon._init.dockerfile import create_dockerfile_lineage
 

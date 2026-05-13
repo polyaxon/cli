@@ -1,6 +1,5 @@
-import pytest
-
 from mock import MagicMock, patch
+import pytest
 
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._runner.agent.client import AgentClient

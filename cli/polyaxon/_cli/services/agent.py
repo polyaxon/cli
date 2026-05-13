@@ -4,7 +4,6 @@ import time
 import click
 
 from clipped.utils.coroutine import coroutine
-
 from polyaxon.exceptions import PolyaxonAgentError
 from polyaxon.logger import logger
 

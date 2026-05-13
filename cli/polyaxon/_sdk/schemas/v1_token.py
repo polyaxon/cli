@@ -1,5 +1,4 @@
 import datetime
-
 from typing import List, Optional
 
 from clipped.compact.pydantic import StrictStr

@@ -1,7 +1,6 @@
 import atexit
 import os
 import threading
-
 from typing import Optional
 
 

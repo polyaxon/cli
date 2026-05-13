@@ -8,8 +8,8 @@ from polyaxon._flow import (
 )
 from polyaxon._k8s.custom_resources.kubeflow.common import get_kf_replicas_template
 from polyaxon._k8s.custom_resources.operation import (
-    get_operation_custom_object,
     KFJOB_KIND,
+    get_operation_custom_object,
 )
 from polyaxon._k8s.custom_resources.setter import (
     set_clean_pod_policy,

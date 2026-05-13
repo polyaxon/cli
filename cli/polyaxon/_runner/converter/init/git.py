@@ -1,11 +1,10 @@
 import os
-
 from typing import List, Optional
 
 from clipped.utils.json import orjson_dumps
 from clipped.utils.lists import to_list
-
 from polyaxon.exceptions import PolyaxonConverterError
+
 
 REPO_INIT_COMMAND = ["polyaxon", "initializer", "git"]
 

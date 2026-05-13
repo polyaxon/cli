@@ -7,7 +7,6 @@ from clipped.compact.pydantic import (
     validation_always,
 )
 from clipped.utils.units import to_cpu_value, to_memory_bytes, to_unit_memory
-
 from polyaxon._schemas.base import BaseSchemaModel, RootModel
 
 

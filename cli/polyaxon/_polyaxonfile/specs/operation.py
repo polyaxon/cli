@@ -1,7 +1,6 @@
 from typing import Dict, Optional, Type
 
 from clipped.utils.lists import to_list
-
 from polyaxon._flow import (
     V1IO,
     V1CompiledOperation,

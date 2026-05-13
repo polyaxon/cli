@@ -1,16 +1,15 @@
 import os
-
 from typing import Optional
 
 from clipped.config.contexts import get_project_path, get_temp_path
 from clipped.utils.enums import get_enum_value
-
 from polyaxon._env_vars.keys import (
     ENV_KEYS_ARCHIVES_ROOT,
     ENV_KEYS_ARTIFACTS_ROOT,
     ENV_KEYS_CONTEXT_ROOT,
     ENV_KEYS_OFFLINE_ROOT,
 )
+
 
 CONTEXT_RELATED_RUNS = "_related_runs"
 

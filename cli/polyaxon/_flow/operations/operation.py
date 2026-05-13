@@ -12,7 +12,6 @@ from clipped.compact.pydantic import (
 )
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
-
 from polyaxon._flow.builds import V1Build
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.hooks import V1Hook

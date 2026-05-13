@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 from clipped.utils.json import orjson_loads
 from clipped.utils.units import to_cpu_value, to_memory_bytes
-
 from polyaxon.exceptions import PQLException
 
 

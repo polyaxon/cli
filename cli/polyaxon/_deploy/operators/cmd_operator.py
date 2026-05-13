@@ -1,6 +1,5 @@
 import json
 import subprocess
-
 from tempfile import TemporaryFile
 
 from polyaxon.exceptions import PolyaxonOperatorException

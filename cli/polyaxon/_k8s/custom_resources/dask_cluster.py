@@ -1,14 +1,14 @@
 from typing import Dict, List, Optional
 
-from clipped.utils.lists import to_list
 from kubernetes import client
 
+from clipped.utils.lists import to_list
 from polyaxon._flow import V1Notification, V1Termination
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon._k8s.custom_resources.operation import (
-    get_operation_custom_object,
     CLUSTER_KIND,
+    get_operation_custom_object,
 )
 from polyaxon._k8s.custom_resources.setter import (
     set_collect_logs,

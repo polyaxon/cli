@@ -1,7 +1,6 @@
 import pytest
 
 from clipped.utils.assertions import assert_equal_dict
-
 from polyaxon._flow.environment import V1Environment
 from polyaxon._utils.test_utils import BaseTestCase
 

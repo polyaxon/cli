@@ -1,6 +1,5 @@
-import pytest
-
 from mock import patch
+import pytest
 
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._sdk.async_client.api_client import AsyncApiClient
@@ -23,7 +22,9 @@ class TestSDKTransport(BaseTestCase):
             )
 
     def test_async_rest_does_not_open_session_on_init(self):
-        rest_client = AsyncRESTClientObject(ClientConfig(host="localhost").async_sdk_config)
+        rest_client = AsyncRESTClientObject(
+            ClientConfig(host="localhost").async_sdk_config
+        )
 
         assert rest_client.pool_manager is None
 

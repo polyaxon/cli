@@ -1,7 +1,8 @@
 from clipped.compact.pydantic import PYDANTIC_VERSION
-from clipped.config.schema import BaseSchemaModel as _BaseSchemaModel
-from clipped.config.schema import RootModel as _RootModel
-
+from clipped.config.schema import (
+    BaseSchemaModel as _BaseSchemaModel,
+    RootModel as _RootModel,
+)
 from polyaxon import pkg
 from polyaxon._config.spec import ConfigSpec
 from polyaxon.exceptions import PolyaxonSchemaError

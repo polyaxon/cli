@@ -1,5 +1,4 @@
 import base64
-
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr

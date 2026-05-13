@@ -2,5 +2,6 @@
 
 from traceml.integrations.tensorboard import Logger
 
+
 # alias
 PolyaxonTensorboardLogger = Logger

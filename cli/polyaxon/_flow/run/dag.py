@@ -12,7 +12,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon import types
 from polyaxon._contexts import sections as ctx_sections
 from polyaxon._flow import dags
@@ -25,6 +24,7 @@ from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon.exceptions import PolyaxonSchemaError
 from polyaxon.pkg import SCHEMA_VERSION
+
 
 V1Operation = ForwardRef("V1Operation")
 V1Component = ForwardRef("V1Component")

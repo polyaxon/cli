@@ -2,7 +2,6 @@ from typing import Any, Dict, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
-
 from polyaxon._sdk.schemas.v1_analytics_spec import V1AnalyticsSpec
 from polyaxon._sdk.schemas.v1_dashboard_spec import V1DashboardSpec
 

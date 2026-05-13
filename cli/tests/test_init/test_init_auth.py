@@ -1,9 +1,8 @@
+from mock import patch
+from mock.mock import MagicMock
 import os
 import pytest
 import uuid
-
-from mock import patch
-from mock.mock import MagicMock
 
 from polyaxon import settings
 from polyaxon._env_vars.keys import ENV_KEYS_RUN_INSTANCE

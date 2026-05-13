@@ -2,7 +2,6 @@ import os
 import pytest
 
 from clipped.utils.paths import check_or_create_path
-
 from polyaxon import settings
 from polyaxon._fs.async_manager import delete_file_or_dir, download_dir, download_file
 from polyaxon._fs.fs import get_default_fs

@@ -1,6 +1,5 @@
 import io
 import pytest
-
 from unittest.mock import mock_open, patch
 
 from polyaxon._managers.ignore import IgnoreConfigManager

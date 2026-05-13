@@ -1,10 +1,8 @@
 import inspect
-
+from mock import mock
 import pytest
 
 from clipped.utils.paths import delete_path
-from mock import mock
-
 from polyaxon._client.project import AsyncProjectClient, ProjectClient
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1Stages
@@ -314,7 +312,10 @@ async def test_version_read_methods_await_api():
     sdk_client.projects_v1.get_version_stages = AsyncMock(return_value=stages)
     client = AsyncProjectClient(owner=OWNER, project=PROJECT, client=sdk_client)
 
-    assert await client.list_versions(V1ProjectVersionKind.MODEL, limit=10) is list_response
+    assert (
+        await client.list_versions(V1ProjectVersionKind.MODEL, limit=10)
+        is list_response
+    )
     assert await client.get_version(V1ProjectVersionKind.MODEL, "v1") is version
     assert await client.get_version_stages(V1ProjectVersionKind.MODEL, "v1") == (
         V1Stages.PRODUCTION,
@@ -431,17 +432,23 @@ async def test_register_version_create_and_update_paths():
     sdk_client.projects_v1.patch_version = AsyncMock(return_value=patched)
     client = AsyncProjectClient(owner=OWNER, project=PROJECT, client=sdk_client)
 
-    assert await client.register_version(
-        kind=V1ProjectVersionKind.MODEL,
-        version="v1",
-        content={"a": 1},
-    ) is created
-    assert await client.register_version(
-        kind=V1ProjectVersionKind.MODEL,
-        version="v1",
-        force=True,
-        description="updated",
-    ) is patched
+    assert (
+        await client.register_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version="v1",
+            content={"a": 1},
+        )
+        is created
+    )
+    assert (
+        await client.register_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version="v1",
+            force=True,
+            description="updated",
+        )
+        is patched
+    )
 
     assert sdk_client.projects_v1.create_version.call_count == 1
     assert sdk_client.projects_v1.patch_version.call_count == 1
@@ -490,11 +497,14 @@ async def test_copy_version_uses_async_project_client_for_destination():
     sdk_client.projects_v1.create_version = AsyncMock(return_value=copied)
     client = AsyncProjectClient(owner=OWNER, project=PROJECT, client=sdk_client)
 
-    assert await client.copy_version(
-        kind=V1ProjectVersionKind.MODEL,
-        version="v1",
-        to_project="target-project",
-    ) is copied
+    assert (
+        await client.copy_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version="v1",
+            to_project="target-project",
+        )
+        is copied
+    )
 
     sdk_client.projects_v1.create_version.assert_called_once()
     assert sdk_client.projects_v1.create_version.call_args[0] == (

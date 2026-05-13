@@ -1,5 +1,4 @@
 from clipped.compact.pydantic import ValidationError
-
 from polyaxon._deploy.schemas.ingress import IngressConfig
 from polyaxon._utils.test_utils import BaseTestCase
 

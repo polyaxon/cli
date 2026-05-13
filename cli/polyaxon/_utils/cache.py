@@ -1,7 +1,7 @@
 from clipped.formatting import Printer
-
 from polyaxon._managers.project import ProjectConfigManager
 from polyaxon.exceptions import PolyaxonSchemaError
+
 
 CACHE_ERROR = (
     "Found an invalid project config or project config cache, "

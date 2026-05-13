@@ -1,10 +1,9 @@
+from mock import MagicMock, mock, patch
 import pytest
 import uuid
 
-from mock import mock, MagicMock, patch
-
 from polyaxon._client.run import RunClient
-from polyaxon._schemas.lifecycle import V1Statuses, V1StatusCondition
+from polyaxon._schemas.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._utils.test_utils import BaseTestCase

@@ -2,7 +2,6 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
-
 from polyaxon._flow.matrix import V1Hyperband
 from polyaxon._flow.optimization import V1Optimization, V1OptimizationMetric
 from polyaxon._utils.test_utils import BaseTestCase

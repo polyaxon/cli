@@ -2,7 +2,6 @@ from typing import Dict, List, Optional, Union
 
 from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._flow.params import V1Param
 from polyaxon._schemas.base import BaseSchemaModel
 

@@ -10,6 +10,12 @@ from polyaxon.exceptions import PolyaxonClientException
 class ClientMixin:
     _IS_ASYNC: bool = False
 
+    def _raise_sync_only(self, method_name: str):
+        raise PolyaxonClientException(
+            "`{}` performs local file, stream, plotting, or artifact IO "
+            "and is sync-only for now.".format(method_name)
+        )
+
     def _set_client(self, client: Optional[PolyaxonClient]):
         if client is not None and client.is_async != self._IS_ASYNC:
             raise PolyaxonClientException(
@@ -48,9 +54,7 @@ class ClientMixin:
 
     async def areset_client(self, **kwargs):
         if not self._IS_ASYNC:
-            raise PolyaxonClientException(
-                "Use `reset_client(...)` for sync clients."
-            )
+            raise PolyaxonClientException("Use `reset_client(...)` for sync clients.")
         if not settings.CLIENT_CONFIG.in_cluster:
             previous = (
                 self._client

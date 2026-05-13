@@ -2,7 +2,6 @@ from typing import Any, Iterable, List, Optional
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.json import orjson_dumps
-
 from polyaxon import settings
 from polyaxon._connections import V1ConnectionResource
 from polyaxon._env_vars.keys import (

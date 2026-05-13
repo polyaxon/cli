@@ -1,7 +1,8 @@
 import os
 import requests
-
 from typing import Dict, List
+
+from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 from clipped.formatting import Printer
 from clipped.utils.json import orjson_dumps
@@ -13,8 +14,6 @@ from clipped.utils.paths import (
     untar_file,
 )
 from clipped.utils.units import format_sizeof
-from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-
 from polyaxon import settings
 from polyaxon._constants.globals import DEFAULT_UPLOADS_PATH
 from polyaxon._env_vars.keys import ENV_KEYS_UPLOAD_SIZE

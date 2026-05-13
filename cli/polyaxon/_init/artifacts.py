@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING, Union
 
 from clipped.formatting import Printer
 from clipped.utils.enums import get_enum_value
-
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._fs.watcher import FSWatcher
 from polyaxon.logger import logger
+
 
 if TYPE_CHECKING:
     from polyaxon._connections import V1ConnectionKind

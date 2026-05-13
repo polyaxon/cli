@@ -25,6 +25,7 @@ from polyaxon._sdk.async_client.api_client import AsyncApiClient
 from polyaxon._sdk.sync_client.api_client import ApiClient
 from polyaxon.exceptions import PolyaxonClientException
 
+
 if TYPE_CHECKING:
     from polyaxon._schemas.client import ClientConfig
 

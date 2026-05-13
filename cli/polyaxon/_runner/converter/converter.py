@@ -1,11 +1,8 @@
 import os
-
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from clipped.utils.http import clean_host
 from clipped.utils.lists import to_list
-from vents.connections.connection_schema import patch_git
-
 from polyaxon import settings
 from polyaxon._auxiliaries import (
     V1PolyaxonInitContainer,
@@ -54,6 +51,7 @@ from polyaxon._services.values import PolyaxonServices
 from polyaxon._utils.fqn_utils import get_resource_name, get_run_instance
 from polyaxon._utils.host_utils import get_api_host
 from polyaxon.exceptions import PolyaxonConverterError, PolyaxonSchemaError
+from vents.connections.connection_schema import patch_git
 
 
 class BaseConverter:

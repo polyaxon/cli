@@ -1,9 +1,9 @@
 import os
 import sys
-
 from typing import Any
 
 import click
+from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from clipped.utils.csv import write_csv
@@ -18,8 +18,6 @@ from clipped.utils.lists import to_list
 from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
 from clipped.utils.versions import compare_versions
-from urllib3.exceptions import HTTPError
-
 from polyaxon import settings
 from polyaxon._cli.dashboard import (
     get_dashboard,
@@ -60,6 +58,7 @@ from polyaxon.exceptions import (
 )
 from polyaxon.logger import clean_outputs
 from traceml.events import get_logs_path
+
 
 DEFAULT_EXCLUDE = [
     "owner",

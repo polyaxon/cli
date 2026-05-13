@@ -12,7 +12,6 @@ from clipped.compact.pydantic import (
 )
 from clipped.config.schema import skip_partial
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._flow.early_stopping import V1EarlyStopping
 from polyaxon._flow.matrix.base import BaseSearchConfig
 from polyaxon._flow.matrix.enums import (

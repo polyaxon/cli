@@ -1,6 +1,5 @@
-import uuid
-
 from mock import patch
+import uuid
 
 from polyaxon import settings
 from polyaxon._utils.test_utils import BaseTestCase

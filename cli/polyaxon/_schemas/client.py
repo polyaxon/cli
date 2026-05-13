@@ -1,12 +1,10 @@
 import os
-
 from typing import Dict, Optional, Union
 
 import urllib3
 
 from clipped.compact.pydantic import Field, StrictStr
 from clipped.utils.http import clean_host
-
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.keys import (
     ENV_KEYS_API_VERSION,

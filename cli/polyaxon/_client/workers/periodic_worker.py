@@ -1,5 +1,4 @@
 import copy
-
 from time import sleep, time
 
 from polyaxon import settings

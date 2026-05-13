@@ -1,7 +1,6 @@
 import websocket
 
 from clipped.utils.json import orjson_loads
-
 from polyaxon.logger import logger
 
 

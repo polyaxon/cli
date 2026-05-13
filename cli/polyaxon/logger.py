@@ -1,11 +1,11 @@
+from functools import wraps
 import logging
 import os
 import sys
-
-from functools import wraps
 from typing import List, Union
 
 from polyaxon._env_vars.keys import ENV_KEYS_DEBUG, ENV_KEYS_LOG_LEVEL
+
 
 logger = logging.getLogger("polyaxon.cli")
 

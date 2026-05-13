@@ -1,7 +1,6 @@
 from typing import Optional
 
 from clipped.compact.pydantic import Field, StrictStr
-
 from polyaxon._env_vars.keys import ENV_KEYS_HOME
 from polyaxon._schemas.base import BaseSchemaModel
 

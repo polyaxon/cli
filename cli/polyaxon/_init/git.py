@@ -1,6 +1,7 @@
 import os
-
 from typing import List, Optional
+
+from git import Repo as GitRepo
 
 from clipped.utils.git import (
     add_remote,
@@ -12,8 +13,6 @@ from clipped.utils.git import (
     update_submodules,
 )
 from clipped.utils.paths import check_or_create_path
-from git import Repo as GitRepo
-
 from polyaxon._client.init import get_client_or_raise
 from polyaxon._env_vars.keys import (
     ENV_KEYS_GIT_CREDENTIALS,

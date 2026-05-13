@@ -1,3 +1,5 @@
+from polyaxon._schemas.base import BaseSchemaModel
+from polyaxon._schemas.types.base import BaseTypeConfig
 from vents.connections import (
     BucketConnection,
     ClaimConnection,
@@ -7,9 +9,6 @@ from vents.connections import (
     HostConnection,
     HostPathConnection,
 )
-
-from polyaxon._schemas.base import BaseSchemaModel
-from polyaxon._schemas.types.base import BaseTypeConfig
 
 
 class V1BucketConnection(BucketConnection, BaseSchemaModel):

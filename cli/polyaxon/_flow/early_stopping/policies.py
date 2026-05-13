@@ -3,7 +3,6 @@ from typing_extensions import Annotated, Literal
 
 from clipped.compact.pydantic import Field, StrictFloat, StrictStr
 from clipped.types.ref_or_obj import BoolOrRef, FloatOrRef, IntOrRef
-
 from polyaxon._flow.optimization import V1Optimization
 from polyaxon._schemas.base import BaseSchemaModel
 

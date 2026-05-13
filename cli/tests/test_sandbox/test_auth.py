@@ -1,11 +1,9 @@
 import hashlib
 import hmac
 import os
-import uuid
-
-from unittest import TestCase
-
 import pytest
+from unittest import TestCase
+import uuid
 
 from polyaxon._env_vars.keys import ENV_KEYS_SECRET_INTERNAL_TOKEN
 from polyaxon._sandbox.auth import (

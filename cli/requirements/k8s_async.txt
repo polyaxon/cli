@@ -1,3 +1,2 @@
 kubernetes_asyncio>=28.2.1
-aiohttp>=3.0.0
 anyio

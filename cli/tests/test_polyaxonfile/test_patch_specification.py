@@ -3,7 +3,6 @@ import pytest
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.dicts import deep_update
 from clipped.utils.tz import now
-
 from polyaxon import pkg
 from polyaxon._flow import V1Component, V1EventKind, V1Operation, V1RunKind
 from polyaxon._polyaxonfile import (

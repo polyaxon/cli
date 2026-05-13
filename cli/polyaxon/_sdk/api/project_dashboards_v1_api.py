@@ -2,13 +2,12 @@ from typing import Optional
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
-
 from polyaxon._sdk.base_api import BaseApi
+from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
+from polyaxon._sdk.schemas.v1_list_dashboards_response import V1ListDashboardsResponse
 from polyaxon._sdk.schemas.v1_owner_sub_entity_resource_promote_request import (
     V1OwnerSubEntityResourcePromoteRequest,
 )
-from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
-from polyaxon._sdk.schemas.v1_list_dashboards_response import V1ListDashboardsResponse
 from polyaxon.exceptions import ApiTypeError
 
 

@@ -3,7 +3,6 @@ import time
 import click
 
 from clipped.utils.json import orjson_loads
-
 from polyaxon.logger import logger
 
 

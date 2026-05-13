@@ -1,14 +1,14 @@
 import pytest
 
-from clipped.utils.assertions import assert_equal_dict
-from polyaxon._k8s import k8s_schemas
 from kubernetes import client as k8s_client
 
+from clipped.utils.assertions import assert_equal_dict
 from polyaxon._flow.termination import (
-    V1Termination,
-    V1Culling,
     V1ActivityProbe,
+    V1Culling,
+    V1Termination,
 )
+from polyaxon._k8s import k8s_schemas
 from polyaxon._utils.test_utils import BaseTestCase
 
 

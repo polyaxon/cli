@@ -1,17 +1,15 @@
 import os
 import sys
-
 from typing import Callable, List, Optional, Union
 
 import click
+from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from clipped.utils.dicts import dict_to_tabulate, list_dicts_to_tabulate
 from clipped.utils.query_params import get_query_params
 from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
-from urllib3.exceptions import HTTPError
-
 from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._contexts.paths import get_offline_base_path

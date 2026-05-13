@@ -2,7 +2,6 @@ import pytest
 
 from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.tz import now
-
 from polyaxon import types
 from polyaxon._flow.operations import V1CompiledOperation
 from polyaxon._flow.params import ops_params

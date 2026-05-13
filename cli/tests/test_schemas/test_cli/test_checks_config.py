@@ -1,11 +1,9 @@
+from datetime import timedelta
 import os
 import pytest
 import tempfile
 
-from datetime import timedelta
-
 from clipped.utils.tz import now
-
 from polyaxon._env_vars.keys import ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
 from polyaxon._schemas.checks import ChecksConfig
 from polyaxon._utils.test_utils import BaseTestCase

@@ -2,14 +2,13 @@ import io
 import logging
 import re
 import ssl
-
 from urllib.parse import urlencode
 
 import aiohttp
 
 from clipped.utils.json import orjson_dumps
-
 from polyaxon.exceptions import ApiException, ApiValueError
+
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +46,7 @@ class RESTClientObject(object):
         if self.pool_manager and not self.pool_manager.closed:
             return self.pool_manager
 
-        ssl_context = ssl.create_default_context(
-            cafile=self.configuration.ssl_ca_cert
-        )
+        ssl_context = ssl.create_default_context(cafile=self.configuration.ssl_ca_cert)
         if self.configuration.cert_file:
             ssl_context.load_cert_chain(
                 self.configuration.cert_file, keyfile=self.configuration.key_file

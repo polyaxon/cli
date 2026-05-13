@@ -3,7 +3,6 @@ from typing_extensions import Literal
 
 from clipped.compact.pydantic import Field
 from clipped.types.ref_or_obj import IntOrRef, RefField
-
 from polyaxon._flow.run.base import BaseRun
 from polyaxon._flow.run.dask.replica import V1DaskReplica
 from polyaxon._flow.run.enums import V1RunKind

@@ -1,10 +1,8 @@
 import os
-
 from typing import List, Tuple, Union
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.lists import to_list
-
 from polyaxon._connections import V1Connection
 from polyaxon._schemas.types import V1ArtifactsType
 

@@ -1,7 +1,6 @@
 from typing import Any, Dict, Optional
 
 from clipped.utils.coroutine import run_sync
-
 from polyaxon._k8s.executor.base import BaseExecutor
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 

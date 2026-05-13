@@ -1,6 +1,6 @@
 import logging
-
 from typing import Dict, Optional
+
 
 logger = logging.getLogger("polyaxon.cli")
 

@@ -1,7 +1,6 @@
 from typing import Type
 
 from clipped.formatting import Printer
-
 from polyaxon._config.manager import ConfigManager
 from polyaxon._sdk.schemas.v1_run import V1Run
 

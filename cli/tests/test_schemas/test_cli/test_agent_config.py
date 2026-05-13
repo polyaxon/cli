@@ -2,7 +2,6 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.json import orjson_dumps
-
 from polyaxon._connections import (
     V1BucketConnection,
     V1ConnectionKind,

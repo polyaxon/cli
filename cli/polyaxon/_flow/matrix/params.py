@@ -13,10 +13,10 @@ from clipped.compact.pydantic import (
 from clipped.config.schema import skip_partial
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon import types
 from polyaxon._flow.matrix.enums import V1HPKind
 from polyaxon._schemas.base import BaseSchemaModel
+
 
 if TYPE_CHECKING:
     from clipped.compact.pydantic import CallableGenerator

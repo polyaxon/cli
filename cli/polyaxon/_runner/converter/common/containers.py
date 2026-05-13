@@ -1,7 +1,6 @@
 from typing import Optional
 
 from clipped.utils.lists import to_list
-
 from polyaxon._containers.names import generate_container_name
 from polyaxon._runner.converter.types import Container
 

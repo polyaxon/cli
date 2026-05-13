@@ -1,12 +1,10 @@
 import numpy as np
 import os
 import tempfile
-
 from unittest import TestCase, mock
 
 from clipped.utils.json import orjson_dumps
 from clipped.utils.paths import delete_path
-
 from polyaxon import _dist, settings
 from polyaxon._connections import V1Connection, V1ConnectionKind, V1HostPathConnection
 from polyaxon._contexts import paths as ctx_paths
@@ -83,6 +81,7 @@ def patch_settings(
     if set_agent:
         set_agent_config(AgentConfig())
     delete_path(ctx_paths.CONTEXT_USER_POLYAXON_PATH)
+
 
 class BaseTestCase(TestCase):
     SET_AUTH_SETTINGS = True

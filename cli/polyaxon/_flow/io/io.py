@@ -1,5 +1,4 @@
 import re
-
 from typing import Any, Dict, List, Optional, Union
 
 from clipped.compact.pydantic import (
@@ -14,10 +13,10 @@ from clipped.compact.pydantic import (
 from clipped.config.schema import skip_partial
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
-
 from polyaxon._config.parser import ConfigParser
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
+
 
 IO_NAME_BLACK_LIST = ["globals", "params", "connections"]
 IO_NAME_ERROR = (

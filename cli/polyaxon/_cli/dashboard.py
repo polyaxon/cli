@@ -1,12 +1,10 @@
 import sys
-
 from typing import Optional
 
 import click
 
 from clipped.formatting import Printer
 from clipped.utils.http import clean_host
-
 from polyaxon import settings
 from polyaxon.api import POLYAXON_CLOUD_HOST
 from polyaxon.logger import clean_outputs

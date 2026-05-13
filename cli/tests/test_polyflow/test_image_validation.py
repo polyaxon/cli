@@ -1,7 +1,6 @@
 import pytest
 
 from clipped.types.docker_image import validate_image
-
 from polyaxon._utils.test_utils import BaseTestCase
 
 

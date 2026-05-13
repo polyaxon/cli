@@ -1,11 +1,9 @@
 import os
 import re
+from typing import List, Optional, Tuple
 import unicodedata
 
-from typing import List, Optional, Tuple
-
 from clipped.utils.paths import get_relative_path_to
-
 from polyaxon.exceptions import PolyaxonSchemaError
 
 

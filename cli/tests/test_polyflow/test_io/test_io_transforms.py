@@ -2,7 +2,6 @@ import pytest
 import uuid
 
 from clipped.utils.json import orjson_dumps
-
 from polyaxon import types
 from polyaxon._flow.params import ParamSpec, V1Param
 from polyaxon._utils.test_utils import BaseTestCase

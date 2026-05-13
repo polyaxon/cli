@@ -1,5 +1,4 @@
 from clipped.config.manager import ConfigManager as _ConfigManager
-
 from polyaxon._config.reader import ConfigReader
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon.logger import logger

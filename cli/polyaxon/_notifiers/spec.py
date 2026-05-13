@@ -3,13 +3,12 @@ from typing import Dict, Optional
 from clipped.utils.dates import to_timestamp
 from clipped.utils.enums import get_enum_value
 from clipped.utils.http import absolute_uri, add_notification_referrer_param
-from vents.notifiers import NotificationSpec as _NotificationSpec
-
 from polyaxon import settings
 from polyaxon._connections import CONNECTION_CONFIG
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon._schemas.lifecycle import StatusColor, V1StatusCondition
 from polyaxon._utils.urls_utils import get_run_url
+from vents.notifiers import NotificationSpec as _NotificationSpec
 
 
 class NotificationSpec(_NotificationSpec, BaseSchemaModel):

@@ -1,11 +1,9 @@
 import datetime
-
 from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
-
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1StageCondition, V1Stages
 
 

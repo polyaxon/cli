@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 from clipped.compact.pydantic import PYDANTIC_VERSION, Field
-
 from polyaxon._schemas.base import BaseSchemaModel, RootModel
 
 

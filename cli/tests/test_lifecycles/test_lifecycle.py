@@ -1,5 +1,4 @@
 from clipped.utils.tz import now
-
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.schemas import LifeCycle, V1Statuses
 

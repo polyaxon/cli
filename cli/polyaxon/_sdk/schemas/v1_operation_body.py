@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
-
 from polyaxon._flow import V1RunPending
 from polyaxon._schemas.lifecycle import ManagedBy
 

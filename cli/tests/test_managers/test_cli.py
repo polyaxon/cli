@@ -1,12 +1,10 @@
+from datetime import timedelta
+from mock import patch
 import os
 import pytest
 import uuid
 
-from datetime import timedelta
-from mock import patch
-
 from clipped.utils.tz import now
-
 from polyaxon._managers.cli import CliConfigManager
 from polyaxon._schemas.cli import CliConfig
 from polyaxon._utils.test_utils import BaseTestCase

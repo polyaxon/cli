@@ -1,10 +1,9 @@
 import pytest
 
 from clipped.utils.assertions import assert_equal_dict
-
-from polyaxon.schemas import V1CompiledOperation, V1Plugins, V1RunKind
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.schemas import V1CompiledOperation, V1Plugins, V1RunKind
 
 
 @pytest.mark.plugins_mark

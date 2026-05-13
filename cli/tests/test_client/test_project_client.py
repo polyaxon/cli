@@ -1,15 +1,14 @@
+from mock import mock
 import pytest
 import uuid
 
-from mock import mock
-
 from polyaxon._client.project import ProjectClient
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1Stages
-from polyaxon._sdk.schemas.v1_list_projects_response import V1ListProjectsResponse
-from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_list_project_versions_response import (
     V1ListProjectVersionsResponse,
 )
+from polyaxon._sdk.schemas.v1_list_projects_response import V1ListProjectsResponse
+from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run

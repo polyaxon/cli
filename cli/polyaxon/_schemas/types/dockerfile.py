@@ -4,8 +4,8 @@ from clipped.compact.pydantic import Field, StrictStr, field_validator
 from clipped.config.schema import skip_partial
 from clipped.types.docker_image import validate_image
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._schemas.types.base import BaseTypeConfig
+
 
 POLYAXON_DOCKERFILE_NAME = "Dockerfile"
 POLYAXON_DOCKER_WORKDIR = "/code"

@@ -2,6 +2,7 @@ from typing import Dict
 
 from polyaxon._k8s.custom_resources.crd import get_custom_object
 
+
 KIND = "Operation"
 PLURAL = "operations"
 JOB_KIND = "Job"

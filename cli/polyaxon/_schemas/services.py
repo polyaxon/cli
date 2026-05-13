@@ -7,7 +7,6 @@ from clipped.compact.pydantic import (
     validation_always,
     validation_before,
 )
-
 from polyaxon._containers.pull_policy import PullPolicy
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel

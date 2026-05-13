@@ -5,8 +5,8 @@ from polyaxon._flow.run.ray.autoscaler import V1RayAutoscalerOptions
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon._k8s.custom_resources.operation import (
-    get_operation_custom_object,
     CLUSTER_KIND,
+    get_operation_custom_object,
 )
 from polyaxon._k8s.custom_resources.setter import (
     set_collect_logs,

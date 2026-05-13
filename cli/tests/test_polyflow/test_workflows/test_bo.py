@@ -2,7 +2,6 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
-
 from polyaxon._flow.matrix.bayes import (
     AcquisitionFunctions,
     GaussianProcessConfig,

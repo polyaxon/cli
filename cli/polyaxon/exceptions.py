@@ -1,8 +1,8 @@
 import sys
-
 from typing import Any, Dict, Optional
 
 from clipped.config.exceptions import ClippedException, SchemaError
+
 
 PolyaxonException = ClippedException
 PolyaxonSchemaError = SchemaError

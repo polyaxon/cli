@@ -1,10 +1,8 @@
 import asyncio
 import functools
-
 from typing import Callable, Optional
 
 import aiohttp
-
 from urllib3.exceptions import HTTPError
 
 from polyaxon import settings
@@ -45,16 +43,14 @@ def _warn_missing_loggers(
     can_log_outputs: bool,
 ):
     if can_log_events and (
-        not hasattr(self_arg, "_event_logger")
-        or self_arg._event_logger is None  # pylint:disable=protected-access
+        not hasattr(self_arg, "_event_logger") or self_arg._event_logger is None  # pylint:disable=protected-access
     ):
         logger.warning(
             "You should set an event logger before calling: {}".format(f.__name__)
         )
 
     if can_log_outputs and (
-        not hasattr(self_arg, "_outputs_path")
-        or self_arg._outputs_path is None  # pylint:disable=protected-access
+        not hasattr(self_arg, "_outputs_path") or self_arg._outputs_path is None  # pylint:disable=protected-access
     ):
         logger.warning(
             "You should set an an outputs path before calling: {}".format(f.__name__)

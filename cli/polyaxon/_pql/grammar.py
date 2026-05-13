@@ -27,6 +27,7 @@ from parsimonious.nodes import Node, NodeVisitor
 
 from polyaxon._pql.ast import AndNode, ASTNode, ExpressionNode, OrNode
 
+
 # PQL Grammar Definition
 # Note: Order matters in PEG grammars - more specific rules must come first
 PQL_GRAMMAR = Grammar(

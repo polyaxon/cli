@@ -7,7 +7,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.types.ref_or_obj import IntOrRef, RefField
-
 from polyaxon._flow.environment import V1Environment
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.run.resources import V1RunResources

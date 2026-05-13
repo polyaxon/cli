@@ -1,14 +1,12 @@
+from collections import namedtuple
 import io
 import os
-import re
-
-from collections import namedtuple
 from pathlib import PurePath
+import re
 from typing import List, Optional
 
 from clipped.utils.lists import to_list
 from clipped.utils.paths import unix_style_path
-
 from polyaxon._config.manager import ConfigManager
 from polyaxon._utils import cli_constants
 from polyaxon.logger import logger

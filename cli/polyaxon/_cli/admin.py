@@ -6,7 +6,6 @@ import click
 from clipped.formatting import Printer
 from clipped.utils.lists import to_list
 from clipped.utils.validation import validate_tags
-
 from polyaxon._cli.dashboard import get_dashboard, get_dashboard_url
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._managers.deploy import DeployConfigManager

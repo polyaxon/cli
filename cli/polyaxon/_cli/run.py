@@ -1,25 +1,25 @@
+from collections import namedtuple
 import sys
 import time
-
-from collections import namedtuple
 from typing import Dict, List, Optional
 
 import click
+from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from clipped.utils import git as git_utils
 from clipped.utils.validation import validate_tags
-from urllib3.exceptions import HTTPError
-
 from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
 from polyaxon._cli.errors import handle_cli_error
-from polyaxon._cli.operations import approve
-from polyaxon._cli.operations import execute as run_execute
-from polyaxon._cli.operations import get_op_agent_host
-from polyaxon._cli.operations import logs as run_logs
-from polyaxon._cli.operations import shell as run_shell
-from polyaxon._cli.operations import statuses
-from polyaxon._cli.operations import upload as run_upload
+from polyaxon._cli.operations import (
+    approve,
+    execute as run_execute,
+    get_op_agent_host,
+    logs as run_logs,
+    shell as run_shell,
+    statuses,
+    upload as run_upload,
+)
 from polyaxon._cli.options import OPTIONS_NAME, OPTIONS_PROJECT
 from polyaxon._cli.utils import handle_output
 from polyaxon._constants.globals import DEFAULT_UPLOADS_PATH
@@ -28,7 +28,7 @@ from polyaxon._env_vars.getters import get_project_or_local
 from polyaxon._flow import V1Operation, V1RunPending
 from polyaxon._managers.git import GitConfigManager
 from polyaxon._managers.run import RunConfigManager
-from polyaxon._polyaxonfile import check_polyaxonfile, CompiledOperationSpecification
+from polyaxon._polyaxonfile import CompiledOperationSpecification, check_polyaxonfile
 from polyaxon._runner.kinds import RunnerKind
 from polyaxon._schemas.lifecycle import ManagedBy
 from polyaxon._utils import cache

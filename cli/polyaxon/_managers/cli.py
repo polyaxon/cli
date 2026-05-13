@@ -1,11 +1,10 @@
 import datetime
-
 from typing import TYPE_CHECKING, Optional, Type
 
 from clipped.utils.tz import now
-
 from polyaxon._config.manager import ConfigManager
 from polyaxon._schemas.cli import CliConfig
+
 
 if TYPE_CHECKING:
     from polyaxon._schemas.compatibility import V1Compatibility

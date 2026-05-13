@@ -1,6 +1,5 @@
-import pytest
-
 from mock import patch
+import pytest
 
 from polyaxon._cli.services.docker import docker
 from polyaxon._schemas.types.dockerfile import V1DockerfileType

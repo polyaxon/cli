@@ -3,7 +3,6 @@ import asyncio
 import click
 
 from clipped.utils.coroutine import coroutine
-
 from polyaxon.logger import logger
 
 

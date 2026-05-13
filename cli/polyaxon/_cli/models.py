@@ -1,7 +1,6 @@
 import click
 
 from clipped.formatting import Printer
-
 from polyaxon._cli.options import OPTIONS_MODEL_VERSION, OPTIONS_NAME, OPTIONS_PROJECT
 from polyaxon._cli.project_versions import (
     copy_project_version,

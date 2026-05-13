@@ -1,6 +1,5 @@
-import pytest
-
 from mock import MagicMock, patch
+import pytest
 
 from polyaxon._cli.artifacts import artifacts
 from polyaxon.schemas import V1ProjectVersionKind

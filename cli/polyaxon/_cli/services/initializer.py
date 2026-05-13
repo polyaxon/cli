@@ -8,7 +8,6 @@ from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.utils.lists import to_list
 from clipped.utils.paths import check_or_create_path, copy_file
-
 from polyaxon._config.spec import ConfigSpec
 from polyaxon._connections import V1ConnectionKind
 from polyaxon._schemas.types import V1FileType
@@ -41,7 +40,6 @@ def auth():
 def file(file_context, filepath, copy_path, track):
     """Create auth context."""
     from clipped.utils.hashing import hash_value
-
     from polyaxon._init.file import create_file_lineage
 
     try:
@@ -321,7 +319,6 @@ def tensorboard(
 ):
     """Create path context."""
     from clipped.utils.validation import validate_tags
-
     from polyaxon._init.tensorboard import initialize_tensorboard
 
     uuids = validate_tags(uuids)

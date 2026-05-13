@@ -1,18 +1,17 @@
 import logging
 import time
-
 from typing import Dict, List, Optional, Union
 
+from docker import APIClient
+from docker.errors import APIError, BuildError
 import orjson
+from urllib3.exceptions import ReadTimeoutError
 
 from clipped.utils.json import orjson_loads
 from clipped.utils.logging import LogLevels
-from docker import APIClient
-from docker.errors import APIError, BuildError
-from urllib3.exceptions import ReadTimeoutError
-
 from polyaxon._schemas.types import Uri
 from polyaxon.exceptions import PolyaxonBuildException, PolyaxonSchemaError
+
 
 _logger = logging.getLogger("polyaxon.dockerizer")
 

@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Union
 
 from clipped.utils.query_params import get_query_params
-
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import (
     async_client_handler,
@@ -12,19 +11,19 @@ from polyaxon._client.mixin import ClientMixin
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind
-from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
+from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
 from polyaxon._sdk.schemas.v1_list_organization_members_response import (
     V1ListOrganizationMembersResponse,
+)
+from polyaxon._sdk.schemas.v1_list_organizations_response import (
+    V1ListOrganizationsResponse,
 )
 from polyaxon._sdk.schemas.v1_list_project_versions_response import (
     V1ListProjectVersionsResponse,
 )
 from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
     V1ListRunArtifactsResponse,
-)
-from polyaxon._sdk.schemas.v1_list_organizations_response import (
-    V1ListOrganizationsResponse,
 )
 from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_list_teams_response import V1ListTeamsResponse
@@ -883,12 +882,8 @@ class AsyncOrganizationClient(OrganizationClient):
     @async_client_handler(check_no_op=True, check_offline=True)
     async def get_run(self, uuid: str) -> V1Run:
         if self.team:
-            return await self.client.teams_v1.get_team_run(
-                self.owner, self.team, uuid
-            )
-        return await self.client.organizations_v1.get_organization_run(
-            self.owner, uuid
-        )
+            return await self.client.teams_v1.get_team_run(self.owner, self.team, uuid)
+        return await self.client.organizations_v1.get_organization_run(self.owner, uuid)
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def approve_runs(self, uuids: Union[List[str], V1Uuids]):
@@ -1121,6 +1116,8 @@ class AsyncOrganizationClient(OrganizationClient):
             return await self.client.teams_v1.get_team_runs_artifacts_lineage(
                 self.owner, self.team, **params
             )
-        return await self.client.organizations_v1.get_organization_runs_artifacts_lineage(
-            self.owner, **params
+        return (
+            await self.client.organizations_v1.get_organization_runs_artifacts_lineage(
+                self.owner, **params
+            )
         )

@@ -5,7 +5,6 @@ import click
 
 from clipped.formatting import Printer
 from clipped.utils.dicts import list_dicts_to_tabulate
-
 from polyaxon import settings
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import (

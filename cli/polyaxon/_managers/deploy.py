@@ -1,12 +1,10 @@
 import shutil
 import time
-
 from typing import Dict, Optional
 
 import click
 
 from clipped.formatting import Printer
-
 from polyaxon import settings
 from polyaxon._deploy.operators.compose import ComposeOperator
 from polyaxon._deploy.operators.docker import DockerOperator

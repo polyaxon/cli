@@ -1,5 +1,4 @@
 import os
-
 from typing import Optional
 
 from polyaxon._utils.fqn_utils import to_fqn_name

@@ -1,7 +1,6 @@
 import pytest
 
 from clipped.compact.pydantic import ValidationError
-
 from polyaxon._schemas.types.dockerfile import (
     POLYAXON_DOCKER_SHELL,
     POLYAXON_DOCKER_WORKDIR,

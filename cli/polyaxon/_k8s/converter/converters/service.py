@@ -1,7 +1,6 @@
 from typing import Dict, Iterable, Optional
 
 from clipped.utils.lists import to_list
-
 from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._flow import V1CompiledOperation, V1Plugins
 from polyaxon._k8s.converter.base import BaseConverter

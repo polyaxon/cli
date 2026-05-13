@@ -1,7 +1,6 @@
 from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
-
 from polyaxon import _dist
 from polyaxon._schemas.checks import ChecksConfig
 from polyaxon._schemas.compatibility import V1Compatibility

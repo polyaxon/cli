@@ -2,8 +2,6 @@ from typing import Dict, List, Optional, Union
 
 from clipped.compact.pydantic import Field
 from clipped.utils.lists import to_list
-from vents.connections import Connection, ConnectionResource
-
 from polyaxon import settings
 from polyaxon._auxiliaries import (
     V1PolyaxonInitContainer,
@@ -16,6 +14,7 @@ from polyaxon._flow import V1CompiledOperation, V1Init
 from polyaxon._schemas.agent import AgentConfig
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonCompilerError
+from vents.connections import Connection, ConnectionResource
 
 
 class AgentResolver(BaseSchemaModel):

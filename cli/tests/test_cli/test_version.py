@@ -1,6 +1,5 @@
-import pytest
-
 from mock import patch
+import pytest
 
 from polyaxon._cli.version import upgrade, version
 from polyaxon._schemas.compatibility import V1Compatibility

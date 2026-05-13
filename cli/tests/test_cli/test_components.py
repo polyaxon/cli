@@ -1,6 +1,5 @@
-import pytest
-
 from mock import patch
+import pytest
 
 from polyaxon._cli.components import components
 from tests.test_cli.utils import BaseCommandTestCase

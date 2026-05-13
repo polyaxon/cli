@@ -1,5 +1,4 @@
 import os
-
 from typing import Dict, Type
 
 from polyaxon._config.manager import ConfigManager

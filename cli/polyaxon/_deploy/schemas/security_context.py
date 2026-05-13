@@ -8,7 +8,6 @@ from clipped.compact.pydantic import (
     validation_after,
 )
 from clipped.config.schema import skip_partial
-
 from polyaxon._schemas.base import BaseSchemaModel
 
 

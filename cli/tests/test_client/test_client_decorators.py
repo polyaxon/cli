@@ -1,10 +1,8 @@
 import asyncio
-
-import aiohttp
+from mock import patch
 import pytest
 
-from mock import patch
-
+import aiohttp
 from urllib3.exceptions import HTTPError
 
 from polyaxon._client.decorators import async_client_handler, client_handler
@@ -96,9 +94,9 @@ def test_client_handler_exceptions_call_error_handler(error):
 
     assert handle.call_count == 1
     assert handle.call_args.kwargs["e"] is error
-    assert "API Client failed at the function `call`" in handle.call_args.kwargs[
-        "message"
-    ]
+    assert (
+        "API Client failed at the function `call`" in handle.call_args.kwargs["message"]
+    )
 
 
 @pytest.mark.client_mark
@@ -217,9 +215,9 @@ async def test_async_client_handler_api_exception_calls_error_handler():
 
     assert handle.call_count == 1
     assert handle.call_args.kwargs["e"] is error
-    assert "API Client failed at the function `call`" in handle.call_args.kwargs[
-        "message"
-    ]
+    assert (
+        "API Client failed at the function `call`" in handle.call_args.kwargs["message"]
+    )
 
 
 @pytest.mark.client_mark

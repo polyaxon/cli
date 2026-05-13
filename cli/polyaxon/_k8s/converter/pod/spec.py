@@ -2,7 +2,6 @@ from typing import Dict, List, Optional, Tuple
 
 from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_string_dict
-
 from polyaxon._flow import V1Environment
 from polyaxon._k8s import k8s_schemas
 from polyaxon.exceptions import PolyaxonConverterError

@@ -1,7 +1,6 @@
 import uuid
 
 from clipped.config.constants import NO_VALUE_FOUND
-
 from polyaxon._config.parser import ConfigParser
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonSchemaError

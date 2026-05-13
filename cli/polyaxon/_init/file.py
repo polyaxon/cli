@@ -1,5 +1,4 @@
 import os
-
 from typing import Dict
 
 from polyaxon._client.init import get_client_or_raise

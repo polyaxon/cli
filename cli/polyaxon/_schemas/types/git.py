@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from clipped.compact.pydantic import StrictStr
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._schemas.types.base import BaseTypeConfig
+
 
 if TYPE_CHECKING:
     from polyaxon._connections import V1GitConnection

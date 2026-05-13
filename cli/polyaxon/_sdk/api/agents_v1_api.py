@@ -1,8 +1,7 @@
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
-
 from polyaxon._schemas.lifecycle import V1Status
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_agent import V1Agent

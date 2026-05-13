@@ -5,7 +5,6 @@ from clipped.utils.bools import to_bool
 from clipped.utils.dates import DateTimeFormatter, DateTimeFormatterException
 from clipped.utils.lists import to_list
 from clipped.utils.tz import get_datetime_from_now
-
 from polyaxon.exceptions import PQLException
 
 

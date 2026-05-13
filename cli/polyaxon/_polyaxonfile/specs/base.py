@@ -1,9 +1,7 @@
+from collections.abc import Mapping
 import copy
 
-from collections.abc import Mapping
-
 from clipped.utils.lists import to_list
-
 from polyaxon._config.spec import ConfigSpec
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.sections import Sections

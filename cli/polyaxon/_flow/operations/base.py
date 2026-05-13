@@ -2,7 +2,6 @@ from typing import Dict, List, Optional, Set, Union
 
 from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._contexts import refs as ctx_refs
 from polyaxon._flow.component.base import BaseComponent
 from polyaxon._flow.events import V1EventKind, V1EventTrigger

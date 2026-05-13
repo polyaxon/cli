@@ -1,7 +1,6 @@
 from typing import Dict, List
 
 from clipped.compact.pydantic import ValidationError
-
 from polyaxon._flow.run.cleaner import V1CleanerJob
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.dask import V1DaskCluster, V1DaskReplica

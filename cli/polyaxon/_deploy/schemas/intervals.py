@@ -1,7 +1,6 @@
 from typing import Optional
 
 from clipped.compact.pydantic import Field, StrictInt
-
 from polyaxon._schemas.base import BaseSchemaModel
 
 

@@ -2,7 +2,6 @@ from collections.abc import Mapping
 from typing import Dict, List, Union
 
 from clipped.formatting import Printer
-
 from polyaxon._polyaxonfile.specs.libs.parser import PolyaxonfileParser
 from polyaxon.exceptions import PolyaxonfileError
 

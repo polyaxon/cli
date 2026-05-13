@@ -1,5 +1,4 @@
 from clipped.compact.pydantic import ValidationError
-
 from polyaxon._deploy import reader
 from polyaxon._deploy.schemas.deployment import DeploymentConfig
 from polyaxon._deploy.schemas.service_types import ServiceTypes

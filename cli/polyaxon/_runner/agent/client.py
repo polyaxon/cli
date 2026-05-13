@@ -1,5 +1,4 @@
 import traceback
-
 from typing import Dict, Optional
 
 from polyaxon._schemas.lifecycle import V1StatusCondition, V1Statuses

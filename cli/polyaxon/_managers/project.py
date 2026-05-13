@@ -1,9 +1,7 @@
 import sys
-
 from typing import Type
 
 from clipped.formatting import Printer
-
 from polyaxon._config.manager import ConfigManager
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._utils import cli_constants

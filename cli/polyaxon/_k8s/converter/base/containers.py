@@ -2,7 +2,6 @@ from typing import Dict, List, Optional, Union
 
 from clipped.utils.lists import to_list
 from clipped.utils.sanitizers import sanitize_value
-
 from polyaxon._containers.names import sanitize_container_name
 from polyaxon._k8s import k8s_schemas
 from polyaxon._runner.converter import BaseConverter

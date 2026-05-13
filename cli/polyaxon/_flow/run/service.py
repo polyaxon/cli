@@ -3,7 +3,6 @@ from typing_extensions import Literal
 
 from clipped.compact.pydantic import Field, StrictInt
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
-
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.job import V1Job
 

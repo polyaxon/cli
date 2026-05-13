@@ -1,8 +1,8 @@
 from typing import Dict, Optional, Type, TypeVar, Union
 
 from clipped.utils.strings import to_snake_case
-
 from polyaxon._k8s import k8s_schemas
+
 
 Swagger = TypeVar("Swagger")
 

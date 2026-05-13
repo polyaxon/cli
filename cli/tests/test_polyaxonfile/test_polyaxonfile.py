@@ -1,7 +1,6 @@
+from mock import MagicMock, patch
 import os
 import pytest
-
-from mock import MagicMock, patch
 
 from polyaxon import pkg
 from polyaxon._contexts import paths as ctx_paths

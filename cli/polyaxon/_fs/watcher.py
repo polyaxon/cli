@@ -1,12 +1,10 @@
-import os
-
 from datetime import datetime
+import os
 from typing import Dict, List, Optional, Set, Tuple
 
 from clipped.compact.pydantic import PYDANTIC_VERSION
 from clipped.utils.dates import path_last_modified
 from clipped.utils.paths import get_files_and_dirs_in_path
-
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._schemas.base import BaseSchemaModel, RootModel
 

@@ -8,9 +8,7 @@ from polyaxon._utils.test_utils import BaseTestCase
 @pytest.mark.k8s_mark
 class TestPatchContainer(BaseTestCase):
     def test_patch_container_normalizes_and_dedupes_ports(self):
-        existing = k8s_schemas.V1ContainerPort(
-            name="sandbox", container_port=9090
-        )
+        existing = k8s_schemas.V1ContainerPort(name="sandbox", container_port=9090)
         http = k8s_schemas.V1ContainerPort(name="http", container_port=8080)
         container = ContainerMixin._patch_container(
             container=k8s_schemas.V1Container(name="main", ports=[existing]),

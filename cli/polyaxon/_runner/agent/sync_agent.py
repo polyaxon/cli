@@ -1,22 +1,24 @@
+from concurrent.futures import ThreadPoolExecutor
 import time
 import traceback
-
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Optional, Tuple
+
+from kubernetes.client.rest import ApiException
+from urllib3.exceptions import HTTPError
 
 from clipped.utils.tz import now
 from clipped.utils.versions import clean_version_for_check
 from clipped.utils.workers import get_pool_workers, get_wait, sync_exit_context
-from kubernetes.client.rest import ApiException
-from urllib3.exceptions import HTTPError
-
 from polyaxon import pkg, settings
 from polyaxon._env_vars.getters import get_run_info
 from polyaxon._runner.agent.base_agent import BaseAgent
 from polyaxon._utils.fqn_utils import get_run_instance
 from polyaxon.client import V1Agent, V1AgentStateResponse
-from polyaxon.exceptions import ApiException as SDKApiException
-from polyaxon.exceptions import PolyaxonAgentError, PolyaxonConverterError
+from polyaxon.exceptions import (
+    ApiException as SDKApiException,
+    PolyaxonAgentError,
+    PolyaxonConverterError,
+)
 from polyaxon.logger import logger
 
 

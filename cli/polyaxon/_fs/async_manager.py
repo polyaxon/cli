@@ -1,5 +1,4 @@
 import os
-
 from typing import Any, Dict, List, Optional, Union
 
 import aiofiles
@@ -8,10 +7,8 @@ from clipped.utils.coroutine import run_sync
 from clipped.utils.hashing import hash_value
 from clipped.utils.lists import to_list
 from clipped.utils.paths import check_or_create_path
-
 from polyaxon import settings
-from polyaxon._fs.tar import tar_dir
-from polyaxon._fs.tar import tar_files as sync_tar_files
+from polyaxon._fs.tar import tar_dir, tar_files as sync_tar_files
 from polyaxon._fs.types import FSSystem
 from polyaxon._fs.utils import get_store_path
 from polyaxon._schemas.lifecycle import V1ProjectFeature

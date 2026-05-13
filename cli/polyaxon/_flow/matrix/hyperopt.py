@@ -9,7 +9,6 @@ from clipped.compact.pydantic import (
 )
 from clipped.types.ref_or_obj import IntOrRef, RefField
 from clipped.utils.enums import PEnum
-
 from polyaxon._flow.early_stopping import V1EarlyStopping
 from polyaxon._flow.matrix.base import BaseSearchConfig
 from polyaxon._flow.matrix.enums import V1MatrixKind

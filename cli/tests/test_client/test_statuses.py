@@ -1,7 +1,6 @@
+from mock import MagicMock, mock
 import pytest
 import uuid
-
-from mock import MagicMock, mock
 
 from polyaxon import settings
 from polyaxon._utils.test_utils import BaseTestCase

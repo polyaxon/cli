@@ -3,7 +3,6 @@ from typing import ClassVar, Optional, Set, Union
 from clipped.compact.pydantic import StrictStr
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.utils.units import to_cpu_value, to_memory_bytes
-
 from polyaxon._k8s.k8s_schemas import V1Container
 from polyaxon._schemas.base import BaseSchemaModel
 

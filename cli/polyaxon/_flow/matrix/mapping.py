@@ -3,7 +3,6 @@ from typing_extensions import Literal
 
 from clipped.compact.pydantic import Field, PositiveInt, field_validator
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._contexts.params import is_template_ref
 from polyaxon._flow.early_stopping import V1EarlyStopping
 from polyaxon._flow.matrix.base import BaseSearchConfig

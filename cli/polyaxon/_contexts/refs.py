@@ -1,9 +1,9 @@
-import uuid
-
 from typing import Optional
+import uuid
 
 from polyaxon._contexts.params import PARAM_REGEX, is_template_ref
 from polyaxon.exceptions import PolyaxonValidationError
+
 
 OPS = "ops"
 RUNS = "runs"

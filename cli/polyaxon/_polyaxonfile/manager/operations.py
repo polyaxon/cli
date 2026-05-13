@@ -1,11 +1,9 @@
-import copy
-
 from collections.abc import Mapping
+import copy
 from typing import Dict, List, Optional, Union
 
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.bools import to_bool
-
 from polyaxon import pkg
 from polyaxon._env_vars.getters.queue import get_queue_info
 from polyaxon._flow import V1Component, V1Init, V1Matrix, V1MatrixKind, V1Operation

@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional, Union
 from clipped.compact.pydantic import Field, StrictStr
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 from clipped.utils.versions import clean_version_post_suffix
-
 from polyaxon import pkg
 from polyaxon._containers.pull_policy import PullPolicy
 from polyaxon._k8s import k8s_schemas

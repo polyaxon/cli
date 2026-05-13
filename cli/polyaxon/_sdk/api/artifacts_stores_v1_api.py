@@ -2,7 +2,6 @@ from typing import Optional
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictStr, validate_call
-
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon.exceptions import ApiTypeError
 

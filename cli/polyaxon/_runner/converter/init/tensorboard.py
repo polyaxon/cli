@@ -1,6 +1,6 @@
 from clipped.utils.validation import validate_tags
-
 from polyaxon._schemas.types import V1TensorboardType
+
 
 TENSORBOARD_INIT_COMMAND = ["polyaxon", "initializer", "tensorboard"]
 

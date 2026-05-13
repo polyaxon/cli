@@ -3,6 +3,7 @@ from typing import List, Optional
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._schemas.types import V1FileType
 
+
 FILE_INIT_COMMAND = ["polyaxon", "initializer", "file"]
 
 

@@ -1,7 +1,6 @@
 import sys
 
 from clipped.formatting import Printer
-
 from polyaxon._constants.globals import DEFAULT
 from polyaxon.exceptions import PolyaxonClientException
 

@@ -2,7 +2,6 @@ from typing import List, Optional, Tuple, Union
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.lists import to_list
-
 from polyaxon._auxiliaries import V1PolyaxonInitContainer
 from polyaxon._connections import V1Connection, V1ConnectionKind
 from polyaxon._constants.globals import DEFAULT

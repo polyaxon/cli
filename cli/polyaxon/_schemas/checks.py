@@ -1,10 +1,8 @@
-import os
-
 from datetime import datetime, timedelta
+import os
 from typing import ClassVar, Optional
 
 from clipped.utils.tz import now
-
 from polyaxon._env_vars.keys import ENV_KEYS_INTERVALS_COMPATIBILITY_CHECK
 from polyaxon._schemas.base import BaseSchemaModel
 

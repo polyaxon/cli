@@ -1,10 +1,8 @@
 import os
-
 from typing import Optional
 
 from clipped.formatting import Printer
 from clipped.utils.bools import to_bool
-
 from polyaxon._env_vars.getters.project import get_project_or_local
 from polyaxon._env_vars.keys import (
     ENV_KEYS_COLLECT_ARTIFACTS,

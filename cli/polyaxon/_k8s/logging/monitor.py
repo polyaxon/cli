@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
-from clipped.utils.tz import now
 from kubernetes.client.rest import ApiException
 
+from clipped.utils.tz import now
 from polyaxon._k8s.manager.manager import K8sManager
 from polyaxon.client import RunClient
 from polyaxon.exceptions import PolyaxonK8sError

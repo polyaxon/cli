@@ -4,7 +4,6 @@ import click
 
 from clipped.formatting import Printer
 from clipped.utils.lists import to_list
-
 from polyaxon._connections import V1ConnectionKind
 
 

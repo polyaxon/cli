@@ -1,6 +1,5 @@
-import pytest
-
 from mock import MagicMock
+import pytest
 
 from polyaxon._flow import dags
 from polyaxon._utils.test_utils import BaseTestCase

@@ -1,11 +1,9 @@
-import os
-
 from collections import OrderedDict
+import os
 from typing import Dict, List, Optional, Union
 
 from clipped.formatting import Printer
 from clipped.utils.lists import to_list
-
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._config.spec import ConfigSpec
 from polyaxon._flow import V1Dag, V1Init, V1Matrix, V1Operation

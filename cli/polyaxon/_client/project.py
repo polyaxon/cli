@@ -1,6 +1,5 @@
-import os
-
 from datetime import datetime
+import os
 from requests import HTTPError
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -9,7 +8,6 @@ from clipped.utils.paths import check_or_create_path, delete_path
 from clipped.utils.query_params import get_query_params
 from clipped.utils.tz import now
 from clipped.utils.validation import validate_tags
-
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import (
     async_client_handler,
@@ -2060,9 +2058,7 @@ class AsyncProjectClient(ProjectClient):
         params = get_query_params(
             limit=limit or 20, offset=offset, query=query, sort=sort
         )
-        return await self.client.runs_v1.list_runs(
-            self.owner, self.project, **params
-        )
+        return await self.client.runs_v1.list_runs(self.owner, self.project, **params)
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def transfer_runs(
@@ -2123,17 +2119,13 @@ class AsyncProjectClient(ProjectClient):
     async def stop_runs(self, uuids: Union[List[str], V1Uuids]):
         if isinstance(uuids, list):
             uuids = V1Uuids(uuids=uuids)
-        return await self.client.runs_v1.stop_runs(
-            self.owner, self.project, body=uuids
-        )
+        return await self.client.runs_v1.stop_runs(self.owner, self.project, body=uuids)
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def skip_runs(self, uuids: Union[List[str], V1Uuids]):
         if isinstance(uuids, list):
             uuids = V1Uuids(uuids=uuids)
-        return await self.client.runs_v1.skip_runs(
-            self.owner, self.project, body=uuids
-        )
+        return await self.client.runs_v1.skip_runs(self.owner, self.project, body=uuids)
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def invalidate_runs(self, uuids: Union[List[str], V1Uuids]):
@@ -2159,9 +2151,7 @@ class AsyncProjectClient(ProjectClient):
             uuids=uuids.uuids,
             tags=tags,
         )
-        return await self.client.runs_v1.tag_runs(
-            self.owner, self.project, body=data
-        )
+        return await self.client.runs_v1.tag_runs(self.owner, self.project, body=data)
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def list_versions(
@@ -2766,21 +2756,12 @@ class AsyncProjectClient(ProjectClient):
             force=force,
         )
 
-    def _raise_sync_only(self, method_name: str):
-        raise PolyaxonClientException(
-            "`{}` performs local file or artifact IO and is sync-only for now.".format(
-                method_name
-            )
-        )
-
     @async_client_handler(check_no_op=True)
     async def persist_version(self, config: V1ProjectVersion, path: str):
         self._raise_sync_only("persist_version")
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def download_artifacts_for_version(
-        self, config: V1ProjectVersion, path: str
-    ):
+    async def download_artifacts_for_version(self, config: V1ProjectVersion, path: str):
         self._raise_sync_only("download_artifacts_for_version")
 
     @async_client_handler(check_no_op=True, check_offline=True)

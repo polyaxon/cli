@@ -1,6 +1,5 @@
-import pytest
-
 from mock import MagicMock, patch
+import pytest
 
 from polyaxon._k8s.agent.async_agent import AsyncAgent
 from polyaxon._k8s.executor.async_executor import AsyncExecutor

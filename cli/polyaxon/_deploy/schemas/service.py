@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr
-
 from polyaxon._deploy.schemas.celery import CeleryConfig
 from polyaxon._deploy.schemas.service_types import ServiceTypes
 from polyaxon._schemas.base import BaseSchemaModel

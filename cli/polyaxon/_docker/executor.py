@@ -1,7 +1,6 @@
 import os
 import signal
 import subprocess
-
 from typing import Dict, List
 
 from polyaxon._deploy.operators.docker import DockerOperator

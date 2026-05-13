@@ -1,5 +1,4 @@
 import copy
-
 from typing import Dict, Optional
 
 from polyaxon._compiler.contexts.base import BaseContextsManager

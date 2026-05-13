@@ -1,16 +1,15 @@
 import atexit
 import datetime
 import mimetypes
+from multiprocessing.pool import ThreadPool
 import os
 import re
 import tempfile
-
-from multiprocessing.pool import ThreadPool
 from urllib.parse import quote
 
-from clipped.utils.json import orjson_dumps, orjson_loads
 from dateutil.parser import parse
 
+from clipped.utils.json import orjson_dumps, orjson_loads
 from polyaxon import pkg, schemas
 from polyaxon._sdk.configuration import Configuration
 from polyaxon.exceptions import ApiException, ApiValueError

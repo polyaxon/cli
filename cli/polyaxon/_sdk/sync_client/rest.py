@@ -6,7 +6,6 @@ import ssl
 import urllib3
 
 from clipped.utils.json import orjson_dumps
-
 from polyaxon.exceptions import (
     ApiException,
     ApiValueError,
@@ -15,6 +14,7 @@ from polyaxon.exceptions import (
     ServiceException,
     UnauthorizedException,
 )
+
 
 logger = logging.getLogger(__name__)
 

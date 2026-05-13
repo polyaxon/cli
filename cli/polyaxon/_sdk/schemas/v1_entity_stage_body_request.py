@@ -2,7 +2,6 @@ from typing import Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
-
 from polyaxon._schemas.lifecycle import V1StageCondition
 
 

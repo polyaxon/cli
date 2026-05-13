@@ -1,6 +1,5 @@
-import pytest
-
 from mock import patch
+import pytest
 
 from polyaxon._cli.auth import logout, whoami
 from tests.test_cli.utils import BaseCommandTestCase

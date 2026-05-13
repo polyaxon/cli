@@ -1,7 +1,6 @@
+from mock import patch
 import pytest
 import tempfile
-
-from mock import patch
 
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
@@ -71,8 +70,7 @@ class TestPolyaxonClient(BaseTestCase):
         sdk_config = api_client.call_args.args[0]
         assert sdk_config.api_key_prefix["ApiKey"] == "InternalToken"
         assert (
-            api_client.call_args.kwargs
-            == settings.CLIENT_CONFIG.get_internal_header()
+            api_client.call_args.kwargs == settings.CLIENT_CONFIG.get_internal_header()
         )
 
     def test_async_internal_client_uses_async_internal_config(self):
@@ -84,8 +82,7 @@ class TestPolyaxonClient(BaseTestCase):
         assert sdk_config.api_key_prefix["ApiKey"] == "InternalToken"
         assert sdk_config.connection_pool_maxsize == 100
         assert (
-            api_client.call_args.kwargs
-            == settings.CLIENT_CONFIG.get_internal_header()
+            api_client.call_args.kwargs == settings.CLIENT_CONFIG.get_internal_header()
         )
 
     def test_from_config(self):

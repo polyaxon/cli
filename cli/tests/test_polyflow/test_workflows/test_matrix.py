@@ -1,11 +1,9 @@
+from datetime import date, datetime, timedelta
 import numpy as np
 import pytest
 
-from datetime import date, datetime, timedelta
-
 from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.json import orjson_dumps
-
 from hypertune.matrix.utils import get_length, get_max, get_min, sample, to_numpy
 from polyaxon._flow.matrix.params import (
     V1HpChoice,

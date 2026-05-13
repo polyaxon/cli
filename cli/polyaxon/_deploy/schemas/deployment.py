@@ -12,7 +12,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.formatting import Printer
-
 from polyaxon._auxiliaries import (
     V1PolyaxonCleaner,
     V1PolyaxonInitContainer,

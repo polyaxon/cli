@@ -1,7 +1,6 @@
 from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.lists import to_list
-
 from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._docker import docker_types
 from polyaxon._flow import V1Init, V1Plugins

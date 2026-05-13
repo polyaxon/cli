@@ -1,5 +1,4 @@
 import os
-
 from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import (
@@ -10,8 +9,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.config.schema import skip_partial, to_partial
-from vents.connections import ConnectionCatalog
-
 from polyaxon._auxiliaries import (
     V1DefaultScheduling,
     V1PolyaxonCleaner,
@@ -48,6 +45,7 @@ from polyaxon._env_vars.keys import (
 from polyaxon._fs.utils import get_store_path
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonSchemaError
+from vents.connections import ConnectionCatalog
 
 
 def validate_agent_config(

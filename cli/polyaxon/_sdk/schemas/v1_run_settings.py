@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Optional
 
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
-
 from polyaxon._sdk.schemas.v1_run_reference_catalog import V1RunReferenceCatalog
 from polyaxon._sdk.schemas.v1_settings_catalog import V1SettingsCatalog
 

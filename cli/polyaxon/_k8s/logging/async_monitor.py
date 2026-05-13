@@ -1,15 +1,15 @@
 import datetime
 import logging
-
 from typing import List, Optional, Tuple
 
-from clipped.utils.tz import now
 from kubernetes_asyncio.client.models import V1Pod
 from kubernetes_asyncio.client.rest import ApiException
 
+from clipped.utils.tz import now
 from polyaxon._flow import V1RunKind
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 from traceml.logging import V1Log, V1Logs
+
 
 _logger = logging.getLogger("haupt.k8s.logs")
 

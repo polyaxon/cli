@@ -1,10 +1,8 @@
 import os
 import subprocess
-
 from typing import List, Optional
 
 from clipped.formatting import Printer
-
 from polyaxon._init.artifacts import download_artifact
 from polyaxon.client import RunClient
 

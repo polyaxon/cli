@@ -1,9 +1,7 @@
 import os
-
 from requests import HTTPError
 
 from clipped.config.spec import ConfigSpec as _ConfigSpec
-
 from polyaxon._env_vars.keys import ENV_KEYS_PUBLIC_REGISTRY, ENV_KEYS_USE_GIT_REGISTRY
 from polyaxon.exceptions import (
     ApiException,

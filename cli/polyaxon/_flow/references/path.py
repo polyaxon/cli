@@ -1,7 +1,6 @@
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import StrictStr
-
 from polyaxon._flow.references.mixin import RefMixin
 from polyaxon._schemas.base import BaseSchemaModel
 

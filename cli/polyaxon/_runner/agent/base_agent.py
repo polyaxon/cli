@@ -1,11 +1,9 @@
+from concurrent.futures import ThreadPoolExecutor
 import time
 import traceback
-
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, Optional, Tuple, Type
 
 from clipped.utils.tz import get_datetime_from_now, now
-
 from polyaxon import settings
 from polyaxon._auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon._connections import V1Connection

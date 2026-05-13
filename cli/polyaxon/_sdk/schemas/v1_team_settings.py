@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from clipped.config.schema import BaseAllowSchemaModel
-
 from polyaxon._sdk.schemas.v1_settings_catalog import V1SettingsCatalog
 
 

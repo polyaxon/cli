@@ -1,5 +1,4 @@
 from clipped.compact.pydantic import validate_call
-
 from polyaxon._schemas.authentication import V1Credentials
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas.v1_auth import V1Auth

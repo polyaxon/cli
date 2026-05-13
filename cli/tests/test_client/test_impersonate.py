@@ -1,10 +1,9 @@
+from mock import patch
 import os
 import pytest
 import tempfile
-import uuid
-
-from mock import patch
 from unittest.mock import MagicMock
+import uuid
 
 from polyaxon._client.impersonate import create_context_auth, impersonate
 from polyaxon._schemas.authentication import AccessTokenConfig

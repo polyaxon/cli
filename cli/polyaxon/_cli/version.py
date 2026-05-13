@@ -6,11 +6,11 @@ from clipped.formatting import Printer
 from clipped.utils import indentation
 from clipped.utils.dicts import dict_to_tabulate
 from clipped.utils.versions import clean_version_for_check, compare_versions
-
 from polyaxon import pkg
 from polyaxon._cli.session import set_versions_config
 from polyaxon._deploy.operators.pip import PipOperator
 from polyaxon.logger import clean_outputs, logger
+
 
 PROJECT_CLI_NAME = "polyaxon"
 

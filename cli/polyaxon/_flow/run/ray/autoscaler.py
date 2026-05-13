@@ -3,11 +3,10 @@ from typing import Optional, Union
 from clipped.compact.pydantic import (
     Field,
     field_validator,
-    validation_before,
     validation_always,
+    validation_before,
 )
 from clipped.types.ref_or_obj import RefField
-
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
 

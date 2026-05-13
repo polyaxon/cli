@@ -1,10 +1,8 @@
 import os
-
 from typing import List, Optional
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.versions import clean_version_post_suffix
-
 from polyaxon import pkg
 from polyaxon._connections import V1Connection
 from polyaxon._containers.names import MAIN_JOB_CONTAINER

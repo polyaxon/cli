@@ -1,8 +1,6 @@
 import inspect
-
-import pytest
-
 from mock import mock
+import pytest
 
 from polyaxon._client.organization import AsyncOrganizationClient, OrganizationClient
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind
@@ -130,9 +128,7 @@ async def test_refresh_data_returns_none_when_offline():
     patch_settings()
     sdk_client = AsyncPolyaxonClientMock()
     sdk_client.organizations_v1.get_organization = AsyncMock()
-    client = AsyncOrganizationClient(
-        owner=OWNER, client=sdk_client, is_offline=True
-    )
+    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client, is_offline=True)
 
     assert await client.refresh_data() is None
     assert sdk_client.organizations_v1.get_organization.call_count == 0
@@ -372,9 +368,7 @@ async def test_transfer_runs_awaits_api_with_entities_transfer():
     sdk_client.teams_v1.transfer_team_runs = AsyncMock(return_value=None)
     client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
 
-    assert await client.transfer_runs(
-        V1Uuids(uuids=[RUN_UUID1]), "project-b"
-    ) is None
+    assert await client.transfer_runs(V1Uuids(uuids=[RUN_UUID1]), "project-b") is None
 
     sdk_client.teams_v1.transfer_team_runs.assert_called_once()
     body = sdk_client.teams_v1.transfer_team_runs.call_args[1]["body"]

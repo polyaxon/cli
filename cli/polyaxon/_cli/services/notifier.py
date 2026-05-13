@@ -1,7 +1,6 @@
 import click
 
 from clipped.utils.json import orjson_loads
-
 from polyaxon._cli.options import OPTIONS_NAME
 
 

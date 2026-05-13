@@ -1,14 +1,13 @@
 import sys
+from typing import Optional
 import uuid
 
-from typing import Optional
+from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from clipped.utils.enums import get_enum_value
 from clipped.utils.tz import now
 from clipped.utils.versions import clean_version_for_compatibility
-from urllib3.exceptions import HTTPError
-
 from polyaxon import pkg
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._constants.globals import NO_AUTH

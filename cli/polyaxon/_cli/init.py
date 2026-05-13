@@ -2,11 +2,10 @@ import os
 import sys
 
 import click
+from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from clipped.utils import indentation
-from urllib3.exceptions import HTTPError
-
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import OPTIONS_PROJECT
 from polyaxon._env_vars.getters import get_project_or_local

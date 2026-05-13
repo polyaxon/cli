@@ -8,7 +8,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.utils.versions import clean_version_post_suffix
-
 from polyaxon import pkg
 from polyaxon._containers.pull_policy import PullPolicy
 from polyaxon._k8s import k8s_schemas, k8s_validation

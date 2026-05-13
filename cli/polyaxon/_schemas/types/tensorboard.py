@@ -11,7 +11,6 @@ from clipped.config.constants import PARAM_REGEX
 from clipped.types.ref_or_obj import RefField
 from clipped.types.uuids import UUIDStr
 from clipped.utils.lists import to_list
-
 from polyaxon._schemas.types.base import BaseTypeConfig
 
 

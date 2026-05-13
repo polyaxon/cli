@@ -1,11 +1,9 @@
 import copy
-
 from typing import Dict, Iterable, List, Optional
 
 from clipped.utils.enums import get_enum_value
 from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
-
 from polyaxon import pkg, settings
 from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._flow import V1Environment, V1Init, V1Plugins

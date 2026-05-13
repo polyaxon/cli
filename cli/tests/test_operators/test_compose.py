@@ -6,6 +6,7 @@ from polyaxon._deploy.operators.compose import ComposeOperator
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonOperatorException
 
+
 DUMMY_RETURN_VALUE = object()
 
 

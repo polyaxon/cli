@@ -1,7 +1,6 @@
 import pytest
 
 from clipped.compact.pydantic import ValidationError
-
 from polyaxon import types
 from polyaxon._flow import (
     V1IO,

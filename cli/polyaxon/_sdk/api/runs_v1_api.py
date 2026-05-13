@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
-
 from polyaxon._schemas.lifecycle import V1Status
 from polyaxon._sdk.base_api import BaseApi
 from polyaxon._sdk.schemas import V1RunEdgesGraph

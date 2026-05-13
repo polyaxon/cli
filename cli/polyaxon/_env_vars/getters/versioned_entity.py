@@ -1,9 +1,7 @@
 import sys
-
 from typing import Tuple
 
 from clipped.formatting import Printer
-
 from polyaxon._constants.globals import DEFAULT, DEFAULT_HUB
 from polyaxon._env_vars.getters.user import get_local_owner
 from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError

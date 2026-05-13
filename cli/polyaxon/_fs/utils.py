@@ -1,5 +1,4 @@
 import os
-
 from typing import Optional
 
 from polyaxon._env_vars.keys import ENV_KEYS_SERVICE_MODE

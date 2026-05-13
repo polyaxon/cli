@@ -1,6 +1,5 @@
-from unittest.mock import patch
-
 import pytest
+from unittest.mock import patch
 
 from polyaxon._auxiliaries.init import V1PolyaxonInitContainer
 from polyaxon._env_vars.keys import (

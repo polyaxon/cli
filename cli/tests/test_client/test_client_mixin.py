@@ -1,6 +1,5 @@
-import pytest
-
 from mock import patch
+import pytest
 
 from polyaxon import settings
 from polyaxon._client.mixin import ClientMixin

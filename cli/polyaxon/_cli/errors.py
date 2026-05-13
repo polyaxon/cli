@@ -2,7 +2,6 @@ from functools import wraps
 from typing import Dict, Optional
 
 from clipped.formatting import Printer
-
 from polyaxon.exceptions import handle_api_error
 
 
