@@ -3,12 +3,26 @@ import pytest
 import uuid
 
 from polyaxon._client.run import RunClient
-from polyaxon._schemas.lifecycle import V1StatusCondition, V1Statuses
+from polyaxon._schemas.lifecycle import (
+    V1ProjectVersionKind,
+    V1StatusCondition,
+    V1Statuses,
+)
 from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
+from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException
 from traceml.artifacts import V1RunArtifact
+
+
+class SyncPolyaxonClientMock:
+    is_async = False
+    config = None
+
+    def __init__(self):
+        self.projects_v1 = MagicMock()
+        self.runs_v1 = MagicMock()
 
 
 @pytest.mark.client_mark
@@ -125,6 +139,39 @@ class TestRunClient(BaseTestCase):
         assert mock_transfer.call_count == 1
         call_args = mock_transfer.call_args
         assert call_args[1]["body"]["project"] == to_project
+
+    def test_promote_versions_use_injected_client(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.projects_v1.get_version.side_effect = AttributeError("missing")
+        sdk_client.projects_v1.create_version.return_value = (
+            V1ProjectVersion.model_construct(name="v1")
+        )
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            client=sdk_client,
+        )
+
+        model_version = client.promote_to_model_version("model-v1")
+        artifact_version = client.promote_to_artifact_version("artifact-v1")
+
+        assert model_version.name == "v1"
+        assert artifact_version.name == "v1"
+        assert sdk_client.projects_v1.create_version.call_count == 2
+        model_call, artifact_call = sdk_client.projects_v1.create_version.call_args_list
+        assert model_call[0] == (
+            self.owner,
+            self.project,
+            V1ProjectVersionKind.MODEL,
+        )
+        assert model_call[1]["body"].run == self.run_uuid
+        assert artifact_call[0] == (
+            self.owner,
+            self.project,
+            V1ProjectVersionKind.ARTIFACT,
+        )
+        assert artifact_call[1]["body"].run == self.run_uuid
 
     # Metadata Operations Tests
     @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
