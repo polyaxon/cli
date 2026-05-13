@@ -3,11 +3,8 @@ import tempfile
 
 from mock import patch
 
-from clipped.utils.paths import delete_path
-
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
-from polyaxon._contexts import paths as ctx_paths
 from polyaxon._constants.globals import NO_AUTH
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._sdk.api import (
@@ -39,11 +36,6 @@ class AsyncSDKClientMock(SDKClientMock):
         self.close_calls += 1
         if self.events is not None:
             self.events.append("{}:close".format(self.name))
-
-
-def setup_async_test_settings():
-    delete_path(ctx_paths.CONTEXT_USER_POLYAXON_PATH)
-    patch_settings()
 
 
 @pytest.mark.client_mark
@@ -199,7 +191,7 @@ class TestPolyaxonClient(BaseTestCase):
 @pytest.mark.client_mark
 @pytest.mark.asyncio
 async def test_aclose_raises_on_sync_instance():
-    setup_async_test_settings()
+    patch_settings()
     sdk_client = SDKClientMock()
     with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
         client = PolyaxonClient()
@@ -211,7 +203,7 @@ async def test_aclose_raises_on_sync_instance():
 @pytest.mark.client_mark
 @pytest.mark.asyncio
 async def test_areset_raises_on_sync_instance():
-    setup_async_test_settings()
+    patch_settings()
     sdk_client = SDKClientMock()
     with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
         client = PolyaxonClient()
@@ -223,7 +215,7 @@ async def test_areset_raises_on_sync_instance():
 @pytest.mark.client_mark
 @pytest.mark.asyncio
 async def test_aclose_awaits_api_client_close():
-    setup_async_test_settings()
+    patch_settings()
     sdk_client = AsyncSDKClientMock()
     with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
         client = PolyaxonClient(is_async=True)
@@ -235,7 +227,7 @@ async def test_aclose_awaits_api_client_close():
 @pytest.mark.client_mark
 @pytest.mark.asyncio
 async def test_areset_closes_previous_after_replacement():
-    setup_async_test_settings()
+    patch_settings()
     events = []
     previous = AsyncSDKClientMock(name="previous", events=events)
     replacement = AsyncSDKClientMock(name="replacement", events=events)
@@ -259,7 +251,7 @@ async def test_areset_closes_previous_after_replacement():
 @pytest.mark.client_mark
 @pytest.mark.asyncio
 async def test_supports_async_context_manager():
-    setup_async_test_settings()
+    patch_settings()
     sdk_client = AsyncSDKClientMock()
     with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
         async with PolyaxonClient(is_async=True) as client:
@@ -271,7 +263,7 @@ async def test_supports_async_context_manager():
 @pytest.mark.client_mark
 @pytest.mark.asyncio
 async def test_async_context_manager_raises_on_sync_instance():
-    setup_async_test_settings()
+    patch_settings()
     sdk_client = SDKClientMock()
     with patch.object(PolyaxonClient, "_get_client", return_value=sdk_client):
         client = PolyaxonClient()

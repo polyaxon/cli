@@ -82,7 +82,7 @@ def patch_settings(
     settings.AGENT_CONFIG = None
     if set_agent:
         set_agent_config(AgentConfig())
-
+    delete_path(ctx_paths.CONTEXT_USER_POLYAXON_PATH)
 
 class BaseTestCase(TestCase):
     SET_AUTH_SETTINGS = True
@@ -92,7 +92,6 @@ class BaseTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
-        delete_path(ctx_paths.CONTEXT_USER_POLYAXON_PATH)
         patch_settings(
             set_auth=self.SET_AUTH_SETTINGS,
             set_client=self.SET_CLIENT_SETTINGS,
