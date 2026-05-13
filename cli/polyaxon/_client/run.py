@@ -358,6 +358,206 @@ class RunClient(ClientMixin):
             self._run_data = response
         return response
 
+    def _set_transferred_project(self, to_project: str):
+        self._project = to_project
+        self._run_data.project = to_project
+
+    def _apply_created_run(self, response: V1Run):
+        self._run_data = response
+        self._run_uuid = self._run_data.uuid
+        self._run_data.status = V1Statuses.CREATED
+        self._namespace = None
+        self._results = {}
+        self._artifacts_lineage = {}
+
+    def _normalize_operation_content(
+        self, content: Optional[Union[str, Dict, V1Operation]]
+    ) -> Optional[str]:
+        if isinstance(content, Mapping):
+            content = V1Operation.from_dict(content)
+        if isinstance(content, V1Operation):
+            content = content.to_json()
+        return content
+
+    def _build_run_create_body(
+        self,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
+        managed_by: Optional[ManagedBy] = None,
+        is_managed: Optional[bool] = None,
+        pending: Optional[str] = None,
+        meta_info: Optional[Dict] = None,
+    ) -> V1OperationBody:
+        if not managed_by and is_managed is not None:
+            managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
+        if not content:
+            managed_by = ManagedBy.USER
+            is_managed = False
+        elif not isinstance(content, (str, Mapping, V1Operation)):
+            raise PolyaxonClientException(
+                "Received an invalid content: {}".format(content)
+            )
+        content = self._normalize_operation_content(content) if content else content
+        return V1OperationBody.model_construct(
+            name=name,
+            description=description,
+            tags=tags,
+            content=content,
+            is_managed=is_managed,
+            managed_by=managed_by,
+            pending=pending,
+            meta_info=meta_info,
+        )
+
+    def _build_status_condition(
+        self,
+        status: Union[str, V1Statuses],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
+    ) -> Tuple[datetime, V1StatusCondition]:
+        reason = reason or "PolyaxonClient"
+        self._run_data.status = status  # type: ignore
+        current_date = now()
+        return current_date, V1StatusCondition.model_construct(
+            type=status,
+            status=True,
+            reason=reason,
+            message=message,
+            last_transition_time=last_transition_time or current_date,
+            last_update_time=last_update_time or current_date,
+        )
+
+    def _apply_offline_status(
+        self,
+        status: Union[str, V1Statuses],
+        current_date: datetime,
+        status_condition: V1StatusCondition,
+    ):
+        self._run_data.status_conditions = self._run_data.status_conditions or []
+        self._run_data.status_conditions.append(status_condition)
+        if status == V1Statuses.CREATED:
+            self._run_data.created_at = current_date
+        LifeCycle.set_started_at(self._run_data)
+        LifeCycle.set_finished_at(self._run_data)
+
+    def _build_runs_io_data(self, runs) -> List[Dict[str, Any]]:
+        data = []
+        for r in runs:
+            run = runs[r]
+            values = run.inputs or {}
+            values.update(run.outputs or {})
+            data.append({"uid": run.uuid, "values": values})
+        return data
+
+    def _build_restart_body(
+        self,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
+        copy: bool = False,
+        recompile: bool = False,
+        copy_dirs: Optional[List[str]] = None,
+        copy_files: Optional[List[str]] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+    ) -> Tuple[V1Run, bool]:
+        content = self._normalize_operation_content(content)
+        body = V1Run.model_construct(content=content)
+        if name:
+            body.name = name
+        if description:
+            body.description = description
+        if tags:
+            body.tags = validate_tags(tags, validate_yaml=True)
+        if copy_dirs or copy_files:
+            copy_dirs = to_list(copy_dirs, check_none=True)
+            copy_files = to_list(copy_files, check_none=True)
+            copy_artifacts = V1ArtifactsType.model_construct()
+            if copy_dirs:
+                copy_artifacts.dirs = [
+                    "{}/{}".format(self.run_uuid, cp) for cp in copy_dirs
+                ]
+            if copy_files:
+                copy_artifacts.files = [
+                    "{}/{}".format(self.run_uuid, cp) for cp in copy_files
+                ]
+            body.meta_info = {META_COPY_ARTIFACTS: copy_artifacts.to_dict()}
+        if recompile:
+            body.meta_info = body.meta_info or {}
+            body.meta_info[META_RECOMPILE] = True
+        return body, bool(copy or copy_dirs or copy_files)
+
+    def _build_resume_body(
+        self,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
+        recompile: bool = False,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+    ) -> V1Run:
+        content = self._normalize_operation_content(content)
+        body = V1Run(content=content)
+        if name:
+            body.name = name
+        if description:
+            body.description = description
+        if tags:
+            body.tags = validate_tags(tags, validate_yaml=True)
+        if recompile:
+            body.meta_info = {META_RECOMPILE: True}
+        return body
+
+    def _build_values_patch(
+        self,
+        field: str,
+        reset: bool,
+        values: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        values = {to_fqn_name(k): v for k, v in values.items()}
+        patch_dict: Dict[str, Any] = {field: values}
+        if reset is False:
+            patch_dict["merge"] = True
+            current_values = getattr(self._run_data, field) or {}
+            current_values.update(values)
+            setattr(self._run_data, field, current_values)
+        else:
+            setattr(self._run_data, field, values)
+        return patch_dict
+
+    def _build_tags_patch(
+        self, tags: Union[str, List[str]], reset: bool = False
+    ) -> Dict[str, Any]:
+        tags = validate_tags(tags, validate_yaml=True)
+        patch_dict: Dict[str, Any] = {"tags": tags}
+        if reset is False and tags:
+            patch_dict["merge"] = True
+            current_tags = self._run_data.tags or []  # type: List[str]
+            current_tags += [t for t in tags if t not in current_tags]
+            self._run_data.tags = current_tags
+        else:
+            self._run_data.tags = tags
+        return patch_dict
+
+    def _cache_offline_artifact_lineage(
+        self,
+        body: Union[Dict, List[Dict], V1RunArtifact, List[V1RunArtifact]],
+    ):
+        for item in to_list(body, check_none=True):
+            if not isinstance(item, V1RunArtifact):
+                item = V1RunArtifact.read(item)
+            self._artifacts_lineage[item.name] = item
+
+    def _build_artifact_lineage_body(
+        self,
+        body: Union[Dict, List[Dict], V1RunArtifact, List[V1RunArtifact]],
+    ) -> V1RunArtifacts:
+        if isinstance(body, (dict, V1RunArtifact)):
+            return V1RunArtifacts(artifacts=[body])
+        return V1RunArtifacts(artifacts=body)
+
     @client_handler(check_no_op=True)
     def update(self, data: Union[Dict, V1Run], async_req: bool = False) -> V1Run:
         """Updates a run based on the data passed.
@@ -386,13 +586,8 @@ class RunClient(ClientMixin):
             to_project: str, required, the destination project to transfer the run to.
             async_req: bool, optional, default: False, execute request asynchronously.
         """
-
-        def _update_run():
-            self._project = to_project
-            self._run_data._project = to_project
-
         if self._is_offline:
-            _update_run()
+            self._set_transferred_project(to_project)
             return
 
         self.client.runs_v1.transfer_run(
@@ -402,7 +597,7 @@ class RunClient(ClientMixin):
             body={"project": to_project},
             async_req=async_req,
         )
-        _update_run()
+        self._set_transferred_project(to_project)
 
     def _create(
         self, data: Union[Dict, V1OperationBody], async_req: bool = False
@@ -414,12 +609,7 @@ class RunClient(ClientMixin):
             async_req=async_req,
         )
         if not async_req:
-            self._run_data = response
-            self._run_uuid = self._run_data.uuid
-            self._run_data.status = V1Statuses.CREATED
-            self._namespace = None
-            self._results = {}
-            self._artifacts_lineage = {}
+            self._apply_created_run(response)
         return response
 
     @client_handler(check_no_op=True)
@@ -474,21 +664,7 @@ class RunClient(ClientMixin):
                 self._run_uuid = uuid.uuid4().hex
             self.run_data.uuid = self._run_uuid
             return self.run_data
-        if not managed_by and is_managed is not None:
-            managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
-        if not content:
-            managed_by = ManagedBy.USER
-            is_managed = False
-        elif not isinstance(content, (str, Mapping, V1Operation)):
-            raise PolyaxonClientException(
-                "Received an invalid content: {}".format(content)
-            )
-        if content:
-            if isinstance(content, Mapping):
-                content = V1Operation.from_dict(content)
-            if isinstance(content, V1Operation):
-                content = content.to_json()
-        data = V1OperationBody.model_construct(
+        data = self._build_run_create_body(
             name=name,
             description=description,
             tags=tags,
@@ -767,24 +943,19 @@ class RunClient(ClientMixin):
             last_transition_time: datetime, default `now`.
             last_update_time: datetime, default `now`.
         """
-        reason = reason or "PolyaxonClient"
-        self._run_data.status = status  # type: ignore
-        current_date = now()
-        status_condition = V1StatusCondition.model_construct(
-            type=status,
-            status=True,
+        current_date, status_condition = self._build_status_condition(
+            status=status,
             reason=reason,
             message=message,
-            last_transition_time=last_transition_time or current_date,
-            last_update_time=last_update_time or current_date,
+            last_transition_time=last_transition_time,
+            last_update_time=last_update_time,
         )
         if self._is_offline:
-            self._run_data.status_conditions = self._run_data.status_conditions or []
-            self._run_data.status_conditions.append(status_condition)
-            if status == V1Statuses.CREATED:
-                self._run_data.created_at = current_date
-            LifeCycle.set_started_at(self._run_data)
-            LifeCycle.set_finished_at(self._run_data)
+            self._apply_offline_status(
+                status=status,
+                current_date=current_date,
+                status_condition=status_condition,
+            )
             return
         return self.client.runs_v1.create_run_status(
             owner=self.owner,
@@ -1241,13 +1412,7 @@ class RunClient(ClientMixin):
             limit=limit,
             offset=offset,
         ).results
-        data = []
-        for r in runs:
-            run = runs[r]
-            values = run.inputs or {}
-            values.update(run.outputs or {})
-            data.append({"uid": run.uuid, "values": values})
-        return data
+        return self._build_runs_io_data(runs)
 
     @client_handler(check_no_op=True)
     def get_runs_as_hiplot(
@@ -1820,41 +1985,23 @@ class RunClient(ClientMixin):
         Returns:
             V1Run instance.
         """
-        if isinstance(content, Mapping):
-            content = V1Operation.from_dict(content)
-        if isinstance(content, V1Operation):
-            content = content.to_json()
-        body = V1Run.model_construct(content=content)
-        if name:
-            body.name = name
-        if description:
-            body.description = description
-        if tags:
-            body.tags = validate_tags(tags, validate_yaml=True)
-        if copy or copy_dirs or copy_files:
-            if copy_dirs or copy_files:
-                copy_dirs = to_list(copy_dirs, check_none=True)
-                copy_files = to_list(copy_files, check_none=True)
-                copy_artifacts = V1ArtifactsType.model_construct()
-                if copy_dirs:
-                    copy_artifacts.dirs = [
-                        "{}/{}".format(self.run_uuid, cp) for cp in copy_dirs
-                    ]
-                if copy_files:
-                    copy_artifacts.files = [
-                        "{}/{}".format(self.run_uuid, cp) for cp in copy_files
-                    ]
-                body.meta_info = {META_COPY_ARTIFACTS: copy_artifacts.to_dict()}
-            if recompile:
-                body.meta_info = body.meta_info or {}
-                body.meta_info[META_RECOMPILE] = True
+        body, use_copy = self._build_restart_body(
+            content=content,
+            copy=copy,
+            recompile=recompile,
+            copy_dirs=copy_dirs,
+            copy_files=copy_files,
+            name=name,
+            description=description,
+            tags=tags,
+        )
+        if use_copy:
             return self.client.runs_v1.copy_run(
                 self.owner, self.project, self.run_uuid, body=body, **kwargs
             )
-        else:
-            return self.client.runs_v1.restart_run(
-                self.owner, self.project, self.run_uuid, body=body, **kwargs
-            )
+        return self.client.runs_v1.restart_run(
+            self.owner, self.project, self.run_uuid, body=body, **kwargs
+        )
 
     @client_handler(check_no_op=True, check_offline=True)
     def resume(
@@ -1880,19 +2027,13 @@ class RunClient(ClientMixin):
         Returns:
             V1Run instance.
         """
-        if isinstance(content, Mapping):
-            content = V1Operation.from_dict(content)
-        if isinstance(content, V1Operation):
-            content = content.to_json()
-        body = V1Run(content=content)
-        if name:
-            body.name = name
-        if description:
-            body.description = description
-        if tags:
-            body.tags = validate_tags(tags, validate_yaml=True)
-        if recompile:
-            body.meta_info = {META_RECOMPILE: True}
+        body = self._build_resume_body(
+            content=content,
+            recompile=recompile,
+            name=name,
+            description=description,
+            tags=tags,
+        )
         return self.client.runs_v1.resume_run(
             self.owner, self.project, self.run_uuid, body=body, **kwargs
         )
@@ -1949,14 +2090,7 @@ class RunClient(ClientMixin):
             async_req: bool, optional, default: False, execute request asynchronously.
             inputs: **kwargs, e.g. param1=value1, param2=value2, ...
         """
-        inputs = {to_fqn_name(k): v for k, v in inputs.items()}
-        patch_dict: Dict[str, Any] = {"inputs": inputs}
-        if reset is False:
-            patch_dict["merge"] = True
-            self._run_data.inputs = self._run_data.inputs or {}
-            self._run_data.inputs.update(inputs)
-        else:
-            self._run_data.inputs = inputs
+        patch_dict = self._build_values_patch("inputs", reset, inputs)
         self._update(patch_dict, async_req=async_req)
 
     @client_handler(check_no_op=True)
@@ -1971,14 +2105,7 @@ class RunClient(ClientMixin):
             async_req: bool, optional, default: False, execute request asynchronously.
             outputs: **kwargs, e.g. output1=value1, metric2=value2, ...
         """
-        outputs = {to_fqn_name(k): v for k, v in outputs.items()}
-        patch_dict: Dict[str, Any] = {"outputs": outputs}
-        if reset is False:
-            patch_dict["merge"] = True
-            self._run_data.outputs = self._run_data.outputs or {}
-            self._run_data.outputs.update(outputs)
-        else:
-            self._run_data.outputs = outputs
+        patch_dict = self._build_values_patch("outputs", reset, outputs)
         self._update(patch_dict, async_req=async_req)
 
     @client_handler(check_no_op=True)
@@ -2005,14 +2132,7 @@ class RunClient(ClientMixin):
             async_req: bool, optional, default: False, execute request asynchronously.
             meta: **kwargs, e.g. concurrency=10, has_flag=True, ...
         """
-        meta = {to_fqn_name(k): v for k, v in meta.items()}
-        patch_dict: Dict[str, Any] = {"meta_info": meta}
-        if reset is False:
-            patch_dict["merge"] = True
-            self._run_data.meta_info = self._run_data.meta_info or {}
-            self._run_data.meta_info.update(meta)
-        else:
-            self._run_data.meta_info = meta
+        patch_dict = self._build_values_patch("meta_info", reset, meta)
         self._update(patch_dict, async_req=async_req)
 
     @client_handler(check_no_op=True)
@@ -2031,15 +2151,7 @@ class RunClient(ClientMixin):
                  on the Polyaxonfile.
             async_req: bool, optional, default: False, execute request asynchronously.
         """
-        tags = validate_tags(tags, validate_yaml=True)
-        patch_dict: Dict[str, Any] = {"tags": tags}
-        if reset is False and tags:
-            patch_dict["merge"] = True
-            current_tags = self._run_data.tags or []  # type: List[str]
-            current_tags += [t for t in tags if t not in current_tags]
-            self._run_data.tags = current_tags
-        else:
-            self._run_data.tags = tags
+        patch_dict = self._build_tags_patch(tags, reset)
         self._update(patch_dict, async_req=async_req)
 
     @client_handler(check_no_op=True)
@@ -2615,21 +2727,14 @@ class RunClient(ClientMixin):
             async_req: bool, optional, default: False, execute request asynchronously.
         """
         if self._is_offline:
-            for b in to_list(body, check_none=True):
-                if not isinstance(b, V1RunArtifact):
-                    b = V1RunArtifact.read(b)
-                self._artifacts_lineage[b.name] = b
+            self._cache_offline_artifact_lineage(body)
             return
 
-        if isinstance(body, (dict, V1RunArtifact)):
-            body = V1RunArtifacts(artifacts=[body])
-        else:
-            body = V1RunArtifacts(artifacts=body)
         self.client.runs_v1.create_run_artifacts_lineage(
             self.owner,
             self.project,
             self.run_uuid,
-            body=body,
+            body=self._build_artifact_lineage_body(body),
             async_req=async_req,
         )
 
@@ -3205,12 +3310,8 @@ class AsyncRunClient(RunClient):
 
     @async_client_handler(check_no_op=True)
     async def transfer(self, to_project: str):
-        def _update_run():
-            self._project = to_project
-            self._run_data.project = to_project
-
         if self._is_offline:
-            _update_run()
+            self._set_transferred_project(to_project)
             return
 
         await self.client.runs_v1.transfer_run(
@@ -3219,7 +3320,7 @@ class AsyncRunClient(RunClient):
             run_uuid=self.run_uuid,
             body={"project": to_project},
         )
-        _update_run()
+        self._set_transferred_project(to_project)
 
     async def _acreate(self, data: Union[Dict, V1OperationBody]) -> V1Run:
         response = await self.client.runs_v1.create_run(
@@ -3227,12 +3328,7 @@ class AsyncRunClient(RunClient):
             project=self.project,
             body=data,
         )
-        self._run_data = response
-        self._run_uuid = self._run_data.uuid
-        self._run_data.status = V1Statuses.CREATED
-        self._namespace = None
-        self._results = {}
-        self._artifacts_lineage = {}
+        self._apply_created_run(response)
         return response
 
     @async_client_handler(check_no_op=True)
@@ -3258,21 +3354,7 @@ class AsyncRunClient(RunClient):
                 self._run_uuid = uuid.uuid4().hex
             self.run_data.uuid = self._run_uuid
             return self.run_data
-        if not managed_by and is_managed is not None:
-            managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
-        if not content:
-            managed_by = ManagedBy.USER
-            is_managed = False
-        elif not isinstance(content, (str, Mapping, V1Operation)):
-            raise PolyaxonClientException(
-                "Received an invalid content: {}".format(content)
-            )
-        if content:
-            if isinstance(content, Mapping):
-                content = V1Operation.from_dict(content)
-            if isinstance(content, V1Operation):
-                content = content.to_json()
-        data = V1OperationBody.model_construct(
+        data = self._build_run_create_body(
             name=name,
             description=description,
             tags=tags,
@@ -3306,26 +3388,21 @@ class AsyncRunClient(RunClient):
         last_transition_time: Optional[datetime] = None,
         last_update_time: Optional[datetime] = None,
     ):
-        reason = reason or "PolyaxonClient"
-        self._run_data.status = status  # type: ignore
-        current_date = now()
-        status_condition = V1StatusCondition.model_construct(
-            type=status,
-            status=True,
+        current_date, status_condition = self._build_status_condition(
+            status=status,
             reason=reason,
             message=message,
-            last_transition_time=last_transition_time or current_date,
-            last_update_time=last_update_time or current_date,
+            last_transition_time=last_transition_time,
+            last_update_time=last_update_time,
         )
         if self._is_offline:
-            self._run_data.status_conditions = self._run_data.status_conditions or []
-            self._run_data.status_conditions.append(status_condition)
-            if status == V1Statuses.CREATED:
-                self._run_data.created_at = current_date
-            LifeCycle.set_started_at(self._run_data)
-            LifeCycle.set_finished_at(self._run_data)
+            self._apply_offline_status(
+                status=status,
+                current_date=current_date,
+                status_condition=status_condition,
+            )
             return
-        return await self.client.runs_v1.create_run_status(
+        await self.client.runs_v1.create_run_status(
             owner=self.owner,
             project=self.project,
             uuid=self.run_uuid,
@@ -3478,19 +3555,15 @@ class AsyncRunClient(RunClient):
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ):
-        runs = await self.list(
-            query=query,
-            sort=sort,
-            limit=limit,
-            offset=offset,
+        runs = (
+            await self.list(
+                query=query,
+                sort=sort,
+                limit=limit,
+                offset=offset,
+            )
         ).results
-        data = []
-        for r in runs:
-            run = runs[r]
-            values = run.inputs or {}
-            values.update(run.outputs or {})
-            data.append({"uid": run.uuid, "values": values})
-        return data
+        return self._build_runs_io_data(runs)
 
     @async_client_handler(check_no_op=True)
     async def get_runs_as_hiplot(self, *args, **kwargs):
@@ -3616,34 +3689,17 @@ class AsyncRunClient(RunClient):
         tags: Optional[Union[str, List[str]]] = None,
         **kwargs,
     ):
-        if isinstance(content, Mapping):
-            content = V1Operation.from_dict(content)
-        if isinstance(content, V1Operation):
-            content = content.to_json()
-        body = V1Run.model_construct(content=content)
-        if name:
-            body.name = name
-        if description:
-            body.description = description
-        if tags:
-            body.tags = validate_tags(tags, validate_yaml=True)
-        if copy or copy_dirs or copy_files:
-            if copy_dirs or copy_files:
-                copy_dirs = to_list(copy_dirs, check_none=True)
-                copy_files = to_list(copy_files, check_none=True)
-                copy_artifacts = V1ArtifactsType.model_construct()
-                if copy_dirs:
-                    copy_artifacts.dirs = [
-                        "{}/{}".format(self.run_uuid, cp) for cp in copy_dirs
-                    ]
-                if copy_files:
-                    copy_artifacts.files = [
-                        "{}/{}".format(self.run_uuid, cp) for cp in copy_files
-                    ]
-                body.meta_info = {META_COPY_ARTIFACTS: copy_artifacts.to_dict()}
-            if recompile:
-                body.meta_info = body.meta_info or {}
-                body.meta_info[META_RECOMPILE] = True
+        body, use_copy = self._build_restart_body(
+            content=content,
+            copy=copy,
+            recompile=recompile,
+            copy_dirs=copy_dirs,
+            copy_files=copy_files,
+            name=name,
+            description=description,
+            tags=tags,
+        )
+        if use_copy:
             return await self.client.runs_v1.copy_run(
                 self.owner,
                 self.project,
@@ -3669,19 +3725,13 @@ class AsyncRunClient(RunClient):
         tags: Optional[Union[str, List[str]]] = None,
         **kwargs,
     ):
-        if isinstance(content, Mapping):
-            content = V1Operation.from_dict(content)
-        if isinstance(content, V1Operation):
-            content = content.to_json()
-        body = V1Run(content=content)
-        if name:
-            body.name = name
-        if description:
-            body.description = description
-        if tags:
-            body.tags = validate_tags(tags, validate_yaml=True)
-        if recompile:
-            body.meta_info = {META_RECOMPILE: True}
+        body = self._build_resume_body(
+            content=content,
+            recompile=recompile,
+            name=name,
+            description=description,
+            tags=tags,
+        )
         return await self.client.runs_v1.resume_run(
             self.owner,
             self.project,
@@ -3707,38 +3757,17 @@ class AsyncRunClient(RunClient):
 
     @async_client_handler(check_no_op=True)
     async def log_inputs(self, reset: bool = False, **inputs):
-        inputs = {to_fqn_name(k): v for k, v in inputs.items()}
-        patch_dict: Dict[str, Any] = {"inputs": inputs}
-        if reset is False:
-            patch_dict["merge"] = True
-            self._run_data.inputs = self._run_data.inputs or {}
-            self._run_data.inputs.update(inputs)
-        else:
-            self._run_data.inputs = inputs
+        patch_dict = self._build_values_patch("inputs", reset, inputs)
         await self._aupdate(patch_dict, update_state=False)
 
     @async_client_handler(check_no_op=True)
     async def log_outputs(self, reset: bool = False, **outputs):
-        outputs = {to_fqn_name(k): v for k, v in outputs.items()}
-        patch_dict: Dict[str, Any] = {"outputs": outputs}
-        if reset is False:
-            patch_dict["merge"] = True
-            self._run_data.outputs = self._run_data.outputs or {}
-            self._run_data.outputs.update(outputs)
-        else:
-            self._run_data.outputs = outputs
+        patch_dict = self._build_values_patch("outputs", reset, outputs)
         await self._aupdate(patch_dict, update_state=False)
 
     @async_client_handler(check_no_op=True)
     async def log_meta(self, reset: bool = False, **meta):
-        meta = {to_fqn_name(k): v for k, v in meta.items()}
-        patch_dict: Dict[str, Any] = {"meta_info": meta}
-        if reset is False:
-            patch_dict["merge"] = True
-            self._run_data.meta_info = self._run_data.meta_info or {}
-            self._run_data.meta_info.update(meta)
-        else:
-            self._run_data.meta_info = meta
+        patch_dict = self._build_values_patch("meta_info", reset, meta)
         await self._aupdate(patch_dict, update_state=False)
 
     @async_client_handler(check_no_op=True)
@@ -3747,15 +3776,7 @@ class AsyncRunClient(RunClient):
         tags: Union[str, List[str]],
         reset: bool = False,
     ):
-        tags = validate_tags(tags, validate_yaml=True)
-        patch_dict: Dict[str, Any] = {"tags": tags}
-        if reset is False and tags:
-            patch_dict["merge"] = True
-            current_tags = self._run_data.tags or []  # type: List[str]
-            current_tags += [t for t in tags if t not in current_tags]
-            self._run_data.tags = current_tags
-        else:
-            self._run_data.tags = tags
+        patch_dict = self._build_tags_patch(tags, reset)
         await self._aupdate(patch_dict, update_state=False)
 
     @async_client_handler(check_no_op=True)
@@ -3873,21 +3894,14 @@ class AsyncRunClient(RunClient):
         body: Union[Dict, List[Dict], V1RunArtifact, List[V1RunArtifact]],
     ):
         if self._is_offline:
-            for item in to_list(body, check_none=True):
-                if not isinstance(item, V1RunArtifact):
-                    item = V1RunArtifact.read(item)
-                self._artifacts_lineage[item.name] = item
+            self._cache_offline_artifact_lineage(body)
             return
 
-        if isinstance(body, (dict, V1RunArtifact)):
-            body = V1RunArtifacts(artifacts=[body])
-        else:
-            body = V1RunArtifacts(artifacts=body)
         await self.client.runs_v1.create_run_artifacts_lineage(
             self.owner,
             self.project,
             self.run_uuid,
-            body=body,
+            body=self._build_artifact_lineage_body(body),
         )
 
     @async_client_handler(check_no_op=True, check_offline=True)

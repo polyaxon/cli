@@ -166,8 +166,25 @@ def test_async_run_client_method_surface_is_async():
 
 
 def test_async_run_client_local_helpers_stay_shared():
-    assert AsyncRunClient._sanitize_filename is RunClient._sanitize_filename
-    assert not inspect.iscoroutinefunction(AsyncRunClient._sanitize_filename)
+    helpers = [
+        "_apply_created_run",
+        "_apply_offline_status",
+        "_build_artifact_lineage_body",
+        "_build_restart_body",
+        "_build_resume_body",
+        "_build_run_create_body",
+        "_build_runs_io_data",
+        "_build_status_condition",
+        "_build_tags_patch",
+        "_build_values_patch",
+        "_cache_offline_artifact_lineage",
+        "_normalize_operation_content",
+        "_sanitize_filename",
+        "_set_transferred_project",
+    ]
+    for helper in helpers:
+        assert getattr(AsyncRunClient, helper) is getattr(RunClient, helper)
+        assert not inspect.iscoroutinefunction(getattr(AsyncRunClient, helper))
 
 
 @pytest.mark.asyncio
