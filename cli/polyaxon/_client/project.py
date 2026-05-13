@@ -11,7 +11,11 @@ from clipped.utils.tz import now
 from clipped.utils.validation import validate_tags
 
 from polyaxon._client.client import PolyaxonClient
-from polyaxon._client.decorators import client_handler, get_global_or_inline_config
+from polyaxon._client.decorators import (
+    async_client_handler,
+    client_handler,
+    get_global_or_inline_config,
+)
 from polyaxon._client.mixin import ClientMixin
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._contexts import paths as ctx_paths
@@ -119,7 +123,7 @@ class ProjectClient(ClientMixin):
             raise PolyaxonClientException("Please provide a valid owner.")
 
         owner, team = split_owner_team_space(owner)
-        self._client = client
+        self._set_client(client)
         self._owner = owner or DEFAULT
         self._team = team
         self._project = project
@@ -1942,3 +1946,915 @@ class ProjectClient(ClientMixin):
             force=force,
             clean=clean,
         )
+
+
+class AsyncProjectClient(ProjectClient):
+    _IS_ASYNC = True
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def refresh_data(self):
+        self._project_data = await self.client.projects_v1.get_project(
+            self.owner, self.project
+        )
+        if self._project_data.owner is None:
+            self._project_data.owner = self.owner
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def create(self, data: Union[Dict, V1Project]) -> V1Project:
+        if self.team:
+            self._project_data = await self.client.projects_v1.create_team_project(
+                self.owner,
+                self.team,
+                data,
+            )
+        else:
+            self._project_data = await self.client.projects_v1.create_project(
+                self.owner,
+                data,
+            )
+        self._project_data.owner = self.owner
+        self._project = self._project_data.name
+        return self._project_data
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_or_create(self):
+        try:
+            await self.refresh_data()
+        except ApiException:
+            self.project_data.name = self.project
+            await self.create(self.project_data)
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def list(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> List[V1Project]:
+        params = get_query_params(limit=limit, offset=offset, query=query, sort=sort)
+        return await self.client.projects_v1.list_projects(self.owner, **params)
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def delete(self):
+        return await self.client.projects_v1.delete_project(self.owner, self.project)
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def update(self, data: Union[Dict, V1Project]) -> V1Project:
+        self._project_data = await self.client.projects_v1.patch_project(
+            self.owner,
+            self.project,
+            body=data,
+        )
+        self._project = self._project_data.name
+        return self._project_data
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def list_runs(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ):
+        params = get_query_params(
+            limit=limit or 20, offset=offset, query=query, sort=sort
+        )
+        return await self.client.runs_v1.list_runs(
+            self.owner, self.project, **params
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def transfer_runs(
+        self,
+        uuids: Union[List[str], V1Uuids],
+        to_project: str,
+    ):
+        if isinstance(uuids, list):
+            transfer_data = V1EntitiesTransfer(uuids=uuids, project=to_project)
+        else:
+            transfer_data = V1EntitiesTransfer(uuids=uuids.uuids, project=to_project)
+
+        logger.info(
+            "Transferring {} runs to project {}".format(
+                len(transfer_data.uuids), to_project
+            )
+        )
+        return await self.client.runs_v1.transfer_runs(
+            self.owner,
+            self.project,
+            body=transfer_data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def approve_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return await self.client.runs_v1.approve_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def archive_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return await self.client.runs_v1.archive_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def restore_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return await self.client.runs_v1.restore_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def delete_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        logger.info("Deleting {} runs".format(len(uuids.uuids)))
+        return await self.client.runs_v1.delete_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def stop_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return await self.client.runs_v1.stop_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def skip_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return await self.client.runs_v1.skip_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def invalidate_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return await self.client.runs_v1.invalidate_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def bookmark_runs(self, uuids: Union[List[str], V1Uuids]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        return await self.client.runs_v1.bookmark_runs(
+            self.owner, self.project, body=uuids
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def tag_runs(self, uuids: Union[List[str], V1Uuids], tags: List[str]):
+        if isinstance(uuids, list):
+            uuids = V1Uuids(uuids=uuids)
+        data = V1EntitiesTags(
+            uuids=uuids.uuids,
+            tags=tags,
+        )
+        return await self.client.runs_v1.tag_runs(
+            self.owner, self.project, body=data
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def list_versions(
+        self,
+        kind: V1ProjectVersionKind,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> V1ListProjectVersionsResponse:
+        self._validate_kind(kind)
+        params = get_query_params(
+            limit=limit or 20, offset=offset, query=query, sort=sort
+        )
+        return await self.client.projects_v1.list_versions(
+            self.owner, self.project, kind, **params
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def list_component_versions(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> V1ListProjectVersionsResponse:
+        return await self.list_versions(
+            kind=V1ProjectVersionKind.COMPONENT,
+            query=query,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def list_model_versions(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> V1ListProjectVersionsResponse:
+        return await self.list_versions(
+            kind=V1ProjectVersionKind.MODEL,
+            query=query,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def list_artifact_versions(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> V1ListProjectVersionsResponse:
+        return await self.list_versions(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            query=query,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_version(
+        self, kind: V1ProjectVersionKind, version: str
+    ) -> V1ProjectVersion:
+        self._validate_kind(kind)
+        response = await self.client.projects_v1.get_version(
+            self.owner, self.project, kind, version
+        )
+        if response.kind != kind:
+            raise PolyaxonClientException("This version is not of kind `%s`." % kind)
+        return response
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_component_version(self, version: str) -> V1ProjectVersion:
+        return await self.get_version(
+            kind=V1ProjectVersionKind.COMPONENT, version=version
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_model_version(self, version: str) -> V1ProjectVersion:
+        return await self.get_version(kind=V1ProjectVersionKind.MODEL, version=version)
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_artifact_version(self, version: str) -> V1ProjectVersion:
+        return await self.get_version(
+            kind=V1ProjectVersionKind.ARTIFACT, version=version
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_version_stages(
+        self, kind: V1ProjectVersionKind, version: str
+    ) -> Tuple[str, List[V1StageCondition]]:
+        self._validate_kind(kind)
+        response = await self.client.projects_v1.get_version_stages(
+            self.owner, self.project, kind, version
+        )
+        return response.stage, response.stage_conditions
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_component_version_stages(
+        self, version: str
+    ) -> Tuple[str, List[V1StageCondition]]:
+        return await self.get_version_stages(
+            kind=V1ProjectVersionKind.COMPONENT, version=version
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_model_version_stages(
+        self, version: str
+    ) -> Tuple[str, List[V1StageCondition]]:
+        return await self.get_version_stages(
+            kind=V1ProjectVersionKind.MODEL, version=version
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_artifact_version_stages(
+        self, version: str
+    ) -> Tuple[str, List[V1StageCondition]]:
+        return await self.get_version_stages(
+            kind=V1ProjectVersionKind.ARTIFACT, version=version
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def create_version(
+        self,
+        kind: V1ProjectVersionKind,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        self._validate_kind(kind)
+        if isinstance(data, V1ProjectVersion):
+            data.kind = kind
+        elif isinstance(data, dict):
+            data["kind"] = kind
+        return await self.client.projects_v1.create_version(
+            self.owner,
+            self.project,
+            kind,
+            body=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def create_component_version(
+        self,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        return await self.create_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            data=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def create_model_version(
+        self,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        return await self.create_version(
+            kind=V1ProjectVersionKind.MODEL,
+            data=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def create_artifact_version(
+        self,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        return await self.create_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            data=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def patch_version(
+        self,
+        kind: V1ProjectVersionKind,
+        version: str,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        self._validate_kind(kind)
+        return await self.client.projects_v1.patch_version(
+            self.owner,
+            self.project,
+            kind,
+            version,
+            body=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def patch_component_version(
+        self,
+        version: str,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        return await self.patch_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            version=version,
+            data=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def patch_model_version(
+        self,
+        version: str,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        return await self.patch_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version=version,
+            data=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def patch_artifact_version(
+        self,
+        version: str,
+        data: Union[Dict, V1ProjectVersion],
+    ) -> V1ProjectVersion:
+        return await self.patch_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            version=version,
+            data=data,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def register_version(
+        self,
+        kind: V1ProjectVersionKind,
+        version: str,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        readme: Optional[str] = None,
+        run: Optional[str] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
+        stage: Optional[V1Stages] = None,
+        stage_conditions: Optional[List[V1StageCondition]] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        try:
+            await self.get_version(kind, version)
+            if not force:
+                raise PolyaxonClientException(
+                    "A {} version {} already exists. "
+                    "Please pass the `force` argument or `--force` flag for CLI) "
+                    "if you want to push force this version.".format(kind, version)
+                )
+            to_update = True
+        except (ApiException, AttributeError):
+            to_update = False
+
+        def _get_content() -> str:
+            return content if isinstance(content, str) else orjson_dumps(content)
+
+        if content:
+            content = _get_content()
+        if tags is not None:
+            tags = validate_tags(tags, validate_yaml=True)
+        if artifacts is not None:
+            artifacts = validate_tags(artifacts, validate_yaml=True)
+
+        if to_update:
+            version_config = V1ProjectVersion.model_construct()
+            if description is not None:
+                version_config.description = description
+            if tags:
+                version_config.tags = tags
+            if content:
+                version_config.content = content  # type: ignore
+            if readme is not None:
+                version_config.readme = readme
+            if run:
+                version_config.run = run
+            if artifacts is not None:
+                version_config.artifacts = artifacts
+            if connection is not None:
+                version_config.connection = connection
+            if stage is not None:
+                version_config.stage = stage
+            if stage_conditions is not None:
+                version_config.stage_conditions = stage_conditions
+            return await self.patch_version(
+                kind=kind,
+                version=version,
+                data=version_config,
+            )
+
+        version_config = V1ProjectVersion.model_construct(
+            name=version,
+            description=description,
+            tags=tags,
+            run=run,
+            readme=readme,
+            artifacts=artifacts,
+            connection=connection,
+            content=content,
+            stage=stage,
+            stage_conditions=stage_conditions,
+        )
+        return await self.create_version(kind=kind, data=version_config)
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def register_component_version(
+        self,
+        version: str,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        run: Optional[str] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        return await self.register_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            version=version,
+            description=description,
+            tags=tags,
+            content=content,
+            run=run,
+            force=force,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def register_model_version(
+        self,
+        version: str,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        run: Optional[str] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        return await self.register_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version=version,
+            description=description,
+            tags=tags,
+            content=content,
+            run=run,
+            connection=connection,
+            artifacts=artifacts,
+            force=force,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def register_artifact_version(
+        self,
+        version: str,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        run: Optional[str] = None,
+        connection: Optional[str] = None,
+        artifacts: Optional[List[str]] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        return await self.register_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            version=version,
+            description=description,
+            tags=tags,
+            content=content,
+            run=run,
+            connection=connection,
+            artifacts=artifacts,
+            force=force,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def delete_version(self, kind: V1ProjectVersionKind, version: str):
+        self._validate_kind(kind)
+        logger.info("Deleting {} version: `{}`".format(kind, version))
+        return await self.client.projects_v1.delete_version(
+            self.owner,
+            self.project,
+            kind,
+            version,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def delete_component_version(self, version: str):
+        return await self.delete_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            version=version,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def delete_model_version(self, version: str):
+        return await self.delete_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version=version,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def delete_artifact_version(self, version: str):
+        return await self.delete_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            version=version,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def stage_version(
+        self,
+        kind: V1ProjectVersionKind,
+        version: str,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
+    ):
+        self._validate_kind(kind)
+        current_date = now()
+        stage_condition = V1StageCondition.model_construct(
+            type=stage,
+            status=True,
+            reason=reason or "ClientStageUpdate",
+            message=message,
+            last_transition_time=last_transition_time or current_date,
+            last_update_time=last_update_time or current_date,
+        )
+        return await self.client.projects_v1.create_version_stage(
+            self.owner,
+            self.project,
+            kind,
+            version,
+            body={"condition": stage_condition},
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def stage_component_version(
+        self,
+        version: str,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
+    ):
+        return await self.stage_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            version=version,
+            stage=stage,
+            reason=reason,
+            message=message,
+            last_transition_time=last_transition_time,
+            last_update_time=last_update_time,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def stage_model_version(
+        self,
+        version: str,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
+    ):
+        return await self.stage_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version=version,
+            stage=stage,
+            reason=reason,
+            message=message,
+            last_transition_time=last_transition_time,
+            last_update_time=last_update_time,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def stage_artifact_version(
+        self,
+        version: str,
+        stage: Union[str, V1Stages],
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        last_transition_time: Optional[datetime] = None,
+        last_update_time: Optional[datetime] = None,
+    ):
+        return await self.stage_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            version=version,
+            stage=stage,
+            reason=reason,
+            message=message,
+            last_transition_time=last_transition_time,
+            last_update_time=last_update_time,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def transfer_version(
+        self, kind: V1ProjectVersionKind, version: str, to_project: str
+    ):
+        self._validate_kind(kind)
+        return await self.client.projects_v1.transfer_version(
+            self.owner,
+            self.project,
+            kind,
+            version,
+            body={"project": to_project},
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def transfer_component_version(self, version: str, to_project: str):
+        return await self.transfer_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            version=version,
+            to_project=to_project,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def transfer_model_version(self, version: str, to_project: str):
+        return await self.transfer_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version=version,
+            to_project=to_project,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def transfer_artifact_version(self, version: str, to_project: str):
+        return await self.transfer_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            version=version,
+            to_project=to_project,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def copy_version(
+        self,
+        kind: V1ProjectVersionKind,
+        version: str,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        original_version = await self.get_version(kind, version)
+        version = name if name else "{}-copy".format(version)
+        return await AsyncProjectClient(
+            owner=self.owner,
+            project=to_project or self.project,
+            client=self.client,
+        ).register_version(
+            kind=kind,
+            version=version,
+            description=description or original_version.description,
+            tags=tags or original_version.tags,
+            content=content or original_version.content,
+            run=original_version.run,
+            connection=original_version.connection,
+            artifacts=original_version.artifacts,
+            force=force,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def copy_component_version(
+        self,
+        version: str,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        return await self.copy_version(
+            kind=V1ProjectVersionKind.COMPONENT,
+            version=version,
+            to_project=to_project,
+            name=name,
+            description=description,
+            tags=tags,
+            content=content,
+            force=force,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def copy_model_version(
+        self,
+        version: str,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        return await self.copy_version(
+            kind=V1ProjectVersionKind.MODEL,
+            version=version,
+            to_project=to_project,
+            name=name,
+            description=description,
+            tags=tags,
+            content=content,
+            force=force,
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def copy_artifact_version(
+        self,
+        version: str,
+        to_project: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict]] = None,
+        force: bool = False,
+    ) -> V1ProjectVersion:
+        return await self.copy_version(
+            kind=V1ProjectVersionKind.ARTIFACT,
+            version=version,
+            to_project=to_project,
+            name=name,
+            description=description,
+            tags=tags,
+            content=content,
+            force=force,
+        )
+
+    def _raise_sync_only(self, method_name: str):
+        raise PolyaxonClientException(
+            "`{}` performs local file or artifact IO and is sync-only for now.".format(
+                method_name
+            )
+        )
+
+    @async_client_handler(check_no_op=True)
+    async def persist_version(self, config: V1ProjectVersion, path: str):
+        self._raise_sync_only("persist_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def download_artifacts_for_version(
+        self, config: V1ProjectVersion, path: str
+    ):
+        self._raise_sync_only("download_artifacts_for_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def pull_version(
+        self,
+        kind: V1ProjectVersionKind,
+        version: str,
+        path: str,
+        download_artifacts: bool = True,
+    ):
+        self._raise_sync_only("pull_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def pull_component_version(
+        self,
+        version: str,
+        path: str,
+    ):
+        self._raise_sync_only("pull_component_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def pull_model_version(
+        self,
+        version: str,
+        path: str,
+        download_artifacts: bool = True,
+    ):
+        self._raise_sync_only("pull_model_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def pull_artifact_version(
+        self,
+        version: str,
+        path: str,
+        download_artifacts: bool = True,
+    ):
+        self._raise_sync_only("pull_artifact_version")
+
+    @classmethod
+    @async_client_handler(check_no_op=True)
+    async def load_offline_version(
+        cls,
+        kind: V1ProjectVersionKind,
+        version: str,
+        path: str,
+        project_client: Optional["ProjectClient"] = None,
+        reset_project: bool = False,
+        raise_if_not_found: bool = False,
+    ) -> Optional["ProjectClient"]:
+        raise PolyaxonClientException(
+            "`load_offline_version` performs local file IO and is sync-only for now."
+        )
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def push_version(
+        self,
+        kind: V1ProjectVersionKind,
+        version: str,
+        path: str,
+        force: bool = False,
+        clean: bool = False,
+    ):
+        self._raise_sync_only("push_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def push_component_version(
+        self,
+        version: str,
+        path: str,
+        force: bool = False,
+        clean: bool = False,
+    ):
+        self._raise_sync_only("push_component_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def push_model_version(
+        self,
+        version: str,
+        path: str,
+        force: bool = True,
+        clean: bool = False,
+    ):
+        self._raise_sync_only("push_model_version")
+
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def push_artifact_version(
+        self,
+        version: str,
+        path: str,
+        force: bool = True,
+        clean: bool = False,
+    ):
+        self._raise_sync_only("push_artifact_version")

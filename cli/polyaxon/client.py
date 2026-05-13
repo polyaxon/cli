@@ -1,7 +1,7 @@
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import ensure_is_managed
 from polyaxon._client.organization import AsyncOrganizationClient, OrganizationClient
-from polyaxon._client.project import ProjectClient
+from polyaxon._client.project import AsyncProjectClient, ProjectClient
 from polyaxon._client.run import RunClient, get_run_logs
 from polyaxon._client.store import PolyaxonStore
 from polyaxon._schemas.agent import AgentConfig
