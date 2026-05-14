@@ -576,6 +576,163 @@ async def test_get_artifact_awaits_refresh_when_settings_missing():
 
 
 @pytest.mark.asyncio
+async def test_download_artifact_methods_call_store_download_file():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.config = mock.Mock(host="http://api", no_op=None, is_offline=None)
+    client = make_client(sdk_client)
+    client._run_data = make_run()
+    client._store = mock.Mock()
+    client._store.download_file = mock.Mock(side_effect=["/tmp/file", "/tmp/archive"])
+
+    file_path = await client.download_artifact(
+        "outputs/model.pkl",
+        force=True,
+        path_to="/tmp/downloads",
+    )
+    archive_path = await client.download_artifacts(
+        "outputs",
+        path_to="/tmp/downloads",
+        untar=False,
+        extract_path="/tmp/extract",
+        check_path=True,
+    )
+
+    assert file_path == "/tmp/file"
+    assert archive_path == "/tmp/archive"
+    file_kwargs = client._store.download_file.call_args_list[0][1]
+    archive_kwargs = client._store.download_file.call_args_list[1][1]
+    assert file_kwargs["path"] == "outputs/model.pkl"
+    assert file_kwargs["path_to"] == "/tmp/downloads"
+    assert file_kwargs["params"] == {"force": True}
+    assert file_kwargs["url"].endswith(
+        "/streams/v1/test-namespace/test-owner/test-project/runs/{}/artifact".format(
+            RUN_UUID
+        )
+    )
+    assert archive_kwargs["path"] == "outputs"
+    assert archive_kwargs["path_to"] == "/tmp/downloads"
+    assert archive_kwargs["untar"] is False
+    assert archive_kwargs["delete_tar"] is False
+    assert archive_kwargs["extract_path"] == "/tmp/extract"
+    assert archive_kwargs["params"] == {"check_path": True}
+    assert archive_kwargs["url"].endswith(
+        "/streams/v1/test-namespace/test-owner/test-project/runs/{}/artifacts".format(
+            RUN_UUID
+        )
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "lineage,expected_method,expected_kwargs",
+    [
+        (
+            V1RunArtifact.model_construct(
+                kind=V1ArtifactKind.METRIC,
+                path=f"{RUN_UUID}/events/metric/loss",
+            ),
+            "download_artifact",
+            {
+                "path": "events/metric/loss",
+                "force": True,
+                "path_to": "/tmp/downloads",
+            },
+        ),
+        (
+            V1RunArtifact.model_construct(
+                kind=V1ArtifactKind.MODEL,
+                path="models/model.pkl",
+            ),
+            "download_artifacts",
+            {
+                "path": "models/model.pkl",
+                "path_to": "/tmp/downloads",
+                "check_path": True,
+            },
+        ),
+        (
+            V1RunArtifact.model_construct(
+                kind=V1ArtifactKind.DIR,
+                path="outputs",
+            ),
+            "download_artifacts",
+            {
+                "path": "outputs",
+                "path_to": "/tmp/downloads",
+            },
+        ),
+    ],
+)
+async def test_download_artifact_for_lineage_routes_to_download_helpers(
+    lineage,
+    expected_method,
+    expected_kwargs,
+):
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    client = make_client(sdk_client)
+    client._run_data = make_run()
+    client.download_artifact = AsyncMock(return_value="file")
+    client.download_artifacts = AsyncMock(return_value="artifacts")
+
+    result = await client.download_artifact_for_lineage(
+        lineage,
+        force=True,
+        path_to="/tmp/downloads",
+    )
+
+    if expected_method == "download_artifact":
+        assert result == "file"
+        client.download_artifact.assert_called_once_with(**expected_kwargs)
+        assert client.download_artifacts.call_count == 0
+    else:
+        assert result == "artifacts"
+        client.download_artifacts.assert_called_once_with(**expected_kwargs)
+        assert client.download_artifact.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_download_artifact_for_lineage_downloads_event_package():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.config = mock.Mock(host="http://api", no_op=None, is_offline=None)
+    client = make_client(sdk_client)
+    client._run_data = make_run()
+    client._store = mock.Mock()
+    client._store.download_file = mock.Mock(return_value="/tmp/events")
+    lineage = V1RunArtifact.model_construct(
+        kind=V1ArtifactKind.MODEL,
+        name="model",
+        path="events/model",
+        summary={"is_event": True},
+    )
+
+    result = await client.download_artifact_for_lineage(
+        lineage,
+        force=True,
+        path_to="/tmp/downloads",
+    )
+
+    assert result == "/tmp/events"
+    kwargs = client._store.download_file.call_args[1]
+    assert kwargs["path"] == RUN_UUID
+    assert kwargs["use_filepath"] is False
+    assert kwargs["extract_path"] == "/tmp/downloads"
+    assert kwargs["path_to"] == "/tmp/downloads"
+    assert kwargs["untar"] is True
+    assert kwargs["params"] == {
+        "force": True,
+        "names": "model",
+        "pkg_assets": True,
+    }
+    assert kwargs["url"].endswith(
+        "/streams/v1/test-namespace/test-owner/test-project/runs/"
+        "{}/events/model".format(RUN_UUID)
+    )
+
+
+@pytest.mark.asyncio
 async def test_run_action_methods_await_api_without_async_req():
     patch_settings()
     sdk_client = AsyncPolyaxonClientMock()
@@ -840,9 +997,6 @@ async def test_promote_methods_use_async_project_client_with_injected_client():
         ("upload_artifact", ("file.txt",)),
         ("upload_artifacts_dir", ("outputs",)),
         ("upload_artifacts", (["file.txt"],)),
-        ("download_artifact_for_lineage", (V1RunArtifact.model_construct(),)),
-        ("download_artifact", ("file.txt",)),
-        ("download_artifacts", ()),
         ("persist_run", ("/tmp/run",)),
         ("push_offline_run", ("/tmp/run",)),
         ("get_runs_as_hiplot", ()),

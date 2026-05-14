@@ -3687,16 +3687,159 @@ class AsyncRunClient(RunClient):
         )
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def download_artifact_for_lineage(self, *args, **kwargs):
-        self._raise_sync_only("download_artifact_for_lineage")
+    async def download_artifact_for_lineage(
+        self,
+        lineage: V1RunArtifact,
+        force: bool = False,
+        path_to: Optional[str] = None,
+    ):
+        if not self.run_uuid:
+            return
+
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+
+        lineage_path = lineage.path or ""
+        summary = lineage.summary or {}
+        is_event = summary.get("is_event")
+        has_step = summary.get("step")
+
+        if self.run_uuid in lineage_path:
+            lineage_path = os.path.relpath(lineage_path, self.run_uuid)
+
+        if V1ArtifactKind.is_single_file_event(lineage.kind):
+            return await self.download_artifact(
+                path=lineage_path,
+                force=force,
+                path_to=path_to,
+            )
+
+        if V1ArtifactKind.is_single_or_multi_file_event(lineage.kind):
+            if is_event or has_step:
+                if not self.settings:
+                    await self.refresh_data()
+                url = get_proxy_run_url(
+                    service=STREAMS_V1_LOCATION,
+                    namespace=self.namespace,
+                    owner=self.owner,
+                    project=self.project,
+                    run_uuid=self.run_uuid,
+                    subpath="events/{}".format(lineage.kind),
+                )
+                url = absolute_uri(url=url, host=self.client.config.host)
+                params = get_streams_params(
+                    connection=self.artifacts_store,
+                    force=force,
+                )
+                params.update({"names": lineage.name, "pkg_assets": True})
+
+                # TODO: Update with AsyncPolyaxonStore is done
+                return await asyncio.to_thread(
+                    self.store.download_file,
+                    url=url,
+                    path=self.run_uuid,
+                    use_filepath=False,
+                    extract_path=path_to,
+                    path_to=path_to,
+                    params=params,
+                    untar=True,
+                )
+            if V1ArtifactKind.is_file_or_dir(lineage.kind):
+                return await self.download_artifacts(
+                    path=lineage_path,
+                    path_to=path_to,
+                    check_path=True,
+                )
+            return await self.download_artifact(
+                path=lineage_path,
+                force=force,
+                path_to=path_to,
+            )
+
+        if V1ArtifactKind.is_file(lineage.kind):
+            return await self.download_artifact(
+                path=lineage_path,
+                force=force,
+                path_to=path_to,
+            )
+
+        if V1ArtifactKind.is_dir(lineage.kind):
+            return await self.download_artifacts(path=lineage_path, path_to=path_to)
+
+        if V1ArtifactKind.is_file_or_dir(lineage.kind):
+            return await self.download_artifacts(
+                path=lineage_path,
+                path_to=path_to,
+                check_path=True,
+            )
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def download_artifact(self, *args, **kwargs):
-        self._raise_sync_only("download_artifact")
+    async def download_artifact(
+        self,
+        path: str,
+        force: bool = False,
+        path_to: Optional[str] = None,
+    ):
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+
+        url = get_proxy_run_url(
+            service=STREAMS_V1_LOCATION,
+            namespace=self.namespace,
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            subpath="artifact",
+        )
+        url = absolute_uri(url=url, host=self.client.config.host)
+        params = get_streams_params(connection=self.artifacts_store, force=force)
+        return await asyncio.to_thread(
+            self.store.download_file,
+            url=url,
+            path=path,
+            path_to=path_to,
+            params=params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def download_artifacts(self, *args, **kwargs):
-        self._raise_sync_only("download_artifacts")
+    async def download_artifacts(
+        self,
+        path: str = "",
+        path_to: Optional[str] = None,
+        untar: bool = True,
+        delete_tar: bool = True,
+        extract_path: Optional[str] = None,
+        check_path: bool = False,
+    ):
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+
+        url = get_proxy_run_url(
+            service=STREAMS_V1_LOCATION,
+            namespace=self.namespace,
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            subpath="artifacts",
+        )
+        url = absolute_uri(url=url, host=self.client.config.host)
+        params = get_streams_params(connection=self.artifacts_store)
+        if check_path:
+            params["check_path"] = True
+
+        return await asyncio.to_thread(
+            self.store.download_file,
+            url=url,
+            path=path,
+            untar=untar,
+            path_to=path_to,
+            delete_tar=delete_tar and untar,
+            extract_path=extract_path,
+            params=params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def upload_artifact(self, *args, **kwargs):
