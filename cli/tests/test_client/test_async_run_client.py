@@ -528,3 +528,80 @@ async def test_load_offline_run_is_sync_only():
 
     with pytest.raises(PolyaxonClientException):
         await AsyncRunClient.load_offline_run("/tmp/run")
+
+
+@pytest.mark.asyncio
+async def test_restart_routes_to_copy_when_copy_flag_set():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    response = make_run(name="restarted")
+    sdk_client.runs_v1.copy_run = AsyncMock(return_value=response)
+    sdk_client.runs_v1.restart_run = AsyncMock()
+    client = make_client(sdk_client)
+
+    result = await client.restart(copy=True, name="restarted")
+
+    assert result is response
+    assert sdk_client.runs_v1.copy_run.call_count == 1
+    assert sdk_client.runs_v1.restart_run.call_count == 0
+    assert "async_req" not in sdk_client.runs_v1.copy_run.call_args[1]
+
+
+@pytest.mark.asyncio
+async def test_restart_routes_to_restart_when_copy_not_set():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    response = make_run(name="restarted")
+    sdk_client.runs_v1.restart_run = AsyncMock(return_value=response)
+    sdk_client.runs_v1.copy_run = AsyncMock()
+    client = make_client(sdk_client)
+
+    result = await client.restart(name="restarted")
+
+    assert result is response
+    assert sdk_client.runs_v1.restart_run.call_count == 1
+    assert sdk_client.runs_v1.copy_run.call_count == 0
+    assert "async_req" not in sdk_client.runs_v1.restart_run.call_args[1]
+
+
+@pytest.mark.asyncio
+async def test_resume_awaits_resume_run_with_built_body():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    response = make_run(name="resumed")
+    sdk_client.runs_v1.resume_run = AsyncMock(return_value=response)
+    client = make_client(sdk_client)
+
+    result = await client.resume(name="resumed")
+
+    assert result is response
+    assert sdk_client.runs_v1.resume_run.call_count == 1
+    assert "async_req" not in sdk_client.runs_v1.resume_run.call_args[1]
+
+
+@pytest.mark.asyncio
+async def test_log_succeeded_awaits_create_run_status_via_log_status():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run_status = AsyncMock(return_value=None)
+    client = make_client(sdk_client)
+    client._run_data = make_run(status=V1Statuses.RUNNING)
+
+    await client.log_succeeded()
+
+    assert sdk_client.runs_v1.create_run_status.call_count == 1
+    body = sdk_client.runs_v1.create_run_status.call_args[1]["body"]
+    assert body["condition"].type == V1Statuses.SUCCEEDED
+
+
+@pytest.mark.asyncio
+async def test_log_end_status_short_circuits_when_already_done():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run_status = AsyncMock()
+    client = make_client(sdk_client)
+    client._run_data = make_run(status=V1Statuses.SUCCEEDED)
+
+    await client.log_failed()
+
+    assert sdk_client.runs_v1.create_run_status.call_count == 0

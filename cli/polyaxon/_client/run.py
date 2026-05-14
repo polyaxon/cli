@@ -3232,7 +3232,7 @@ class RunClient(ClientMixin):
 class AsyncRunClient(RunClient):
     _IS_ASYNC = True
 
-    async def _areset_agent(self, agent: Optional[str] = None):
+    async def _reset_agent(self, agent: Optional[str] = None):
         if agent:
             agent = await self.client.agents_v1.get_agent(self.owner, agent)
             self.settings.agent = V1SettingsCatalog(
@@ -3244,7 +3244,7 @@ class AsyncRunClient(RunClient):
             self.settings.namespace = agent.namespace
             self.settings.artifacts_store = None
 
-    async def _ause_agent_host(self):
+    async def _use_agent_host(self):
         if self.settings.agent and self.settings.agent.url:
             await self.areset_client(
                 host=self.settings.agent.url,
@@ -3469,7 +3469,7 @@ class AsyncRunClient(RunClient):
     ):
         if not self.settings:
             await self.refresh_data()
-        await self._ause_agent_host()
+        await self._use_agent_host()
 
         params = get_streams_params(self.artifacts_store)
         return await self.client.runs_v1.get_run_events(
@@ -3495,7 +3495,7 @@ class AsyncRunClient(RunClient):
     ):
         if not self.settings:
             await self.refresh_data()
-        await self._ause_agent_host()
+        await self._use_agent_host()
 
         params = get_streams_params(self.artifacts_store)
         return await self.client.runs_v1.get_multi_run_events(
