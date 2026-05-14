@@ -999,23 +999,25 @@ class RunClient(ClientMixin):
         except (ApiException, HTTPError) as e:
             raise PolyaxonClientException("Api error: %s" % e) from e
 
+    def _should_stop_waiting(self, last_status, statuses) -> bool:
+        if statuses:
+            return last_status in statuses
+        return LifeCycle.is_done(last_status)
+
+    def _is_retryable_status_error(self, error: ApiException) -> bool:
+        return error.status in {500, 502, 503, 504}
+
     def _wait_for_condition(self, statuses: Optional[List[str]] = None):
         statuses = to_list(statuses, check_none=True)
-
-        def condition():
-            if statuses:
-                return last_status in statuses
-            return LifeCycle.is_done(last_status)
-
         last_status = None
-        while not condition():
+        while not self._should_stop_waiting(last_status, statuses):
             if last_status:
                 time.sleep(settings.CLIENT_CONFIG.watch_interval)
             try:
                 last_status, _conditions = self.get_statuses(last_status)
                 yield last_status, _conditions
             except ApiException as e:
-                if e.status in {500, 502, 503, 504}:
+                if self._is_retryable_status_error(e):
                     yield last_status, []
                 else:
                     raise e
@@ -3435,25 +3437,82 @@ class AsyncRunClient(RunClient):
         except ApiException as e:
             raise PolyaxonClientException("Api error: %s" % e) from e
 
-    @async_client_handler(check_no_op=True, check_offline=True)
-    async def wait_for_condition(self, *args, **kwargs):
-        self._raise_sync_only("wait_for_condition")
+    async def _wait_for_condition(self, statuses: Optional[List[str]] = None):
+        statuses = to_list(statuses, check_none=True)
+        last_status = None
+        while not self._should_stop_waiting(last_status, statuses):
+            if last_status:
+                await asyncio.sleep(settings.CLIENT_CONFIG.watch_interval)
+            try:
+                last_status, conditions = await self.get_statuses(last_status)
+                yield last_status, conditions
+            except ApiException as e:
+                if self._is_retryable_status_error(e):
+                    yield last_status, []
+                else:
+                    raise e
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def watch_statuses(self, *args, **kwargs):
-        self._raise_sync_only("watch_statuses")
+    async def wait_for_condition(
+        self,
+        statuses: Optional[List[str]] = None,
+        print_status: bool = False,
+        live_update: Any = None,
+    ):
+        async for status, _conditions in self._wait_for_condition(statuses):
+            self._run_data.status = status  # type: ignore
+            if print_status:
+                print("Last received status: {}\n".format(status))
+            if live_update:
+                latest_status = Printer.add_status_color(
+                    {"status": status}, status_key="status"
+                )
+                live_update.update(status="{}\n".format(latest_status["status"]))
+
+    async def watch_statuses(self, statuses: Optional[List[str]] = None):
+        if self._no_op or self._is_offline:
+            return
+        async for status, conditions in self._wait_for_condition(statuses):
+            self._run_data.status = status  # type: ignore
+            yield status, conditions
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def get_logs(self, *args, **kwargs):
-        self._raise_sync_only("get_logs")
+    async def get_logs(self, last_file=None, last_time=None) -> "V1Logs":
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+        params = get_logs_params(
+            last_file=last_file,
+            last_time=last_time,
+            connection=self.artifacts_store,
+            kind=self.run_data.kind,
+        )
+        return await self.client.runs_v1.get_run_logs(
+            self.namespace,
+            self.owner,
+            self.project,
+            self.run_uuid,
+            **params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def watch_logs(self, *args, **kwargs):
         self._raise_sync_only("watch_logs")
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def inspect(self, *args, **kwargs):
-        self._raise_sync_only("inspect")
+    async def inspect(self):
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+        params = get_streams_params(connection=self.artifacts_store, status=self.status)
+        return await self.client.runs_v1.inspect_run(
+            self.namespace,
+            self.owner,
+            self.project,
+            self.run_uuid,
+            self.run_data.kind,
+            **params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def shell(self, *args, **kwargs):

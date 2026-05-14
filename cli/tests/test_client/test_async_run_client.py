@@ -2,6 +2,7 @@ import inspect
 from mock import mock
 import pytest
 
+from polyaxon import settings
 from polyaxon._client.run import AsyncRunClient, RunClient
 from polyaxon._schemas.lifecycle import (
     V1ProjectVersionKind,
@@ -162,7 +163,10 @@ def test_async_run_client_rejects_sync_client():
 def test_async_run_client_method_surface_is_async():
     for method in ASYNC_METHODS:
         assert method in AsyncRunClient.__dict__
-        assert inspect.iscoroutinefunction(getattr(AsyncRunClient, method))
+        if method == "watch_statuses":
+            assert inspect.isasyncgenfunction(getattr(AsyncRunClient, method))
+        else:
+            assert inspect.iscoroutinefunction(getattr(AsyncRunClient, method))
 
 
 def test_async_run_client_local_helpers_stay_shared():
@@ -327,6 +331,109 @@ async def test_status_methods_await_api_without_async_req():
     condition = sdk_client.runs_v1.create_run_status.call_args[1]["body"]["condition"]
     assert condition.type == V1Statuses.RUNNING
     assert "async_req" not in sdk_client.runs_v1.create_run_status.call_args[1]
+
+
+@pytest.mark.asyncio
+async def test_wait_for_condition_updates_status():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.get_run_statuses = AsyncMock(
+        return_value=mock.Mock(
+            status=V1Statuses.RUNNING,
+            status_conditions=[
+                V1StatusCondition.model_construct(type=V1Statuses.RUNNING)
+            ],
+        )
+    )
+    client = make_client(sdk_client)
+
+    await client.wait_for_condition(statuses=[V1Statuses.RUNNING])
+
+    assert client.status == V1Statuses.RUNNING
+    sdk_client.runs_v1.get_run_statuses.assert_called_once_with(
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+    )
+
+
+@pytest.mark.asyncio
+async def test_watch_statuses_yields_until_done_status():
+    patch_settings()
+    settings.CLIENT_CONFIG.watch_interval = 0
+    sdk_client = AsyncPolyaxonClientMock()
+    running_condition = V1StatusCondition.model_construct(type=V1Statuses.RUNNING)
+    succeeded_condition = V1StatusCondition.model_construct(type=V1Statuses.SUCCEEDED)
+    sdk_client.runs_v1.get_run_statuses = AsyncMock(
+        side_effect=[
+            mock.Mock(
+                status=V1Statuses.RUNNING,
+                status_conditions=[running_condition],
+            ),
+            mock.Mock(
+                status=V1Statuses.SUCCEEDED,
+                status_conditions=[running_condition, succeeded_condition],
+            ),
+        ]
+    )
+    client = make_client(sdk_client)
+
+    statuses = []
+    async for status, _conditions in client.watch_statuses():
+        statuses.append(status)
+
+    assert statuses == [V1Statuses.RUNNING, V1Statuses.SUCCEEDED]
+    assert client.status == V1Statuses.SUCCEEDED
+    assert sdk_client.runs_v1.get_run_statuses.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_get_logs_awaits_refresh_and_api():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    response = mock.Mock()
+    sdk_client.runs_v1.get_run = AsyncMock(return_value=make_run())
+    sdk_client.runs_v1.get_run_logs = AsyncMock(return_value=response)
+    client = make_client(sdk_client)
+    client._run_data.settings = None
+
+    result = await client.get_logs(last_file="last.log", last_time="123")
+
+    assert result is response
+    sdk_client.runs_v1.get_run.assert_called_once_with(OWNER, PROJECT, RUN_UUID)
+    assert sdk_client.runs_v1.get_run_logs.call_args[0] == (
+        "test-namespace",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+    )
+    assert "async_req" not in sdk_client.runs_v1.get_run_logs.call_args[1]
+
+
+@pytest.mark.asyncio
+async def test_inspect_awaits_refresh_and_api():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    response = {"pods": {}}
+    sdk_client.runs_v1.get_run = AsyncMock(
+        return_value=make_run(status=V1Statuses.RUNNING)
+    )
+    sdk_client.runs_v1.inspect_run = AsyncMock(return_value=response)
+    client = make_client(sdk_client)
+    client._run_data.settings = None
+
+    result = await client.inspect()
+
+    assert result is response
+    sdk_client.runs_v1.get_run.assert_called_once_with(OWNER, PROJECT, RUN_UUID)
+    assert sdk_client.runs_v1.inspect_run.call_args[0] == (
+        "test-namespace",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+        None,
+    )
+    assert "async_req" not in sdk_client.runs_v1.inspect_run.call_args[1]
 
 
 @pytest.mark.asyncio
@@ -504,7 +611,6 @@ async def test_promote_methods_use_async_project_client_with_injected_client():
 @pytest.mark.parametrize(
     "method,args",
     [
-        ("get_logs", ()),
         ("upload_artifact", ("file.txt",)),
         ("download_artifacts", ()),
         ("persist_run", ("/tmp/run",)),
