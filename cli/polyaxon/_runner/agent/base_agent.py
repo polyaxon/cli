@@ -8,7 +8,7 @@ from polyaxon import settings
 from polyaxon._auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarContainer
 from polyaxon._connections import V1Connection
 from polyaxon._constants.globals import DEFAULT
-from polyaxon._runner.agent.client import AgentClient
+from polyaxon._runner.agent.client import AgentClient, AsyncAgentClient
 from polyaxon._runner.executor import BaseExecutor
 from polyaxon._schemas.checks import ChecksConfig
 from polyaxon._schemas.lifecycle import LiveState, V1Statuses
@@ -44,9 +44,8 @@ class BaseAgent:
         self._graceful_shutdown = False
         self._last_data_collected_at = last_hour
         self._last_reconciled_at = last_hour
-        self.client = AgentClient(
-            owner=owner, agent_uuid=agent_uuid, is_async=self.IS_ASYNC
-        )
+        agent_client_cls = AsyncAgentClient if self.IS_ASYNC else AgentClient
+        self.client = agent_client_cls(owner=owner, agent_uuid=agent_uuid)
         self.executor = self.EXECUTOR()
         self.content = settings.AGENT_CONFIG.to_json()
 

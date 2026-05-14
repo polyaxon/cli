@@ -3,7 +3,7 @@ import pytest
 
 from polyaxon._k8s.agent.async_agent import AsyncAgent
 from polyaxon._k8s.executor.async_executor import AsyncExecutor
-from polyaxon._runner.agent.client import AgentClient
+from polyaxon._runner.agent.client import AsyncAgentClient
 from polyaxon._utils.test_utils import AsyncMock, patch_settings
 
 
@@ -18,7 +18,7 @@ async def test_init_agent_component(register):
     agent = AsyncAgent(owner="foo", agent_uuid="uuid")
     assert agent.max_interval == 6
     assert isinstance(agent.executor, AsyncExecutor)
-    assert isinstance(agent.client, AgentClient)
+    assert isinstance(agent.client, AsyncAgentClient)
     assert register.call_count == 0
 
 
@@ -43,7 +43,7 @@ async def test_init_agent(
     agent.executor.manager.get_version.return_value = {}
     assert agent.max_interval == 6
     assert agent.executor is not None
-    assert isinstance(agent.client, AgentClient)
+    assert isinstance(agent.client, AsyncAgentClient)
     assert get_agent.call_count == 0
     assert get_agent_state.call_count == 0
     assert create_agent_status.call_count == 0
@@ -53,9 +53,24 @@ async def test_init_agent(
     await agent._enter()
     assert agent.max_interval == 6
     assert agent.executor is not None
-    assert isinstance(agent.client, AgentClient)
+    assert isinstance(agent.client, AsyncAgentClient)
     assert get_agent.call_count == 1
     assert get_agent_state.call_count == 0
     assert create_agent_status.call_count == 1
     assert sync_agent.call_count == 1
     assert agent.executor.manager.get_version.call_count == 1
+
+
+@pytest.mark.agent_mark
+@pytest.mark.asyncio
+async def test_async_agent_aexit_closes_client_in_finally():
+    patch_settings()
+    agent = AsyncAgent(owner="foo", agent_uuid="uuid")
+    agent.client = MagicMock()
+    agent.client.aclose = AsyncMock()
+    agent._exit = AsyncMock(side_effect=RuntimeError("exit failed"))
+
+    with pytest.raises(RuntimeError):
+        await agent.__aexit__(None, None, None)
+
+    agent.client.aclose.assert_called_once()

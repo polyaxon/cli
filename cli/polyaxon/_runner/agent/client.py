@@ -3,29 +3,46 @@ from typing import Dict, Optional
 
 from polyaxon._schemas.lifecycle import V1StatusCondition, V1Statuses
 from polyaxon.client import PolyaxonClient, V1Agent, V1AgentStateResponse
+from polyaxon.exceptions import PolyaxonClientException
 from polyaxon.logger import logger
 
 
-class AgentClient:
+class _AgentClientBase:
+    _IS_ASYNC = False
+
     def __init__(
         self,
         owner: Optional[str] = None,
         agent_uuid: Optional[str] = None,
         client: Optional[PolyaxonClient] = None,
         internal_client: Optional[PolyaxonClient] = None,
-        is_async: bool = False,
     ):
         self.owner = owner
         self.agent_uuid = agent_uuid
-        self.is_async = is_async
+        self._validate_client_mode(client, "client")
+        self._validate_client_mode(internal_client, "internal_client")
         self._client = client
         self._internal_client = internal_client
+        self._created_client = None
+        self._created_internal_client = None
+
+    def _validate_client_mode(self, client: Optional[PolyaxonClient], name: str):
+        if client is None:
+            return
+        is_async = getattr(client, "is_async", None)
+        if isinstance(is_async, bool) and is_async != self._IS_ASYNC:
+            raise PolyaxonClientException(
+                "Injected `{}` transport mode does not match AgentClient mode.".format(
+                    name
+                )
+            )
 
     @property
     def client(self):
         if self._client:
             return self._client
-        self._client = PolyaxonClient(is_async=self.is_async)
+        self._client = PolyaxonClient(is_async=self._IS_ASYNC)
+        self._created_client = self._client
         return self._client
 
     @property
@@ -33,9 +50,10 @@ class AgentClient:
         if self._internal_client:
             return self._internal_client
         self._internal_client = PolyaxonClient(
-            is_async=self.is_async,
+            is_async=self._IS_ASYNC,
             is_internal=True,
         )
+        self._created_internal_client = self._internal_client
         return self._internal_client
 
     @property
@@ -181,3 +199,21 @@ class AgentClient:
             uuid=run_uuid,
             body={"condition": status_condition},
         )
+
+
+class AgentClient(_AgentClientBase):
+    def close(self):
+        if self._created_client is not None:
+            self._created_client.close()
+        if self._created_internal_client is not None:
+            self._created_internal_client.close()
+
+
+class AsyncAgentClient(_AgentClientBase):
+    _IS_ASYNC = True
+
+    async def aclose(self):
+        if self._created_client is not None:
+            await self._created_client.aclose()
+        if self._created_internal_client is not None:
+            await self._created_internal_client.aclose()

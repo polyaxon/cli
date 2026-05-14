@@ -2,7 +2,7 @@ from mock import MagicMock, patch
 import pytest
 
 from polyaxon._constants.globals import DEFAULT
-from polyaxon._runner.agent.client import AgentClient
+from polyaxon._runner.agent.client import AgentClient, AsyncAgentClient
 from polyaxon._runner.agent.sync_agent import BaseSyncAgent
 from polyaxon._utils.test_utils import BaseTestCase
 
@@ -148,8 +148,18 @@ class TestBaseSyncAgent(BaseTestCase):
 
     @patch("polyaxon._runner.agent.client.PolyaxonClient")
     def test_agent_client_creates_internal_client_with_internal_mode(self, client_cls):
-        client = AgentClient(owner="foo", agent_uuid="uuid", is_async=True)
+        client = AsyncAgentClient(owner="foo", agent_uuid="uuid")
 
         _ = client.internal_client
 
         client_cls.assert_called_once_with(is_async=True, is_internal=True)
+
+    def test_sync_agent_exit_closes_client_in_finally(self):
+        agent = DummyAgent(owner="foo", agent_uuid="uuid")
+        agent.client = MagicMock()
+        agent._exit = MagicMock(side_effect=RuntimeError("exit failed"))
+
+        with pytest.raises(RuntimeError):
+            agent.__exit__(None, None, None)
+
+        agent.client.close.assert_called_once()

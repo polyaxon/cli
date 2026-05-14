@@ -61,7 +61,10 @@ class BaseAsyncAgent(BaseAgent):
         return await self._enter()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self._exit()
+        try:
+            await self._exit()
+        finally:
+            await self.client.aclose()
 
     async def refresh_executor(self):
         if (

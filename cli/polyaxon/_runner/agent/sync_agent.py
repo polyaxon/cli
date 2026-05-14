@@ -60,7 +60,10 @@ class BaseSyncAgent(BaseAgent):
         return self._enter()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._exit()
+        try:
+            self._exit()
+        finally:
+            self.client.close()
 
     def refresh_executor(self):
         if (
