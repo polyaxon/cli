@@ -1,7 +1,10 @@
+import asyncio
 import os
 import requests
 from typing import Dict, List
 
+import aiofiles
+import aiohttp
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 from clipped.formatting import Printer
@@ -326,3 +329,155 @@ class PolyaxonStore:
 
     def delete(self, path, **kwargs):
         pass
+
+
+class AsyncPolyaxonStore(PolyaxonStore):
+    async def ls(self, path):
+        return await self.list(path=path)
+
+    async def list(self, path):
+        return await self._client.get_artifacts_tree(path=path)
+
+    @staticmethod
+    async def check_response_status(response, endpoint):
+        if 200 <= response.status < 300:
+            return response
+
+        try:
+            reason = await response.text()
+            logger.error(
+                "Request to %s failed with status code %s. \nReason: %s",
+                endpoint,
+                response.status,
+                reason,
+            )
+        except TypeError:
+            logger.error("Request to %s failed with status code", endpoint)
+
+        raise PolyaxonClientException(HTTP_ERROR_MESSAGES_MAPPING.get(response.status))
+
+    @staticmethod
+    def _get_request_timeout(timeout):
+        if isinstance(timeout, aiohttp.ClientTimeout):
+            return timeout
+        return aiohttp.ClientTimeout(total=timeout)
+
+    async def download(
+        self,
+        url,
+        filename,
+        params=None,
+        headers=None,
+        timeout=None,
+        session=None,
+        untar=False,
+        delete_tar=True,
+        extract_path=None,
+        use_filepath=True,
+        show_progress=True,
+    ):
+        logger.debug("Downloading files from url: %s", url)
+
+        request_headers = self._client.client.config.get_full_headers(headers=headers)
+        timeout = timeout if timeout is not None else settings.LONG_REQUEST_TIMEOUT
+        request_timeout = self._get_request_timeout(timeout)
+        close_session = session is None
+        session = session or aiohttp.ClientSession(timeout=request_timeout)
+
+        try:
+            with Printer.console.status("Loading content ..."):
+                async with session.get(
+                    url=url,
+                    params=params,
+                    headers=request_headers,
+                    timeout=request_timeout,
+                ) as response:
+                    content_disposition = self._get_header_value(
+                        headers=response.headers,
+                        key="content-disposition",
+                    )
+                    has_tar = (
+                        '.tar"' in content_disposition
+                        or '.tar.gz"' in content_disposition
+                    )
+                    if has_tar:
+                        filename = filename + ".tar.gz"
+                    if untar:
+                        untar = has_tar
+
+                    await self.check_response_status(response, url)
+
+                    content_length = self._get_header_value(
+                        headers=response.headers,
+                        key="content-length",
+                    )
+                    content_length = float(content_length) if content_length else None
+                    chunk_size = 1024 * 10
+
+                    async def _download_impl(progress=None, task=None):
+                        async with aiofiles.open(filename, "wb") as f:
+                            async for chunk in response.content.iter_chunked(
+                                chunk_size
+                            ):
+                                if progress:
+                                    progress.update(task, advance=len(chunk))
+                                if chunk:
+                                    await f.write(chunk)
+
+                    if show_progress:
+                        with Printer.get_progress() as progress:
+                            task = progress.add_task(
+                                "Writing content:", total=content_length
+                            )
+                            await _download_impl(progress, task)
+                    else:
+                        await _download_impl()
+
+            if untar:
+                filename = await asyncio.to_thread(
+                    untar_file,
+                    filename=filename,
+                    delete_tar=delete_tar,
+                    extract_path=extract_path,
+                    use_filepath=use_filepath,
+                )
+            return filename
+        except (aiohttp.ClientError, asyncio.TimeoutError) as exception:
+            try:
+                logger.debug("Exception: %s", exception)
+            except TypeError:
+                pass
+
+            raise PolyaxonShouldExitError(
+                "Error connecting to Polyaxon server on `{}`.\n"
+                "An Error `{}` occurred.\n"
+                "Check your host and ports configuration "
+                "and your internet connection.".format(url, exception)
+            )
+        finally:
+            if close_session:
+                await session.close()
+
+    async def download_file(self, url, path, **kwargs):
+        local_path = kwargs.pop("path_to", None)
+        local_path = local_path or os.path.join(
+            settings.CLIENT_CONFIG.archives_root, self._client.run_uuid
+        )
+        if path:
+            local_path = os.path.join(local_path, path)
+
+        await asyncio.to_thread(check_or_create_path, local_path, is_dir=False)
+        if not await asyncio.to_thread(os.path.exists, local_path):
+            params = kwargs.pop("params", {})
+            params["path"] = path
+            await self.download(filename=local_path, params=params, url=url, **kwargs)
+        return local_path
+
+    async def upload_file(self, *args, **kwargs):
+        raise PolyaxonClientException("Async artifact upload is not supported yet.")
+
+    async def upload_dir(self, *args, **kwargs):
+        raise PolyaxonClientException("Async artifact upload is not supported yet.")
+
+    async def upload(self, *args, **kwargs):
+        raise PolyaxonClientException("Async artifact upload is not supported yet.")

@@ -41,7 +41,7 @@ from polyaxon._client.decorators import (
     get_global_or_inline_config,
 )
 from polyaxon._client.mixin import ClientMixin
-from polyaxon._client.store import PolyaxonStore
+from polyaxon._client.store import AsyncPolyaxonStore, PolyaxonStore
 from polyaxon._constants.metadata import META_COPY_ARTIFACTS, META_RECOMPILE, META_TMUX
 from polyaxon._containers.names import MAIN_CONTAINER_NAMES
 from polyaxon._contexts import paths as ctx_paths
@@ -3253,6 +3253,13 @@ class AsyncRunClient(RunClient):
                 POLYAXON_HOST=self.settings.agent.url,
             )
 
+    @property
+    def store(self):
+        if self._store:
+            return self._store
+        self._store = AsyncPolyaxonStore(client=self)
+        return self._store
+
     @async_client_handler(check_no_op=True)
     async def get_inputs(self) -> Dict[str, Any]:
         if not self._run_data.inputs:
@@ -3734,9 +3741,7 @@ class AsyncRunClient(RunClient):
                 )
                 params.update({"names": lineage.name, "pkg_assets": True})
 
-                # TODO: Update with AsyncPolyaxonStore is done
-                return await asyncio.to_thread(
-                    self.store.download_file,
+                return await self.store.download_file(
                     url=url,
                     path=self.run_uuid,
                     use_filepath=False,
@@ -3795,8 +3800,7 @@ class AsyncRunClient(RunClient):
         )
         url = absolute_uri(url=url, host=self.client.config.host)
         params = get_streams_params(connection=self.artifacts_store, force=force)
-        return await asyncio.to_thread(
-            self.store.download_file,
+        return await self.store.download_file(
             url=url,
             path=path,
             path_to=path_to,
@@ -3830,8 +3834,7 @@ class AsyncRunClient(RunClient):
         if check_path:
             params["check_path"] = True
 
-        return await asyncio.to_thread(
-            self.store.download_file,
+        return await self.store.download_file(
             url=url,
             path=path,
             untar=untar,

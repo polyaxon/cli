@@ -5,6 +5,7 @@ import pytest
 from clipped.utils.hashing import hash_file, hash_value
 from polyaxon import settings
 from polyaxon._client.run import AsyncRunClient, RunClient
+from polyaxon._client.store import AsyncPolyaxonStore
 from polyaxon._schemas.lifecycle import (
     V1ProjectVersionKind,
     V1StatusCondition,
@@ -146,6 +147,13 @@ def make_run(**kwargs):
     }
     data.update(kwargs)
     return V1Run.model_construct(**data)
+
+
+def test_async_run_client_uses_async_store():
+    patch_settings()
+    client = make_client(AsyncPolyaxonClientMock())
+
+    assert isinstance(client.store, AsyncPolyaxonStore)
 
 
 def get_logged_lineage_artifact(sdk_client, index=0):
@@ -583,7 +591,7 @@ async def test_download_artifact_methods_call_store_download_file():
     client = make_client(sdk_client)
     client._run_data = make_run()
     client._store = mock.Mock()
-    client._store.download_file = mock.Mock(side_effect=["/tmp/file", "/tmp/archive"])
+    client._store.download_file = AsyncMock(side_effect=["/tmp/file", "/tmp/archive"])
 
     file_path = await client.download_artifact(
         "outputs/model.pkl",
@@ -700,7 +708,7 @@ async def test_download_artifact_for_lineage_downloads_event_package():
     client = make_client(sdk_client)
     client._run_data = make_run()
     client._store = mock.Mock()
-    client._store.download_file = mock.Mock(return_value="/tmp/events")
+    client._store.download_file = AsyncMock(return_value="/tmp/events")
     lineage = V1RunArtifact.model_construct(
         kind=V1ArtifactKind.MODEL,
         name="model",
