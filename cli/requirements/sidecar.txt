@@ -1,3 +1,2 @@
-aiofiles<=25.1.0
 pandas
 anyio
