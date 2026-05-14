@@ -3920,32 +3920,167 @@ class AsyncRunClient(RunClient):
         await self.log_meta(progress=value)
 
     @async_client_handler(check_no_op=True)
-    async def log_code_ref(self, *args, **kwargs):
-        self._raise_sync_only("log_code_ref")
+    async def log_code_ref(
+        self, code_ref: Optional[Dict] = None, is_input: bool = True
+    ):
+        code_ref = code_ref or await asyncio.to_thread(get_code_reference)
+        if code_ref and "commit" in code_ref:
+            artifact_run = V1RunArtifact.model_construct(
+                name=code_ref.get("commit"),
+                kind=V1ArtifactKind.CODEREF,
+                summary=code_ref,
+                is_input=is_input,
+            )
+            await self.log_artifact_lineage(body=artifact_run)
 
     @async_client_handler(check_no_op=True)
-    async def log_data_ref(self, *args, **kwargs):
-        self._raise_sync_only("log_data_ref")
+    async def log_data_ref(
+        self,
+        name: str,
+        hash: Optional[str] = None,
+        path: Optional[str] = None,
+        content=None,
+        summary: Optional[Dict] = None,
+        is_input: bool = True,
+        skip_hash_calculation: bool = False,
+    ):
+        return await self.log_artifact_ref(
+            path=path,
+            hash=hash,
+            content=content,
+            kind=V1ArtifactKind.DATA,
+            name=name,
+            summary=summary,
+            is_input=is_input,
+            skip_hash_calculation=skip_hash_calculation,
+        )
 
     @async_client_handler(check_no_op=True)
-    async def log_artifact_ref(self, *args, **kwargs):
-        self._raise_sync_only("log_artifact_ref")
+    async def log_artifact_ref(
+        self,
+        path: str,
+        kind: V1ArtifactKind,
+        name: Optional[str] = None,
+        hash: Optional[str] = None,
+        content=None,
+        summary: Optional[Dict] = None,
+        is_input: bool = False,
+        rel_path: Optional[str] = None,
+        skip_hash_calculation: bool = False,
+    ):
+        summary = await asyncio.to_thread(
+            self._calculate_summary_for_path_or_content,
+            hash=hash,
+            path=path,
+            content=content,
+            summary=summary,
+            skip_hash_calculation=skip_hash_calculation,
+        )
+        if path:
+            name = name or get_base_filename(path)
+            rel_path = self._sanitize_filepath(filepath=path, rel_path=rel_path)
+        if name:
+            artifact_run = V1RunArtifact.model_construct(
+                name=self._sanitize_filename(name),
+                kind=kind,
+                path=rel_path,
+                summary=summary,
+                is_input=is_input,
+            )
+            await self.log_artifact_lineage(body=artifact_run)
+
+    async def _log_has_model(self):
+        if not self._has_meta_key("has_model"):
+            await self.log_meta(has_model=True)
 
     @async_client_handler(check_no_op=True)
-    async def log_model_ref(self, *args, **kwargs):
-        self._raise_sync_only("log_model_ref")
+    async def log_model_ref(
+        self,
+        path: str,
+        name: Optional[str] = None,
+        framework: Optional[str] = None,
+        summary: Optional[Dict] = None,
+        is_input: bool = False,
+        rel_path: Optional[str] = None,
+        skip_hash_calculation: bool = False,
+    ):
+        summary = summary or {}
+        summary["framework"] = framework
+        await self._log_has_model()
+        return await self.log_artifact_ref(
+            path=path,
+            kind=V1ArtifactKind.MODEL,
+            name=name,
+            summary=summary,
+            is_input=is_input,
+            rel_path=rel_path,
+            skip_hash_calculation=skip_hash_calculation,
+        )
 
     @async_client_handler(check_no_op=True)
-    async def log_file_ref(self, *args, **kwargs):
-        self._raise_sync_only("log_file_ref")
+    async def log_file_ref(
+        self,
+        path: str,
+        name: Optional[str] = None,
+        hash: Optional[str] = None,
+        content=None,
+        summary: Optional[Dict] = None,
+        is_input: bool = False,
+        rel_path: Optional[str] = None,
+        skip_hash_calculation: bool = False,
+    ):
+        return await self.log_artifact_ref(
+            path=path,
+            kind=V1ArtifactKind.FILE,
+            name=name,
+            hash=hash,
+            content=content,
+            summary=summary,
+            is_input=is_input,
+            rel_path=rel_path,
+            skip_hash_calculation=skip_hash_calculation,
+        )
 
     @async_client_handler(check_no_op=True)
-    async def log_dir_ref(self, *args, **kwargs):
-        self._raise_sync_only("log_dir_ref")
+    async def log_dir_ref(
+        self,
+        path: str,
+        name: Optional[str] = None,
+        hash: Optional[str] = None,
+        summary: Optional[Dict] = None,
+        is_input: bool = False,
+        rel_path: Optional[str] = None,
+        skip_hash_calculation: bool = False,
+    ):
+        return await self.log_artifact_ref(
+            path=path,
+            kind=V1ArtifactKind.DIR,
+            name=name or os.path.basename(path),
+            hash=hash,
+            summary=summary,
+            is_input=is_input,
+            rel_path=rel_path,
+            skip_hash_calculation=skip_hash_calculation,
+        )
 
     @async_client_handler(check_no_op=True)
-    async def log_tensorboard_ref(self, *args, **kwargs):
-        self._raise_sync_only("log_tensorboard_ref")
+    async def log_tensorboard_ref(
+        self,
+        path: str,
+        name: str = "tensorboard",
+        is_input: bool = False,
+        rel_path: Optional[str] = None,
+    ):
+        if not self._has_meta_key("has_tensorboard"):
+            await self.log_artifact_ref(
+                path=path,
+                kind=V1ArtifactKind.TENSORBOARD,
+                name=name,
+                is_input=is_input,
+                rel_path=rel_path,
+                skip_hash_calculation=True,
+            )
+            await self.log_meta(has_tensorboard=True)
 
     @async_client_handler(check_no_op=True)
     async def log_artifact_lineage(

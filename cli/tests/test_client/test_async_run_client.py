@@ -2,6 +2,7 @@ import inspect
 from mock import mock
 import pytest
 
+from clipped.utils.hashing import hash_file, hash_value
 from polyaxon import settings
 from polyaxon._client.run import AsyncRunClient, RunClient
 from polyaxon._schemas.lifecycle import (
@@ -145,6 +146,13 @@ def make_run(**kwargs):
     }
     data.update(kwargs)
     return V1Run.model_construct(**data)
+
+
+def get_logged_lineage_artifact(sdk_client, index=0):
+    body = sdk_client.runs_v1.create_run_artifacts_lineage.call_args_list[index][1][
+        "body"
+    ]
+    return body.artifacts[0]
 
 
 def test_async_run_client_public_export():
@@ -582,6 +590,147 @@ async def test_log_artifact_lineage_and_run_edges_await_api():
 
 
 @pytest.mark.asyncio
+async def test_log_code_ref_detects_code_ref_in_thread(monkeypatch):
+    patch_settings()
+    monkeypatch.setattr(
+        "polyaxon._client.run.get_code_reference",
+        lambda: {"commit": "abc123", "branch": "main"},
+    )
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run_artifacts_lineage = AsyncMock(return_value=None)
+    client = make_client(sdk_client)
+
+    await client.log_code_ref(is_input=False)
+
+    artifact = get_logged_lineage_artifact(sdk_client)
+    assert artifact.name == "abc123"
+    assert artifact.kind == V1ArtifactKind.CODEREF
+    assert artifact.summary == {"commit": "abc123", "branch": "main"}
+    assert artifact.is_input is False
+
+
+@pytest.mark.asyncio
+async def test_log_data_ref_hashes_content_and_awaits_lineage_api():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run_artifacts_lineage = AsyncMock(return_value=None)
+    client = make_client(sdk_client)
+
+    await client.log_data_ref(
+        name="dataset",
+        content={"x": 1},
+        summary={"rows": 10},
+    )
+
+    artifact = get_logged_lineage_artifact(sdk_client)
+    assert artifact.name == "dataset"
+    assert artifact.kind == V1ArtifactKind.DATA
+    assert artifact.summary == {"rows": 10, "hash": hash_value({"x": 1})}
+    assert artifact.is_input is True
+
+
+@pytest.mark.asyncio
+async def test_log_artifact_ref_hashes_existing_file(tmp_path):
+    patch_settings()
+    asset = tmp_path / "result.json"
+    asset.write_text("payload")
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run_artifacts_lineage = AsyncMock(return_value=None)
+    client = make_client(sdk_client)
+
+    await client.log_artifact_ref(
+        path=str(asset),
+        kind=V1ArtifactKind.ARTIFACT,
+    )
+
+    artifact = get_logged_lineage_artifact(sdk_client)
+    assert artifact.name == "result"
+    assert artifact.kind == V1ArtifactKind.ARTIFACT
+    assert artifact.path == str(asset)
+    assert artifact.summary == {"path": str(asset), "hash": hash_file(str(asset))}
+
+
+@pytest.mark.asyncio
+async def test_log_model_ref_updates_meta_and_awaits_lineage_api():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.patch_run = AsyncMock(return_value=make_run())
+    sdk_client.runs_v1.create_run_artifacts_lineage = AsyncMock(return_value=None)
+    client = make_client(sdk_client)
+
+    await client.log_model_ref(
+        path="models/model.pt",
+        name="model",
+        framework="pytorch",
+        summary={"hash": "hash2"},
+        rel_path="models/model.pt",
+    )
+
+    assert client.run_data.meta_info == {"has_model": True}
+    sdk_client.runs_v1.patch_run.assert_called_once()
+    artifact = get_logged_lineage_artifact(sdk_client)
+    assert artifact.name == "model"
+    assert artifact.kind == V1ArtifactKind.MODEL
+    assert artifact.path == "models/model.pt"
+    assert artifact.summary == {
+        "hash": "hash2",
+        "framework": "pytorch",
+        "path": "models/model.pt",
+    }
+
+
+@pytest.mark.asyncio
+async def test_log_file_and_dir_refs_hash_paths_and_await_lineage_api(tmp_path):
+    patch_settings()
+    file_path = tmp_path / "file.txt"
+    file_path.write_text("payload")
+    dir_path = tmp_path / "outputs"
+    dir_path.mkdir()
+    (dir_path / "data.txt").write_text("data")
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run_artifacts_lineage = AsyncMock(return_value=None)
+    client = make_client(sdk_client)
+
+    await client.log_file_ref(str(file_path), is_input=True)
+    await client.log_dir_ref(str(dir_path), name="outputs")
+
+    file_artifact = get_logged_lineage_artifact(sdk_client, 0)
+    dir_artifact = get_logged_lineage_artifact(sdk_client, 1)
+    assert file_artifact.name == "file"
+    assert file_artifact.kind == V1ArtifactKind.FILE
+    assert file_artifact.is_input is True
+    assert file_artifact.summary == {
+        "path": str(file_path),
+        "hash": hash_file(str(file_path)),
+    }
+    assert dir_artifact.name == "outputs"
+    assert dir_artifact.kind == V1ArtifactKind.DIR
+    assert dir_artifact.summary["path"] == str(dir_path)
+    assert dir_artifact.summary["hash"]
+
+
+@pytest.mark.asyncio
+async def test_log_tensorboard_ref_logs_once_and_sets_meta():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.patch_run = AsyncMock(return_value=make_run())
+    sdk_client.runs_v1.create_run_artifacts_lineage = AsyncMock(return_value=None)
+    client = make_client(sdk_client)
+
+    await client.log_tensorboard_ref("tensorboard", rel_path="tensorboard")
+    await client.log_tensorboard_ref("tensorboard", rel_path="tensorboard")
+
+    assert client.run_data.meta_info == {"has_tensorboard": True}
+    assert sdk_client.runs_v1.patch_run.call_count == 1
+    assert sdk_client.runs_v1.create_run_artifacts_lineage.call_count == 1
+    artifact = get_logged_lineage_artifact(sdk_client)
+    assert artifact.name == "tensorboard"
+    assert artifact.kind == V1ArtifactKind.TENSORBOARD
+    assert artifact.path == "tensorboard"
+    assert artifact.summary == {"path": "tensorboard"}
+
+
+@pytest.mark.asyncio
 async def test_promote_methods_use_async_project_client_with_injected_client():
     patch_settings()
     sdk_client = AsyncPolyaxonClientMock()
@@ -615,7 +764,6 @@ async def test_promote_methods_use_async_project_client_with_injected_client():
         ("download_artifacts", ()),
         ("persist_run", ("/tmp/run",)),
         ("push_offline_run", ("/tmp/run",)),
-        ("log_file_ref", ("file.txt",)),
         ("get_runs_as_hiplot", ()),
     ],
 )
