@@ -3664,8 +3664,27 @@ class AsyncRunClient(RunClient):
         )
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def get_artifact(self, *args, **kwargs):
-        self._raise_sync_only("get_artifact")
+    async def get_artifact(
+        self,
+        path: str,
+        stream: bool = True,
+        force: bool = False,
+    ):
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+        params = get_streams_params(self.artifacts_store)
+        return await self.client.runs_v1.get_run_artifact(
+            namespace=self.namespace,
+            owner=self.owner,
+            project=self.project,
+            uuid=self.run_uuid,
+            path=path,
+            stream=stream,
+            force=force,
+            _preload_content=True,
+            **params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def download_artifact_for_lineage(self, *args, **kwargs):
@@ -3692,16 +3711,52 @@ class AsyncRunClient(RunClient):
         self._raise_sync_only("upload_artifacts")
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def delete_artifact(self, *args, **kwargs):
-        self._raise_sync_only("delete_artifact")
+    async def delete_artifact(self, path: str):
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+
+        params = get_streams_params(connection=self.artifacts_store)
+        await self.client.runs_v1.delete_run_artifact(
+            namespace=self.namespace,
+            owner=self.owner,
+            project=self.project,
+            uuid=self.run_uuid,
+            path=path,
+            **params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def delete_artifacts(self, *args, **kwargs):
-        self._raise_sync_only("delete_artifacts")
+    async def delete_artifacts(self, path: str):
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+
+        params = get_streams_params(connection=self.artifacts_store)
+        return await self.client.runs_v1.delete_run_artifacts(
+            namespace=self.namespace,
+            owner=self.owner,
+            project=self.project,
+            uuid=self.run_uuid,
+            path=path,
+            **params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
-    async def get_artifacts_tree(self, *args, **kwargs):
-        self._raise_sync_only("get_artifacts_tree")
+    async def get_artifacts_tree(self, path: str = ""):
+        if not self.settings:
+            await self.refresh_data()
+        await self._use_agent_host()
+
+        params = get_streams_params(connection=self.artifacts_store)
+        return await self.client.runs_v1.get_run_artifacts_tree(
+            namespace=self.namespace,
+            owner=self.owner,
+            project=self.project,
+            uuid=self.run_uuid,
+            path=path,
+            **params,
+        )
 
     @async_client_handler(check_no_op=True, check_offline=True)
     async def stop(self):

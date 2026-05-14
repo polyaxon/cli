@@ -499,6 +499,83 @@ async def test_events_metrics_and_lineage_methods_await_api():
 
 
 @pytest.mark.asyncio
+async def test_artifact_stream_methods_await_api_without_async_req():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.get_run_artifact = AsyncMock(return_value=b"payload")
+    sdk_client.runs_v1.delete_run_artifact = AsyncMock(return_value=None)
+    sdk_client.runs_v1.delete_run_artifacts = AsyncMock(return_value=None)
+    sdk_client.runs_v1.get_run_artifacts_tree = AsyncMock(return_value=mock.Mock())
+    client = make_client(sdk_client)
+    client._run_data = make_run()
+
+    assert await client.get_artifact("outputs/model.pkl", stream=False, force=True) == (
+        b"payload"
+    )
+    assert await client.delete_artifact("outputs/model.pkl") is None
+    assert await client.delete_artifacts("outputs") is None
+    tree = await client.get_artifacts_tree("outputs")
+
+    assert tree is sdk_client.runs_v1.get_run_artifacts_tree.return_value
+    sdk_client.runs_v1.get_run_artifact.assert_called_once_with(
+        namespace="test-namespace",
+        owner=OWNER,
+        project=PROJECT,
+        uuid=RUN_UUID,
+        path="outputs/model.pkl",
+        stream=False,
+        force=True,
+        _preload_content=True,
+    )
+    sdk_client.runs_v1.delete_run_artifact.assert_called_once_with(
+        namespace="test-namespace",
+        owner=OWNER,
+        project=PROJECT,
+        uuid=RUN_UUID,
+        path="outputs/model.pkl",
+    )
+    sdk_client.runs_v1.delete_run_artifacts.assert_called_once_with(
+        namespace="test-namespace",
+        owner=OWNER,
+        project=PROJECT,
+        uuid=RUN_UUID,
+        path="outputs",
+    )
+    sdk_client.runs_v1.get_run_artifacts_tree.assert_called_once_with(
+        namespace="test-namespace",
+        owner=OWNER,
+        project=PROJECT,
+        uuid=RUN_UUID,
+        path="outputs",
+    )
+    for sdk_method in [
+        sdk_client.runs_v1.get_run_artifact,
+        sdk_client.runs_v1.delete_run_artifact,
+        sdk_client.runs_v1.delete_run_artifacts,
+        sdk_client.runs_v1.get_run_artifacts_tree,
+    ]:
+        assert "async_req" not in sdk_method.call_args[1]
+
+
+@pytest.mark.asyncio
+async def test_get_artifact_awaits_refresh_when_settings_missing():
+    patch_settings()
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.get_run = AsyncMock(return_value=make_run())
+    sdk_client.runs_v1.get_run_artifact = AsyncMock(return_value=b"payload")
+    client = make_client(sdk_client)
+    client._run_data.settings = None
+
+    result = await client.get_artifact("outputs/model.pkl")
+
+    assert result == b"payload"
+    sdk_client.runs_v1.get_run.assert_called_once_with(OWNER, PROJECT, RUN_UUID)
+    assert sdk_client.runs_v1.get_run_artifact.call_args[1]["namespace"] == (
+        "test-namespace"
+    )
+
+
+@pytest.mark.asyncio
 async def test_run_action_methods_await_api_without_async_req():
     patch_settings()
     sdk_client = AsyncPolyaxonClientMock()
@@ -761,6 +838,10 @@ async def test_promote_methods_use_async_project_client_with_injected_client():
     "method,args",
     [
         ("upload_artifact", ("file.txt",)),
+        ("upload_artifacts_dir", ("outputs",)),
+        ("upload_artifacts", (["file.txt"],)),
+        ("download_artifact_for_lineage", (V1RunArtifact.model_construct(),)),
+        ("download_artifact", ("file.txt",)),
         ("download_artifacts", ()),
         ("persist_run", ("/tmp/run",)),
         ("push_offline_run", ("/tmp/run",)),
