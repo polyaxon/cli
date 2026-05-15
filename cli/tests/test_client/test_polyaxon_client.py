@@ -11,6 +11,7 @@ from polyaxon._sdk.api import (
     AuthV1Api,
     ProjectsV1Api,
     RunsV1Api,
+    SandboxV1Api,
     UsersV1Api,
     VersionsV1Api,
 )
@@ -55,12 +56,31 @@ class TestPolyaxonClient(BaseTestCase):
         assert isinstance(client.versions_v1, VersionsV1Api)
         assert isinstance(client.projects_v1, ProjectsV1Api)
         assert isinstance(client.runs_v1, RunsV1Api)
+        assert isinstance(client.sandbox_v1, SandboxV1Api)
         assert isinstance(client.users_v1, UsersV1Api)
 
     def test_internal_client_services(self):
         client = PolyaxonClient(is_internal=True)
         assert client.is_internal is True
         assert isinstance(client.agents_v1, AgentsV1Api)
+
+    def test_sandbox_v1_wrapper_is_cached_and_reset(self):
+        previous = SDKClientMock(name="previous")
+        replacement = SDKClientMock(name="replacement")
+
+        with patch.object(
+            PolyaxonClient,
+            "_get_client",
+            side_effect=[previous, replacement],
+        ):
+            client = PolyaxonClient()
+            wrapper = client.sandbox_v1
+            assert client.sandbox_v1 is wrapper
+            assert wrapper.api_client is previous
+            client.reset()
+
+        assert client.sandbox_v1 is not wrapper
+        assert client.sandbox_v1.api_client is replacement
 
     def test_sync_internal_client_uses_internal_config(self):
         settings.CLIENT_CONFIG.token = "token"

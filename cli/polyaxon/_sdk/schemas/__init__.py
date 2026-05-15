@@ -134,6 +134,7 @@ from polyaxon._sdk.schemas.v1_exec_bg_start import V1ExecBgStart
 from polyaxon._sdk.schemas.v1_exec_bg_status import V1ExecBgStatus
 from polyaxon._sdk.schemas.v1_exec_request import V1ExecRequest
 from polyaxon._sdk.schemas.v1_exec_result import V1ExecResult
+from polyaxon._sdk.schemas.v1_fs_entry import V1FsEntry
 from polyaxon._sdk.schemas.v1_fs_list_result import V1FsListResult
 from polyaxon._sdk.schemas.v1_fs_mkdir_request import V1FsMkdirRequest
 from polyaxon._sdk.schemas.v1_fs_path_result import V1FsPathResult

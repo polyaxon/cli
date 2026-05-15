@@ -21,6 +21,7 @@ from polyaxon._sdk.api import (
     ProjectsV1Api,
     QueuesV1Api,
     RunsV1Api,
+    SandboxV1Api,
     SearchesV1Api,
     ServiceAccountsV1Api,
     TagsV1Api,

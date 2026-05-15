@@ -14,6 +14,7 @@ from polyaxon._sdk.api import (
     ProjectsV1Api,
     QueuesV1Api,
     RunsV1Api,
+    SandboxV1Api,
     SearchesV1Api,
     ServiceAccountsV1Api,
     TagsV1Api,
@@ -93,6 +94,7 @@ class PolyaxonClient:
     def _reset_api_wrappers(self):
         self._projects_v1 = None
         self._runs_v1 = None
+        self._sandbox_v1 = None
         self._project_dashboards_v1 = None
         self._project_searches_v1 = None
         self._auth_v1 = None
@@ -179,6 +181,12 @@ class PolyaxonClient:
         if not self._runs_v1:
             self._runs_v1 = RunsV1Api(self.api_client)
         return self._runs_v1
+
+    @property
+    def sandbox_v1(self):
+        if not self._sandbox_v1:
+            self._sandbox_v1 = SandboxV1Api(self.api_client)
+        return self._sandbox_v1
 
     @property
     def auth_v1(self):
