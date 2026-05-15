@@ -10,6 +10,7 @@ from polyaxon._sdk.api.project_searches_v1_api import ProjectSearchesV1Api
 from polyaxon._sdk.api.projects_v1_api import ProjectsV1Api
 from polyaxon._sdk.api.queues_v1_api import QueuesV1Api
 from polyaxon._sdk.api.runs_v1_api import RunsV1Api
+from polyaxon._sdk.api.sandbox_v1_api import SandboxV1Api
 from polyaxon._sdk.api.searches_v1_api import SearchesV1Api
 from polyaxon._sdk.api.service_accounts_v1_api import ServiceAccountsV1Api
 from polyaxon._sdk.api.tags_v1_api import TagsV1Api
