@@ -3732,7 +3732,7 @@ class AsyncRunClient(RunClient):
                     owner=self.owner,
                     project=self.project,
                     run_uuid=self.run_uuid,
-                    subpath="events/{}".format(lineage.kind),
+                    subpath="events/{}".format(lineage.kind.value),
                 )
                 url = absolute_uri(url=url, host=self.client.config.host)
                 params = get_streams_params(
