@@ -2,7 +2,7 @@ import base64
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import ssl
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from clipped.utils.json import orjson_loads
 
@@ -24,7 +24,7 @@ class FsWriteResult:
     created: bool
 
 
-def normalize_command(command: Sequence[str]) -> list:
+def normalize_command(command: Sequence[str]) -> List[str]:
     if isinstance(command, str):
         raise TypeError("command must be a sequence of strings, not a string")
     try:
