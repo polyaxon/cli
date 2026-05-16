@@ -4,7 +4,10 @@ from typing import Optional
 
 import aiohttp
 
+from clipped.utils.bools import to_bool
+from clipped.utils.encoding import BytesLike, as_bytes, b64_data
 from clipped.utils.http import absolute_uri
+from clipped.utils.json import orjson_loads
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import (
@@ -19,20 +22,12 @@ from polyaxon._env_vars.getters import (
     get_run_or_local,
 )
 from polyaxon._sandbox.client_utils import (
-    BytesLike,
     FsReadResult,
     FsWriteResult,
-    as_bytes,
-    b64_data,
-    build_async_ssl_context,
     format_mode,
-    get_requests_cert,
-    get_requests_verify,
     normalize_command,
     normalize_env,
-    parse_bool_header,
     parse_error_message,
-    parse_json,
 )
 from polyaxon._sdk.schemas import (
     V1CreatePtyRequest,
@@ -228,19 +223,10 @@ class _BaseSubClient:
         )
 
     def _request_kwargs(self, headers=None, timeout=None):
-        sdk_config = self._parent.client.api_client.configuration
-        kwargs = {
+        return {
             "headers": self._headers(headers=headers),
             "timeout": timeout or settings.LONG_REQUEST_TIMEOUT,
-            "verify": get_requests_verify(sdk_config),
         }
-        cert = get_requests_cert(sdk_config)
-        if cert:
-            kwargs["cert"] = cert
-        proxy = getattr(sdk_config, "proxy", None)
-        if proxy:
-            kwargs["proxies"] = {"http": proxy, "https": proxy}
-        return kwargs
 
     @staticmethod
     def _raise_for_response(response, action: str):
@@ -268,25 +254,13 @@ class _AsyncBaseSubClient(_BaseSubClient):
         return aiohttp.ClientTimeout(total=timeout or settings.LONG_REQUEST_TIMEOUT)
 
     def _session_kwargs(self, timeout=None):
-        sdk_config = self._parent.client.api_client.configuration
         return {
-            "connector": aiohttp.TCPConnector(
-                ssl=build_async_ssl_context(sdk_config),
-            ),
             "timeout": self._client_timeout(timeout),
             "trust_env": True,
         }
 
     def _request_kwargs(self, headers=None):
-        sdk_config = self._parent.client.api_client.configuration
-        kwargs = {"headers": self._headers(headers=headers)}
-        proxy = getattr(sdk_config, "proxy", None)
-        if proxy:
-            kwargs["proxy"] = proxy
-        proxy_headers = getattr(sdk_config, "proxy_headers", None)
-        if proxy_headers:
-            kwargs["proxy_headers"] = proxy_headers
-        return kwargs
+        return {"headers": self._headers(headers=headers)}
 
     @staticmethod
     async def _raise_for_response(response, data: bytes, action: str):
@@ -501,7 +475,7 @@ class _FsSubClient(_BaseSubClient):
         return FsReadResult(
             data=response.content,
             next_offset=int(response.headers.get("X-Polyaxon-Next-Offset", 0)),
-            eof=parse_bool_header(response.headers.get("X-Polyaxon-Eof")),
+            eof=to_bool(response.headers.get("X-Polyaxon-Eof"), handle_none=True),
         )
 
     @client_handler(check_no_op=True)
@@ -538,7 +512,7 @@ class _FsSubClient(_BaseSubClient):
             raise PolyaxonClientException("fs.write failed: {}".format(e)) from e
 
         self._raise_for_response(response, "fs.write")
-        payload = parse_json(response.content)
+        payload = orjson_loads(response.content) if response.content else {}
         return FsWriteResult(
             path=payload.get("path"),
             bytes_written=payload.get("bytes_written", 0),
@@ -614,7 +588,9 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
                         next_offset=int(
                             response.headers.get("X-Polyaxon-Next-Offset", 0)
                         ),
-                        eof=parse_bool_header(response.headers.get("X-Polyaxon-Eof")),
+                        eof=to_bool(
+                            response.headers.get("X-Polyaxon-Eof"), handle_none=True
+                        ),
                     )
         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
             raise PolyaxonClientException("fs.read failed: {}".format(e)) from e
@@ -652,7 +628,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
                 ) as response:
                     data = await response.read()
                     await self._raise_for_response(response, data, "fs.write")
-                    payload = parse_json(data)
+                    payload = orjson_loads(data) if data else {}
                     return FsWriteResult(
                         path=payload.get("path"),
                         bytes_written=payload.get("bytes_written", 0),

@@ -1,5 +1,4 @@
 import pytest
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
@@ -33,17 +32,6 @@ class AsyncPolyaxonClientMock:
 
     def __init__(self):
         self.config = ClientConfigMock()
-        self.api_client = SimpleNamespace(
-            configuration=SimpleNamespace(
-                verify_ssl=True,
-                ssl_ca_cert=None,
-                cert_file=None,
-                key_file=None,
-                assert_hostname=None,
-                proxy=None,
-                proxy_headers=None,
-            )
-        )
         self.runs_v1 = MagicMock()
         self.runs_v1.get_run_namespace = AsyncMock(
             return_value=V1RunSettings(namespace="lazy-ns")
@@ -114,10 +102,9 @@ def make_client(sdk_client=None, namespace="ns"):
 
 
 def patch_aiohttp_session(session):
-    return patch.multiple(
-        "polyaxon._client.sandbox.aiohttp",
-        ClientSession=MagicMock(return_value=session),
-        TCPConnector=MagicMock(return_value=object()),
+    return patch(
+        "polyaxon._client.sandbox.aiohttp.ClientSession",
+        MagicMock(return_value=session),
     )
 
 

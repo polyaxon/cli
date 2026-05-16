@@ -1,13 +1,8 @@
-import base64
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-import ssl
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from clipped.utils.json import orjson_loads
-
-
-BytesLike = Union[bytes, bytearray, memoryview]
 
 
 @dataclass(frozen=True)
@@ -67,26 +62,6 @@ def format_mode(mode: int) -> str:
     return "{:04o}".format(mode)
 
 
-def as_bytes(data: BytesLike) -> bytes:
-    if isinstance(data, str):
-        raise TypeError("data must be bytes-like, not str")
-    if isinstance(data, memoryview):
-        return data.tobytes()
-    if isinstance(data, (bytes, bytearray)):
-        return bytes(data)
-    raise TypeError("data must be bytes-like")
-
-
-def b64_data(data: Optional[BytesLike]) -> Optional[str]:
-    if data is None:
-        return None
-    return base64.b64encode(as_bytes(data)).decode("ascii")
-
-
-def parse_bool_header(value: Optional[str]) -> bool:
-    return str(value or "").lower() == "true"
-
-
 def parse_error_message(data: bytes, fallback: str) -> str:
     try:
         payload = orjson_loads(data or b"{}")
@@ -99,40 +74,3 @@ def parse_error_message(data: bytes, fallback: str) -> str:
     if isinstance(payload, dict) and payload.get("message"):
         return payload["message"]
     return fallback
-
-
-def parse_json(data: bytes):
-    return orjson_loads(data or b"{}")
-
-
-def get_requests_verify(sdk_config):
-    if getattr(sdk_config, "verify_ssl", None) is False:
-        return False
-    return getattr(sdk_config, "ssl_ca_cert", None) or True
-
-
-def get_requests_cert(sdk_config):
-    cert_file = getattr(sdk_config, "cert_file", None)
-    key_file = getattr(sdk_config, "key_file", None)
-    if cert_file and key_file:
-        return cert_file, key_file
-    return cert_file
-
-
-def build_async_ssl_context(sdk_config):
-    if getattr(sdk_config, "verify_ssl", None) is False:
-        return False
-
-    context = ssl.create_default_context(
-        cafile=getattr(sdk_config, "ssl_ca_cert", None)
-    )
-    if getattr(sdk_config, "assert_hostname", None) is False:
-        context.check_hostname = False
-
-    cert_file = getattr(sdk_config, "cert_file", None)
-    if cert_file:
-        context.load_cert_chain(
-            cert_file,
-            keyfile=getattr(sdk_config, "key_file", None),
-        )
-    return context

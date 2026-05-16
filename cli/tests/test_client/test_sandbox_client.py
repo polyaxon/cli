@@ -1,5 +1,4 @@
 import pytest
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
@@ -31,17 +30,6 @@ class SyncPolyaxonClientMock:
 
     def __init__(self):
         self.config = ClientConfigMock()
-        self.api_client = SimpleNamespace(
-            configuration=SimpleNamespace(
-                verify_ssl=True,
-                ssl_ca_cert=None,
-                cert_file=None,
-                key_file=None,
-                assert_hostname=None,
-                proxy=None,
-                proxy_headers=None,
-            )
-        )
         self.runs_v1 = MagicMock()
         self.sandbox_v1 = MagicMock()
 
