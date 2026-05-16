@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import requests
 from typing import Optional
 
@@ -7,7 +8,7 @@ import aiohttp
 from clipped.utils.bools import to_bool
 from clipped.utils.encoding import BytesLike, as_bytes, b64_data
 from clipped.utils.http import absolute_uri
-from clipped.utils.json import orjson_loads
+from clipped.utils.json import orjson_dumps, orjson_loads
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import (
@@ -24,6 +25,7 @@ from polyaxon._env_vars.getters import (
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
     FsWriteResult,
+    SseFrameBuffer,
     format_mode,
     normalize_command,
     normalize_env,
@@ -233,6 +235,7 @@ class _BaseSubClient:
         if response.status_code < 400:
             return
         fallback = "{} failed with status {}".format(action, response.status_code)
+        # Safe for stream=True responses: this branch only runs on error envelopes.
         raise PolyaxonClientException(parse_error_message(response.content, fallback))
 
 
@@ -270,6 +273,104 @@ class _AsyncBaseSubClient(_BaseSubClient):
         raise PolyaxonClientException(parse_error_message(data, fallback))
 
 
+class _SseIterator:
+    def __init__(self, response, session):
+        self._response = response
+        self._session = session
+        self._buffer = SseFrameBuffer()
+        self._chunks = response.iter_content(chunk_size=8192)
+        self._events = []
+        self._closed = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while not self._events:
+            try:
+                chunk = next(self._chunks)
+            except StopIteration:
+                self.close()
+                raise
+            except requests.RequestException as e:
+                self.close()
+                raise PolyaxonClientException(
+                    "process.exec_stream failed: {}".format(e)
+                ) from e
+
+            if chunk:
+                self._events.extend(self._buffer.feed(chunk))
+
+        return self._events.pop(0)
+
+    def close(self):
+        if self._closed:
+            return
+        close_response = getattr(self._response, "close", None)
+        if close_response:
+            close_response()
+        close_session = getattr(self._session, "close", None)
+        if close_session:
+            close_session()
+        self._closed = True
+
+
+class _AsyncSseIterator:
+    def __init__(self, response, session):
+        self._response = response
+        self._session = session
+        self._buffer = SseFrameBuffer()
+        self._chunks = response.content.iter_chunked(8192).__aiter__()
+        self._events = []
+        self._closed = False
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        await self.aclose()
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        while not self._events:
+            try:
+                chunk = await self._chunks.__anext__()
+            except StopAsyncIteration:
+                await self.aclose()
+                raise
+            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+                await self.aclose()
+                raise PolyaxonClientException(
+                    "process.exec_stream failed: {}".format(e)
+                ) from e
+
+            if chunk:
+                self._events.extend(self._buffer.feed(chunk))
+
+        return self._events.pop(0)
+
+    async def aclose(self):
+        if self._closed:
+            return
+        close_response = getattr(self._response, "close", None)
+        if close_response:
+            close_response()
+        close_session = getattr(self._session, "close", None)
+        if close_session:
+            result = close_session()
+            if inspect.isawaitable(result):
+                await result
+        self._closed = True
+
+
 class _ProcessSubClient(_BaseSubClient):
     @client_handler(check_no_op=True)
     def exec(
@@ -290,6 +391,55 @@ class _ProcessSubClient(_BaseSubClient):
                 timeout_ms=timeout_ms,
             ),
         )
+
+    @client_handler(check_no_op=True)
+    def exec_stream(
+        self,
+        command,
+        env=None,
+        workdir: Optional[str] = None,
+        stdin: Optional[BytesLike] = None,
+        timeout_ms: Optional[int] = None,
+        timeout=None,
+        session=None,
+    ):
+        body = V1ExecRequest(
+            command=normalize_command(command),
+            env=normalize_env(env),
+            workdir=workdir,
+            stdin=b64_data(stdin),
+            timeout_ms=timeout_ms,
+        )
+        session = session or requests.Session()
+        response = None
+        try:
+            response = session.post(
+                self._url("exec/stream"),
+                data=orjson_dumps(body.to_dict()),
+                stream=True,
+                **self._request_kwargs(
+                    headers={
+                        "Accept": "text/event-stream",
+                        "Content-Type": "application/json",
+                    },
+                    timeout=timeout,
+                ),
+            )
+            self._raise_for_response(response, "process.exec_stream")
+        except requests.RequestException as e:
+            session.close()
+            raise PolyaxonClientException(
+                "process.exec_stream failed: {}".format(e)
+            ) from e
+        except Exception:
+            if response is not None:
+                close_response = getattr(response, "close", None)
+                if close_response:
+                    close_response()
+            session.close()
+            raise
+
+        return _SseIterator(response=response, session=session)
 
     @client_handler(check_no_op=True)
     def exec_bg(
@@ -376,6 +526,57 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
                 timeout_ms=timeout_ms,
             ),
         )
+
+    @async_client_handler(check_no_op=True)
+    async def exec_stream(
+        self,
+        command,
+        env=None,
+        workdir: Optional[str] = None,
+        stdin: Optional[BytesLike] = None,
+        timeout_ms: Optional[int] = None,
+        timeout=None,
+        session=None,
+    ):
+        body = V1ExecRequest(
+            command=normalize_command(command),
+            env=normalize_env(env),
+            workdir=workdir,
+            stdin=b64_data(stdin),
+            timeout_ms=timeout_ms,
+        )
+        session = session or aiohttp.ClientSession(
+            **self._session_kwargs(timeout=timeout)
+        )
+        response = None
+        try:
+            response = await session.post(
+                await self._url("exec/stream"),
+                data=orjson_dumps(body.to_dict()),
+                **self._request_kwargs(
+                    headers={
+                        "Accept": "text/event-stream",
+                        "Content-Type": "application/json",
+                    }
+                ),
+            )
+            if response.status >= 400:
+                data = await response.read()
+                await self._raise_for_response(response, data, "process.exec_stream")
+        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+            await session.close()
+            raise PolyaxonClientException(
+                "process.exec_stream failed: {}".format(e)
+            ) from e
+        except Exception:
+            if response is not None:
+                close_response = getattr(response, "close", None)
+                if close_response:
+                    close_response()
+            await session.close()
+            raise
+
+        return _AsyncSseIterator(response=response, session=session)
 
     @async_client_handler(check_no_op=True)
     async def exec_bg(

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from clipped.utils.json import orjson_loads
+from polyaxon.exceptions import PolyaxonClientException
 
 
 @dataclass(frozen=True)
@@ -74,3 +75,68 @@ def parse_error_message(data: bytes, fallback: str) -> str:
     if isinstance(payload, dict) and payload.get("message"):
         return payload["message"]
     return fallback
+
+
+class SseFrameBuffer:
+    def __init__(self):
+        self._buffer = bytearray()
+
+    def feed(self, chunk: bytes) -> List[Dict]:
+        self._buffer.extend(bytes(chunk))
+        events = []
+
+        while True:
+            marker = self._buffer.find(b"\n\n")
+            if marker < 0:
+                break
+            frame = bytes(self._buffer[:marker])
+            del self._buffer[: marker + 2]
+            event = self._parse_frame(frame)
+            if event is not None:
+                events.append(event)
+
+        return events
+
+    @staticmethod
+    def _parse_frame(frame: bytes) -> Optional[Dict]:
+        if not frame:
+            return None
+
+        try:
+            text = frame.decode("utf-8")
+        except UnicodeDecodeError as e:
+            raise PolyaxonClientException("Invalid SSE event encoding.") from e
+
+        event_type = "message"
+        data_lines = []
+
+        for line in text.split("\n"):
+            if not line or line.startswith(":"):
+                continue
+            field, separator, value = line.partition(":")
+            if separator and value.startswith(" "):
+                value = value[1:]
+            if field == "event":
+                event_type = value
+            elif field == "data":
+                data_lines.append(value)
+
+        if event_type == "ping" or not data_lines:
+            return None
+
+        data = "\n".join(data_lines)
+        try:
+            payload = orjson_loads(data.encode("utf-8"))
+        except Exception as e:
+            raise PolyaxonClientException(
+                "Invalid SSE event JSON for event `{}`.".format(event_type)
+            ) from e
+
+        if not isinstance(payload, dict):
+            raise PolyaxonClientException(
+                "Invalid SSE event payload for event `{}`.".format(event_type)
+            )
+
+        event = dict(payload)
+        event["type"] = event_type
+        return event

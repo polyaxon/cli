@@ -1,8 +1,9 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
+from clipped.utils.json import orjson_loads
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
-from polyaxon._sandbox.client_utils import FsReadResult, FsWriteResult
+from polyaxon._sandbox.client_utils import FsReadResult, FsWriteResult, SseFrameBuffer
 from polyaxon._sdk.schemas import V1RunSettings
 from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import PolyaxonClientException
@@ -45,10 +46,18 @@ class AsyncPolyaxonClientMock(SyncPolyaxonClientMock):
 
 
 class FakeResponse:
-    def __init__(self, status_code=200, content=b"", headers=None):
+    def __init__(self, status_code=200, content=b"", headers=None, chunks=None):
         self.status_code = status_code
         self.content = content
         self.headers = headers or {}
+        self.chunks = chunks or []
+        self.closed = False
+
+    def iter_content(self, chunk_size=1):
+        yield from self.chunks
+
+    def close(self):
+        self.closed = True
 
 
 class FakeSession:
@@ -56,6 +65,7 @@ class FakeSession:
         self.response = response
         self.get_calls = []
         self.post_calls = []
+        self.closed = False
 
     def __enter__(self):
         return self
@@ -71,6 +81,9 @@ class FakeSession:
         self.post_calls.append((url, kwargs))
         return self.response
 
+    def close(self):
+        self.closed = True
+
 
 def make_client(sdk_client=None, namespace="ns"):
     patch_settings()
@@ -81,6 +94,46 @@ def make_client(sdk_client=None, namespace="ns"):
         namespace=namespace,
         client=sdk_client or SyncPolyaxonClientMock(),
     )
+
+
+@pytest.mark.client_mark
+def test_sse_frame_buffer_parses_split_frames_and_suppresses_ping():
+    buffer = SseFrameBuffer()
+
+    assert buffer.feed(b"") == []
+    assert buffer.feed(b": keepalive\n\n") == []
+    assert buffer.feed(b'event: stdout\ndata: {"text":"hel') == []
+    assert buffer.feed(b'lo","offset":5}\n\n') == [
+        {"type": "stdout", "text": "hello", "offset": 5}
+    ]
+
+    events = buffer.feed(
+        b'event: ping\ndata: {}\n\nevent: execution_complete\ndata: {"exit_code":0}\n\n'
+    )
+
+    assert events == [
+        {
+            "type": "execution_complete",
+            "exit_code": 0,
+        }
+    ]
+
+
+@pytest.mark.client_mark
+def test_sse_frame_buffer_yields_error_event():
+    buffer = SseFrameBuffer()
+
+    assert buffer.feed(b'event: error\ndata: {"message":"boom"}\n\n') == [
+        {"type": "error", "message": "boom"}
+    ]
+
+
+@pytest.mark.client_mark
+def test_sse_frame_buffer_rejects_invalid_json():
+    buffer = SseFrameBuffer()
+
+    with pytest.raises(PolyaxonClientException, match="Invalid SSE event JSON"):
+        buffer.feed(b"event: stdout\ndata: nope\n\n")
 
 
 @pytest.mark.client_mark
@@ -197,11 +250,96 @@ def test_logs_does_not_expose_follow_kwarg():
 
 
 @pytest.mark.client_mark
-def test_streaming_and_attach_stubs_are_not_exposed():
+def test_pty_attach_stub_is_not_exposed():
     client = make_client()
 
-    assert not hasattr(client.process, "exec_stream")
     assert not hasattr(client.pty, "attach")
+
+
+@pytest.mark.client_mark
+def test_process_exec_stream_sends_request_and_closes_on_context_exit():
+    response = FakeResponse(
+        chunks=[
+            b'event: start\ndata: {"exec_id":"exec-1","pid":123}\n\n',
+            b'event: stdout\ndata: {"text":"hello","offset":5}\n\n',
+        ]
+    )
+    session = FakeSession(response)
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+        stream = client.process.exec_stream(
+            ("echo", "hi"),
+            env={"A": "B"},
+            stdin=b"x",
+            timeout_ms=1000,
+        )
+
+    url, kwargs = session.post_calls[0]
+    assert url == (
+        "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/exec/stream".format(
+            RUN_UUID
+        )
+    )
+    assert kwargs["stream"] is True
+    assert kwargs["headers"]["Accept"] == "text/event-stream"
+    assert kwargs["headers"]["Content-Type"] == "application/json"
+    assert kwargs["headers"]["authorization"] == "Bearer token"
+    payload = orjson_loads(kwargs["data"])
+    assert payload["command"] == ["echo", "hi"]
+    assert payload["env"] == {"A": "B"}
+    assert payload["stdin"] == "eA=="
+    assert payload["timeout_ms"] == 1000
+
+    with stream as events:
+        assert next(events) == {"type": "start", "exec_id": "exec-1", "pid": 123}
+
+    assert response.closed is True
+    assert session.closed is True
+
+
+@pytest.mark.client_mark
+def test_process_exec_stream_raises_on_4xx_with_server_error_envelope():
+    response = FakeResponse(
+        status_code=403,
+        content=b'{"error":{"code":"forbidden","message":"denied"}}',
+    )
+    session = FakeSession(response)
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+        with pytest.raises(PolyaxonClientException, match="denied"):
+            client.process.exec_stream(("echo", "hi"))
+
+    assert session.closed is True
+
+
+@pytest.mark.client_mark
+def test_process_exec_stream_rejects_invalid_command_before_opening_session():
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.requests.Session") as session:
+        with pytest.raises(TypeError):
+            client.process.exec_stream("echo hi")
+
+    session.assert_not_called()
+
+
+@pytest.mark.client_mark
+def test_process_exec_stream_error_envelope_closes_and_raises():
+    response = FakeResponse(
+        status_code=403,
+        content=b'{"error":{"code":"forbidden","message":"denied"}}',
+    )
+    session = FakeSession(response)
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+        with pytest.raises(PolyaxonClientException, match="denied"):
+            client.process.exec_stream(["echo", "hi"])
+
+    assert response.closed is True
+    assert session.closed is True
 
 
 @pytest.mark.client_mark

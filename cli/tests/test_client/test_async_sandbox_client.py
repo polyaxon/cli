@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from clipped.utils.json import orjson_loads
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
 from polyaxon._sandbox.client_utils import FsReadResult, FsWriteResult
 from polyaxon._sdk.schemas import V1RunSettings
@@ -58,6 +59,7 @@ class AsyncResponse:
         self.status = status
         self._data = data
         self.headers = headers or {}
+        self.closed = False
 
     async def __aenter__(self):
         return self
@@ -68,12 +70,41 @@ class AsyncResponse:
     async def read(self):
         return self._data
 
+    def close(self):
+        self.closed = True
+
+
+class AsyncStreamContent:
+    def __init__(self, chunks):
+        self.chunks = chunks
+
+    async def iter_chunked(self, chunk_size):
+        for chunk in self.chunks:
+            yield chunk
+
+
+class AsyncStreamResponse:
+    headers = {}
+
+    def __init__(self, chunks=None, status=200, data=b""):
+        self.status = status
+        self.content = AsyncStreamContent(chunks or [])
+        self._data = data
+        self.closed = False
+
+    async def read(self):
+        return self._data
+
+    def close(self):
+        self.closed = True
+
 
 class AsyncSession:
     def __init__(self, response):
         self.response = response
         self.get_calls = []
         self.post_calls = []
+        self.closed = False
 
     async def __aenter__(self):
         return self
@@ -88,6 +119,23 @@ class AsyncSession:
     def post(self, url, **kwargs):
         self.post_calls.append((url, kwargs))
         return self.response
+
+    async def close(self):
+        self.closed = True
+
+
+class AsyncStreamSession:
+    def __init__(self, response):
+        self.response = response
+        self.post_calls = []
+        self.closed = False
+
+    async def post(self, url, **kwargs):
+        self.post_calls.append((url, kwargs))
+        return self.response
+
+    async def close(self):
+        self.closed = True
 
 
 def make_client(sdk_client=None, namespace="ns"):
@@ -205,11 +253,81 @@ async def test_async_pty_create_allows_default_command():
 
 
 @pytest.mark.asyncio
-async def test_async_streaming_and_attach_stubs_are_not_exposed():
+async def test_async_pty_attach_stub_is_not_exposed():
     client = make_client()
 
-    assert not hasattr(client.process, "exec_stream")
     assert not hasattr(client.pty, "attach")
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_stream_sends_request_and_closes_on_context_exit():
+    response = AsyncStreamResponse(
+        chunks=[
+            b'event: start\ndata: {"exec_id":"exec-1","pid":123}\n\n',
+            b'event: stdout\ndata: {"text":"hello","offset":5}\n\n',
+        ]
+    )
+    session = AsyncStreamSession(response)
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        stream = await client.process.exec_stream(
+            ("echo", "hi"),
+            env={"A": "B"},
+            stdin=b"x",
+            timeout_ms=1000,
+        )
+
+    url, kwargs = session.post_calls[0]
+    assert url == (
+        "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/exec/stream".format(
+            RUN_UUID
+        )
+    )
+    assert kwargs["headers"]["Accept"] == "text/event-stream"
+    assert kwargs["headers"]["Content-Type"] == "application/json"
+    assert kwargs["headers"]["authorization"] == "Bearer token"
+    payload = orjson_loads(kwargs["data"])
+    assert payload["command"] == ["echo", "hi"]
+    assert payload["env"] == {"A": "B"}
+    assert payload["stdin"] == "eA=="
+    assert payload["timeout_ms"] == 1000
+
+    async with stream as events:
+        async for event in events:
+            assert event == {"type": "start", "exec_id": "exec-1", "pid": 123}
+            break
+
+    assert response.closed is True
+    assert session.closed is True
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_stream_rejects_invalid_command_before_session():
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.aiohttp.ClientSession") as session:
+        with pytest.raises(TypeError):
+            await client.process.exec_stream("echo hi")
+
+    session.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_stream_error_envelope_closes_and_raises():
+    response = AsyncStreamResponse(
+        status=403,
+        data=b'{"error":{"code":"forbidden","message":"denied"}}',
+    )
+    session = AsyncStreamSession(response)
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        with pytest.raises(PolyaxonClientException, match="denied"):
+            await client.process.exec_stream(["echo", "hi"])
+
+    assert response.closed is True
+    assert session.closed is True
 
 
 @pytest.mark.asyncio
