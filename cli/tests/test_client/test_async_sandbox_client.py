@@ -138,6 +138,49 @@ class AsyncStreamSession:
         self.closed = True
 
 
+class AsyncWSMessage:
+    def __init__(self, type, data):
+        self.type = type
+        self.data = data
+
+
+class FakeAsyncWS:
+    def __init__(self, messages):
+        self.messages = list(messages)
+        self.sent_bytes = []
+        self.sent_str = []
+        self.closed = False
+
+    async def receive(self):
+        return self.messages.pop(0)
+
+    async def send_bytes(self, data):
+        self.sent_bytes.append(data)
+
+    async def send_str(self, data):
+        self.sent_str.append(data)
+
+    async def close(self):
+        self.closed = True
+
+    def exception(self):
+        return None
+
+
+class AsyncWSSession:
+    def __init__(self, ws):
+        self.ws = ws
+        self.ws_connect_calls = []
+        self.closed = False
+
+    async def ws_connect(self, url, headers=None):
+        self.ws_connect_calls.append((url, headers))
+        return self.ws
+
+    async def close(self):
+        self.closed = True
+
+
 def make_client(sdk_client=None, namespace="ns"):
     patch_settings()
     return AsyncSandboxClient(
@@ -152,6 +195,13 @@ def make_client(sdk_client=None, namespace="ns"):
 def patch_aiohttp_session(session):
     return patch(
         "polyaxon._client.sandbox.aiohttp.ClientSession",
+        MagicMock(return_value=session),
+    )
+
+
+def patch_async_ws_session(session):
+    return patch(
+        "polyaxon._client.transport.async_sandbox_ws.aiohttp.ClientSession",
         MagicMock(return_value=session),
     )
 
@@ -253,10 +303,87 @@ async def test_async_pty_create_allows_default_command():
 
 
 @pytest.mark.asyncio
-async def test_async_pty_attach_stub_is_not_exposed():
+async def test_async_pty_attach_connects_and_uses_raw_frames():
+    from polyaxon._client.transport import async_sandbox_ws
+
+    ws = FakeAsyncWS(
+        messages=[
+            AsyncWSMessage(
+                async_sandbox_ws.aiohttp.WSMsgType.TEXT,
+                '{"type":"attached","pty_id":"pty-1","pid":123}',
+            ),
+            AsyncWSMessage(async_sandbox_ws.aiohttp.WSMsgType.BINARY, b"output"),
+            AsyncWSMessage(
+                async_sandbox_ws.aiohttp.WSMsgType.TEXT,
+                '{"type":"exited","exit_code":0}',
+            ),
+        ]
+    )
+    session = AsyncWSSession(ws)
     client = make_client()
 
-    assert not hasattr(client.pty, "attach")
+    with patch_async_ws_session(session):
+        attached = await client.pty.attach("pty-1", replay_bytes=20)
+
+    assert session.ws_connect_calls[0] == (
+        "ws://polyaxon/sandbox/v1/ns/owner/project/runs/{}/pty/pty-1/ws"
+        "?replay_bytes=20".format(RUN_UUID),
+        {"authorization": "Bearer token"},
+    )
+    assert attached.attached_event == {
+        "type": "attached",
+        "pty_id": "pty-1",
+        "pid": 123,
+    }
+
+    await attached.send_stdin(bytearray(b"echo\n"))
+    await attached.send_control({"type": "resize", "cols": 100, "rows": 30})
+
+    assert ws.sent_bytes == [b"echo\n"]
+    assert orjson_loads(ws.sent_str[0].encode("utf-8")) == {
+        "type": "resize",
+        "cols": 100,
+        "rows": 30,
+    }
+    assert await attached.recv() == b"output"
+    assert await attached.recv() == {"type": "exited", "exit_code": 0}
+
+    await attached.close()
+    assert ws.closed is True
+    assert session.closed is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "message, match",
+    [
+        ('{"type":"error","message":"bad attach"}', "bad attach"),
+        (b"not attached", "binary frame"),
+        ("not json", "Invalid PTY websocket event JSON"),
+        ('{"type":"ready"}', "ready"),
+    ],
+)
+async def test_async_pty_attach_closes_and_raises_on_bad_initial_frame(
+    message,
+    match,
+):
+    from polyaxon._client.transport import async_sandbox_ws
+
+    message_type = (
+        async_sandbox_ws.aiohttp.WSMsgType.BINARY
+        if isinstance(message, bytes)
+        else async_sandbox_ws.aiohttp.WSMsgType.TEXT
+    )
+    ws = FakeAsyncWS(messages=[AsyncWSMessage(message_type, message)])
+    session = AsyncWSSession(ws)
+    client = make_client()
+
+    with patch_async_ws_session(session):
+        with pytest.raises(PolyaxonClientException, match=match):
+            await client.pty.attach("pty-1")
+
+    assert ws.closed is True
+    assert session.closed is True
 
 
 @pytest.mark.asyncio

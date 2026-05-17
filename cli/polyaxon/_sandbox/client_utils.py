@@ -6,6 +6,25 @@ from clipped.utils.json import orjson_loads
 from polyaxon.exceptions import PolyaxonClientException
 
 
+def parse_ws_event(data) -> Dict:
+    if isinstance(data, bytes):
+        try:
+            data = data.decode("utf-8")
+        except UnicodeDecodeError as e:
+            raise PolyaxonClientException(
+                "Invalid PTY websocket event encoding."
+            ) from e
+    if not isinstance(data, str):
+        raise PolyaxonClientException("Invalid PTY websocket text frame.")
+    try:
+        payload = orjson_loads(data.encode("utf-8"))
+    except Exception as e:
+        raise PolyaxonClientException("Invalid PTY websocket event JSON.") from e
+    if not isinstance(payload, dict):
+        raise PolyaxonClientException("Invalid PTY websocket event payload.")
+    return payload
+
+
 @dataclass(frozen=True)
 class FsReadResult:
     data: bytes

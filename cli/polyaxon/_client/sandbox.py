@@ -2,12 +2,13 @@ import asyncio
 import inspect
 import requests
 from typing import Optional
+from urllib.parse import urlencode
 
 import aiohttp
 
 from clipped.utils.bools import to_bool
 from clipped.utils.encoding import BytesLike, as_bytes, b64_data
-from clipped.utils.http import absolute_uri
+from clipped.utils.http import absolute_uri, to_ws_url
 from clipped.utils.json import orjson_dumps, orjson_loads
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
@@ -17,6 +18,7 @@ from polyaxon._client.decorators import (
     get_global_or_inline_config,
 )
 from polyaxon._client.mixin import ClientMixin
+from polyaxon._client.transport import async_sandbox_ws, sandbox_ws
 from polyaxon._env_vars.getters import (
     get_project_error_message,
     get_project_or_local,
@@ -271,6 +273,27 @@ class _AsyncBaseSubClient(_BaseSubClient):
             return
         fallback = "{} failed with status {}".format(action, response.status)
         raise PolyaxonClientException(parse_error_message(data, fallback))
+
+
+def _attached_error_message(event):
+    return event.get("message") or event.get("error") or "PTY attach failed."
+
+
+def _validate_attached_message(message):
+    if isinstance(message, bytes):
+        raise PolyaxonClientException(
+            "Expected PTY attached control event, received binary frame."
+        )
+    event_type = message.get("type")
+    if event_type == "attached":
+        return message
+    if event_type == "error":
+        raise PolyaxonClientException(_attached_error_message(message))
+    raise PolyaxonClientException(
+        "Expected PTY attached control event, received `{}`.".format(
+            event_type or "unknown"
+        )
+    )
 
 
 class _SseIterator:
@@ -880,6 +903,12 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
 
 
 class _PtySubClient(_BaseSubClient):
+    def _ws_url(self, id: str, replay_bytes: Optional[int] = None) -> str:
+        url = self._url("pty/{}/ws".format(id))
+        if replay_bytes is not None:
+            url = "{}?{}".format(url, urlencode({"replay_bytes": replay_bytes}))
+        return to_ws_url(url)
+
     @client_handler(check_no_op=True)
     def create(
         self,
@@ -930,8 +959,37 @@ class _PtySubClient(_BaseSubClient):
             body=V1SignalRequest(signal=signal),
         )
 
+    @client_handler(check_no_op=True)
+    def attach(self, id: str, replay_bytes: Optional[int] = None, timeout=None):
+        ws = None
+        try:
+            ws = sandbox_ws.connect(
+                self._ws_url(id=id, replay_bytes=replay_bytes),
+                headers=self._headers(),
+                timeout=timeout,
+            )
+            attached_event = _validate_attached_message(sandbox_ws.recv_message(ws))
+        except Exception:
+            if ws is not None:
+                try:
+                    ws.close()
+                except Exception:
+                    pass
+            raise
+
+        return sandbox_ws.SandboxPtyWSClient(
+            ws=ws,
+            attached_event=attached_event,
+        )
+
 
 class _AsyncPtySubClient(_PtySubClient, _AsyncBaseSubClient):
+    async def _ws_url(self, id: str, replay_bytes: Optional[int] = None) -> str:
+        url = await self._url("pty/{}/ws".format(id))
+        if replay_bytes is not None:
+            url = "{}?{}".format(url, urlencode({"replay_bytes": replay_bytes}))
+        return to_ws_url(url)
+
     @async_client_handler(check_no_op=True)
     async def create(
         self,
@@ -989,4 +1047,36 @@ class _AsyncPtySubClient(_PtySubClient, _AsyncBaseSubClient):
             *(await self._run_args()),
             id=id,
             body=V1SignalRequest(signal=signal),
+        )
+
+    @async_client_handler(check_no_op=True)
+    async def attach(self, id: str, replay_bytes: Optional[int] = None, timeout=None):
+        session = None
+        ws = None
+        try:
+            session, ws = await async_sandbox_ws.connect(
+                await self._ws_url(id=id, replay_bytes=replay_bytes),
+                headers=self._headers(),
+                timeout=self._client_timeout(timeout),
+            )
+            attached_event = _validate_attached_message(
+                await async_sandbox_ws.recv_message(ws)
+            )
+        except Exception:
+            if ws is not None:
+                try:
+                    await ws.close()
+                except Exception:
+                    pass
+            if session is not None:
+                try:
+                    await session.close()
+                except Exception:
+                    pass
+            raise
+
+        return async_sandbox_ws.AsyncSandboxPtyWSClient(
+            session=session,
+            ws=ws,
+            attached_event=attached_event,
         )

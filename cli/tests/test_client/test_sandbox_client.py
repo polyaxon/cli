@@ -3,7 +3,12 @@ from unittest.mock import MagicMock, patch
 
 from clipped.utils.json import orjson_loads
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
-from polyaxon._sandbox.client_utils import FsReadResult, FsWriteResult, SseFrameBuffer
+from polyaxon._client.transport import sandbox_ws
+from polyaxon._sandbox.client_utils import (
+    FsReadResult,
+    FsWriteResult,
+    SseFrameBuffer,
+)
 from polyaxon._sdk.schemas import V1RunSettings
 from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import PolyaxonClientException
@@ -80,6 +85,22 @@ class FakeSession:
     def post(self, url, **kwargs):
         self.post_calls.append((url, kwargs))
         return self.response
+
+    def close(self):
+        self.closed = True
+
+
+class FakeSyncWS:
+    def __init__(self, frames):
+        self.frames = list(frames)
+        self.sent = []
+        self.closed = False
+
+    def recv_data(self):
+        return self.frames.pop(0)
+
+    def send(self, data, opcode=None):
+        self.sent.append((opcode, data))
 
     def close(self):
         self.closed = True
@@ -250,10 +271,75 @@ def test_logs_does_not_expose_follow_kwarg():
 
 
 @pytest.mark.client_mark
-def test_pty_attach_stub_is_not_exposed():
+def test_pty_attach_connects_and_uses_raw_frames():
+    ws = FakeSyncWS(
+        frames=[
+            (
+                sandbox_ws.OPCODE_TEXT,
+                b'{"type":"attached","pty_id":"pty-1","pid":123}',
+            ),
+            (sandbox_ws.OPCODE_BINARY, b"output"),
+            (sandbox_ws.OPCODE_TEXT, b'{"type":"exited","exit_code":0}'),
+        ]
+    )
     client = make_client()
 
-    assert not hasattr(client.pty, "attach")
+    with patch(
+        "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+        return_value=ws,
+    ) as connect:
+        attached = client.pty.attach("pty-1", replay_bytes=20)
+
+    assert connect.call_args.args[0] == (
+        "ws://polyaxon/sandbox/v1/ns/owner/project/runs/{}/pty/pty-1/ws"
+        "?replay_bytes=20".format(RUN_UUID)
+    )
+    assert "authorization: Bearer token" in connect.call_args.kwargs["header"]
+    assert attached.attached_event == {
+        "type": "attached",
+        "pty_id": "pty-1",
+        "pid": 123,
+    }
+
+    attached.send_stdin(b"echo\n")
+    attached.send_control({"type": "resize", "cols": 100, "rows": 30})
+
+    assert ws.sent[0] == (sandbox_ws.OPCODE_BINARY, b"echo\n")
+    assert ws.sent[1][0] == sandbox_ws.OPCODE_TEXT
+    assert orjson_loads(ws.sent[1][1].encode("utf-8")) == {
+        "type": "resize",
+        "cols": 100,
+        "rows": 30,
+    }
+    assert attached.recv() == b"output"
+    assert attached.recv() == {"type": "exited", "exit_code": 0}
+
+    attached.close()
+    assert ws.closed is True
+
+
+@pytest.mark.client_mark
+@pytest.mark.parametrize(
+    "frame, match",
+    [
+        ((1, b'{"type":"error","message":"bad attach"}'), "bad attach"),
+        ((2, b"not attached"), "binary frame"),
+        ((1, b"not json"), "Invalid PTY websocket event JSON"),
+        ((1, b'{"type":"ready"}'), "ready"),
+    ],
+)
+def test_pty_attach_closes_and_raises_on_bad_initial_frame(frame, match):
+    ws = FakeSyncWS(frames=[frame])
+    client = make_client()
+
+    with patch(
+        "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+        return_value=ws,
+    ):
+        with pytest.raises(PolyaxonClientException, match=match):
+            client.pty.attach("pty-1")
+
+    assert ws.closed is True
 
 
 @pytest.mark.client_mark
