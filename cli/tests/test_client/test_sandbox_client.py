@@ -1,7 +1,9 @@
+import inspect
 import pytest
 from unittest.mock import MagicMock, patch
 
 from clipped.utils.json import orjson_loads
+from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
 from polyaxon._client.transport import sandbox_ws
 from polyaxon._sandbox.client_utils import (
@@ -9,7 +11,7 @@ from polyaxon._sandbox.client_utils import (
     FsWriteResult,
     SseFrameBuffer,
 )
-from polyaxon._sdk.schemas import V1RunSettings
+from polyaxon._sdk.schemas import V1ExecBgStart, V1ExecBgStatus, V1RunSettings
 from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import PolyaxonClientException
 
@@ -271,6 +273,182 @@ def test_logs_does_not_expose_follow_kwarg():
 
 
 @pytest.mark.client_mark
+def test_exec_stream_does_not_expose_session_kwarg():
+    client = make_client()
+
+    assert "session" not in inspect.signature(client.process.exec_stream).parameters
+
+
+@pytest.mark.client_mark
+def test_process_exec_bg_returns_handle_and_delegates_operations():
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(
+        exec_id="exec-1",
+        pid=123,
+        tag="nightly",
+    )
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="running",
+    )
+    sdk_client.sandbox_v1.get_bg_exec_logs.return_value = "logs"
+    sdk_client.sandbox_v1.signal_bg_exec.return_value = None
+    sdk_client.sandbox_v1.delete_bg_exec.return_value = None
+    client = make_client(sdk_client=sdk_client)
+
+    handle = client.process.exec_bg(
+        ("sleep", "1"),
+        env={"A": "B"},
+        stdin=b"x",
+        tag="nightly",
+    )
+
+    assert handle.id == "exec-1"
+    assert handle.exec_id == "exec-1"
+    assert handle.pid == 123
+    assert handle.tag == "nightly"
+    body = sdk_client.sandbox_v1.exec_bg.call_args.kwargs["body"]
+    assert body.command == ["sleep", "1"]
+    assert body.env == {"A": "B"}
+    assert body.stdin == "eA=="
+    assert body.tag == "nightly"
+
+    assert handle.get().state == "running"
+    assert handle.logs(stream="stdout", offset=5, max_bytes=10) == "logs"
+    handle.signal("SIGTERM")
+    handle.delete()
+
+    sdk_client.sandbox_v1.get_bg_exec.assert_called_with(
+        "ns",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+        id="exec-1",
+    )
+    sdk_client.sandbox_v1.get_bg_exec_logs.assert_called_with(
+        "ns",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+        id="exec-1",
+        stream="stdout",
+        offset=5,
+        max_bytes=10,
+    )
+    signal_body = sdk_client.sandbox_v1.signal_bg_exec.call_args.kwargs["body"]
+    assert signal_body.signal == "SIGTERM"
+    sdk_client.sandbox_v1.delete_bg_exec.assert_called_with(
+        "ns",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+        id="exec-1",
+    )
+
+
+@pytest.mark.client_mark
+def test_process_exec_bg_wait_polls_until_terminal_status():
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.side_effect = [
+        V1ExecBgStatus(exec_id="exec-1", state="running"),
+        V1ExecBgStatus(exec_id="exec-1", state="exited", exit_code=0),
+    ]
+    client = make_client(sdk_client=sdk_client)
+    handle = client.process.exec_bg(("sleep", "1"))
+
+    with patch("polyaxon._client.sandbox.time.sleep") as sleep:
+        status = handle.wait(timeout=10, interval=0.1)
+
+    assert status.state == "exited"
+    assert sleep.call_count == 1
+
+
+@pytest.mark.client_mark
+def test_bg_exec_state_sets_match_server_enum():
+    assert sandbox_module._BG_RUNNING_STATES == {"running"}
+    assert sandbox_module._BG_TERMINAL_STATES == {
+        "exited",
+        "signaled",
+        "timed_out",
+        "failed_to_start",
+        "orphaned",
+    }
+
+
+@pytest.mark.client_mark
+def test_process_exec_bg_wait_returns_terminal_status_without_sleeping():
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="exited",
+        exit_code=0,
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = client.process.exec_bg(("true",))
+
+    with patch("polyaxon._client.sandbox.time.sleep") as sleep:
+        status = handle.wait(timeout=10, interval=0.1)
+
+    assert status.state == "exited"
+    sleep.assert_not_called()
+
+
+@pytest.mark.client_mark
+def test_process_exec_bg_wait_validates_timeout_and_interval():
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="running",
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = client.process.exec_bg(("sleep", "1"))
+
+    with pytest.raises(ValueError, match="interval"):
+        handle.wait(interval=0)
+    with pytest.raises(PolyaxonClientException, match="Timed out"):
+        handle.wait(timeout=0, interval=0.1)
+
+
+@pytest.mark.client_mark
+def test_process_exec_bg_wait_rejects_unknown_state():
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="paused",
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = client.process.exec_bg(("sleep", "1"))
+
+    with pytest.raises(PolyaxonClientException, match="Unknown sandbox"):
+        handle.wait(timeout=10)
+
+
+@pytest.mark.client_mark
+def test_process_exec_bg_handle_does_not_delegate_unknown_attrs_to_start():
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    client = make_client(sdk_client=sdk_client)
+    handle = client.process.exec_bg(("sleep", "1"))
+
+    with pytest.raises(AttributeError):
+        handle.exit_code
+
+
+@pytest.mark.client_mark
+def test_process_exec_bg_requires_exec_id():
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart()
+    client = make_client(sdk_client=sdk_client)
+
+    with pytest.raises(PolyaxonClientException, match="exec_id"):
+        client.process.exec_bg(("sleep", "1"))
+
+
+@pytest.mark.client_mark
 def test_pty_attach_connects_and_uses_raw_frames():
     ws = FakeSyncWS(
         frames=[
@@ -522,6 +700,43 @@ def test_fs_write_accepts_memoryview_and_rejects_str():
             client.fs.write("/tmp/file.txt", "x")
 
     assert session.post_calls[0][1]["data"] == b"x"
+
+
+@pytest.mark.client_mark
+def test_fs_read_write_byte_and_text_helpers():
+    read_response = FakeResponse(
+        content=b"hello",
+        headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+    )
+    read_session = FakeSession(read_response)
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=read_session):
+        assert client.fs.read_bytes("/tmp/file.txt") == b"hello"
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=read_session):
+        assert client.fs.read_text("/tmp/file.txt") == "hello"
+
+    write_response = FakeResponse(
+        content=b'{"path":"/tmp/file.txt","bytes_written":5,"created":false}'
+    )
+    write_session = FakeSession(write_response)
+
+    with patch(
+        "polyaxon._client.sandbox.requests.Session",
+        return_value=write_session,
+    ):
+        result = client.fs.write_text("/tmp/file.txt", "hello")
+
+    assert result == FsWriteResult(
+        path="/tmp/file.txt",
+        bytes_written=5,
+        created=False,
+    )
+    assert write_session.post_calls[0][1]["data"] == b"hello"
+
+    with pytest.raises(TypeError):
+        client.fs.write_text("/tmp/file.txt", b"not text")
 
 
 @pytest.mark.client_mark

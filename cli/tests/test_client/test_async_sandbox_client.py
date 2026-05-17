@@ -1,10 +1,11 @@
+import inspect
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from clipped.utils.json import orjson_loads
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
 from polyaxon._sandbox.client_utils import FsReadResult, FsWriteResult
-from polyaxon._sdk.schemas import V1RunSettings
+from polyaxon._sdk.schemas import V1ExecBgStart, V1ExecBgStatus, V1RunSettings
 from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import PolyaxonClientException
 
@@ -41,7 +42,10 @@ class AsyncPolyaxonClientMock:
         self.sandbox_v1.ping = AsyncMock()
         self.sandbox_v1.call_exec = AsyncMock()
         self.sandbox_v1.exec_bg = AsyncMock()
+        self.sandbox_v1.get_bg_exec = AsyncMock()
         self.sandbox_v1.get_bg_exec_logs = AsyncMock()
+        self.sandbox_v1.signal_bg_exec = AsyncMock()
+        self.sandbox_v1.delete_bg_exec = AsyncMock()
         self.sandbox_v1.fs_mkdir = AsyncMock()
         self.sandbox_v1.create_pty = AsyncMock()
 
@@ -280,6 +284,163 @@ async def test_async_logs_does_not_expose_follow_kwarg():
 
 
 @pytest.mark.asyncio
+async def test_async_exec_stream_does_not_expose_session_kwarg():
+    client = make_client()
+
+    assert "session" not in inspect.signature(client.process.exec_stream).parameters
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_returns_handle_and_delegates_operations():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(
+        exec_id="exec-1",
+        pid=123,
+        tag="nightly",
+    )
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="running",
+    )
+    sdk_client.sandbox_v1.get_bg_exec_logs.return_value = "logs"
+    client = make_client(sdk_client=sdk_client)
+
+    handle = await client.process.exec_bg(
+        ("sleep", "1"),
+        env={"A": "B"},
+        stdin=b"x",
+        tag="nightly",
+    )
+
+    assert handle.id == "exec-1"
+    assert handle.exec_id == "exec-1"
+    assert handle.pid == 123
+    assert handle.tag == "nightly"
+    body = sdk_client.sandbox_v1.exec_bg.await_args.kwargs["body"]
+    assert body.command == ["sleep", "1"]
+    assert body.env == {"A": "B"}
+    assert body.stdin == "eA=="
+    assert body.tag == "nightly"
+
+    assert (await handle.get()).state == "running"
+    assert await handle.logs(stream="stdout", offset=5, max_bytes=10) == "logs"
+    await handle.signal("SIGTERM")
+    await handle.delete()
+
+    sdk_client.sandbox_v1.get_bg_exec.assert_awaited_with(
+        "ns",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+        id="exec-1",
+    )
+    sdk_client.sandbox_v1.get_bg_exec_logs.assert_awaited_with(
+        "ns",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+        id="exec-1",
+        stream="stdout",
+        offset=5,
+        max_bytes=10,
+    )
+    signal_body = sdk_client.sandbox_v1.signal_bg_exec.await_args.kwargs["body"]
+    assert signal_body.signal == "SIGTERM"
+    sdk_client.sandbox_v1.delete_bg_exec.assert_awaited_with(
+        "ns",
+        OWNER,
+        PROJECT,
+        RUN_UUID,
+        id="exec-1",
+    )
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_wait_polls_until_terminal_status():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.side_effect = [
+        V1ExecBgStatus(exec_id="exec-1", state="running"),
+        V1ExecBgStatus(exec_id="exec-1", state="exited", exit_code=0),
+    ]
+    client = make_client(sdk_client=sdk_client)
+    handle = await client.process.exec_bg(("sleep", "1"))
+
+    with patch(
+        "polyaxon._client.sandbox.asyncio.sleep",
+        new_callable=AsyncMock,
+    ) as sleep:
+        status = await handle.wait(timeout=10, interval=0.1)
+
+    assert status.state == "exited"
+    assert sleep.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_wait_returns_terminal_status_without_sleeping():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="exited",
+        exit_code=0,
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = await client.process.exec_bg(("true",))
+
+    with patch(
+        "polyaxon._client.sandbox.asyncio.sleep",
+        new_callable=AsyncMock,
+    ) as sleep:
+        status = await handle.wait(timeout=10, interval=0.1)
+
+    assert status.state == "exited"
+    sleep.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_wait_validates_timeout_and_interval():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="running",
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = await client.process.exec_bg(("sleep", "1"))
+
+    with pytest.raises(ValueError, match="interval"):
+        await handle.wait(interval=0)
+    with pytest.raises(PolyaxonClientException, match="Timed out"):
+        await handle.wait(timeout=0, interval=0.1)
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_wait_rejects_unknown_state():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+        exec_id="exec-1",
+        state="paused",
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = await client.process.exec_bg(("sleep", "1"))
+
+    with pytest.raises(PolyaxonClientException, match="Unknown sandbox"):
+        await handle.wait(timeout=10)
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_requires_exec_id():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart()
+    client = make_client(sdk_client=sdk_client)
+
+    with pytest.raises(PolyaxonClientException, match="exec_id"):
+        await client.process.exec_bg(("sleep", "1"))
+
+
+@pytest.mark.asyncio
 async def test_async_fs_mkdir_serializes_mode_as_octal_string():
     sdk_client = AsyncPolyaxonClientMock()
     client = make_client(sdk_client=sdk_client)
@@ -514,6 +675,40 @@ async def test_async_fs_write_sends_raw_bytes_and_octal_mode():
     }
     assert kwargs["data"] == b"x"
     assert kwargs["headers"]["Content-Type"] == "application/octet-stream"
+
+
+@pytest.mark.asyncio
+async def test_async_fs_read_write_byte_and_text_helpers():
+    read_response = AsyncResponse(
+        data=b"hello",
+        headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+    )
+    read_session = AsyncSession(read_response)
+    client = make_client()
+
+    with patch_aiohttp_session(read_session):
+        assert await client.fs.read_bytes("/tmp/file.txt") == b"hello"
+
+    with patch_aiohttp_session(read_session):
+        assert await client.fs.read_text("/tmp/file.txt") == "hello"
+
+    write_response = AsyncResponse(
+        data=b'{"path":"/tmp/file.txt","bytes_written":5,"created":false}'
+    )
+    write_session = AsyncSession(write_response)
+
+    with patch_aiohttp_session(write_session):
+        result = await client.fs.write_text("/tmp/file.txt", "hello")
+
+    assert result == FsWriteResult(
+        path="/tmp/file.txt",
+        bytes_written=5,
+        created=False,
+    )
+    assert write_session.post_calls[0][1]["data"] == b"hello"
+
+    with pytest.raises(TypeError):
+        await client.fs.write_text("/tmp/file.txt", b"not text")
 
 
 @pytest.mark.asyncio

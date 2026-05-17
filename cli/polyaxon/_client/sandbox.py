@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import requests
+import time
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -296,6 +297,141 @@ def _validate_attached_message(message):
     )
 
 
+_BG_RUNNING_STATES = {"running"}
+_BG_TERMINAL_STATES = {
+    "exited",
+    "signaled",
+    "timed_out",
+    "failed_to_start",
+    "orphaned",
+}
+
+
+def _is_bg_exec_terminal(status) -> bool:
+    state = getattr(status, "state", None)
+    if not state:
+        return False
+    state = str(state).lower()
+    if state in _BG_TERMINAL_STATES:
+        return True
+    if state in _BG_RUNNING_STATES:
+        return False
+    raise PolyaxonClientException(
+        "Unknown sandbox background exec state `{}`.".format(state)
+    )
+
+
+def _validate_wait_args(timeout, interval):
+    if timeout is not None and timeout < 0:
+        raise ValueError("timeout must be greater than or equal to 0")
+    if interval <= 0:
+        raise ValueError("interval must be greater than 0")
+
+
+class SandboxBgExec:
+    def __init__(self, process, start):
+        self._process = process
+        self.start = start
+        self.exec_id = getattr(start, "exec_id", None)
+        if not self.exec_id:
+            raise PolyaxonClientException(
+                "Sandbox background exec response did not include an exec_id."
+            )
+
+    @property
+    def id(self):
+        return self.exec_id
+
+    @property
+    def pid(self):
+        return getattr(self.start, "pid", None)
+
+    @property
+    def started_at(self):
+        return getattr(self.start, "started_at", None)
+
+    @property
+    def tag(self):
+        return getattr(self.start, "tag", None)
+
+    def get(self):
+        return self._process.get(self.exec_id)
+
+    def logs(
+        self,
+        stream: Optional[str] = None,
+        offset: Optional[int] = None,
+        max_bytes: Optional[int] = None,
+    ):
+        return self._process.logs(
+            self.exec_id,
+            stream=stream,
+            offset=offset,
+            max_bytes=max_bytes,
+        )
+
+    def signal(self, signal: str):
+        return self._process.signal(self.exec_id, signal)
+
+    def delete(self):
+        return self._process.delete(self.exec_id)
+
+    def wait(self, timeout=None, interval: float = 1.0):
+        _validate_wait_args(timeout=timeout, interval=interval)
+        started_at = time.monotonic()
+        while True:
+            status = self.get()
+            if _is_bg_exec_terminal(status):
+                return status
+            if timeout is not None and time.monotonic() - started_at >= timeout:
+                raise PolyaxonClientException(
+                    "Timed out waiting for sandbox background exec `{}`.".format(
+                        self.exec_id
+                    )
+                )
+            time.sleep(interval)
+
+
+class AsyncSandboxBgExec(SandboxBgExec):
+    async def get(self):
+        return await self._process.get(self.exec_id)
+
+    async def logs(
+        self,
+        stream: Optional[str] = None,
+        offset: Optional[int] = None,
+        max_bytes: Optional[int] = None,
+    ):
+        return await self._process.logs(
+            self.exec_id,
+            stream=stream,
+            offset=offset,
+            max_bytes=max_bytes,
+        )
+
+    async def signal(self, signal: str):
+        return await self._process.signal(self.exec_id, signal)
+
+    async def delete(self):
+        return await self._process.delete(self.exec_id)
+
+    async def wait(self, timeout=None, interval: float = 1.0):
+        # Do not delegate to SandboxBgExec.wait; the sync parent uses time.sleep.
+        _validate_wait_args(timeout=timeout, interval=interval)
+        started_at = time.monotonic()
+        while True:
+            status = await self.get()
+            if _is_bg_exec_terminal(status):
+                return status
+            if timeout is not None and time.monotonic() - started_at >= timeout:
+                raise PolyaxonClientException(
+                    "Timed out waiting for sandbox background exec `{}`.".format(
+                        self.exec_id
+                    )
+                )
+            await asyncio.sleep(interval)
+
+
 class _SseIterator:
     def __init__(self, response, session):
         self._response = response
@@ -424,7 +560,6 @@ class _ProcessSubClient(_BaseSubClient):
         stdin: Optional[BytesLike] = None,
         timeout_ms: Optional[int] = None,
         timeout=None,
-        session=None,
     ):
         body = V1ExecRequest(
             command=normalize_command(command),
@@ -433,7 +568,7 @@ class _ProcessSubClient(_BaseSubClient):
             stdin=b64_data(stdin),
             timeout_ms=timeout_ms,
         )
-        session = session or requests.Session()
+        session = requests.Session()
         response = None
         try:
             response = session.post(
@@ -474,7 +609,7 @@ class _ProcessSubClient(_BaseSubClient):
         timeout_ms: Optional[int] = None,
         tag: Optional[str] = None,
     ):
-        return self._parent.client.sandbox_v1.exec_bg(
+        start = self._parent.client.sandbox_v1.exec_bg(
             *self._run_args(),
             body=V1ExecBgRequest(
                 command=normalize_command(command),
@@ -485,6 +620,7 @@ class _ProcessSubClient(_BaseSubClient):
                 tag=tag,
             ),
         )
+        return SandboxBgExec(process=self, start=start)
 
     @client_handler(check_no_op=True)
     def list(self, tag: Optional[str] = None):
@@ -559,7 +695,6 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
         stdin: Optional[BytesLike] = None,
         timeout_ms: Optional[int] = None,
         timeout=None,
-        session=None,
     ):
         body = V1ExecRequest(
             command=normalize_command(command),
@@ -568,9 +703,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
             stdin=b64_data(stdin),
             timeout_ms=timeout_ms,
         )
-        session = session or aiohttp.ClientSession(
-            **self._session_kwargs(timeout=timeout)
-        )
+        session = aiohttp.ClientSession(**self._session_kwargs(timeout=timeout))
         response = None
         try:
             response = await session.post(
@@ -611,7 +744,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
         timeout_ms: Optional[int] = None,
         tag: Optional[str] = None,
     ):
-        return await self._parent.client.sandbox_v1.exec_bg(
+        start = await self._parent.client.sandbox_v1.exec_bg(
             *(await self._run_args()),
             body=V1ExecBgRequest(
                 command=normalize_command(command),
@@ -622,6 +755,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
                 tag=tag,
             ),
         )
+        return AsyncSandboxBgExec(process=self, start=start)
 
     @async_client_handler(check_no_op=True)
     async def list(self, tag: Optional[str] = None):
@@ -744,6 +878,85 @@ class _FsSubClient(_BaseSubClient):
         )
 
     @client_handler(check_no_op=True)
+    def read_bytes(
+        self,
+        path: str,
+        offset: int = 0,
+        length: Optional[int] = None,
+        timeout=None,
+    ) -> bytes:
+        return self.read(
+            path=path,
+            offset=offset,
+            length=length,
+            timeout=timeout,
+        ).data
+
+    @client_handler(check_no_op=True)
+    def write_bytes(
+        self,
+        path: str,
+        data: BytesLike,
+        mode: int = 0o644,
+        create: bool = True,
+        append: bool = False,
+        timeout=None,
+    ) -> FsWriteResult:
+        return self.write(
+            path=path,
+            data=data,
+            mode=mode,
+            create=create,
+            append=append,
+            timeout=timeout,
+        )
+
+    @client_handler(check_no_op=True)
+    def read_text(
+        self,
+        path: str,
+        offset: int = 0,
+        length: Optional[int] = None,
+        encoding: str = "utf-8",
+        errors: str = "strict",
+        timeout=None,
+    ) -> str:
+        """Decode bytes from one fs.read call.
+
+        This does not page until EOF. Partial reads can truncate large files and
+        strict decoding can fail if the returned byte range ends mid-character.
+        """
+        return self.read_bytes(
+            path=path,
+            offset=offset,
+            length=length,
+            timeout=timeout,
+        ).decode(encoding, errors=errors)
+
+    @client_handler(check_no_op=True)
+    def write_text(
+        self,
+        path: str,
+        data: str,
+        mode: int = 0o644,
+        create: bool = True,
+        append: bool = False,
+        encoding: str = "utf-8",
+        errors: str = "strict",
+        timeout=None,
+    ) -> FsWriteResult:
+        if not isinstance(data, str):
+            raise TypeError("data must be a string")
+        return self.write_bytes(
+            path=path,
+            data=data.encode(encoding, errors=errors),
+            mode=mode,
+            create=create,
+            append=append,
+            timeout=timeout,
+        )
+
+    @client_handler(check_no_op=True)
     def ls(
         self,
         path: Optional[str] = None,
@@ -860,6 +1073,87 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
                     )
         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
             raise PolyaxonClientException("fs.write failed: {}".format(e)) from e
+
+    @async_client_handler(check_no_op=True)
+    async def read_bytes(
+        self,
+        path: str,
+        offset: int = 0,
+        length: Optional[int] = None,
+        timeout=None,
+    ) -> bytes:
+        result = await self.read(
+            path=path,
+            offset=offset,
+            length=length,
+            timeout=timeout,
+        )
+        return result.data
+
+    @async_client_handler(check_no_op=True)
+    async def write_bytes(
+        self,
+        path: str,
+        data: BytesLike,
+        mode: int = 0o644,
+        create: bool = True,
+        append: bool = False,
+        timeout=None,
+    ) -> FsWriteResult:
+        return await self.write(
+            path=path,
+            data=data,
+            mode=mode,
+            create=create,
+            append=append,
+            timeout=timeout,
+        )
+
+    @async_client_handler(check_no_op=True)
+    async def read_text(
+        self,
+        path: str,
+        offset: int = 0,
+        length: Optional[int] = None,
+        encoding: str = "utf-8",
+        errors: str = "strict",
+        timeout=None,
+    ) -> str:
+        """Decode bytes from one fs.read call.
+
+        This does not page until EOF. Partial reads can truncate large files and
+        strict decoding can fail if the returned byte range ends mid-character.
+        """
+        data = await self.read_bytes(
+            path=path,
+            offset=offset,
+            length=length,
+            timeout=timeout,
+        )
+        return data.decode(encoding, errors=errors)
+
+    @async_client_handler(check_no_op=True)
+    async def write_text(
+        self,
+        path: str,
+        data: str,
+        mode: int = 0o644,
+        create: bool = True,
+        append: bool = False,
+        encoding: str = "utf-8",
+        errors: str = "strict",
+        timeout=None,
+    ) -> FsWriteResult:
+        if not isinstance(data, str):
+            raise TypeError("data must be a string")
+        return await self.write_bytes(
+            path=path,
+            data=data.encode(encoding, errors=errors),
+            mode=mode,
+            create=create,
+            append=append,
+            timeout=timeout,
+        )
 
     @async_client_handler(check_no_op=True)
     async def ls(
