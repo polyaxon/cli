@@ -128,6 +128,16 @@ class AsyncSession:
         self.closed = True
 
 
+class AsyncSequenceSession(AsyncSession):
+    def __init__(self, responses):
+        super().__init__(response=None)
+        self.responses = list(responses)
+
+    def get(self, url, **kwargs):
+        self.get_calls.append((url, kwargs))
+        return self.responses.pop(0)
+
+
 class AsyncStreamSession:
     def __init__(self, response):
         self.response = response
@@ -709,6 +719,93 @@ async def test_async_fs_read_write_byte_and_text_helpers():
 
     with pytest.raises(TypeError):
         await client.fs.write_text("/tmp/file.txt", b"not text")
+
+
+@pytest.mark.asyncio
+async def test_async_fs_read_bytes_pages_until_eof():
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b"he",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            AsyncResponse(
+                data=b"llo",
+                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        assert await client.fs.read_bytes("/tmp/file.txt") == b"hello"
+
+    assert [call[1]["params"] for call in session.get_calls] == [
+        {"path": "/tmp/file.txt", "offset": 0},
+        {"path": "/tmp/file.txt", "offset": 2},
+    ]
+
+
+@pytest.mark.asyncio
+async def test_async_fs_read_bytes_honors_length_across_pages():
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b"ab",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            AsyncResponse(
+                data=b"cdef",
+                headers={"X-Polyaxon-Next-Offset": "6", "X-Polyaxon-Eof": "false"},
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        assert await client.fs.read_bytes("/tmp/file.txt", length=4) == b"abcd"
+
+    assert [call[1]["params"] for call in session.get_calls] == [
+        {"path": "/tmp/file.txt", "offset": 0, "length": 4},
+        {"path": "/tmp/file.txt", "offset": 2, "length": 2},
+    ]
+
+
+@pytest.mark.asyncio
+async def test_async_fs_read_text_decodes_after_paging():
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b"\xc3",
+                headers={"X-Polyaxon-Next-Offset": "1", "X-Polyaxon-Eof": "false"},
+            ),
+            AsyncResponse(
+                data=b"\xa9",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "true"},
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        assert await client.fs.read_text("/tmp/file.txt") == "é"
+
+
+@pytest.mark.asyncio
+async def test_async_fs_read_bytes_rejects_non_advancing_response():
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b"x",
+                headers={"X-Polyaxon-Next-Offset": "0", "X-Polyaxon-Eof": "false"},
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        with pytest.raises(PolyaxonClientException, match="did not advance"):
+            await client.fs.read_bytes("/tmp/file.txt")
 
 
 @pytest.mark.asyncio

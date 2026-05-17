@@ -885,12 +885,40 @@ class _FsSubClient(_BaseSubClient):
         length: Optional[int] = None,
         timeout=None,
     ) -> bytes:
-        return self.read(
-            path=path,
-            offset=offset,
-            length=length,
-            timeout=timeout,
-        ).data
+        if length == 0:
+            return b""
+
+        chunks = []
+        next_offset = offset
+        remaining = length
+
+        while True:
+            result = self.read(
+                path=path,
+                offset=next_offset,
+                length=remaining,
+                timeout=timeout,
+            )
+            data = result.data
+            if remaining is not None:
+                data = data[:remaining]
+            chunks.append(data)
+
+            if result.eof:
+                break
+
+            if remaining is not None:
+                remaining -= len(data)
+                if remaining <= 0:
+                    break
+
+            if result.next_offset <= next_offset:
+                raise PolyaxonClientException(
+                    "fs.read did not advance while reading `{}`.".format(path)
+                )
+            next_offset = result.next_offset
+
+        return b"".join(chunks)
 
     @client_handler(check_no_op=True)
     def write_bytes(
@@ -921,10 +949,10 @@ class _FsSubClient(_BaseSubClient):
         errors: str = "strict",
         timeout=None,
     ) -> str:
-        """Decode bytes from one fs.read call.
+        """Read and decode bytes until EOF or the requested length.
 
-        This does not page until EOF. Partial reads can truncate large files and
-        strict decoding can fail if the returned byte range ends mid-character.
+        This buffers the requested range in memory. Use fs.read for explicit
+        chunked reads.
         """
         return self.read_bytes(
             path=path,
@@ -1082,13 +1110,40 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         length: Optional[int] = None,
         timeout=None,
     ) -> bytes:
-        result = await self.read(
-            path=path,
-            offset=offset,
-            length=length,
-            timeout=timeout,
-        )
-        return result.data
+        if length == 0:
+            return b""
+
+        chunks = []
+        next_offset = offset
+        remaining = length
+
+        while True:
+            result = await self.read(
+                path=path,
+                offset=next_offset,
+                length=remaining,
+                timeout=timeout,
+            )
+            data = result.data
+            if remaining is not None:
+                data = data[:remaining]
+            chunks.append(data)
+
+            if result.eof:
+                break
+
+            if remaining is not None:
+                remaining -= len(data)
+                if remaining <= 0:
+                    break
+
+            if result.next_offset <= next_offset:
+                raise PolyaxonClientException(
+                    "fs.read did not advance while reading `{}`.".format(path)
+                )
+            next_offset = result.next_offset
+
+        return b"".join(chunks)
 
     @async_client_handler(check_no_op=True)
     async def write_bytes(
@@ -1119,10 +1174,10 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         errors: str = "strict",
         timeout=None,
     ) -> str:
-        """Decode bytes from one fs.read call.
+        """Read and decode bytes until EOF or the requested length.
 
-        This does not page until EOF. Partial reads can truncate large files and
-        strict decoding can fail if the returned byte range ends mid-character.
+        This buffers the requested range in memory. Use fs.read for explicit
+        chunked reads.
         """
         data = await self.read_bytes(
             path=path,
