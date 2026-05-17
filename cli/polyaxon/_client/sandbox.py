@@ -30,11 +30,13 @@ from polyaxon._env_vars.getters import (
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
     FsWriteResult,
+    SandboxBgOutput,
     SseFrameBuffer,
     format_mode,
     normalize_command,
     normalize_env,
     parse_error_message,
+    validate_remote_path,
 )
 from polyaxon._sdk.schemas import (
     V1CreatePtyRequest,
@@ -333,6 +335,14 @@ def _validate_wait_args(timeout, interval):
         raise ValueError("interval must be greater than 0")
 
 
+def _validate_log_iter_args(offset: int, max_bytes, timeout, interval):
+    if offset < 0:
+        raise ValueError("offset must be greater than or equal to 0")
+    if max_bytes is not None and max_bytes <= 0:
+        raise ValueError("max_bytes must be greater than 0")
+    _validate_wait_args(timeout=timeout, interval=interval)
+
+
 def _validate_fs_read_args(offset: int, length: Optional[int], chunk_size: int):
     if offset < 0:
         raise ValueError("offset must be greater than or equal to 0")
@@ -357,6 +367,31 @@ def _validate_fs_read_advanced(path: str, next_offset: int, result: FsReadResult
         raise PolyaxonClientException(
             "fs.read did not advance while reading `{}`.".format(path)
         )
+
+
+def _log_data(logs) -> str:
+    if isinstance(logs, str):
+        return logs
+    return getattr(logs, "data", None) or ""
+
+
+def _log_next_offset(logs) -> int:
+    next_offset = getattr(logs, "next_offset", None)
+    if next_offset is None:
+        raise PolyaxonClientException(
+            "Sandbox background exec log response did not include next_offset."
+        )
+    return next_offset
+
+
+def _log_is_done(logs) -> bool:
+    if not getattr(logs, "eof", False):
+        return False
+    if getattr(logs, "state", None) is None:
+        raise PolyaxonClientException(
+            "Sandbox background exec log response did not include state."
+        )
+    return _is_bg_exec_terminal(logs)
 
 
 class SandboxBgExec:
@@ -404,8 +439,88 @@ class SandboxBgExec:
     def signal(self, signal: str):
         return self._process.signal(self.exec_id, signal)
 
+    def kill(self, signal: str = "SIGTERM"):
+        return self.signal(signal)
+
     def delete(self):
         return self._process.delete(self.exec_id)
+
+    def stdout(
+        self,
+        offset: Optional[int] = 0,
+        max_bytes: Optional[int] = None,
+    ) -> str:
+        return _log_data(self.logs(stream="stdout", offset=offset, max_bytes=max_bytes))
+
+    def stderr(
+        self,
+        offset: Optional[int] = 0,
+        max_bytes: Optional[int] = None,
+    ) -> str:
+        return _log_data(self.logs(stream="stderr", offset=offset, max_bytes=max_bytes))
+
+    def output(
+        self,
+        offset: Optional[int] = 0,
+        max_bytes: Optional[int] = None,
+    ) -> SandboxBgOutput:
+        return SandboxBgOutput(
+            stdout=self.stdout(offset=offset, max_bytes=max_bytes),
+            stderr=self.stderr(offset=offset, max_bytes=max_bytes),
+        )
+
+    def iter_logs(
+        self,
+        stream: str = "stdout",
+        offset: int = 0,
+        max_bytes: Optional[int] = None,
+        timeout=None,
+        interval: float = 1.0,
+    ):
+        _validate_log_iter_args(
+            offset=offset,
+            max_bytes=max_bytes,
+            timeout=timeout,
+            interval=interval,
+        )
+
+        def _iterator():
+            cursor = offset
+            started_at = time.monotonic()
+            while True:
+                logs = self.logs(stream=stream, offset=cursor, max_bytes=max_bytes)
+                data = _log_data(logs)
+                next_offset = _log_next_offset(logs)
+                if data and next_offset <= cursor:
+                    raise PolyaxonClientException(
+                        "bg exec logs did not advance for `{}`.".format(self.exec_id)
+                    )
+                if next_offset < cursor:
+                    raise PolyaxonClientException(
+                        "bg exec logs moved backwards for `{}`.".format(self.exec_id)
+                    )
+
+                cursor = next_offset
+                if data:
+                    yield data
+
+                if _log_is_done(logs):
+                    break
+                if timeout is not None and time.monotonic() - started_at >= timeout:
+                    raise PolyaxonClientException(
+                        "Timed out waiting for sandbox background exec logs `{}`.".format(
+                            self.exec_id
+                        )
+                    )
+                time.sleep(interval)
+
+        return _iterator()
+
+    def iter_stdout(self, **kwargs):
+        return self.iter_logs(stream="stdout", **kwargs)
+
+    def iter_stderr(self, **kwargs):
+        return self.iter_logs(stream="stderr", **kwargs)
 
     def wait(self, timeout=None, interval: float = 1.0):
         _validate_wait_args(timeout=timeout, interval=interval)
@@ -443,8 +558,94 @@ class AsyncSandboxBgExec(SandboxBgExec):
     async def signal(self, signal: str):
         return await self._process.signal(self.exec_id, signal)
 
+    async def kill(self, signal: str = "SIGTERM"):
+        return await self.signal(signal)
+
     async def delete(self):
         return await self._process.delete(self.exec_id)
+
+    async def stdout(
+        self,
+        offset: Optional[int] = 0,
+        max_bytes: Optional[int] = None,
+    ) -> str:
+        return _log_data(
+            await self.logs(stream="stdout", offset=offset, max_bytes=max_bytes)
+        )
+
+    async def stderr(
+        self,
+        offset: Optional[int] = 0,
+        max_bytes: Optional[int] = None,
+    ) -> str:
+        return _log_data(
+            await self.logs(stream="stderr", offset=offset, max_bytes=max_bytes)
+        )
+
+    async def output(
+        self,
+        offset: Optional[int] = 0,
+        max_bytes: Optional[int] = None,
+    ) -> SandboxBgOutput:
+        return SandboxBgOutput(
+            stdout=await self.stdout(offset=offset, max_bytes=max_bytes),
+            stderr=await self.stderr(offset=offset, max_bytes=max_bytes),
+        )
+
+    def iter_logs(
+        self,
+        stream: str = "stdout",
+        offset: int = 0,
+        max_bytes: Optional[int] = None,
+        timeout=None,
+        interval: float = 1.0,
+    ):
+        _validate_log_iter_args(
+            offset=offset,
+            max_bytes=max_bytes,
+            timeout=timeout,
+            interval=interval,
+        )
+
+        async def _iterator():
+            cursor = offset
+            started_at = time.monotonic()
+            while True:
+                logs = await self.logs(
+                    stream=stream, offset=cursor, max_bytes=max_bytes
+                )
+                data = _log_data(logs)
+                next_offset = _log_next_offset(logs)
+                if data and next_offset <= cursor:
+                    raise PolyaxonClientException(
+                        "bg exec logs did not advance for `{}`.".format(self.exec_id)
+                    )
+                if next_offset < cursor:
+                    raise PolyaxonClientException(
+                        "bg exec logs moved backwards for `{}`.".format(self.exec_id)
+                    )
+
+                cursor = next_offset
+                if data:
+                    yield data
+
+                if _log_is_done(logs):
+                    break
+                if timeout is not None and time.monotonic() - started_at >= timeout:
+                    raise PolyaxonClientException(
+                        "Timed out waiting for sandbox background exec logs `{}`.".format(
+                            self.exec_id
+                        )
+                    )
+                await asyncio.sleep(interval)
+
+        return _iterator()
+
+    def iter_stdout(self, **kwargs):
+        return self.iter_logs(stream="stdout", **kwargs)
+
+    def iter_stderr(self, **kwargs):
+        return self.iter_logs(stream="stderr", **kwargs)
 
     async def wait(self, timeout=None, interval: float = 1.0):
         # Do not delegate to SandboxBgExec.wait; the sync parent uses time.sleep.
@@ -843,6 +1044,7 @@ class _FsSubClient(_BaseSubClient):
         length: Optional[int] = None,
         timeout=None,
     ) -> FsReadResult:
+        path = validate_remote_path(path)
         params = {"path": path, "offset": offset}
         if length is not None:
             params["length"] = length
@@ -877,6 +1079,7 @@ class _FsSubClient(_BaseSubClient):
         append: bool = False,
         timeout=None,
     ) -> FsWriteResult:
+        path = validate_remote_path(path)
         params = {
             "path": path,
             "mode": format_mode(mode),
@@ -917,6 +1120,7 @@ class _FsSubClient(_BaseSubClient):
         chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ) -> bytes:
+        """Read a remote absolute POSIX path into memory."""
         return b"".join(
             self.iter_bytes(
                 path=path,
@@ -935,6 +1139,8 @@ class _FsSubClient(_BaseSubClient):
         chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ):
+        """Yield chunks from a remote absolute POSIX path."""
+        path = validate_remote_path(path)
         _validate_fs_read_args(offset=offset, length=length, chunk_size=chunk_size)
 
         def _iterator():
@@ -1034,6 +1240,12 @@ class _FsSubClient(_BaseSubClient):
         timeout=None,
         create_parents: bool = True,
     ) -> str:
+        """Download a remote absolute POSIX path to a local file.
+
+        The local write uses a .part file followed by os.replace. This does not
+        make any statement about remote-side atomicity.
+        """
+        path = validate_remote_path(path)
         destination = Path(local_path)
         if create_parents:
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -1068,10 +1280,12 @@ class _FsSubClient(_BaseSubClient):
     ) -> FsWriteResult:
         """Upload a local file to a remote sandbox path.
 
-        Uploads are not remote-atomic. Concurrent uploads to the same remote path
-        are unsupported, and a mid-upload failure may leave a partial remote file.
-        The mode only applies if the remote file is created.
+        The remote path must be absolute. Uploads are not remote-atomic.
+        Concurrent uploads to the same remote path are unsupported, and a
+        mid-upload failure may leave a partial remote file. The mode only
+        applies if the remote file is created.
         """
+        path = validate_remote_path(path)
         _validate_file_chunk_size(chunk_size)
         source = Path(local_path)
         total = 0
@@ -1128,10 +1342,11 @@ class _FsSubClient(_BaseSubClient):
     @client_handler(check_no_op=True)
     def ls(
         self,
-        path: Optional[str] = None,
+        path: str,
         recursive: Optional[bool] = None,
         max_entries: Optional[int] = None,
     ):
+        path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_ls(
             *self._run_args(),
             path=path,
@@ -1141,6 +1356,7 @@ class _FsSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def mkdir(self, path: str, parents: bool = False, mode: int = 0o755):
+        path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_mkdir(
             *self._run_args(),
             body=V1FsMkdirRequest(
@@ -1152,6 +1368,7 @@ class _FsSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def rm(self, path: str, recursive: bool = False):
+        path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_rm(
             *self._run_args(),
             path=path,
@@ -1160,6 +1377,7 @@ class _FsSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def stat(self, path: str):
+        path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_stat(*self._run_args(), path=path)
 
 
@@ -1172,6 +1390,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         length: Optional[int] = None,
         timeout=None,
     ) -> FsReadResult:
+        path = validate_remote_path(path)
         params = {"path": path, "offset": offset}
         if length is not None:
             params["length"] = length
@@ -1211,6 +1430,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         append: bool = False,
         timeout=None,
     ) -> FsWriteResult:
+        path = validate_remote_path(path)
         params = {
             "path": path,
             "mode": format_mode(mode),
@@ -1252,6 +1472,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ) -> bytes:
+        """Read a remote absolute POSIX path into memory."""
         chunks = []
         async for chunk in self.iter_bytes(
             path=path,
@@ -1271,6 +1492,8 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ):
+        """Yield chunks from a remote absolute POSIX path."""
+        path = validate_remote_path(path)
         _validate_fs_read_args(offset=offset, length=length, chunk_size=chunk_size)
 
         async def _iterator():
@@ -1371,6 +1594,12 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         timeout=None,
         create_parents: bool = True,
     ) -> str:
+        """Download a remote absolute POSIX path to a local file.
+
+        The local file I/O is synchronous; async only covers the sandbox
+        network requests.
+        """
+        path = validate_remote_path(path)
         destination = Path(local_path)
         if create_parents:
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -1405,10 +1634,13 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
     ) -> FsWriteResult:
         """Upload a local file to a remote sandbox path.
 
-        Uploads are not remote-atomic. Concurrent uploads to the same remote path
-        are unsupported, and a mid-upload failure may leave a partial remote file.
-        The mode only applies if the remote file is created.
+        The remote path must be absolute. Uploads are not remote-atomic.
+        Concurrent uploads to the same remote path are unsupported, and a
+        mid-upload failure may leave a partial remote file. The mode only
+        applies if the remote file is created. Local file I/O is synchronous;
+        async only covers the sandbox network requests.
         """
+        path = validate_remote_path(path)
         _validate_file_chunk_size(chunk_size)
         source = Path(local_path)
         total = 0
@@ -1465,10 +1697,11 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
     @async_client_handler(check_no_op=True)
     async def ls(
         self,
-        path: Optional[str] = None,
+        path: str,
         recursive: Optional[bool] = None,
         max_entries: Optional[int] = None,
     ):
+        path = validate_remote_path(path)
         return await self._parent.client.sandbox_v1.fs_ls(
             *(await self._run_args()),
             path=path,
@@ -1478,6 +1711,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
 
     @async_client_handler(check_no_op=True)
     async def mkdir(self, path: str, parents: bool = False, mode: int = 0o755):
+        path = validate_remote_path(path)
         return await self._parent.client.sandbox_v1.fs_mkdir(
             *(await self._run_args()),
             body=V1FsMkdirRequest(
@@ -1489,6 +1723,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
 
     @async_client_handler(check_no_op=True)
     async def rm(self, path: str, recursive: bool = False):
+        path = validate_remote_path(path)
         return await self._parent.client.sandbox_v1.fs_rm(
             *(await self._run_args()),
             path=path,
@@ -1497,6 +1732,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
 
     @async_client_handler(check_no_op=True)
     async def stat(self, path: str):
+        path = validate_remote_path(path)
         return await self._parent.client.sandbox_v1.fs_stat(
             *(await self._run_args()),
             path=path,
@@ -1581,6 +1817,8 @@ class _PtySubClient(_BaseSubClient):
         return sandbox_ws.SandboxPtyWSClient(
             ws=ws,
             attached_event=attached_event,
+            resize=lambda cols, rows: self.resize(id, cols, rows),
+            signal=lambda signal: self.signal(id, signal),
         )
 
 
@@ -1680,4 +1918,6 @@ class _AsyncPtySubClient(_PtySubClient, _AsyncBaseSubClient):
             session=session,
             ws=ws,
             attached_event=attached_event,
+            resize=lambda cols, rows: self.resize(id, cols, rows),
+            signal=lambda signal: self.signal(id, signal),
         )

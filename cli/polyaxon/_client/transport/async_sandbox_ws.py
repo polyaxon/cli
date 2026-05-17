@@ -48,10 +48,12 @@ async def recv_message(ws):
 
 
 class AsyncSandboxPtyWSClient:
-    def __init__(self, session, ws, attached_event):
+    def __init__(self, session, ws, attached_event, resize=None, signal=None):
         self._session = session
         self._ws = ws
         self._attached_event = attached_event
+        self._resize = resize
+        self._signal = signal
 
     @property
     def attached_event(self):
@@ -81,6 +83,19 @@ class AsyncSandboxPtyWSClient:
 
     async def recv(self):
         return await recv_message(self._ws)
+
+    async def resize(self, cols: int, rows: int):
+        if not self._resize:
+            raise PolyaxonClientException("PTY resize callback is not configured.")
+        return await self._resize(cols, rows)
+
+    async def signal(self, signal: str):
+        if not self._signal:
+            raise PolyaxonClientException("PTY signal callback is not configured.")
+        return await self._signal(signal)
+
+    async def kill(self, signal: str = "SIGTERM"):
+        return await self.signal(signal)
 
     async def close(self):
         try:

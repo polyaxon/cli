@@ -5,8 +5,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from clipped.utils.json import orjson_loads
 from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
-from polyaxon._sandbox.client_utils import FsReadResult, FsWriteResult
-from polyaxon._sdk.schemas import V1ExecBgStart, V1ExecBgStatus, V1RunSettings
+from polyaxon._sandbox.client_utils import (
+    FsReadResult,
+    FsWriteResult,
+    SandboxBgOutput,
+)
+from polyaxon._sdk.schemas import (
+    V1ExecBgLogs,
+    V1ExecBgStart,
+    V1ExecBgStatus,
+    V1RunSettings,
+)
 from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import PolyaxonClientException
 
@@ -49,6 +58,8 @@ class AsyncPolyaxonClientMock:
         self.sandbox_v1.delete_bg_exec = AsyncMock()
         self.sandbox_v1.fs_mkdir = AsyncMock()
         self.sandbox_v1.create_pty = AsyncMock()
+        self.sandbox_v1.resize_pty = AsyncMock()
+        self.sandbox_v1.signal_pty = AsyncMock()
 
     async def aclose(self):
         pass
@@ -374,6 +385,109 @@ async def test_async_process_exec_bg_returns_handle_and_delegates_operations():
 
 
 @pytest.mark.asyncio
+async def test_async_process_exec_bg_handle_exposes_log_and_kill_sugar():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec_logs.side_effect = [
+        V1ExecBgLogs(data="out"),
+        V1ExecBgLogs(data="err"),
+        V1ExecBgLogs(data="out2"),
+        V1ExecBgLogs(data="err2"),
+    ]
+    client = make_client(sdk_client=sdk_client)
+
+    handle = await client.process.exec_bg(("sleep", "1"))
+
+    assert await handle.stdout(offset=1, max_bytes=2) == "out"
+    assert await handle.stderr() == "err"
+    assert await handle.output() == SandboxBgOutput(stdout="out2", stderr="err2")
+    await handle.kill("SIGKILL")
+
+    assert sdk_client.sandbox_v1.get_bg_exec_logs.await_args_list[0].kwargs == {
+        "id": "exec-1",
+        "stream": "stdout",
+        "offset": 1,
+        "max_bytes": 2,
+    }
+    assert sdk_client.sandbox_v1.get_bg_exec_logs.await_args_list[1].kwargs == {
+        "id": "exec-1",
+        "stream": "stderr",
+        "offset": 0,
+        "max_bytes": None,
+    }
+    signal_body = sdk_client.sandbox_v1.signal_bg_exec.await_args.kwargs["body"]
+    assert signal_body.signal == "SIGKILL"
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_iter_logs_polls_offsets_until_terminal():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec_logs.side_effect = [
+        V1ExecBgLogs(data="one", next_offset=3, eof=False, state="running"),
+        V1ExecBgLogs(data="", next_offset=3, eof=True, state="running"),
+        V1ExecBgLogs(data="two", next_offset=6, eof=True, state="exited"),
+    ]
+    client = make_client(sdk_client=sdk_client)
+    handle = await client.process.exec_bg(("sleep", "1"))
+
+    chunks = []
+    with patch(
+        "polyaxon._client.sandbox.asyncio.sleep",
+        new_callable=AsyncMock,
+    ) as sleep:
+        async for chunk in handle.iter_stdout(max_bytes=10, timeout=10, interval=0.1):
+            chunks.append(chunk)
+
+    assert chunks == ["one", "two"]
+    assert sleep.await_count == 2
+    assert [
+        call.kwargs["offset"]
+        for call in sdk_client.sandbox_v1.get_bg_exec_logs.await_args_list
+    ] == [0, 3, 3]
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_iter_logs_rejects_non_advancing_data():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec_logs.return_value = V1ExecBgLogs(
+        data="x",
+        next_offset=0,
+        eof=False,
+        state="running",
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = await client.process.exec_bg(("sleep", "1"))
+
+    with pytest.raises(PolyaxonClientException, match="did not advance"):
+        async for _ in handle.iter_logs(timeout=10):
+            pass
+
+
+@pytest.mark.asyncio
+async def test_async_process_exec_bg_iter_logs_validates_args_and_timeout():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+    sdk_client.sandbox_v1.get_bg_exec_logs.return_value = V1ExecBgLogs(
+        data="",
+        next_offset=0,
+        eof=True,
+        state="running",
+    )
+    client = make_client(sdk_client=sdk_client)
+    handle = await client.process.exec_bg(("sleep", "1"))
+
+    with pytest.raises(ValueError, match="offset"):
+        handle.iter_logs(offset=-1)
+    with pytest.raises(ValueError, match="max_bytes"):
+        handle.iter_logs(max_bytes=0)
+    with pytest.raises(PolyaxonClientException, match="Timed out"):
+        async for _ in handle.iter_logs(timeout=0, interval=0.1):
+            pass
+
+
+@pytest.mark.asyncio
 async def test_async_process_exec_bg_wait_polls_until_terminal_status():
     sdk_client = AsyncPolyaxonClientMock()
     sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
@@ -485,6 +599,7 @@ async def test_async_pty_create_allows_default_command():
 async def test_async_pty_attach_connects_and_uses_raw_frames():
     from polyaxon._client.transport import async_sandbox_ws
 
+    sdk_client = AsyncPolyaxonClientMock()
     ws = FakeAsyncWS(
         messages=[
             AsyncWSMessage(
@@ -499,7 +614,7 @@ async def test_async_pty_attach_connects_and_uses_raw_frames():
         ]
     )
     session = AsyncWSSession(ws)
-    client = make_client()
+    client = make_client(sdk_client=sdk_client)
 
     with patch_async_ws_session(session):
         attached = await client.pty.attach("pty-1", replay_bytes=20)
@@ -517,6 +632,8 @@ async def test_async_pty_attach_connects_and_uses_raw_frames():
 
     await attached.send_stdin(bytearray(b"echo\n"))
     await attached.send_control({"type": "resize", "cols": 100, "rows": 30})
+    await attached.resize(cols=120, rows=40)
+    await attached.kill("SIGKILL")
 
     assert ws.sent_bytes == [b"echo\n"]
     assert orjson_loads(ws.sent_str[0].encode("utf-8")) == {
@@ -526,6 +643,11 @@ async def test_async_pty_attach_connects_and_uses_raw_frames():
     }
     assert await attached.recv() == b"output"
     assert await attached.recv() == {"type": "exited", "exit_code": 0}
+    resize_body = sdk_client.sandbox_v1.resize_pty.await_args.kwargs["body"]
+    assert resize_body.cols == 120
+    assert resize_body.rows == 40
+    signal_body = sdk_client.sandbox_v1.signal_pty.await_args.kwargs["body"]
+    assert signal_body.signal == "SIGKILL"
 
     await attached.close()
     assert ws.closed is True
@@ -693,6 +815,55 @@ async def test_async_fs_write_sends_raw_bytes_and_octal_mode():
     }
     assert kwargs["data"] == b"x"
     assert kwargs["headers"]["Content-Type"] == "application/octet-stream"
+
+
+@pytest.mark.asyncio
+async def test_async_fs_validates_remote_paths_before_transport():
+    sdk_client = AsyncPolyaxonClientMock()
+    client = make_client(sdk_client=sdk_client)
+    session = AsyncSession(AsyncResponse())
+
+    with patch_aiohttp_session(session):
+        with pytest.raises(ValueError, match="absolute"):
+            await client.fs.read("tmp/file.txt")
+        with pytest.raises(ValueError, match="absolute"):
+            await client.fs.write("tmp/file.txt", b"x")
+        with pytest.raises(ValueError, match="absolute"):
+            async for _ in client.fs.iter_bytes("tmp/file.txt"):
+                pass
+
+    assert session.get_calls == []
+    assert session.post_calls == []
+
+    with pytest.raises(ValueError, match="absolute"):
+        await client.fs.ls("tmp")
+    with pytest.raises(ValueError, match="absolute"):
+        await client.fs.mkdir("tmp")
+    with pytest.raises(ValueError, match="absolute"):
+        await client.fs.rm("tmp")
+    with pytest.raises(ValueError, match="absolute"):
+        await client.fs.stat("tmp")
+
+    sdk_client.sandbox_v1.fs_ls.assert_not_called()
+    sdk_client.sandbox_v1.fs_mkdir.assert_not_called()
+    sdk_client.sandbox_v1.fs_rm.assert_not_called()
+    sdk_client.sandbox_v1.fs_stat.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_async_fs_transfer_helpers_validate_remote_path_before_local_side_effects(
+    tmp_path,
+):
+    client = make_client()
+
+    with pytest.raises(ValueError, match="absolute"):
+        await client.fs.upload_file(tmp_path / "missing.txt", "tmp/file.txt")
+
+    destination = tmp_path / "missing-dir" / "file.txt"
+    with pytest.raises(ValueError, match="absolute"):
+        await client.fs.download_file("tmp/file.txt", destination)
+
+    assert not destination.parent.exists()
 
 
 @pytest.mark.asyncio

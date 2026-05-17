@@ -1,9 +1,13 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+import posixpath
 from typing import Dict, List, Optional
 
 from clipped.utils.json import orjson_loads
 from polyaxon.exceptions import PolyaxonClientException
+
+
+MAX_REMOTE_PATH_BYTES = 4096
 
 
 def parse_ws_event(data) -> Dict:
@@ -37,6 +41,12 @@ class FsWriteResult:
     path: str
     bytes_written: int
     created: bool
+
+
+@dataclass(frozen=True)
+class SandboxBgOutput:
+    stdout: str
+    stderr: str
 
 
 def normalize_command(command: Sequence[str]) -> List[str]:
@@ -94,6 +104,21 @@ def parse_error_message(data: bytes, fallback: str) -> str:
     if isinstance(payload, dict) and payload.get("message"):
         return payload["message"]
     return fallback
+
+
+def validate_remote_path(path: str) -> str:
+    """Validate a POSIX path inside the sandbox container."""
+    if not isinstance(path, str):
+        raise TypeError("path must be a string")
+    if not path:
+        raise ValueError("path is required")
+    if not posixpath.isabs(path):
+        raise ValueError("path must be absolute")
+    if "\x00" in path:
+        raise ValueError("path contains NUL")
+    if len(path.encode("utf-8")) > MAX_REMOTE_PATH_BYTES:
+        raise ValueError("path exceeds {} bytes".format(MAX_REMOTE_PATH_BYTES))
+    return path
 
 
 class SseFrameBuffer:

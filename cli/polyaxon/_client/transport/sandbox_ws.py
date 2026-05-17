@@ -49,9 +49,11 @@ def recv_message(ws):
 
 
 class SandboxPtyWSClient:
-    def __init__(self, ws, attached_event):
+    def __init__(self, ws, attached_event, resize=None, signal=None):
         self._ws = ws
         self._attached_event = attached_event
+        self._resize = resize
+        self._signal = signal
 
     @property
     def attached_event(self):
@@ -81,6 +83,19 @@ class SandboxPtyWSClient:
 
     def recv(self):
         return recv_message(self._ws)
+
+    def resize(self, cols: int, rows: int):
+        if not self._resize:
+            raise PolyaxonClientException("PTY resize callback is not configured.")
+        return self._resize(cols, rows)
+
+    def signal(self, signal: str):
+        if not self._signal:
+            raise PolyaxonClientException("PTY signal callback is not configured.")
+        return self._signal(signal)
+
+    def kill(self, signal: str = "SIGTERM"):
+        return self.signal(signal)
 
     def close(self):
         try:
