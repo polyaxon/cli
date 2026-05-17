@@ -1,5 +1,7 @@
 import asyncio
 import inspect
+import os
+from pathlib import Path
 import requests
 import time
 from typing import Optional
@@ -46,6 +48,9 @@ from polyaxon._utils.fqn_utils import get_entity_full_name, split_owner_team_spa
 from polyaxon._utils.urls_utils import get_proxy_run_url
 from polyaxon.api import SANDBOX_V1_LOCATION
 from polyaxon.exceptions import PolyaxonClientException
+
+
+_DEFAULT_FILE_CHUNK_SIZE = 64 * 1024
 
 
 class SandboxClient(ClientMixin):
@@ -326,6 +331,28 @@ def _validate_wait_args(timeout, interval):
         raise ValueError("timeout must be greater than or equal to 0")
     if interval <= 0:
         raise ValueError("interval must be greater than 0")
+
+
+def _validate_fs_read_args(offset: int, length: Optional[int], chunk_size: int):
+    if offset < 0:
+        raise ValueError("offset must be greater than or equal to 0")
+    if length is not None and length < 0:
+        raise ValueError("length must be greater than or equal to 0")
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be greater than 0")
+
+
+def _next_read_length(remaining: Optional[int], chunk_size: int) -> int:
+    if remaining is None:
+        return chunk_size
+    return min(remaining, chunk_size)
+
+
+def _validate_fs_read_advanced(path: str, next_offset: int, result: FsReadResult):
+    if result.next_offset <= next_offset:
+        raise PolyaxonClientException(
+            "fs.read did not advance while reading `{}`.".format(path)
+        )
 
 
 class SandboxBgExec:
@@ -883,42 +910,71 @@ class _FsSubClient(_BaseSubClient):
         path: str,
         offset: int = 0,
         length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ) -> bytes:
-        if length == 0:
-            return b""
-
-        chunks = []
-        next_offset = offset
-        remaining = length
-
-        while True:
-            result = self.read(
+        return b"".join(
+            self.iter_bytes(
                 path=path,
-                offset=next_offset,
-                length=remaining,
+                offset=offset,
+                length=length,
+                chunk_size=chunk_size,
                 timeout=timeout,
             )
-            data = result.data
-            if remaining is not None:
-                data = data[:remaining]
-            chunks.append(data)
+        )
 
-            if result.eof:
-                break
+    def iter_bytes(
+        self,
+        path: str,
+        offset: int = 0,
+        length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
+        timeout=None,
+    ):
+        _validate_fs_read_args(offset=offset, length=length, chunk_size=chunk_size)
 
-            if remaining is not None:
-                remaining -= len(data)
-                if remaining <= 0:
+        def _iterator():
+            if length == 0:
+                return
+            next_offset = offset
+            remaining = length
+
+            while True:
+                result = self.read(
+                    path=path,
+                    offset=next_offset,
+                    length=_next_read_length(remaining, chunk_size),
+                    timeout=timeout,
+                )
+                data = result.data
+                if remaining is not None:
+                    data = data[:remaining]
+
+                done = result.eof
+                next_remaining = remaining
+
+                if next_remaining is not None:
+                    next_remaining -= len(data)
+                    if next_remaining <= 0:
+                        done = True
+
+                if not done:
+                    _validate_fs_read_advanced(
+                        path=path,
+                        next_offset=next_offset,
+                        result=result,
+                    )
+
+                if data:
+                    yield data
+
+                if done:
                     break
 
-            if result.next_offset <= next_offset:
-                raise PolyaxonClientException(
-                    "fs.read did not advance while reading `{}`.".format(path)
-                )
-            next_offset = result.next_offset
+                next_offset = result.next_offset
+                remaining = next_remaining
 
-        return b"".join(chunks)
+        return _iterator()
 
     @client_handler(check_no_op=True)
     def write_bytes(
@@ -945,6 +1001,7 @@ class _FsSubClient(_BaseSubClient):
         path: str,
         offset: int = 0,
         length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         encoding: str = "utf-8",
         errors: str = "strict",
         timeout=None,
@@ -958,8 +1015,42 @@ class _FsSubClient(_BaseSubClient):
             path=path,
             offset=offset,
             length=length,
+            chunk_size=chunk_size,
             timeout=timeout,
         ).decode(encoding, errors=errors)
+
+    @client_handler(check_no_op=True)
+    def download_file(
+        self,
+        path: str,
+        local_path,
+        offset: int = 0,
+        length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
+        timeout=None,
+        create_parents: bool = True,
+    ) -> str:
+        destination = Path(local_path)
+        if create_parents:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+        tmp_path = Path("{}.part".format(destination))
+
+        try:
+            with tmp_path.open("wb") as handle:
+                for chunk in self.iter_bytes(
+                    path=path,
+                    offset=offset,
+                    length=length,
+                    chunk_size=chunk_size,
+                    timeout=timeout,
+                ):
+                    handle.write(chunk)
+            os.replace(tmp_path, destination)
+        except Exception:
+            tmp_path.unlink(missing_ok=True)
+            raise
+
+        return str(destination)
 
     @client_handler(check_no_op=True)
     def write_text(
@@ -1108,42 +1199,72 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         path: str,
         offset: int = 0,
         length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ) -> bytes:
-        if length == 0:
-            return b""
-
         chunks = []
-        next_offset = offset
-        remaining = length
+        async for chunk in self.iter_bytes(
+            path=path,
+            offset=offset,
+            length=length,
+            chunk_size=chunk_size,
+            timeout=timeout,
+        ):
+            chunks.append(chunk)
+        return b"".join(chunks)
 
-        while True:
-            result = await self.read(
-                path=path,
-                offset=next_offset,
-                length=remaining,
-                timeout=timeout,
-            )
-            data = result.data
-            if remaining is not None:
-                data = data[:remaining]
-            chunks.append(data)
+    def iter_bytes(
+        self,
+        path: str,
+        offset: int = 0,
+        length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
+        timeout=None,
+    ):
+        _validate_fs_read_args(offset=offset, length=length, chunk_size=chunk_size)
 
-            if result.eof:
-                break
+        async def _iterator():
+            if length == 0:
+                return
+            next_offset = offset
+            remaining = length
 
-            if remaining is not None:
-                remaining -= len(data)
-                if remaining <= 0:
+            while True:
+                result = await self.read(
+                    path=path,
+                    offset=next_offset,
+                    length=_next_read_length(remaining, chunk_size),
+                    timeout=timeout,
+                )
+                data = result.data
+                if remaining is not None:
+                    data = data[:remaining]
+
+                done = result.eof
+                next_remaining = remaining
+
+                if next_remaining is not None:
+                    next_remaining -= len(data)
+                    if next_remaining <= 0:
+                        done = True
+
+                if not done:
+                    _validate_fs_read_advanced(
+                        path=path,
+                        next_offset=next_offset,
+                        result=result,
+                    )
+
+                if data:
+                    yield data
+
+                if done:
                     break
 
-            if result.next_offset <= next_offset:
-                raise PolyaxonClientException(
-                    "fs.read did not advance while reading `{}`.".format(path)
-                )
-            next_offset = result.next_offset
+                next_offset = result.next_offset
+                remaining = next_remaining
 
-        return b"".join(chunks)
+        return _iterator()
 
     @async_client_handler(check_no_op=True)
     async def write_bytes(
@@ -1170,6 +1291,7 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         path: str,
         offset: int = 0,
         length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         encoding: str = "utf-8",
         errors: str = "strict",
         timeout=None,
@@ -1183,9 +1305,43 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
             path=path,
             offset=offset,
             length=length,
+            chunk_size=chunk_size,
             timeout=timeout,
         )
         return data.decode(encoding, errors=errors)
+
+    @async_client_handler(check_no_op=True)
+    async def download_file(
+        self,
+        path: str,
+        local_path,
+        offset: int = 0,
+        length: Optional[int] = None,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
+        timeout=None,
+        create_parents: bool = True,
+    ) -> str:
+        destination = Path(local_path)
+        if create_parents:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+        tmp_path = Path("{}.part".format(destination))
+
+        try:
+            with tmp_path.open("wb") as handle:
+                async for chunk in self.iter_bytes(
+                    path=path,
+                    offset=offset,
+                    length=length,
+                    chunk_size=chunk_size,
+                    timeout=timeout,
+                ):
+                    handle.write(chunk)
+            os.replace(tmp_path, destination)
+        except Exception:
+            tmp_path.unlink(missing_ok=True)
+            raise
+
+        return str(destination)
 
     @async_client_handler(check_no_op=True)
     async def write_text(

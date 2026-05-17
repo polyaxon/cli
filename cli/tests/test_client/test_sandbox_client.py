@@ -769,8 +769,44 @@ def test_fs_read_bytes_pages_until_eof():
         assert client.fs.read_bytes("/tmp/file.txt") == b"hello"
 
     assert [call[1]["params"] for call in session.get_calls] == [
-        {"path": "/tmp/file.txt", "offset": 0},
-        {"path": "/tmp/file.txt", "offset": 2},
+        {
+            "path": "/tmp/file.txt",
+            "offset": 0,
+            "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
+        },
+        {
+            "path": "/tmp/file.txt",
+            "offset": 2,
+            "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
+        },
+    ]
+
+
+@pytest.mark.client_mark
+def test_fs_iter_bytes_yields_chunks():
+    session = FakeSequenceSession(
+        [
+            FakeResponse(
+                content=b"he",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            FakeResponse(
+                content=b"llo",
+                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+        assert list(client.fs.iter_bytes("/tmp/file.txt", chunk_size=2)) == [
+            b"he",
+            b"llo",
+        ]
+
+    assert [call[1]["params"] for call in session.get_calls] == [
+        {"path": "/tmp/file.txt", "offset": 0, "length": 2},
+        {"path": "/tmp/file.txt", "offset": 2, "length": 2},
     ]
 
 
@@ -834,6 +870,71 @@ def test_fs_read_bytes_rejects_non_advancing_response():
     with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
         with pytest.raises(PolyaxonClientException, match="did not advance"):
             client.fs.read_bytes("/tmp/file.txt")
+
+
+@pytest.mark.client_mark
+def test_fs_read_bytes_length_zero_does_not_request():
+    session = FakeSequenceSession([])
+    client = make_client()
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+        assert client.fs.read_bytes("/tmp/file.txt", length=0) == b""
+
+    assert session.get_calls == []
+
+
+@pytest.mark.client_mark
+def test_fs_download_file_writes_chunks_and_replaces_tmp(tmp_path):
+    session = FakeSequenceSession(
+        [
+            FakeResponse(
+                content=b"he",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            FakeResponse(
+                content=b"llo",
+                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+            ),
+        ]
+    )
+    client = make_client()
+    destination = tmp_path / "nested" / "file.txt"
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+        result = client.fs.download_file(
+            "/tmp/file.txt",
+            destination,
+            chunk_size=2,
+        )
+
+    assert result == str(destination)
+    assert destination.read_bytes() == b"hello"
+    assert not (destination.parent / "file.txt.part").exists()
+
+
+@pytest.mark.client_mark
+def test_fs_download_file_cleans_tmp_on_error(tmp_path):
+    session = FakeSequenceSession(
+        [
+            FakeResponse(
+                content=b"he",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            FakeResponse(
+                content=b"x",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+        ]
+    )
+    client = make_client()
+    destination = tmp_path / "file.txt"
+
+    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+        with pytest.raises(PolyaxonClientException, match="did not advance"):
+            client.fs.download_file("/tmp/file.txt", destination, chunk_size=2)
+
+    assert not destination.exists()
+    assert not (tmp_path / "file.txt.part").exists()
 
 
 @pytest.mark.client_mark

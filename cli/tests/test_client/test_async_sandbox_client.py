@@ -3,6 +3,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from clipped.utils.json import orjson_loads
+from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
 from polyaxon._sandbox.client_utils import FsReadResult, FsWriteResult
 from polyaxon._sdk.schemas import V1ExecBgStart, V1ExecBgStatus, V1RunSettings
@@ -741,8 +742,44 @@ async def test_async_fs_read_bytes_pages_until_eof():
         assert await client.fs.read_bytes("/tmp/file.txt") == b"hello"
 
     assert [call[1]["params"] for call in session.get_calls] == [
-        {"path": "/tmp/file.txt", "offset": 0},
-        {"path": "/tmp/file.txt", "offset": 2},
+        {
+            "path": "/tmp/file.txt",
+            "offset": 0,
+            "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
+        },
+        {
+            "path": "/tmp/file.txt",
+            "offset": 2,
+            "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
+        },
+    ]
+
+
+@pytest.mark.asyncio
+async def test_async_fs_iter_bytes_yields_chunks():
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b"he",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            AsyncResponse(
+                data=b"llo",
+                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+            ),
+        ]
+    )
+    client = make_client()
+    chunks = []
+
+    with patch_aiohttp_session(session):
+        async for chunk in client.fs.iter_bytes("/tmp/file.txt", chunk_size=2):
+            chunks.append(chunk)
+
+    assert chunks == [b"he", b"llo"]
+    assert [call[1]["params"] for call in session.get_calls] == [
+        {"path": "/tmp/file.txt", "offset": 0, "length": 2},
+        {"path": "/tmp/file.txt", "offset": 2, "length": 2},
     ]
 
 
@@ -806,6 +843,71 @@ async def test_async_fs_read_bytes_rejects_non_advancing_response():
     with patch_aiohttp_session(session):
         with pytest.raises(PolyaxonClientException, match="did not advance"):
             await client.fs.read_bytes("/tmp/file.txt")
+
+
+@pytest.mark.asyncio
+async def test_async_fs_read_bytes_length_zero_does_not_request():
+    session = AsyncSequenceSession([])
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        assert await client.fs.read_bytes("/tmp/file.txt", length=0) == b""
+
+    assert session.get_calls == []
+
+
+@pytest.mark.asyncio
+async def test_async_fs_download_file_writes_chunks_and_replaces_tmp(tmp_path):
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b"he",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            AsyncResponse(
+                data=b"llo",
+                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+            ),
+        ]
+    )
+    client = make_client()
+    destination = tmp_path / "nested" / "file.txt"
+
+    with patch_aiohttp_session(session):
+        result = await client.fs.download_file(
+            "/tmp/file.txt",
+            destination,
+            chunk_size=2,
+        )
+
+    assert result == str(destination)
+    assert destination.read_bytes() == b"hello"
+    assert not (destination.parent / "file.txt.part").exists()
+
+
+@pytest.mark.asyncio
+async def test_async_fs_download_file_cleans_tmp_on_error(tmp_path):
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b"he",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+            AsyncResponse(
+                data=b"x",
+                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+            ),
+        ]
+    )
+    client = make_client()
+    destination = tmp_path / "file.txt"
+
+    with patch_aiohttp_session(session):
+        with pytest.raises(PolyaxonClientException, match="did not advance"):
+            await client.fs.download_file("/tmp/file.txt", destination, chunk_size=2)
+
+    assert not destination.exists()
+    assert not (tmp_path / "file.txt.part").exists()
 
 
 @pytest.mark.asyncio
