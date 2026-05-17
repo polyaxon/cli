@@ -338,6 +338,10 @@ def _validate_fs_read_args(offset: int, length: Optional[int], chunk_size: int):
         raise ValueError("offset must be greater than or equal to 0")
     if length is not None and length < 0:
         raise ValueError("length must be greater than or equal to 0")
+    _validate_file_chunk_size(chunk_size)
+
+
+def _validate_file_chunk_size(chunk_size: int):
     if chunk_size <= 0:
         raise ValueError("chunk_size must be greater than 0")
 
@@ -1053,6 +1057,52 @@ class _FsSubClient(_BaseSubClient):
         return str(destination)
 
     @client_handler(check_no_op=True)
+    def upload_file(
+        self,
+        local_path,
+        path: str,
+        mode: int = 0o644,
+        create: bool = True,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
+        timeout=None,
+    ) -> FsWriteResult:
+        """Upload a local file to a remote sandbox path.
+
+        Uploads are not remote-atomic. Concurrent uploads to the same remote path
+        are unsupported, and a mid-upload failure may leave a partial remote file.
+        The mode only applies if the remote file is created.
+        """
+        _validate_file_chunk_size(chunk_size)
+        source = Path(local_path)
+        total = 0
+        created = False
+        wrote = False
+
+        with source.open("rb") as handle:
+            while True:
+                chunk = handle.read(chunk_size)
+                if not chunk and wrote:
+                    break
+
+                result = self.write(
+                    path=path,
+                    data=chunk,
+                    mode=mode,
+                    create=create if not wrote else False,
+                    append=wrote,
+                    timeout=timeout,
+                )
+                if not wrote:
+                    created = result.created
+                total += result.bytes_written
+                wrote = True
+
+                if not chunk:
+                    break
+
+        return FsWriteResult(path=path, bytes_written=total, created=created)
+
+    @client_handler(check_no_op=True)
     def write_text(
         self,
         path: str,
@@ -1342,6 +1392,52 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
             raise
 
         return str(destination)
+
+    @async_client_handler(check_no_op=True)
+    async def upload_file(
+        self,
+        local_path,
+        path: str,
+        mode: int = 0o644,
+        create: bool = True,
+        chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
+        timeout=None,
+    ) -> FsWriteResult:
+        """Upload a local file to a remote sandbox path.
+
+        Uploads are not remote-atomic. Concurrent uploads to the same remote path
+        are unsupported, and a mid-upload failure may leave a partial remote file.
+        The mode only applies if the remote file is created.
+        """
+        _validate_file_chunk_size(chunk_size)
+        source = Path(local_path)
+        total = 0
+        created = False
+        wrote = False
+
+        with source.open("rb") as handle:
+            while True:
+                chunk = handle.read(chunk_size)
+                if not chunk and wrote:
+                    break
+
+                result = await self.write(
+                    path=path,
+                    data=chunk,
+                    mode=mode,
+                    create=create if not wrote else False,
+                    append=wrote,
+                    timeout=timeout,
+                )
+                if not wrote:
+                    created = result.created
+                total += result.bytes_written
+                wrote = True
+
+                if not chunk:
+                    break
+
+        return FsWriteResult(path=path, bytes_written=total, created=created)
 
     @async_client_handler(check_no_op=True)
     async def write_text(

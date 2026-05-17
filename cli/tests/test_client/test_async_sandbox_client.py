@@ -138,6 +138,13 @@ class AsyncSequenceSession(AsyncSession):
         self.get_calls.append((url, kwargs))
         return self.responses.pop(0)
 
+    def post(self, url, **kwargs):
+        self.post_calls.append((url, kwargs))
+        response = self.responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
+
 
 class AsyncStreamSession:
     def __init__(self, response):
@@ -908,6 +915,109 @@ async def test_async_fs_download_file_cleans_tmp_on_error(tmp_path):
 
     assert not destination.exists()
     assert not (tmp_path / "file.txt.part").exists()
+
+
+@pytest.mark.asyncio
+async def test_async_fs_upload_file_writes_chunks_with_append(tmp_path):
+    local_path = tmp_path / "local.txt"
+    local_path.write_bytes(b"hello")
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b'{"path":"/tmp/file.txt","bytes_written":2,"created":true}'
+            ),
+            AsyncResponse(
+                data=b'{"path":"/tmp/file.txt","bytes_written":2,"created":false}'
+            ),
+            AsyncResponse(
+                data=b'{"path":"/tmp/file.txt","bytes_written":1,"created":false}'
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        result = await client.fs.upload_file(
+            local_path,
+            "/tmp/file.txt",
+            chunk_size=2,
+            mode=0o600,
+        )
+
+    assert result == FsWriteResult(
+        path="/tmp/file.txt",
+        bytes_written=5,
+        created=True,
+    )
+    assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o"]
+    assert [call[1]["params"] for call in session.post_calls] == [
+        {"path": "/tmp/file.txt", "mode": "0600", "create": True, "append": False},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": False, "append": True},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": False, "append": True},
+    ]
+
+
+@pytest.mark.asyncio
+async def test_async_fs_upload_file_writes_empty_file(tmp_path):
+    local_path = tmp_path / "empty.txt"
+    local_path.write_bytes(b"")
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b'{"path":"/tmp/empty.txt","bytes_written":0,"created":true}'
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        result = await client.fs.upload_file(local_path, "/tmp/empty.txt", chunk_size=2)
+
+    assert result == FsWriteResult(
+        path="/tmp/empty.txt",
+        bytes_written=0,
+        created=True,
+    )
+    assert len(session.post_calls) == 1
+    assert session.post_calls[0][1]["data"] == b""
+    assert session.post_calls[0][1]["params"]["append"] is False
+
+
+@pytest.mark.asyncio
+async def test_async_fs_upload_file_validates_chunk_size(tmp_path):
+    local_path = tmp_path / "local.txt"
+    local_path.write_bytes(b"hello")
+    client = make_client()
+
+    with pytest.raises(ValueError, match="chunk_size"):
+        await client.fs.upload_file(local_path, "/tmp/file.txt", chunk_size=0)
+
+
+@pytest.mark.asyncio
+async def test_async_fs_upload_file_stops_on_mid_upload_failure(tmp_path):
+    local_path = tmp_path / "local.txt"
+    local_path.write_bytes(b"hello!")
+    session = AsyncSequenceSession(
+        [
+            AsyncResponse(
+                data=b'{"path":"/tmp/file.txt","bytes_written":2,"created":true}'
+            ),
+            AsyncResponse(
+                data=b'{"path":"/tmp/file.txt","bytes_written":2,"created":false}'
+            ),
+            PolyaxonClientException("write failed"),
+            AsyncResponse(
+                data=b'{"path":"/tmp/file.txt","bytes_written":0,"created":false}'
+            ),
+        ]
+    )
+    client = make_client()
+
+    with patch_aiohttp_session(session):
+        with pytest.raises(PolyaxonClientException, match="write failed"):
+            await client.fs.upload_file(local_path, "/tmp/file.txt", chunk_size=2)
+
+    assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o!"]
 
 
 @pytest.mark.asyncio
