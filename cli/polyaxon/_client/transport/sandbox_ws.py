@@ -2,7 +2,7 @@ import websocket
 
 from clipped.utils.encoding import BytesLike, as_bytes
 from clipped.utils.json import orjson_dumps
-from polyaxon._sandbox.client_utils import parse_ws_event
+from polyaxon._sandbox.client_utils import parse_error_message, parse_ws_event
 from polyaxon.exceptions import PolyaxonClientException
 
 
@@ -24,6 +24,14 @@ def connect(url: str, headers=None, timeout=None):
             header=_format_headers(headers),
             timeout=timeout,
         )
+    except websocket.WebSocketBadStatusException as e:
+        message = parse_error_message(
+            getattr(e, "resp_body", None),
+            "websocket handshake failed with status {}".format(
+                getattr(e, "status_code", "unknown")
+            ),
+        )
+        raise PolyaxonClientException("pty.attach failed: {}".format(message)) from None
     except websocket.WebSocketException as e:
         raise PolyaxonClientException("pty.attach failed: {}".format(e)) from e
 

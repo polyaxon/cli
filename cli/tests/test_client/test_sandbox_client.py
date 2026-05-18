@@ -654,6 +654,27 @@ def test_pty_attach_closes_and_raises_on_bad_initial_frame(frame, match):
 
 
 @pytest.mark.client_mark
+def test_pty_attach_uses_server_error_from_bad_handshake():
+    client = make_client()
+    error = sandbox_ws.websocket.WebSocketBadStatusException(
+        "Handshake status 404 Not Found -+-+- headers -+-+- body",
+        404,
+        resp_body=b'{"error":{"code":"not_found","message":"pty not found"}}',
+    )
+
+    with patch(
+        "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+        side_effect=error,
+    ):
+        with pytest.raises(PolyaxonClientException) as exc:
+            client.pty.attach("missing-pty")
+
+    message = str(exc.value)
+    assert "pty.attach failed: pty not found" == message
+    assert "Handshake status" not in message
+
+
+@pytest.mark.client_mark
 def test_process_exec_stream_sends_request_and_closes_on_context_exit():
     response = FakeResponse(
         chunks=[
@@ -812,8 +833,8 @@ def test_fs_write_sends_raw_bytes_and_octal_mode():
     assert kwargs["params"] == {
         "path": "/tmp/file.txt",
         "mode": "0644",
-        "create": True,
-        "append": False,
+        "create": "true",
+        "append": "false",
     }
     assert kwargs["data"] == b"x"
     assert kwargs["headers"]["Content-Type"] == "application/octet-stream"
@@ -1156,9 +1177,9 @@ def test_fs_upload_file_writes_chunks_with_append(tmp_path):
     )
     assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o"]
     assert [call[1]["params"] for call in session.post_calls] == [
-        {"path": "/tmp/file.txt", "mode": "0600", "create": True, "append": False},
-        {"path": "/tmp/file.txt", "mode": "0600", "create": False, "append": True},
-        {"path": "/tmp/file.txt", "mode": "0600", "create": False, "append": True},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": "true", "append": "false"},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": "false", "append": "true"},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": "false", "append": "true"},
     ]
 
 
@@ -1185,7 +1206,7 @@ def test_fs_upload_file_writes_empty_file(tmp_path):
     )
     assert len(session.post_calls) == 1
     assert session.post_calls[0][1]["data"] == b""
-    assert session.post_calls[0][1]["params"]["append"] is False
+    assert session.post_calls[0][1]["params"]["append"] == "false"
 
 
 @pytest.mark.client_mark
