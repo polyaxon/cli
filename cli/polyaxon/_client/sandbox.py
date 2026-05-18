@@ -33,6 +33,7 @@ from polyaxon._sandbox.client_utils import (
     SandboxBgOutput,
     SseFrameBuffer,
     format_mode,
+    format_query_bool,
     normalize_command,
     normalize_env,
     parse_error_message,
@@ -1083,8 +1084,8 @@ class _FsSubClient(_BaseSubClient):
         params = {
             "path": path,
             "mode": format_mode(mode),
-            "create": create,
-            "append": append,
+            "create": format_query_bool(create),
+            "append": format_query_bool(append),
         }
         try:
             with requests.Session() as session:
@@ -1434,8 +1435,8 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
         params = {
             "path": path,
             "mode": format_mode(mode),
-            "create": create,
-            "append": append,
+            "create": format_query_bool(create),
+            "append": format_query_bool(append),
         }
         try:
             async with aiohttp.ClientSession(

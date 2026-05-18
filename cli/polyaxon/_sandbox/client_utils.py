@@ -92,6 +92,12 @@ def format_mode(mode: int) -> str:
     return "{:04o}".format(mode)
 
 
+def format_query_bool(value: bool) -> str:
+    if not isinstance(value, bool):
+        raise TypeError("value must be a bool")
+    return "true" if value else "false"
+
+
 def parse_error_message(data: bytes, fallback: str) -> str:
     try:
         payload = orjson_loads(data or b"{}")

@@ -43,3 +43,25 @@ class TestSDKTransport(BaseTestCase):
             client.rest_client.close()
 
         assert clear.call_count == 1
+
+    def test_sync_api_client_query_bools_are_lowercase(self):
+        client = ApiClient(ClientConfig(host="localhost").sdk_config)
+
+        assert (
+            client.parameters_to_url_query(
+                {"enabled": True, "recursive": False, "limit": 3},
+                collection_formats=None,
+            )
+            == "enabled=true&recursive=false&limit=3"
+        )
+
+    def test_async_api_client_query_bools_are_lowercase(self):
+        client = AsyncApiClient(ClientConfig(host="localhost").async_sdk_config)
+
+        assert (
+            client.parameters_to_url_query(
+                {"enabled": True, "recursive": False, "limit": 3},
+                collection_formats=None,
+            )
+            == "enabled=true&recursive=false&limit=3"
+        )

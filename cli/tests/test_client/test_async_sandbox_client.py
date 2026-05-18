@@ -810,8 +810,8 @@ async def test_async_fs_write_sends_raw_bytes_and_octal_mode():
     assert kwargs["params"] == {
         "path": "/tmp/file.txt",
         "mode": "0644",
-        "create": True,
-        "append": False,
+        "create": "true",
+        "append": "false",
     }
     assert kwargs["data"] == b"x"
     assert kwargs["headers"]["Content-Type"] == "application/octet-stream"
@@ -1122,9 +1122,9 @@ async def test_async_fs_upload_file_writes_chunks_with_append(tmp_path):
     )
     assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o"]
     assert [call[1]["params"] for call in session.post_calls] == [
-        {"path": "/tmp/file.txt", "mode": "0600", "create": True, "append": False},
-        {"path": "/tmp/file.txt", "mode": "0600", "create": False, "append": True},
-        {"path": "/tmp/file.txt", "mode": "0600", "create": False, "append": True},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": "true", "append": "false"},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": "false", "append": "true"},
+        {"path": "/tmp/file.txt", "mode": "0600", "create": "false", "append": "true"},
     ]
 
 
@@ -1151,7 +1151,7 @@ async def test_async_fs_upload_file_writes_empty_file(tmp_path):
     )
     assert len(session.post_calls) == 1
     assert session.post_calls[0][1]["data"] == b""
-    assert session.post_calls[0][1]["params"]["append"] is False
+    assert session.post_calls[0][1]["params"]["append"] == "false"
 
 
 @pytest.mark.asyncio
