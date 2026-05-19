@@ -5,6 +5,8 @@ from polyaxon._ssh.setup import (
     get_public_key,
     prepare_ssh_access,
     resolve_identity_file,
+    resolve_known_hosts_file,
+    write_known_hosts_entry,
 )
 
 
@@ -15,4 +17,6 @@ __all__ = [
     "get_public_key",
     "prepare_ssh_access",
     "resolve_identity_file",
+    "resolve_known_hosts_file",
+    "write_known_hosts_entry",
 ]
