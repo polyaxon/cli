@@ -21,6 +21,7 @@ from polyaxon._cli.projects import project
 from polyaxon._cli.run import run
 from polyaxon._cli.sandbox import sandbox
 from polyaxon._cli.session import set_versions_config
+from polyaxon._cli.ssh import ssh
 from polyaxon._cli.version import check_cli_version, upgrade, version
 from polyaxon._services.values import PolyaxonServices
 from polyaxon.logger import clean_outputs, configure_logger
@@ -135,6 +136,7 @@ def cli(context, verbose, offline):
         "upgrade",
         "port-forward",
         "sandbox",
+        "ssh",
     ]
     if not (
         context.invoked_subcommand in non_check_cmds
@@ -164,6 +166,7 @@ cli.add_command(components)
 cli.add_command(models)
 cli.add_command(run)
 cli.add_command(sandbox)
+cli.add_command(ssh)
 cli.add_command(dashboard)
 cli.add_command(admin)
 cli.add_command(port_forward)
