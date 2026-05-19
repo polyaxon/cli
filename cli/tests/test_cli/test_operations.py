@@ -5,6 +5,54 @@ from polyaxon._cli.operations import ops
 from tests.test_cli.utils import BaseCommandTestCase
 
 
+RUN_UUID = "8aac02e3a62a4f0aaa257c59da5eab80"
+K8S_EXIT_7 = (
+    '{"status":"Failure","details":{"causes":[{"reason":"ExitCode","message":"7"}]}}'
+)
+
+
+class ExecShell:
+    def __init__(self, stdout="", stderr="", error='{"status":"Success"}'):
+        self.stdout = stdout
+        self.stderr = stderr
+        self.error = error
+        self.open = True
+        self.closed = False
+
+    def is_open(self):
+        return self.open
+
+    def update(self, timeout=0):
+        self.open = False
+
+    def peek_stdout(self):
+        return bool(self.stdout)
+
+    def read_stdout(self):
+        data = self.stdout
+        self.stdout = ""
+        return data
+
+    def peek_stderr(self):
+        return bool(self.stderr)
+
+    def read_stderr(self):
+        data = self.stderr
+        self.stderr = ""
+        return data
+
+    def peek_channel(self, channel):
+        return bool(self.error)
+
+    def read_channel(self, channel):
+        data = self.error
+        self.error = ""
+        return data
+
+    def close(self):
+        self.closed = True
+
+
 @pytest.mark.cli_mark
 class TestCliRuns(BaseCommandTestCase):
     @patch("polyaxon.client.RunClient.list")
@@ -141,3 +189,80 @@ class TestCliRuns(BaseCommandTestCase):
             ],
         )
         assert download_outputs.call_count == 1
+
+    @patch("polyaxon._cli.operations.RunClient")
+    def test_exec_requires_separator(self, run_client):
+        result = self.runner.invoke(
+            ops,
+            ["exec", "-p", "admin/foo", "-uid", RUN_UUID, "ls", "-la"],
+        )
+
+        assert result.exit_code != 0
+        assert "command required after --" in result.output
+        run_client.assert_not_called()
+
+    @patch("polyaxon._cli.operations.wait_for_running_condition")
+    @patch("polyaxon._cli.operations.get_project_run_or_local")
+    @patch("polyaxon._cli.operations.RunClient")
+    def test_exec_streams_output_and_exit_code(self, run_client, get_run, wait):
+        get_run.return_value = ("admin", None, "foo", RUN_UUID)
+        shell = ExecShell(stdout="out\n", stderr="err\n", error=K8S_EXIT_7)
+        run_client.return_value.shell.return_value = shell
+
+        result = self.runner.invoke(
+            ops,
+            [
+                "exec",
+                "-p",
+                "admin/foo",
+                "-uid",
+                RUN_UUID,
+                "--pod",
+                "pod-1",
+                "--container",
+                "main",
+                "--",
+                "sh",
+                "-lc",
+                "echo hi",
+            ],
+        )
+
+        assert result.exit_code == 7
+        assert "out" in result.output
+        assert "err" in result.output
+        run_client.return_value.shell.assert_called_once_with(
+            command=("sh", "-lc", "echo hi"),
+            pod="pod-1",
+            container="main",
+            stdin=False,
+            stdout=True,
+            stderr=True,
+            tty=False,
+        )
+        wait.assert_called_once_with(run_client.return_value)
+        assert shell.closed
+
+    @patch("polyaxon._cli.operations.wait_for_running_condition")
+    @patch("polyaxon._cli.operations.get_project_run_or_local")
+    @patch("polyaxon._cli.operations.RunClient")
+    def test_exec_returns_zero_on_success_status(self, run_client, get_run, wait):
+        get_run.return_value = ("admin", None, "foo", RUN_UUID)
+        run_client.return_value.shell.return_value = ExecShell(stdout="ok\n")
+
+        result = self.runner.invoke(
+            ops,
+            ["exec", "-p", "admin/foo", "-uid", RUN_UUID, "--", "python", "-V"],
+        )
+
+        assert result.exit_code == 0
+        assert "ok" in result.output
+        run_client.return_value.shell.assert_called_once_with(
+            command=("python", "-V"),
+            pod=None,
+            container=None,
+            stdin=False,
+            stdout=True,
+            stderr=True,
+            tty=False,
+        )

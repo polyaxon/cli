@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 import sys
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Set, Tuple, Union
 from urllib.parse import urlparse
 import uuid
 
@@ -1123,7 +1123,7 @@ class RunClient(ClientMixin):
     @client_handler(check_no_op=True, check_offline=True)
     def shell(
         self,
-        command: Optional[str] = None,
+        command: Optional[Union[str, Sequence[str]]] = None,
         pod: Optional[str] = None,
         container: Optional[str] = None,
         stderr: bool = True,
@@ -1137,7 +1137,7 @@ class RunClient(ClientMixin):
         and receives stdout/stderr from 'bash' back to the client.
 
         Args:
-            command: str, optional, a command to execute.
+            command: str or sequence of str, optional, a command to execute.
             pod: str, optional, the pod to use for executing the command.
             container: str, optional, the container to use for executing the command.
             stderr: bool, optional
@@ -1212,11 +1212,12 @@ class RunClient(ClientMixin):
                 if self._has_meta_key(META_TMUX)
                 else "/bin/bash"
             )
+        command = command.split() if isinstance(command, str) else list(command)
         return ws_client.websocket_call(
             self.client.config.sdk_config,
             url,
             query_params=[
-                ("command", command.split()),
+                ("command", command),
                 ("stderr", stderr),
                 ("stdin", stdin),
                 ("stdout", stdout),

@@ -1,5 +1,6 @@
 from mock import MagicMock, mock, patch
 import pytest
+from types import SimpleNamespace
 import uuid
 
 from polyaxon._client.run import RunClient
@@ -11,6 +12,7 @@ from polyaxon._schemas.lifecycle import (
 from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException
 from traceml.artifacts import V1RunArtifact
@@ -528,3 +530,34 @@ class TestRunClient(BaseTestCase):
         )
 
         assert mock_create_lineage.call_count == 1
+
+    @mock.patch("polyaxon._client.transport.ws_client.websocket_call")
+    def test_shell_preserves_sequence_command(self, websocket_call):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.config = SimpleNamespace(
+            host="http://localhost",
+            sdk_config=None,
+            is_offline=None,
+            no_op=None,
+            get_full_headers=MagicMock(return_value={}),
+        )
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            client=sdk_client,
+        )
+        client.run_data.settings = V1RunSettings(namespace="ns")
+
+        client.shell(
+            command=["sh", "-lc", "echo hi"],
+            pod="pod-1",
+            container="main",
+            stdin=False,
+            tty=False,
+        )
+
+        query_params = websocket_call.call_args.kwargs["query_params"]
+        assert ("command", ["sh", "-lc", "echo hi"]) in query_params
+        assert ("stdin", False) in query_params
+        assert ("tty", False) in query_params

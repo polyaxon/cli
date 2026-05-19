@@ -13,7 +13,7 @@ from clipped.utils.dicts import (
     list_dicts_to_csv,
     list_dicts_to_tabulate,
 )
-from clipped.utils.json import orjson_dumps
+from clipped.utils.json import orjson_dumps, orjson_loads
 from clipped.utils.lists import to_list
 from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
@@ -33,7 +33,8 @@ from polyaxon._cli.options import (
     OPTIONS_RUN_OFFLINE_PATH_TO,
     OPTIONS_RUN_UID,
 )
-from polyaxon._cli.utils import handle_output
+from polyaxon._cli.utils import CommandSeparatorCommand, handle_output
+from polyaxon._client.transport import ws_client
 from polyaxon._constants.metadata import META_IS_EXTERNAL, META_PORTS, META_REWRITE_PATH
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.getters import get_project_or_local, get_project_run_or_local
@@ -124,6 +125,67 @@ def handle_run_statuses(status, conditions, table):
             table.add_row(*o.values())
 
     return True
+
+
+def _write_exec_stream(data, err: bool = False):
+    if not data:
+        return
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", "replace")
+    stream = sys.stderr if err else sys.stdout
+    stream.write(data)
+    stream.flush()
+
+
+def _parse_k8s_exec_error_channel(data):
+    if not data:
+        return 0
+    try:
+        status = orjson_loads(data)
+    except (TypeError, ValueError):
+        _write_exec_stream(str(data), err=True)
+        return 1
+    if status.get("status") == "Success":
+        return 0
+
+    details = status.get("details") or {}
+    for cause in details.get("causes") or []:
+        if cause.get("reason") != "ExitCode":
+            continue
+        try:
+            return int(cause.get("message"))
+        except (TypeError, ValueError):
+            break
+
+    message = status.get("message")
+    if message:
+        _write_exec_stream("{}\n".format(message), err=True)
+    return 1
+
+
+def _drain_k8s_exec_channels(client_shell):
+    if client_shell.peek_stdout():
+        _write_exec_stream(client_shell.read_stdout())
+    if client_shell.peek_stderr():
+        _write_exec_stream(client_shell.read_stderr(), err=True)
+    if client_shell.peek_channel(ws_client.ERROR_CHANNEL):
+        return _parse_k8s_exec_error_channel(
+            client_shell.read_channel(ws_client.ERROR_CHANNEL)
+        )
+    return None
+
+
+def _stream_k8s_exec(client_shell):
+    try:
+        while client_shell.is_open():
+            client_shell.update(timeout=1)
+            exit_code = _drain_k8s_exec_channels(client_shell)
+            if exit_code is not None:
+                return exit_code
+        exit_code = _drain_k8s_exec_channels(client_shell)
+        return 0 if exit_code is None else exit_code
+    finally:
+        client_shell.close()
 
 
 def get_run_details(run):  # pylint:disable=redefined-outer-name
@@ -1539,6 +1601,64 @@ def inspect(ctx, project, uid):
         sys.exit(1)
 
 
+@ops.command("exec", cls=CommandSeparatorCommand)
+@click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
+@click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
+@click.option(
+    "--pod",
+    type=str,
+    help="Optional. In a multi-replica or distributed job, "
+    "the pod to use for selecting the container.",
+)
+@click.option(
+    "--container",
+    type=str,
+    help="Optional. The container to use for executing the command, "
+    "by default the main container is used..",
+)
+@click.argument("command", nargs=-1, type=click.UNPROCESSED)
+@click.pass_context
+@clean_outputs
+def exec_command(ctx, project, uid, pod, container, command):
+    """Execute a command in a run container.
+
+    The command must follow a `--` separator:
+
+    \b
+    $ polyaxon ops exec -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80 -- python -V
+    """
+    run_uuid = uid or ctx.obj.get("run_uuid")
+    try:
+        owner, _, project_name, run_uuid = get_project_run_or_local(
+            project or ctx.obj.get("project"),
+            run_uuid,
+            is_cli=True,
+        )
+        client = RunClient(
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
+        )
+        wait_for_running_condition(client)
+        client_shell = client.shell(
+            command=command,
+            pod=pod,
+            container=container,
+            stdin=False,
+            stdout=True,
+            stderr=True,
+            tty=False,
+        )
+        ctx.exit(_stream_k8s_exec(client_shell))
+    except (ApiException, HTTPError, PolyaxonClientException) as e:
+        handle_cli_error(
+            e,
+            message="Could not execute command for run `{}`.".format(run_uuid),
+        )
+        sys.exit(1)
+
+
 @ops.command()
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
@@ -1578,7 +1698,7 @@ def shell(ctx, project, uid, command, pod, container):
     \b
     $ polyaxon ops shell -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80 -cmd="/bin/bash"
     """
-    from polyaxon._vendor.shell_pty import PseudoTerminal
+    from polyaxon._pty.k8s import PseudoTerminal
 
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
