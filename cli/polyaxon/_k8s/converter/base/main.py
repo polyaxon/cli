@@ -8,6 +8,11 @@ from polyaxon._k8s import k8s_schemas
 from polyaxon._runner.converter import BaseConverter as _BaseConverter
 from polyaxon._sandbox.auth import derive_sandbox_token_from_env
 from polyaxon._sandbox.constants import SANDBOX_BOOTSTRAP_PATH, SANDBOX_PORT
+from polyaxon._ssh.constants import (
+    SSH_BOOTSTRAP_PATH,
+    SSH_IDLE_COMMAND,
+    SSH_PORT,
+)
 from polyaxon.exceptions import PolyaxonConverterError
 
 
@@ -35,20 +40,29 @@ class MainConverter(_BaseConverter):
         if artifacts_store and not run_path:
             raise PolyaxonConverterError("Run path is required for main container.")
 
-        if plugins and plugins.sandbox:
+        sandbox_enabled = plugins and (plugins.sandbox or plugins.ssh)
+        ssh_enabled = plugins and plugins.ssh
+
+        if sandbox_enabled:
             if not main_container:
                 raise PolyaxonConverterError(
-                    "plugins.sandbox requires a main container."
+                    "plugins.sandbox/plugins.ssh require a main container."
                 )
             if main_container.args and not main_container.command:
                 raise PolyaxonConverterError(
-                    "plugins.sandbox does not support args without command."
+                    "plugins.sandbox/plugins.ssh do not support args without command."
                 )
             user_argv = to_list(main_container.command, check_none=True) + to_list(
                 main_container.args, check_none=True
             )
-            main_container.command = [SANDBOX_BOOTSTRAP_PATH]
-            main_container.args = user_argv
+            if ssh_enabled:
+                main_container.command = [SSH_BOOTSTRAP_PATH]
+                main_container.args = [SANDBOX_BOOTSTRAP_PATH] + (
+                    user_argv or SSH_IDLE_COMMAND
+                )
+            else:
+                main_container.command = [SANDBOX_BOOTSTRAP_PATH]
+                main_container.args = user_argv
 
         if artifacts_store and (
             not plugins.collect_artifacts or plugins.mount_artifacts_store
@@ -76,7 +90,8 @@ class MainConverter(_BaseConverter):
                 use_docker_context=plugins.docker,
                 use_shm_context=plugins.shm,
                 use_tmux_context=plugins.tmux,
-                use_sandbox_context=plugins.sandbox,
+                use_sandbox_context=sandbox_enabled,
+                use_ssh_context=ssh_enabled,
                 run_path=run_path,
             )
             if plugins
@@ -100,7 +115,7 @@ class MainConverter(_BaseConverter):
             secrets=requested_secrets,
             config_maps=requested_config_maps,
         )
-        if plugins and plugins.sandbox:
+        if sandbox_enabled:
             env.append(
                 self._get_env_var(
                     name=ENV_KEYS_SANDBOX_TOKEN,
@@ -115,8 +130,10 @@ class MainConverter(_BaseConverter):
         )
 
         ports = list(to_list(ports, check_none=True))
-        if plugins and plugins.sandbox and SANDBOX_PORT not in ports:
+        if sandbox_enabled and SANDBOX_PORT not in ports:
             ports.append(SANDBOX_PORT)
+        if ssh_enabled and SSH_PORT not in ports:
+            ports.append(SSH_PORT)
 
         ports = [k8s_schemas.V1ContainerPort(container_port=port) for port in ports]
 

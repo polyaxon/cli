@@ -28,17 +28,26 @@ class V1CompiledOperation(BaseOp, RunMixin):
     def validate_sandbox_kind(cls, values):
         plugins = cls.get_value_for_key("plugins", values)
         sandbox = cls.get_value_for_key("sandbox", plugins) if plugins else None
-        if sandbox is None or sandbox is False:
+        ssh = cls.get_value_for_key("ssh", plugins) if plugins else None
+        sandbox_enabled = sandbox is not None and sandbox is not False
+        ssh_enabled = ssh is not None and ssh is not False
+        if not sandbox_enabled and not ssh_enabled:
             return values
 
         run = cls.get_value_for_key("run", values)
-        if not run or run.kind != V1RunKind.SERVICE:
-            got = run.kind if run else "unset"
+        if run and run.kind == V1RunKind.SERVICE:
+            return values
+
+        got = run.kind if run else "unset"
+        if sandbox_enabled:
             raise ValueError(
                 "plugins.sandbox is only supported on kind: service in this version. "
                 f"Got kind: {got}."
             )
-        return values
+        raise ValueError(
+            "plugins.ssh is only supported on kind: service in this version. "
+            f"Got kind: {got}."
+        )
 
     def validate_params(
         self,

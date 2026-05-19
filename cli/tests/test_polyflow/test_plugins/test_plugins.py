@@ -81,6 +81,17 @@ class TestPluginsConfigs(BaseTestCase):
         assert_equal_dict(config_dict, config.to_dict())
         assert config.sandbox is False
 
+    def test_plugins_ssh_config(self):
+        config_dict = {"ssh": True}
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+        assert config.ssh is True
+
+        config_dict = {"ssh": False}
+        config = V1Plugins.from_dict(config_dict)
+        assert_equal_dict(config_dict, config.to_dict())
+        assert config.ssh is False
+
     def test_get_from_spec(self):
         compiled_operation = V1CompiledOperation.read(
             {
@@ -111,6 +122,7 @@ class TestPluginsConfigs(BaseTestCase):
         assert plugins.external_host is True
         assert plugins.tmux is False
         assert plugins.sandbox is True
+        assert plugins.ssh is False
 
     def test_read_keys_from_env(self):
         spec = V1Plugins(

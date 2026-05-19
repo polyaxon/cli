@@ -90,6 +90,16 @@ class MountsMixin(BaseConverter):
             read_only=read_only,
         )
 
+    @staticmethod
+    def _get_tools_etc_context_mount(
+        read_only: bool = True,
+    ) -> k8s_schemas.V1VolumeMount:
+        return k8s_schemas.V1VolumeMount(
+            name=constants.VOLUME_MOUNT_TOOLS_ETC,
+            mount_path=ctx_paths.CONTEXT_MOUNT_TOOLS_ETC,
+            read_only=read_only,
+        )
+
     @classmethod
     def _get_mounts(
         cls,
@@ -99,6 +109,7 @@ class MountsMixin(BaseConverter):
         use_artifacts_context: bool,
         use_tmux_context: bool = False,
         use_sandbox_context: bool = False,
+        use_ssh_context: bool = False,
         run_path: Optional[str] = None,
     ) -> List[k8s_schemas.V1VolumeMount]:
         mounts = []
@@ -114,7 +125,9 @@ class MountsMixin(BaseConverter):
             mounts.append(cls._get_docker_context_mount())
         if use_shm_context:
             mounts.append(cls._get_shm_context_mount())
-        if use_tmux_context or use_sandbox_context:
+        if use_tmux_context or use_sandbox_context or use_ssh_context:
             mounts.append(cls._get_tools_bin_context_mount(read_only=True))
+        if use_ssh_context:
+            mounts.append(cls._get_tools_etc_context_mount(read_only=False))
 
         return mounts

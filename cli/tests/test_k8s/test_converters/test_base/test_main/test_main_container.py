@@ -19,6 +19,7 @@ from polyaxon._k8s import k8s_schemas
 from polyaxon._sandbox.auth import derive_sandbox_token
 from polyaxon._sandbox.constants import SANDBOX_BOOTSTRAP_PATH, SANDBOX_PORT
 from polyaxon._services.values import PolyaxonServices
+from polyaxon._ssh.constants import SSH_BOOTSTRAP_PATH, SSH_IDLE_COMMAND, SSH_PORT
 from polyaxon.exceptions import PolyaxonConverterError
 from tests.test_k8s.test_converters.base import BaseConverterTest
 
@@ -89,6 +90,20 @@ class TestMainContainer(BaseConverterTest):
     def get_sandbox_plugins():
         return V1Plugins(
             sandbox=True,
+            auth=False,
+            docker=False,
+            shm=False,
+            tmux=False,
+            collect_artifacts=False,
+            collect_logs=False,
+            collect_resources=False,
+            mount_artifacts_store=False,
+        )
+
+    @staticmethod
+    def get_ssh_plugins():
+        return V1Plugins(
+            ssh=True,
             auth=False,
             docker=False,
             shm=False,
@@ -281,6 +296,76 @@ class TestMainContainer(BaseConverterTest):
         assert container.args == []
         assert [p.container_port for p in container.ports] == [SANDBOX_PORT]
 
+    def test_get_main_container_with_ssh_implies_sandbox(self):
+        with patch.dict(
+            "os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: "internal-token"}
+        ):
+            container = self.converter._get_main_container(
+                container_id="new-name",
+                main_container=k8s_schemas.V1Container(
+                    name="main",
+                    image="job_docker_image",
+                    command=["python"],
+                    args=["app.py"],
+                ),
+                plugins=self.get_ssh_plugins(),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=None,
+                run_path=None,
+            )
+
+        env_by_name = {e.name: e for e in container.env}
+        assert container.command == [SSH_BOOTSTRAP_PATH]
+        assert container.args == [SANDBOX_BOOTSTRAP_PATH, "python", "app.py"]
+        assert env_by_name[ENV_KEYS_SANDBOX_TOKEN].value == derive_sandbox_token(
+            "internal-token", self.converter.run_uuid
+        )
+        assert self.converter._get_tools_bin_context_mount(read_only=True) in (
+            container.volume_mounts
+        )
+        assert self.converter._get_tools_etc_context_mount(read_only=False) in (
+            container.volume_mounts
+        )
+        assert [p.container_port for p in container.ports] == [
+            SANDBOX_PORT,
+            SSH_PORT,
+        ]
+
+    def test_get_main_container_with_ssh_only_uses_idle_fallback(self):
+        with patch.dict(
+            "os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: "internal-token"}
+        ):
+            container = self.converter._get_main_container(
+                container_id="new-name",
+                main_container=k8s_schemas.V1Container(
+                    name="main",
+                    image="job_docker_image",
+                ),
+                plugins=self.get_ssh_plugins(),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=None,
+                run_path=None,
+            )
+
+        assert container.command == [SSH_BOOTSTRAP_PATH]
+        assert container.args == [SANDBOX_BOOTSTRAP_PATH] + SSH_IDLE_COMMAND
+        assert [p.container_port for p in container.ports] == [
+            SANDBOX_PORT,
+            SSH_PORT,
+        ]
+
     def test_get_main_container_with_sandbox_args_only_raises(self):
         with self.assertRaises(PolyaxonConverterError) as ctx:
             self.converter._get_main_container(
@@ -301,7 +386,9 @@ class TestMainContainer(BaseConverterTest):
                 ports=None,
                 run_path=None,
             )
-        assert "args without command" in str(ctx.exception)
+        assert "plugins.sandbox/plugins.ssh do not support args without command" in str(
+            ctx.exception
+        )
 
     def test_get_main_container_with_sandbox_requires_internal_token(self):
         with patch.dict("os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: ""}):

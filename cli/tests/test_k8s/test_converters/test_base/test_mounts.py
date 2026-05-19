@@ -172,6 +172,17 @@ class TestMounts(BaseConverterTest):
         assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_TOOLS_BIN
         assert mount.read_only is False
 
+    def test_get_tools_etc_context_mount(self):
+        mount = MountsMixin._get_tools_etc_context_mount()
+        assert mount.name == constants.VOLUME_MOUNT_TOOLS_ETC
+        assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_TOOLS_ETC
+        assert mount.read_only is True
+
+        mount = MountsMixin._get_tools_etc_context_mount(read_only=False)
+        assert mount.name == constants.VOLUME_MOUNT_TOOLS_ETC
+        assert mount.mount_path == ctx_paths.CONTEXT_MOUNT_TOOLS_ETC
+        assert mount.read_only is False
+
     def test_get_mounts(self):
         assert (
             MountsMixin._get_mounts(
@@ -213,6 +224,17 @@ class TestMounts(BaseConverterTest):
             use_sandbox_context=True,
         ) == [
             MountsMixin._get_tools_bin_context_mount(read_only=True),
+        ]
+        assert MountsMixin._get_mounts(
+            use_auth_context=False,
+            use_artifacts_context=False,
+            use_docker_context=False,
+            use_shm_context=False,
+            use_sandbox_context=True,
+            use_ssh_context=True,
+        ) == [
+            MountsMixin._get_tools_bin_context_mount(read_only=True),
+            MountsMixin._get_tools_etc_context_mount(read_only=False),
         ]
         assert MountsMixin._get_mounts(
             use_auth_context=True,

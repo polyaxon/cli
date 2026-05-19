@@ -75,6 +75,57 @@ class TestInitTools(BaseConverterTest):
             "/opt/polyaxon/bin/bootstrap-sandbox.sh",
         ]
 
+    def test_get_tools_init_container_with_ssh(self):
+        container = self.converter._get_tools_init_container(
+            polyaxon_init=V1PolyaxonInitContainer(
+                image="foo/foo",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
+            ),
+            use_sandbox=True,
+            use_ssh=True,
+        )
+
+        assert container.command == [
+            "sh",
+            "-c",
+            "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec && "
+            "cp /usr/bin/bootstrap-sandbox.sh "
+            "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
+            "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd && "
+            "cp /usr/lib/openssh/sftp-server "
+            "/opt/polyaxon/bin/sftp-server && "
+            "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen && "
+            "cp /usr/bin/bootstrap-ssh.sh /opt/polyaxon/bin/bootstrap-ssh.sh && "
+            "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config",
+        ]
+        assert container.volume_mounts == [
+            self.converter._get_tools_bin_context_mount(read_only=False),
+            self.converter._get_tools_etc_context_mount(read_only=False),
+        ]
+
+    def test_get_tools_init_container_with_tmux_sandbox_and_ssh(self):
+        container = self.converter._get_tools_init_container(
+            polyaxon_init=V1PolyaxonInitContainer(
+                image="foo/foo",
+                image_tag="",
+                image_pull_policy=PullPolicy.IF_NOT_PRESENT,
+            ),
+            use_tmux=True,
+            use_sandbox=True,
+            use_ssh=True,
+        )
+
+        command = container.command[-1]
+        assert "cp /usr/bin/tmux /opt/polyaxon/bin/tmux" in command
+        assert "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec" in command
+        assert "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd" in command
+        assert "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen" in command
+        assert container.volume_mounts == [
+            self.converter._get_tools_bin_context_mount(read_only=False),
+            self.converter._get_tools_etc_context_mount(read_only=False),
+        ]
+
     def test_get_tools_init_container_requires_tool(self):
         with self.assertRaises(PolyaxonConverterError):
             self.converter._get_tools_init_container(
@@ -96,6 +147,38 @@ class TestInitTools(BaseConverterTest):
         assert len(containers) == 1
         assert containers[0].name == INIT_TOOLS_CONTAINER
         assert "/usr/bin/plx-exec" in containers[0].command[-1]
+
+    def test_get_init_containers_with_ssh_implies_sandbox(self):
+        containers = self.converter.get_init_containers(
+            polyaxon_init=V1PolyaxonInitContainer(image="foo/foo", image_tag=""),
+            plugins=V1Plugins(ssh=True),
+            artifacts_store=None,
+            init_connections=[],
+            init_containers=[],
+            connection_by_names={},
+        )
+
+        assert len(containers) == 1
+        assert containers[0].name == INIT_TOOLS_CONTAINER
+        assert "/usr/bin/plx-exec" in containers[0].command[-1]
+        assert "/usr/bin/ssh-keygen" in containers[0].command[-1]
+
+    def test_get_init_containers_with_tmux_and_ssh_implies_sandbox(self):
+        containers = self.converter.get_init_containers(
+            polyaxon_init=V1PolyaxonInitContainer(image="foo/foo", image_tag=""),
+            plugins=V1Plugins(tmux=True, ssh=True),
+            artifacts_store=None,
+            init_connections=[],
+            init_containers=[],
+            connection_by_names={},
+        )
+
+        assert len(containers) == 1
+        assert containers[0].name == INIT_TOOLS_CONTAINER
+        command = containers[0].command[-1]
+        assert "cp /usr/bin/tmux /opt/polyaxon/bin/tmux" in command
+        assert "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec" in command
+        assert "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd" in command
 
     def test_get_tools_init_container_with_custom_image(self):
         container = self.converter._get_tools_init_container(

@@ -892,6 +892,35 @@ class TestCompiledOperationsConfigs(BaseTestCase):
         }
         V1CompiledOperation.from_dict(config_dict)
 
+    def test_ssh_requires_service(self):
+        config_dict = {
+            "plugins": {"ssh": True},
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        with self.assertRaises(ValidationError) as ctx:
+            V1CompiledOperation.from_dict(config_dict)
+        assert "plugins.ssh is only supported" in str(ctx.exception)
+
+        config_dict = {
+            "plugins": {"ssh": "{{ inputs.ssh }}"},
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        with self.assertRaises(ValidationError) as ctx:
+            V1CompiledOperation.from_dict(config_dict)
+        assert "plugins.ssh is only supported" in str(ctx.exception)
+
+        config_dict = {
+            "plugins": {"ssh": False},
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        V1CompiledOperation.from_dict(config_dict)
+
+        config_dict = {
+            "plugins": {"ssh": True},
+            "run": {"kind": V1RunKind.SERVICE, "container": {"image": "test"}},
+        }
+        V1CompiledOperation.from_dict(config_dict)
+
     def test_executable(self):
         config_dict = {
             "startAt": "foo",

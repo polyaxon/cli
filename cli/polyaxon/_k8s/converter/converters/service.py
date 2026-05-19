@@ -7,14 +7,17 @@ from polyaxon._k8s.converter.base import BaseConverter
 from polyaxon._k8s.converter.mixins import ServiceMixin
 from polyaxon._k8s.custom_resources.service import get_service_custom_resource
 from polyaxon._sandbox.constants import SANDBOX_PORT
+from polyaxon._ssh.constants import SSH_PORT
 
 
 class ServiceConverter(ServiceMixin, BaseConverter):
     @staticmethod
     def _get_service_ports(ports, plugins: V1Plugins):
         ports = list(to_list(ports, check_none=True))
-        if plugins and plugins.sandbox and SANDBOX_PORT not in ports:
+        if plugins and (plugins.sandbox or plugins.ssh) and SANDBOX_PORT not in ports:
             ports.append(SANDBOX_PORT)
+        if plugins and plugins.ssh and SSH_PORT not in ports:
+            ports.append(SSH_PORT)
         return ports
 
     def get_resource(

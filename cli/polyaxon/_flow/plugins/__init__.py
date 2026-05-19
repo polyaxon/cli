@@ -310,6 +310,7 @@ class V1Plugins(BaseSchemaModel):
     shm: Optional[BoolOrRef] = None
     tmux: Optional[BoolOrRef] = None
     sandbox: Optional[BoolOrRef] = None
+    ssh: Optional[BoolOrRef] = None
     mount_artifacts_store: Optional[BoolOrRef] = Field(
         alias="mountArtifactsStore", default=None
     )
@@ -347,6 +348,7 @@ class V1Plugins(BaseSchemaModel):
         config.set_external_host()
         config.set_tmux()
         config.set_sandbox()
+        config.set_ssh()
         return config
 
     @staticmethod
@@ -420,3 +422,7 @@ class V1Plugins(BaseSchemaModel):
     def set_sandbox(self, default: bool = False):
         if self.sandbox is None:
             self.sandbox = default
+
+    def set_ssh(self, default: bool = False):
+        if self.ssh is None:
+            self.ssh = default

@@ -11,6 +11,7 @@ from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.converters.service import ServiceConverter
 from polyaxon._sandbox.auth import derive_sandbox_token
 from polyaxon._sandbox.constants import SANDBOX_BOOTSTRAP_PATH, SANDBOX_PORT
+from polyaxon._ssh.constants import SSH_BOOTSTRAP_PATH, SSH_PORT
 from polyaxon._utils.test_utils import BaseTestCase
 
 
@@ -32,6 +33,20 @@ class TestServiceConverter(BaseTestCase):
     def get_sandbox_plugins():
         return V1Plugins(
             sandbox=True,
+            auth=False,
+            docker=False,
+            shm=False,
+            tmux=False,
+            collect_artifacts=False,
+            collect_logs=False,
+            collect_resources=False,
+            mount_artifacts_store=False,
+        )
+
+    @staticmethod
+    def get_ssh_plugins():
+        return V1Plugins(
+            ssh=True,
             auth=False,
             docker=False,
             shm=False,
@@ -108,3 +123,49 @@ class TestServiceConverter(BaseTestCase):
 
         assert service_spec["ports"] == [SANDBOX_PORT]
         assert [p.container_port for p in main_container.ports] == [SANDBOX_PORT]
+
+    def test_get_resource_with_ssh_implies_sandbox(self):
+        compiled_operation = V1CompiledOperation(
+            plugins=self.get_ssh_plugins(),
+            run=V1Service(
+                container=k8s_schemas.V1Container(
+                    name="main",
+                    image="python:3.12",
+                ),
+            ),
+        )
+
+        with patch.dict(
+            "os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: "internal-token"}
+        ):
+            resource = self.converter.get_resource(
+                compiled_operation=compiled_operation,
+                artifacts_store=None,
+                connection_by_names={},
+                secrets=[],
+                config_maps=[],
+            )
+
+        service_spec = resource["serviceSpec"]
+        template = service_spec["template"]
+        main_container = template.spec.containers[0]
+        env_by_name = {e.name: e for e in main_container.env}
+
+        assert service_spec["ports"] == [SANDBOX_PORT, SSH_PORT]
+        assert main_container.command == [SSH_BOOTSTRAP_PATH]
+        assert main_container.args == [
+            SANDBOX_BOOTSTRAP_PATH,
+            "tail",
+            "-f",
+            "/dev/null",
+        ]
+        assert [p.container_port for p in main_container.ports] == [
+            SANDBOX_PORT,
+            SSH_PORT,
+        ]
+        assert env_by_name[ENV_KEYS_SANDBOX_TOKEN].value == derive_sandbox_token(
+            "internal-token", self.converter.run_uuid
+        )
+        assert len(template.spec.init_containers) == 1
+        assert "/usr/bin/plx-exec" in template.spec.init_containers[0].command[-1]
+        assert "/usr/bin/ssh-keygen" in template.spec.init_containers[0].command[-1]

@@ -682,6 +682,7 @@ class BaseConverter:
         polyaxon_init: "V1PolyaxonInitContainer",
         use_tmux: bool = False,
         use_sandbox: bool = False,
+        use_ssh: bool = False,
     ) -> Container:
         raise NotImplementedError
 
@@ -945,12 +946,13 @@ class BaseConverter:
             )
 
         # Add tool binaries
-        if plugins and (plugins.tmux or plugins.sandbox):
+        if plugins and (plugins.tmux or plugins.sandbox or plugins.ssh):
             containers.append(
                 self._get_tools_init_container(
                     polyaxon_init=polyaxon_init,
                     use_tmux=plugins.tmux,
-                    use_sandbox=plugins.sandbox,
+                    use_sandbox=plugins.sandbox or plugins.ssh,
+                    use_ssh=plugins.ssh,
                 )
             )
 

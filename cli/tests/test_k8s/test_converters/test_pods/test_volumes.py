@@ -16,6 +16,7 @@ from polyaxon._k8s.converter.common.volumes import (
     get_docker_context_volume,
     get_shm_context_volume,
     get_tools_bin_context_volume,
+    get_tools_etc_context_volume,
     get_volume,
     get_volume_from_config_map,
     get_volume_from_connection,
@@ -250,6 +251,25 @@ class TestPodVolumes(BaseTestCase):
             config_maps=[],
             volumes=[],
         ) == [get_tools_bin_context_volume()]
+
+    def test_ssh_context(self):
+        assert get_pod_volumes(
+            plugins=V1Plugins(
+                docker=False,
+                shm=False,
+                auth=False,
+                collect_artifacts=False,
+                collect_logs=False,
+                ssh=True,
+            ),
+            artifacts_store=None,
+            init_connections=[],
+            connections=[],
+            connection_by_names={},
+            secrets=[],
+            config_maps=[],
+            volumes=[],
+        ) == [get_tools_bin_context_volume(), get_tools_etc_context_volume()]
 
     def test_passing_volumes(self):
         assert get_pod_volumes(

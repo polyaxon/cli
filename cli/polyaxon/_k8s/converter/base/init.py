@@ -516,8 +516,9 @@ class InitConverter(_BaseConverter):
         polyaxon_init: V1PolyaxonInitContainer,
         use_tmux: bool = False,
         use_sandbox: bool = False,
+        use_ssh: bool = False,
     ) -> k8s_schemas.V1Container:
-        if not use_tmux and not use_sandbox:
+        if not use_tmux and not use_sandbox and not use_ssh:
             raise PolyaxonConverterError("Init tools container requires a tool.")
 
         copy_commands = []
@@ -529,9 +530,21 @@ class InitConverter(_BaseConverter):
                 "cp /usr/bin/bootstrap-sandbox.sh "
                 "/opt/polyaxon/bin/bootstrap-sandbox.sh",
             ]
+        if use_ssh:
+            copy_commands += [
+                "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd",
+                "cp /usr/lib/openssh/sftp-server /opt/polyaxon/bin/sftp-server",
+                "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen",
+                "cp /usr/bin/bootstrap-ssh.sh /opt/polyaxon/bin/bootstrap-ssh.sh",
+                "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config",
+            ]
         command = ["sh", "-c", " && ".join(copy_commands)]
-        if use_tmux and not use_sandbox:
+        if use_tmux and not use_sandbox and not use_ssh:
             command = ["cp", "/usr/bin/tmux", "/opt/polyaxon/bin/tmux"]
+
+        volume_mounts = [cls._get_tools_bin_context_mount(read_only=False)]
+        if use_ssh:
+            volume_mounts.append(cls._get_tools_etc_context_mount(read_only=False))
 
         return cls._patch_container(
             container=k8s_schemas.V1Container(
@@ -540,7 +553,7 @@ class InitConverter(_BaseConverter):
                 image_pull_policy=polyaxon_init.image_pull_policy,
                 command=command,
                 resources=polyaxon_init.get_resources(),
-                volume_mounts=[cls._get_tools_bin_context_mount(read_only=False)],
+                volume_mounts=volume_mounts,
             )
         )
 
