@@ -1,6 +1,5 @@
 import shlex
 import shutil
-import sys
 
 import click
 from urllib3.exceptions import HTTPError
@@ -8,7 +7,7 @@ from urllib3.exceptions import HTTPError
 from clipped.formatting import Printer
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import OPTIONS_PROJECT, OPTIONS_RUN_UID
-from polyaxon._cli.utils import CommandSeparatorCommand
+from polyaxon._cli.utils import CommandSeparatorCommand, write_stream
 from polyaxon._env_vars.getters import get_project_run_or_local
 from polyaxon._pty.sandbox import SandboxPseudoTerminal
 from polyaxon._sandbox.client_utils import validate_remote_path
@@ -29,14 +28,6 @@ def _sandbox_client(project, uid):
         run_uuid=run_uuid,
         manual_exceptions_handling=True,
     )
-
-
-def _write(data, err: bool = False):
-    if not data:
-        return
-    stream = sys.stderr if err else sys.stdout
-    stream.write(data)
-    stream.flush()
 
 
 def _event_data(event):
@@ -142,11 +133,11 @@ def exec_command(ctx, project, uid, stream, detach, tag, timeout_ms, command):
                 for event in events:
                     event_type = event.get("type")
                     if event_type == "stdout":
-                        _write(_event_data(event))
+                        write_stream(_event_data(event))
                     elif event_type == "stderr":
-                        _write(_event_data(event), err=True)
+                        write_stream(_event_data(event), err=True)
                     elif event_type == "error":
-                        _write(_event_data(event) or str(event), err=True)
+                        write_stream(_event_data(event) or str(event), err=True)
                         ctx.exit(1)
                     elif event_type == "execution_complete":
                         exit_code = _remote_exit_code(event.get("exit_code"))
@@ -156,8 +147,8 @@ def exec_command(ctx, project, uid, stream, detach, tag, timeout_ms, command):
             ctx.exit(exit_code)
 
         result = client.process.exec(command=command, timeout_ms=timeout_ms)
-        _write(getattr(result, "stdout", None))
-        _write(getattr(result, "stderr", None), err=True)
+        write_stream(getattr(result, "stdout", None))
+        write_stream(getattr(result, "stderr", None), err=True)
         ctx.exit(_remote_exit_code(getattr(result, "exit_code", None)))
     except (ApiException, HTTPError, PolyaxonClientException) as e:
         handle_cli_error(
@@ -196,7 +187,7 @@ def logs(project, uid, stream, offset, max_bytes, exec_id):
         handle_cli_error(
             e, "Could not read sandbox logs for run `{}`.".format(uid), sys_exit=True
         )
-    _write(getattr(response, "data", None) or "")
+    write_stream(getattr(response, "data", None) or "")
 
 
 @sandbox.command()

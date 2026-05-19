@@ -17,6 +17,16 @@ class CommandSeparatorCommand(click.Command):
         return super().parse_args(ctx, args)
 
 
+def write_stream(data, err: bool = False):
+    if not data:
+        return
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", "replace")
+    stream = click.get_text_stream("stderr" if err else "stdout")
+    stream.write(data)
+    stream.flush()
+
+
 def get_entity_details(entity: any, entity_name: str):
     if entity.description:
         Printer.heading("{} description:".format(entity_name))

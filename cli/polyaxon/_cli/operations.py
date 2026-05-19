@@ -33,7 +33,7 @@ from polyaxon._cli.options import (
     OPTIONS_RUN_OFFLINE_PATH_TO,
     OPTIONS_RUN_UID,
 )
-from polyaxon._cli.utils import CommandSeparatorCommand, handle_output
+from polyaxon._cli.utils import CommandSeparatorCommand, handle_output, write_stream
 from polyaxon._client.transport import ws_client
 from polyaxon._constants.metadata import META_IS_EXTERNAL, META_PORTS, META_REWRITE_PATH
 from polyaxon._contexts import paths as ctx_paths
@@ -127,23 +127,13 @@ def handle_run_statuses(status, conditions, table):
     return True
 
 
-def _write_exec_stream(data, err: bool = False):
-    if not data:
-        return
-    if isinstance(data, bytes):
-        data = data.decode("utf-8", "replace")
-    stream = sys.stderr if err else sys.stdout
-    stream.write(data)
-    stream.flush()
-
-
 def _parse_k8s_exec_error_channel(data):
     if not data:
         return 0
     try:
         status = orjson_loads(data)
     except (TypeError, ValueError):
-        _write_exec_stream(str(data), err=True)
+        write_stream(str(data), err=True)
         return 1
     if status.get("status") == "Success":
         return 0
@@ -159,15 +149,15 @@ def _parse_k8s_exec_error_channel(data):
 
     message = status.get("message")
     if message:
-        _write_exec_stream("{}\n".format(message), err=True)
+        write_stream("{}\n".format(message), err=True)
     return 1
 
 
 def _drain_k8s_exec_channels(client_shell):
     if client_shell.peek_stdout():
-        _write_exec_stream(client_shell.read_stdout())
+        write_stream(client_shell.read_stdout())
     if client_shell.peek_stderr():
-        _write_exec_stream(client_shell.read_stderr(), err=True)
+        write_stream(client_shell.read_stderr(), err=True)
     if client_shell.peek_channel(ws_client.ERROR_CHANNEL):
         return _parse_k8s_exec_error_channel(
             client_shell.read_channel(ws_client.ERROR_CHANNEL)
