@@ -19,6 +19,7 @@ from polyaxon._cli.operations import ops
 from polyaxon._cli.port_forward import port_forward
 from polyaxon._cli.projects import project
 from polyaxon._cli.run import run
+from polyaxon._cli.sandbox import sandbox
 from polyaxon._cli.session import set_versions_config
 from polyaxon._cli.version import check_cli_version, upgrade, version
 from polyaxon._services.values import PolyaxonServices
@@ -162,6 +163,7 @@ cli.add_command(artifacts)
 cli.add_command(components)
 cli.add_command(models)
 cli.add_command(run)
+cli.add_command(sandbox)
 cli.add_command(dashboard)
 cli.add_command(admin)
 cli.add_command(port_forward)
@@ -202,10 +204,3 @@ if PolyaxonServices.is_agent():
     from polyaxon._cli.services.agent import agent
 
     cli.add_command(agent)
-
-try:
-    from haupt.cli.sandbox import sandbox
-
-    cli.add_command(sandbox)
-except ImportError:
-    pass
