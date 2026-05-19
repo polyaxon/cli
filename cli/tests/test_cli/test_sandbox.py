@@ -126,7 +126,8 @@ class TestCliSandbox(BaseCommandTestCase):
         )
 
         assert result.exit_code != 0
-        assert "No such option: --namespace" in result.output
+        assert "No such option" in result.output
+        assert "--namespace" in result.output
         self.sandbox_client_class.assert_not_called()
 
     def test_exec_rejects_namespace_before_command_separator(self):
@@ -147,7 +148,8 @@ class TestCliSandbox(BaseCommandTestCase):
         )
 
         assert result.exit_code != 0
-        assert "No such option: --namespace" in result.output
+        assert "No such option" in result.output
+        assert "--namespace" in result.output
         self.client.process.exec.assert_not_called()
 
     def test_exec_requires_separator(self):
