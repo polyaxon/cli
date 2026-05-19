@@ -44,6 +44,7 @@ def make_client():
             SimpleNamespace(name="file.txt", type="file", size=5, mode="0644"),
         ]
     )
+    client.pty.create.return_value = SimpleNamespace(pty_id="pty-1")
     return client
 
 
@@ -89,6 +90,7 @@ class TestCliSandbox(BaseCommandTestCase):
         cases = [
             ["ping", "-p", "owner/project", "-uid", RUN_UUID],
             ["exec", "-p", "owner/project", "-uid", RUN_UUID, "--", "python", "-V"],
+            ["shell", "-p", "owner/project", "-uid", RUN_UUID],
             ["logs", "-p", "owner/project", "-uid", RUN_UUID, "exec-1"],
             ["ls", "-p", "owner/project", "-uid", RUN_UUID, "/tmp"],
             [
@@ -336,6 +338,84 @@ class TestCliSandbox(BaseCommandTestCase):
             recursive=True,
             max_entries=None,
         )
+
+    def test_shell_starts_default_pty_and_propagates_exit_code(self):
+        ws = MagicMock()
+        self.client.pty.attach.return_value = ws
+        with (
+            patch(
+                "polyaxon._cli.sandbox.shutil.get_terminal_size",
+                return_value=SimpleNamespace(columns=100, lines=30),
+            ),
+            patch("polyaxon._cli.sandbox.SandboxPseudoTerminal") as terminal,
+        ):
+            terminal.return_value.start.return_value = 7
+
+            result = self.runner.invoke(
+                sandbox,
+                ["shell", "-p", "owner/project", "-uid", RUN_UUID],
+            )
+
+        assert result.exit_code == 7
+        self.client.pty.create.assert_called_once_with(
+            command=["sh"],
+            cols=100,
+            rows=30,
+        )
+        self.client.pty.attach.assert_called_once_with("pty-1", replay_bytes=0)
+        terminal.assert_called_once_with(ws)
+
+    def test_shell_forwards_command_size_and_replay_options(self):
+        ws = MagicMock()
+        self.client.pty.attach.return_value = ws
+        with patch("polyaxon._cli.sandbox.SandboxPseudoTerminal") as terminal:
+            terminal.return_value.start.return_value = 0
+
+            result = self.runner.invoke(
+                sandbox,
+                [
+                    "shell",
+                    "-p",
+                    "owner/project",
+                    "-uid",
+                    RUN_UUID,
+                    "--command",
+                    "python -i",
+                    "--cols",
+                    "120",
+                    "--rows",
+                    "40",
+                    "--replay-bytes",
+                    "1024",
+                ],
+            )
+
+        assert result.exit_code == 0
+        self.client.pty.create.assert_called_once_with(
+            command=["python", "-i"],
+            cols=120,
+            rows=40,
+        )
+        self.client.pty.attach.assert_called_once_with("pty-1", replay_bytes=1024)
+        terminal.assert_called_once_with(ws)
+
+    def test_shell_rejects_empty_command(self):
+        result = self.runner.invoke(
+            sandbox,
+            [
+                "shell",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "--command",
+                "",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "shell command must not be empty" in result.output
+        self.client.pty.create.assert_not_called()
 
     def test_upload(self):
         result = self.runner.invoke(

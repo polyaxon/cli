@@ -92,6 +92,9 @@ class SandboxPtyWSClient:
     def recv(self):
         return recv_message(self._ws)
 
+    def fileno(self):
+        return self._ws.sock.fileno()
+
     def resize(self, cols: int, rows: int):
         if not self._resize:
             raise PolyaxonClientException("PTY resize callback is not configured.")

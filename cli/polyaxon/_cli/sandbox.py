@@ -1,3 +1,5 @@
+import shlex
+import shutil
 import sys
 
 import click
@@ -6,21 +8,13 @@ from urllib3.exceptions import HTTPError
 from clipped.formatting import Printer
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import OPTIONS_PROJECT, OPTIONS_RUN_UID
+from polyaxon._cli.utils import CommandSeparatorCommand
 from polyaxon._env_vars.getters import get_project_run_or_local
+from polyaxon._pty.sandbox import SandboxPseudoTerminal
 from polyaxon._sandbox.client_utils import validate_remote_path
 from polyaxon.client import SandboxClient
 from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.logger import clean_outputs
-
-
-class CommandSeparatorCommand(click.Command):
-    def parse_args(self, ctx, args):
-        if not ctx.resilient_parsing and not any(a in ("--help", "-h") for a in args):
-            if "--" not in args:
-                raise click.UsageError("command required after --")
-            if args.index("--") == len(args) - 1:
-                raise click.UsageError("command required after --")
-        return super().parse_args(ctx, args)
 
 
 def _sandbox_client(project, uid):
@@ -51,6 +45,22 @@ def _event_data(event):
 
 def _remote_exit_code(value):
     return 1 if value is None else int(value)
+
+
+def _terminal_size(cols, rows):
+    if cols and rows:
+        return cols, rows
+    size = shutil.get_terminal_size(fallback=(80, 24))
+    return cols or size.columns, rows or size.lines
+
+
+def _shell_command(command: str):
+    if command is None:
+        command = "sh"
+    value = shlex.split(command)
+    if not value:
+        raise click.ClickException("shell command must not be empty")
+    return value
 
 
 def _validate_remote_file_path(path: str):
@@ -91,10 +101,7 @@ def ping(project, uid):
         Printer.print(response.version)
 
 
-@sandbox.command(
-    "exec",
-    cls=CommandSeparatorCommand,
-)
+@sandbox.command("exec", cls=CommandSeparatorCommand)
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
 @click.option("--stream", is_flag=True, default=False, help="Stream command output.")
@@ -276,3 +283,41 @@ def download(project, uid, chunk_size, path_from, path_to):
         Printer.success("Downloaded `{}` to `{}`.".format(path_from, path_to))
     except (ApiException, HTTPError, PolyaxonClientException, ValueError) as e:
         handle_cli_error(e, "Could not download sandbox file.", sys_exit=True)
+
+
+@sandbox.command()
+@click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
+@click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
+@click.option(
+    "--command",
+    "-cmd",
+    type=str,
+    default="sh",
+    show_default=True,
+    help="The shell command to start.",
+)
+@click.option("--cols", type=click.IntRange(min=1), help="Initial terminal columns.")
+@click.option("--rows", type=click.IntRange(min=1), help="Initial terminal rows.")
+@click.option(
+    "--replay-bytes",
+    type=click.IntRange(min=0),
+    default=0,
+    show_default=True,
+    help="PTY output bytes to replay on attach.",
+)
+@clean_outputs
+def shell(project, uid, command, cols, rows, replay_bytes):
+    """Start an interactive shell in a sandbox run."""
+    try:
+        client = _sandbox_client(project, uid)
+        cols, rows = _terminal_size(cols=cols, rows=rows)
+        pty = client.pty.create(
+            command=_shell_command(command),
+            cols=cols,
+            rows=rows,
+        )
+        ws = client.pty.attach(pty.pty_id, replay_bytes=replay_bytes)
+        exit_code = SandboxPseudoTerminal(ws).start()
+    except (ApiException, HTTPError, PolyaxonClientException) as e:
+        handle_cli_error(e, "Could not start sandbox shell.", sys_exit=True)
+    raise click.exceptions.Exit(exit_code)
