@@ -6,6 +6,7 @@ from clipped.utils.json import orjson_loads
 from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
 from polyaxon._client.transport import sandbox_ws
+from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._sandbox.client_utils import (
     MAX_REMOTE_PATH_BYTES,
     FsReadResult,
@@ -133,15 +134,17 @@ class FakeSyncWS:
         self.closed = True
 
 
-def make_client(sdk_client=None, namespace="ns"):
+def make_client(sdk_client=None, run_namespace="ns"):
     patch_settings()
-    return SandboxClient(
+    client = SandboxClient(
         owner=OWNER,
         project=PROJECT,
         run_uuid=RUN_UUID,
-        namespace=namespace,
         client=sdk_client or SyncPolyaxonClientMock(),
     )
+    if run_namespace:
+        client.run_data.settings = V1RunSettings(namespace=run_namespace)
+    return client
 
 
 @pytest.mark.client_mark
@@ -209,15 +212,30 @@ def test_sandbox_client_rejects_async_client():
 
 
 @pytest.mark.client_mark
-def test_ping_uses_explicit_namespace():
+def test_sandbox_client_does_not_expose_namespace_constructor_arg():
+    assert "namespace" not in inspect.signature(SandboxClient).parameters
+
+
+@pytest.mark.client_mark
+def test_namespace_property_uses_run_settings_or_default_namespace():
+    client = make_client(run_namespace=None)
+
+    assert client.namespace == DEFAULT_NAMESPACE
+
+    client.run_data.settings = V1RunSettings(namespace="settings-ns")
+    assert client.namespace == "settings-ns"
+
+
+@pytest.mark.client_mark
+def test_ping_uses_namespace_from_run_settings():
     sdk_client = SyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client, namespace="explicit-ns")
+    client = make_client(sdk_client=sdk_client, run_namespace="settings-ns")
 
     client.ping()
 
     sdk_client.runs_v1.get_run_namespace.assert_not_called()
     sdk_client.sandbox_v1.ping.assert_called_once_with(
-        "explicit-ns",
+        "settings-ns",
         OWNER,
         PROJECT,
         RUN_UUID,
@@ -230,7 +248,7 @@ def test_ping_resolves_and_caches_namespace():
     sdk_client.runs_v1.get_run_namespace.return_value = V1RunSettings(
         namespace="lazy-ns"
     )
-    client = make_client(sdk_client=sdk_client, namespace=None)
+    client = make_client(sdk_client=sdk_client, run_namespace=None)
 
     client.ping()
     client.ping()
@@ -242,13 +260,14 @@ def test_ping_resolves_and_caches_namespace():
     )
     assert sdk_client.sandbox_v1.ping.call_args_list[0].args[0] == "lazy-ns"
     assert sdk_client.sandbox_v1.ping.call_args_list[1].args[0] == "lazy-ns"
+    assert client.run_data.settings.namespace == "lazy-ns"
 
 
 @pytest.mark.client_mark
 def test_namespace_resolution_raises_when_missing():
     sdk_client = SyncPolyaxonClientMock()
     sdk_client.runs_v1.get_run_namespace.return_value = V1RunSettings()
-    client = make_client(sdk_client=sdk_client, namespace=None)
+    client = make_client(sdk_client=sdk_client, run_namespace=None)
 
     with pytest.raises(PolyaxonClientException):
         client.ping()

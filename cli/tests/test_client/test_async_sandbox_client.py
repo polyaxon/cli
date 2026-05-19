@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from clipped.utils.json import orjson_loads
 from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
+from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
     FsWriteResult,
@@ -214,15 +215,17 @@ class AsyncWSSession:
         self.closed = True
 
 
-def make_client(sdk_client=None, namespace="ns"):
+def make_client(sdk_client=None, run_namespace="ns"):
     patch_settings()
-    return AsyncSandboxClient(
+    client = AsyncSandboxClient(
         owner=OWNER,
         project=PROJECT,
         run_uuid=RUN_UUID,
-        namespace=namespace,
         client=sdk_client or AsyncPolyaxonClientMock(),
     )
+    if run_namespace:
+        client.run_data.settings = V1RunSettings(namespace=run_namespace)
+    return client
 
 
 def patch_aiohttp_session(session):
@@ -253,15 +256,30 @@ async def test_async_sandbox_client_rejects_sync_client():
 
 
 @pytest.mark.asyncio
-async def test_async_ping_uses_explicit_namespace():
+async def test_async_sandbox_client_does_not_expose_namespace_constructor_arg():
+    assert "namespace" not in inspect.signature(AsyncSandboxClient).parameters
+
+
+@pytest.mark.asyncio
+async def test_async_namespace_property_uses_run_settings_or_default_namespace():
+    client = make_client(run_namespace=None)
+
+    assert client.namespace == DEFAULT_NAMESPACE
+
+    client.run_data.settings = V1RunSettings(namespace="settings-ns")
+    assert client.namespace == "settings-ns"
+
+
+@pytest.mark.asyncio
+async def test_async_ping_uses_namespace_from_run_settings():
     sdk_client = AsyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client, namespace="explicit-ns")
+    client = make_client(sdk_client=sdk_client, run_namespace="settings-ns")
 
     await client.ping()
 
     sdk_client.runs_v1.get_run_namespace.assert_not_called()
     sdk_client.sandbox_v1.ping.assert_awaited_once_with(
-        "explicit-ns",
+        "settings-ns",
         OWNER,
         PROJECT,
         RUN_UUID,
@@ -271,7 +289,7 @@ async def test_async_ping_uses_explicit_namespace():
 @pytest.mark.asyncio
 async def test_async_ping_resolves_and_caches_namespace():
     sdk_client = AsyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client, namespace=None)
+    client = make_client(sdk_client=sdk_client, run_namespace=None)
 
     await client.ping()
     await client.ping()
@@ -283,6 +301,7 @@ async def test_async_ping_resolves_and_caches_namespace():
     )
     assert sdk_client.sandbox_v1.ping.await_args_list[0].args[0] == "lazy-ns"
     assert sdk_client.sandbox_v1.ping.await_args_list[1].args[0] == "lazy-ns"
+    assert client.run_data.settings.namespace == "lazy-ns"
 
 
 @pytest.mark.asyncio

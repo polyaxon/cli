@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Mapping
 import inspect
 import os
 from pathlib import Path
@@ -27,6 +28,7 @@ from polyaxon._env_vars.getters import (
     get_project_or_local,
     get_run_or_local,
 )
+from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
     FsWriteResult,
@@ -45,6 +47,8 @@ from polyaxon._sdk.schemas import (
     V1ExecRequest,
     V1FsMkdirRequest,
     V1ResizePtyRequest,
+    V1Run,
+    V1RunSettings,
     V1SignalRequest,
 )
 from polyaxon._utils.fqn_utils import get_entity_full_name, split_owner_team_space
@@ -63,7 +67,6 @@ class SandboxClient(ClientMixin):
         owner: Optional[str] = None,
         project: Optional[str] = None,
         run_uuid: Optional[str] = None,
-        namespace: Optional[str] = None,
         client: Optional[PolyaxonClient] = None,
         is_offline: Optional[bool] = None,
         no_op: Optional[bool] = None,
@@ -105,7 +108,11 @@ class SandboxClient(ClientMixin):
         self._team = team
         self._project = project
         self._run_uuid = run_uuid
-        self._namespace = namespace
+        self._run_data = V1Run.model_construct(
+            owner=self._owner,
+            project=self._project,
+            uuid=self._run_uuid,
+        )
         self._set_subclients()
 
     def _set_subclients(self):
@@ -118,26 +125,49 @@ class SandboxClient(ClientMixin):
         return self._run_uuid
 
     @property
-    def namespace(self) -> Optional[str]:
-        return self._namespace
+    def namespace(self) -> str:
+        if self.settings and self.settings.namespace:
+            return self.settings.namespace
+        return DEFAULT_NAMESPACE
 
-    def _get_namespace(self) -> str:
-        if self._namespace:
-            return self._namespace
+    @property
+    def run_data(self):
+        return self._run_data
 
-        settings_ = self.client.runs_v1.get_run_namespace(
+    @property
+    def settings(self) -> Optional[V1RunSettings]:
+        if not self.run_data:
+            return None
+        if self.run_data.settings and isinstance(self.run_data.settings, Mapping):
+            self._run_data.settings = V1RunSettings(**self.run_data.settings)
+        return self.run_data.settings
+
+    def _set_namespace(self, namespace: str):
+        if not self._run_data.settings:
+            self._run_data.settings = V1RunSettings()
+        self._run_data.settings.namespace = namespace
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def get_namespace(self):
+        """Fetches the run namespace."""
+        return self.client.runs_v1.get_run_namespace(
             self.owner,
             self.project,
             self.run_uuid,
-        )
-        namespace = getattr(settings_, "namespace", None)
+        ).namespace
+
+    def _resolve_namespace(self) -> str:
+        if self.settings and self.settings.namespace:
+            return self.settings.namespace
+
+        namespace = self.get_namespace()
         if not namespace:
             raise PolyaxonClientException(
                 "Could not resolve sandbox run namespace for run `{}`.".format(
                     self.run_uuid
                 )
             )
-        self._namespace = namespace
+        self._set_namespace(namespace)
         return namespace
 
     def _sandbox_url(self, namespace: str, subpath: str) -> str:
@@ -154,7 +184,7 @@ class SandboxClient(ClientMixin):
     @client_handler(check_no_op=True)
     def ping(self):
         return self.client.sandbox_v1.ping(
-            self._get_namespace(),
+            self._resolve_namespace(),
             self.owner,
             self.project,
             self.run_uuid,
@@ -169,29 +199,33 @@ class AsyncSandboxClient(SandboxClient):
         self.fs = _AsyncFsSubClient(self)
         self.pty = _AsyncPtySubClient(self)
 
-    async def _get_namespace(self) -> str:
-        if self._namespace:
-            return self._namespace
-
-        settings_ = await self.client.runs_v1.get_run_namespace(
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def get_namespace(self):
+        response = await self.client.runs_v1.get_run_namespace(
             self.owner,
             self.project,
             self.run_uuid,
         )
-        namespace = getattr(settings_, "namespace", None)
+        return response.namespace
+
+    async def _resolve_namespace(self) -> str:
+        if self.settings and self.settings.namespace:
+            return self.settings.namespace
+
+        namespace = await self.get_namespace()
         if not namespace:
             raise PolyaxonClientException(
                 "Could not resolve sandbox run namespace for run `{}`.".format(
                     self.run_uuid
                 )
             )
-        self._namespace = namespace
+        self._set_namespace(namespace)
         return namespace
 
     @async_client_handler(check_no_op=True)
     async def ping(self):
         return await self.client.sandbox_v1.ping(
-            await self._get_namespace(),
+            await self._resolve_namespace(),
             self.owner,
             self.project,
             self.run_uuid,
@@ -220,14 +254,14 @@ class _BaseSubClient:
 
     def _run_args(self):
         return (
-            self._parent._get_namespace(),
+            self._parent._resolve_namespace(),
             self._parent.owner,
             self._parent.project,
             self._parent.run_uuid,
         )
 
     def _url(self, subpath: str) -> str:
-        return self._parent._sandbox_url(self._parent._get_namespace(), subpath)
+        return self._parent._sandbox_url(self._parent._resolve_namespace(), subpath)
 
     def _headers(self, headers=None):
         return self._parent.client.config.get_full_headers(
@@ -253,14 +287,16 @@ class _BaseSubClient:
 class _AsyncBaseSubClient(_BaseSubClient):
     async def _run_args(self):
         return (
-            await self._parent._get_namespace(),
+            await self._parent._resolve_namespace(),
             self._parent.owner,
             self._parent.project,
             self._parent.run_uuid,
         )
 
     async def _url(self, subpath: str) -> str:
-        return self._parent._sandbox_url(await self._parent._get_namespace(), subpath)
+        return self._parent._sandbox_url(
+            await self._parent._resolve_namespace(), subpath
+        )
 
     def _client_timeout(self, timeout=None):
         if isinstance(timeout, aiohttp.ClientTimeout):
