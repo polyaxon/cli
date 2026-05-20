@@ -366,6 +366,51 @@ class TestMainContainer(BaseConverterTest):
             SSH_PORT,
         ]
 
+    def test_get_main_container_with_ssh_sandbox_and_tmux_uses_wrapper_order(self):
+        with patch.dict(
+            "os.environ", {ENV_KEYS_SECRET_INTERNAL_TOKEN: "internal-token"}
+        ):
+            container = self.converter._get_main_container(
+                container_id="new-name",
+                main_container=k8s_schemas.V1Container(
+                    name="main",
+                    image="job_docker_image",
+                    command=["python"],
+                    args=["app.py"],
+                ),
+                plugins=V1Plugins(
+                    sandbox=True,
+                    ssh=True,
+                    tmux=True,
+                    auth=False,
+                    docker=False,
+                    shm=False,
+                    collect_artifacts=False,
+                    collect_logs=False,
+                    collect_resources=False,
+                    mount_artifacts_store=False,
+                ),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=None,
+                run_path=None,
+            )
+
+        assert container.command == [SSH_BOOTSTRAP_PATH]
+        assert container.args == [SANDBOX_BOOTSTRAP_PATH, "python", "app.py"]
+        assert self.converter._get_tools_etc_context_mount(read_only=False) in (
+            container.volume_mounts
+        )
+        assert [p.container_port for p in container.ports] == [
+            SANDBOX_PORT,
+            SSH_PORT,
+        ]
+
     def test_get_main_container_with_sandbox_args_only_raises(self):
         with self.assertRaises(PolyaxonConverterError) as ctx:
             self.converter._get_main_container(

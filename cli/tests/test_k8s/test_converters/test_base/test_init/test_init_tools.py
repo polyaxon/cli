@@ -175,10 +175,20 @@ class TestInitTools(BaseConverterTest):
 
         assert len(containers) == 1
         assert containers[0].name == INIT_TOOLS_CONTAINER
-        command = containers[0].command[-1]
-        assert "cp /usr/bin/tmux /opt/polyaxon/bin/tmux" in command
-        assert "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec" in command
-        assert "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd" in command
+        assert containers[0].command == [
+            "sh",
+            "-c",
+            "cp /usr/bin/tmux /opt/polyaxon/bin/tmux && "
+            "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec && "
+            "cp /usr/bin/bootstrap-sandbox.sh "
+            "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
+            "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd && "
+            "cp /usr/lib/openssh/sftp-server "
+            "/opt/polyaxon/bin/sftp-server && "
+            "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen && "
+            "cp /usr/bin/bootstrap-ssh.sh /opt/polyaxon/bin/bootstrap-ssh.sh && "
+            "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config",
+        ]
 
     def test_get_tools_init_container_with_custom_image(self):
         container = self.converter._get_tools_init_container(
