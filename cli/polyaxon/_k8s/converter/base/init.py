@@ -533,6 +533,8 @@ class InitConverter(_BaseConverter):
         if use_ssh:
             copy_commands += [
                 "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd",
+                "cp /usr/bin/sshd-session /opt/polyaxon/bin/sshd-session",
+                "cp /usr/bin/sshd-auth /opt/polyaxon/bin/sshd-auth",
                 "cp /usr/lib/openssh/sftp-server /opt/polyaxon/bin/sftp-server",
                 "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen",
                 "cp /usr/bin/bootstrap-ssh.sh /opt/polyaxon/bin/bootstrap-ssh.sh",

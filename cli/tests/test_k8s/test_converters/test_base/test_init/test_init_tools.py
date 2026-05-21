@@ -93,6 +93,8 @@ class TestInitTools(BaseConverterTest):
             "cp /usr/bin/bootstrap-sandbox.sh "
             "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
             "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd && "
+            "cp /usr/bin/sshd-session /opt/polyaxon/bin/sshd-session && "
+            "cp /usr/bin/sshd-auth /opt/polyaxon/bin/sshd-auth && "
             "cp /usr/lib/openssh/sftp-server "
             "/opt/polyaxon/bin/sftp-server && "
             "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen && "
@@ -120,6 +122,8 @@ class TestInitTools(BaseConverterTest):
         assert "cp /usr/bin/tmux /opt/polyaxon/bin/tmux" in command
         assert "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec" in command
         assert "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd" in command
+        assert "cp /usr/bin/sshd-session /opt/polyaxon/bin/sshd-session" in command
+        assert "cp /usr/bin/sshd-auth /opt/polyaxon/bin/sshd-auth" in command
         assert "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen" in command
         assert container.volume_mounts == [
             self.converter._get_tools_bin_context_mount(read_only=False),
@@ -183,6 +187,8 @@ class TestInitTools(BaseConverterTest):
             "cp /usr/bin/bootstrap-sandbox.sh "
             "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
             "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd && "
+            "cp /usr/bin/sshd-session /opt/polyaxon/bin/sshd-session && "
+            "cp /usr/bin/sshd-auth /opt/polyaxon/bin/sshd-auth && "
             "cp /usr/lib/openssh/sftp-server "
             "/opt/polyaxon/bin/sftp-server && "
             "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen && "
