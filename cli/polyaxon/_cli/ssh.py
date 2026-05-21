@@ -1,11 +1,16 @@
+from contextlib import contextmanager
+import logging
 import shlex
+import sys
 
 import click
 from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
+from clipped.utils.http import to_ws_url
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import OPTIONS_PROJECT, OPTIONS_RUN_UID
+from polyaxon._client.transport.ssh_tunnel import SandboxSshTunnelClient
 from polyaxon._env_vars.getters import get_project_run_or_local
 from polyaxon._ssh import (
     prepare_ssh_access,
@@ -13,6 +18,7 @@ from polyaxon._ssh import (
     resolve_known_hosts_file,
     write_known_hosts_entry,
 )
+from polyaxon._ssh.tunnel import run_tunnel
 from polyaxon.client import SandboxClient
 from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.logger import clean_outputs
@@ -28,6 +34,31 @@ def _sandbox_client(project, uid):
         run_uuid=run_uuid,
         manual_exceptions_handling=True,
     )
+
+
+def _ssh_tunnel_url(client):
+    return to_ws_url(client._sandbox_url(client._resolve_namespace(), "ssh/tunnel"))
+
+
+def _ssh_tunnel_headers(client):
+    return client.client.config.get_full_headers(
+        headers=None,
+        auth_key="authorization",
+    )
+
+
+def _write_tunnel_error(stage, error):
+    click.echo("polyaxon ssh tunnel: {}: {}".format(stage, error), err=True)
+
+
+@contextmanager
+def _disable_tunnel_logging():
+    previous_disable_level = logging.root.manager.disable
+    logging.disable(logging.CRITICAL)
+    try:
+        yield
+    finally:
+        logging.disable(previous_disable_level)
 
 
 def _proxy_command(project_ref, run_uuid, identity_file):
@@ -154,33 +185,47 @@ def config_command(project, uid, identity_file, known_hosts_file):
 @clean_outputs
 def tunnel(project, uid, identity_file, known_hosts_file):
     """Open an SSH tunnel to a sandbox run."""
-    try:
-        owner, _, project_name, run_uuid = get_project_run_or_local(
-            project, uid, is_cli=True
-        )
-        client = SandboxClient(
-            owner=owner,
-            project=project_name,
-            run_uuid=run_uuid,
-            manual_exceptions_handling=True,
-        )
-        access = prepare_ssh_access(client=client, identity_file=identity_file)
-        known_hosts_path = resolve_known_hosts_file(known_hosts_file)
-        write_known_hosts_entry(
-            path=known_hosts_path,
-            alias="polyaxon-{}".format(run_uuid),
-            host_public_key=access.host_public_key,
-        )
-    except (ApiException, HTTPError, PolyaxonClientException) as e:
-        handle_cli_error(
-            e,
-            "Could not prepare SSH tunnel for run `{}`.".format(uid),
-            sys_exit=True,
-        )
-    raise click.ClickException(
-        "SSH tunnel transport is not implemented yet. "
-        "Setup completed with identity `{}` and known_hosts `{}`.".format(
-            access.identity_file,
-            known_hosts_path,
-        )
+    with _disable_tunnel_logging():
+        try:
+            owner, _, project_name, run_uuid = get_project_run_or_local(
+                project, uid, is_cli=True
+            )
+            client = SandboxClient(
+                owner=owner,
+                project=project_name,
+                run_uuid=run_uuid,
+                manual_exceptions_handling=True,
+            )
+            access = prepare_ssh_access(client=client, identity_file=identity_file)
+        except (ApiException, HTTPError, PolyaxonClientException) as e:
+            _write_tunnel_error("setup", e)
+            raise click.exceptions.Exit(1) from e
+
+        try:
+            known_hosts_path = resolve_known_hosts_file(known_hosts_file)
+            write_known_hosts_entry(
+                path=known_hosts_path,
+                alias="polyaxon-{}".format(run_uuid),
+                host_public_key=access.host_public_key,
+            )
+        except (OSError, PolyaxonClientException) as e:
+            _write_tunnel_error("known_hosts", e)
+            raise click.exceptions.Exit(1) from e
+
+        try:
+            tunnel_client = SandboxSshTunnelClient(
+                url=_ssh_tunnel_url(client),
+                headers=_ssh_tunnel_headers(client),
+            )
+        except (ApiException, HTTPError, PolyaxonClientException) as e:
+            _write_tunnel_error("connect", e)
+            raise click.exceptions.Exit(1) from e
+
+    code = run_tunnel(
+        client=tunnel_client,
+        stdin=sys.stdin.buffer,
+        stdout=sys.stdout.buffer,
+        stderr=sys.stderr,
     )
+    if code:
+        raise click.exceptions.Exit(code)
