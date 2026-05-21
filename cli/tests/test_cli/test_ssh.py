@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
 
-from polyaxon._cli.ssh import ssh
+from polyaxon._cli.ssh import _split_connect_args, ssh
 from polyaxon.exceptions import PolyaxonClientException
 from tests.test_cli.utils import BaseCommandTestCase
 
@@ -96,6 +96,31 @@ class TestCliSsh(BaseCommandTestCase):
         self.ensure_local_keypair.assert_not_called()
         self.subprocess_call.assert_not_called()
 
+    def test_split_connect_args(self):
+        cases = [
+            ((), ((), ())),
+            (("bash", "-lc", "echo hi"), ((), ("bash", "-lc", "echo hi"))),
+            (
+                ("-L", "8888:127.0.0.1:8888", "-N"),
+                (("-L", "8888:127.0.0.1:8888", "-N"), ()),
+            ),
+            (
+                ("-v", "-L", "8888:127.0.0.1:8888", "--", "bash"),
+                (("-v", "-L", "8888:127.0.0.1:8888"), ("bash",)),
+            ),
+            (("--", "-some-command"), ((), ("-some-command",))),
+        ]
+        for args, expected in cases:
+            assert _split_connect_args(args) == expected
+
+    def test_connect_help_documents_passthrough(self):
+        result = self.runner.invoke(ssh, ["connect", "--help"])
+
+        assert result.exit_code == 0
+        assert "Pass SSH options or a remote command after `--`." in result.output
+        assert "Use a second `--` to separate" in result.output
+        assert "SSH options from the remote command." in result.output
+
     def test_connect_builds_exact_ssh_argv(self):
         result = self.runner.invoke(
             ssh,
@@ -173,6 +198,221 @@ class TestCliSsh(BaseCommandTestCase):
                 "polyaxon-{}".format(RUN_UUID),
             ]
         )
+
+    def test_connect_appends_remote_command_after_target(self):
+        result = self.runner.invoke(
+            ssh,
+            [
+                "connect",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "--",
+                "bash",
+                "-lc",
+                "echo hi",
+            ],
+        )
+
+        assert result.exit_code == 0
+        self.subprocess_call.assert_called_once_with(
+            [
+                "ssh",
+                "-o",
+                "User=root",
+                "-o",
+                "IdentityFile=/tmp/polyaxon_sandbox_ed25519",
+                "-o",
+                "IdentitiesOnly=yes",
+                "-o",
+                "UserKnownHostsFile=/tmp/polyaxon_known_hosts",
+                "-o",
+                "StrictHostKeyChecking=yes",
+                "-o",
+                (
+                    "ProxyCommand=polyaxon ssh tunnel -p owner/project -uid {} "
+                    "--identity-file /tmp/polyaxon_sandbox_ed25519 "
+                    "--known-hosts-file /tmp/polyaxon_known_hosts"
+                ).format(RUN_UUID),
+                "polyaxon-{}".format(RUN_UUID),
+                "bash",
+                "-lc",
+                "echo hi",
+            ]
+        )
+
+    def test_connect_inserts_ssh_args_before_target(self):
+        result = self.runner.invoke(
+            ssh,
+            [
+                "connect",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "--",
+                "-L",
+                "8888:127.0.0.1:8888",
+                "-N",
+            ],
+        )
+
+        assert result.exit_code == 0
+        self.subprocess_call.assert_called_once_with(
+            [
+                "ssh",
+                "-o",
+                "User=root",
+                "-o",
+                "IdentityFile=/tmp/polyaxon_sandbox_ed25519",
+                "-o",
+                "IdentitiesOnly=yes",
+                "-o",
+                "UserKnownHostsFile=/tmp/polyaxon_known_hosts",
+                "-o",
+                "StrictHostKeyChecking=yes",
+                "-o",
+                (
+                    "ProxyCommand=polyaxon ssh tunnel -p owner/project -uid {} "
+                    "--identity-file /tmp/polyaxon_sandbox_ed25519 "
+                    "--known-hosts-file /tmp/polyaxon_known_hosts"
+                ).format(RUN_UUID),
+                "-L",
+                "8888:127.0.0.1:8888",
+                "-N",
+                "polyaxon-{}".format(RUN_UUID),
+            ]
+        )
+
+    def test_connect_splits_ssh_args_and_remote_command(self):
+        result = self.runner.invoke(
+            ssh,
+            [
+                "connect",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "--",
+                "-v",
+                "-L",
+                "8888:127.0.0.1:8888",
+                "--",
+                "bash",
+            ],
+        )
+
+        assert result.exit_code == 0
+        self.subprocess_call.assert_called_once_with(
+            [
+                "ssh",
+                "-o",
+                "User=root",
+                "-o",
+                "IdentityFile=/tmp/polyaxon_sandbox_ed25519",
+                "-o",
+                "IdentitiesOnly=yes",
+                "-o",
+                "UserKnownHostsFile=/tmp/polyaxon_known_hosts",
+                "-o",
+                "StrictHostKeyChecking=yes",
+                "-o",
+                (
+                    "ProxyCommand=polyaxon ssh tunnel -p owner/project -uid {} "
+                    "--identity-file /tmp/polyaxon_sandbox_ed25519 "
+                    "--known-hosts-file /tmp/polyaxon_known_hosts"
+                ).format(RUN_UUID),
+                "-v",
+                "-L",
+                "8888:127.0.0.1:8888",
+                "polyaxon-{}".format(RUN_UUID),
+                "bash",
+            ]
+        )
+
+    def test_connect_treats_dash_prefixed_first_arg_as_all_ssh_args(self):
+        result = self.runner.invoke(
+            ssh,
+            [
+                "connect",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "--",
+                "-L",
+                "8888:127.0.0.1:8888",
+                "ls",
+            ],
+        )
+
+        assert result.exit_code == 0
+        self.subprocess_call.assert_called_once()
+        call_args = self.subprocess_call.call_args.args[0]
+        assert call_args[-4:] == [
+            "-L",
+            "8888:127.0.0.1:8888",
+            "ls",
+            "polyaxon-{}".format(RUN_UUID),
+        ]
+
+    def test_connect_dash_prefixed_remote_command_uses_internal_delimiter(self):
+        result = self.runner.invoke(
+            ssh,
+            [
+                "connect",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "--",
+                "--",
+                "-some-command",
+            ],
+        )
+
+        assert result.exit_code == 0
+        self.subprocess_call.assert_called_once_with(
+            [
+                "ssh",
+                "-o",
+                "User=root",
+                "-o",
+                "IdentityFile=/tmp/polyaxon_sandbox_ed25519",
+                "-o",
+                "IdentitiesOnly=yes",
+                "-o",
+                "UserKnownHostsFile=/tmp/polyaxon_known_hosts",
+                "-o",
+                "StrictHostKeyChecking=yes",
+                "-o",
+                (
+                    "ProxyCommand=polyaxon ssh tunnel -p owner/project -uid {} "
+                    "--identity-file /tmp/polyaxon_sandbox_ed25519 "
+                    "--known-hosts-file /tmp/polyaxon_known_hosts"
+                ).format(RUN_UUID),
+                "polyaxon-{}".format(RUN_UUID),
+                "-some-command",
+            ]
+        )
+
+    def test_connect_requires_click_separator_for_ssh_options(self):
+        result = self.runner.invoke(
+            ssh,
+            [
+                "connect",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "-L",
+                "8888:127.0.0.1:8888",
+            ],
+        )
+
+        assert result.exit_code == 2
+        self.subprocess_call.assert_not_called()
 
     def test_connect_propagates_ssh_exit_code(self):
         self.subprocess_call.return_value = 7

@@ -78,7 +78,25 @@ def _ssh_target(run_uuid):
     return "polyaxon-{}".format(run_uuid)
 
 
-def _ssh_connect_argv(project_ref, run_uuid, identity_file, known_hosts_file):
+def _split_connect_args(args):
+    if not args:
+        return (), ()
+    if "--" in args:
+        index = args.index("--")
+        return args[:index], args[index + 1 :]
+    if args[0].startswith("-"):
+        return args, ()
+    return (), args
+
+
+def _ssh_connect_argv(
+    project_ref,
+    run_uuid,
+    identity_file,
+    known_hosts_file,
+    ssh_args=(),
+    remote_args=(),
+):
     return [
         "ssh",
         "-o",
@@ -100,7 +118,9 @@ def _ssh_connect_argv(project_ref, run_uuid, identity_file, known_hosts_file):
                 known_hosts_file=known_hosts_file,
             )
         ),
+        *ssh_args,
         _ssh_target(run_uuid),
+        *remote_args,
     ]
 
 
@@ -146,21 +166,29 @@ def ssh():
     type=click.Path(dir_okay=False),
     help="Known hosts file to use. Defaults to Polyaxon's managed file.",
 )
+@click.argument("connect_args", nargs=-1, type=click.UNPROCESSED)
 @clean_outputs
-def connect(project, uid, identity_file, known_hosts_file):
-    """Connect to a sandbox run over SSH."""
+def connect(project, uid, identity_file, known_hosts_file, connect_args):
+    """Connect to a sandbox run over SSH.
+
+    Pass SSH options or a remote command after `--`. Use a second `--` to
+    separate SSH options from the remote command.
+    """
     try:
         owner, _, project_name, run_uuid = get_project_run_or_local(
             project, uid, is_cli=True
         )
         identity_path = ensure_local_keypair(identity_file)
         known_hosts_path = resolve_known_hosts_file(known_hosts_file)
+        ssh_args, remote_args = _split_connect_args(connect_args)
         exit_code = subprocess.call(
             _ssh_connect_argv(
                 project_ref="{}/{}".format(owner, project_name),
                 run_uuid=run_uuid,
                 identity_file=identity_path,
                 known_hosts_file=known_hosts_path,
+                ssh_args=ssh_args,
+                remote_args=remote_args,
             )
         )
     except (OSError, PolyaxonClientException) as e:
