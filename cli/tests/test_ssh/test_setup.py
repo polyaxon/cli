@@ -35,7 +35,9 @@ def test_ensure_local_keypair_generates_default_key(tmp_path):
             "polyaxon-sandbox",
             "-f",
             str(identity_file),
-        ]
+        ],
+        stdout=setup.subprocess.DEVNULL,
+        stderr=setup.subprocess.DEVNULL,
     )
 
 
@@ -80,7 +82,10 @@ def test_get_public_key_derives_from_private_key_when_pub_file_missing(tmp_path)
     ) as check_output:
         assert setup.get_public_key(identity_file) == "ssh-ed25519 BBB derived"
 
-    check_output.assert_called_once_with(["ssh-keygen", "-y", "-f", str(identity_file)])
+    check_output.assert_called_once_with(
+        ["ssh-keygen", "-y", "-f", str(identity_file)],
+        stderr=setup.subprocess.DEVNULL,
+    )
 
 
 def test_build_remote_setup_command_is_idempotent():

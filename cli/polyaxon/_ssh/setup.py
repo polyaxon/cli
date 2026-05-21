@@ -85,7 +85,9 @@ def ensure_local_keypair(identity_file: Optional[str] = None) -> Path:
                 SSH_KEY_COMMENT,
                 "-f",
                 str(path),
-            ]
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
     except (OSError, subprocess.CalledProcessError) as e:
         raise PolyaxonClientException(
@@ -101,7 +103,10 @@ def get_public_key(identity_file: Path) -> str:
     else:
         try:
             public_key = (
-                subprocess.check_output(["ssh-keygen", "-y", "-f", str(identity_file)])
+                subprocess.check_output(
+                    ["ssh-keygen", "-y", "-f", str(identity_file)],
+                    stderr=subprocess.DEVNULL,
+                )
                 .decode("utf-8")
                 .strip()
             )

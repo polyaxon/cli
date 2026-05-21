@@ -28,6 +28,11 @@ class TestCliSsh(BaseCommandTestCase):
         self.known_hosts = patch("polyaxon._cli.ssh.write_known_hosts_entry")
         self.tunnel_client = patch("polyaxon._cli.ssh.SandboxSshTunnelClient")
         self.tunnel_runner = patch("polyaxon._cli.ssh.run_tunnel")
+        self.ensure_keypair = patch(
+            "polyaxon._cli.ssh.ensure_local_keypair",
+            return_value=Path("/tmp/polyaxon_sandbox_ed25519"),
+        )
+        self.ssh_call = patch("polyaxon._cli.ssh.subprocess.call", return_value=0)
         self.resolve_identity = patch(
             "polyaxon._cli.ssh.resolve_identity_file",
             return_value=Path("/tmp/polyaxon_sandbox_ed25519"),
@@ -42,6 +47,8 @@ class TestCliSsh(BaseCommandTestCase):
         self.write_known_hosts_entry = self.known_hosts.start()
         self.ssh_tunnel_client_class = self.tunnel_client.start()
         self.run_tunnel = self.tunnel_runner.start()
+        self.ensure_local_keypair = self.ensure_keypair.start()
+        self.subprocess_call = self.ssh_call.start()
         self.resolve_identity_file = self.resolve_identity.start()
         self.resolve_known_hosts_file = self.resolve_known_hosts.start()
         self.client = MagicMock()
@@ -68,13 +75,137 @@ class TestCliSsh(BaseCommandTestCase):
         self.addCleanup(self.known_hosts.stop)
         self.addCleanup(self.tunnel_client.stop)
         self.addCleanup(self.tunnel_runner.stop)
+        self.addCleanup(self.ensure_keypair.stop)
+        self.addCleanup(self.ssh_call.stop)
         self.addCleanup(self.resolve_identity.stop)
         self.addCleanup(self.resolve_known_hosts.stop)
 
-    def test_command_is_registered(self):
+    def test_commands_are_registered(self):
         from polyaxon.cli import cli
 
         assert cli.commands["ssh"].name == "ssh"
+        assert ssh.commands["connect"].name == "connect"
+
+    def test_group_options_are_not_supported(self):
+        result = self.runner.invoke(
+            ssh,
+            ["-p", "owner/project", "-uid", RUN_UUID],
+        )
+
+        assert result.exit_code == 2
+        self.ensure_local_keypair.assert_not_called()
+        self.subprocess_call.assert_not_called()
+
+    def test_connect_builds_exact_ssh_argv(self):
+        result = self.runner.invoke(
+            ssh,
+            ["connect", "-p", "owner/project", "-uid", RUN_UUID],
+        )
+
+        assert result.exit_code == 0
+        self.ensure_local_keypair.assert_called_once_with(None)
+        self.resolve_known_hosts_file.assert_called_once_with(None)
+        self.subprocess_call.assert_called_once_with(
+            [
+                "ssh",
+                "-o",
+                "User=root",
+                "-o",
+                "IdentityFile=/tmp/polyaxon_sandbox_ed25519",
+                "-o",
+                "IdentitiesOnly=yes",
+                "-o",
+                "UserKnownHostsFile=/tmp/polyaxon_known_hosts",
+                "-o",
+                "StrictHostKeyChecking=yes",
+                "-o",
+                (
+                    "ProxyCommand=polyaxon ssh tunnel -p owner/project -uid {} "
+                    "--identity-file /tmp/polyaxon_sandbox_ed25519 "
+                    "--known-hosts-file /tmp/polyaxon_known_hosts"
+                ).format(RUN_UUID),
+                "polyaxon-{}".format(RUN_UUID),
+            ]
+        )
+        self.prepare_ssh_access.assert_not_called()
+
+    def test_connect_forwards_custom_identity_and_known_hosts(self):
+        self.ensure_local_keypair.return_value = Path("/tmp/id_ed25519")
+        self.resolve_known_hosts_file.return_value = Path("/tmp/known_hosts")
+
+        result = self.runner.invoke(
+            ssh,
+            [
+                "connect",
+                "-p",
+                "owner/project",
+                "-uid",
+                RUN_UUID,
+                "--identity-file",
+                "/tmp/id_ed25519",
+                "--known-hosts-file",
+                "/tmp/known_hosts",
+            ],
+        )
+
+        assert result.exit_code == 0
+        self.ensure_local_keypair.assert_called_once_with("/tmp/id_ed25519")
+        self.resolve_known_hosts_file.assert_called_once_with("/tmp/known_hosts")
+        self.subprocess_call.assert_called_once_with(
+            [
+                "ssh",
+                "-o",
+                "User=root",
+                "-o",
+                "IdentityFile=/tmp/id_ed25519",
+                "-o",
+                "IdentitiesOnly=yes",
+                "-o",
+                "UserKnownHostsFile=/tmp/known_hosts",
+                "-o",
+                "StrictHostKeyChecking=yes",
+                "-o",
+                (
+                    "ProxyCommand=polyaxon ssh tunnel -p owner/project -uid {} "
+                    "--identity-file /tmp/id_ed25519 "
+                    "--known-hosts-file /tmp/known_hosts"
+                ).format(RUN_UUID),
+                "polyaxon-{}".format(RUN_UUID),
+            ]
+        )
+
+    def test_connect_propagates_ssh_exit_code(self):
+        self.subprocess_call.return_value = 7
+
+        result = self.runner.invoke(
+            ssh,
+            ["connect", "-p", "owner/project", "-uid", RUN_UUID],
+        )
+
+        assert result.exit_code == 7
+
+    def test_connect_handles_local_key_errors_before_ssh(self):
+        self.ensure_local_keypair.side_effect = PolyaxonClientException("bad key")
+
+        result = self.runner.invoke(
+            ssh,
+            ["connect", "-p", "owner/project", "-uid", RUN_UUID],
+        )
+
+        assert result.exit_code == 1
+        assert "bad key" in result.output
+        self.subprocess_call.assert_not_called()
+
+    def test_connect_handles_subprocess_launch_errors(self):
+        self.subprocess_call.side_effect = OSError("missing ssh")
+
+        result = self.runner.invoke(
+            ssh,
+            ["connect", "-p", "owner/project", "-uid", RUN_UUID],
+        )
+
+        assert result.exit_code == 1
+        assert "missing ssh" in result.output
 
     def test_setup_prepares_ssh_access(self):
         result = self.runner.invoke(
@@ -452,6 +583,25 @@ class TestCliSsh(BaseCommandTestCase):
         result = self.runner.invoke(ssh, ["--help"])
 
         assert result.exit_code == 0
+        assert "connect" in result.output
         assert "setup" in result.output
         assert "config" in result.output
         assert "tunnel" not in result.output
+
+    def test_only_connect_invokes_ssh_subprocess(self):
+        for command in ["setup", "config", "tunnel"]:
+            result = self.runner.invoke(
+                ssh,
+                [command, "-p", "owner/project", "-uid", RUN_UUID],
+            )
+            assert result.exit_code == 0
+
+        self.subprocess_call.assert_not_called()
+
+        result = self.runner.invoke(
+            ssh,
+            ["connect", "-p", "owner/project", "-uid", RUN_UUID],
+        )
+
+        assert result.exit_code == 0
+        self.subprocess_call.assert_called_once()

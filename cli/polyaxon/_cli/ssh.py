@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import logging
 import shlex
+import subprocess
 import sys
 
 import click
@@ -13,6 +14,7 @@ from polyaxon._cli.options import OPTIONS_PROJECT, OPTIONS_RUN_UID
 from polyaxon._client.transport.ssh_tunnel import SandboxSshTunnelClient
 from polyaxon._env_vars.getters import get_project_run_or_local
 from polyaxon._ssh import (
+    ensure_local_keypair,
     prepare_ssh_access,
     resolve_identity_file,
     resolve_known_hosts_file,
@@ -62,7 +64,9 @@ def _disable_tunnel_logging():
 
 
 def _proxy_command(project_ref, run_uuid, identity_file, known_hosts_file):
-    return "polyaxon ssh tunnel -p {} -uid {} --identity-file {} --known-hosts-file {}".format(
+    return (
+        "polyaxon ssh tunnel -p {} -uid {} --identity-file {} --known-hosts-file {}"
+    ).format(
         shlex.quote(project_ref),
         shlex.quote(run_uuid),
         shlex.quote(str(identity_file)),
@@ -70,8 +74,38 @@ def _proxy_command(project_ref, run_uuid, identity_file, known_hosts_file):
     )
 
 
+def _ssh_target(run_uuid):
+    return "polyaxon-{}".format(run_uuid)
+
+
+def _ssh_connect_argv(project_ref, run_uuid, identity_file, known_hosts_file):
+    return [
+        "ssh",
+        "-o",
+        "User=root",
+        "-o",
+        "IdentityFile={}".format(identity_file),
+        "-o",
+        "IdentitiesOnly=yes",
+        "-o",
+        "UserKnownHostsFile={}".format(known_hosts_file),
+        "-o",
+        "StrictHostKeyChecking=yes",
+        "-o",
+        "ProxyCommand={}".format(
+            _proxy_command(
+                project_ref=project_ref,
+                run_uuid=run_uuid,
+                identity_file=identity_file,
+                known_hosts_file=known_hosts_file,
+            )
+        ),
+        _ssh_target(run_uuid),
+    ]
+
+
 def _ssh_config(project_ref, run_uuid, identity_file, known_hosts_file):
-    host = "polyaxon-{}".format(run_uuid)
+    host = _ssh_target(run_uuid)
     return "\n".join(
         [
             "Host {}".format(host),
@@ -97,6 +131,46 @@ def _ssh_config(project_ref, run_uuid, identity_file, known_hosts_file):
 @clean_outputs
 def ssh():
     """SSH access for sandbox-enabled runs."""
+
+
+@ssh.command()
+@click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
+@click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
+@click.option(
+    "--identity-file",
+    type=click.Path(dir_okay=False),
+    help="SSH private key to use. Defaults to Polyaxon's managed sandbox key.",
+)
+@click.option(
+    "--known-hosts-file",
+    type=click.Path(dir_okay=False),
+    help="Known hosts file to use. Defaults to Polyaxon's managed file.",
+)
+@clean_outputs
+def connect(project, uid, identity_file, known_hosts_file):
+    """Connect to a sandbox run over SSH."""
+    try:
+        owner, _, project_name, run_uuid = get_project_run_or_local(
+            project, uid, is_cli=True
+        )
+        identity_path = ensure_local_keypair(identity_file)
+        known_hosts_path = resolve_known_hosts_file(known_hosts_file)
+        exit_code = subprocess.call(
+            _ssh_connect_argv(
+                project_ref="{}/{}".format(owner, project_name),
+                run_uuid=run_uuid,
+                identity_file=identity_path,
+                known_hosts_file=known_hosts_path,
+            )
+        )
+    except (OSError, PolyaxonClientException) as e:
+        handle_cli_error(
+            e,
+            "Could not start SSH connection for run `{}`.".format(uid),
+            sys_exit=True,
+        )
+        return
+    raise click.exceptions.Exit(exit_code)
 
 
 @ssh.command()
