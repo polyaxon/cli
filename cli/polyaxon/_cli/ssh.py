@@ -117,7 +117,9 @@ def setup(project, uid, identity_file, timeout_ms):
 def config_command(project, uid, identity_file, known_hosts_file):
     """Print an SSH config block for a sandbox run."""
     try:
-        owner, _, project_name, run_uuid = get_project_run_or_local(project, uid, is_cli=True)
+        owner, _, project_name, run_uuid = get_project_run_or_local(
+            project, uid, is_cli=True
+        )
     except PolyaxonClientException as e:
         handle_cli_error(
             e,
@@ -153,7 +155,9 @@ def config_command(project, uid, identity_file, known_hosts_file):
 def tunnel(project, uid, identity_file, known_hosts_file):
     """Open an SSH tunnel to a sandbox run."""
     try:
-        owner, _, project_name, run_uuid = get_project_run_or_local(project, uid, is_cli=True)
+        owner, _, project_name, run_uuid = get_project_run_or_local(
+            project, uid, is_cli=True
+        )
         client = SandboxClient(
             owner=owner,
             project=project_name,
