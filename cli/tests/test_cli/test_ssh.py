@@ -85,6 +85,7 @@ class TestCliSsh(BaseCommandTestCase):
         assert result.exit_code == 0
         assert "SSH access prepared" in result.output
         assert "IdentityFile /tmp/polyaxon_sandbox_ed25519" in result.output
+        assert "UserKnownHostsFile /tmp/polyaxon_known_hosts" in result.output
         self.sandbox_client_class.assert_called_once_with(
             owner="owner",
             project="project",
@@ -95,6 +96,12 @@ class TestCliSsh(BaseCommandTestCase):
             client=self.client,
             identity_file=None,
             timeout_ms=30_000,
+        )
+        self.resolve_known_hosts_file.assert_called_once_with(None)
+        self.write_known_hosts_entry.assert_called_once_with(
+            path=Path("/tmp/polyaxon_known_hosts"),
+            alias="polyaxon-{}".format(RUN_UUID),
+            host_public_key="ssh-ed25519 HOST sandbox",
         )
 
     def test_setup_forwards_identity_file_and_timeout(self):
@@ -108,6 +115,8 @@ class TestCliSsh(BaseCommandTestCase):
                 RUN_UUID,
                 "--identity-file",
                 "/tmp/id_ed25519",
+                "--known-hosts-file",
+                "/tmp/known_hosts",
                 "--timeout-ms",
                 "1000",
             ],
@@ -119,6 +128,7 @@ class TestCliSsh(BaseCommandTestCase):
             identity_file="/tmp/id_ed25519",
             timeout_ms=1000,
         )
+        self.resolve_known_hosts_file.assert_called_once_with("/tmp/known_hosts")
 
     def test_setup_handles_errors(self):
         self.prepare_ssh_access.side_effect = PolyaxonClientException("bad ssh")
@@ -130,6 +140,28 @@ class TestCliSsh(BaseCommandTestCase):
 
         assert result.exit_code == 1
         assert "bad ssh" in result.output
+        self.write_known_hosts_entry.assert_not_called()
+
+    def test_setup_handles_known_hosts_errors_after_prepare(self):
+        self.write_known_hosts_entry.side_effect = OSError("bad known_hosts")
+
+        result = self.runner.invoke(
+            ssh,
+            ["setup", "-p", "owner/project", "-uid", RUN_UUID],
+        )
+
+        assert result.exit_code == 1
+        assert "bad known_hosts" in result.output
+        self.prepare_ssh_access.assert_called_once_with(
+            client=self.client,
+            identity_file=None,
+            timeout_ms=30_000,
+        )
+        self.write_known_hosts_entry.assert_called_once_with(
+            path=Path("/tmp/polyaxon_known_hosts"),
+            alias="polyaxon-{}".format(RUN_UUID),
+            host_public_key="ssh-ed25519 HOST sandbox",
+        )
 
     def test_config_prints_proxy_command(self):
         result = self.runner.invoke(
@@ -142,11 +174,13 @@ class TestCliSsh(BaseCommandTestCase):
         assert "HostName polyaxon-{}".format(RUN_UUID) in result.output
         assert "User root" in result.output
         assert "IdentityFile /tmp/polyaxon_sandbox_ed25519" in result.output
+        assert "IdentitiesOnly yes" in result.output
         assert "UserKnownHostsFile /tmp/polyaxon_known_hosts" in result.output
         assert "StrictHostKeyChecking yes" in result.output
         assert (
             "ProxyCommand polyaxon ssh tunnel -p owner/project -uid {} "
-            "--identity-file /tmp/polyaxon_sandbox_ed25519".format(RUN_UUID)
+            "--identity-file /tmp/polyaxon_sandbox_ed25519 "
+            "--known-hosts-file /tmp/polyaxon_known_hosts".format(RUN_UUID)
             in result.output
         )
         self.resolve_identity_file.assert_called_once_with(None)
@@ -156,6 +190,7 @@ class TestCliSsh(BaseCommandTestCase):
 
     def test_config_forwards_identity_file(self):
         self.resolve_identity_file.return_value = Path("/tmp/id_ed25519")
+        self.resolve_known_hosts_file.return_value = Path("/tmp/known_hosts")
 
         result = self.runner.invoke(
             ssh,
@@ -174,7 +209,10 @@ class TestCliSsh(BaseCommandTestCase):
 
         assert result.exit_code == 0
         assert "IdentityFile /tmp/id_ed25519" in result.output
-        assert "UserKnownHostsFile /tmp/polyaxon_known_hosts" in result.output
+        assert "UserKnownHostsFile /tmp/known_hosts" in result.output
+        assert (
+            "--identity-file /tmp/id_ed25519 --known-hosts-file /tmp/known_hosts"
+        ) in result.output
         self.resolve_identity_file.assert_called_once_with("/tmp/id_ed25519")
         self.resolve_known_hosts_file.assert_called_once_with("/tmp/known_hosts")
 

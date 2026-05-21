@@ -61,11 +61,12 @@ def _disable_tunnel_logging():
         logging.disable(previous_disable_level)
 
 
-def _proxy_command(project_ref, run_uuid, identity_file):
-    return "polyaxon ssh tunnel -p {} -uid {} --identity-file {}".format(
+def _proxy_command(project_ref, run_uuid, identity_file, known_hosts_file):
+    return "polyaxon ssh tunnel -p {} -uid {} --identity-file {} --known-hosts-file {}".format(
         shlex.quote(project_ref),
         shlex.quote(run_uuid),
         shlex.quote(str(identity_file)),
+        shlex.quote(str(known_hosts_file)),
     )
 
 
@@ -77,6 +78,7 @@ def _ssh_config(project_ref, run_uuid, identity_file, known_hosts_file):
             "  HostName {}".format(host),
             "  User root",
             "  IdentityFile {}".format(identity_file),
+            "  IdentitiesOnly yes",
             "  UserKnownHostsFile {}".format(known_hosts_file),
             "  StrictHostKeyChecking yes",
             "  ProxyCommand {}".format(
@@ -84,6 +86,7 @@ def _ssh_config(project_ref, run_uuid, identity_file, known_hosts_file):
                     project_ref=project_ref,
                     run_uuid=run_uuid,
                     identity_file=identity_file,
+                    known_hosts_file=known_hosts_file,
                 )
             ),
         ]
@@ -105,6 +108,11 @@ def ssh():
     help="SSH private key to use. Defaults to Polyaxon's managed sandbox key.",
 )
 @click.option(
+    "--known-hosts-file",
+    type=click.Path(dir_okay=False),
+    help="Known hosts file to use. Defaults to Polyaxon's managed file.",
+)
+@click.option(
     "--timeout-ms",
     type=click.IntRange(min=1),
     default=30_000,
@@ -112,16 +120,37 @@ def ssh():
     help="Remote SSH setup timeout in milliseconds.",
 )
 @clean_outputs
-def setup(project, uid, identity_file, timeout_ms):
+def setup(project, uid, identity_file, known_hosts_file, timeout_ms):
     """Prepare SSH access for a sandbox run."""
     try:
-        client = _sandbox_client(project, uid)
+        owner, _, project_name, run_uuid = get_project_run_or_local(
+            project, uid, is_cli=True
+        )
+        client = SandboxClient(
+            owner=owner,
+            project=project_name,
+            run_uuid=run_uuid,
+            manual_exceptions_handling=True,
+        )
+        known_hosts_path = resolve_known_hosts_file(known_hosts_file)
+    except PolyaxonClientException as e:
+        handle_cli_error(
+            e,
+            "Could not resolve sandbox run `{}`.".format(uid),
+            sys_exit=True,
+        )
+    try:
         access = prepare_ssh_access(
             client=client,
             identity_file=identity_file,
             timeout_ms=timeout_ms,
         )
-    except (ApiException, HTTPError, PolyaxonClientException) as e:
+        write_known_hosts_entry(
+            path=known_hosts_path,
+            alias="polyaxon-{}".format(run_uuid),
+            host_public_key=access.host_public_key,
+        )
+    except (ApiException, HTTPError, OSError, PolyaxonClientException) as e:
         handle_cli_error(
             e,
             "Could not prepare SSH access for run `{}`.".format(uid),
@@ -129,6 +158,7 @@ def setup(project, uid, identity_file, timeout_ms):
         )
     Printer.success("SSH access prepared.")
     Printer.print("IdentityFile {}".format(access.identity_file))
+    Printer.print("UserKnownHostsFile {}".format(known_hosts_path))
 
 
 @ssh.command("config")
