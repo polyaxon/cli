@@ -1,3 +1,4 @@
+import inspect
 import logging
 from pathlib import Path
 import pytest
@@ -13,6 +14,12 @@ from tests.test_cli.utils import BaseCommandTestCase
 
 
 RUN_UUID = "019e3c01-0000-7000-8000-000000000000"
+
+
+def _cli_runner_with_stderr():
+    if "mix_stderr" in inspect.signature(CliRunner.__init__).parameters:
+        return CliRunner(mix_stderr=False)
+    return CliRunner()
 
 
 @pytest.mark.cli_mark
@@ -717,7 +724,7 @@ class TestCliSsh(BaseCommandTestCase):
     def test_tunnel_handles_setup_errors(self):
         self.prepare_ssh_access.side_effect = PolyaxonClientException("bad ssh")
 
-        result = CliRunner(mix_stderr=False).invoke(
+        result = _cli_runner_with_stderr().invoke(
             ssh,
             ["tunnel", "-p", "owner/project", "-uid", RUN_UUID],
         )
@@ -732,7 +739,7 @@ class TestCliSsh(BaseCommandTestCase):
     def test_tunnel_handles_known_hosts_errors(self):
         self.write_known_hosts_entry.side_effect = OSError("bad known_hosts")
 
-        result = CliRunner(mix_stderr=False).invoke(
+        result = _cli_runner_with_stderr().invoke(
             ssh,
             ["tunnel", "-p", "owner/project", "-uid", RUN_UUID],
         )
@@ -748,7 +755,7 @@ class TestCliSsh(BaseCommandTestCase):
             "handshake failed"
         )
 
-        result = CliRunner(mix_stderr=False).invoke(
+        result = _cli_runner_with_stderr().invoke(
             ssh,
             ["tunnel", "-p", "owner/project", "-uid", RUN_UUID],
         )
@@ -761,7 +768,7 @@ class TestCliSsh(BaseCommandTestCase):
     def test_tunnel_propagates_bridge_exit_code(self):
         self.run_tunnel.return_value = 7
 
-        result = CliRunner(mix_stderr=False).invoke(
+        result = _cli_runner_with_stderr().invoke(
             ssh,
             ["tunnel", "-p", "owner/project", "-uid", RUN_UUID],
         )
@@ -790,7 +797,7 @@ class TestCliSsh(BaseCommandTestCase):
         self.prepare_ssh_access.side_effect = prepare_access
 
         try:
-            result = CliRunner(mix_stderr=False).invoke(
+            result = _cli_runner_with_stderr().invoke(
                 ssh,
                 ["tunnel", "-p", "owner/project", "-uid", RUN_UUID],
             )
