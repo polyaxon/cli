@@ -8,6 +8,7 @@ from polyaxon._ssh import setup
 from polyaxon._ssh.constants import (
     POLYAXON_KNOWN_HOSTS_PATH,
     SSH_AUTHORIZED_KEYS_PATH,
+    SSH_ETC_PATH,
     SSH_HOST_KEY_PATH,
 )
 from polyaxon.exceptions import PolyaxonClientException
@@ -95,7 +96,14 @@ def test_build_remote_setup_command_is_idempotent():
     script = command[2]
     assert SSH_HOST_KEY_PATH in script
     assert SSH_AUTHORIZED_KEYS_PATH in script
-    assert ">/dev/null 2>&1" in script
+    assert "chmod 700 {}".format(SSH_ETC_PATH) in script
+    assert ">/dev/null 2>&1" not in script
+    assert (
+        '/opt/polyaxon/bin/ssh-keygen -t ed25519 -N "" -f {} >/dev/null'.format(
+            SSH_HOST_KEY_PATH
+        )
+        in script
+    )
     assert 'grep -qxF "$pub"' in script
     assert ">> {}".format(SSH_AUTHORIZED_KEYS_PATH) in script
     assert script.endswith(

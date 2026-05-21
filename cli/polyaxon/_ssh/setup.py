@@ -20,8 +20,9 @@ SSH_SETUP_TIMEOUT_MS = 30_000
 SSH_SETUP_SCRIPT = """
 set -eu
 mkdir -p {ssh_etc_path}
+chmod 700 {ssh_etc_path}
 if [ ! -f {host_key_path} ]; then
-  /opt/polyaxon/bin/ssh-keygen -t ed25519 -N "" -f {host_key_path} >/dev/null 2>&1
+  /opt/polyaxon/bin/ssh-keygen -t ed25519 -N "" -f {host_key_path} >/dev/null
 fi
 touch {authorized_keys_path}
 chmod 600 {host_key_path} {authorized_keys_path}
