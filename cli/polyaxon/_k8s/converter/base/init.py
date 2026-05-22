@@ -523,12 +523,16 @@ class InitConverter(_BaseConverter):
 
         copy_commands = []
         if use_tmux:
-            copy_commands.append("cp /usr/bin/tmux /opt/polyaxon/bin/tmux")
+            copy_commands += [
+                "cp /usr/bin/tmux /opt/polyaxon/bin/tmux",
+                "printf '%s\\n' 'Polyaxon tmux tools initialized'",
+            ]
         if use_sandbox:
             copy_commands += [
                 "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec",
                 "cp /usr/bin/bootstrap-sandbox.sh "
                 "/opt/polyaxon/bin/bootstrap-sandbox.sh",
+                "printf '%s\\n' 'Polyaxon sandbox tools initialized'",
             ]
         if use_ssh:
             copy_commands += [
@@ -539,10 +543,9 @@ class InitConverter(_BaseConverter):
                 "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen",
                 "cp /usr/bin/bootstrap-ssh.sh /opt/polyaxon/bin/bootstrap-ssh.sh",
                 "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config",
+                "printf '%s\\n' 'Polyaxon ssh tools initialized'",
             ]
         command = ["sh", "-c", " && ".join(copy_commands)]
-        if use_tmux and not use_sandbox and not use_ssh:
-            command = ["cp", "/usr/bin/tmux", "/opt/polyaxon/bin/tmux"]
 
         volume_mounts = [cls._get_tools_bin_context_mount(read_only=False)]
         if use_ssh:

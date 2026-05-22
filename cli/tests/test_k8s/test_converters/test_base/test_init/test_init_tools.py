@@ -26,9 +26,10 @@ class TestInitTools(BaseConverterTest):
         assert container.image == "foo/foo"
         assert container.image_pull_policy == "IfNotPresent"
         assert container.command == [
-            "cp",
-            "/usr/bin/tmux",
-            "/opt/polyaxon/bin/tmux",
+            "sh",
+            "-c",
+            "cp /usr/bin/tmux /opt/polyaxon/bin/tmux && "
+            "printf '%s\\n' 'Polyaxon tmux tools initialized'",
         ]
         assert container.args is None
         assert container.resources == get_init_resources()
@@ -52,7 +53,8 @@ class TestInitTools(BaseConverterTest):
             "-c",
             "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec && "
             "cp /usr/bin/bootstrap-sandbox.sh "
-            "/opt/polyaxon/bin/bootstrap-sandbox.sh",
+            "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
+            "printf '%s\\n' 'Polyaxon sandbox tools initialized'",
         ]
 
     def test_get_tools_init_container_with_tmux_and_sandbox(self):
@@ -70,9 +72,11 @@ class TestInitTools(BaseConverterTest):
             "sh",
             "-c",
             "cp /usr/bin/tmux /opt/polyaxon/bin/tmux && "
+            "printf '%s\\n' 'Polyaxon tmux tools initialized' && "
             "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec && "
             "cp /usr/bin/bootstrap-sandbox.sh "
-            "/opt/polyaxon/bin/bootstrap-sandbox.sh",
+            "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
+            "printf '%s\\n' 'Polyaxon sandbox tools initialized'",
         ]
 
     def test_get_tools_init_container_with_ssh(self):
@@ -92,6 +96,7 @@ class TestInitTools(BaseConverterTest):
             "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec && "
             "cp /usr/bin/bootstrap-sandbox.sh "
             "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
+            "printf '%s\\n' 'Polyaxon sandbox tools initialized' && "
             "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd && "
             "cp /usr/bin/sshd-session /opt/polyaxon/bin/sshd-session && "
             "cp /usr/bin/sshd-auth /opt/polyaxon/bin/sshd-auth && "
@@ -99,7 +104,8 @@ class TestInitTools(BaseConverterTest):
             "/opt/polyaxon/bin/sftp-server && "
             "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen && "
             "cp /usr/bin/bootstrap-ssh.sh /opt/polyaxon/bin/bootstrap-ssh.sh && "
-            "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config",
+            "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config && "
+            "printf '%s\\n' 'Polyaxon ssh tools initialized'",
         ]
         assert container.volume_mounts == [
             self.converter._get_tools_bin_context_mount(read_only=False),
@@ -125,6 +131,9 @@ class TestInitTools(BaseConverterTest):
         assert "cp /usr/bin/sshd-session /opt/polyaxon/bin/sshd-session" in command
         assert "cp /usr/bin/sshd-auth /opt/polyaxon/bin/sshd-auth" in command
         assert "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen" in command
+        assert "Polyaxon tmux tools initialized" in command
+        assert "Polyaxon sandbox tools initialized" in command
+        assert "Polyaxon ssh tools initialized" in command
         assert container.volume_mounts == [
             self.converter._get_tools_bin_context_mount(read_only=False),
             self.converter._get_tools_etc_context_mount(read_only=False),
@@ -183,9 +192,11 @@ class TestInitTools(BaseConverterTest):
             "sh",
             "-c",
             "cp /usr/bin/tmux /opt/polyaxon/bin/tmux && "
+            "printf '%s\\n' 'Polyaxon tmux tools initialized' && "
             "cp /usr/bin/plx-exec /opt/polyaxon/bin/plx-exec && "
             "cp /usr/bin/bootstrap-sandbox.sh "
             "/opt/polyaxon/bin/bootstrap-sandbox.sh && "
+            "printf '%s\\n' 'Polyaxon sandbox tools initialized' && "
             "cp /usr/sbin/sshd /opt/polyaxon/bin/sshd && "
             "cp /usr/bin/sshd-session /opt/polyaxon/bin/sshd-session && "
             "cp /usr/bin/sshd-auth /opt/polyaxon/bin/sshd-auth && "
@@ -193,7 +204,8 @@ class TestInitTools(BaseConverterTest):
             "/opt/polyaxon/bin/sftp-server && "
             "cp /usr/bin/ssh-keygen /opt/polyaxon/bin/ssh-keygen && "
             "cp /usr/bin/bootstrap-ssh.sh /opt/polyaxon/bin/bootstrap-ssh.sh && "
-            "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config",
+            "cp /etc/polyaxon/sshd_config /opt/polyaxon/etc/sshd_config && "
+            "printf '%s\\n' 'Polyaxon ssh tools initialized'",
         ]
 
     def test_get_tools_init_container_with_custom_image(self):
