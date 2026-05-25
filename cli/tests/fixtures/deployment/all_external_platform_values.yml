@@ -118,7 +118,6 @@ sidecar:
 agent:
   token:
   instance:
-  isReplica: false
   additionalNamespaces: [n1, n2]
   watchCluster: true
   enabled: false

@@ -22,7 +22,6 @@ class V1Agent(BaseAllowSchemaModel):
     updated_at: Optional[datetime.datetime] = None
     status: Optional[V1Statuses] = None
     status_conditions: Optional[List[V1StatusCondition]] = None
-    is_replica: Optional[bool] = None
     is_ui_managed: Optional[bool] = None
     settings: Optional[Dict[str, Any]] = None
     stats: Optional[Dict[str, Any]] = None

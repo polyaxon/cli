@@ -38,7 +38,6 @@ class AgentServiceConfig(DeploymentService):
     enable_logs_finalizers: Optional[bool] = Field(
         alias="enableLogsFinalizers", default=None
     )
-    is_replica: Optional[bool] = Field(alias="isReplica", default=None)
 
 
 class OperatorServiceConfig(DeploymentService):
