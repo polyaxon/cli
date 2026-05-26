@@ -5,7 +5,7 @@ from kubernetes.client import Configuration
 
 from polyaxon import settings
 from polyaxon._k8s.converter.converters import CONVERTERS
-from polyaxon._k8s.converter.mixins import MIXIN_MAPPING, BaseMixin
+from polyaxon._k8s.converter.mixins import MIXIN_MAPPING
 from polyaxon._runner.executor import BaseExecutor as _BaseExecutor
 from polyaxon._runner.kinds import RunnerKind
 from polyaxon._utils.fqn_utils import get_resource_name
@@ -115,10 +115,25 @@ class BaseExecutor(_BaseExecutor):
             namespace=namespace,
         )
 
+    @classmethod
+    def _get_operation_resource_mixins(cls):
+        mixins = []
+        seen = set()
+        for run_kind in cls.MIXIN_MAPPING:
+            mixin = cls._get_mixin_for_kind(kind=run_kind)
+            key = (mixin.GROUP, mixin.API_VERSION, mixin.PLURAL)
+            if key not in seen:
+                seen.add(key)
+                mixins.append(mixin)
+        return mixins
+
     def list_ops(self, namespace: str = None):
-        return self.manager.list_custom_objects(
-            group=BaseMixin.GROUP,
-            version=BaseMixin.API_VERSION,
-            plural=BaseMixin.PLURAL,
-            namespace=namespace,
-        )
+        ops = []
+        for mixin in self._get_operation_resource_mixins():
+            ops += self.manager.list_custom_objects(
+                group=mixin.GROUP,
+                version=mixin.API_VERSION,
+                plural=mixin.PLURAL,
+                namespace=namespace,
+            )
+        return ops
