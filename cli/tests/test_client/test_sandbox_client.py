@@ -13,6 +13,8 @@ from polyaxon._sandbox.client_utils import (
     FsWriteResult,
     SandboxBgOutput,
     SseFrameBuffer,
+    normalize_command,
+    normalize_env,
     validate_remote_path,
 )
 from polyaxon._sdk.schemas import (
@@ -306,6 +308,17 @@ def test_process_exec_rejects_invalid_command_and_env():
         client.process.exec(["env"], env={"A": 1})
     with pytest.raises(TypeError):
         client.process.exec(["env"], env={"A": {"nested": "bad"}})
+
+
+@pytest.mark.client_mark
+def test_sandbox_client_utils_normalize_command_and_env():
+    assert normalize_command(arg for arg in ("echo", "hi")) == ["echo", "hi"]
+    assert normalize_env({"A": "B", "EMPTY": None}) == {"A": "B", "EMPTY": None}
+
+    with pytest.raises(TypeError, match="iterable of strings"):
+        normalize_command("echo hi")
+    with pytest.raises(TypeError, match="env must be a mapping"):
+        normalize_env([("A", "B")])
 
 
 @pytest.mark.client_mark
