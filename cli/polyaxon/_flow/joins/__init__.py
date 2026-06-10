@@ -114,7 +114,7 @@ class V1Join(BaseSchemaModel):
 
     This will instruct Polyaxon to perform 2 searches.
     Each search will expose the params to be used similar to the default
-    [params section](/docs/scheduling/specification/params/).
+    [params section](/docs/polyaxonfile/specification/params/).
     Polyaxon will validate the params of search against the IO(inputs/outputs) definition.
     Users should make sure that their IO definition specify the `isList: true`,
     unless the type is `artifacts`.
@@ -130,7 +130,7 @@ class V1Join(BaseSchemaModel):
     >>> }
     ```
 
-    When the param is of type [ArtifactsType](/docs/scheduling/specification/types/#v1artifactstype),
+    When the param is of type [ArtifactsType](/docs/polyaxonfile/specification/types/#v1artifactstype),
     all files and dirs will be concatenated in a single list,
     each value will be prefixed with the uuid (run path) of each run in the query result:
 
@@ -148,7 +148,7 @@ class V1Join(BaseSchemaModel):
     ```
 
     > **Note**: the difference between using `artifacts.lineage_name`
-    > and [ArtifactsType](/docs/scheduling/specification/types/#v1artifactstype),
+    > and [ArtifactsType](/docs/polyaxonfile/specification/types/#v1artifactstype),
     > is that the former will only expose the path(s) based on any lineage logged
     > during the runtime, the later is a manual way of selecting specific files and dirs.
 
@@ -196,7 +196,7 @@ class V1Join(BaseSchemaModel):
 
     ### params
 
-    Similar to the default [params specification](/docs/scheduling/specification/params/)
+    Similar to the default [params specification](/docs/polyaxonfile/specification/params/)
     with the exception that it does not accept the `ref` key.
     The reference is generated automatically based on the search performed by Polyaxon.
 

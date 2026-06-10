@@ -23,7 +23,7 @@ class V1Tuner(BaseSchemaModel):
         hub_ref: str
         queue: List[str], optional
         presets: List[str], optional
-        params: Dict[str, [V1Param](/docs/scheduling/specification/params/)], optional
+        params: Dict[str, [V1Param](/docs/polyaxonfile/specification/params/)], optional
 
     ## YAML usage
 
@@ -101,7 +101,7 @@ class V1Tuner(BaseSchemaModel):
 
     ### params
 
-    The [params](/docs/scheduling/specification/params/) to pass if the handler requires extra params,
+    The [params](/docs/polyaxonfile/specification/params/) to pass if the handler requires extra params,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.

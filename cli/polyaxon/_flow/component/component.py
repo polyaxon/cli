@@ -41,15 +41,15 @@ class V1Component(
         queue: str, optional
         namespace: str, optional
         cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
-        termination: [V1Termination](/docs/scheduling/specification/termination/), optional
-        plugins: [V1Plugins](/docs/scheduling/specification/plugins/), optional
-        mount: List[[V1Mount](/docs/scheduling/specification/mount/)], optional
+        termination: [V1Termination](/docs/polyaxonfile/specification/termination/), optional
+        plugins: [V1Plugins](/docs/polyaxonfile/specification/plugins/), optional
+        mount: List[[V1Mount](/docs/polyaxonfile/specification/mount/)], optional
         build: [V1Build](/docs/orchestration/builds/), optional
         hooks: List[[V1Hook](/docs/orchestration/hooks/)], optional
-        inputs: [V1IO](/docs/scheduling/specification/io/), optional
-        outputs: [V1IO](/docs/scheduling/specification/io/), optional
+        inputs: [V1IO](/docs/polyaxonfile/specification/io/), optional
+        outputs: [V1IO](/docs/polyaxonfile/specification/io/), optional
         run: Union[[V1Job](/docs/workload/jobs/), [V1Service](/docs/workload/services/), [V1TFJob](/docs/workload/distributed/tf-jobs/), [V1PytorchJob](/docs/workload/distributed/pytorch-jobs/), [V1MPIJob](/docs/workload/distributed/mpi-jobs/), [V1RayCluster](/docs/workload/clusters/ray-clusters/), [V1DaskCluster](/docs/workload/clusters/dask-clusters/), [V1Dag](/docs/orchestration/flow-engine/specification/)]  # noqa
-        template: [V1Template](/docs/scheduling/specification/template/), optional
+        template: [V1Template](/docs/polyaxonfile/specification/template/), optional
 
     ## YAML usage
 
@@ -232,7 +232,7 @@ class V1Component(
 
     ### termination
 
-    The default component [termination](/docs/scheduling/specification/termination/).
+    The default component [termination](/docs/polyaxonfile/specification/termination/).
 
     This termination definition will be passed as the default value to
     all operations using this component,
@@ -246,7 +246,7 @@ class V1Component(
 
     ### plugins
 
-    The default component [plugins](/docs/scheduling/specification/plugins/).
+    The default component [plugins](/docs/polyaxonfile/specification/plugins/).
 
     This plugins definition will be passed as the default value to
     all operations using this component,
@@ -275,7 +275,7 @@ class V1Component(
 
     ### inputs
 
-    The [inputs](/docs/scheduling/specification/io/) definition for this component.
+    The [inputs](/docs/polyaxonfile/specification/io/) definition for this component.
 
     If the component defines required inputs, anytime a user tries to run
     this component without passing the required params or passing params with wrong types,
@@ -297,7 +297,7 @@ class V1Component(
 
     ### outputs
 
-    The [outputs](/docs/scheduling/specification/io/) definition for this component.
+    The [outputs](/docs/polyaxonfile/specification/io/) definition for this component.
 
     If the component defines required outputs, no exception will be raised at execution time,
     since Polyaxon considers the output values will be resolved in the future,
@@ -322,7 +322,7 @@ class V1Component(
 
     ### mount
 
-    > **Note**: ver 2.13+. Please check [V1Mount](/docs/scheduling/specification/mount/) for more details.
+    > **Note**: ver 2.13+. Please check [V1Mount](/docs/polyaxonfile/specification/mount/) for more details.
 
     This section defines a list of mounts to be used for this operation.
     Mounts can be defined either as strings or as full objects.

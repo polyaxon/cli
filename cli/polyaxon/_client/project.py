@@ -1237,7 +1237,7 @@ class ProjectClient(ClientMixin):
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the stage change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1278,7 +1278,7 @@ class ProjectClient(ClientMixin):
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1310,7 +1310,7 @@ class ProjectClient(ClientMixin):
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1342,7 +1342,7 @@ class ProjectClient(ClientMixin):
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.

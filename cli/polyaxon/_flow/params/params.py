@@ -264,8 +264,8 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
 
     When a param is passed from the CLI or directly in the YAML/Python specification,
-    it will be validated against the [inputs/outputs](/docs/scheduling/specification/io/)
-    defined in the [component](/docs/scheduling/specification/component/)
+    it will be validated against the [inputs/outputs](/docs/polyaxonfile/specification/io/)
+    defined in the [component](/docs/polyaxonfile/specification/component/)
 
     Args:
         value: any
@@ -358,7 +358,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     >>>     value: 0.001
     ```
 
-    The value could be coming from the [context](/docs/scheduling/context/), for example:
+    The value could be coming from the [context](/docs/polyaxonfile/context/overview/), for example:
 
     ```yaml
     >>> params:
@@ -405,7 +405,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     ```
 
     Resolving artifacts manually from the reference based on the
-    [ArtifactsType](/docs/scheduling/specification/types/#v1artifactstype)
+    [ArtifactsType](/docs/polyaxonfile/specification/types/#v1artifactstype)
 
     ```yaml
     >>>   files_and_dirs:
@@ -415,7 +415,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     ```
 
     > **Note**: the difference between using `artifacts.lineage_name`
-    > and [ArtifactsType](/docs/scheduling/specification/types/#v1artifactstype),
+    > and [ArtifactsType](/docs/polyaxonfile/specification/types/#v1artifactstype),
     > is that the former will only expose the path based on any lineage logged during the runtime,
     > the later is a manual way of selecting specific files and dirs.
 
@@ -476,7 +476,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     if True the param will be converted to an init container.
 
     For example, to initialize some artifacts without using the
-    [init section](/docs/scheduling/specification/init/), you can use `toInit` to turn an artifacts value
+    [init section](/docs/polyaxonfile/specification/init/), you can use `toInit` to turn an artifacts value
     or git value to an init container:
 
     ```yaml

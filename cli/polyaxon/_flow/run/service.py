@@ -14,12 +14,12 @@ class V1Service(V1Job):
 
     Args:
         kind: str, should be equal `service`
-        environment: [V1Environment](/docs/scheduling/specification/environment/), optional
+        environment: [V1Environment](/docs/polyaxonfile/specification/environment/), optional
         connections: List[str], optional
         volumes: List[[Kubernetes Volume](https://kubernetes.io/docs/concepts/storage/volumes/)],
              optional
-        init: List[[V1Init](/docs/scheduling/specification/init/)], optional
-        sidecars: List[[sidecar containers](/docs/scheduling/specification/sidecars/)], optional
+        init: List[[V1Init](/docs/polyaxonfile/specification/init/)], optional
+        sidecars: List[[sidecar containers](/docs/polyaxonfile/specification/sidecars/)], optional
         container: [Kubernetes Container](https://kubernetes.io/docs/concepts/containers/)
         ports: List[int], optional
         rewrite_path: bool, optional
@@ -76,7 +76,7 @@ class V1Service(V1Job):
 
     ### environment
 
-    Optional [environment section](/docs/scheduling/specification/environment/),
+    Optional [environment section](/docs/polyaxonfile/specification/environment/),
     it provides a way to inject pod related information.
 
     ```yaml
@@ -145,7 +145,7 @@ class V1Service(V1Job):
 
     ### init
 
-    A list of [init handlers and containers](/docs/scheduling/specification/init/)
+    A list of [init handlers and containers](/docs/polyaxonfile/specification/init/)
     to resolve for the service.
 
     <blockquote className="light">
@@ -180,7 +180,7 @@ class V1Service(V1Job):
     ### sidecars
 
 
-    A list of [sidecar containers](/docs/scheduling/specification/sidecars/)
+    A list of [sidecar containers](/docs/polyaxonfile/specification/sidecars/)
     that will be used as sidecars.
 
     ```yaml

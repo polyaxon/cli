@@ -703,8 +703,8 @@ class RunClient(ClientMixin):
         Args:
             polyaxonfile: str, path to the polyaxonfile containing a YAML/Json specification.
                  The polyaxonfile should contain a
-                 [V1Component](/docs/scheduling/specification/component/) or an
-                 [V1Operation](/docs/scheduling/specification/operation/).
+                 [V1Component](/docs/polyaxonfile/specification/component/) or an
+                 [V1Operation](/docs/polyaxonfile/specification/operation/).
             name: str, optional,
                  it will override the name in the operation if provided.
             description: str, optional,
@@ -782,8 +782,8 @@ class RunClient(ClientMixin):
         Args:
             url: str, url containing a YAML/Json specification.
                  The url's polyaxonfile should contain a
-                 [V1Component](/docs/scheduling/specification/component/) or an
-                 [V1Operation](/docs/scheduling/specification/operation/).
+                 [V1Component](/docs/polyaxonfile/specification/component/) or an
+                 [V1Operation](/docs/polyaxonfile/specification/operation/).
             name: str, optional, it will override the name in the operation if provided.
             description: str, optional,
                  it will override the description in the operation if provided.
@@ -937,7 +937,7 @@ class RunClient(ClientMixin):
         [Run API](/docs/api/#operation/CreateRunStatus)
 
         Args:
-            status: str, a valid [Statuses](/docs/scheduling/specification/lifecycle/) value.
+            status: str, a valid [Statuses](/docs/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -974,7 +974,7 @@ class RunClient(ClientMixin):
         [Run API](/docs/api/#operation/GetRunStatus)
 
         Args:
-            last_status: str, a valid [Statuses](/docs/scheduling/specification/lifecycle/) value.
+            last_status: str, a valid [Statuses](/docs/polyaxonfile/specification/lifecycle/) value.
 
         Returns:
             Tuple[str, List[Conditions]], last status and ordered status conditions.
@@ -2185,7 +2185,7 @@ class RunClient(ClientMixin):
         </blockquote>
 
         Args:
-            status: str, a valid [Statuses](/docs/scheduling/specification/lifecycle/) value.
+            status: str, a valid [Statuses](/docs/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
         """
