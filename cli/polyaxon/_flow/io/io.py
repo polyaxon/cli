@@ -107,7 +107,7 @@ def validate_io(
 class V1Validation(BaseSchemaModel):
     """Validation is used to validate inputs/outputs.
 
-    Validation is defined as a sdt of predicates, each one of the predicates that must be satisfied.
+    Validation is defined as a set of predicates, each one of the predicates that must be satisfied.
 
     Args:
         delay: bool, optional
@@ -142,7 +142,7 @@ class V1Validation(BaseSchemaModel):
     >>>     validation:
     >>>       gt: 0.001
     >>>       lt: 0.5
-    >>> options:
+    >>> outputs:
     >>>   - name: accuracy
     >>>     type: float
     >>>     validation:
@@ -157,28 +157,30 @@ class V1Validation(BaseSchemaModel):
 
     ```python
     >>> from polyaxon import types
-    >>> from polyaxon.schemas import V1Validation
+    >>> from polyaxon.schemas import V1IO
+    >>> from polyaxon._flow.io import V1Validation
     >>> inputs = [
     >>>     V1IO(
     >>>         name="loss",
     >>>         type='str',
-    >>>         validation=[V1Validation(options=["MeanSquaredError", "MeanAbsoluteError"])]
+    >>>         validation=V1Validation(options=["MeanSquaredError", "MeanAbsoluteError"])
     >>>     ),
     >>>     V1IO(
     >>>         name="learning_rate",
     >>>         type='float',
-    >>>         validation=[V1Validation(gt=0.001, lt=0.5)]
+    >>>         validation=V1Validation(gt=0.001, lt=0.5)
+    >>>     )
     >>> ]
     >>> outputs = [
     >>>     V1IO(
     >>>         name="accuracy",
     >>>         type='float',
-    >>>         validation=[V1Validation(ge=0.5)]
+    >>>         validation=V1Validation(ge=0.5)
     >>>     ),
     >>>     V1IO(
     >>>         name="outputs-path",
     >>>         type=types.PATH,
-    >>>         validation=[V1Validation(regex="^s3://(?P<bucket>[a-z0-9-.]{3,63})/(?P<key>.+)$")]
+    >>>         validation=V1Validation(regex="^s3://(?P<bucket>[a-z0-9-.]{3,63})/(?P<key>.+)$")
     >>>     )
     >>> ]
     ```
@@ -456,8 +458,8 @@ class V1IO(BaseSchemaModel):
     going from one operation to another.
 
     The final value of an input/output can be resolved
-    from [params](/docs/core/specification/params/), or from other values in
-    the [context](/docs/core/context/).
+    from [params](/docs/scheduling/specification/params/), or from other values in
+    the [context](/docs/scheduling/context/).
 
     Examples:
      * A build component may have a git repository as input and a container image as output.
@@ -476,7 +478,7 @@ class V1IO(BaseSchemaModel):
     converted to an argument using the `arg_format`.
 
     To learn how to pass valid values,
-    please check the [param section](/docs/core/specification/params/).
+    please check the [param section](/docs/scheduling/specification/params/).
 
     Args:
         name: str
@@ -490,9 +492,9 @@ class V1IO(BaseSchemaModel):
         connection: str, optional
         to_init: bool, optional
         to_env: str, optional
-        validation: [V1Validation](/docs/core/specification/validation/), optional
-        delay_validation: bool, optional (**Deprecated**: please see valiation.delay)
-        options: List[any], optional (**Deprecated**: please see valiation)
+        validation: [V1Validation](/docs/scheduling/specification/validation/), optional
+        delay_validation: bool, optional (**Deprecated**: please see validation.delay)
+        options: List[any], optional (**Deprecated**: please see validation)
 
     ## YAML usage
 
@@ -581,7 +583,7 @@ class V1IO(BaseSchemaModel):
     ```
 
     for more details about composite type validation and schema,
-    please check the [types section](/docs/core/specification/types/),
+    please check the [types section](/docs/scheduling/specification/types/),
     possible types include any python type hint, pydantic built-in types, and:
         * URI: "uri"
         * LIST: "list"

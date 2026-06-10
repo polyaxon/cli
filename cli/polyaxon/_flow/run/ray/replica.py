@@ -23,12 +23,12 @@ class V1RayReplica(BaseSchemaModel):
         min_replicas: str, int, optional
         max_replicas: str, int, optional
         ray_start_params: str, Dict[str, str], optional
-        environment: [V1Environment](/docs/core/specification/environment/), optional
+        environment: [V1Environment](/docs/scheduling/specification/environment/), optional
         connections: List[str], optional
         volumes: List[[Kubernetes Volume](https://kubernetes.io/docs/concepts/storage/volumes/)],
              optional
-        init: List[[V1Init](/docs/core/specification/init/)], optional
-        sidecars: List[[sidecar containers](/docs/core/specification/sidecars/)], optional
+        init: List[[V1Init](/docs/scheduling/specification/init/)], optional
+        sidecars: List[[sidecar containers](/docs/scheduling/specification/sidecars/)], optional
         container: [Kubernetes Container](https://kubernetes.io/docs/concepts/containers/)
 
     ## YAML usage
@@ -104,7 +104,7 @@ class V1RayReplica(BaseSchemaModel):
 
     ### environment
 
-    Optional [environment section](/docs/core/specification/environment/),
+    Optional [environment section](/docs/scheduling/specification/environment/),
     it provides a way to inject pod related information into the replica (executor/driver).
 
     ```yaml
@@ -124,9 +124,9 @@ class V1RayReplica(BaseSchemaModel):
 
     ### connections
 
-    A list of [connection names](/docs/setup/connections/) to resolve for the job.
+    A list of [connection names](/setup/connections/) to resolve for the job.
 
-    <blockquote class="light">
+    <blockquote className="light">
     If you are referencing a connection it must be configured.
     All referenced connections will be checked:
 
@@ -145,10 +145,10 @@ class V1RayReplica(BaseSchemaModel):
 
     ### init
 
-    A list of [init handlers and containers](/docs/core/specification/init/)
+    A list of [init handlers and containers](/docs/scheduling/specification/init/)
     to resolve for the replica (executor/driver).
 
-    <blockquote class="light">
+    <blockquote className="light">
     If you are referencing a connection it must be configured.
     All referenced connections will be checked:
 
@@ -179,7 +179,7 @@ class V1RayReplica(BaseSchemaModel):
     ### sidecars
 
 
-    A list of [sidecar containers](/docs/core/specification/sidecars/)
+    A list of [sidecar containers](/docs/scheduling/specification/sidecars/)
     that will be used as sidecars.
 
     ```yaml

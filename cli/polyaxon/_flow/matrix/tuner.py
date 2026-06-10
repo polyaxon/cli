@@ -23,7 +23,7 @@ class V1Tuner(BaseSchemaModel):
         hub_ref: str
         queue: List[str], optional
         presets: List[str], optional
-        params: Dict[str, [V1Param](/docs/core/specification/params/)], optional
+        params: Dict[str, [V1Param](/docs/scheduling/specification/params/)], optional
 
     ## YAML usage
 
@@ -61,7 +61,7 @@ class V1Tuner(BaseSchemaModel):
 
     ### presets
 
-    The [presets](/docs/management/organizations/presets/) to use for the tuner operation,
+    The [presets](/docs/administration/organizations/presets/) to use for the tuner operation,
     if provided, it will override the component's presets otherwise
     the presets of the component will be used if available.
 
@@ -72,7 +72,7 @@ class V1Tuner(BaseSchemaModel):
 
     ### queue
 
-    The [queue](/docs/core/scheduling-strategies/queues/) to use.
+    The [queue](/docs/scheduling/scheduling-strategies/queues/) to use.
     If not provided, the default queue will be used.
 
     ```yaml
@@ -101,7 +101,7 @@ class V1Tuner(BaseSchemaModel):
 
     ### params
 
-    The [params](/docs/core/specification/params/) to pass if the handler requires extra params,
+    The [params](/docs/scheduling/specification/params/) to pass if the handler requires extra params,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.

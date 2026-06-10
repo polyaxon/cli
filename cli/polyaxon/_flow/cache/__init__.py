@@ -57,7 +57,7 @@ class V1Cache(BaseSchemaModel):
 
     ### ttl
 
-    the default caching behavior is to persist and reuse a run's results everytime a new operation
+    the default caching behavior is to persist and reuse a run's results every time a new operation
     with similar characteristics is scheduled to run.
 
     In order to invalidate the cache after a certain period of time you can

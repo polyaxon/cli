@@ -66,8 +66,8 @@ class PolyaxonClient:
     ```
 
     If you are interacting with a run or with a project, we suggest that you check:
-     * [RunClient](/docs/core/python-library/run-client/)
-     * [ProjectClient](/docs/core/python-library/project-client/)
+     * [RunClient](/docs/python-library/run-client/)
+     * [ProjectClient](/docs/python-library/project-client/)
     """
 
     def __init__(

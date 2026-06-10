@@ -25,11 +25,11 @@ class V1Iterative(BaseSearchConfig):
     Args:
         kind: str, should be equal `iterative`
         max_iterations: int
-        params: List[Dict[str, [params](/docs/automation/optimization-engine/params/)]]
+        params: List[Dict[str, [params](/docs/orchestration/optimization-engine/params/)]]
         concurrency: int, optional
         seed: int, optional
-        tuner: [V1Tuner](/docs/automation/optimization-engine/tuner/), optional
-        early_stopping: List[[EarlyStopping](/docs/automation/helpers/early-stopping)], optional
+        tuner: [V1Tuner](/docs/orchestration/optimization-engine/tuner/), optional
+        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -83,7 +83,7 @@ class V1Iterative(BaseSearchConfig):
 
     An optional value to set the number of concurrent operations.
 
-    <blockquote class="light">
+    <blockquote className="light">
     This value only makes sense if less or equal to the total number of possible runs.
     </blockquote>
 
@@ -94,7 +94,7 @@ class V1Iterative(BaseSearchConfig):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/automation/helpers/concurrency/).
+    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
 
     ### params
 
@@ -102,7 +102,7 @@ class V1Iterative(BaseSearchConfig):
     to generate the parameters.
 
     To learn about all possible
-    [params generators](/docs/automation/optimization-engine/params/).
+    [params generators](/docs/orchestration/optimization-engine/params/).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values
@@ -155,7 +155,7 @@ class V1Iterative(BaseSearchConfig):
     ```
 
     For more details please check the
-    [early stopping section](/docs/automation/helpers/early-stopping/).
+    [early stopping section](/docs/orchestration/helpers/early-stopping/).
 
     ### tuner
 

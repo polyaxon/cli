@@ -60,7 +60,7 @@ Polyaxon makes it faster, easier, and more efficient to develop deep learning ap
     $ polyaxon port-forward
     ```
 
-Please check [polyaxon installation guide](https://polyaxon.com/docs/setup/)
+Please check [polyaxon installation guide](https://polyaxon.com/setup/)
 
 # Quick start
 
@@ -130,32 +130,32 @@ and update your polyaxonfile.
 
 Here are some examples of using distributed training:
 
- * [Distributed Tensorflow](https://polyaxon.com/docs/experimentation/distributed/tf-jobs/)
- * [Distributed Pytorch](https://polyaxon.com/docs/experimentation/distributed/pytorch-jobs/)
- * [Distributed MPI](https://polyaxon.com/docs/experimentation/distributed/mpi-jobs/)
+ * [Distributed Tensorflow](https://polyaxon.com/docs/workload/distributed/tf-jobs/)
+ * [Distributed Pytorch](https://polyaxon.com/docs/workload/distributed/pytorch-jobs/)
+ * [Distributed MPI](https://polyaxon.com/docs/workload/distributed/mpi-jobs/)
  * [Horovod](https://polyaxon.com/integrations/horovod/)
- * [Ray](https://polyaxon.com/docs/experimentation/distributed/ray-jobs/)
- * [Dask](https://polyaxon.com/docs/experimentation/distributed/dask-jobs/)
+ * [Ray](https://polyaxon.com/docs/workload/clusters/ray-clusters/)
+ * [Dask](https://polyaxon.com/docs/workload/clusters/dask-clusters/)
 
 # Hyperparameters tuning
 
 Polyaxon has a concept for suggesting hyperparameters and managing their results very similar to Google Vizier called experiment groups.
 An experiment group in Polyaxon defines a search algorithm, a search space, and a model to train.
 
- * [Grid search](https://polyaxon.com/docs/automation/optimization-engine/grid-search/)
- * [Random search](https://polyaxon.com/docs/automation/optimization-engine/random-search/)
- * [Hyperband](https://polyaxon.com/docs/automation/optimization-engine/hyperband/)
- * [Bayesian Optimization](https://polyaxon.com/docs/automation/optimization-engine/bayesian-optimization/)
- * [Hyperopt](https://polyaxon.com/docs/automation/optimization-engine/hyperopt/)
- * [Custom Iterative Optimization](https://polyaxon.com/docs/automation/optimization-engine/iterative/)
+ * [Grid search](https://polyaxon.com/docs/orchestration/optimization-engine/grid-search/)
+ * [Random search](https://polyaxon.com/docs/orchestration/optimization-engine/random-search/)
+ * [Hyperband](https://polyaxon.com/docs/orchestration/optimization-engine/hyperband/)
+ * [Bayesian Optimization](https://polyaxon.com/docs/orchestration/optimization-engine/bayesian-optimization/)
+ * [Hyperopt](https://polyaxon.com/docs/orchestration/optimization-engine/hyperopt/)
+ * [Custom Iterative Optimization](https://polyaxon.com/docs/orchestration/optimization-engine/iterative/)
 
 # Parallel executions
 
-You can run your processing or model training jobs in parallel, Polyaxon provides a [mapping](https://polyaxon.com/docs/automation/mapping/) abstraction to manage concurrent jobs.
+You can run your processing or model training jobs in parallel, Polyaxon provides a [mapping](https://polyaxon.com/docs/orchestration/mapping/) abstraction to manage concurrent jobs.
 
 # DAGs and workflows
 
-[Polyaxon DAGs](https://polyaxon.com/docs/automation/flow-engine/) is a tool that provides container-native engine for running machine learning pipelines.
+[Polyaxon DAGs](https://polyaxon.com/docs/orchestration/flow-engine/) is a tool that provides container-native engine for running machine learning pipelines.
 A DAG manages multiple operations with dependencies. Each operation is defined by a component runtime.
 This means that operations in a DAG can be jobs, services, distributed jobs, parallel executions, or nested DAGs.
 

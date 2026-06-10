@@ -39,7 +39,7 @@ class V1Hyperband(BaseSearchConfig):
 
     Args:
         kind: string, should be equal to `hyperband`
-        params: List[Dict[str, [params](/docs/automation/optimization-engine/params/#discrete-values)]]  # noqa
+        params: List[Dict[str, [params](/docs/orchestration/optimization-engine/params/#discrete-values)]]  # noqa
         max_iterations: int
         eta: int
         resource: V1OptimizationResource
@@ -47,8 +47,8 @@ class V1Hyperband(BaseSearchConfig):
         resume: bool, optional
         seed: int, optional
         concurrency: int, optional
-        tuner: [V1Tuner](/docs/automation/optimization-engine/tuner/), optional
-        early_stopping: List[[EarlyStopping](/docs/automation/helpers/early-stopping)], optional
+        tuner: [V1Tuner](/docs/orchestration/optimization-engine/tuner/), optional
+        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -103,7 +103,7 @@ class V1Hyperband(BaseSearchConfig):
     to generate the parameters.
 
     To learn about all possible
-    [params generators](/docs/automation/optimization-engine/params/).
+    [params generators](/docs/orchestration/optimization-engine/params/).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values
@@ -183,7 +183,7 @@ class V1Hyperband(BaseSearchConfig):
 
     An optional value to set the number of concurrent operations.
 
-    <blockquote class="light">
+    <blockquote className="light">
     This value only makes sense if less or equal to the total number of possible runs.
     </blockquote>
 
@@ -194,7 +194,7 @@ class V1Hyperband(BaseSearchConfig):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/automation/helpers/concurrency/).
+    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
 
     ### seed
 
@@ -221,7 +221,7 @@ class V1Hyperband(BaseSearchConfig):
     ```
 
     For more details please check the
-    [early stopping section](/docs/automation/helpers/early-stopping/).
+    [early stopping section](/docs/orchestration/helpers/early-stopping/).
 
     ### tuner
 

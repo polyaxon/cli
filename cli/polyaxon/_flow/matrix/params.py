@@ -534,7 +534,7 @@ class V1HpRange(BaseHpParamConfig):
     """`Range` picks a value from a generated list of values using `[start, stop, step]`,
     you can pass values in these forms:
       * [1, 10, 2]
-      * {start: 1, stop: 10, step: 2}
+      * `{start: 1, stop: 10, step: 2}`
       * '1:10:2'
 
     ```yaml
@@ -710,7 +710,7 @@ class V1HpLinSpace(BaseHpParamConfig):
     """`LinSpace` picks a value from a generated list of steps from start to stop spaced evenly
     on a linear scale `[start, stop, step]`, you can pass values in these forms:
       * [1, 10, 20]
-      * {start: 1, stop: 10, num: 20}
+      * `{start: 1, stop: 10, num: 20}`
       * '1:10:20'
 
     ```yaml
@@ -763,8 +763,8 @@ class V1HpLogSpace(BaseHpParamConfig):
     you can pass values in these forms:
       * [1, 10, 20]
       * [1, 10, 20, 2]
-      * {start: 1, stop: 10, num: 20}
-      * {start: 1, stop: 10, num: 20, base: 2}
+      * `{start: 1, stop: 10, num: 20}`
+      * `{start: 1, stop: 10, num: 20, base: 2}`
       * '1:10:20:2'
 
     ```yaml
@@ -814,7 +814,7 @@ class V1HpGeomSpace(BaseHpParamConfig):
     """`GeomSpace` picks a value from a generated list of steps from start to stop spaced evenly
     on a geometric progression `[start, stop, step]`, you can pass values in these forms:
       * [1, 10, 20]
-      * {start: 1, stop: 10, num: 20}
+      * `{start: 1, stop: 10, num: 20}`
       * '1:10:20'
 
     ```yaml
@@ -865,7 +865,7 @@ class V1HpUniform(BaseHpParamConfig):
     interval `[low, high)`, you can pass values in these forms:
       * 0:1
       * [0, 1]
-      * {'low': 0, 'high': 1}
+      * `{'low': 0, 'high': 1}`
 
     ```yaml
     >>> params:
@@ -916,7 +916,7 @@ class V1HpQUniform(BaseHpParamConfig):
     you can pass values in these forms:
       * 0:1:0.1
       * [0, 1, 0.1]
-      * {'low': 0, 'high': 1, 'q': 0.1}
+      * `{'low': 0, 'high': 1, 'q': 0.1}`
 
 
     ```yaml
@@ -967,7 +967,7 @@ class V1HpLogUniform(BaseHpParamConfig):
     you can pass values in these forms:
       * 0:1
       * [0, 1]
-      * {'low': 0, 'high': 1}
+      * `{'low': 0, 'high': 1}`
 
 
     ```yaml
@@ -1018,7 +1018,7 @@ class V1HpQLogUniform(BaseHpParamConfig):
     you can pass values in these forms:
       * 0:1:0.1
       * [0, 1, 0.1]
-      * {'low': 0, 'high': 1, 'q': 0.1}
+      * `{'low': 0, 'high': 1, 'q': 0.1}`
 
 
     ```yaml
@@ -1075,7 +1075,7 @@ class V1HpNormal(BaseHpParamConfig):
     `[loc, scale]`, you can pass values in these forms:
       * 0:1
       * [0, 1]
-      * {'loc': 0, 'scale': 1}
+      * `{'loc': 0, 'scale': 1}`
 
 
     ```yaml
@@ -1126,7 +1126,7 @@ class V1HpQNormal(BaseHpParamConfig):
     `[loc, scale]`, you can pass values in these forms:
       * 0:1:0.1
       * [0, 1, 0.1]
-      * {'loc': 0, 'scale': 1, 'q': 0.1}
+      * `{'loc': 0, 'scale': 1, 'q': 0.1}`
 
 
     ```yaml
@@ -1177,7 +1177,7 @@ class V1HpLogNormal(BaseHpParamConfig):
     `[loc, scale]`, you can pass values in these forms:
       * 0:1
       * [0, 1]
-      * {'loc': 0, 'scale': 1}
+      * `{'loc': 0, 'scale': 1}`
 
 
     ```yaml
@@ -1228,7 +1228,7 @@ class V1HpQLogNormal(BaseHpParamConfig):
     `[loc, scale]`, you can pass values in these forms:
       * 0:1:0.1
       * [0, 1, 0.1]
-      * {'loc': 0, 'scale': 1, 'q': 0.1}
+      * `{'loc': 0, 'scale': 1, 'q': 0.1}`
 
 
     ```yaml

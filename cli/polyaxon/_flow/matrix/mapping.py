@@ -17,7 +17,7 @@ class V1Mapping(BaseSearchConfig):
         kind: str, should be equal `mapping`
         values: List[Dict]
         concurrency: int, optional
-        early_stopping: List[[EarlyStopping](/docs/automation/helpers/early-stopping)], optional
+        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -74,7 +74,7 @@ class V1Mapping(BaseSearchConfig):
 
     An optional value to set the number of concurrent operations.
 
-    <blockquote class="light">
+    <blockquote className="light">
     This value only makes sense if less or equal to the total number of possible runs.
     </blockquote>
 
@@ -84,7 +84,7 @@ class V1Mapping(BaseSearchConfig):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/automation/helpers/concurrency/).
+    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
 
     ### earlyStopping
 
@@ -99,7 +99,7 @@ class V1Mapping(BaseSearchConfig):
     ```
 
     For more details please check the
-    [early stopping section](/docs/automation/helpers/early-stopping/).
+    [early stopping section](/docs/orchestration/helpers/early-stopping/).
     """
 
     _IDENTIFIER = V1MatrixKind.MAPPING

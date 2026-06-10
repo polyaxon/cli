@@ -93,7 +93,7 @@ def login(token, username, password):
                 "Make sure your shell is handling the token appropriately."
             )
             logger.info(
-                "See docs for help: http://polyaxon.com/docs/polyaxon_cli/commands/auth"
+                "See docs for help: https://polyaxon.com/docs/cli/auth/"
             )
             return
 

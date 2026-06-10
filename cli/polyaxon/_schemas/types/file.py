@@ -10,7 +10,7 @@ class V1FileType(BaseTypeConfig):
     """File type.
 
     This type allows to easily construct a file content without
-    the need to clone repo or download a from an external localtion.
+    the need to clone repo or download a from an external location.
     It exposes a very simple interface for generating a file or a script
     that can be used by your containers.
 

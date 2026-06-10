@@ -22,6 +22,7 @@ class V1Plugins(BaseSchemaModel):
         shm: bool, optional, default: True
         tmux: bool, optional, default: False
         sandbox: bool, optional, default: False
+        ssh: bool, optional, default: False
         mount_artifacts_store: bool, optional, default: True
         collect_artifacts: bool, optional, default: True
         collect_logs: bool, optional, default: True
@@ -41,6 +42,7 @@ class V1Plugins(BaseSchemaModel):
     >>>   shm:
     >>>   tmux:
     >>>   sandbox:
+    >>>   ssh:
     >>>   mountArtifactsStore:
     >>>   collectArtifacts:
     >>>   collectLogs:
@@ -62,6 +64,7 @@ class V1Plugins(BaseSchemaModel):
     >>>     shm=True,
     >>>     tmux=True,
     >>>     sandbox=True,
+    >>>     ssh=True,
     >>>     mount_artifacts_store=True,
     >>>     collect_artifacts=False,
     >>>     collect_logs=False,
@@ -77,7 +80,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### auth
 
-    <blockquote class="light">
+    <blockquote className="light">
     This plugin is enabled by default in Polyaxon deployments with user management.
     </blockquote>
 
@@ -104,7 +107,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### docker
 
-    <blockquote class="light">This plugin is disabled by default.</blockquote>
+    <blockquote className="light">This plugin is disabled by default.</blockquote>
 
     This plugin exposes a docker socket volume to your run container.
 
@@ -121,7 +124,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### shm
 
-    <blockquote class="light">This plugin is enabled by default.</blockquote>
+    <blockquote className="light">This plugin is enabled by default.</blockquote>
 
     This plugin mounts an tmpfs volume to /dev/shm.
     This will set /dev/shm size to half of the RAM of node.
@@ -138,7 +141,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### tmux
 
-    <blockquote class="light">This plugin is disabled by default.</blockquote>
+    <blockquote className="light">This plugin is disabled by default.</blockquote>
 
     This plugin ships a statically-linked `tmux` into the user container so
     that the in-cluster shell session opened by `polyaxon ops shell` can attach
@@ -154,7 +157,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### sandbox
 
-    <blockquote class="light">This plugin is disabled by default.</blockquote>
+    <blockquote className="light">This plugin is disabled by default.</blockquote>
 
     This plugin enables the sandbox daemon for programmatic exec, filesystem,
     and PTY access from SDKs, agents, and UIs.
@@ -172,9 +175,29 @@ class V1Plugins(BaseSchemaModel):
     >>>   sandbox: true
     ```
 
+    ### ssh
+
+    <blockquote className="light">This plugin is disabled by default.</blockquote>
+
+    This plugin enables SSH access to a service run for local development tools
+    such as OpenSSH, VS Code Remote SSH, JetBrains Gateway, SFTP, SCP, and rsync.
+
+    SSH is supported for service runs only. When enabled, Polyaxon injects the
+    OpenSSH runtime into the user container, starts `sshd`, and exposes the SSH
+    port through the service. In this version, the CLI prepares access and
+    tunnels the SSH connection through the sandbox transport, so SSH-enabled
+    runs also need the sandbox control plane to be reachable.
+
+    To enable this plugin:
+
+    ```yaml
+    >>> plugins:
+    >>>   ssh: true
+    ```
+
     ### mountArtifactsStore
 
-    <blockquote class="light">This plugin is disabled by default.</blockquote>
+    <blockquote className="light">This plugin is disabled by default.</blockquote>
 
     this plugin allows to request the default artifacts store and mount it to the main container
     without adding the connection reference name to the `connections` section.
@@ -184,7 +207,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### collectArtifacts
 
-    <blockquote class="light">This plugin is enabled by default.</blockquote>
+    <blockquote className="light">This plugin is enabled by default.</blockquote>
 
     By default, Polyaxon will collect all artifacts and outputs that you share in the
     `plx-context/artifacts/run-uuid/outputs` to the default artifacts store
@@ -202,9 +225,9 @@ class V1Plugins(BaseSchemaModel):
     ```
 
     Sometimes you might want to access the artifacts path in your polyaxonfile,
-    Polyaxon expose a [context](/docs/core//context/) that get resolved during
+    Polyaxon expose a [context](/docs/scheduling/context/) that get resolved during
     the compilation time, you can just use
-    "{{run_artifacts_path}}" global variable and it will be resolved automatically.
+    `{{run_artifacts_path}}` global variable and it will be resolved automatically.
 
     Example:
 
@@ -216,11 +239,11 @@ class V1Plugins(BaseSchemaModel):
 
     ```
 
-    For more information about the context, please check [context](/docs/core/context/)
+    For more information about the context, please check [context](/docs/scheduling/context/)
 
     ### collectLogs
 
-    <blockquote class="light">This plugin is enabled by default.</blockquote>
+    <blockquote className="light">This plugin is enabled by default.</blockquote>
 
     By default, Polyaxon will collect all logs related to your runs before deleting
     the resource on the clusters. This ensures that your cluster(s) are kept clean and no resources
@@ -237,7 +260,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### collectResources
 
-    <blockquote class="light">This plugin is enabled by default.</blockquote>
+    <blockquote className="light">This plugin is enabled by default.</blockquote>
 
     By default, Polyaxon will collect all Mem/CPU/GPU resources
     for your runs that use the python client.
@@ -254,7 +277,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### autoResume
 
-    <blockquote class="light">This plugin is enabled by default.</blockquote>
+    <blockquote className="light">This plugin is enabled by default.</blockquote>
 
     By default, Polyaxon will resume from collecting metrics/outputs/artifacts
     if a run fails and retries or if the user resume a run.
@@ -267,7 +290,7 @@ class V1Plugins(BaseSchemaModel):
     ```
 
     ### externalHost
-    <blockquote class="light">Default is False.</blockquote>
+    <blockquote className="light">Default is False.</blockquote>
     In some edge cases where the auxiliaries and/or the main container cannot reach the API/Streams
     services via the internal networking interface, you can enable this flag to tell Polyaxon
     resolve the external host instead of the default behavior with the in-cluster host.
@@ -279,7 +302,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### logLevel
 
-    <blockquote class="light">Default is None.</blockquote>
+    <blockquote className="light">Default is None.</blockquote>
 
     If you want to control the log level of your runs in a similar way locally and on the cluster,
     you can either use env vars or this plugin to share the same log level with all containers
@@ -292,7 +315,7 @@ class V1Plugins(BaseSchemaModel):
 
     ### sidecar
 
-    <blockquote class="light">Default is None.</blockquote>
+    <blockquote className="light">Default is None.</blockquote>
 
     To override the default global sidecar configuration.
 

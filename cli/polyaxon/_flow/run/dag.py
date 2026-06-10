@@ -41,31 +41,31 @@ class V1Dag(BaseRun):
     A dag executes a dependency graph of operations, each operation runs a Kubernetes primitive
     described in its component.
 
-    Dags are defined in Polyaxon as a [component runtime](/docs/core/specification/component/#run),
+    Dags are defined in Polyaxon as a [component runtime](/docs/scheduling/specification/component/#run),
     which makes them compatible with all knowledge used for running other runtimes:
      * They can be defined in reusable components and can be registered in the Component Hub.
      * They get executed using operations.
      * They can be parametrized similar to jobs and services.
      * Since they are defined as components' runtimes, and they run a graph of other components,
        they can be nested natively.
-     * They can leverage all [pipeline helpers](/docs/automation/helpers/).
-     * They can run in parallel and can be used with [mapping](/docs/automation/mapping/) or
-       other [optimization algorithms](/docs/automation/optimization-engine/).
-     * They can run on [schedule](/docs/automation/schedules/)
-     * They can subscribe to [events](/docs/automation/events/)
+     * They can leverage all [pipeline helpers](/docs/orchestration/helpers/).
+     * They can run in parallel and can be used with [mapping](/docs/orchestration/mapping/) or
+       other [optimization algorithms](/docs/orchestration/optimization-engine/).
+     * They can run on [schedule](/docs/orchestration/schedules/)
+     * They can subscribe to [events](/docs/orchestration/events/)
      * They can take advantage of all scheduling strategies to route operations to nodes,
        namespaces, and clusters even within the same DAG.
 
     Args:
         kind: str, should be equal `dag`
-        operations: List[[V1Operation](/docs/core/specification/operation/)]
-        components: List[[V1Component](/docs/core/specification/component/)], optional
-        environment: [V1Environment](/docs/core/specification/environment/), optional
+        operations: List[[V1Operation](/docs/scheduling/specification/operation/)]
+        components: List[[V1Component](/docs/scheduling/specification/component/)], optional
+        environment: [V1Environment](/docs/scheduling/specification/environment/), optional
         connections: List[str], optional
         volumes: List[[Kubernetes Volume](https://kubernetes.io/docs/concepts/storage/volumes/)],
              optional
         concurrency: init, optional
-        early_stopping: List[[EarlyStopping](/docs/automation/helpers/early-stopping)], optional
+        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -139,7 +139,7 @@ class V1Dag(BaseRun):
 
     > **Note**: For more information about managing the execution graph
     > and creating dependencies between operations, please check the
-    > [flow dependencies section](/docs/automation/flow-engine/flow-dependencies/).
+    > [flow dependencies section](/docs/orchestration/flow-engine/flow-dependencies/).
 
     ### references
 
@@ -149,12 +149,12 @@ class V1Dag(BaseRun):
     concurrency and other queue priority definitions.
 
     Operations can reference components using:
-        * [dagRef](/docs/core/specification/operation/#dagRef)
+        * [dagRef](/docs/scheduling/specification/operation/#dagRef)
              (reusable component defined inside the dag)
-        * [hubRef](/docs/core/specification/operation/#hubRef)
-        * [pathRef](/docs/core/specification/operation/#pathRef)
-        * [urlRef](/docs/core/specification/operation/#urlRef)
-        * [inline component](/docs/core/specification/operation/#component)
+        * [hubRef](/docs/scheduling/specification/operation/#hubRef)
+        * [pathRef](/docs/scheduling/specification/operation/#pathRef)
+        * [urlRef](/docs/scheduling/specification/operation/#urlRef)
+        * [inline component](/docs/scheduling/specification/operation/#component)
 
     ```yaml
     >>> run:
@@ -205,7 +205,7 @@ class V1Dag(BaseRun):
 
     ### environment
 
-    Optional [environment section](/docs/core/specification/environment/),
+    Optional [environment section](/docs/scheduling/specification/environment/),
     it provides a way to inject pod related information.
 
     The environment definition will be passed to all children operations.
@@ -228,9 +228,9 @@ class V1Dag(BaseRun):
 
     ### connections
 
-    A list of [connection names](/docs/setup/connections/) to resolve for the dag.
+    A list of [connection names](/setup/connections/) to resolve for the dag.
 
-    <blockquote class="light">
+    <blockquote className="light">
     If you are referencing a connection it must be configured.
     All referenced connections will be checked:
 
@@ -280,7 +280,7 @@ class V1Dag(BaseRun):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/automation/helpers/concurrency/).
+    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
 
     ### earlyStopping
 
@@ -296,7 +296,7 @@ class V1Dag(BaseRun):
     ```
 
     For more details please check the
-    [early stopping section](/docs/automation/helpers/early-stopping/).
+    [early stopping section](/docs/orchestration/helpers/early-stopping/).
 
     """
 

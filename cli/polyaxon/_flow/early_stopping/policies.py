@@ -165,7 +165,7 @@ class V1FailureEarlyStopping(BaseSchemaModel):
 
     Args:
         kind: str, should be equal to `failure_early_stopping`
-        percent: int (>0, <=99)
+        percent: int ({`>0, <=99`})
 
 
     ## YAML usage

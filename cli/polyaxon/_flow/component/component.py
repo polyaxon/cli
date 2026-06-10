@@ -24,7 +24,7 @@ class V1Component(
     Polyaxon uses containers to execute that logic.
 
     Components are definitions that can be shared if they reach a
-    certain maturity and can be managed by the [Component Hub](/docs/management/component-hub/).
+    certain maturity and can be managed by the [Component Hub](/docs/registry/component-hub/).
     This allows you to create a library of frequently-used components and reuse them
     either by submitting them directly or by referencing them from your operations.
 
@@ -40,16 +40,16 @@ class V1Component(
         presets: List[str], optional
         queue: str, optional
         namespace: str, optional
-        cache: [V1Cache](/docs/automation/helpers/cache/), optional
-        termination: [V1Termination](/docs/core/specification/termination/), optional
-        plugins: [V1Plugins](/docs/core/specification/plugins/), optional
-        mount: List[[V1Mount](/docs/core/specification/mount/)], optional
-        build: [V1Build](/docs/automation/builds/), optional
-        hooks: List[[V1Hook](/docs/automation/hooks/)], optional
-        inputs: [V1IO](/docs/core/specification/io/), optional
-        outputs: [V1IO](/docs/core/specification/io/), optional
-        run: Union[[V1Job](/docs/experimentation/jobs/), [V1Service](/docs/experimentation/services/), [V1TFJob](/docs/experimentation/distributed/tf-jobs/), [V1PytorchJob](/docs/experimentation/distributed/pytorch-jobs/), [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/), [V1RayCluster](/docs/experimentation/distributed/ray-jobs/), [V1DaskCluster](/docs/experimentation/distributed/dask-jobs/), [V1Dag](/docs/automation/flow-engine/specification/)]  # noqa
-        template: [V1Template](/docs/core/specification/template/), optional
+        cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
+        termination: [V1Termination](/docs/scheduling/specification/termination/), optional
+        plugins: [V1Plugins](/docs/scheduling/specification/plugins/), optional
+        mount: List[[V1Mount](/docs/scheduling/specification/mount/)], optional
+        build: [V1Build](/docs/orchestration/builds/), optional
+        hooks: List[[V1Hook](/docs/orchestration/hooks/)], optional
+        inputs: [V1IO](/docs/scheduling/specification/io/), optional
+        outputs: [V1IO](/docs/scheduling/specification/io/), optional
+        run: Union[[V1Job](/docs/workload/jobs/), [V1Service](/docs/workload/services/), [V1TFJob](/docs/workload/distributed/tf-jobs/), [V1PytorchJob](/docs/workload/distributed/pytorch-jobs/), [V1MPIJob](/docs/workload/distributed/mpi-jobs/), [V1RayCluster](/docs/workload/clusters/ray-clusters/), [V1DaskCluster](/docs/workload/clusters/dask-clusters/), [V1Dag](/docs/orchestration/flow-engine/specification/)]  # noqa
+        template: [V1Template](/docs/scheduling/specification/template/), optional
 
     ## YAML usage
 
@@ -171,7 +171,7 @@ class V1Component(
 
     ### presets
 
-    The default component [presets](/docs/core/scheduling-presets/).
+    The default component [presets](/docs/scheduling/scheduling-presets/).
 
     These presets will be passed as the default value to all operations using this component,
     unless the operations override the presets or `--presets`
@@ -184,7 +184,7 @@ class V1Component(
 
     ### queue
 
-    The default component [queue](/docs/core/scheduling-strategies/queues/).
+    The default component [queue](/docs/scheduling/scheduling-strategies/queues/).
 
     This queue will be passed as the default value to all operations using this component,
     unless the operations override the queue or `--queue`
@@ -216,7 +216,7 @@ class V1Component(
 
     ### cache
 
-    The default component [cache](/docs/automation/helpers/cache/).
+    The default component [cache](/docs/orchestration/helpers/cache/).
 
     This cache definition will be passed as the default value to
     all operations using this component,
@@ -232,7 +232,7 @@ class V1Component(
 
     ### termination
 
-    The default component [termination](/docs/core/specification/termination/).
+    The default component [termination](/docs/scheduling/specification/termination/).
 
     This termination definition will be passed as the default value to
     all operations using this component,
@@ -246,7 +246,7 @@ class V1Component(
 
     ### plugins
 
-    The default component [plugins](/docs/core/specification/plugins/).
+    The default component [plugins](/docs/scheduling/specification/plugins/).
 
     This plugins definition will be passed as the default value to
     all operations using this component,
@@ -275,7 +275,7 @@ class V1Component(
 
     ### inputs
 
-    The [inputs](/docs/core/specification/io/) definition for this component.
+    The [inputs](/docs/scheduling/specification/io/) definition for this component.
 
     If the component defines required inputs, anytime a user tries to run
     this component without passing the required params or passing params with wrong types,
@@ -297,7 +297,7 @@ class V1Component(
 
     ### outputs
 
-    The [outputs](/docs/core/specification/io/) definition for this component.
+    The [outputs](/docs/scheduling/specification/io/) definition for this component.
 
     If the component defines required outputs, no exception will be raised at execution time,
     since Polyaxon considers the output values will be resolved in the future,
@@ -322,7 +322,7 @@ class V1Component(
 
     ### mount
 
-    > **Note**: ver 2.13+. Please check [V1Mount](/docs/core/specification/mount/) for more details.
+    > **Note**: ver 2.13+. Please check [V1Mount](/docs/scheduling/specification/mount/) for more details.
 
     This section defines a list of mounts to be used for this operation.
     Mounts can be defined either as strings or as full objects.
@@ -338,7 +338,7 @@ class V1Component(
 
     ### build
 
-    > **Note**: Please check [V1Build](/docs/automation/builds/) for more details.
+    > **Note**: Please check [V1Build](/docs/orchestration/builds/) for more details.
 
     This section defines if this component should build a container before starting the main logic.
     If the build section is provided, Polyaxon will set the main operation to a pending state
@@ -356,18 +356,18 @@ class V1Component(
     ### run
 
     This is the section that defines the runtime of the component:
-     * [V1Job](/docs/experimentation/jobs/): for running batch jobs, model training experiments,
+     * [V1Job](/docs/workload/jobs/): for running batch jobs, model training experiments,
        data processing jobs, ...
-     * [V1Service](/docs/experimentation/services/): for running tensorboards, notebooks,
+     * [V1Service](/docs/workload/services/): for running tensorboards, notebooks,
        streamlit, custom services or an API.
-     * [V1TFJob](/docs/experimentation/distributed/tf-jobs/): for running distributed
+     * [V1TFJob](/docs/workload/distributed/tf-jobs/): for running distributed
        Tensorflow training job.
-     * [V1PytorchJob](/docs/experimentation/distributed/pytorch-jobs/): for running distributed
+     * [V1PytorchJob](/docs/workload/distributed/pytorch-jobs/): for running distributed
        Pytorch training job.
-     * [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/): for running distributed MPI job.
-     * [V1RayCluster](/docs/experimentation/distributed/ray-jobs/): for running a ray job.
-     * [V1DaskCluster](/docs/experimentation/distributed/dask-jobs/): for running a Dask job.
-     * [V1Dag](/docs/automation/flow-engine/specification/): for running a DAG/workflow.
+     * [V1MPIJob](/docs/workload/distributed/mpi-jobs/): for running distributed MPI job.
+     * [V1RayCluster](/docs/workload/clusters/ray-clusters/): for running a ray job.
+     * [V1DaskCluster](/docs/workload/clusters/dask-clusters/): for running a Dask job.
+     * [V1Dag](/docs/orchestration/flow-engine/specification/): for running a DAG/workflow.
 
     ### isApproved
 

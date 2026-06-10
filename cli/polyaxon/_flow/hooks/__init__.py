@@ -52,7 +52,7 @@ class V1Hook(BaseSchemaModel):
         namespace: str, optional
         presets: List[str], optional
         disableDefaults: bool, optional
-        params: Dict[str, [V1Param](/docs/core/specification/params/)], optional
+        params: Dict[str, [V1Param](/docs/scheduling/specification/params/)], optional
 
     ## YAML usage
 
@@ -78,7 +78,7 @@ class V1Hook(BaseSchemaModel):
 
     ### connection
 
-    The connection to notify, this [connection](/docs/setup/connections/)
+    The connection to notify, this [connection](/setup/connections/)
     must be configured at deployment time to be used here by referencing the name.
 
     ```yaml
@@ -99,7 +99,7 @@ class V1Hook(BaseSchemaModel):
 
     ### hubRef
 
-    Polyaxon provides a [Component Hub](/docs/management/component-hub/)
+    Polyaxon provides a [Component Hub](/docs/registry/component-hub/)
     for hosting versioned components with an access control system to improve
     the productivity of your team.
 
@@ -134,7 +134,7 @@ class V1Hook(BaseSchemaModel):
 
     ### presets
 
-    The [presets](/docs/management/organizations/presets/) to use for the hook operation,
+    The [presets](/docs/administration/organizations/presets/) to use for the hook operation,
     if provided, it will override the component's presets otherwise
     the presets of the component will be used if available.
 
@@ -145,7 +145,7 @@ class V1Hook(BaseSchemaModel):
 
     ### queue
 
-    The [queue](/docs/core/scheduling-strategies/queues/) to use.
+    The [queue](/docs/scheduling/scheduling-strategies/queues/) to use.
     If not provided, the default queue will be used.
 
     ```yaml
@@ -191,7 +191,7 @@ class V1Hook(BaseSchemaModel):
 
     ### params
 
-    The [params](/docs/core/specification/params/) to pass if the handler requires extra params,
+    The [params](/docs/scheduling/specification/params/) to pass if the handler requires extra params,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.

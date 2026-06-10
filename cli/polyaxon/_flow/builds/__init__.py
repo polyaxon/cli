@@ -30,8 +30,8 @@ class V1Build(BaseSchemaModel):
         queue: str, optional
         namespace: str, optional
         presets: List[str], optional
-        cache: [V1Cache](/docs/automation/helpers/cache/), optional
-        params: Dict[str, [V1Param](/docs/core/specification/params/)], optional
+        cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
+        params: Dict[str, [V1Param](/docs/scheduling/specification/params/)], optional
         run_patch: Dict, optional
         patch_strategy: str, optional, defaults to post_merge
 
@@ -64,7 +64,7 @@ class V1Build(BaseSchemaModel):
 
     ### hubRef
 
-    Polyaxon provides a [Component Hub](/docs/management/component-hub/)
+    Polyaxon provides a [Component Hub](/docs/registry/component-hub/)
     for hosting versioned components with an access control system to improve
     the productivity of your team.
 
@@ -91,13 +91,13 @@ class V1Build(BaseSchemaModel):
 
     ```yaml
     >>> build:
-    >>>   connection: registry-conneciton-name
+    >>>   connection: registry-connection-name
     ...
     ```
 
     ### presets
 
-    The [presets](/docs/management/organizations/presets/) to use for the hook operation,
+    The [presets](/docs/administration/organizations/presets/) to use for the hook operation,
     if provided, it will override the component's presets otherwise
     the presets of the component will be used if available.
 
@@ -108,7 +108,7 @@ class V1Build(BaseSchemaModel):
 
     ### queue
 
-    The [queue](/docs/core/scheduling-strategies/queues/) to use.
+    The [queue](/docs/scheduling/scheduling-strategies/queues/) to use.
     If not provided, the default queue will be used.
 
     ```yaml
@@ -137,7 +137,7 @@ class V1Build(BaseSchemaModel):
 
     ### cache
 
-    The [cache](/docs/automation/helpers/cache/) to use for the build operation,
+    The [cache](/docs/orchestration/helpers/cache/) to use for the build operation,
     if provided, it will override the component's cache otherwise
     the cache of the component will be used if it exists.
 
@@ -150,7 +150,7 @@ class V1Build(BaseSchemaModel):
 
     ### params
 
-    The [params](/docs/core/specification/params/) to pass if the handler requires extra params,
+    The [params](/docs/scheduling/specification/params/) to pass if the handler requires extra params,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.
@@ -206,7 +206,7 @@ class V1Build(BaseSchemaModel):
 
     The run patch is a dictionary that can modify most of the runtime information and
     will be resolved against the corresponding run kind, in this case
-    [V1Job](/docs/experimentation/jobs/).
+    [V1Job](/docs/workload/jobs/).
 
     ### patchStrategy
 

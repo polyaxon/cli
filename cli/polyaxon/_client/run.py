@@ -115,14 +115,14 @@ class RunClient(ClientMixin):
         run_data: V1Run.
         status: str.
         namespace: str.
-        client: [PolyaxonClient](/docs/core/python-library/polyaxon-client/)
+        client: [PolyaxonClient](/docs/python-library/polyaxon-client/)
 
     Args:
         owner: str, optional, the owner is the username or
              the organization name owning this project.
         project: str, optional, project name owning the run(s).
         run_uuid: str, optional, run uuid.
-        client: [PolyaxonClient](/docs/core/python-library/polyaxon-client/), optional,
+        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
         is_offline: bool, optional,
@@ -703,8 +703,8 @@ class RunClient(ClientMixin):
         Args:
             polyaxonfile: str, path to the polyaxonfile containing a YAML/Json specification.
                  The polyaxonfile should contain a
-                 [V1Component](/docs/core/specification/component/) or an
-                 [V1Operation](/docs/core/specification/operation/).
+                 [V1Component](/docs/scheduling/specification/component/) or an
+                 [V1Operation](/docs/scheduling/specification/operation/).
             name: str, optional,
                  it will override the name in the operation if provided.
             description: str, optional,
@@ -715,24 +715,24 @@ class RunClient(ClientMixin):
                  used to resolve the component's inputs/outputs.
             matrix: dict or V1Matrix, a matrix definition.
             presets: List[str], optional, the name of the
-                 [presets](/docs/core/scheduling-presets/).
+                 [presets](/docs/scheduling/scheduling-presets/).
             queue: str, optional, the name of the
-                 [queue](/docs/core/scheduling-strategies/queues/) to assign the run to.
+                 [queue](/docs/scheduling/scheduling-strategies/queues/) to assign the run to.
             namespace: str, optional, the namespace to create the run under, by default it will
                  use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
-                 [cache check](/docs/automation/helpers/cache/).
+                 [cache check](/docs/orchestration/helpers/cache/).
                  If passed and the Polyaxonfile has cache section,
                  it will be patched with `disabled: true`.
             cache: Union[int, str, bool], optional, simple flag to enable/disable
-                 [cache check](/docs/automation/helpers/cache/).
+                 [cache check](/docs/orchestration/helpers/cache/).
                  If passed and the Polyaxonfile will be patched with `disabled: true/false`.
                  e.g. `cache=1`, `cache='yes'`, `cache=False`, `cache='t'`, ...
             approved: Union[int, str, bool], optional, simple flag to enable/disable
                  human in the loop validation without changing the polyaxonfile,
                  similar to `isApproved: true/false`,
-                 [manual approval](/docs/core/scheduling-strategies/manual-approval/).
+                 [manual approval](/docs/scheduling/scheduling-strategies/manual-approval/).
                  Can be used with yes/no, y/n, false/true, f/t, 1/0. "
                  "e.g. `approved=1`, `approved='yes'`, `approved=False`, `approved='t'`, ..."
 
@@ -782,8 +782,8 @@ class RunClient(ClientMixin):
         Args:
             url: str, url containing a YAML/Json specification.
                  The url's polyaxonfile should contain a
-                 [V1Component](/docs/core/specification/component/) or an
-                 [V1Operation](/docs/core/specification/operation/).
+                 [V1Component](/docs/scheduling/specification/component/) or an
+                 [V1Operation](/docs/scheduling/specification/operation/).
             name: str, optional, it will override the name in the operation if provided.
             description: str, optional,
                  it will override the description in the operation if provided.
@@ -793,24 +793,24 @@ class RunClient(ClientMixin):
                  used to resolve the component's inputs/outputs.
             matrix: dict or V1Matrix, a matrix definition.
             presets: List[str], optional, the name of the
-                 [presets](/docs/core/scheduling-presets/).
+                 [presets](/docs/scheduling/scheduling-presets/).
             queue: str, optional, the name of the
-                 [queue](/docs/core/scheduling-strategies/queues/) to assign the run to.
+                 [queue](/docs/scheduling/scheduling-strategies/queues/) to assign the run to.
             namespace: str, optional, the namespace to create the run under, by default it will
                  use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
-                 [cache check](/docs/automation/helpers/cache/).
+                 [cache check](/docs/orchestration/helpers/cache/).
                  If passed and the Polyaxonfile has cache section,
                  it will be patched with `disabled: true`.
             cache: Union[int, str, bool], optional, simple flag to enable/disable
-                 [cache check](/docs/automation/helpers/cache/).
+                 [cache check](/docs/orchestration/helpers/cache/).
                  If passed and the Polyaxonfile will be patched with `disabled: true/false`.
                  e.g. `cache=1`, `cache='yes'`, `cache=False`, `cache='t'`, ...
             approved: Union[int, str, bool], optional, simple flag to enable/disable
                  human in the loop validation without changing the polyaxonfile,
                  similar to `isApproved: true/false`,
-                 [manual approval](/docs/core/scheduling-strategies/manual-approval/).
+                 [manual approval](/docs/scheduling/scheduling-strategies/manual-approval/).
                  Can be used with yes/no, y/n, false/true, f/t, 1/0. "
                  "e.g. `approved=1`, `approved='yes'`, `approved=False`, `approved='t'`, ..."
 
@@ -870,24 +870,24 @@ class RunClient(ClientMixin):
                  used to resolve the component's inputs/outputs.
             matrix: dict or V1Matrix, a matrix definition.
             presets: List[str], optional, the name of the
-                 [presets](/docs/core/scheduling-presets/).
+                 [presets](/docs/scheduling/scheduling-presets/).
             queue: str, optional, the name of the
-                 [queue](/docs/core/scheduling-strategies/queues/) to assign the run to.
+                 [queue](/docs/scheduling/scheduling-strategies/queues/) to assign the run to.
             namespace: str, optional, the namespace to create the run under, by default it will
                  use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
-                 [cache check](/docs/automation/helpers/cache/).
+                 [cache check](/docs/orchestration/helpers/cache/).
                  If passed and the Polyaxonfile has cache section,
                  it will be patched with `disabled: true`.
             cache: Union[int, str, bool], optional, simple flag to enable/disable
-                 [cache check](/docs/automation/helpers/cache/).
+                 [cache check](/docs/orchestration/helpers/cache/).
                  If passed and the Polyaxonfile will be patched with `disabled: true/false`.
                  e.g. `cache=1`, `cache='yes'`, `cache=False`, `cache='t'`, ...
             approved: Union[int, str, bool], optional, simple flag to enable/disable
                  human in the loop validation without changing the polyaxonfile,
                  similar to `isApproved: true/false`,
-                 [manual approval](/docs/core/scheduling-strategies/manual-approval/).
+                 [manual approval](/docs/scheduling/scheduling-strategies/manual-approval/).
                  Can be used with yes/no, y/n, false/true, f/t, 1/0. "
                  "e.g. `approved=1`, `approved='yes'`, `approved=False`, `approved='t'`, ..."
 
@@ -922,7 +922,7 @@ class RunClient(ClientMixin):
     ):
         """Logs a new run status.
 
-        <blockquote class="info">
+        <blockquote className="info">
         <strong>Note</strong>: If you are executing a managed run, you don't need to call this method manually.
         This method is only useful for manual runs outside of Polyaxon.
         </blockquote>
@@ -937,7 +937,7 @@ class RunClient(ClientMixin):
         [Run API](/docs/api/#operation/CreateRunStatus)
 
         Args:
-            status: str, a valid [Statuses](/docs/core/specification/lifecycle/) value.
+            status: str, a valid [Statuses](/docs/scheduling/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -974,7 +974,7 @@ class RunClient(ClientMixin):
         [Run API](/docs/api/#operation/GetRunStatus)
 
         Args:
-            last_status: str, a valid [Statuses](/docs/core/specification/lifecycle/) value.
+            last_status: str, a valid [Statuses](/docs/scheduling/specification/lifecycle/) value.
 
         Returns:
             Tuple[str, List[Conditions]], last status and ordered status conditions.
@@ -1400,9 +1400,9 @@ class RunClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/core/query-language/runs/#query)
+                 [Run PQL](/docs/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/core/query-language/runs/#sort)
+                 [Run PQL](/docs/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -1451,9 +1451,9 @@ class RunClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/core/query-language/artifacts-lineage/#query)
+                 [Run PQL](/docs/query-language/artifacts-lineage/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/core/query-language/artifacts-lineage/#sort)
+                 [Run PQL](/docs/query-language/artifacts-lineage/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -1483,9 +1483,9 @@ class RunClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/core/query-language/artifacts-lineage/#query)
+                 [Run PQL](/docs/query-language/artifacts-lineage/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/core/query-language/artifacts-lineage/#sort)
+                 [Run PQL](/docs/query-language/artifacts-lineage/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -2161,7 +2161,7 @@ class RunClient(ClientMixin):
     def start(self):
         """Sets the current run to `running` status.
 
-        <blockquote class="info">
+        <blockquote className="info">
         <strong>Note</strong>: If you are executing a managed run, you don't need to call this method manually.
         This method is only useful for manual runs outside of Polyaxon.
         </blockquote>
@@ -2179,13 +2179,13 @@ class RunClient(ClientMixin):
     ):
         """Sets the current run to `status` status.
 
-        <blockquote class="info">
+        <blockquote className="info">
         <strong>Note</strong>: If you are executing a managed run, you don't need to call this method manually.
         This method is only useful for manual runs outside of Polyaxon.
         </blockquote>
 
         Args:
-            status: str, a valid [Statuses](/docs/core/specification/lifecycle/) value.
+            status: str, a valid [Statuses](/docs/scheduling/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
         """
@@ -2205,7 +2205,7 @@ class RunClient(ClientMixin):
     ):
         """Sets the current run to `succeeded` status.
 
-        <blockquote class="info">
+        <blockquote className="info">
         <strong>Note</strong>: If you are executing a managed run,
         you don't need to call this method manually.
         This method is only useful for manual runs outside of Polyaxon.
@@ -2223,7 +2223,7 @@ class RunClient(ClientMixin):
     ):
         """Sets the current run to `stopped` status.
 
-        <blockquote class="info">
+        <blockquote className="info">
         <strong>Note</strong>: If you are executing a managed run,
         you don't need to call this method manually.
         This method is only useful for manual runs outside of Polyaxon.
@@ -2235,7 +2235,7 @@ class RunClient(ClientMixin):
     def log_failed(self, reason: Optional[str] = None, message: Optional[str] = None):
         """Sets the current run to `failed` status.
 
-        <blockquote class="info">
+        <blockquote className="info">
         <strong>Note</strong>: If you are executing a managed run, you don't need to call this method manually.
         This method is only useful for manual runs outside of Polyaxon.
         </blockquote>
@@ -2770,9 +2770,9 @@ class RunClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/core/query-language/runs/#query)
+                 [Run PQL](/docs/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/core/query-language/runs/#sort)
+                 [Run PQL](/docs/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
             all_projects: bool, optional, default: False
@@ -2803,9 +2803,9 @@ class RunClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project PQL](/docs/core/query-language/runs/#query)
+                 [Project PQL](/docs/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project PQL](/docs/core/query-language/runs/#sort)
+                 [Project PQL](/docs/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -2832,7 +2832,7 @@ class RunClient(ClientMixin):
         force: bool = False,
     ) -> V1ProjectVersion:
         """Similar to
-        [ProjectClient.register_model_version](/docs/core/python-library/project-client/#register_model_version),
+        [ProjectClient.register_model_version](/docs/python-library/project-client/#register_model_version),
         directly from the run client instance,
         allows to create or Update a model version based on the current run.
 
@@ -2894,7 +2894,7 @@ class RunClient(ClientMixin):
         force: bool = False,
     ) -> V1ProjectVersion:
         """Similar to
-        [ProjectClient.register_artifact_version](/docs/core/python-library/project-client/#register_artifact_version),
+        [ProjectClient.register_artifact_version](/docs/python-library/project-client/#register_artifact_version),
         directly from the run client instance,
         allows to create or Update an artifact version based on the current run.
 

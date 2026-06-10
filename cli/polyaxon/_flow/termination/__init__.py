@@ -200,7 +200,7 @@ class V1Termination(BaseSchemaModel):
     Maximum number of retries when an operation fails.
 
     This field can be used with
-    [restartPolicy](/docs/core/specification/environment/#restartpolicy)
+    [restartPolicy](/docs/scheduling/specification/environment/#restartpolicy)
     from the environment section.
 
     This field is the equivalent of the
@@ -315,7 +315,7 @@ class V1Termination(BaseSchemaModel):
     For HTTP probes, the endpoint should return activity information.
     For exec probes, the command should exit with code 0 for active, 1 for idle.
 
-    See [services timeout preset documentation](/docs/core/scheduling-presets/services-timeout/)
+    See [services timeout preset documentation](/docs/scheduling/scheduling-presets/services-timeout/)
     for detailed examples and use cases.
 
     ### podFailurePolicy

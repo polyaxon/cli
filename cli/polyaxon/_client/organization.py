@@ -79,7 +79,7 @@ class OrganizationClient(ClientMixin):
         owner: str, optional, the owner is the username or the organization name.
                Can be specified as "owner" for organization-wide scope or "owner/team"
                for team-scoped operations.
-        client: [PolyaxonClient](/docs/core/python-library/polyaxon-client/), optional,
+        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
         is_offline: bool, optional,

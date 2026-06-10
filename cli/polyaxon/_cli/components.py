@@ -400,7 +400,7 @@ def delete(ctx, project, version, yes):
 def update(ctx, project, version, name, description, tags):
     """Update component version.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -452,7 +452,7 @@ def update(ctx, project, version, name, description, tags):
 def stage(ctx, project, version, to, reason, message):
     """Update stage for a component version.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -490,7 +490,7 @@ def stage(ctx, project, version, to, reason, message):
 def transfer(ctx, project, version, to_project):
     """Transfer the version to a destination project under the same owner/organization.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -549,7 +549,7 @@ def pull(
 ):
     """Package and download a component version or multiple component versions to a local path.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -630,7 +630,7 @@ def push(
 ):
     """Push local packaged component version or multiple component versions to a remove server.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 

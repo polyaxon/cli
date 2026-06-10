@@ -364,7 +364,7 @@ def delete(ctx, project, version, yes):
 def update(ctx, project, version, name, description, tags):
     """Update artifact version.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -415,7 +415,7 @@ def update(ctx, project, version, name, description, tags):
 def stage(ctx, project, version, to, reason, message):
     """Update stage for a artifact version.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -453,7 +453,7 @@ def stage(ctx, project, version, to, reason, message):
 def transfer(ctx, project, version, to_project):
     """Transfer the version to a destination project under the same owner/organization.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -520,7 +520,7 @@ def pull(
     """Package and download an artifact version or many artifact versions
     to a local path with or without assets.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 
@@ -601,7 +601,7 @@ def push(
 ):
     """Push local packaged artifact version or multiple artifact versions to a remove server.
 
-    Uses /docs/core/cli/#caching
+    Uses /docs/cli/#caching
 
     Examples:
 

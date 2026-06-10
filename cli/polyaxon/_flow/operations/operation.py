@@ -52,28 +52,28 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         presets: str, optional
         queue: str, optional
         namespace: str, optional
-        cache: [V1Cache](/docs/automation/helpers/cache/), optional
-        termination: [V1Termination](/docs/core/specification/termination/), optional
-        plugins: [V1Plugins](/docs/core/specification/plugins/), optional
-        params: Dict[str, [V1Param](/docs/core/specification/params/)], optional
-        schedule: Union[[V1CronSchedule](/docs/automation/schedules/cron/), [V1IntervalSchedule](/docs/automation/schedules/interval/), [V1DateTimeSchedule](/docs/automation/schedules/datetime/)], optional  # noqa
-        events: List[[V1EventTrigger](/docs/automation/events/)], optional
-        mount: List[[V1Mount](/docs/core/specification/mount/)], optional
-        build: [V1Build](/docs/automation/builds/), optional
-        hooks: List[[V1Hook](/docs/automation/hooks/)], optional
-        matrix: Union[[V1Mapping](/docs/automation/mapping/), [V1GridSearch](/docs/automation/optimization-engine/grid-search/), [V1RandomSearch](/docs/automation/optimization-engine/random-search/), [V1Hyperband](/docs/automation/optimization-engine/hyperband/), [V1Bayes](/docs/automation/optimization-engine/bayesian-optimization/), [V1Hyperopt](/docs/automation/optimization-engine/hyperopt/), [V1Iterative](/docs/automation/optimization-engine/iterative/)], optional  # noqa
-        joins: List[[V1Join](/docs/automation/joins/)], optional
-        dependencies: [dependencies](/docs/automation/flow-engine/flow-dependencies/#dependencies), optional  # noqa
-        trigger: [trigger](/docs/automation/flow-engine/flow-dependencies/#trigger), optional
-        conditions: [conditions](/docs/core/scheduling-strategies/conditional-scheduling/#conditional-scheduling), optional  # noqa
-        skip_on_upstream_skip: [skip_on_upstream_skip](/docs/automation/flow-engine/flow-dependencies/#skiponupstreamskip), optional  # noqa
+        cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
+        termination: [V1Termination](/docs/scheduling/specification/termination/), optional
+        plugins: [V1Plugins](/docs/scheduling/specification/plugins/), optional
+        params: Dict[str, [V1Param](/docs/scheduling/specification/params/)], optional
+        schedule: Union[[V1CronSchedule](/docs/orchestration/schedules/cron/), [V1IntervalSchedule](/docs/orchestration/schedules/interval/), [V1DateTimeSchedule](/docs/orchestration/schedules/datetime/)], optional  # noqa
+        events: List[[V1EventTrigger](/docs/orchestration/events/)], optional
+        mount: List[[V1Mount](/docs/scheduling/specification/mount/)], optional
+        build: [V1Build](/docs/orchestration/builds/), optional
+        hooks: List[[V1Hook](/docs/orchestration/hooks/)], optional
+        matrix: Union[[V1Mapping](/docs/orchestration/mapping/), [V1GridSearch](/docs/orchestration/optimization-engine/grid-search/), [V1RandomSearch](/docs/orchestration/optimization-engine/random-search/), [V1Hyperband](/docs/orchestration/optimization-engine/hyperband/), [V1Bayes](/docs/orchestration/optimization-engine/bayesian-optimization/), [V1Hyperopt](/docs/orchestration/optimization-engine/hyperopt/), [V1Iterative](/docs/orchestration/optimization-engine/iterative/)], optional  # noqa
+        joins: List[[V1Join](/docs/orchestration/joins/)], optional
+        dependencies: [dependencies](/docs/orchestration/flow-engine/flow-dependencies/#dependencies), optional  # noqa
+        trigger: [trigger](/docs/orchestration/flow-engine/flow-dependencies/#trigger), optional
+        conditions: [conditions](/docs/scheduling/scheduling-strategies/conditional-scheduling/#conditional-scheduling), optional  # noqa
+        skip_on_upstream_skip: [skip_on_upstream_skip](/docs/orchestration/flow-engine/flow-dependencies/#skiponupstreamskip), optional  # noqa
         run_patch: Dict, optional
         hub_ref: str, optional
         dag_ref: str, optional
         url_ref: str, optional
         path_ref: str, optional
-        component: [V1Component](/docs/core/specification/component/), optional
-        template: [V1Template](/docs/core/specification/template/), optional
+        component: [V1Component](/docs/scheduling/specification/component/), optional
+        template: [V1Template](/docs/scheduling/specification/template/), optional
 
     ## YAML usage
 
@@ -195,7 +195,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     ```
 
     > **Note**: Please check this
-    > [in-depth section about presets](/docs/core/scheduling-presets/).
+    > [in-depth section about presets](/docs/scheduling/scheduling-presets/).
 
     ### name
 
@@ -232,7 +232,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### presets
 
-    The [presets](/docs/management/organizations/presets/) to use for this operation run,
+    The [presets](/docs/administration/organizations/presets/) to use for this operation run,
     if provided, it will override the component's presets otherwise
     the presets of the component will be used if it exists.
 
@@ -243,7 +243,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### queue
 
-    The [queue](/docs/core/scheduling-strategies/queues/) to use for this operation run,
+    The [queue](/docs/scheduling/scheduling-strategies/queues/) to use for this operation run,
     if provided, it will override the component's queue otherwise
     the queue of the component will be used if it exists.
 
@@ -276,7 +276,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### cache
 
-    The [cache](/docs/automation/helpers/cache/) to use for this operation run,
+    The [cache](/docs/orchestration/helpers/cache/) to use for this operation run,
     if provided, it will override the component's cache otherwise
     the cache of the component will be used if it exists.
 
@@ -289,7 +289,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### termination
 
-    The [termination](/docs/core/specification/termination/) to use for this operation run,
+    The [termination](/docs/scheduling/specification/termination/) to use for this operation run,
     if provided, it will override the component's termination otherwise
     the termination of the component will be used if it exists.
 
@@ -301,7 +301,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### plugins
 
-    The [plugins](/docs/core/specification/plugins/) to use for this operation run,
+    The [plugins](/docs/scheduling/specification/plugins/) to use for this operation run,
     if provided, it will override the component's plugins otherwise
     the plugins of the component will be used if it exists.
 
@@ -317,7 +317,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### params
 
-    The [params](/docs/core/specification/params/)  to pass to the component,
+    The [params](/docs/scheduling/specification/params/)  to pass to the component,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.
@@ -333,7 +333,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### mount
 
-    > **Note**: ver 2.13+. Please check [V1Mount](/docs/core/specification/mount/) for more details.
+    > **Note**: ver 2.13+. Please check [V1Mount](/docs/scheduling/specification/mount/) for more details.
 
     This section defines a list of mounts to be used for this operation.
     Mounts can be defined either as strings or as full objects.
@@ -349,7 +349,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### build
 
-    > **Note**: Please check [V1Build](/docs/automation/builds/) for more details.
+    > **Note**: Please check [V1Build](/docs/orchestration/builds/) for more details.
 
     This section defines if this operation should build a container before starting the main logic.
     If the build section is provided, Polyaxon will set the main operation to a pending state
@@ -372,14 +372,14 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     The run patch is a dictionary that can modify most of the runtime information and
     will be resolved against the corresponding run kind:
 
-     * [V1Job](/docs/experimentation/jobs/): for running batch jobs, model training experiments, data processing jobs, ...  # noqa
-     * [V1Service](/docs/experimentation/services/): for running tensorboards, notebooks, streamlit, custom services or an API.  # noqa
-     * [V1TFJob](/docs/experimentation/distributed/tf-jobs/): for running distributed Tensorflow training job.  # noqa
-     * [V1PytorchJob](/docs/experimentation/distributed/pytorch-jobs/): for running distributed Pytorch training job.  # noqa
-     * [V1MPIJob](/docs/experimentation/distributed/mpi-jobs/): for running distributed MPI job.  # noqa
-     * [V1RayCluster](/docs/experimentation/distributed/ray-jobs/): for running a Ray cluster.
-     * [V1DaskCluster](/docs/experimentation/distributed/dask-jobs/): for running a Dask cluster.
-     * [V1Dag](/docs/automation/flow-engine/specification/): for running a DAG/workflow.
+     * [V1Job](/docs/workload/jobs/): for running batch jobs, model training experiments, data processing jobs, ...  # noqa
+     * [V1Service](/docs/workload/services/): for running tensorboards, notebooks, streamlit, custom services or an API.  # noqa
+     * [V1TFJob](/docs/workload/distributed/tf-jobs/): for running distributed Tensorflow training job.  # noqa
+     * [V1PytorchJob](/docs/workload/distributed/pytorch-jobs/): for running distributed Pytorch training job.  # noqa
+     * [V1MPIJob](/docs/workload/distributed/mpi-jobs/): for running distributed MPI job.  # noqa
+     * [V1RayCluster](/docs/workload/clusters/ray-clusters/): for running a Ray cluster.
+     * [V1DaskCluster](/docs/workload/clusters/dask-clusters/): for running a Dask cluster.
+     * [V1Dag](/docs/orchestration/flow-engine/specification/): for running a DAG/workflow.
 
     For example, if we define a generic component for running Jupyter Notebook:
 
@@ -427,7 +427,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### hubRef
 
-    Polyaxon provides a [Component Hub](/docs/management/component-hub/)
+    Polyaxon provides a [Component Hub](/docs/registry/component-hub/)
     for hosting versioned components with an access control system to improve
     the productivity of your team.
 
@@ -444,7 +444,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     If you are building a dag and you have a component that can be used by several operations,
     you can define a component and reuse it in all operations using `dagRef`.
-    Please check Polyaxon automation's [flow engine section](/docs/automation/flow-engine/)
+    Please check Polyaxon automation's [flow engine section](/docs/orchestration/flow-engine/)
     for more details.
 
     ### urlRef

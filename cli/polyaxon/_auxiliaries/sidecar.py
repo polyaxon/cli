@@ -99,7 +99,7 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
     > using the sidecar plugin.
 
     > **N.B.2**: be careful of the trade-off between a large sleep interval and a short interval,
-    > you don't want the sidecar to overwhelm the API and Kuberenetes API,
+    > you don't want the sidecar to overwhelm the API and Kubernetes API,
     > and you don't want also the sidecar to penalize your workload with additional latency.
 
     ```yaml

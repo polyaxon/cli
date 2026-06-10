@@ -140,7 +140,7 @@ class ProjectClient(ClientMixin):
              Can be specified as "owner" for organization scope or "owner/team"
              for team-scoped projects.
         project: str, optional, project name.
-        client: [PolyaxonClient](/docs/core/python-library/polyaxon-client/), optional,
+        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
         is_offline: bool, optional,
@@ -255,9 +255,9 @@ class ProjectClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                    [Project PQL](/docs/core/query-language/projects/#query)
+                    [Project PQL](/docs/query-language/projects/#query)
             sort: str, optional, fields to order by, please refer to
-                    [Project PQL](/docs/core/query-language/projects/#sort)
+                    [Project PQL](/docs/query-language/projects/#sort)
             limit: int, optional, limit of projects to return.
             offset: int, optional, offset pages to paginate projects.
 
@@ -307,9 +307,9 @@ class ProjectClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/core/query-language/runs/#query)
+                 [Run PQL](/docs/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/core/query-language/runs/#sort)
+                 [Run PQL](/docs/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -503,9 +503,9 @@ class ProjectClient(ClientMixin):
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -534,9 +534,9 @@ class ProjectClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -565,9 +565,9 @@ class ProjectClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -596,9 +596,9 @@ class ProjectClient(ClientMixin):
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/core/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -1056,7 +1056,7 @@ class ProjectClient(ClientMixin):
             force: bool, optional, to force push, i.e. update if exists.
 
         Returns:
-            V1ProjectVersion, component verison.
+            V1ProjectVersion, component version.
         """
         return self.register_version(
             kind=V1ProjectVersionKind.COMPONENT,
@@ -1237,7 +1237,7 @@ class ProjectClient(ClientMixin):
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/core/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the stage change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1278,7 +1278,7 @@ class ProjectClient(ClientMixin):
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/core/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1310,7 +1310,7 @@ class ProjectClient(ClientMixin):
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/core/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1342,7 +1342,7 @@ class ProjectClient(ClientMixin):
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/core/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/scheduling/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
