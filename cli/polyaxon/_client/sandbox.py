@@ -1,11 +1,12 @@
 import asyncio
 from collections.abc import Mapping
+from copy import deepcopy
 import inspect
 import os
 from pathlib import Path
 import requests
 import time
-from typing import Optional
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 
 import aiohttp
@@ -14,6 +15,7 @@ from clipped.utils.bools import to_bool
 from clipped.utils.encoding import BytesLike, as_bytes, b64_data
 from clipped.utils.http import absolute_uri, to_ws_url
 from clipped.utils.json import orjson_dumps, orjson_loads
+from clipped.utils.validation import validate_tags
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._client.decorators import (
@@ -28,6 +30,7 @@ from polyaxon._env_vars.getters import (
     get_project_or_local,
     get_run_or_local,
 )
+from polyaxon._flow import V1Component, V1Operation, V1Plugins, V1RunKind, V1Service
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
@@ -41,11 +44,13 @@ from polyaxon._sandbox.client_utils import (
     parse_error_message,
     validate_remote_path,
 )
+from polyaxon._schemas.lifecycle import ManagedBy, V1Statuses
 from polyaxon._sdk.schemas import (
     V1CreatePtyRequest,
     V1ExecBgRequest,
     V1ExecRequest,
     V1FsMkdirRequest,
+    V1OperationBody,
     V1ResizePtyRequest,
     V1Run,
     V1RunSettings,
@@ -64,9 +69,9 @@ class SandboxClient(ClientMixin):
     """SandboxClient is a client to interact with a run's sandbox service.
 
     The sandbox service exposes process execution, filesystem access, and
-    interactive PTY sessions inside the run's main container. The client
-    requires a valid owner, project, and run uuid, and resolves the run's
-    namespace lazily on the first call.
+    interactive PTY sessions inside the run's main container. Sandbox operations
+    require a valid owner, project, and run uuid. To create a new sandbox-enabled
+    service run, initialize the client with owner/project and call `create()`.
 
     If no values are passed to this class,
     Polyaxon will try to resolve the owner, project, and run uuid from the environment:
@@ -116,7 +121,7 @@ class SandboxClient(ClientMixin):
              To set the NO_OP mode manually instead of depending on `POLYAXON_NO_OP`.
 
     Raises:
-        PolyaxonClientException: If the owner, project, and/or run uuid are not passed
+        PolyaxonClientException: If the owner and/or project are not passed
              and Polyaxon cannot resolve the values from the environment.
     """
 
@@ -133,14 +138,10 @@ class SandboxClient(ClientMixin):
     ):
         self._manual_exceptions_handling = manual_exceptions_handling
         self._is_offline = get_global_or_inline_config(
-            config_key="is_offline",
-            config_value=is_offline,
-            client=client,
+            config_key="is_offline", config_value=is_offline, client=client
         )
         self._no_op = get_global_or_inline_config(
-            config_key="no_op",
-            config_value=no_op,
-            client=client,
+            config_key="no_op", config_value=no_op, client=client
         )
 
         if self._no_op:
@@ -158,8 +159,6 @@ class SandboxClient(ClientMixin):
             raise PolyaxonClientException(error_message)
 
         run_uuid = get_run_or_local(run_uuid)
-        if not run_uuid:
-            raise PolyaxonClientException("Please provide a valid run uuid.")
 
         owner, team = split_owner_team_space(owner)
         self._set_client(client)
@@ -180,7 +179,7 @@ class SandboxClient(ClientMixin):
         self.pty = _PtySubClient(self)
 
     @property
-    def run_uuid(self) -> str:
+    def run_uuid(self) -> Optional[str]:
         return self._run_uuid
 
     @property
@@ -206,6 +205,147 @@ class SandboxClient(ClientMixin):
             self._run_data.settings = V1RunSettings()
         self._run_data.settings.namespace = namespace
 
+    def _require_run_uuid(self) -> str:
+        if not self.run_uuid:
+            raise PolyaxonClientException(
+                "Please provide a valid run uuid or call `create()` first."
+            )
+        return self.run_uuid
+
+    def _apply_created_run(self, response: V1Run):
+        self._run_data = response
+        self._run_uuid = self._run_data.uuid
+        self._run_data.status = V1Statuses.CREATED
+        self._namespace = None
+
+    def _normalize_sandbox_operation_content(
+        self,
+        content: Optional[Union[str, Dict, V1Operation]],
+        tmux: bool = False,
+        ssh: bool = False,
+    ) -> V1Operation:
+        if content is None:
+            return V1Operation(
+                component=V1Component(
+                    run=V1Service(),
+                    plugins=V1Plugins(sandbox=True, tmux=tmux, ssh=ssh),
+                )
+            )
+        if isinstance(content, Mapping):
+            return V1Operation.from_dict(content)
+        if isinstance(content, V1Operation):
+            return deepcopy(content)
+        if isinstance(content, str):
+            return V1Operation.read(content)
+        raise PolyaxonClientException("Received an invalid content: {}".format(content))
+
+    def _build_sandbox_operation_content(
+        self,
+        content: Optional[Union[str, Dict, V1Operation]],
+        tmux: bool = False,
+        ssh: bool = False,
+    ) -> str:
+        operation = self._normalize_sandbox_operation_content(
+            content, tmux=tmux, ssh=ssh
+        )
+        if not operation.component:
+            raise PolyaxonClientException(
+                "Sandbox creation requires inline component content."
+            )
+        component = operation.component
+        if not component.run or component.run.kind != V1RunKind.SERVICE:
+            kind = component.run.kind if component.run else None
+            raise PolyaxonClientException(
+                "Sandbox creation requires a service component, received `{}`.".format(
+                    kind
+                )
+            )
+
+        plugins = component.plugins
+        if plugins and not isinstance(plugins, V1Plugins):
+            raise PolyaxonClientException(
+                "Sandbox creation cannot merge plugin references; "
+                "provide inline plugins."
+            )
+        if not plugins:
+            component.plugins = V1Plugins(sandbox=True, tmux=tmux, ssh=ssh)
+        else:
+            plugins.sandbox = True
+        return operation.to_json()
+
+    def _build_sandbox_create_body(
+        self,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
+        managed_by: Optional[ManagedBy] = None,
+        is_managed: Optional[bool] = None,
+        pending: Optional[str] = None,
+        meta_info: Optional[Dict] = None,
+    ) -> V1OperationBody:
+        if not managed_by and is_managed is not None:
+            managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
+        return V1OperationBody.model_construct(
+            name=name,
+            description=description,
+            tags=tags,
+            content=self._build_sandbox_operation_content(content),
+            is_managed=is_managed,
+            managed_by=managed_by,
+            pending=pending,
+            meta_info=meta_info,
+        )
+
+    @client_handler(check_no_op=True, check_offline=True)
+    def create(
+        self,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
+        managed_by: Optional[ManagedBy] = None,
+        is_managed: Optional[bool] = None,
+        pending: Optional[str] = None,
+        meta_info: Optional[Dict] = None,
+    ) -> V1Run:
+        """Creates a new sandbox-enabled service run.
+
+        The created resource is a regular Polyaxon service run with
+        `plugins.sandbox` enabled. After creation, this client points at the
+        returned run and can use `process`, `fs`, and `pty`.
+
+        Args:
+            name: str, optional, run name.
+            description: str, optional, run description.
+            tags: str or List[str], optional, list of tags.
+            content: str or Dict or V1Operation, optional, inline service operation.
+            is_managed: bool, flag to create a managed run.
+            managed_by: ManagedBy, optional, service that manages the operation.
+            pending: str, optional, pending state.
+            meta_info: dict, optional, meta info to create the run with.
+
+        Returns:
+            V1Run, run instance from the response.
+        """
+        data = self._build_sandbox_create_body(
+            name=name,
+            description=description,
+            tags=validate_tags(tags, validate_yaml=True),
+            content=content,
+            is_managed=is_managed,
+            managed_by=managed_by,
+            pending=pending,
+            meta_info=meta_info,
+        )
+        response = self.client.runs_v1.create_run(
+            owner=self.owner,
+            project=self.project,
+            body=data,
+        )
+        self._apply_created_run(response)
+        return self.run_data
+
     @client_handler(check_no_op=True, check_offline=True)
     def get_namespace(self):
         """Fetches the run namespace.
@@ -216,10 +356,11 @@ class SandboxClient(ClientMixin):
         return self.client.runs_v1.get_run_namespace(
             self.owner,
             self.project,
-            self.run_uuid,
+            self._require_run_uuid(),
         ).namespace
 
     def _resolve_namespace(self) -> str:
+        self._require_run_uuid()
         if self.settings and self.settings.namespace:
             return self.settings.namespace
 
@@ -239,7 +380,7 @@ class SandboxClient(ClientMixin):
             namespace=namespace,
             owner=self.owner,
             project=self.project,
-            run_uuid=self.run_uuid,
+            run_uuid=self._require_run_uuid(),
             subpath=subpath,
         )
         return absolute_uri(url=url, host=self.client.config.host)
@@ -262,7 +403,7 @@ class SandboxClient(ClientMixin):
             self._resolve_namespace(),
             self.owner,
             self.project,
-            self.run_uuid,
+            self._require_run_uuid(),
         )
 
 
@@ -295,11 +436,12 @@ class AsyncSandboxClient(SandboxClient):
         response = await self.client.runs_v1.get_run_namespace(
             self.owner,
             self.project,
-            self.run_uuid,
+            self._require_run_uuid(),
         )
         return response.namespace
 
     async def _resolve_namespace(self) -> str:
+        self._require_run_uuid()
         if self.settings and self.settings.namespace:
             return self.settings.namespace
 
@@ -313,13 +455,43 @@ class AsyncSandboxClient(SandboxClient):
         self._set_namespace(namespace)
         return namespace
 
+    @async_client_handler(check_no_op=True, check_offline=True)
+    async def create(
+        self,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        content: Optional[Union[str, Dict, V1Operation]] = None,
+        managed_by: Optional[ManagedBy] = None,
+        is_managed: Optional[bool] = None,
+        pending: Optional[str] = None,
+        meta_info: Optional[Dict] = None,
+    ) -> V1Run:
+        data = self._build_sandbox_create_body(
+            name=name,
+            description=description,
+            tags=validate_tags(tags, validate_yaml=True),
+            content=content,
+            is_managed=is_managed,
+            managed_by=managed_by,
+            pending=pending,
+            meta_info=meta_info,
+        )
+        response = await self.client.runs_v1.create_run(
+            owner=self.owner,
+            project=self.project,
+            body=data,
+        )
+        self._apply_created_run(response)
+        return self.run_data
+
     @async_client_handler(check_no_op=True)
     async def ping(self):
         return await self.client.sandbox_v1.ping(
             await self._resolve_namespace(),
             self.owner,
             self.project,
-            self.run_uuid,
+            self._require_run_uuid(),
         )
 
 

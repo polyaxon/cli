@@ -5,16 +5,26 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from clipped.utils.json import orjson_loads
 from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
+from polyaxon._flow import (
+    V1Component,
+    V1Job,
+    V1Operation,
+    V1Plugins,
+    V1RunKind,
+    V1Service,
+)
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
     FsWriteResult,
     SandboxBgOutput,
 )
+from polyaxon._schemas.lifecycle import V1Statuses
 from polyaxon._sdk.schemas import (
     V1ExecBgLogs,
     V1ExecBgStart,
     V1ExecBgStatus,
+    V1Run,
     V1RunSettings,
 )
 from polyaxon._utils.test_utils import patch_settings
@@ -228,6 +238,11 @@ def make_client(sdk_client=None, run_namespace="ns"):
     return client
 
 
+def get_created_operation(sdk_client):
+    body = sdk_client.runs_v1.create_run.await_args.kwargs["body"]
+    return V1Operation.read(body.content)
+
+
 def patch_aiohttp_session(session):
     return patch(
         "polyaxon._client.sandbox.aiohttp.ClientSession",
@@ -258,6 +273,125 @@ async def test_async_sandbox_client_rejects_sync_client():
 @pytest.mark.asyncio
 async def test_async_sandbox_client_does_not_expose_namespace_constructor_arg():
     assert "namespace" not in inspect.signature(AsyncSandboxClient).parameters
+
+
+@pytest.mark.asyncio
+async def test_async_sandbox_client_can_initialize_without_run_uuid_for_create():
+    patch_settings()
+
+    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+        client = AsyncSandboxClient(
+            owner=OWNER,
+            project=PROJECT,
+            client=AsyncPolyaxonClientMock(),
+        )
+
+    assert client.run_uuid is None
+
+
+@pytest.mark.asyncio
+async def test_async_sandbox_operations_require_run_uuid_before_create():
+    patch_settings()
+    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+        client = AsyncSandboxClient(
+            owner=OWNER,
+            project=PROJECT,
+            client=AsyncPolyaxonClientMock(),
+        )
+
+    with pytest.raises(PolyaxonClientException, match="call `create\\(\\)` first"):
+        await client.ping()
+
+
+@pytest.mark.asyncio
+async def test_async_create_builds_default_sandbox_service_and_mutates_state():
+    sdk_client = AsyncPolyaxonClientMock()
+    created = V1Run.model_construct(
+        uuid=RUN_UUID,
+        settings=V1RunSettings(namespace="created-ns"),
+    )
+    sdk_client.runs_v1.create_run = AsyncMock(return_value=created)
+    patch_settings()
+    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+        client = AsyncSandboxClient(
+            owner=OWNER,
+            project=PROJECT,
+            client=sdk_client,
+        )
+
+    result = await client.create(name="sandbox", tags=["debug"])
+
+    assert result is created
+    assert client.run_uuid == RUN_UUID
+    assert client.run_data is created
+    assert client.run_data.status == V1Statuses.CREATED
+    sdk_client.runs_v1.create_run.assert_awaited_once()
+    assert sdk_client.runs_v1.create_run.await_args.kwargs["owner"] == OWNER
+    assert sdk_client.runs_v1.create_run.await_args.kwargs["project"] == PROJECT
+    assert "async_req" not in sdk_client.runs_v1.create_run.await_args.kwargs
+    body = sdk_client.runs_v1.create_run.await_args.kwargs["body"]
+    assert body.name == "sandbox"
+    assert body.tags == ["debug"]
+
+    operation = get_created_operation(sdk_client)
+    assert operation.component.run.kind == V1RunKind.SERVICE
+    assert operation.component.plugins.sandbox is True
+    assert client.process._parent is client
+    assert client.fs._parent is client
+    assert client.pty._parent is client
+
+
+@pytest.mark.asyncio
+async def test_async_create_merges_sandbox_plugin_into_existing_inline_content():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run = AsyncMock(
+        return_value=V1Run.model_construct(uuid=RUN_UUID)
+    )
+    content = V1Operation(
+        component=V1Component(
+            run=V1Service(),
+            plugins=V1Plugins(tmux=True),
+        )
+    )
+    patch_settings()
+    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+        client = AsyncSandboxClient(
+            owner=OWNER,
+            project=PROJECT,
+            client=sdk_client,
+        )
+
+    await client.create(content=content)
+
+    operation = get_created_operation(sdk_client)
+    assert operation.component.run.kind == V1RunKind.SERVICE
+    assert operation.component.plugins.tmux is True
+    assert operation.component.plugins.sandbox is True
+    assert content.component.plugins.sandbox is None
+
+
+@pytest.mark.asyncio
+async def test_async_create_rejects_non_service_inline_content():
+    sdk_client = AsyncPolyaxonClientMock()
+    sdk_client.runs_v1.create_run = AsyncMock()
+    content = V1Operation(
+        component=V1Component(
+            run=V1Job(),
+            plugins=V1Plugins(),
+        )
+    )
+    patch_settings()
+    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+        client = AsyncSandboxClient(
+            owner=OWNER,
+            project=PROJECT,
+            client=sdk_client,
+        )
+
+    with pytest.raises(PolyaxonClientException, match="requires a service"):
+        await client.create(content=content)
+
+    sdk_client.runs_v1.create_run.assert_not_called()
 
 
 @pytest.mark.asyncio
