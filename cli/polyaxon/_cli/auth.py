@@ -92,9 +92,7 @@ def login(token, username, password):
                 "Empty token received. "
                 "Make sure your shell is handling the token appropriately."
             )
-            logger.info(
-                "See docs for help: https://polyaxon.com/docs/cli/auth/"
-            )
+            logger.info("See docs for help: https://polyaxon.com/docs/cli/auth/")
             return
 
         access_auth = V1Auth(token=token.strip(" "))
