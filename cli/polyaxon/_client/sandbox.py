@@ -61,6 +61,65 @@ _DEFAULT_FILE_CHUNK_SIZE = 64 * 1024
 
 
 class SandboxClient(ClientMixin):
+    """SandboxClient is a client to interact with a run's sandbox service.
+
+    The sandbox service exposes process execution, filesystem access, and
+    interactive PTY sessions inside the run's main container. The client
+    requires a valid owner, project, and run uuid, and resolves the run's
+    namespace lazily on the first call.
+
+    If no values are passed to this class,
+    Polyaxon will try to resolve the owner, project, and run uuid from the environment:
+     * If you have a configured CLI, Polyaxon will use the configuration of the cli.
+     * If you have a cached run using the CLI,
+       the client will default to that cached run unless you override the values.
+     * If you use this client in the context of a job or a service managed by Polyaxon,
+       a configuration will be available to resolve the values based on that run.
+
+    The functionality is split into sub-clients:
+     * `process`: one-shot, streaming, and background command execution.
+     * `fs`: filesystem reads, writes, transfers, and management.
+     * `pty`: interactive PTY sessions over WebSocket.
+
+    Example:
+    ```python
+    >>> from polyaxon.client import SandboxClient
+    >>> client = SandboxClient(owner="acme", project="proj", run_uuid=run_uuid)
+    >>> client.ping()
+    >>> result = client.process.exec(command=["python", "-V"])
+    >>> print(result.exit_code, result.stdout)
+    ```
+
+    Properties:
+        project: str.
+        owner: str.
+        run_uuid: str.
+        run_data: V1Run.
+        namespace: str.
+        settings: V1RunSettings.
+        client: [PolyaxonClient](/docs/python-library/polyaxon-client/)
+        process: the process execution sub-client.
+        fs: the filesystem sub-client.
+        pty: the PTY sub-client.
+
+    Args:
+        owner: str, optional, the owner is the username or
+             the organization name owning this project.
+        project: str, optional, project name owning the run(s).
+        run_uuid: str, optional, run uuid.
+        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
+             an instance of a configured client, if not passed,
+             a new instance will be created based on the available environment.
+        is_offline: bool, optional,
+             To trigger the offline mode manually instead of depending on `POLYAXON_IS_OFFLINE`.
+        no_op: bool, optional,
+             To set the NO_OP mode manually instead of depending on `POLYAXON_NO_OP`.
+
+    Raises:
+        PolyaxonClientException: If the owner, project, and/or run uuid are not passed
+             and Polyaxon cannot resolve the values from the environment.
+    """
+
     @client_handler(check_no_op=True)
     def __init__(
         self,
@@ -149,7 +208,11 @@ class SandboxClient(ClientMixin):
 
     @client_handler(check_no_op=True, check_offline=True)
     def get_namespace(self):
-        """Fetches the run namespace."""
+        """Fetches the run namespace.
+
+        Returns:
+            str, the namespace where the run is scheduled.
+        """
         return self.client.runs_v1.get_run_namespace(
             self.owner,
             self.project,
@@ -183,6 +246,18 @@ class SandboxClient(ClientMixin):
 
     @client_handler(check_no_op=True)
     def ping(self):
+        """Checks that the sandbox service is reachable and healthy.
+
+        Example:
+        ```python
+        >>> response = client.ping()
+        >>> print(response.status, response.version)
+        ```
+
+        Returns:
+            V1PingResponse, with `status`, `version`, `uptime_ms`,
+                 `last_activity`, `execs_running`, `ptys_running`, `ptys_attached`.
+        """
         return self.client.sandbox_v1.ping(
             self._resolve_namespace(),
             self.owner,
@@ -192,6 +267,22 @@ class SandboxClient(ClientMixin):
 
 
 class AsyncSandboxClient(SandboxClient):
+    """AsyncSandboxClient is the async variant of the
+    [SandboxClient](/docs/sandbox/client/#sandboxclient).
+
+    It exposes the same API surface with coroutine methods and async iterators:
+     * `process.exec_stream` returns an async context manager / async iterator.
+     * Background exec handles expose awaitable methods and `async for` log iteration.
+     * `pty.attach` returns an async WebSocket client.
+
+    Example:
+    ```python
+    >>> from polyaxon.client import AsyncSandboxClient
+    >>> client = AsyncSandboxClient(owner="acme", project="proj", run_uuid=run_uuid)
+    >>> result = await client.process.exec(command=["python", "-V"])
+    ```
+    """
+
     _IS_ASYNC = True
 
     def _set_subclients(self):
@@ -432,6 +523,31 @@ def _log_is_done(logs) -> bool:
 
 
 class SandboxBgExec:
+    """SandboxBgExec is a handle for a background command started
+    with `process.exec_bg`.
+
+    It wraps the started exec's id and exposes convenience methods to poll
+    status, read logs, signal, and wait for completion.
+
+    Example:
+    ```python
+    >>> bg = client.process.exec_bg(command=["sh", "-lc", "sleep 2; echo done"])
+    >>> print(bg.id, bg.pid, bg.started_at, bg.tag)
+    >>> for chunk in bg.iter_stdout(timeout=10, interval=0.2):
+    >>>     print(chunk, end="")
+    >>> status = bg.wait(timeout=10)
+    >>> print(status.state, status.exit_code)
+    ```
+
+    Properties:
+        id: str, the background exec id.
+        exec_id: str, alias of `id`.
+        pid: int, the process pid.
+        started_at: datetime, when the process started.
+        tag: str, the optional tag passed at start time.
+        start: V1ExecBgStart, the raw start response.
+    """
+
     def __init__(self, process, start):
         self._process = process
         self.start = start
@@ -458,6 +574,13 @@ class SandboxBgExec:
         return getattr(self.start, "tag", None)
 
     def get(self):
+        """Fetches the current status of the background exec.
+
+        Returns:
+            V1ExecBgStatus, with `state`, `exit_code`, `signal`,
+                 `started_at`, `finished_at`, `duration_ms`,
+                 `stdout_bytes`, `stderr_bytes`, `tag`.
+        """
         return self._process.get(self.exec_id)
 
     def logs(
@@ -466,6 +589,16 @@ class SandboxBgExec:
         offset: Optional[int] = None,
         max_bytes: Optional[int] = None,
     ):
+        """Fetches one page of captured logs for the background exec.
+
+        Args:
+            stream: str, optional, `stdout` or `stderr`.
+            offset: int, optional, byte offset to read from.
+            max_bytes: int, optional, max bytes to return in this page.
+
+        Returns:
+            V1ExecBgLogs, with `data`, `next_offset`, `eof`, and `state`.
+        """
         return self._process.logs(
             self.exec_id,
             stream=stream,
@@ -474,12 +607,25 @@ class SandboxBgExec:
         )
 
     def signal(self, signal: str):
+        """Sends a signal to the background exec.
+
+        Args:
+            signal: str, the signal name, e.g. `SIGTERM` or `SIGKILL`.
+        """
         return self._process.signal(self.exec_id, signal)
 
     def kill(self, signal: str = "SIGTERM"):
+        """Sends a termination signal to the background exec.
+
+        Alias of `signal` with a default of `SIGTERM`.
+
+        Args:
+            signal: str, optional, the signal name, default: `SIGTERM`.
+        """
         return self.signal(signal)
 
     def delete(self):
+        """Deletes the background exec record and its captured logs."""
         return self._process.delete(self.exec_id)
 
     def stdout(
@@ -487,6 +633,18 @@ class SandboxBgExec:
         offset: Optional[int] = 0,
         max_bytes: Optional[int] = None,
     ) -> str:
+        """Returns the captured stdout data as a string.
+
+        This is a convenience that buffers the requested range in memory.
+        Use `iter_stdout` to follow logs incrementally.
+
+        Args:
+            offset: int, optional, byte offset to read from.
+            max_bytes: int, optional, max bytes to return.
+
+        Returns:
+            str
+        """
         return _log_data(self.logs(stream="stdout", offset=offset, max_bytes=max_bytes))
 
     def stderr(
@@ -494,6 +652,18 @@ class SandboxBgExec:
         offset: Optional[int] = 0,
         max_bytes: Optional[int] = None,
     ) -> str:
+        """Returns the captured stderr data as a string.
+
+        This is a convenience that buffers the requested range in memory.
+        Use `iter_stderr` to follow logs incrementally.
+
+        Args:
+            offset: int, optional, byte offset to read from.
+            max_bytes: int, optional, max bytes to return.
+
+        Returns:
+            str
+        """
         return _log_data(self.logs(stream="stderr", offset=offset, max_bytes=max_bytes))
 
     def output(
@@ -501,6 +671,15 @@ class SandboxBgExec:
         offset: Optional[int] = 0,
         max_bytes: Optional[int] = None,
     ) -> SandboxBgOutput:
+        """Returns both captured stdout and stderr, buffered in memory.
+
+        Args:
+            offset: int, optional, byte offset to read from.
+            max_bytes: int, optional, max bytes to return per stream.
+
+        Returns:
+            SandboxBgOutput, with `stdout` and `stderr` strings.
+        """
         return SandboxBgOutput(
             stdout=self.stdout(offset=offset, max_bytes=max_bytes),
             stderr=self.stderr(offset=offset, max_bytes=max_bytes),
@@ -514,6 +693,31 @@ class SandboxBgExec:
         timeout=None,
         interval: float = 1.0,
     ):
+        """Iterates over the captured logs by polling with increasing offsets.
+
+        The iterator yields data chunks as they become available and stops
+        when the exec reaches a terminal state and all data is consumed.
+
+        Example:
+        ```python
+        >>> for chunk in bg.iter_logs(stream="stdout", timeout=10, interval=0.2):
+        >>>     print(chunk, end="")
+        ```
+
+        Args:
+            stream: str, optional, `stdout` or `stderr`, default: `stdout`.
+            offset: int, optional, byte offset to start from.
+            max_bytes: int, optional, max bytes per polling request.
+            timeout: int, optional, max seconds to wait before raising.
+            interval: float, optional, seconds between polls, default: 1.0.
+
+        Yields:
+            str, log data chunks.
+
+        Raises:
+            PolyaxonClientException: If the timeout is reached or the server
+                 returns inconsistent offsets.
+        """
         _validate_log_iter_args(
             offset=offset,
             max_bytes=max_bytes,
@@ -554,12 +758,31 @@ class SandboxBgExec:
         return _iterator()
 
     def iter_stdout(self, **kwargs):
+        """Iterates over the captured stdout logs. See `iter_logs`."""
         return self.iter_logs(stream="stdout", **kwargs)
 
     def iter_stderr(self, **kwargs):
+        """Iterates over the captured stderr logs. See `iter_logs`."""
         return self.iter_logs(stream="stderr", **kwargs)
 
     def wait(self, timeout=None, interval: float = 1.0):
+        """Polls the background exec until it reaches a terminal state.
+
+        Terminal states are: `exited`, `signaled`, `timed_out`,
+        `failed_to_start`, `orphaned`.
+
+        Args:
+            timeout: int, optional, max seconds to wait before raising.
+                 A timeout of 0 polls exactly once.
+            interval: float, optional, seconds between polls, default: 1.0.
+
+        Returns:
+            V1ExecBgStatus, the terminal status.
+
+        Raises:
+            PolyaxonClientException: If the timeout is reached before the
+                 exec terminates.
+        """
         _validate_wait_args(timeout=timeout, interval=interval)
         started_at = time.monotonic()
         while True:
@@ -576,6 +799,20 @@ class SandboxBgExec:
 
 
 class AsyncSandboxBgExec(SandboxBgExec):
+    """Async variant of `SandboxBgExec`.
+
+    All methods are coroutines and `iter_logs`/`iter_stdout`/`iter_stderr`
+    return async iterators.
+
+    Example:
+    ```python
+    >>> bg = await client.process.exec_bg(command=["sh", "-lc", "echo bg"])
+    >>> async for chunk in bg.iter_stdout(timeout=10):
+    >>>     print(chunk, end="")
+    >>> status = await bg.wait(timeout=10)
+    ```
+    """
+
     async def get(self):
         return await self._process.get(self.exec_id)
 
@@ -800,6 +1037,8 @@ class _AsyncSseIterator:
 
 
 class _ProcessSubClient(_BaseSubClient):
+    """Process execution sub-client, accessed via `client.process`."""
+
     @client_handler(check_no_op=True)
     def exec(
         self,
@@ -809,6 +1048,41 @@ class _ProcessSubClient(_BaseSubClient):
         stdin: Optional[BytesLike] = None,
         timeout_ms: Optional[int] = None,
     ):
+        """Runs a command to completion and returns the buffered result.
+
+        The command must be an iterable of strings, plain strings are
+        rejected. Use `exec_stream` for incremental output and `exec_bg`
+        for detached commands.
+
+        Example:
+        ```python
+        >>> result = client.process.exec(
+        >>>     command=["python", "-c", "import os; print(os.getenv('MSG'))"],
+        >>>     env={"MSG": "hello"},
+        >>>     workdir="/tmp",
+        >>>     timeout_ms=10_000,
+        >>> )
+        >>> print(result.exit_code, result.stdout, result.stderr)
+        ```
+
+        Args:
+            command: List[str], the command and its arguments.
+            env: Dict[str, str], optional, environment variables to set.
+                 Values must be strings. `POLYAXON_*` keys are rejected
+                 by the server.
+            workdir: str, optional, working directory for the command.
+            stdin: str or bytes, optional, data to pass to the command's stdin.
+            timeout_ms: int, optional, server-side execution timeout
+                 in milliseconds.
+
+        Returns:
+            V1ExecResult, with `exit_code`, `stdout`, `stderr`, `signal`,
+                 `duration_ms`, `timed_out`, `stdout_truncated`,
+                 `stderr_truncated`.
+
+        Raises:
+            TypeError: If the command or env values have the wrong shape.
+        """
         return self._parent.client.sandbox_v1.call_exec(
             *self._run_args(),
             body=V1ExecRequest(
@@ -830,6 +1104,39 @@ class _ProcessSubClient(_BaseSubClient):
         timeout_ms: Optional[int] = None,
         timeout=None,
     ):
+        """Runs a command and streams its output as server-sent events.
+
+        Returns an iterator that is also a context manager. Breaking out of
+        the loop early inside a `with` block closes the HTTP response.
+        Events are dicts with a `type` key: `stdout`, `stderr`, `error`,
+        and `execution_complete`.
+
+        Example:
+        ```python
+        >>> with client.process.exec_stream(
+        >>>     command=["sh", "-lc", "echo one; echo two"],
+        >>> ) as events:
+        >>>     for event in events:
+        >>>         print(event)
+        >>>         if event.get("type") == "execution_complete":
+        >>>             break
+        ```
+
+        Args:
+            command: List[str], the command and its arguments.
+            env: Dict[str, str], optional, environment variables to set.
+            workdir: str, optional, working directory for the command.
+            stdin: str or bytes, optional, data to pass to the command's stdin.
+            timeout_ms: int, optional, server-side execution timeout
+                 in milliseconds.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            An SSE iterator and context manager yielding event dicts.
+
+        Raises:
+            PolyaxonClientException: If the request or the stream fails.
+        """
         body = V1ExecRequest(
             command=normalize_command(command),
             env=normalize_env(env),
@@ -878,6 +1185,35 @@ class _ProcessSubClient(_BaseSubClient):
         timeout_ms: Optional[int] = None,
         tag: Optional[str] = None,
     ):
+        """Starts a detached background command and returns a handle.
+
+        The command keeps running after this call returns. Use the returned
+        handle to poll status, read logs, signal, and wait.
+
+        Example:
+        ```python
+        >>> bg = client.process.exec_bg(
+        >>>     command=["sh", "-lc", "for i in 1 2 3; do echo tick-$i; sleep 1; done"],
+        >>>     tag="my-job",
+        >>> )
+        >>> status = bg.wait(timeout=10)
+        >>> print(status.state, status.exit_code)
+        ```
+
+        Args:
+            command: List[str], the command and its arguments.
+            env: Dict[str, str], optional, environment variables to set.
+            workdir: str, optional, working directory for the command.
+            stdin: str or bytes, optional, data to pass to the command's stdin.
+            timeout_ms: int, optional, server-side execution timeout
+                 in milliseconds.
+            tag: str, optional, a label to filter execs in `list`.
+
+        Returns:
+            SandboxBgExec, a handle for the started command with `id`, `pid`,
+                 `started_at`, and `tag` properties, and methods to poll
+                 status, read logs, signal, and wait, documented below.
+        """
         start = self._parent.client.sandbox_v1.exec_bg(
             *self._run_args(),
             body=V1ExecBgRequest(
@@ -893,6 +1229,14 @@ class _ProcessSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def list(self, tag: Optional[str] = None):
+        """Lists background execs.
+
+        Args:
+            tag: str, optional, only return execs started with this tag.
+
+        Returns:
+            V1ExecBgList, with `execs`, a list of V1ExecBgStatus.
+        """
         return self._parent.client.sandbox_v1.list_bg_execs(
             *self._run_args(),
             tag=tag,
@@ -900,6 +1244,14 @@ class _ProcessSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def get(self, id: str):
+        """Fetches the status of a background exec by id.
+
+        Args:
+            id: str, the background exec id.
+
+        Returns:
+            V1ExecBgStatus
+        """
         return self._parent.client.sandbox_v1.get_bg_exec(*self._run_args(), id=id)
 
     @client_handler(check_no_op=True)
@@ -910,6 +1262,17 @@ class _ProcessSubClient(_BaseSubClient):
         offset: Optional[int] = None,
         max_bytes: Optional[int] = None,
     ):
+        """Fetches one page of captured logs for a background exec.
+
+        Args:
+            id: str, the background exec id.
+            stream: str, optional, `stdout` or `stderr`.
+            offset: int, optional, byte offset to read from.
+            max_bytes: int, optional, max bytes to return in this page.
+
+        Returns:
+            V1ExecBgLogs, with `data`, `next_offset`, `eof`, and `state`.
+        """
         return self._parent.client.sandbox_v1.get_bg_exec_logs(
             *self._run_args(),
             id=id,
@@ -920,6 +1283,12 @@ class _ProcessSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def signal(self, id: str, signal: str):
+        """Sends a signal to a background exec.
+
+        Args:
+            id: str, the background exec id.
+            signal: str, the signal name, e.g. `SIGTERM` or `SIGKILL`.
+        """
         return self._parent.client.sandbox_v1.signal_bg_exec(
             *self._run_args(),
             id=id,
@@ -928,6 +1297,11 @@ class _ProcessSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def delete(self, id: str):
+        """Deletes a background exec record and its captured logs.
+
+        Args:
+            id: str, the background exec id.
+        """
         return self._parent.client.sandbox_v1.delete_bg_exec(
             *self._run_args(),
             id=id,
@@ -1073,6 +1447,12 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
 
 
 class _FsSubClient(_BaseSubClient):
+    """Filesystem sub-client, accessed via `client.fs`.
+
+    All remote paths must be absolute POSIX paths; relative paths are
+    rejected client-side before any network I/O.
+    """
+
     @client_handler(check_no_op=True)
     def read(
         self,
@@ -1081,6 +1461,30 @@ class _FsSubClient(_BaseSubClient):
         length: Optional[int] = None,
         timeout=None,
     ) -> FsReadResult:
+        """Reads one page of bytes from a remote file.
+
+        This exposes the server paging contract directly. Use `read_bytes`,
+        `read_text`, or `iter_bytes` for higher-level reads.
+
+        Example:
+        ```python
+        >>> result = client.fs.read("/tmp/data.bin", offset=0, length=1024)
+        >>> print(result.data, result.next_offset, result.eof)
+        ```
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            offset: int, optional, byte offset to read from.
+            length: int, optional, max bytes to return in this page.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            FsReadResult, with `data` bytes, `next_offset`, and `eof`.
+
+        Raises:
+            ValueError: If the path is not absolute or arguments are invalid.
+            PolyaxonClientException: If the request fails.
+        """
         path = validate_remote_path(path)
         params = {"path": path, "offset": offset}
         if length is not None:
@@ -1116,6 +1520,34 @@ class _FsSubClient(_BaseSubClient):
         append: bool = False,
         timeout=None,
     ) -> FsWriteResult:
+        """Writes bytes to a remote file in a single request.
+
+        Use `upload_file` for chunked transfers of local files.
+
+        Example:
+        ```python
+        >>> result = client.fs.write("/tmp/hello.txt", b"hello\\n")
+        >>> print(result.path, result.bytes_written, result.created)
+        ```
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            data: str or bytes, the content to write.
+            mode: int, optional, file mode if the file is created,
+                 default: `0o644`.
+            create: bool, optional, create the file if it does not exist,
+                 default: True.
+            append: bool, optional, append instead of overwrite,
+                 default: False.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            FsWriteResult, with `path`, `bytes_written`, and `created`.
+
+        Raises:
+            ValueError: If the path is not absolute.
+            PolyaxonClientException: If the request fails.
+        """
         path = validate_remote_path(path)
         params = {
             "path": path,
@@ -1157,7 +1589,21 @@ class _FsSubClient(_BaseSubClient):
         chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ) -> bytes:
-        """Read a remote absolute POSIX path into memory."""
+        """Reads a remote file into memory as bytes.
+
+        This buffers the requested range in memory. Use `iter_bytes` for
+        large files.
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            offset: int, optional, byte offset to start from.
+            length: int, optional, max bytes to read, default: until EOF.
+            chunk_size: int, optional, bytes per request, default: 64KiB.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            bytes
+        """
         return b"".join(
             self.iter_bytes(
                 path=path,
@@ -1176,7 +1622,31 @@ class _FsSubClient(_BaseSubClient):
         chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ):
-        """Yield chunks from a remote absolute POSIX path."""
+        """Iterates over a remote file's content in chunks.
+
+        This is the lower-memory option for large files.
+
+        Example:
+        ```python
+        >>> for chunk in client.fs.iter_bytes("/tmp/data.bin", chunk_size=1024):
+        >>>     process(chunk)
+        ```
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            offset: int, optional, byte offset to start from.
+            length: int, optional, max bytes to read, default: until EOF.
+            chunk_size: int, optional, bytes per request, default: 64KiB.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Yields:
+            bytes, file content chunks.
+
+        Raises:
+            ValueError: If the path is not absolute or arguments are invalid.
+            PolyaxonClientException: If the server returns non-advancing
+                 offsets.
+        """
         path = validate_remote_path(path)
         _validate_fs_read_args(offset=offset, length=length, chunk_size=chunk_size)
 
@@ -1233,6 +1703,22 @@ class _FsSubClient(_BaseSubClient):
         append: bool = False,
         timeout=None,
     ) -> FsWriteResult:
+        """Writes bytes to a remote file. Alias of `write`.
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            data: str or bytes, the content to write.
+            mode: int, optional, file mode if the file is created,
+                 default: `0o644`.
+            create: bool, optional, create the file if it does not exist,
+                 default: True.
+            append: bool, optional, append instead of overwrite,
+                 default: False.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            FsWriteResult, with `path`, `bytes_written`, and `created`.
+        """
         return self.write(
             path=path,
             data=data,
@@ -1253,10 +1739,27 @@ class _FsSubClient(_BaseSubClient):
         errors: str = "strict",
         timeout=None,
     ) -> str:
-        """Read and decode bytes until EOF or the requested length.
+        """Reads a remote file and decodes it as text.
 
-        This buffers the requested range in memory. Use fs.read for explicit
+        This buffers the requested range in memory. Use `read` for explicit
         chunked reads.
+
+        Example:
+        ```python
+        >>> print(client.fs.read_text("/tmp/hello.txt"))
+        ```
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            offset: int, optional, byte offset to start from.
+            length: int, optional, max bytes to read, default: until EOF.
+            chunk_size: int, optional, bytes per request, default: 64KiB.
+            encoding: str, optional, text encoding, default: `utf-8`.
+            errors: str, optional, decoding error handling, default: `strict`.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            str
         """
         return self.read_bytes(
             path=path,
@@ -1277,10 +1780,29 @@ class _FsSubClient(_BaseSubClient):
         timeout=None,
         create_parents: bool = True,
     ) -> str:
-        """Download a remote absolute POSIX path to a local file.
+        """Downloads a remote file to a local path.
 
-        The local write uses a .part file followed by os.replace. This does not
-        make any statement about remote-side atomicity.
+        The local write uses a `.part` file followed by `os.replace`, so the
+        local destination is never left partially written. This makes no
+        statement about remote-side atomicity.
+
+        Example:
+        ```python
+        >>> client.fs.download_file("/tmp/results.json", "results.json")
+        ```
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            local_path: str or Path, the local destination.
+            offset: int, optional, remote byte offset to start from.
+            length: int, optional, max bytes to download, default: until EOF.
+            chunk_size: int, optional, bytes per request, default: 64KiB.
+            timeout: int, optional, client-side request timeout in seconds.
+            create_parents: bool, optional, create local parent directories,
+                 default: True.
+
+        Returns:
+            str, the local destination path.
         """
         path = validate_remote_path(path)
         destination = Path(local_path)
@@ -1315,12 +1837,30 @@ class _FsSubClient(_BaseSubClient):
         chunk_size: int = _DEFAULT_FILE_CHUNK_SIZE,
         timeout=None,
     ) -> FsWriteResult:
-        """Upload a local file to a remote sandbox path.
+        """Uploads a local file to a remote sandbox path.
 
-        The remote path must be absolute. Uploads are not remote-atomic.
-        Concurrent uploads to the same remote path are unsupported, and a
-        mid-upload failure may leave a partial remote file. The mode only
-        applies if the remote file is created.
+        Uploads are chunked but not remote-atomic: a mid-upload failure may
+        leave a partial remote file. Concurrent uploads to the same remote
+        path are unsupported. The mode only applies if the remote file is
+        created.
+
+        Example:
+        ```python
+        >>> client.fs.upload_file("data.csv", "/tmp/data.csv")
+        ```
+
+        Args:
+            local_path: str or Path, the local file to upload.
+            path: str, an absolute POSIX path on the sandbox.
+            mode: int, optional, file mode if the remote file is created,
+                 default: `0o644`.
+            create: bool, optional, create the remote file if it does not
+                 exist, default: True.
+            chunk_size: int, optional, bytes per request, default: 64KiB.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            FsWriteResult, with `path`, `bytes_written`, and `created`.
         """
         path = validate_remote_path(path)
         _validate_file_chunk_size(chunk_size)
@@ -1365,6 +1905,32 @@ class _FsSubClient(_BaseSubClient):
         errors: str = "strict",
         timeout=None,
     ) -> FsWriteResult:
+        """Encodes a string and writes it to a remote file.
+
+        Example:
+        ```python
+        >>> client.fs.write_text("/tmp/hello.txt", "hello\\n")
+        ```
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            data: str, the text to write.
+            mode: int, optional, file mode if the file is created,
+                 default: `0o644`.
+            create: bool, optional, create the file if it does not exist,
+                 default: True.
+            append: bool, optional, append instead of overwrite,
+                 default: False.
+            encoding: str, optional, text encoding, default: `utf-8`.
+            errors: str, optional, encoding error handling, default: `strict`.
+            timeout: int, optional, client-side request timeout in seconds.
+
+        Returns:
+            FsWriteResult, with `path`, `bytes_written`, and `created`.
+
+        Raises:
+            TypeError: If data is not a string.
+        """
         if not isinstance(data, str):
             raise TypeError("data must be a string")
         return self.write_bytes(
@@ -1383,6 +1949,16 @@ class _FsSubClient(_BaseSubClient):
         recursive: Optional[bool] = None,
         max_entries: Optional[int] = None,
     ):
+        """Lists a remote directory.
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            recursive: bool, optional, list entries recursively.
+            max_entries: int, optional, max entries to return.
+
+        Returns:
+            V1FsListResult, with `path`, `entries`, and `truncated`.
+        """
         path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_ls(
             *self._run_args(),
@@ -1393,6 +1969,17 @@ class _FsSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def mkdir(self, path: str, parents: bool = False, mode: int = 0o755):
+        """Creates a remote directory.
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            parents: bool, optional, create parent directories as needed,
+                 default: False.
+            mode: int, optional, directory mode, default: `0o755`.
+
+        Returns:
+            V1FsPathResult, with the created `path`.
+        """
         path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_mkdir(
             *self._run_args(),
@@ -1405,6 +1992,16 @@ class _FsSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def rm(self, path: str, recursive: bool = False):
+        """Removes a remote file or directory.
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+            recursive: bool, optional, remove directories recursively,
+                 default: False.
+
+        Returns:
+            V1FsPathResult, with the removed `path`.
+        """
         path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_rm(
             *self._run_args(),
@@ -1414,6 +2011,15 @@ class _FsSubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def stat(self, path: str):
+        """Fetches metadata for a remote file or directory.
+
+        Args:
+            path: str, an absolute POSIX path on the sandbox.
+
+        Returns:
+            V1FsStatResult, with `path`, `type`, `size`, `mtime`, `mode`,
+                 `uid`, `gid`, `symlink_target`.
+        """
         path = validate_remote_path(path)
         return self._parent.client.sandbox_v1.fs_stat(*self._run_args(), path=path)
 
@@ -1777,6 +2383,12 @@ class _AsyncFsSubClient(_FsSubClient, _AsyncBaseSubClient):
 
 
 class _PtySubClient(_BaseSubClient):
+    """PTY sub-client, accessed via `client.pty`.
+
+    Manages interactive PTY sessions inside the sandbox and attaches to
+    them over WebSocket.
+    """
+
     def _ws_url(self, id: str, replay_bytes: Optional[int] = None) -> str:
         url = self._url("pty/{}/ws".format(id))
         if replay_bytes is not None:
@@ -1793,6 +2405,27 @@ class _PtySubClient(_BaseSubClient):
         rows: Optional[int] = 24,
         tag: Optional[str] = None,
     ):
+        """Creates a new PTY session.
+
+        Example:
+        ```python
+        >>> pty = client.pty.create(command=["sh"], cols=80, rows=24)
+        >>> print(pty.pty_id, pty.state)
+        ```
+
+        Args:
+            command: List[str], optional, the command to run in the PTY,
+                 default: the server's default shell.
+            env: Dict[str, str], optional, environment variables to set.
+            workdir: str, optional, working directory for the session.
+            cols: int, optional, terminal columns, default: 80.
+            rows: int, optional, terminal rows, default: 24.
+            tag: str, optional, a label to filter sessions in `list`.
+
+        Returns:
+            V1Pty, with `pty_id`, `pid`, `state`, `attached`, `cols`,
+                 `rows`, `tag`, and activity timestamps.
+        """
         return self._parent.client.sandbox_v1.create_pty(
             *self._run_args(),
             body=V1CreatePtyRequest(
@@ -1807,18 +2440,46 @@ class _PtySubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def list(self, tag: Optional[str] = None):
+        """Lists PTY sessions.
+
+        Args:
+            tag: str, optional, only return sessions created with this tag.
+
+        Returns:
+            V1PtyList, with `sessions`, a list of V1Pty.
+        """
         return self._parent.client.sandbox_v1.list_ptys(*self._run_args(), tag=tag)
 
     @client_handler(check_no_op=True)
     def get(self, id: str):
+        """Fetches a PTY session by id.
+
+        Args:
+            id: str, the PTY session id.
+
+        Returns:
+            V1Pty
+        """
         return self._parent.client.sandbox_v1.get_pty(*self._run_args(), id=id)
 
     @client_handler(check_no_op=True)
     def delete(self, id: str):
+        """Terminates and deletes a PTY session.
+
+        Args:
+            id: str, the PTY session id.
+        """
         return self._parent.client.sandbox_v1.delete_pty(*self._run_args(), id=id)
 
     @client_handler(check_no_op=True)
     def resize(self, id: str, cols: int, rows: int):
+        """Resizes a PTY session's terminal.
+
+        Args:
+            id: str, the PTY session id.
+            cols: int, terminal columns.
+            rows: int, terminal rows.
+        """
         return self._parent.client.sandbox_v1.resize_pty(
             *self._run_args(),
             id=id,
@@ -1827,6 +2488,12 @@ class _PtySubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def signal(self, id: str, signal: str):
+        """Sends a signal to a PTY session's process.
+
+        Args:
+            id: str, the PTY session id.
+            signal: str, the signal name, e.g. `SIGTERM` or `SIGKILL`.
+        """
         return self._parent.client.sandbox_v1.signal_pty(
             *self._run_args(),
             id=id,
@@ -1835,6 +2502,40 @@ class _PtySubClient(_BaseSubClient):
 
     @client_handler(check_no_op=True)
     def attach(self, id: str, replay_bytes: Optional[int] = None, timeout=None):
+        """Attaches to a PTY session over WebSocket.
+
+        The initial `attached` control event is consumed before this method
+        returns; a bad initial frame closes the socket and raises.
+
+        The returned client is a context manager and exposes:
+         * `send_stdin(data)`: sends bytes to the PTY's stdin.
+         * `recv()`: receives the next frame, bytes for raw PTY output,
+           dicts for JSON control events.
+         * `resize(cols, rows)`: resizes the terminal.
+         * `signal(signal)` / `kill(signal="SIGTERM")`: signals the process.
+         * `attached_event`: the initial attached control event.
+         * `close()`: closes the WebSocket.
+
+        Example:
+        ```python
+        >>> pty = client.pty.create(command=["sh"])
+        >>> with client.pty.attach(pty.pty_id, replay_bytes=1024) as ws:
+        >>>     ws.send_stdin(b"echo ready\\n")
+        >>>     frame = ws.recv()
+        ```
+
+        Args:
+            id: str, the PTY session id.
+            replay_bytes: int, optional, bytes of recent output to replay
+                 on attach.
+            timeout: int, optional, connection timeout in seconds.
+
+        Returns:
+            SandboxPtyWSClient, a connected PTY WebSocket client.
+
+        Raises:
+            PolyaxonClientException: If the attach handshake fails.
+        """
         ws = None
         try:
             ws = sandbox_ws.connect(

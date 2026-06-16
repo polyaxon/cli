@@ -120,7 +120,7 @@ Please check [polyaxon installation guide](https://polyaxon.com/setup/)
 </p>
 <br>
 
-Please check our [quick start guide](https://polyaxon.com/docs/intro/quick-start/) to start training your first experiment.
+Please check our [quick start guide](https://polyaxon.com/docs/guides/quick-start/) to start training your first experiment.
 
 # Distributed job
 
