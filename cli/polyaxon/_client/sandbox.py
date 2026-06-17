@@ -311,15 +311,30 @@ class SandboxClient(ClientMixin):
     ) -> V1Run:
         """Creates a new sandbox-enabled service run.
 
-        The created resource is a regular Polyaxon service run with
-        `plugins.sandbox` enabled. After creation, this client points at the
-        returned run and can use `process`, `fs`, and `pty`.
+        A sandbox is not a separate Polyaxon resource. This method creates a
+        regular `kind: service` run with `plugins.sandbox` enabled, then mutates
+        this client to point at the returned run. After creation, the same
+        client can use `process`, `fs`, and `pty`.
+
+        If `content` is not provided, the method builds a minimal service
+        operation with `plugins.sandbox: true`. If `content` is provided, it
+        must be inline service operation content so the client can verify the
+        run kind and merge the sandbox plugin before submission.
+
+        Example:
+        ```python
+        >>> from polyaxon.client import SandboxClient
+        >>> client = SandboxClient(owner="acme", project="proj")
+        >>> run = client.create(name="debug-sandbox")
+        >>> result = client.process.exec(command=["python", "-V"])
+        ```
 
         Args:
             name: str, optional, run name.
             description: str, optional, run description.
             tags: str or List[str], optional, list of tags.
-            content: str or Dict or V1Operation, optional, inline service operation.
+            content: str or Dict or V1Operation, optional, inline service operation
+                 content. When provided, it must define a service component.
             is_managed: bool, flag to create a managed run.
             managed_by: ManagedBy, optional, service that manages the operation.
             pending: str, optional, pending state.
@@ -467,6 +482,40 @@ class AsyncSandboxClient(SandboxClient):
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
     ) -> V1Run:
+        """Creates a new sandbox-enabled service run asynchronously.
+
+        A sandbox is not a separate Polyaxon resource. This method creates a
+        regular `kind: service` run with `plugins.sandbox` enabled, then mutates
+        this client to point at the returned run. After creation, the same
+        client can use `process`, `fs`, and `pty`.
+
+        If `content` is not provided, the method builds a minimal service
+        operation with `plugins.sandbox: true`. If `content` is provided, it
+        must be inline service operation content so the client can verify the
+        run kind and merge the sandbox plugin before submission.
+
+        Example:
+        ```python
+        >>> from polyaxon.client import AsyncSandboxClient
+        >>> client = AsyncSandboxClient(owner="acme", project="proj")
+        >>> run = await client.create(name="debug-sandbox")
+        >>> result = await client.process.exec(command=["python", "-V"])
+        ```
+
+        Args:
+            name: str, optional, run name.
+            description: str, optional, run description.
+            tags: str or List[str], optional, list of tags.
+            content: str or Dict or V1Operation, optional, inline service operation
+                 content. When provided, it must define a service component.
+            is_managed: bool, flag to create a managed run.
+            managed_by: ManagedBy, optional, service that manages the operation.
+            pending: str, optional, pending state.
+            meta_info: dict, optional, meta info to create the run with.
+
+        Returns:
+            V1Run, run instance from the response.
+        """
         data = self._build_sandbox_create_body(
             name=name,
             description=description,
