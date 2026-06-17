@@ -458,8 +458,8 @@ class V1IO(BaseSchemaModel):
     going from one operation to another.
 
     The final value of an input/output can be resolved
-    from [params](/docs/polyaxonfile/specification/params/), or from other values in
-    the [context](/docs/polyaxonfile/context/overview/).
+    from [params](/docs/references/polyaxonfile/specification/params/), or from other values in
+    the [context](/docs/references/polyaxonfile/context/overview/).
 
     Examples:
      * A build component may have a git repository as input and a container image as output.
@@ -478,7 +478,7 @@ class V1IO(BaseSchemaModel):
     converted to an argument using the `arg_format`.
 
     To learn how to pass valid values,
-    please check the [param section](/docs/polyaxonfile/specification/params/).
+    please check the [param section](/docs/references/polyaxonfile/specification/params/).
 
     Args:
         name: str
@@ -492,7 +492,7 @@ class V1IO(BaseSchemaModel):
         connection: str, optional
         to_init: bool, optional
         to_env: str, optional
-        validation: [V1Validation](/docs/polyaxonfile/specification/validation/), optional
+        validation: [V1Validation](/docs/references/polyaxonfile/specification/validation/), optional
         delay_validation: bool, optional (**Deprecated**: please see validation.delay)
         options: List[any], optional (**Deprecated**: please see validation)
 
@@ -583,7 +583,7 @@ class V1IO(BaseSchemaModel):
     ```
 
     for more details about composite type validation and schema,
-    please check the [types section](/docs/polyaxonfile/specification/types/),
+    please check the [types section](/docs/references/polyaxonfile/specification/types/),
     possible types include any python type hint, pydantic built-in types, and:
         * URI: "uri"
         * LIST: "list"

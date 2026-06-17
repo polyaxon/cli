@@ -200,7 +200,7 @@ class V1Termination(BaseSchemaModel):
     Maximum number of retries when an operation fails.
 
     This field can be used with
-    [restartPolicy](/docs/polyaxonfile/specification/environment/#restartpolicy)
+    [restartPolicy](/docs/references/polyaxonfile/specification/environment/#restartpolicy)
     from the environment section.
 
     This field is the equivalent of the

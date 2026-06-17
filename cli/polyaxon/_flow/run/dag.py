@@ -41,7 +41,7 @@ class V1Dag(BaseRun):
     A dag executes a dependency graph of operations, each operation runs a Kubernetes primitive
     described in its component.
 
-    Dags are defined in Polyaxon as a [component runtime](/docs/polyaxonfile/specification/component/#run),
+    Dags are defined in Polyaxon as a [component runtime](/docs/references/polyaxonfile/specification/component/#run),
     which makes them compatible with all knowledge used for running other runtimes:
      * They can be defined in reusable components and can be registered in the Component Hub.
      * They get executed using operations.
@@ -58,9 +58,9 @@ class V1Dag(BaseRun):
 
     Args:
         kind: str, should be equal `dag`
-        operations: List[[V1Operation](/docs/polyaxonfile/specification/operation/)]
-        components: List[[V1Component](/docs/polyaxonfile/specification/component/)], optional
-        environment: [V1Environment](/docs/polyaxonfile/specification/environment/), optional
+        operations: List[[V1Operation](/docs/references/polyaxonfile/specification/operation/)]
+        components: List[[V1Component](/docs/references/polyaxonfile/specification/component/)], optional
+        environment: [V1Environment](/docs/references/polyaxonfile/specification/environment/), optional
         connections: List[str], optional
         volumes: List[[Kubernetes Volume](https://kubernetes.io/docs/concepts/storage/volumes/)],
              optional
@@ -149,12 +149,12 @@ class V1Dag(BaseRun):
     concurrency and other queue priority definitions.
 
     Operations can reference components using:
-        * [dagRef](/docs/polyaxonfile/specification/operation/#dagRef)
+        * [dagRef](/docs/references/polyaxonfile/specification/operation/#dagRef)
              (reusable component defined inside the dag)
-        * [hubRef](/docs/polyaxonfile/specification/operation/#hubRef)
-        * [pathRef](/docs/polyaxonfile/specification/operation/#pathRef)
-        * [urlRef](/docs/polyaxonfile/specification/operation/#urlRef)
-        * [inline component](/docs/polyaxonfile/specification/operation/#component)
+        * [hubRef](/docs/references/polyaxonfile/specification/operation/#hubRef)
+        * [pathRef](/docs/references/polyaxonfile/specification/operation/#pathRef)
+        * [urlRef](/docs/references/polyaxonfile/specification/operation/#urlRef)
+        * [inline component](/docs/references/polyaxonfile/specification/operation/#component)
 
     ```yaml
     >>> run:
@@ -205,7 +205,7 @@ class V1Dag(BaseRun):
 
     ### environment
 
-    Optional [environment section](/docs/polyaxonfile/specification/environment/),
+    Optional [environment section](/docs/references/polyaxonfile/specification/environment/),
     it provides a way to inject pod related information.
 
     The environment definition will be passed to all children operations.

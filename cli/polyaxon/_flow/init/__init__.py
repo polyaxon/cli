@@ -41,11 +41,11 @@ class V1Init(BaseSchemaModel):
     Args:
         paths: Union[List[str], List[[str, str]], optional,
              list of subpaths or a list of [path from, path to].
-        artifacts: [V1ArtifactsType](/docs/polyaxonfile/specification/types/#v1artifactstype), optional
-        git: [V1GitType](/docs/polyaxonfile/specification/types/#v1gittype), optional
-        dockerfile: [V1DockerfileType](/docs/polyaxonfile/specification/types/#v1dockerfiletype), optional
-        file: [V1FileType](/docs/polyaxonfile/specification/types/#v1Filetype), optional
-        tensorboard: [V1TensorboardType](/docs/polyaxonfile/specification/types/#v1Tensorboardtype), optional
+        artifacts: [V1ArtifactsType](/docs/references/polyaxonfile/specification/types/#v1artifactstype), optional
+        git: [V1GitType](/docs/references/polyaxonfile/specification/types/#v1gittype), optional
+        dockerfile: [V1DockerfileType](/docs/references/polyaxonfile/specification/types/#v1dockerfiletype), optional
+        file: [V1FileType](/docs/references/polyaxonfile/specification/types/#v1Filetype), optional
+        tensorboard: [V1TensorboardType](/docs/references/polyaxonfile/specification/types/#v1Tensorboardtype), optional
         lineage_ref: str, optional
         model_ref: str, optional
         artifact_ref: str, optional

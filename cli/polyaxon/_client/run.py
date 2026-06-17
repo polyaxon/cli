@@ -115,14 +115,14 @@ class RunClient(ClientMixin):
         run_data: V1Run.
         status: str.
         namespace: str.
-        client: [PolyaxonClient](/docs/python-library/polyaxon-client/)
+        client: [PolyaxonClient](/docs/references/python-library/polyaxon-client/)
 
     Args:
         owner: str, optional, the owner is the username or
              the organization name owning this project.
         project: str, optional, project name owning the run(s).
         run_uuid: str, optional, run uuid.
-        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
+        client: [PolyaxonClient](/docs/references/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
         is_offline: bool, optional,
@@ -562,7 +562,7 @@ class RunClient(ClientMixin):
     def update(self, data: Union[Dict, V1Run], async_req: bool = False) -> V1Run:
         """Updates a run based on the data passed.
 
-        [Run API](/docs/api/#operation/PatchRun)
+        [Run API](/docs/references/api/#operation/PatchRun)
 
         Args:
             data: Dict or V1Run, required.
@@ -580,7 +580,7 @@ class RunClient(ClientMixin):
     def transfer(self, to_project: str, async_req: bool = False):
         """Transfers the run to a project under the same owner/organization.
 
-        [Run API](/docs/api/#operation/TransferRun)
+        [Run API](/docs/references/api/#operation/TransferRun)
 
         Args:
             to_project: str, required, the destination project to transfer the run to.
@@ -636,7 +636,7 @@ class RunClient(ClientMixin):
 
         > **Note**: If the `content` param is not passed, the run will be marked as non-managed.
 
-        [Run API](/docs/api/#operation/CreateRun)
+        [Run API](/docs/references/api/#operation/CreateRun)
 
         Args:
             name: str, optional, it will override the name in the operation if provided.
@@ -698,13 +698,13 @@ class RunClient(ClientMixin):
         N.B. Create methods are only useful if you want to create a run programmatically,
         if you run a component/operation from the CLI/UI an instance will be created automatically.
 
-        [Run API](/docs/api/#operation/CreateRun)
+        [Run API](/docs/references/api/#operation/CreateRun)
 
         Args:
             polyaxonfile: str, path to the polyaxonfile containing a YAML/Json specification.
                  The polyaxonfile should contain a
-                 [V1Component](/docs/polyaxonfile/specification/component/) or an
-                 [V1Operation](/docs/polyaxonfile/specification/operation/).
+                 [V1Component](/docs/references/polyaxonfile/specification/component/) or an
+                 [V1Operation](/docs/references/polyaxonfile/specification/operation/).
             name: str, optional,
                  it will override the name in the operation if provided.
             description: str, optional,
@@ -777,13 +777,13 @@ class RunClient(ClientMixin):
         N.B. Create methods are only useful if you want to create a run programmatically,
         if you run a component/operation from the CLI/UI an instance will be created automatically.
 
-        [Run API](/docs/api/#operation/CreateRun)
+        [Run API](/docs/references/api/#operation/CreateRun)
 
         Args:
             url: str, url containing a YAML/Json specification.
                  The url's polyaxonfile should contain a
-                 [V1Component](/docs/polyaxonfile/specification/component/) or an
-                 [V1Operation](/docs/polyaxonfile/specification/operation/).
+                 [V1Component](/docs/references/polyaxonfile/specification/component/) or an
+                 [V1Operation](/docs/references/polyaxonfile/specification/operation/).
             name: str, optional, it will override the name in the operation if provided.
             description: str, optional,
                  it will override the description in the operation if provided.
@@ -857,7 +857,7 @@ class RunClient(ClientMixin):
 
         If the component has required inputs, you should pass the params.
 
-        [Run API](/docs/api/#operation/CreateRun)
+        [Run API](/docs/references/api/#operation/CreateRun)
 
         Args:
             component: str, name of the hub component.
@@ -934,10 +934,10 @@ class RunClient(ClientMixin):
             * start
             * end
 
-        [Run API](/docs/api/#operation/CreateRunStatus)
+        [Run API](/docs/references/api/#operation/CreateRunStatus)
 
         Args:
-            status: str, a valid [Statuses](/docs/polyaxonfile/specification/lifecycle/) value.
+            status: str, a valid [Statuses](/docs/references/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -971,10 +971,10 @@ class RunClient(ClientMixin):
     ) -> Tuple[Union[str, V1Statuses], List[V1StatusCondition]]:
         """Gets the run's statuses.
 
-        [Run API](/docs/api/#operation/GetRunStatus)
+        [Run API](/docs/references/api/#operation/GetRunStatus)
 
         Args:
-            last_status: str, a valid [Statuses](/docs/polyaxonfile/specification/lifecycle/) value.
+            last_status: str, a valid [Statuses](/docs/references/polyaxonfile/specification/lifecycle/) value.
 
         Returns:
             Tuple[str, List[Conditions]], last status and ordered status conditions.
@@ -1396,13 +1396,13 @@ class RunClient(ClientMixin):
     ):
         """Gets multiple runs' inputs/outputs under the current owner - project.
 
-        [Run API](/docs/api/#operation/ListRuns)
+        [Run API](/docs/references/api/#operation/ListRuns)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/query-language/runs/#query)
+                 [Run PQL](/docs/references/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/query-language/runs/#sort)
+                 [Run PQL](/docs/references/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -1447,13 +1447,13 @@ class RunClient(ClientMixin):
     ) -> "V1ListRunArtifactsResponse":
         """Gets the run's artifacts lineage.
 
-        [Run API](/docs/api/#operation/GetRunArtifactsLineage)
+        [Run API](/docs/references/api/#operation/GetRunArtifactsLineage)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/query-language/artifacts-lineage/#query)
+                 [Run PQL](/docs/references/query-language/artifacts-lineage/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/query-language/artifacts-lineage/#sort)
+                 [Run PQL](/docs/references/query-language/artifacts-lineage/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -1477,15 +1477,15 @@ class RunClient(ClientMixin):
     ):
         """Gets the artifacts lineage for multiple runs under project based on query.
 
-        [Run API](/docs/api/#operation/GetRunsArtifactsLineage)
+        [Run API](/docs/references/api/#operation/GetRunsArtifactsLineage)
 
         **Available from v1.18**
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/query-language/artifacts-lineage/#query)
+                 [Run PQL](/docs/references/query-language/artifacts-lineage/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/query-language/artifacts-lineage/#sort)
+                 [Run PQL](/docs/references/query-language/artifacts-lineage/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -2185,7 +2185,7 @@ class RunClient(ClientMixin):
         </blockquote>
 
         Args:
-            status: str, a valid [Statuses](/docs/polyaxonfile/specification/lifecycle/) value.
+            status: str, a valid [Statuses](/docs/references/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
         """
@@ -2766,13 +2766,13 @@ class RunClient(ClientMixin):
     ):
         """Lists runs under the current owner - project.
 
-        [Run API](/docs/api/#operation/ListRuns)
+        [Run API](/docs/references/api/#operation/ListRuns)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/query-language/runs/#query)
+                 [Run PQL](/docs/references/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/query-language/runs/#sort)
+                 [Run PQL](/docs/references/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
             all_projects: bool, optional, default: False
@@ -2799,13 +2799,13 @@ class RunClient(ClientMixin):
     ):
         """Lists run's children if the current run has a pipeline.
 
-        [Run API](/docs/api/#operation/ListRuns)
+        [Run API](/docs/references/api/#operation/ListRuns)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project PQL](/docs/query-language/runs/#query)
+                 [Project PQL](/docs/references/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project PQL](/docs/query-language/runs/#sort)
+                 [Project PQL](/docs/references/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -2832,7 +2832,7 @@ class RunClient(ClientMixin):
         force: bool = False,
     ) -> V1ProjectVersion:
         """Similar to
-        [ProjectClient.register_model_version](/docs/python-library/project-client/#register_model_version),
+        [ProjectClient.register_model_version](/docs/references/python-library/project-client/#register_model_version),
         directly from the run client instance,
         allows to create or Update a model version based on the current run.
 
@@ -2894,7 +2894,7 @@ class RunClient(ClientMixin):
         force: bool = False,
     ) -> V1ProjectVersion:
         """Similar to
-        [ProjectClient.register_artifact_version](/docs/python-library/project-client/#register_artifact_version),
+        [ProjectClient.register_artifact_version](/docs/references/python-library/project-client/#register_artifact_version),
         directly from the run client instance,
         allows to create or Update an artifact version based on the current run.
 

@@ -299,7 +299,7 @@ def ls(
 ):
     """List runs for this project.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -463,7 +463,7 @@ def ls(
 def get(ctx, project, uid, offline, path, output):
     """Get run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples for getting a run:
 
@@ -559,7 +559,7 @@ def get(ctx, project, uid, offline, path, output):
 def delete(ctx, project, uid, yes, offline, path):
     """Delete a run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -635,7 +635,7 @@ def delete(ctx, project, uid, yes, offline, path):
 def update(ctx, project, uid, name, description, tags, offline, path):
     """Update run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -714,7 +714,7 @@ def update(ctx, project, uid, name, description, tags, offline, path):
 def approve(ctx, project, uid):
     """Approve a run waiting for human validation.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -761,7 +761,7 @@ def approve(ctx, project, uid):
 def stop(ctx, project, uid, yes):
     """Stop run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -813,7 +813,7 @@ def stop(ctx, project, uid, yes):
 def skip(ctx, project, uid, yes):
     """Skip run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -913,7 +913,7 @@ def restart(
 ):
     """Restart run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -998,7 +998,7 @@ def resume(
 ):
     """Resume run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -1045,7 +1045,7 @@ def resume(
 def invalidate(ctx, project, uid):
     """Invalidate the run's cache state.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -1088,7 +1088,7 @@ def invalidate(ctx, project, uid):
 def execute(ctx, project, uid, executor):
     """Execute a run on the current local machine using one of the specified executor.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples getting executing a run:
 
@@ -1333,7 +1333,7 @@ def execute(ctx, project, uid, executor):
 def statuses(ctx, project, uid, watch, offline, path):
     """Get run's statuses.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples getting run statuses:
 
@@ -1409,7 +1409,7 @@ def statuses(ctx, project, uid, watch, offline, path):
 # def resources(ctx, gpu):
 #     """Get run or run job resources.
 #
-#     Uses /docs/cli/#caching
+#     Uses /docs/references/cli/cache/#caching
 #
 #     Examples for getting run resources:
 #
@@ -1482,7 +1482,7 @@ def logs(
 ):
     """Get run's logs.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples for getting run logs:
 
@@ -1563,7 +1563,7 @@ def logs(
 def inspect(ctx, project, uid):
     """Inspect a run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -1675,7 +1675,7 @@ def exec_command(ctx, project, uid, pod, container, command):
 def shell(ctx, project, uid, command, pod, container):
     """Start a shell session for run.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -1773,7 +1773,7 @@ def artifacts(
 
     If no files, dirs, or refs are provided, the full run's artifacts will be downloaded.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -1971,7 +1971,7 @@ def upload(
 ):
     """Upload runs' artifacts.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -2054,7 +2054,7 @@ def upload(
 def transfer(ctx, project, uid, to_project):
     """Transfer the run to a destination project under the same owner/organization.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -2310,7 +2310,7 @@ def pull(
 ):
     """Pull a remote run or multiple remote runs to a local path.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -2463,7 +2463,7 @@ def push(
 ):
     """Push a local run (or all runs) to a remove server.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 

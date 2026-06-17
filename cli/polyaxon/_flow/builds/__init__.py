@@ -31,7 +31,7 @@ class V1Build(BaseSchemaModel):
         namespace: str, optional
         presets: List[str], optional
         cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
-        params: Dict[str, [V1Param](/docs/polyaxonfile/specification/params/)], optional
+        params: Dict[str, [V1Param](/docs/references/polyaxonfile/specification/params/)], optional
         run_patch: Dict, optional
         patch_strategy: str, optional, defaults to post_merge
 
@@ -150,7 +150,7 @@ class V1Build(BaseSchemaModel):
 
     ### params
 
-    The [params](/docs/polyaxonfile/specification/params/) to pass if the handler requires extra params,
+    The [params](/docs/references/polyaxonfile/specification/params/) to pass if the handler requires extra params,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.

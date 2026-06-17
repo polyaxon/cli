@@ -79,7 +79,7 @@ class OrganizationClient(ClientMixin):
         owner: str, optional, the owner is the username or the organization name.
                Can be specified as "owner" for organization-wide scope or "owner/team"
                for team-scoped operations.
-        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
+        client: [PolyaxonClient](/docs/references/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
         is_offline: bool, optional,
@@ -146,7 +146,7 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListOrganizationsResponse:
         """Lists organizations.
 
-        [Organization API](/docs/api/#operation/ListOrganizations)
+        [Organization API](/docs/references/api/#operation/ListOrganizations)
 
         Args:
             query: str, optional, query filters
@@ -171,7 +171,7 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListOrganizationMembersResponse:
         """Lists organization members.
 
-        [Organization API](/docs/api/#operation/ListOrganizationMembers)
+        [Organization API](/docs/references/api/#operation/ListOrganizationMembers)
 
         Args:
             query: str, optional, query filters
@@ -193,7 +193,7 @@ class OrganizationClient(ClientMixin):
     def get_member(self, user: str) -> V1OrganizationMember:
         """Gets an organization member.
 
-        [Organization API](/docs/api/#operation/GetOrganizationMember)
+        [Organization API](/docs/references/api/#operation/GetOrganizationMember)
 
         Args:
             user: str, required, the username of the member.
@@ -211,7 +211,7 @@ class OrganizationClient(ClientMixin):
     ) -> V1OrganizationMember:
         """Creates a new organization member.
 
-        [Organization API](/docs/api/#operation/CreateOrganizationMember)
+        [Organization API](/docs/references/api/#operation/CreateOrganizationMember)
 
         Args:
             data: Dict or V1OrganizationMember, required.
@@ -235,7 +235,7 @@ class OrganizationClient(ClientMixin):
     ) -> V1OrganizationMember:
         """Updates an organization member based on the data passed.
 
-        [Organization API](/docs/api/#operation/UpdateOrganizationMember)
+        [Organization API](/docs/references/api/#operation/UpdateOrganizationMember)
 
         Args:
             user: str, required, the username of the member.
@@ -259,7 +259,7 @@ class OrganizationClient(ClientMixin):
     ) -> V1OrganizationMember:
         """Patches an organization member based on the data passed.
 
-        [Organization API](/docs/api/#operation/PatchOrganizationMember)
+        [Organization API](/docs/references/api/#operation/PatchOrganizationMember)
 
         Args:
             user: str, required, the username of the member.
@@ -279,7 +279,7 @@ class OrganizationClient(ClientMixin):
     def delete_member(self, user: str):
         """Deletes an organization member.
 
-        [Organization API](/docs/api/#operation/DeleteOrganizationMember)
+        [Organization API](/docs/references/api/#operation/DeleteOrganizationMember)
 
         Args:
             user: str, required, the username of the member.
@@ -299,7 +299,7 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListTeamsResponse:
         """Lists teams in the organization.
 
-        [Teams API](/docs/api/#operation/ListTeams)
+        [Teams API](/docs/references/api/#operation/ListTeams)
 
         Args:
             query: str, optional, query filters
@@ -331,8 +331,8 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListRunsResponse:
         """Lists runs across all projects in the organization or team.
 
-        [Organization API](/docs/api/#operation/GetOrganizationRuns)
-        [Team API](/docs/api/#operation/GetTeamRuns)
+        [Organization API](/docs/references/api/#operation/GetOrganizationRuns)
+        [Team API](/docs/references/api/#operation/GetTeamRuns)
 
         Args:
             query: str, optional, query filters
@@ -354,8 +354,8 @@ class OrganizationClient(ClientMixin):
     def get_run(self, uuid: str) -> V1Run:
         """Gets a run by uuid from the organization or team.
 
-        [Organization API](/docs/api/#operation/GetOrganizationRun)
-        [Team API](/docs/api/#operation/GetTeamRun)
+        [Organization API](/docs/references/api/#operation/GetOrganizationRun)
+        [Team API](/docs/references/api/#operation/GetTeamRun)
 
         Args:
             uuid: str, required, the run uuid.
@@ -371,7 +371,7 @@ class OrganizationClient(ClientMixin):
     def approve_runs(self, uuids: Union[List[str], V1Uuids]):
         """Approves multiple runs in the organization.
 
-        [Organization API](/docs/api/#operation/ApproveOrganizationRuns)
+        [Organization API](/docs/references/api/#operation/ApproveOrganizationRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to approve.
@@ -388,7 +388,7 @@ class OrganizationClient(ClientMixin):
     def archive_runs(self, uuids: Union[List[str], V1Uuids]):
         """Archives multiple runs in the organization.
 
-        [Organization API](/docs/api/#operation/ArchiveOrganizationRuns)
+        [Organization API](/docs/references/api/#operation/ArchiveOrganizationRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to archive.
@@ -405,7 +405,7 @@ class OrganizationClient(ClientMixin):
     def restore_runs(self, uuids: Union[List[str], V1Uuids]):
         """Restores multiple runs in the organization.
 
-        [Organization API](/docs/api/#operation/RestoreOrganizationRuns)
+        [Organization API](/docs/references/api/#operation/RestoreOrganizationRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to restore.
@@ -422,8 +422,8 @@ class OrganizationClient(ClientMixin):
     def delete_runs(self, uuids: Union[List[str], V1Uuids]):
         """Deletes multiple runs in the organization or team.
 
-        [Organization API](/docs/api/#operation/DeleteOrganizationRuns)
-        [Team API](/docs/api/#operation/DeleteTeamRuns)
+        [Organization API](/docs/references/api/#operation/DeleteOrganizationRuns)
+        [Team API](/docs/references/api/#operation/DeleteTeamRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to delete.
@@ -443,8 +443,8 @@ class OrganizationClient(ClientMixin):
     def stop_runs(self, uuids: Union[List[str], V1Uuids]):
         """Stops multiple runs in the organization or team.
 
-        [Organization API](/docs/api/#operation/StopOrganizationRuns)
-        [Team API](/docs/api/#operation/StopTeamRuns)
+        [Organization API](/docs/references/api/#operation/StopOrganizationRuns)
+        [Team API](/docs/references/api/#operation/StopTeamRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to stop.
@@ -463,7 +463,7 @@ class OrganizationClient(ClientMixin):
     def skip_runs(self, uuids: Union[List[str], V1Uuids]):
         """Skips multiple runs in the organization.
 
-        [Organization API](/docs/api/#operation/SkipOrganizationRuns)
+        [Organization API](/docs/references/api/#operation/SkipOrganizationRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to skip.
@@ -482,8 +482,8 @@ class OrganizationClient(ClientMixin):
     def invalidate_runs(self, uuids: Union[List[str], V1Uuids]):
         """Invalidates multiple runs in the organization or team.
 
-        [Organization API](/docs/api/#operation/InvalidateOrganizationRuns)
-        [Team API](/docs/api/#operation/InvalidateTeamRuns)
+        [Organization API](/docs/references/api/#operation/InvalidateOrganizationRuns)
+        [Team API](/docs/references/api/#operation/InvalidateTeamRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to invalidate.
@@ -502,7 +502,7 @@ class OrganizationClient(ClientMixin):
     def bookmark_runs(self, uuids: Union[List[str], V1Uuids]):
         """Bookmarks multiple runs in the organization.
 
-        [Organization API](/docs/api/#operation/BookmarkOrganizationRuns)
+        [Organization API](/docs/references/api/#operation/BookmarkOrganizationRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to bookmark.
@@ -521,7 +521,7 @@ class OrganizationClient(ClientMixin):
     def tag_runs(self, uuids: Union[List[str], V1Uuids], tags: List[str]):
         """Tags multiple runs in the organization.
 
-        [Organization API](/docs/api/#operation/TagOrganizationRuns)
+        [Organization API](/docs/references/api/#operation/TagOrganizationRuns)
 
         Args:
             data: Dict, required, must include 'uuids' and 'tags' fields.
@@ -544,7 +544,7 @@ class OrganizationClient(ClientMixin):
     ):
         """Transfers multiple runs to another project in the organization.
 
-        [Organization API](/docs/api/#operation/TransferOrganizationRuns)
+        [Organization API](/docs/references/api/#operation/TransferOrganizationRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to transfer.
@@ -595,8 +595,8 @@ class OrganizationClient(ClientMixin):
             * model versions
             * artifact versions
 
-        [Organization API](/docs/api/#operation/GetOrganizationVersions)
-        [Team API](/docs/api/#operation/GetTeamVersions)
+        [Organization API](/docs/references/api/#operation/GetOrganizationVersions)
+        [Team API](/docs/references/api/#operation/GetTeamVersions)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
@@ -630,8 +630,8 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListProjectVersionsResponse:
         """Lists component versions across all projects in the organization or team.
 
-        [Organization API](/docs/api/#operation/GetOrganizationVersions)
-        [Team API](/docs/api/#operation/GetTeamVersions)
+        [Organization API](/docs/references/api/#operation/GetOrganizationVersions)
+        [Team API](/docs/references/api/#operation/GetTeamVersions)
 
         Args:
             query: str, optional, query filters
@@ -660,8 +660,8 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListProjectVersionsResponse:
         """Lists model versions across all projects in the organization or team.
 
-        [Organization API](/docs/api/#operation/GetOrganizationVersions)
-        [Team API](/docs/api/#operation/GetTeamVersions)
+        [Organization API](/docs/references/api/#operation/GetOrganizationVersions)
+        [Team API](/docs/references/api/#operation/GetTeamVersions)
 
         Args:
             query: str, optional, query filters
@@ -690,8 +690,8 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListProjectVersionsResponse:
         """Lists artifact versions across all projects in the organization or team.
 
-        [Organization API](/docs/api/#operation/GetOrganizationVersions)
-        [Team API](/docs/api/#operation/GetTeamVersions)
+        [Organization API](/docs/references/api/#operation/GetOrganizationVersions)
+        [Team API](/docs/references/api/#operation/GetTeamVersions)
 
         Args:
             query: str, optional, query filters
@@ -723,7 +723,7 @@ class OrganizationClient(ClientMixin):
     ) -> V1ListRunArtifactsResponse:
         """Lists artifact lineage for runs across all projects in the organization.
 
-        [Organization API](/docs/api/#operation/GetOrganizationRunsArtifactsLineage)
+        [Organization API](/docs/references/api/#operation/GetOrganizationRunsArtifactsLineage)
 
         Args:
             name: str, optional, entity name filter.

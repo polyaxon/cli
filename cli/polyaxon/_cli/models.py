@@ -363,7 +363,7 @@ def delete(ctx, project, version, yes):
 def update(ctx, project, version, name, description, tags):
     """Update model version.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -414,7 +414,7 @@ def update(ctx, project, version, name, description, tags):
 def stage(ctx, project, version, to, reason, message):
     """Update stage for a model version.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -452,7 +452,7 @@ def stage(ctx, project, version, to, reason, message):
 def transfer(ctx, project, version, to_project):
     """Transfer the version to a destination project under the same owner/organization.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -519,7 +519,7 @@ def pull(
     """Package and download a model version or multiple model versions
     to a local path with or without artifacts.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -600,7 +600,7 @@ def push(
 ):
     """Push local packaged model version or multiple model versions to a remove server.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 

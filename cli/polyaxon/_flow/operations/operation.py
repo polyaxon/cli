@@ -53,12 +53,12 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         queue: str, optional
         namespace: str, optional
         cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
-        termination: [V1Termination](/docs/polyaxonfile/specification/termination/), optional
-        plugins: [V1Plugins](/docs/polyaxonfile/specification/plugins/), optional
-        params: Dict[str, [V1Param](/docs/polyaxonfile/specification/params/)], optional
+        termination: [V1Termination](/docs/references/polyaxonfile/specification/termination/), optional
+        plugins: [V1Plugins](/docs/references/polyaxonfile/specification/plugins/), optional
+        params: Dict[str, [V1Param](/docs/references/polyaxonfile/specification/params/)], optional
         schedule: Union[[V1CronSchedule](/docs/orchestration/schedules/cron/), [V1IntervalSchedule](/docs/orchestration/schedules/interval/), [V1DateTimeSchedule](/docs/orchestration/schedules/datetime/)], optional  # noqa
         events: List[[V1EventTrigger](/docs/orchestration/events/)], optional
-        mount: List[[V1Mount](/docs/polyaxonfile/specification/mount/)], optional
+        mount: List[[V1Mount](/docs/references/polyaxonfile/specification/mount/)], optional
         build: [V1Build](/docs/orchestration/builds/), optional
         hooks: List[[V1Hook](/docs/orchestration/hooks/)], optional
         matrix: Union[[V1Mapping](/docs/orchestration/mapping/), [V1GridSearch](/docs/orchestration/optimization-engine/grid-search/), [V1RandomSearch](/docs/orchestration/optimization-engine/random-search/), [V1Hyperband](/docs/orchestration/optimization-engine/hyperband/), [V1Bayes](/docs/orchestration/optimization-engine/bayesian-optimization/), [V1Hyperopt](/docs/orchestration/optimization-engine/hyperopt/), [V1Iterative](/docs/orchestration/optimization-engine/iterative/)], optional  # noqa
@@ -72,8 +72,8 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         dag_ref: str, optional
         url_ref: str, optional
         path_ref: str, optional
-        component: [V1Component](/docs/polyaxonfile/specification/component/), optional
-        template: [V1Template](/docs/polyaxonfile/specification/template/), optional
+        component: [V1Component](/docs/references/polyaxonfile/specification/component/), optional
+        template: [V1Template](/docs/references/polyaxonfile/specification/template/), optional
 
     ## YAML usage
 
@@ -289,7 +289,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### termination
 
-    The [termination](/docs/polyaxonfile/specification/termination/) to use for this operation run,
+    The [termination](/docs/references/polyaxonfile/specification/termination/) to use for this operation run,
     if provided, it will override the component's termination otherwise
     the termination of the component will be used if it exists.
 
@@ -301,7 +301,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### plugins
 
-    The [plugins](/docs/polyaxonfile/specification/plugins/) to use for this operation run,
+    The [plugins](/docs/references/polyaxonfile/specification/plugins/) to use for this operation run,
     if provided, it will override the component's plugins otherwise
     the plugins of the component will be used if it exists.
 
@@ -317,7 +317,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### params
 
-    The [params](/docs/polyaxonfile/specification/params/)  to pass to the component,
+    The [params](/docs/references/polyaxonfile/specification/params/)  to pass to the component,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.
@@ -333,7 +333,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### mount
 
-    > **Note**: ver 2.13+. Please check [V1Mount](/docs/polyaxonfile/specification/mount/) for more details.
+    > **Note**: ver 2.13+. Please check [V1Mount](/docs/references/polyaxonfile/specification/mount/) for more details.
 
     This section defines a list of mounts to be used for this operation.
     Mounts can be defined either as strings or as full objects.

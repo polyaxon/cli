@@ -102,7 +102,7 @@ def cli(context, verbose, offline):
 
       - polyaxon admin teardown [-f]
 
-    For more information, please visit https://polyaxon.com/docs/cli/
+    For more information, please visit https://polyaxon.com/docs/references/cli/
 
     Check the help available for each command listed below by appending `-h`.
     """

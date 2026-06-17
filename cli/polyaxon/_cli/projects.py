@@ -58,7 +58,7 @@ def project(ctx, _project):  # pylint:disable=redefined-outer-name
 def create(ctx, name, description, tags, public, init):
     """Create a new project.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -134,7 +134,7 @@ def create(ctx, name, description, tags, public, init):
 def ls(owner, query, sort, limit, offset):
     """List projects.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
     """
     owner = owner or get_local_owner(is_cli=True)
     if not owner:
@@ -185,7 +185,7 @@ def ls(owner, query, sort, limit, offset):
 def get(ctx, _project):
     """Get info for current project, by project_name, or owner/project_name.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 
@@ -246,7 +246,7 @@ def get(ctx, _project):
 def delete(ctx, _project, yes):
     """Delete project.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
     """
     owner, _, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
@@ -298,7 +298,7 @@ def delete(ctx, _project, yes):
 def update(ctx, _project, name, description, tags, private):
     """Update project.
 
-    Uses /docs/cli/#caching
+    Uses /docs/references/cli/cache/#caching
 
     Examples:
 

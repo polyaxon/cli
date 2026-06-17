@@ -44,7 +44,7 @@ class V1Join(BaseSchemaModel):
 
     The result of the join will be a list of values based on the results from executing the search.
 
-    A Join corresponds to a valid [query specification](/docs/query-language/),
+    A Join corresponds to a valid [query specification](/docs/references/query-language/overview/),
     the result of the search will be used to resolve
     the params defined in the join.
 
@@ -114,7 +114,7 @@ class V1Join(BaseSchemaModel):
 
     This will instruct Polyaxon to perform 2 searches.
     Each search will expose the params to be used similar to the default
-    [params section](/docs/polyaxonfile/specification/params/).
+    [params section](/docs/references/polyaxonfile/specification/params/).
     Polyaxon will validate the params of search against the IO(inputs/outputs) definition.
     Users should make sure that their IO definition specify the `isList: true`,
     unless the type is `artifacts`.
@@ -130,7 +130,7 @@ class V1Join(BaseSchemaModel):
     >>> }
     ```
 
-    When the param is of type [ArtifactsType](/docs/polyaxonfile/specification/types/#v1artifactstype),
+    When the param is of type [ArtifactsType](/docs/references/polyaxonfile/specification/types/#v1artifactstype),
     all files and dirs will be concatenated in a single list,
     each value will be prefixed with the uuid (run path) of each run in the query result:
 
@@ -148,7 +148,7 @@ class V1Join(BaseSchemaModel):
     ```
 
     > **Note**: the difference between using `artifacts.lineage_name`
-    > and [ArtifactsType](/docs/polyaxonfile/specification/types/#v1artifactstype),
+    > and [ArtifactsType](/docs/references/polyaxonfile/specification/types/#v1artifactstype),
     > is that the former will only expose the path(s) based on any lineage logged
     > during the runtime, the later is a manual way of selecting specific files and dirs.
 
@@ -157,7 +157,7 @@ class V1Join(BaseSchemaModel):
     ### query
 
     A valid query respecting
-    [Polyaxon Query Language](/docs/query-language/runs/#query)
+    [Polyaxon Query Language](/docs/references/query-language/runs/#query)
 
     ```yaml
     >>> joins:
@@ -167,7 +167,7 @@ class V1Join(BaseSchemaModel):
     ### sort
 
     A valid sort respecting
-    [Polyaxon Query Language](/docs/query-language/runs/#sort)
+    [Polyaxon Query Language](/docs/references/query-language/runs/#sort)
 
     ```yaml
     >>> joins:
@@ -196,7 +196,7 @@ class V1Join(BaseSchemaModel):
 
     ### params
 
-    Similar to the default [params specification](/docs/polyaxonfile/specification/params/)
+    Similar to the default [params specification](/docs/references/polyaxonfile/specification/params/)
     with the exception that it does not accept the `ref` key.
     The reference is generated automatically based on the search performed by Polyaxon.
 

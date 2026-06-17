@@ -102,7 +102,7 @@ class SandboxClient(ClientMixin):
         run_data: V1Run.
         namespace: str.
         settings: V1RunSettings.
-        client: [PolyaxonClient](/docs/python-library/polyaxon-client/)
+        client: [PolyaxonClient](/docs/references/python-library/polyaxon-client/)
         process: the process execution sub-client.
         fs: the filesystem sub-client.
         pty: the PTY sub-client.
@@ -112,7 +112,7 @@ class SandboxClient(ClientMixin):
              the organization name owning this project.
         project: str, optional, project name owning the run(s).
         run_uuid: str, optional, run uuid.
-        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
+        client: [PolyaxonClient](/docs/references/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
         is_offline: bool, optional,
@@ -424,7 +424,7 @@ class SandboxClient(ClientMixin):
 
 class AsyncSandboxClient(SandboxClient):
     """AsyncSandboxClient is the async variant of the
-    [SandboxClient](/docs/sandbox/client/#sandboxclient).
+    [SandboxClient](/docs/references/sandbox/client/#sandboxclient).
 
     It exposes the same API surface with coroutine methods and async iterators:
      * `process.exec_stream` returns an async context manager / async iterator.

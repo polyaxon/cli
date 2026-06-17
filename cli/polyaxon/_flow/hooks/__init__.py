@@ -52,7 +52,7 @@ class V1Hook(BaseSchemaModel):
         namespace: str, optional
         presets: List[str], optional
         disableDefaults: bool, optional
-        params: Dict[str, [V1Param](/docs/polyaxonfile/specification/params/)], optional
+        params: Dict[str, [V1Param](/docs/references/polyaxonfile/specification/params/)], optional
 
     ## YAML usage
 
@@ -191,7 +191,7 @@ class V1Hook(BaseSchemaModel):
 
     ### params
 
-    The [params](/docs/polyaxonfile/specification/params/) to pass if the handler requires extra params,
+    The [params](/docs/references/polyaxonfile/specification/params/) to pass if the handler requires extra params,
     they will be validated against the inputs/outputs.
     If a parameter is passed and the component does not define a corresponding inputs/outputs,
     a validation error will be raised unless the param has the `contextOnly` flag enabled.

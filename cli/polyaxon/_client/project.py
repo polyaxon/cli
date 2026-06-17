@@ -140,7 +140,7 @@ class ProjectClient(ClientMixin):
              Can be specified as "owner" for organization scope or "owner/team"
              for team-scoped projects.
         project: str, optional, project name.
-        client: [PolyaxonClient](/docs/python-library/polyaxon-client/), optional,
+        client: [PolyaxonClient](/docs/references/python-library/polyaxon-client/), optional,
              an instance of a configured client, if not passed,
              a new instance will be created based on the available environment.
         is_offline: bool, optional,
@@ -208,7 +208,7 @@ class ProjectClient(ClientMixin):
     def create(self, data: Union[Dict, V1Project]) -> V1Project:
         """Creates a new project based on the data passed.
 
-        [Project API](/docs/api/#operation/CreateProject)
+        [Project API](/docs/references/api/#operation/CreateProject)
 
         Args:
             data: dict or V1Project, required.
@@ -251,13 +251,13 @@ class ProjectClient(ClientMixin):
     ) -> List[V1Project]:
         """Lists projects under the current owner.
 
-        [Project API](/docs/api/#operation/ListProjects)
+        [Project API](/docs/references/api/#operation/ListProjects)
 
         Args:
             query: str, optional, query filters, please refer to
-                    [Project PQL](/docs/query-language/projects/#query)
+                    [Project PQL](/docs/references/query-language/projects/#query)
             sort: str, optional, fields to order by, please refer to
-                    [Project PQL](/docs/query-language/projects/#sort)
+                    [Project PQL](/docs/references/query-language/projects/#sort)
             limit: int, optional, limit of projects to return.
             offset: int, optional, offset pages to paginate projects.
 
@@ -276,7 +276,7 @@ class ProjectClient(ClientMixin):
     def update(self, data: Union[Dict, V1Project]) -> V1Project:
         """Updates a project based on the data passed.
 
-        [Project API](/docs/api/#operation/PatchProject)
+        [Project API](/docs/references/api/#operation/PatchProject)
 
         Args:
             data: Dict or V1Project, required.
@@ -303,13 +303,13 @@ class ProjectClient(ClientMixin):
     ):
         """Lists runs under the current owner/project.
 
-        [Run API](/docs/api/#operation/ListRuns)
+        [Run API](/docs/references/api/#operation/ListRuns)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Run PQL](/docs/query-language/runs/#query)
+                 [Run PQL](/docs/references/query-language/runs/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Run PQL](/docs/query-language/runs/#sort)
+                 [Run PQL](/docs/references/query-language/runs/#sort)
             limit: int, optional, limit of runs to return.
             offset: int, optional, offset pages to paginate runs.
 
@@ -329,7 +329,7 @@ class ProjectClient(ClientMixin):
     ):
         """Transfers multiple runs to another project under the same owner/organization.
 
-        [Run API](/docs/api/#operation/TransferRuns)
+        [Run API](/docs/references/api/#operation/TransferRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to transfer.
@@ -356,7 +356,7 @@ class ProjectClient(ClientMixin):
     def approve_runs(self, uuids: Union[List[str], V1Uuids]):
         """Approves multiple runs in the project.
 
-        [Run API](/docs/api/#operation/ApproveRuns)
+        [Run API](/docs/references/api/#operation/ApproveRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to approve.
@@ -369,7 +369,7 @@ class ProjectClient(ClientMixin):
     def archive_runs(self, uuids: Union[List[str], V1Uuids]):
         """Archives multiple runs in the project.
 
-        [Run API](/docs/api/#operation/ArchiveRuns)
+        [Run API](/docs/references/api/#operation/ArchiveRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to archive.
@@ -382,7 +382,7 @@ class ProjectClient(ClientMixin):
     def restore_runs(self, uuids: Union[List[str], V1Uuids]):
         """Restores multiple runs in the project.
 
-        [Run API](/docs/api/#operation/RestoreRuns)
+        [Run API](/docs/references/api/#operation/RestoreRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to restore.
@@ -395,7 +395,7 @@ class ProjectClient(ClientMixin):
     def delete_runs(self, uuids: Union[List[str], V1Uuids]):
         """Deletes multiple runs in the project.
 
-        [Run API](/docs/api/#operation/DeleteRuns)
+        [Run API](/docs/references/api/#operation/DeleteRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to delete.
@@ -409,7 +409,7 @@ class ProjectClient(ClientMixin):
     def stop_runs(self, uuids: Union[List[str], V1Uuids]):
         """Stops multiple runs in the project.
 
-        [Run API](/docs/api/#operation/StopRuns)
+        [Run API](/docs/references/api/#operation/StopRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to stop.
@@ -422,7 +422,7 @@ class ProjectClient(ClientMixin):
     def skip_runs(self, uuids: Union[List[str], V1Uuids]):
         """Skips multiple runs in the project.
 
-        [Run API](/docs/api/#operation/SkipRuns)
+        [Run API](/docs/references/api/#operation/SkipRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to skip.
@@ -435,7 +435,7 @@ class ProjectClient(ClientMixin):
     def invalidate_runs(self, uuids: Union[List[str], V1Uuids]):
         """Invalidates multiple runs in the project.
 
-        [Run API](/docs/api/#operation/InvalidateRuns)
+        [Run API](/docs/references/api/#operation/InvalidateRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to invalidate.
@@ -448,7 +448,7 @@ class ProjectClient(ClientMixin):
     def bookmark_runs(self, uuids: Union[List[str], V1Uuids]):
         """Bookmarks multiple runs in the project.
 
-        [Run API](/docs/api/#operation/BookmarkRuns)
+        [Run API](/docs/references/api/#operation/BookmarkRuns)
 
         Args:
             uuids: List[str] or V1Uuids, required, list of run uuids to bookmark.
@@ -461,7 +461,7 @@ class ProjectClient(ClientMixin):
     def tag_runs(self, uuids: Union[List[str], V1Uuids], tags: List[str]):
         """Tags multiple runs in the project.
 
-        [Run API](/docs/api/#operation/TagRuns)
+        [Run API](/docs/references/api/#operation/TagRuns)
 
         Args:
             data: Dict, required, must include 'uuids' and 'tags' fields.
@@ -498,14 +498,14 @@ class ProjectClient(ClientMixin):
             * model versions
             * artifact versions
 
-        [Project API](/docs/api/#operation/ListProjectVersions)
+        [Project API](/docs/references/api/#operation/ListProjectVersions)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -530,13 +530,13 @@ class ProjectClient(ClientMixin):
     ) -> V1ListProjectVersionsResponse:
         """Lists component versions under the current owner/project.
 
-        [Project API](/docs/api/#operation/ListProjectVersions)
+        [Project API](/docs/references/api/#operation/ListProjectVersions)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -561,13 +561,13 @@ class ProjectClient(ClientMixin):
     ) -> V1ListProjectVersionsResponse:
         """Lists model versions under the current owner/project.
 
-        [Project API](/docs/api/#operation/ListProjectVersions)
+        [Project API](/docs/references/api/#operation/ListProjectVersions)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -592,13 +592,13 @@ class ProjectClient(ClientMixin):
     ) -> V1ListProjectVersionsResponse:
         """Lists artifact versions under the current owner/project.
 
-        [Project API](/docs/api/#operation/ListProjectVersions)
+        [Project API](/docs/references/api/#operation/ListProjectVersions)
 
         Args:
             query: str, optional, query filters, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#query)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#query)
             sort: str, optional, fields to order by, please refer to
-                 [Project Version PQL](/docs/query-language/project-versions/#sort)
+                 [Project Version PQL](/docs/references/query-language/project-versions/#sort)
             limit: int, optional, limit of project versions to return.
             offset: int, optional, offset pages to paginate project versions.
 
@@ -622,7 +622,7 @@ class ProjectClient(ClientMixin):
             * model version
             * artifact version
 
-        [Project API](/docs/api/#operation/GetVersion)
+        [Project API](/docs/references/api/#operation/GetVersion)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
@@ -643,7 +643,7 @@ class ProjectClient(ClientMixin):
     def get_component_version(self, version: str) -> V1ProjectVersion:
         """Gets a component version under the current owner/project.
 
-        [Project API](/docs/api/#operation/GetVersion)
+        [Project API](/docs/references/api/#operation/GetVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -657,7 +657,7 @@ class ProjectClient(ClientMixin):
     def get_model_version(self, version: str) -> V1ProjectVersion:
         """Gets a model version under the current owner/project.
 
-        [Project API](/docs/api/#operation/GetVersion)
+        [Project API](/docs/references/api/#operation/GetVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -671,7 +671,7 @@ class ProjectClient(ClientMixin):
     def get_artifact_version(self, version: str) -> V1ProjectVersion:
         """Gets an artifact version under the current owner/project.
 
-        [Project API](/docs/api/#operation/GetVersion)
+        [Project API](/docs/references/api/#operation/GetVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -692,7 +692,7 @@ class ProjectClient(ClientMixin):
             * model version
             * artifact version
 
-        [Project API](/docs/api/#operation/GetVersionStages)
+        [Project API](/docs/references/api/#operation/GetVersionStages)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
@@ -713,7 +713,7 @@ class ProjectClient(ClientMixin):
     ) -> Tuple[str, List[V1StageCondition]]:
         """Gets a component version stages under the current owner/project.
 
-        [Project API](/docs/api/#operation/GetVersionStages)
+        [Project API](/docs/references/api/#operation/GetVersionStages)
 
         Args:
             version: str, required, the version name/tag.
@@ -731,7 +731,7 @@ class ProjectClient(ClientMixin):
     ) -> Tuple[str, List[V1StageCondition]]:
         """Gets a model version under the current owner/project.
 
-        [Project API](/docs/api/#operation/GetVersionStages)
+        [Project API](/docs/references/api/#operation/GetVersionStages)
 
         Args:
             version: str, required, the version name/tag.
@@ -747,7 +747,7 @@ class ProjectClient(ClientMixin):
     ) -> Tuple[str, List[V1StageCondition]]:
         """Gets an artifact version under the current owner/project.
 
-        [Project API](/docs/api/#operation/GetVersionStages)
+        [Project API](/docs/references/api/#operation/GetVersionStages)
 
         Args:
             version: str, required, the version name/tag.
@@ -772,7 +772,7 @@ class ProjectClient(ClientMixin):
             * model version
             * artifact version
 
-        [Project API](/docs/api/#operation/CreateVersion)
+        [Project API](/docs/references/api/#operation/CreateVersion)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
@@ -801,7 +801,7 @@ class ProjectClient(ClientMixin):
     ) -> V1ProjectVersion:
         """Creates a component version based on the data passed.
 
-        [Project API](/docs/api/#operation/CreateVersion)
+        [Project API](/docs/references/api/#operation/CreateVersion)
 
         Args:
             data: Dict or V1ProjectVersion, required.
@@ -821,7 +821,7 @@ class ProjectClient(ClientMixin):
     ) -> V1ProjectVersion:
         """Creates a model version based on the data passed.
 
-        [Project API](/docs/api/#operation/CreateVersion)
+        [Project API](/docs/references/api/#operation/CreateVersion)
 
         Args:
             data: Dict or V1ProjectVersion, required.
@@ -841,7 +841,7 @@ class ProjectClient(ClientMixin):
     ) -> V1ProjectVersion:
         """Creates an artifact version based on the data passed.
 
-        [Project API](/docs/api/#operation/CreateVersion)
+        [Project API](/docs/references/api/#operation/CreateVersion)
 
         Args:
             data: Dict or V1ProjectVersion, required.
@@ -868,7 +868,7 @@ class ProjectClient(ClientMixin):
             * model version
             * artifact version
 
-        [Project API](/docs/api/#operation/PatchVersion)
+        [Project API](/docs/references/api/#operation/PatchVersion)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
@@ -896,7 +896,7 @@ class ProjectClient(ClientMixin):
     ) -> V1ProjectVersion:
         """Updates a component version based on the data passed.
 
-        [Project API](/docs/api/#operation/PatchVersion)
+        [Project API](/docs/references/api/#operation/PatchVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -919,7 +919,7 @@ class ProjectClient(ClientMixin):
     ) -> V1ProjectVersion:
         """Updates a model version based on the data passed.
 
-        [Project API](/docs/api/#operation/PatchVersion)
+        [Project API](/docs/references/api/#operation/PatchVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -942,7 +942,7 @@ class ProjectClient(ClientMixin):
     ) -> V1ProjectVersion:
         """Updates an artifact version based on the data passed.
 
-        [Project API](/docs/api/#operation/PatchVersion)
+        [Project API](/docs/references/api/#operation/PatchVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -1155,7 +1155,7 @@ class ProjectClient(ClientMixin):
             * model version
             * artifact version
 
-        [Project API](/docs/api/#operation/DeleteVersion)
+        [Project API](/docs/references/api/#operation/DeleteVersion)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
@@ -1175,7 +1175,7 @@ class ProjectClient(ClientMixin):
     def delete_component_version(self, version: str):
         """Deletes a component version under the current owner/project.
 
-        [Project API](/docs/api/#operation/DeleteVersion)
+        [Project API](/docs/references/api/#operation/DeleteVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -1189,7 +1189,7 @@ class ProjectClient(ClientMixin):
     def delete_model_version(self, version: str):
         """Deletes a model version under the current owner/project.
 
-        [Project API](/docs/api/#operation/DeleteVersion)
+        [Project API](/docs/references/api/#operation/DeleteVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -1203,7 +1203,7 @@ class ProjectClient(ClientMixin):
     def delete_artifact_version(self, version: str):
         """Deletes an artifact version under the current owner/project.
 
-        [Project API](/docs/api/#operation/DeleteVersion)
+        [Project API](/docs/references/api/#operation/DeleteVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -1232,12 +1232,12 @@ class ProjectClient(ClientMixin):
             * model version
             * artifact version
 
-        [Project API](/docs/api/#operation/CreateVersionStage)
+        [Project API](/docs/references/api/#operation/CreateVersionStage)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/references/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the stage change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1274,11 +1274,11 @@ class ProjectClient(ClientMixin):
     ):
         """Creates a new a component version stage.
 
-        [Project API](/docs/api/#operation/CreateVersionStage)
+        [Project API](/docs/references/api/#operation/CreateVersionStage)
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/references/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1306,11 +1306,11 @@ class ProjectClient(ClientMixin):
     ):
         """Creates a new a model version stage.
 
-        [Project API](/docs/api/#operation/CreateVersionStage)
+        [Project API](/docs/references/api/#operation/CreateVersionStage)
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/references/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1338,11 +1338,11 @@ class ProjectClient(ClientMixin):
     ):
         """Creates a new an artifact version stage.
 
-        [Project API](/docs/api/#operation/CreateVersionStage)
+        [Project API](/docs/references/api/#operation/CreateVersionStage)
 
         Args:
             version: str, required, the version name/tag.
-            stage: str, a valid [Stages](/docs/polyaxonfile/specification/lifecycle/) value.
+            stage: str, a valid [Stages](/docs/references/polyaxonfile/specification/lifecycle/) value.
             reason: str, optional, reason or service issuing the status change.
             message: str, optional, message to log with this status.
             last_transition_time: datetime, default `now`.
@@ -1369,7 +1369,7 @@ class ProjectClient(ClientMixin):
             * model version
             * artifact version
 
-        [Run API](/docs/api/#operation/TransferVersion)
+        [Run API](/docs/references/api/#operation/TransferVersion)
 
         Args:
             kind: V1ProjectVersionKind, kind of the project version.
@@ -1391,7 +1391,7 @@ class ProjectClient(ClientMixin):
     def transfer_component_version(self, version: str, to_project: str):
         """Transfers the component version to a project under the same owner/organization.
 
-        [Run API](/docs/api/#operation/TransferVersion)
+        [Run API](/docs/references/api/#operation/TransferVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -1407,7 +1407,7 @@ class ProjectClient(ClientMixin):
     def transfer_model_version(self, version: str, to_project: str):
         """Transfers the model version to a project under the same owner/organization.
 
-        [Run API](/docs/api/#operation/TransferVersion)
+        [Run API](/docs/references/api/#operation/TransferVersion)
 
         Args:
             version: str, required, the version name/tag.
@@ -1423,7 +1423,7 @@ class ProjectClient(ClientMixin):
     def transfer_artifact_version(self, version: str, to_project: str):
         """Transfers the artifact version to a project under the same owner/organization.
 
-        [Run API](/docs/api/#operation/TransferVersion)
+        [Run API](/docs/references/api/#operation/TransferVersion)
 
         Args:
             version: str, required, the version name/tag.
