@@ -78,7 +78,7 @@ class V1Hook(BaseSchemaModel):
 
     ### connection
 
-    The connection to notify, this [connection](/setup/connections/)
+    The connection to notify, this [connection](/docs/setup/connections/)
     must be configured at deployment time to be used here by referencing the name.
 
     ```yaml

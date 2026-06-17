@@ -91,7 +91,7 @@ class V1KFReplica(BaseSchemaModel):
 
     ### connections
 
-    A list of [connection names](/setup/connections/) to resolve for the job.
+    A list of [connection names](/docs/setup/connections/) to resolve for the job.
 
     <blockquote className="light">
     If you are referencing a connection it must be configured.

@@ -228,7 +228,7 @@ class V1Dag(BaseRun):
 
     ### connections
 
-    A list of [connection names](/setup/connections/) to resolve for the dag.
+    A list of [connection names](/docs/setup/connections/) to resolve for the dag.
 
     <blockquote className="light">
     If you are referencing a connection it must be configured.

@@ -166,9 +166,9 @@ class V1Connection(Connection, BaseTypeConfig):
     you can expose any key/value object you want for your own custom handlers.
 
     For more details please check connection schema section for the built-in handlers:
-        * [artifacts connections](/setup/connections/artifacts/)
-        * [git connections](/setup/connections/git/)
-        * [docker registry connections](/setup/connections/registry/)
+        * [artifacts connections](/docs/setup/connections/artifacts/)
+        * [git connections](/docs/setup/connections/git/)
+        * [docker registry connections](/docs/setup/connections/registry/)
 
     ### secret
 

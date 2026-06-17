@@ -97,7 +97,7 @@ class V1Service(V1Job):
 
      ### connections
 
-     A list of [connection names](/setup/connections/) to resolve for the service.
+     A list of [connection names](/docs/setup/connections/) to resolve for the service.
 
     <blockquote className="light">
     If you are referencing a connection it must be configured.

@@ -48,7 +48,7 @@ class V1Notification(BaseSchemaModel):
 
     ### connections
 
-    The connections to notify, these [connections](/setup/connections/)
+    The connections to notify, these [connections](/docs/setup/connections/)
     must be configured at deployment time.
 
     ```yaml
