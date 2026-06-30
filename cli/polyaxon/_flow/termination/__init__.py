@@ -176,6 +176,7 @@ class V1Termination(BaseSchemaModel):
     >>>       - action: Ignore
     >>>         onPodConditions:
     >>>           - type: DisruptionTarget
+    >>>             status: "'True'"
     ```
 
     ## Python usage
@@ -343,6 +344,7 @@ class V1Termination(BaseSchemaModel):
     >>>       - action: Ignore
     >>>         onPodConditions:
     >>>           - type: DisruptionTarget
+    >>>             status: "'True'"
     ```
 
     Available actions:
