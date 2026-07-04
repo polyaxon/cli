@@ -52,21 +52,21 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         presets: str, optional
         queue: str, optional
         namespace: str, optional
-        cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
+        cache: [V1Cache](/docs/references/polyaxonfile/helpers/cache/), optional
         termination: [V1Termination](/docs/references/polyaxonfile/specification/termination/), optional
         plugins: [V1Plugins](/docs/references/polyaxonfile/specification/plugins/), optional
         params: Dict[str, [V1Param](/docs/references/polyaxonfile/specification/params/)], optional
-        schedule: Union[[V1CronSchedule](/docs/orchestration/schedules/cron/), [V1IntervalSchedule](/docs/orchestration/schedules/interval/), [V1DateTimeSchedule](/docs/orchestration/schedules/datetime/)], optional  # noqa
-        events: List[[V1EventTrigger](/docs/orchestration/events/)], optional
+        schedule: Union[[V1CronSchedule](/docs/references/polyaxonfile/automation/schedules/cron/), [V1IntervalSchedule](/docs/references/polyaxonfile/automation/schedules/interval/), [V1DateTimeSchedule](/docs/references/polyaxonfile/automation/schedules/datetime/)], optional  # noqa
+        events: List[[V1EventTrigger](/docs/references/polyaxonfile/automation/events/)], optional
         mount: List[[V1Mount](/docs/references/polyaxonfile/specification/mount/)], optional
-        build: [V1Build](/docs/orchestration/builds/), optional
-        hooks: List[[V1Hook](/docs/orchestration/hooks/)], optional
-        matrix: Union[[V1Mapping](/docs/orchestration/mapping/), [V1GridSearch](/docs/orchestration/optimization-engine/grid-search/), [V1RandomSearch](/docs/orchestration/optimization-engine/random-search/), [V1Hyperband](/docs/orchestration/optimization-engine/hyperband/), [V1Bayes](/docs/orchestration/optimization-engine/bayesian-optimization/), [V1Hyperopt](/docs/orchestration/optimization-engine/hyperopt/), [V1Iterative](/docs/orchestration/optimization-engine/iterative/)], optional  # noqa
-        joins: List[[V1Join](/docs/orchestration/joins/)], optional
-        dependencies: [dependencies](/docs/orchestration/flow-engine/flow-dependencies/#dependencies), optional  # noqa
-        trigger: [trigger](/docs/orchestration/flow-engine/flow-dependencies/#trigger), optional
+        build: [V1Build](/docs/references/polyaxonfile/automation/build/), optional
+        hooks: List[[V1Hook](/docs/references/polyaxonfile/automation/hooks/)], optional
+        matrix: Union[[V1Mapping](/docs/references/polyaxonfile/automation/mapping/), [V1GridSearch](/docs/references/polyaxonfile/automation/matrix/grid-search/), [V1RandomSearch](/docs/references/polyaxonfile/automation/matrix/random-search/), [V1Hyperband](/docs/references/polyaxonfile/automation/matrix/hyperband/), [V1Bayes](/docs/references/polyaxonfile/automation/matrix/bayesian-optimization/), [V1Hyperopt](/docs/references/polyaxonfile/automation/matrix/hyperopt/), [V1Iterative](/docs/references/polyaxonfile/automation/matrix/iterative/)], optional  # noqa
+        joins: List[[V1Join](/docs/references/polyaxonfile/automation/joins/)], optional
+        dependencies: [dependencies](/docs/references/polyaxonfile/automation/dependencies/#dependencies), optional  # noqa
+        trigger: [trigger](/docs/references/polyaxonfile/automation/dependencies/#trigger), optional
         conditions: [conditions](/docs/scheduling/scheduling-strategies/conditional-scheduling/#conditional-scheduling), optional  # noqa
-        skip_on_upstream_skip: [skip_on_upstream_skip](/docs/orchestration/flow-engine/flow-dependencies/#skiponupstreamskip), optional  # noqa
+        skip_on_upstream_skip: [skip_on_upstream_skip](/docs/references/polyaxonfile/automation/dependencies/#skiponupstreamskip), optional  # noqa
         run_patch: Dict, optional
         hub_ref: str, optional
         dag_ref: str, optional
@@ -276,7 +276,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### cache
 
-    The [cache](/docs/orchestration/helpers/cache/) to use for this operation run,
+    The [cache](/docs/references/polyaxonfile/helpers/cache/) to use for this operation run,
     if provided, it will override the component's cache otherwise
     the cache of the component will be used if it exists.
 
@@ -349,7 +349,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### build
 
-    > **Note**: Please check [V1Build](/docs/orchestration/builds/) for more details.
+    > **Note**: Please check [V1Build](/docs/references/polyaxonfile/automation/build/) for more details.
 
     This section defines if this operation should build a container before starting the main logic.
     If the build section is provided, Polyaxon will set the main operation to a pending state
@@ -372,14 +372,14 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     The run patch is a dictionary that can modify most of the runtime information and
     will be resolved against the corresponding run kind:
 
-     * [V1Job](/docs/workload/jobs/): for running batch jobs, model training experiments, data processing jobs, ...  # noqa
-     * [V1Service](/docs/workload/services/): for running tensorboards, notebooks, streamlit, custom services or an API.  # noqa
-     * [V1TFJob](/docs/workload/distributed/tf-jobs/): for running distributed Tensorflow training job.  # noqa
-     * [V1PytorchJob](/docs/workload/distributed/pytorch-jobs/): for running distributed Pytorch training job.  # noqa
-     * [V1MPIJob](/docs/workload/distributed/mpi-jobs/): for running distributed MPI job.  # noqa
-     * [V1RayCluster](/docs/workload/clusters/ray-clusters/): for running a Ray cluster.
-     * [V1DaskCluster](/docs/workload/clusters/dask-clusters/): for running a Dask cluster.
-     * [V1Dag](/docs/orchestration/flow-engine/specification/): for running a DAG/workflow.
+     * [V1Job](/docs/references/polyaxonfile/runtimes/job/): for running batch jobs, model training experiments, data processing jobs, ...  # noqa
+     * [V1Service](/docs/references/polyaxonfile/runtimes/service/): for running tensorboards, notebooks, streamlit, custom services or an API.  # noqa
+     * [V1TFJob](/docs/references/polyaxonfile/runtimes/distributed/tf-jobs/): for running distributed Tensorflow training job.  # noqa
+     * [V1PytorchJob](/docs/references/polyaxonfile/runtimes/distributed/pytorch-jobs/): for running distributed Pytorch training job.  # noqa
+     * [V1MPIJob](/docs/references/polyaxonfile/runtimes/distributed/mpi-jobs/): for running distributed MPI job.  # noqa
+     * [V1RayCluster](/docs/references/polyaxonfile/runtimes/clusters/ray-clusters/): for running a Ray cluster.
+     * [V1DaskCluster](/docs/references/polyaxonfile/runtimes/clusters/dask-clusters/): for running a Dask cluster.
+     * [V1Dag](/docs/references/polyaxonfile/automation/dag/): for running a DAG/workflow.
 
     For example, if we define a generic component for running Jupyter Notebook:
 

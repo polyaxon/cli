@@ -48,11 +48,11 @@ class V1Dag(BaseRun):
      * They can be parametrized similar to jobs and services.
      * Since they are defined as components' runtimes, and they run a graph of other components,
        they can be nested natively.
-     * They can leverage all [pipeline helpers](/docs/orchestration/helpers/).
-     * They can run in parallel and can be used with [mapping](/docs/orchestration/mapping/) or
-       other [optimization algorithms](/docs/orchestration/optimization-engine/).
-     * They can run on [schedule](/docs/orchestration/schedules/)
-     * They can subscribe to [events](/docs/orchestration/events/)
+     * They can leverage all [pipeline helpers](/docs/references/polyaxonfile/helpers/overview/).
+     * They can run in parallel and can be used with [mapping](/docs/references/polyaxonfile/automation/mapping/) or
+       other [optimization algorithms](/docs/references/polyaxonfile/automation/matrix/overview/).
+     * They can run on [schedule](/docs/references/polyaxonfile/automation/schedules/overview/)
+     * They can subscribe to [events](/docs/references/polyaxonfile/automation/events/)
      * They can take advantage of all scheduling strategies to route operations to nodes,
        namespaces, and clusters even within the same DAG.
 
@@ -65,7 +65,7 @@ class V1Dag(BaseRun):
         volumes: List[[Kubernetes Volume](https://kubernetes.io/docs/concepts/storage/volumes/)],
              optional
         concurrency: init, optional
-        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
+        early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -139,7 +139,7 @@ class V1Dag(BaseRun):
 
     > **Note**: For more information about managing the execution graph
     > and creating dependencies between operations, please check the
-    > [flow dependencies section](/docs/orchestration/flow-engine/flow-dependencies/).
+    > [flow dependencies section](/docs/references/polyaxonfile/automation/dependencies/).
 
     ### references
 
@@ -280,7 +280,7 @@ class V1Dag(BaseRun):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
+    please check the [concurrency section](/docs/references/polyaxonfile/helpers/concurrency/).
 
     ### earlyStopping
 
@@ -296,7 +296,7 @@ class V1Dag(BaseRun):
     ```
 
     For more details please check the
-    [early stopping section](/docs/orchestration/helpers/early-stopping/).
+    [early stopping section](/docs/references/polyaxonfile/helpers/early-stopping/).
 
     """
 

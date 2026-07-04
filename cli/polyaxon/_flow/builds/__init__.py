@@ -30,7 +30,7 @@ class V1Build(BaseSchemaModel):
         queue: str, optional
         namespace: str, optional
         presets: List[str], optional
-        cache: [V1Cache](/docs/orchestration/helpers/cache/), optional
+        cache: [V1Cache](/docs/references/polyaxonfile/helpers/cache/), optional
         params: Dict[str, [V1Param](/docs/references/polyaxonfile/specification/params/)], optional
         run_patch: Dict, optional
         patch_strategy: str, optional, defaults to post_merge
@@ -137,7 +137,7 @@ class V1Build(BaseSchemaModel):
 
     ### cache
 
-    The [cache](/docs/orchestration/helpers/cache/) to use for the build operation,
+    The [cache](/docs/references/polyaxonfile/helpers/cache/) to use for the build operation,
     if provided, it will override the component's cache otherwise
     the cache of the component will be used if it exists.
 
@@ -206,7 +206,7 @@ class V1Build(BaseSchemaModel):
 
     The run patch is a dictionary that can modify most of the runtime information and
     will be resolved against the corresponding run kind, in this case
-    [V1Job](/docs/workload/jobs/).
+    [V1Job](/docs/references/polyaxonfile/runtimes/job/).
 
     ### patchStrategy
 

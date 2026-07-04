@@ -52,9 +52,9 @@ class V1PytorchJob(BaseRun, DestinationImageMixin):
     Args:
         kind: str, should be equal `pytorchjob`
         clean_pod_policy: str, one of [`All`, `Running`, `None`]
-        scheduling_policy: [V1SchedulingPolicy](/docs/workload/distributed/kubeflow-scheduling-policy/), optional  # noqa
-        master: [V1KFReplica](/docs/workload/distributed/kubeflow-replica/), optional
-        worker: [V1KFReplica](/docs/workload/distributed/kubeflow-replica/), optional
+        scheduling_policy: [V1SchedulingPolicy](/docs/references/polyaxonfile/runtimes/distributed/kubeflow-scheduling-policy/), optional  # noqa
+        master: [V1KFReplica](/docs/references/polyaxonfile/runtimes/distributed/kubeflow-replica/), optional
+        worker: [V1KFReplica](/docs/references/polyaxonfile/runtimes/distributed/kubeflow-replica/), optional
 
     ## YAML usage
 

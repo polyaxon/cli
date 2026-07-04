@@ -17,7 +17,7 @@ class V1Mapping(BaseSearchConfig):
         kind: str, should be equal `mapping`
         values: List[Dict]
         concurrency: int, optional
-        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
+        early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -84,7 +84,7 @@ class V1Mapping(BaseSearchConfig):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
+    please check the [concurrency section](/docs/references/polyaxonfile/helpers/concurrency/).
 
     ### earlyStopping
 
@@ -99,7 +99,7 @@ class V1Mapping(BaseSearchConfig):
     ```
 
     For more details please check the
-    [early stopping section](/docs/orchestration/helpers/early-stopping/).
+    [early stopping section](/docs/references/polyaxonfile/helpers/early-stopping/).
     """
 
     _IDENTIFIER = V1MatrixKind.MAPPING

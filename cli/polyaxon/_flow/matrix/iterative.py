@@ -25,11 +25,11 @@ class V1Iterative(BaseSearchConfig):
     Args:
         kind: str, should be equal `iterative`
         max_iterations: int
-        params: List[Dict[str, [params](/docs/orchestration/optimization-engine/params/)]]
+        params: List[Dict[str, [params](/docs/references/polyaxonfile/automation/matrix/params/)]]
         concurrency: int, optional
         seed: int, optional
-        tuner: [V1Tuner](/docs/orchestration/optimization-engine/tuner/), optional
-        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
+        tuner: [V1Tuner](/docs/references/polyaxonfile/automation/matrix/tuner/), optional
+        early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -94,7 +94,7 @@ class V1Iterative(BaseSearchConfig):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
+    please check the [concurrency section](/docs/references/polyaxonfile/helpers/concurrency/).
 
     ### params
 
@@ -102,7 +102,7 @@ class V1Iterative(BaseSearchConfig):
     to generate the parameters.
 
     To learn about all possible
-    [params generators](/docs/orchestration/optimization-engine/params/).
+    [params generators](/docs/references/polyaxonfile/automation/matrix/params/).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values
@@ -155,7 +155,7 @@ class V1Iterative(BaseSearchConfig):
     ```
 
     For more details please check the
-    [early stopping section](/docs/orchestration/helpers/early-stopping/).
+    [early stopping section](/docs/references/polyaxonfile/helpers/early-stopping/).
 
     ### tuner
 

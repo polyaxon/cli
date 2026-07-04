@@ -19,10 +19,10 @@ class V1MPIJob(BaseRun, DestinationImageMixin):
     Args:
         kind: str, should be equal `mpijob`
         clean_pod_policy: str, one of [`All`, `Running`, `None`]
-        scheduling_policy: [V1SchedulingPolicy](/docs/workload/distributed/kubeflow-scheduling-policy/), optional  # noqa
+        scheduling_policy: [V1SchedulingPolicy](/docs/references/polyaxonfile/runtimes/distributed/kubeflow-scheduling-policy/), optional  # noqa
         slots_per_worker: int, optional
-        launcher: [V1KFReplica](/docs/workload/distributed/kubeflow-replica/), optional
-        worker: [V1KFReplica](/docs/workload/distributed/kubeflow-replica/), optional
+        launcher: [V1KFReplica](/docs/references/polyaxonfile/runtimes/distributed/kubeflow-replica/), optional
+        worker: [V1KFReplica](/docs/references/polyaxonfile/runtimes/distributed/kubeflow-replica/), optional
 
     ## YAML usage
 

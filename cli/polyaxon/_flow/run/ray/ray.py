@@ -25,10 +25,10 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
         runtime_env: Dict, optional
         metadata: int, Dict, optional
         ray_version: str, optional
-        head: [V1RayReplica](/docs/workload/clusters/ray-replica/), optional
-        workers: Dict[str, [V1RayReplica](/docs/workload/clusters/ray-replica/)], optional
+        head: [V1RayReplica](/docs/references/polyaxonfile/runtimes/clusters/ray-replica/), optional
+        workers: Dict[str, [V1RayReplica](/docs/references/polyaxonfile/runtimes/clusters/ray-replica/)], optional
         enable_in_tree_autoscaling: bool, optional
-        autoscaler_options: [V1RayAutoscalerOptions](/docs/workload/clusters/ray-clusters/), optional
+        autoscaler_options: [V1RayAutoscalerOptions](/docs/references/polyaxonfile/runtimes/clusters/ray-clusters/), optional
 
 
     ## YAML usage

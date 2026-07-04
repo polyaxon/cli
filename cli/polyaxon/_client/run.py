@@ -722,11 +722,11 @@ class RunClient(ClientMixin):
                  use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
-                 [cache check](/docs/orchestration/helpers/cache/).
+                 [cache check](/docs/references/polyaxonfile/helpers/cache/).
                  If passed and the Polyaxonfile has cache section,
                  it will be patched with `disabled: true`.
             cache: Union[int, str, bool], optional, simple flag to enable/disable
-                 [cache check](/docs/orchestration/helpers/cache/).
+                 [cache check](/docs/references/polyaxonfile/helpers/cache/).
                  If passed and the Polyaxonfile will be patched with `disabled: true/false`.
                  e.g. `cache=1`, `cache='yes'`, `cache=False`, `cache='t'`, ...
             approved: Union[int, str, bool], optional, simple flag to enable/disable
@@ -800,11 +800,11 @@ class RunClient(ClientMixin):
                  use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
-                 [cache check](/docs/orchestration/helpers/cache/).
+                 [cache check](/docs/references/polyaxonfile/helpers/cache/).
                  If passed and the Polyaxonfile has cache section,
                  it will be patched with `disabled: true`.
             cache: Union[int, str, bool], optional, simple flag to enable/disable
-                 [cache check](/docs/orchestration/helpers/cache/).
+                 [cache check](/docs/references/polyaxonfile/helpers/cache/).
                  If passed and the Polyaxonfile will be patched with `disabled: true/false`.
                  e.g. `cache=1`, `cache='yes'`, `cache=False`, `cache='t'`, ...
             approved: Union[int, str, bool], optional, simple flag to enable/disable
@@ -877,11 +877,11 @@ class RunClient(ClientMixin):
                  use the agent's namespace.
             nocache: bool, optional, DEPRECATED Please use `cache='f'`
                  simple flag to disable
-                 [cache check](/docs/orchestration/helpers/cache/).
+                 [cache check](/docs/references/polyaxonfile/helpers/cache/).
                  If passed and the Polyaxonfile has cache section,
                  it will be patched with `disabled: true`.
             cache: Union[int, str, bool], optional, simple flag to enable/disable
-                 [cache check](/docs/orchestration/helpers/cache/).
+                 [cache check](/docs/references/polyaxonfile/helpers/cache/).
                  If passed and the Polyaxonfile will be patched with `disabled: true/false`.
                  e.g. `cache=1`, `cache='yes'`, `cache=False`, `cache='t'`, ...
             approved: Union[int, str, bool], optional, simple flag to enable/disable

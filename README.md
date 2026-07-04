@@ -120,7 +120,7 @@ Please check [polyaxon installation guide](https://polyaxon.com/setup/)
 </p>
 <br>
 
-Please check our [quick start guide](https://polyaxon.com/docs/guides/quick-start/) to start training your first experiment.
+Please check our [quick start guide](https://polyaxon.com/docs/quick-start/) to start training your first experiment.
 
 # Distributed job
 
@@ -130,28 +130,28 @@ and update your polyaxonfile.
 
 Here are some examples of using distributed training:
 
- * [Distributed Tensorflow](https://polyaxon.com/docs/workload/distributed/tf-jobs/)
- * [Distributed Pytorch](https://polyaxon.com/docs/workload/distributed/pytorch-jobs/)
- * [Distributed MPI](https://polyaxon.com/docs/workload/distributed/mpi-jobs/)
+ * [Distributed Tensorflow](https://polyaxon.com/docs/references/polyaxonfile/runtimes/distributed/tf-jobs/)
+ * [Distributed Pytorch](https://polyaxon.com/docs/references/polyaxonfile/runtimes/distributed/pytorch-jobs/)
+ * [Distributed MPI](https://polyaxon.com/docs/references/polyaxonfile/runtimes/distributed/mpi-jobs/)
  * [Horovod](https://polyaxon.com/integrations/horovod/)
- * [Ray](https://polyaxon.com/docs/workload/clusters/ray-clusters/)
- * [Dask](https://polyaxon.com/docs/workload/clusters/dask-clusters/)
+ * [Ray](https://polyaxon.com/docs/references/polyaxonfile/runtimes/clusters/ray-clusters/)
+ * [Dask](https://polyaxon.com/docs/references/polyaxonfile/runtimes/clusters/dask-clusters/)
 
 # Hyperparameters tuning
 
 Polyaxon has a concept for suggesting hyperparameters and managing their results very similar to Google Vizier called experiment groups.
 An experiment group in Polyaxon defines a search algorithm, a search space, and a model to train.
 
- * [Grid search](https://polyaxon.com/docs/orchestration/optimization-engine/grid-search/)
- * [Random search](https://polyaxon.com/docs/orchestration/optimization-engine/random-search/)
- * [Hyperband](https://polyaxon.com/docs/orchestration/optimization-engine/hyperband/)
- * [Bayesian Optimization](https://polyaxon.com/docs/orchestration/optimization-engine/bayesian-optimization/)
- * [Hyperopt](https://polyaxon.com/docs/orchestration/optimization-engine/hyperopt/)
- * [Custom Iterative Optimization](https://polyaxon.com/docs/orchestration/optimization-engine/iterative/)
+ * [Grid search](https://polyaxon.com/docs/references/polyaxonfile/automation/matrix/grid-search/)
+ * [Random search](https://polyaxon.com/docs/references/polyaxonfile/automation/matrix/random-search/)
+ * [Hyperband](https://polyaxon.com/docs/references/polyaxonfile/automation/matrix/hyperband/)
+ * [Bayesian Optimization](https://polyaxon.com/docs/references/polyaxonfile/automation/matrix/bayesian-optimization/)
+ * [Hyperopt](https://polyaxon.com/docs/references/polyaxonfile/automation/matrix/hyperopt/)
+ * [Custom Iterative Optimization](https://polyaxon.com/docs/references/polyaxonfile/automation/matrix/iterative/)
 
 # Parallel executions
 
-You can run your processing or model training jobs in parallel, Polyaxon provides a [mapping](https://polyaxon.com/docs/orchestration/mapping/) abstraction to manage concurrent jobs.
+You can run your processing or model training jobs in parallel, Polyaxon provides a [mapping](https://polyaxon.com/docs/references/polyaxonfile/automation/mapping/) abstraction to manage concurrent jobs.
 
 # DAGs and workflows
 

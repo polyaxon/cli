@@ -39,14 +39,14 @@ class V1GridSearch(BaseSearchConfig):
 
     Grid search does not allow the use of distributions,
     and requires that all values of the params definition to
-    be [discrete values](/docs/orchestration/optimization-engine/params/#discrete-values).
+    be [discrete values](/docs/references/polyaxonfile/automation/matrix/params/#discrete-values).
 
     Args:
         kind: str, should be equal `grid`
-        params: List[Dict[str, [params](/docs/orchestration/optimization-engine/params/#discrete-values)]]  # noqa
+        params: List[Dict[str, [params](/docs/references/polyaxonfile/automation/matrix/params/#discrete-values)]]  # noqa
         concurrency: int, optional
         num_runs: int, optional
-        early_stopping: List[[EarlyStopping](/docs/orchestration/helpers/early-stopping)], optional
+        early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
 
@@ -102,7 +102,7 @@ class V1GridSearch(BaseSearchConfig):
     ```
 
     For more details about concurrency management,
-    please check the [concurrency section](/docs/orchestration/helpers/concurrency/).
+    please check the [concurrency section](/docs/references/polyaxonfile/helpers/concurrency/).
 
     ### params
 
@@ -110,7 +110,7 @@ class V1GridSearch(BaseSearchConfig):
     to generate the parameters.
 
     Gird search can only use
-    [discrete value](/docs/orchestration/optimization-engine/params/#discrete-values).
+    [discrete value](/docs/references/polyaxonfile/automation/matrix/params/#discrete-values).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values
@@ -153,7 +153,7 @@ class V1GridSearch(BaseSearchConfig):
     ```
 
     For more details please check the
-    [early stopping section](/docs/orchestration/helpers/early-stopping/).
+    [early stopping section](/docs/references/polyaxonfile/helpers/early-stopping/).
 
     ## Example
 
