@@ -44,11 +44,11 @@ class V1Component(
         termination: [V1Termination](/docs/references/polyaxonfile/specification/termination/), optional
         plugins: [V1Plugins](/docs/references/polyaxonfile/specification/plugins/), optional
         mount: List[[V1Mount](/docs/references/polyaxonfile/specification/mount/)], optional
-        build: [V1Build](/docs/references/polyaxonfile/automation/build/), optional
-        hooks: List[[V1Hook](/docs/references/polyaxonfile/automation/hooks/)], optional
+        build: [V1Build](/docs/references/polyaxonfile/orchestration/build/specification/), optional
+        hooks: List[[V1Hook](/docs/references/polyaxonfile/orchestration/hooks/specification/)], optional
         inputs: [V1IO](/docs/references/polyaxonfile/specification/io/), optional
         outputs: [V1IO](/docs/references/polyaxonfile/specification/io/), optional
-        run: Union[[V1Job](/docs/references/polyaxonfile/runtimes/job/), [V1Service](/docs/references/polyaxonfile/runtimes/service/), [V1TFJob](/docs/references/polyaxonfile/runtimes/distributed/tf-jobs/), [V1PytorchJob](/docs/references/polyaxonfile/runtimes/distributed/pytorch-jobs/), [V1MPIJob](/docs/references/polyaxonfile/runtimes/distributed/mpi-jobs/), [V1RayCluster](/docs/references/polyaxonfile/runtimes/clusters/ray-clusters/), [V1DaskCluster](/docs/references/polyaxonfile/runtimes/clusters/dask-clusters/), [V1Dag](/docs/references/polyaxonfile/automation/dag/)]  # noqa
+        run: Union[[V1Job](/docs/references/polyaxonfile/runtimes/jobs/specification/), [V1Service](/docs/references/polyaxonfile/runtimes/services/specification/), [V1TFJob](/docs/references/polyaxonfile/runtimes/distributed/tf-jobs/), [V1PytorchJob](/docs/references/polyaxonfile/runtimes/distributed/pytorch-jobs/), [V1MPIJob](/docs/references/polyaxonfile/runtimes/distributed/mpi-jobs/), [V1RayCluster](/docs/references/polyaxonfile/runtimes/clusters/ray-clusters/), [V1DaskCluster](/docs/references/polyaxonfile/runtimes/clusters/dask-clusters/), [V1Dag](/docs/references/polyaxonfile/orchestration/dag/specification/)]  # noqa
         template: [V1Template](/docs/references/polyaxonfile/specification/template/), optional
 
     ## YAML usage
@@ -338,7 +338,7 @@ class V1Component(
 
     ### build
 
-    > **Note**: Please check [V1Build](/docs/references/polyaxonfile/automation/build/) for more details.
+    > **Note**: Please check [V1Build](/docs/references/polyaxonfile/orchestration/build/specification/) for more details.
 
     This section defines if this component should build a container before starting the main logic.
     If the build section is provided, Polyaxon will set the main operation to a pending state
@@ -356,9 +356,9 @@ class V1Component(
     ### run
 
     This is the section that defines the runtime of the component:
-     * [V1Job](/docs/references/polyaxonfile/runtimes/job/): for running batch jobs, model training experiments,
+     * [V1Job](/docs/references/polyaxonfile/runtimes/jobs/specification/): for running batch jobs, model training experiments,
        data processing jobs, ...
-     * [V1Service](/docs/references/polyaxonfile/runtimes/service/): for running tensorboards, notebooks,
+     * [V1Service](/docs/references/polyaxonfile/runtimes/services/specification/): for running tensorboards, notebooks,
        streamlit, custom services or an API.
      * [V1TFJob](/docs/references/polyaxonfile/runtimes/distributed/tf-jobs/): for running distributed
        Tensorflow training job.
@@ -367,7 +367,7 @@ class V1Component(
      * [V1MPIJob](/docs/references/polyaxonfile/runtimes/distributed/mpi-jobs/): for running distributed MPI job.
      * [V1RayCluster](/docs/references/polyaxonfile/runtimes/clusters/ray-clusters/): for running a ray job.
      * [V1DaskCluster](/docs/references/polyaxonfile/runtimes/clusters/dask-clusters/): for running a Dask job.
-     * [V1Dag](/docs/references/polyaxonfile/automation/dag/): for running a DAG/workflow.
+     * [V1Dag](/docs/references/polyaxonfile/orchestration/dag/specification/): for running a DAG/workflow.
 
     ### isApproved
 

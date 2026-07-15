@@ -33,13 +33,13 @@ class V1Hyperopt(BaseSearchConfig):
     Args:
         kind: hyperopt
         algorithm: str, one of tpe, rand, anneal
-        params: List[Dict[str, [params](/docs/references/polyaxonfile/automation/matrix/params/#discrete-values)]]  # noqa
+        params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/#discrete-values)]]  # noqa
         metric: V1OptimizationMetric
         max_iterations: int, optional
         concurrency: int, optional
         num_runs: int, optional
         seed: int, optional
-        tuner: [V1Tuner](/docs/references/polyaxonfile/automation/matrix/tuner/), optional
+        tuner: [V1Tuner](/docs/references/polyaxonfile/orchestration/matrix/tuner/), optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
 
@@ -124,7 +124,7 @@ class V1Hyperopt(BaseSearchConfig):
     to generate the parameters.
 
     To learn about all possible
-    [params generators](/docs/references/polyaxonfile/automation/matrix/params/).
+    [params generators](/docs/references/polyaxonfile/orchestration/matrix/params/).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values

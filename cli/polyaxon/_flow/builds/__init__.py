@@ -206,7 +206,7 @@ class V1Build(BaseSchemaModel):
 
     The run patch is a dictionary that can modify most of the runtime information and
     will be resolved against the corresponding run kind, in this case
-    [V1Job](/docs/references/polyaxonfile/runtimes/job/).
+    [V1Job](/docs/references/polyaxonfile/runtimes/jobs/specification/).
 
     ### patchStrategy
 

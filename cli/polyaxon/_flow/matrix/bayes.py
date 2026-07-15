@@ -110,10 +110,10 @@ class V1Bayes(BaseSearchConfig):
         num_initial_runs: int
         max_iterations: int
         metric: V1OptimizationMetric
-        params: List[Dict[str, [params](/docs/references/polyaxonfile/automation/matrix/params/#discrete-values)]]  # noqa
+        params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/#discrete-values)]]  # noqa
         seed: int, optional
         concurrency: int, optional
-        tuner: [V1Tuner](/docs/references/polyaxonfile/automation/matrix/tuner/), optional
+        tuner: [V1Tuner](/docs/references/polyaxonfile/orchestration/matrix/tuner/), optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
 
@@ -172,7 +172,7 @@ class V1Bayes(BaseSearchConfig):
     to generate the parameters.
 
     To learn about all possible
-    [params generators](/docs/references/polyaxonfile/automation/matrix/params/).
+    [params generators](/docs/references/polyaxonfile/orchestration/matrix/params/).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values

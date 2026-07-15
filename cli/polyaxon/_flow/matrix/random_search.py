@@ -24,7 +24,7 @@ class V1RandomSearch(BaseSearchConfig):
 
     Args:
         kind: str, should be equal `grid`
-        params: List[Dict[str, [params](/docs/references/polyaxonfile/automation/matrix/params/)]]
+        params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/)]]
         concurrency: int, optional
         num_runs: int, optional
         seed: int, optional
@@ -94,7 +94,7 @@ class V1RandomSearch(BaseSearchConfig):
     to generate the parameters.
 
     To learn about all possible
-    [params generators](/docs/references/polyaxonfile/automation/matrix/params/).
+    [params generators](/docs/references/polyaxonfile/orchestration/matrix/params/).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values

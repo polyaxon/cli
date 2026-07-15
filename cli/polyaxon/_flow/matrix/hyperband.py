@@ -39,7 +39,7 @@ class V1Hyperband(BaseSearchConfig):
 
     Args:
         kind: string, should be equal to `hyperband`
-        params: List[Dict[str, [params](/docs/references/polyaxonfile/automation/matrix/params/#discrete-values)]]  # noqa
+        params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/#discrete-values)]]  # noqa
         max_iterations: int
         eta: int
         resource: V1OptimizationResource
@@ -47,7 +47,7 @@ class V1Hyperband(BaseSearchConfig):
         resume: bool, optional
         seed: int, optional
         concurrency: int, optional
-        tuner: [V1Tuner](/docs/references/polyaxonfile/automation/matrix/tuner/), optional
+        tuner: [V1Tuner](/docs/references/polyaxonfile/orchestration/matrix/tuner/), optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
@@ -103,7 +103,7 @@ class V1Hyperband(BaseSearchConfig):
     to generate the parameters.
 
     To learn about all possible
-    [params generators](/docs/references/polyaxonfile/automation/matrix/params/).
+    [params generators](/docs/references/polyaxonfile/orchestration/matrix/params/).
 
     > The parameters generated will be validated against
     > the component's inputs/outputs definition to check that the values

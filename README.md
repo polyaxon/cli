@@ -155,7 +155,7 @@ You can run your processing or model training jobs in parallel, Polyaxon provide
 
 # DAGs and workflows
 
-[Polyaxon DAGs](https://polyaxon.com/docs/orchestration/flow-engine/) is a tool that provides container-native engine for running machine learning pipelines.
+[Polyaxon DAGs](https://polyaxon.com/docs/pipelines-automation/dags/) is a tool that provides container-native engine for running machine learning pipelines.
 A DAG manages multiple operations with dependencies. Each operation is defined by a component runtime.
 This means that operations in a DAG can be jobs, services, distributed jobs, parallel executions, or nested DAGs.
 
