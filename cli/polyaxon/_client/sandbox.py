@@ -313,8 +313,8 @@ class SandboxClient(ClientMixin):
 
         A sandbox is not a separate Polyaxon resource. This method creates a
         regular `kind: service` run with `plugins.sandbox` enabled, then mutates
-        this client to point at the returned run. After creation, the same
-        client can use `process`, `fs`, and `pty`.
+        this client to point at the returned run. After the run is approved,
+        scheduled, and running, the same client can use `process`, `fs`, and `pty`.
 
         If `content` is not provided, the method builds a minimal service
         operation with `plugins.sandbox: true`. If `content` is provided, it
@@ -326,8 +326,13 @@ class SandboxClient(ClientMixin):
         >>> from polyaxon.client import SandboxClient
         >>> client = SandboxClient(owner="acme", project="proj")
         >>> run = client.create(name="debug-sandbox")
-        >>> result = client.process.exec(command=["python", "-V"])
+        >>> print(run.uuid)
+        >>> result = client.process.exec(command=["ls"])
         ```
+
+        `create()` submits the service run but does not approve it, schedule it,
+        or wait for readiness. After the run reaches `running`, call
+        `client.ping()` before using the process, filesystem, or PTY sub-clients.
 
         Args:
             name: str, optional, run name.
@@ -486,8 +491,8 @@ class AsyncSandboxClient(SandboxClient):
 
         A sandbox is not a separate Polyaxon resource. This method creates a
         regular `kind: service` run with `plugins.sandbox` enabled, then mutates
-        this client to point at the returned run. After creation, the same
-        client can use `process`, `fs`, and `pty`.
+        this client to point at the returned run. After the run is approved,
+        scheduled, and running, the same client can use `process`, `fs`, and `pty`.
 
         If `content` is not provided, the method builds a minimal service
         operation with `plugins.sandbox: true`. If `content` is provided, it
@@ -499,8 +504,13 @@ class AsyncSandboxClient(SandboxClient):
         >>> from polyaxon.client import AsyncSandboxClient
         >>> client = AsyncSandboxClient(owner="acme", project="proj")
         >>> run = await client.create(name="debug-sandbox")
-        >>> result = await client.process.exec(command=["python", "-V"])
+        >>> print(run.uuid)
+        >>> result = client.process.exec(command=["ls"])
         ```
+
+        `create()` submits the service run but does not approve it, schedule it,
+        or wait for readiness. After the run reaches `running`, call
+        `await client.ping()` before using the process, filesystem, or PTY sub-clients.
 
         Args:
             name: str, optional, run name.
