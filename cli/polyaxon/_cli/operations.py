@@ -1673,9 +1673,23 @@ def exec_command(ctx, project, uid, pod, container, command):
 @click.pass_context
 @clean_outputs
 def shell(ctx, project, uid, command, pod, container):
-    """Start a shell session for run.
+    """Start an interactive shell in a running operation container.
 
     Uses /docs/references/cli/cache/#caching
+
+    This command uses Kubernetes exec. By default, it selects the first pod
+    and the main container. Use ``--pod`` and ``--container`` to target a
+    specific replica or container.
+
+    The default command is ``/bin/bash``. When the operation enables
+    ``plugins.tmux``, the default instead creates or attaches to the
+    ``terminal`` tmux session so the shell can survive a client or proxy
+    disconnect. Supplying ``--command`` bypasses that tmux default. Without
+    tmux, the remote process is tied to the Kubernetes exec connection.
+    Neither mode survives a target pod restart.
+
+    Command strings are split on whitespace and executed directly rather than
+    through a local shell.
 
     Examples:
 

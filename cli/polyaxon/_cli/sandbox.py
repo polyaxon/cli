@@ -298,7 +298,29 @@ def download(project, uid, chunk_size, path_from, path_to):
 )
 @clean_outputs
 def shell(project, uid, command, cols, rows, replay_bytes):
-    """Start an interactive shell in a sandbox run."""
+    """Start an interactive PTY in a sandbox-enabled service.
+
+    The run must use ``kind: service`` with ``plugins.sandbox: true``.
+    This command creates a PTY managed by the sandbox daemon and attaches to
+    it directly; it does not use Kubernetes exec.
+
+    A sandbox PTY survives a client disconnect until it exits or reaches its
+    detached-idle timeout. This command currently creates a new PTY on every
+    invocation and does not reattach to a previous session. ``--replay-bytes``
+    replays recent output from the newly created PTY when attaching; it does
+    not select or restore an earlier PTY.
+
+    The command defaults to ``sh`` and is parsed using shell-like quoting
+    before being executed directly.
+
+    Examples:
+
+    \b
+    $ polyaxon sandbox shell -p acme/project -uid UUID
+
+    \b
+    $ polyaxon sandbox shell -p acme/project -uid UUID --command "python -i"
+    """
     try:
         client = _sandbox_client(project, uid)
         cols, rows = _terminal_size(cols=cols, rows=rows)
