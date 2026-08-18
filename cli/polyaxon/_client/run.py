@@ -92,6 +92,15 @@ if TYPE_CHECKING:
     from traceml.tracking.run import Run
 
 
+EventNames = Union[str, Set[str], List[str]]
+
+
+def _serialize_event_names(names: EventNames) -> str:
+    if isinstance(names, str):
+        return names
+    return ",".join(names)
+
+
 class RunClient(ClientMixin):
     """RunClient is a client to communicate with Polyaxon runs endpoints.
 
@@ -446,9 +455,8 @@ class RunClient(ClientMixin):
 
     def _build_runs_io_data(self, runs) -> List[Dict[str, Any]]:
         data = []
-        for r in runs:
-            run = runs[r]
-            values = run.inputs or {}
+        for run in runs:
+            values = dict(run.inputs or {})
             values.update(run.outputs or {})
             data.append({"uid": run.uuid, "values": values})
         return data
@@ -1230,7 +1238,7 @@ class RunClient(ClientMixin):
     def get_events(
         self,
         kind: V1ArtifactKind,
-        names: List[str],
+        names: EventNames,
         orient: Optional[str] = None,
         force: bool = False,
     ):
@@ -1238,7 +1246,7 @@ class RunClient(ClientMixin):
 
         Args:
             kind: str, a valid `V1ArtifactKind`.
-            names: List[str], list of events to return.
+            names: List[str], Set[str], or comma-separated str of events to return.
             orient: str, csv or dict.
             force: bool, force reload the events.
         """
@@ -1253,7 +1261,7 @@ class RunClient(ClientMixin):
             self.project,
             self.run_uuid,
             kind=kind,
-            names=names,
+            names=_serialize_event_names(names),
             orient=orient,
             force=force,
             **params,
@@ -1366,7 +1374,7 @@ class RunClient(ClientMixin):
         """Get current's run metrics as line chart."""
         import plotly.express as px
 
-        df = self.get_metrics_as_wide_df()
+        df = self.get_metrics_as_tidy_df()
         return px.line(df, x=x, y=y, color=color)
 
     @client_handler(check_no_op=True)
@@ -3530,7 +3538,7 @@ class AsyncRunClient(RunClient):
     async def get_events(
         self,
         kind: V1ArtifactKind,
-        names: List[str],
+        names: EventNames,
         orient: Optional[str] = None,
         force: bool = False,
     ):
@@ -3545,7 +3553,7 @@ class AsyncRunClient(RunClient):
             self.project,
             self.run_uuid,
             kind=kind,
-            names=names,
+            names=_serialize_event_names(names),
             orient=orient,
             force=force,
             **params,

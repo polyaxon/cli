@@ -3,7 +3,7 @@ import pytest
 from types import SimpleNamespace
 import uuid
 
-from polyaxon._client.run import RunClient
+from polyaxon._client.run import RunClient, _serialize_event_names
 from polyaxon._schemas.lifecycle import (
     V1ProjectVersionKind,
     V1StatusCondition,
@@ -61,6 +61,77 @@ class TestRunClient(BaseTestCase):
         """Test initialization without project raises exception"""
         with pytest.raises(PolyaxonClientException):
             RunClient(owner=self.owner, run_uuid=self.run_uuid)
+
+    def test_build_runs_io_data_accepts_run_list(self):
+        from types import SimpleNamespace
+
+        runs = [
+            SimpleNamespace(
+                uuid="run-1",
+                inputs={"learning_rate": 0.01},
+                outputs={"loss": 0.2},
+            )
+        ]
+        client = RunClient.__new__(RunClient)
+
+        data = client._build_runs_io_data(runs)
+
+        assert data == [
+            {
+                "uid": "run-1",
+                "values": {"learning_rate": 0.01, "loss": 0.2},
+            }
+        ]
+
+    def test_get_metrics_as_line_chart_uses_tidy_df(self, monkeypatch):
+        import sys
+        from types import ModuleType
+        from unittest.mock import MagicMock
+
+        tidy_df = object()
+        line = MagicMock(return_value="chart")
+        plotly = ModuleType("plotly")
+        express = ModuleType("plotly.express")
+        express.line = line
+        plotly.express = express
+        monkeypatch.setitem(sys.modules, "plotly", plotly)
+        monkeypatch.setitem(sys.modules, "plotly.express", express)
+
+        client = RunClient.__new__(RunClient)
+        client.get_metrics_as_tidy_df = MagicMock(return_value=tidy_df)
+
+        assert client.get_metrics_as_line_chart() == "chart"
+        client.get_metrics_as_tidy_df.assert_called_once_with()
+        line.assert_called_once_with(
+            tidy_df,
+            x="step",
+            y="metric",
+            color="name",
+        )
+
+    def test_serialize_event_names(self):
+        assert _serialize_event_names(["loss", "accuracy"]) == "loss,accuracy"
+        event_names = {"loss", "accuracy"}
+        assert _serialize_event_names(event_names) == ",".join(event_names)
+        assert _serialize_event_names("loss,accuracy") == "loss,accuracy"
+
+    def test_get_metrics_serializes_event_names(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.runs_v1.get_run_events.return_value = SimpleNamespace(data=[])
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            client=sdk_client,
+        )
+        client.run_data.settings = V1RunSettings.model_construct(namespace="ns")
+        client._use_agent_host = MagicMock()
+
+        client.get_metrics(["loss", "accuracy"])
+
+        assert sdk_client.runs_v1.get_run_events.call_args.kwargs["names"] == (
+            "loss,accuracy"
+        )
 
     # Basic Run Operations Tests
     @mock.patch("polyaxon._sdk.api.RunsV1Api.get_run")

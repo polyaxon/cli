@@ -483,7 +483,7 @@ async def test_events_metrics_and_lineage_methods_await_api():
         PROJECT,
         RUN_UUID,
         kind=V1ArtifactKind.METRIC,
-        names=["accuracy"],
+        names="accuracy",
         orient=V1Events.ORIENT_DICT,
         force=True,
     )
