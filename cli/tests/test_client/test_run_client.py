@@ -83,10 +83,10 @@ class TestRunClient(BaseTestCase):
             }
         ]
 
-    def test_get_metrics_as_line_chart_uses_tidy_df(self, monkeypatch):
+    def test_get_metrics_as_line_chart_uses_tidy_df(self):
         import sys
         from types import ModuleType
-        from unittest.mock import MagicMock
+        from unittest.mock import MagicMock, patch
 
         tidy_df = object()
         line = MagicMock(return_value="chart")
@@ -94,8 +94,12 @@ class TestRunClient(BaseTestCase):
         express = ModuleType("plotly.express")
         express.line = line
         plotly.express = express
-        monkeypatch.setitem(sys.modules, "plotly", plotly)
-        monkeypatch.setitem(sys.modules, "plotly.express", express)
+        plotly_patch = patch.dict(
+            sys.modules,
+            {"plotly": plotly, "plotly.express": express},
+        )
+        plotly_patch.start()
+        self.addCleanup(plotly_patch.stop)
 
         client = RunClient.__new__(RunClient)
         client.get_metrics_as_tidy_df = MagicMock(return_value=tidy_df)
@@ -104,7 +108,7 @@ class TestRunClient(BaseTestCase):
         client.get_metrics_as_tidy_df.assert_called_once_with()
         line.assert_called_once_with(
             tidy_df,
-            x="step",
+            x="timestamp",
             y="metric",
             color="name",
         )
