@@ -44,7 +44,16 @@ class ContainerMixin(BaseConverter):
         return cls._sanitize_container(container)
 
     @staticmethod
-    def _sanitize_container_env(
+    def _get_env_var_name(env_var: docker_types.V1EnvVar) -> Optional[str]:
+        value = env_var.get_root()
+        if isinstance(value, dict):
+            if "name" in value:
+                return value["name"]
+            return next(iter(value)) if len(value) == 1 else None
+        return value[0]
+
+    @staticmethod
+    def _sanitize_container_env_values(
         env: List[docker_types.V1EnvVar],
     ) -> List[docker_types.V1EnvVar]:
         def sanitize_env_dict(d: Dict):

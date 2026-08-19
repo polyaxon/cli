@@ -133,10 +133,26 @@ class BaseConverter:
     def filter_containers_from_init(init: List[V1Init]) -> List[Container]:
         return [i.container for i in init if not i.has_connection()]
 
+    @classmethod
+    def _sanitize_container_env(cls, env: List[EnvVar]) -> List[EnvVar]:
+        env = cls._sanitize_container_env_values(env)
+        results = []
+        seen = set()
+        for env_var in reversed(env):
+            name = cls._get_env_var_name(env_var)
+            if name is not None:
+                if name in seen:
+                    continue
+                seen.add(name)
+            results.append(env_var)
+        return list(reversed(results))
+
     @staticmethod
-    def _sanitize_container_env(
-        env: List[EnvVar],
-    ) -> Optional[List[EnvVar]]:
+    def _sanitize_container_env_values(env: List[EnvVar]) -> List[EnvVar]:
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_env_var_name(env_var: EnvVar) -> Optional[str]:
         raise NotImplementedError
 
     @classmethod

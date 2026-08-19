@@ -49,6 +49,16 @@ class ContainerMixin(BaseConverter):
         return cls._sanitize_container(container)
 
     @staticmethod
+    def _get_env_var_name(
+        env_var: Union[k8s_schemas.V1EnvVar, Dict],
+    ) -> Optional[str]:
+        if isinstance(env_var, dict):
+            if "name" in env_var:
+                return env_var["name"]
+            return next(iter(env_var)) if len(env_var) == 1 else None
+        return env_var.name
+
+    @staticmethod
     def _normalize_port(port) -> Optional[k8s_schemas.V1ContainerPort]:
         if isinstance(port, k8s_schemas.V1ContainerPort):
             return port
@@ -84,9 +94,9 @@ class ContainerMixin(BaseConverter):
         return merged
 
     @staticmethod
-    def _sanitize_container_env(
+    def _sanitize_container_env_values(
         env: List[k8s_schemas.V1EnvVar],
-    ) -> Optional[List[k8s_schemas.V1EnvVar]]:
+    ) -> List[k8s_schemas.V1EnvVar]:
         def sanitize_env_dict(d: Dict):
             return {
                 d_k: sanitize_value(d_v, handle_dict=False)

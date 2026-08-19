@@ -9,6 +9,7 @@ from polyaxon._connections import (
     V1ConnectionKind,
     V1ConnectionResource,
 )
+from polyaxon._env_vars.keys import ENV_KEYS_RUN_INSTANCE
 from polyaxon._flow import V1Init, V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._schemas.types import (
@@ -97,6 +98,40 @@ class TestJobConverter(BaseConverterTest):
             init_containers=[],
         )
         assert containers == []
+
+    def test_get_tracked_init_containers_dedupes_env_vars(self):
+        store = V1Connection(
+            name="test_s3",
+            kind=V1ConnectionKind.S3,
+            schema_=V1BucketConnection(bucket="s3://foo"),
+        )
+        init_connections = [
+            V1Init(dockerfile=V1DockerfileType(image="foo/test")),
+            V1Init(file=V1FileType(filename="script.py", content="print('test')")),
+            V1Init(
+                tensorboard=V1TensorboardType(
+                    port=8000,
+                    uuids=uuid.uuid4().hex,
+                )
+            ),
+        ]
+
+        for base_env_vars in (False, True):
+            self.converter.base_env_vars = base_env_vars
+            containers = self.converter.get_init_containers(
+                plugins=None,
+                artifacts_store=store,
+                init_connections=init_connections,
+                init_containers=[],
+                connection_by_names={},
+                polyaxon_init=V1PolyaxonInitContainer(image="foo/foo"),
+            )
+
+            assert len(containers) == 3
+            for container in containers:
+                env_names = [env.name for env in container.env or []]
+                assert len(env_names) == len(set(env_names))
+                assert env_names.count(ENV_KEYS_RUN_INSTANCE) == 1
 
     def test_get_init_containers_with_claim_outputs(self):  # TODO
         store = V1Connection(

@@ -7,6 +7,23 @@ from polyaxon._utils.test_utils import BaseTestCase
 
 @pytest.mark.k8s_mark
 class TestPatchContainer(BaseTestCase):
+    def test_patch_container_dedupes_env_vars_and_keeps_last_value(self):
+        existing_only = k8s_schemas.V1EnvVar(name="EXISTING", value="existing")
+        incoming_only = k8s_schemas.V1EnvVar(name="INCOMING", value="incoming")
+        incoming_duplicate = k8s_schemas.V1EnvVar(name="DUPLICATE", value="incoming")
+        container = ContainerMixin._patch_container(
+            container=k8s_schemas.V1Container(
+                name="main",
+                env=[
+                    k8s_schemas.V1EnvVar(name="DUPLICATE", value="existing"),
+                    existing_only,
+                ],
+            ),
+            env=[incoming_duplicate, incoming_only],
+        )
+
+        assert container.env == [existing_only, incoming_duplicate, incoming_only]
+
     def test_patch_container_normalizes_and_dedupes_ports(self):
         existing = k8s_schemas.V1ContainerPort(name="sandbox", container_port=9090)
         http = k8s_schemas.V1ContainerPort(name="http", container_port=8080)

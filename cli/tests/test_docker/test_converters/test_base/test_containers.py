@@ -6,6 +6,26 @@ from polyaxon._utils.test_utils import BaseTestCase
 
 
 @pytest.mark.docker_mark
+class TestPatchContainer(BaseTestCase):
+    def test_patch_container_dedupes_env_vars_and_keeps_last_value(self):
+        existing_only = docker_types.V1EnvVar.make(("EXISTING", "existing"))
+        incoming_only = docker_types.V1EnvVar.make(("INCOMING", "incoming"))
+        incoming_duplicate = docker_types.V1EnvVar.make(("DUPLICATE", "incoming"))
+        container = ContainerMixin._patch_container(
+            container=docker_types.V1Container(
+                name="main",
+                env=[
+                    docker_types.V1EnvVar.make(("DUPLICATE", "existing")),
+                    existing_only,
+                ],
+            ),
+            env=[incoming_duplicate, incoming_only],
+        )
+
+        assert container.env == [existing_only, incoming_duplicate, incoming_only]
+
+
+@pytest.mark.docker_mark
 class TestSanitizeContainerEnv(BaseTestCase):
     def test_sanitize_container_env_value(self):
         value = [{"foo": "bar"}]
