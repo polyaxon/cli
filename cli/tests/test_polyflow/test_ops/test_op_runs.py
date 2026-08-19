@@ -674,14 +674,14 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-    def test_param_validation_with_optional_definition(self):
+    def test_param_validation_with_implicit_optional_definition(self):
         config_dict = {
-            "inputs": [
-                {"name": "param1", "type": "int", "isOptional": True, "value": 1}
-            ],
+            "inputs": [{"name": "param1", "type": "int", "value": 0}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
+        assert config.inputs[0].is_optional is True
+        assert not ops_params.requires_params(config.inputs, config.outputs)
         # Passing correct param
         ops_params.validate_params(
             params={"param1": {"value": 2}},
@@ -695,21 +695,21 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
-        ops_params.validate_params(
+        validated_params = ops_params.validate_params(
             params={},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
         )
+        assert [p.param.value for p in validated_params] == [0]
 
         config_dict = {
             "inputs": [
                 {
                     "name": "param1",
                     "type": "int",
-                    "isOptional": True,
                     "isList": True,
-                    "value": [1],
+                    "value": [],
                 }
             ],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
@@ -728,20 +728,20 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
-        ops_params.validate_params(
+        validated_params = ops_params.validate_params(
             params={},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
         )
+        assert [p.param.value for p in validated_params] == [[]]
 
         config_dict = {
-            "inputs": [
-                {"name": "param2", "type": "str", "isOptional": True, "value": "text"}
-            ],
+            "inputs": [{"name": "param2", "type": "str", "value": None}],
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
         config = V1CompiledOperation.from_dict(config_dict)
+        assert config.inputs[0].is_optional is True
         # Passing correct param
         ops_params.validate_params(
             params={"param2": {"value": "text2"}},
@@ -755,19 +755,19 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             outputs=config.outputs,
             is_template=False,
         )
-        ops_params.validate_params(
+        validated_params = ops_params.validate_params(
             params={},
             inputs=config.inputs,
             outputs=config.outputs,
             is_template=False,
         )
+        assert [p.param.value for p in validated_params] == [None]
 
         config_dict = {
             "inputs": [
                 {
                     "name": "param2",
                     "type": "str",
-                    "isOptional": True,
                     "isList": True,
                     "value": ["text"],
                 }

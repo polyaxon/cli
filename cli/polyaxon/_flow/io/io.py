@@ -24,6 +24,10 @@ IO_NAME_ERROR = (
     "please use a different name that does "
     "not already taken by the context".format(IO_NAME_BLACK_LIST)
 )
+IO_DEFAULT_ERROR = (
+    "IO `{}` is not optional and has default value `{}`. "
+    "Please either make it optional or remove the default value."
+)
 
 
 def validate_io_value(
@@ -72,7 +76,7 @@ def validate_io(
     is_flag: bool,
     validation: Optional[Union["V1Validation", Dict]],
 ):
-    if type and value:
+    if type and value is not None:
         try:
             value = validate_io_value(
                 name=name,
@@ -86,13 +90,8 @@ def validate_io(
         except PolyaxonValidationError as e:
             raise ValueError(e)
 
-    if not is_optional and value:
-        raise ValueError(
-            "IO `{}` is not optional and has default value `{}`. "
-            "Please either make it optional or remove the default value.".format(
-                name, value
-            )
-        )
+    if not is_optional and value is not None:
+        raise ValueError(IO_DEFAULT_ERROR.format(name, value))
 
     if is_flag and type != "bool":
         raise ValueError(
@@ -467,7 +466,8 @@ class V1IO(BaseSchemaModel):
        and some hyperparameters as input and a list of metrics and artifacts as outputs.
 
     An input/output section includes a name, a description, a type to check the value passed,
-    a flag to tell if the input/output is optional, and a default value if it's optional.
+    and an optional default value. Declaring the `value` field, including `null`,
+    implicitly makes the input/output optional.
 
     Sometimes users prefer to pass a param to the `command` or `args`
     section only if the value is not null. Polyaxon provides a way to do that using
@@ -502,7 +502,6 @@ class V1IO(BaseSchemaModel):
     >>> inputs:
     >>>   - name: loss
     >>>     type: str
-    >>>     isOptional: true
     >>>     value: MeanSquaredError
     >>>   - name: preprocess
     >>>     type: bool
@@ -523,7 +522,6 @@ class V1IO(BaseSchemaModel):
     >>>         name="loss",
     >>>         type='str',
     >>>         description="Loss to use for training my model",
-    >>>         is_optional=True,
     >>>         value="MeanSquaredError"
     >>>     ),
     >>>     V1IO(
@@ -601,8 +599,7 @@ class V1IO(BaseSchemaModel):
 
     ### value
 
-    If an input is optional you should assign it a value.
-    If an output is optional you can assign it a value.
+    Declaring the value field, including `null`, implicitly makes the input/output optional.
 
     ```yaml
     >>> inputs:
@@ -621,7 +618,6 @@ class V1IO(BaseSchemaModel):
     >>>   - name: learning_rate
     >>>     description: A short description about this input
     >>>     type: float
-    >>>     value: 1.1
     >>>     isOptional: true
     ```
 
@@ -926,6 +922,16 @@ class V1IO(BaseSchemaModel):
 
     @model_validator(**validation_before)
     def handle_validation(cls, values):
+        has_is_optional = "is_optional" in values or "isOptional" in values
+        is_optional = values.get("is_optional", values.get("isOptional"))
+        if "value" in values:
+            if not has_is_optional:
+                values["is_optional"] = True
+            elif is_optional is False:
+                raise ValueError(
+                    IO_DEFAULT_ERROR.format(values.get("name"), values.get("value"))
+                )
+
         validation = values.get("validation")
         if not validation and (
             values.get("options") is not None

@@ -51,6 +51,7 @@ class TestV1IO(BaseTestCase):
         config_dict = {"name": "input1"}
         config = V1IO.from_dict(config_dict)
         assert_equal_dict(config.to_dict(), config_dict)
+        assert config.is_optional is None
 
     def test_io_config_desc(self):
         # test desc
@@ -131,8 +132,61 @@ class TestV1IO(BaseTestCase):
             "type": "str",
             "value": "foo",
         }
-        with self.assertRaises(ValidationError):
-            V1IO.from_dict(config_dict)
+        expected_config_dict = {
+            "name": "input1",
+            "description": "some text",
+            "type": "str",
+            "value": "foo",
+            "isOptional": True,
+        }
+        config = V1IO.from_dict(config_dict)
+        expected_config = V1IO.from_dict(expected_config_dict)
+        assert_equal_dict(config.to_dict(), expected_config.to_dict())
+
+    def test_io_config_default_is_implicitly_optional(self):
+        config_dicts = [
+            {"name": "null-input", "type": "str", "value": None},
+            {"name": "str-input", "type": "str", "value": "foo"},
+            {"name": "empty-str-input", "type": "str", "value": ""},
+            {"name": "int-input", "type": "int", "value": 1},
+            {"name": "zero-input", "type": "int", "value": 0},
+            {"name": "true-input", "type": "bool", "value": True},
+            {"name": "false-input", "type": "bool", "value": False},
+            {
+                "name": "list-input",
+                "type": "int",
+                "isList": True,
+                "value": [1],
+            },
+            {
+                "name": "empty-list-input",
+                "type": "int",
+                "isList": True,
+                "value": [],
+            },
+            {"name": "dict-input", "type": "dict", "value": {"foo": "bar"}},
+            {"name": "empty-dict-input", "type": "dict", "value": {}},
+        ]
+
+        for config_dict in config_dicts:
+            with self.subTest(config_dict=config_dict):
+                config = V1IO.from_dict(config_dict)
+                assert config.is_optional is True
+                assert config.value == config_dict["value"]
+
+                expected = {**config_dict, "isOptional": True}
+                if config_dict["value"] is None:
+                    expected.pop("value")
+                assert_equal_dict(config.to_dict(), expected)
+
+    def test_io_config_default_cannot_be_explicitly_required(self):
+        values = (None, "foo", "", 1, 0, True, False, [1], [], {"foo": "bar"}, {})
+        for value in values:
+            with self.subTest(value=value):
+                with self.assertRaises(ValidationError):
+                    V1IO.from_dict(
+                        {"name": "input1", "value": value, "isOptional": False}
+                    )
 
     def test_io_config_required(self):
         config_dict = {
