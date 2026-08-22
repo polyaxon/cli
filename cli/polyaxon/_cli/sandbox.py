@@ -292,7 +292,7 @@ def download(project, uid, chunk_size, path_from, path_to):
 @click.option(
     "--replay-bytes",
     type=click.IntRange(min=0),
-    default=0,
+    default=1024,
     show_default=True,
     help="PTY output bytes to replay on attach.",
 )

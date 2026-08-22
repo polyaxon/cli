@@ -364,7 +364,7 @@ class TestCliSandbox(BaseCommandTestCase):
             cols=100,
             rows=30,
         )
-        self.client.pty.attach.assert_called_once_with("pty-1", replay_bytes=0)
+        self.client.pty.attach.assert_called_once_with("pty-1", replay_bytes=1024)
         terminal.assert_called_once_with(ws)
 
     def test_shell_forwards_command_size_and_replay_options(self):
