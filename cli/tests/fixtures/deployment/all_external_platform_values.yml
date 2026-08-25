@@ -473,30 +473,6 @@ redis:
                 - "polyaxon-core"
             topologyKey: "kubernetes.io/hostname"
 
-rabbitmq:
-  enabled: false
-  replicaCount: 1
-  auth:
-    username: polyaxon
-    password: polyaxon
-  resources:
-    requests:
-      memory: 256Mi
-      cpu: 300m
-  affinity:
-    podAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-                - key: type
-                  operator: In
-                  values:
-                    - "polyaxon-core"
-            topologyKey: "kubernetes.io/hostname"
-
-
 ## Prometheus Exporter / Metrics
 metrics:
   enabled: false

@@ -40,7 +40,6 @@ scheduler:
   celery:
     taskTrackStarted: false
     brokerPoolLimit: 2
-    confirmPublish: false
     workerPrefetchMultiplier: 2
     workerMaxTasksPerChild: 2
     workerMaxMemoryPerChild: 2
@@ -53,7 +52,6 @@ worker:
   celery:
     taskTrackStarted: true
     brokerPoolLimit: 4
-    confirmPublish: true
     workerPrefetchMultiplier: 4
     workerMaxTasksPerChild: 4
     workerMaxMemoryPerChild: 4
@@ -81,9 +79,6 @@ allowedHosts:
   - 127.0.0.1
   - 123.123.12.3
 logLevel: INFO
-
-rabbitmq:
-  enabled: false
 
 broker: redis
 

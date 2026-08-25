@@ -10,7 +10,6 @@ class CeleryConfig(BaseSchemaModel):
     broker_pool_limit: Optional[StrictInt] = Field(
         alias="brokerPoolLimit", default=None
     )
-    confirm_publish: Optional[bool] = Field(alias="confirmPublish", default=None)
     worker_prefetch_multiplier: Optional[StrictInt] = Field(
         alias="workerPrefetchMultiplier", default=None
     )

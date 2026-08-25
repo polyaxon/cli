@@ -50,12 +50,6 @@ class ComposeOperator(CmdOperator):
                         "POLYAXON_CELERY_BROKER_POOL_LIMIT", celery.broker_pool_limit
                     )
                 )
-            if celery.confirm_publish:
-                env.append(
-                    template.format(
-                        "POLYAXON_CELERY_CONFIRM_PUBLISH", celery.confirm_publish
-                    )
-                )
             if celery.worker_prefetch_multiplier:
                 env.append(
                     template.format(

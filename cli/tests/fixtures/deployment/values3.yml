@@ -65,9 +65,6 @@ allowedHosts:
   - foo.bar.com
   - 123.123.12.3
 
-rabbitmq:
-  enabled: false
-
 broker: redis
 
 redis:

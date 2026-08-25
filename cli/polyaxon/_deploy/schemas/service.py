@@ -87,10 +87,6 @@ class RedisConfig(ThirdPartyService):
     auth: Optional[Dict] = None
 
 
-class RabbitmqConfig(ThirdPartyService):
-    auth: Optional[Dict] = None
-
-
 class ExternalService(BaseSchemaModel):
     user: Optional[StrictStr] = None
     password: Optional[StrictStr] = None
@@ -124,7 +120,6 @@ class AuthServicesConfig(BaseSchemaModel):
 
 class ExternalServicesConfig(BaseSchemaModel):
     redis: Optional[ExternalService] = None
-    rabbitmq: Optional[ExternalService] = None
     postgresql: Optional[ExternalService] = None
     gateway: Optional[ExternalService] = None
     api: Optional[ExternalService] = None

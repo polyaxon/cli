@@ -4,7 +4,6 @@ from polyaxon._deploy.schemas.service import (
     ExternalService,
     ExternalServicesConfig,
     PostgresqlConfig,
-    RabbitmqConfig,
     RedisConfig,
     ThirdPartyService,
 )
@@ -184,53 +183,6 @@ class TestService(BaseTestCase):
         config = RedisConfig.from_dict(config_dict)
         assert config.to_light_dict() == config_dict
 
-    def test_rabbitmq_config(self):
-        config_dict = {
-            "rabbitmqUsername": "dsf",
-            "rabbitmqPassword": "sdf",
-        }
-        config = RabbitmqConfig.from_dict(config_dict)
-        assert config.to_dict() == config_dict
-
-        config_dict = {
-            "externalRabbitmqHost": 123,
-        }
-        config = RabbitmqConfig.from_dict(config_dict)
-        assert config.to_dict() == config_dict
-
-        config_dict = {
-            "enabled": True,
-            "auth": {"username": "dsf", "password": "sdf"},
-            "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
-            "tolerations": [
-                {
-                    "key": "key",
-                    "operator": "Equal",
-                    "value": "value",
-                    "effect": "NoSchedule",
-                }
-            ],
-            "affinity": {},
-        }
-        config = RabbitmqConfig.from_dict(config_dict)
-        assert config.to_light_dict() == config_dict
-
-        config_dict = {
-            "auth": {"username": "dsf", "password": "sdf"},
-            "resources": {"requests": {"cpu": 2}, "limits": {"memory": "500Mi"}},
-            "tolerations": [
-                {
-                    "key": "key",
-                    "operator": "Equal",
-                    "value": "value",
-                    "effect": "NoSchedule",
-                }
-            ],
-            "affinity": {},
-        }
-        config = RabbitmqConfig.from_dict(config_dict)
-        assert config.to_light_dict() == config_dict
-
     def test_external_service_config(self):
         config_dict = {
             "user": "user",
@@ -295,8 +247,8 @@ class TestService(BaseTestCase):
                 "port": 2344,
             },
         }
-        config = ExternalServicesConfig.from_dict(config_dict)
-        assert config.to_light_dict() == config_dict
+        with self.assertRaises(ValidationError):
+            ExternalServicesConfig.from_dict(config_dict)
 
         config_dict = {
             "postgresql": {
@@ -319,5 +271,5 @@ class TestService(BaseTestCase):
                 "port": 2344,
             },
         }
-        config = ExternalServicesConfig.from_dict(config_dict)
-        assert config.to_light_dict() == config_dict
+        with self.assertRaises(ValidationError):
+            ExternalServicesConfig.from_dict(config_dict)

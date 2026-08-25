@@ -38,7 +38,6 @@ from polyaxon._deploy.schemas.service import (
     HooksConfig,
     OperatorServiceConfig,
     PostgresqlConfig,
-    RabbitmqConfig,
     RedisConfig,
     WorkerServiceConfig,
 )
@@ -76,27 +75,6 @@ def check_postgres(postgresql, external_services):
             "please enable the in-cluster postgresql, "
             "or provide an external instance."
         )
-
-
-def check_rabbitmq(rabbitmq, external_services, broker):
-    rabbitmq_enabled = rabbitmq and rabbitmq.enabled
-    external_rabbitmq = None
-    rabbitmq_broker = broker != "redis"
-    if external_services:
-        external_rabbitmq = external_services.rabbitmq
-
-    if rabbitmq_enabled and external_rabbitmq:
-        raise ValueError(
-            "You can either enable the in-cluster rabbitmq or use an external instance, "
-            "not both!"
-        )
-    rabbitmq_used = rabbitmq_enabled or external_rabbitmq
-    if rabbitmq_used and not rabbitmq_broker:
-        raise ValueError(
-            "rabbitmq is enabled but you are using a different broker backend!"
-        )
-
-    return rabbitmq_used
 
 
 def check_redis(redis, external_services, broker):
@@ -145,7 +123,6 @@ def wrong_agent_deployment_keys(**kwargs):
 def validate_platform_deployment(
     postgresql,
     redis,
-    rabbitmq,
     broker,
     scheduler,
     compiler,
@@ -155,17 +132,11 @@ def validate_platform_deployment(
 ):
     check_postgres(postgresql, external_services)
     redis_used, redis_is_broker = check_redis(redis, external_services, broker)
-    rabbitmq_used = check_rabbitmq(rabbitmq, external_services, broker)
-    if rabbitmq_used and redis_used and redis_is_broker:
-        raise ValueError(
-            "You only need to enable rabbitmq or redis for the broker, "
-            "you don't need to deploy both!"
-        )
-    broker_defined = rabbitmq_used or redis_used
+    broker_defined = redis_used and redis_is_broker
     services = [scheduler, compiler, worker, beat]
     if broker_is_required(services) and not broker_defined:
         raise ValueError(
-            "You enabled some services that require a broker, please set redis or rabbitmq!"
+            "You enabled some services that require a broker, please set redis!"
         )
 
 
@@ -264,8 +235,7 @@ class DeploymentConfig(BaseSchemaModel):
     flower: Optional[DeploymentService] = None
     postgresql: Optional[PostgresqlConfig] = None
     redis: Optional[RedisConfig] = None
-    rabbitmq: Optional[RabbitmqConfig] = None
-    broker: Optional[Literal["redis", "rabbitmq"]] = None
+    broker: Optional[Literal["redis"]] = None
     email: Optional[EmailConfig] = None
     ldap: Optional[Dict] = None
     metrics: Optional[Dict] = None
@@ -313,7 +283,6 @@ class DeploymentConfig(BaseSchemaModel):
         validate_platform_deployment(
             postgresql=cls.get_value_for_key("postgresql", values),
             redis=cls.get_value_for_key("redis", values),
-            rabbitmq=cls.get_value_for_key("rabbitmq", values),
             broker=cls.get_value_for_key("broker", values),
             scheduler=cls.get_value_for_key("scheduler", values),
             compiler=cls.get_value_for_key("compiler", values),
@@ -339,7 +308,6 @@ class DeploymentConfig(BaseSchemaModel):
                 flower=cls.get_value_for_key("flower", values),
                 postgresql=cls.get_value_for_key("postgresql", values),
                 redis=cls.get_value_for_key("redis", values),
-                rabbitmq=cls.get_value_for_key("rabbitmq", values),
                 broker=cls.get_value_for_key("broker", values),
                 email=cls.get_value_for_key("email", values),
                 ldap=cls.get_value_for_key("ldap", values),
