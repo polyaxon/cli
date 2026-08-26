@@ -106,7 +106,6 @@ def cli(context, verbose, offline):
     """
     from clipped.formatting import Printer
     from polyaxon import settings
-    from polyaxon._cli.session import set_versions_config
 
     settings.set_cli_config()
     configure_logger(verbose)
@@ -147,6 +146,8 @@ def cli(context, verbose, offline):
         or PolyaxonServices.get_service_name()
         or DOCS_GEN
     ) and not (settings.CLI_CONFIG or settings.CLI_CONFIG.installation):
+        from polyaxon._cli.session import set_versions_config
+
         cli_config = set_versions_config(is_cli=False)
         settings.CLI_CONFIG = cli_config
         check_cli_version(cli_config, is_cli=False)
