@@ -43,6 +43,7 @@ class V1CloningKind(str, PEnum):
 class V1PipelineKind(str, PEnum):
     DAG = "dag"
     MATRIX = "matrix"
+    SCHEDULE = "schedule"
 
 
 class V1RunEdgeKind(str, PEnum):

@@ -4,6 +4,7 @@ import pytest
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._sdk.async_client.api_client import AsyncApiClient
 from polyaxon._sdk.async_client.rest import RESTClientObject as AsyncRESTClientObject
+from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.sync_client.api_client import ApiClient
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import ApiValueError
@@ -11,6 +12,13 @@ from polyaxon.exceptions import ApiValueError
 
 @pytest.mark.client_mark
 class TestSDKTransport(BaseTestCase):
+    def test_list_runs_response_accepts_schedule_pipeline_kind(self):
+        response = V1ListRunsResponse.from_dict(
+            {"results": [{"pipeline": {"kind": "schedule"}}]}
+        )
+
+        assert response.results[0].pipeline.kind == "schedule"
+
     def test_async_api_client_rejects_async_req(self):
         client = AsyncApiClient(ClientConfig(host="localhost").async_sdk_config)
 
