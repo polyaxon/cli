@@ -1,6 +1,6 @@
 import os
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
@@ -9,20 +9,17 @@ from clipped.utils.bools import to_bool
 from polyaxon._env_vars.keys import ENV_KEYS_NO_CONFIG, ENV_KEYS_SET_AGENT
 from polyaxon._managers.client import ClientConfigManager
 from polyaxon._managers.home import HomeConfigManager
-from polyaxon._managers.user import UserConfigManager
-from polyaxon._schemas.agent import AgentConfig
-from polyaxon._schemas.authentication import AccessTokenConfig
-from polyaxon._schemas.cli import CliConfig
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._schemas.home import HomeConfig
 from polyaxon._services.values import PolyaxonServices
 from polyaxon.api import LOCALHOST
 
-from polyaxon._managers.ignore import IgnoreConfigManager  # noqa
-from polyaxon._managers.run import RunConfigManager  # noqa
-from polyaxon._managers.project import ProjectConfigManager  # noqa
-from polyaxon._managers.auth import AuthConfigManager  # noqa
-from polyaxon._managers.cli import CliConfigManager  # noqa
+
+if TYPE_CHECKING:
+    from polyaxon._schemas.agent import AgentConfig
+    from polyaxon._schemas.authentication import AccessTokenConfig
+    from polyaxon._schemas.cli import CliConfig
+
 
 MIN_TIMEOUT = 1
 LONG_REQUEST_TIMEOUT = 3600
@@ -30,10 +27,10 @@ HEALTH_CHECK_INTERVAL = 60
 SET_AGENT = to_bool(os.environ.get(ENV_KEYS_SET_AGENT, False))
 
 HOME_CONFIG: HomeConfig = HomeConfigManager.get_config_from_env()
-AUTH_CONFIG: Optional[AccessTokenConfig] = None
+AUTH_CONFIG: Optional["AccessTokenConfig"] = None
 CLIENT_CONFIG: ClientConfig
-CLI_CONFIG: Optional[CliConfig] = None
-AGENT_CONFIG: Optional[AgentConfig] = None
+CLI_CONFIG: Optional["CliConfig"] = None
+AGENT_CONFIG: Optional["AgentConfig"] = None
 
 PolyaxonServices.set_service_name()
 
@@ -44,7 +41,7 @@ def set_home_config(config: Optional[HomeConfig] = None):
     HOME_CONFIG = config or HomeConfigManager.get_config_from_env()
 
 
-def set_agent_config(config: Optional[AgentConfig] = None):
+def set_agent_config(config: Optional["AgentConfig"] = None):
     from polyaxon._connections import CONNECTION_CONFIG
     from polyaxon._managers.agent import AgentConfigManager
 
@@ -63,6 +60,8 @@ def set_agent_config(config: Optional[AgentConfig] = None):
 
 
 def set_cli_config():
+    from polyaxon._managers.cli import CliConfigManager
+
     global CLI_CONFIG
 
     # Patch the config with correct home path if available
@@ -90,6 +89,8 @@ def set_client_config():
 
 
 def set_auth_config():
+    from polyaxon._managers.auth import AuthConfigManager
+
     global AUTH_CONFIG
 
     # Patch the config with correct home path if available
@@ -100,15 +101,6 @@ def set_auth_config():
     except (TypeError, ValidationError):
         AuthConfigManager.purge()
         Printer.warning("Your auth configuration was purged!")
-
-    # Patch the config with correct home path if available
-    UserConfigManager.set_config_path(HOME_CONFIG.path)
-
-    try:
-        UserConfigManager.get_config_or_default()
-    except (TypeError, ValidationError):
-        UserConfigManager.purge()
-        Printer.warning("Your user configuration was purged!")
 
 
 if not to_bool(os.environ.get(ENV_KEYS_NO_CONFIG, False)):
