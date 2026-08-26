@@ -8,25 +8,16 @@ import click
 from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
-from clipped.utils.http import to_ws_url
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import OPTIONS_PROJECT, OPTIONS_RUN_UID
-from polyaxon._client.transport.ssh_tunnel import SandboxSshTunnelClient
-from polyaxon._env_vars.getters import get_project_run_or_local
-from polyaxon._ssh import (
-    ensure_local_keypair,
-    prepare_ssh_access,
-    resolve_identity_file,
-    resolve_known_hosts_file,
-    write_known_hosts_entry,
-)
-from polyaxon._ssh.tunnel import run_tunnel
-from polyaxon.client import SandboxClient
 from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.logger import clean_outputs
 
 
 def _sandbox_client(project, uid):
+    from polyaxon._client.sandbox import SandboxClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project, uid, is_cli=True
     )
@@ -39,6 +30,8 @@ def _sandbox_client(project, uid):
 
 
 def _ssh_tunnel_url(client):
+    from clipped.utils.http import to_ws_url
+
     return to_ws_url(client._sandbox_url(client._resolve_namespace(), "ssh/tunnel"))
 
 
@@ -174,6 +167,9 @@ def connect(project, uid, identity_file, known_hosts_file, connect_args):
     Pass SSH options or a remote command after `--`. Use a second `--` to
     separate SSH options from the remote command.
     """
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._ssh import ensure_local_keypair, resolve_known_hosts_file
+
     try:
         owner, _, project_name, run_uuid = get_project_run_or_local(
             project, uid, is_cli=True
@@ -224,6 +220,14 @@ def connect(project, uid, identity_file, known_hosts_file, connect_args):
 @clean_outputs
 def setup(project, uid, identity_file, known_hosts_file, timeout_ms):
     """Prepare SSH access for a sandbox run."""
+    from polyaxon._client.sandbox import SandboxClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._ssh import (
+        prepare_ssh_access,
+        resolve_known_hosts_file,
+        write_known_hosts_entry,
+    )
+
     try:
         owner, _, project_name, run_uuid = get_project_run_or_local(
             project, uid, is_cli=True
@@ -279,6 +283,9 @@ def setup(project, uid, identity_file, known_hosts_file, timeout_ms):
 @clean_outputs
 def config_command(project, uid, identity_file, known_hosts_file):
     """Print an SSH config block for a sandbox run."""
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._ssh import resolve_identity_file, resolve_known_hosts_file
+
     try:
         owner, _, project_name, run_uuid = get_project_run_or_local(
             project, uid, is_cli=True
@@ -317,6 +324,16 @@ def config_command(project, uid, identity_file, known_hosts_file):
 @clean_outputs
 def tunnel(project, uid, identity_file, known_hosts_file):
     """Open an SSH tunnel to a sandbox run."""
+    from polyaxon._client.sandbox import SandboxClient
+    from polyaxon._client.transport.ssh_tunnel import SandboxSshTunnelClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._ssh import (
+        prepare_ssh_access,
+        resolve_known_hosts_file,
+        write_known_hosts_entry,
+    )
+    from polyaxon._ssh.tunnel import run_tunnel
+
     with _disable_tunnel_logging():
         try:
             owner, _, project_name, run_uuid = get_project_run_or_local(

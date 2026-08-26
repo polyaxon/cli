@@ -5,17 +5,14 @@ import click
 from clipped.formatting import Printer
 from clipped.utils.dicts import dict_to_tabulate
 from clipped.utils.paths import check_or_create_path
-from polyaxon import settings
 from polyaxon._cli.errors import handle_cli_error
-from polyaxon._cli.session import set_versions_config
-from polyaxon._managers.cli import CliConfigManager
-from polyaxon._managers.client import ClientConfigManager
-from polyaxon._managers.home import HomeConfigManager
-from polyaxon._managers.user import UserConfigManager
 from polyaxon.logger import clean_outputs, logger
 
 
 def set_home_path(home_path: str):
+    from polyaxon import settings
+    from polyaxon._managers.home import HomeConfigManager
+
     try:
         _config = HomeConfigManager.get_config_or_default()
     except Exception as e:
@@ -44,6 +41,8 @@ def set_home_path(home_path: str):
 
 
 def set_owner(owner: str):
+    from polyaxon._managers.user import UserConfigManager
+
     try:
         _config = UserConfigManager.get_config_or_default()
     except Exception as e:
@@ -96,6 +95,11 @@ def config(_list):  # pylint:disable=redefined-builtin
 @clean_outputs
 def show():
     """Show the current cli, client, and user configs."""
+    from polyaxon._managers.cli import CliConfigManager
+    from polyaxon._managers.client import ClientConfigManager
+    from polyaxon._managers.home import HomeConfigManager
+    from polyaxon._managers.user import UserConfigManager
+
     _config = HomeConfigManager.get_config_or_default()
     Printer.heading(
         "In addition to environment variables, global configs will be loaded from:"
@@ -143,6 +147,10 @@ def get(keys):
     \b
     $ polyaxon config get home host verify-ssl
     """
+
+    from polyaxon._managers.cli import CliConfigManager
+    from polyaxon._managers.client import ClientConfigManager
+    from polyaxon._managers.home import HomeConfigManager
 
     if not keys:
         return
@@ -250,6 +258,12 @@ def set_(**kwargs):  # pylint:disable=redefined-builtin
     \b
     $ polyaxon config set --host=localhost
     """
+    from polyaxon import settings
+    from polyaxon._cli.session import set_versions_config
+    from polyaxon._managers.cli import CliConfigManager
+    from polyaxon._managers.client import ClientConfigManager
+    from polyaxon._managers.user import UserConfigManager
+
     no_purge = kwargs.pop("no_purge", None)
     if kwargs.get("home") is not None:
         home_path = kwargs.pop("home", None)
@@ -297,8 +311,11 @@ def set_(**kwargs):  # pylint:disable=redefined-builtin
 def purge(cache_only):
     """Purge the global config values."""
     from polyaxon._managers.auth import AuthConfigManager
+    from polyaxon._managers.cli import CliConfigManager
+    from polyaxon._managers.client import ClientConfigManager
     from polyaxon._managers.project import ProjectConfigManager
     from polyaxon._managers.run import RunConfigManager
+    from polyaxon._managers.user import UserConfigManager
 
     if not cache_only:
         ClientConfigManager.purge()

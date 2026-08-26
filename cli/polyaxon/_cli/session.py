@@ -10,6 +10,7 @@ from clipped.utils.tz import now
 from clipped.utils.versions import clean_version_for_compatibility
 from polyaxon import pkg
 from polyaxon._cli.errors import handle_cli_error
+from polyaxon._client.client import PolyaxonClient
 from polyaxon._constants.globals import NO_AUTH
 from polyaxon._managers.auth import AuthConfigManager
 from polyaxon._managers.cli import CliConfigManager
@@ -17,7 +18,6 @@ from polyaxon._managers.user import UserConfigManager
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._schemas.installation import V1Installation
 from polyaxon._services.values import PolyaxonServices
-from polyaxon.client import PolyaxonClient
 from polyaxon.exceptions import ApiException
 
 

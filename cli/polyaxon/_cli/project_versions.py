@@ -12,10 +12,11 @@ from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
 from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
 from polyaxon._cli.errors import handle_cli_error
+from polyaxon._client.client import PolyaxonClient
+from polyaxon._client.project import ProjectClient
 from polyaxon._contexts.paths import get_offline_base_path
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind
 from polyaxon._utils.fqn_utils import get_versioned_entity_full_name
-from polyaxon.client import PolyaxonClient, ProjectClient
 from polyaxon.exceptions import ApiException
 
 

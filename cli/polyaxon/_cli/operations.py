@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 from urllib3.exceptions import HTTPError
@@ -18,7 +18,6 @@ from clipped.utils.lists import to_list
 from clipped.utils.responses import get_meta_response
 from clipped.utils.validation import validate_tags
 from clipped.utils.versions import compare_versions
-from polyaxon import settings
 from polyaxon._cli.dashboard import (
     get_dashboard,
     get_dashboard_url,
@@ -34,23 +33,13 @@ from polyaxon._cli.options import (
     OPTIONS_RUN_UID,
 )
 from polyaxon._cli.utils import CommandSeparatorCommand, handle_output, write_stream
-from polyaxon._client.transport import ws_client
 from polyaxon._constants.metadata import META_IS_EXTERNAL, META_PORTS, META_REWRITE_PATH
-from polyaxon._contexts import paths as ctx_paths
-from polyaxon._env_vars.getters import get_project_or_local, get_project_run_or_local
-from polyaxon._flow import V1RunKind
-from polyaxon._managers.run import RunConfigManager
-from polyaxon._polyaxonfile import OperationSpecification
-from polyaxon._runner.kinds import RunnerKind
-from polyaxon._schemas.lifecycle import LifeCycle, V1ProjectFeature, V1Statuses
-from polyaxon._utils import cache
 from polyaxon.api import (
     EXTERNAL_V1,
     REWRITE_EXTERNAL_V1,
     REWRITE_SERVICES_V1,
     SERVICES_V1,
 )
-from polyaxon.client import RunClient, V1Run, V1RunSettings, get_run_logs
 from polyaxon.exceptions import (
     ApiException,
     PolyaxonClientException,
@@ -58,7 +47,11 @@ from polyaxon.exceptions import (
     PolyaxonShouldExitError,
 )
 from polyaxon.logger import clean_outputs
-from traceml.events import get_logs_path
+
+
+if TYPE_CHECKING:
+    from polyaxon._client.run import RunClient
+    from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 
 
 DEFAULT_EXCLUDE = [
@@ -87,7 +80,7 @@ DEFAULT_EXCLUDE = [
 ]
 
 
-def get_op_agent_host(runSettings: V1RunSettings):
+def get_op_agent_host(runSettings: "V1RunSettings"):
     host_kwargs = {}
     if runSettings and runSettings.agent and runSettings.agent.url:
         host_kwargs["host"] = runSettings.agent.url
@@ -154,6 +147,8 @@ def _parse_k8s_exec_error_channel(data):
 
 
 def _drain_k8s_exec_channels(client_shell):
+    from polyaxon._client.transport import ws_client
+
     if client_shell.peek_stdout():
         write_stream(client_shell.read_stdout())
     if client_shell.peek_stderr():
@@ -332,6 +327,12 @@ def ls(
     \b
     $ polyaxon ops ls -q "kind: service"
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+
     if offline:
         offline_path = ctx_paths.get_offline_base_path(
             entity_kind=V1ProjectFeature.RUNTIME, path=path
@@ -480,6 +481,13 @@ def get(ctx, project, uid, offline, path, output):
     $ polyaxon ops get -p alain/cats-vs-dogs --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
 
+    from polyaxon._client.run import RunClient
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+    from polyaxon._utils import cache
+
     uid = uid or ctx.obj.get("run_uuid")
 
     if offline:
@@ -572,6 +580,12 @@ def delete(ctx, project, uid, yes, offline, path):
     \b
     $ polyaxon ops delete --project=cats-vs-dogs -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+
     if offline:
         offline_path = ctx_paths.get_offline_path(
             entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
@@ -646,6 +660,12 @@ def update(ctx, project, uid, name, description, tags, offline, path):
     \b
     $ polyaxon ops update --project=cats-vs-dogs -uid 8aac02e3a62a4f0aaa257c59da5eab80 --tags="foo, bar" --name="unique-name"
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+
     update_dict = {}
 
     if name:
@@ -724,6 +744,9 @@ def approve(ctx, project, uid):
     \b
     $ polyaxon ops approve --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -771,6 +794,9 @@ def stop(ctx, project, uid, yes):
     \b
     $ polyaxon ops stop --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -823,6 +849,9 @@ def skip(ctx, project, uid, yes):
     \b
     $ polyaxon ops skip --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -923,6 +952,10 @@ def restart(
     \b
     $ polyaxon ops restart --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._polyaxonfile import OperationSpecification
+
     content = None
     if polyaxonfile:
         content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
@@ -1008,6 +1041,10 @@ def resume(
     \b
     $ polyaxon ops resume --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._polyaxonfile import OperationSpecification
+
     content = None
     if polyaxonfile:
         content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
@@ -1055,6 +1092,9 @@ def invalidate(ctx, project, uid):
     \b
     $ polyaxon ops invalidate --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -1098,6 +1138,14 @@ def execute(ctx, project, uid, executor):
     \b
     $ polyaxon ops execute -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+
+    from polyaxon import settings
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._flow import V1RunKind
+    from polyaxon._runner.kinds import RunnerKind
+    from polyaxon._schemas.lifecycle import LifeCycle, V1Statuses
+    from polyaxon._sdk.schemas.v1_run import V1Run
 
     Printer.warning(
         "The `ops execute` command is experimental and might change in the future!"
@@ -1343,6 +1391,12 @@ def statuses(ctx, project, uid, watch, offline, path):
     \b
     $ polyaxon ops statuses -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+
     if offline:
         offline_path = ctx_paths.get_offline_path(
             entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
@@ -1492,6 +1546,13 @@ def logs(
     \b
     $ polyaxon ops logs -uid 8aac02e3a62a4f0aaa257c59da5eab80 -p mnist
     """
+    from polyaxon._client.run import RunClient, get_run_logs
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+    from traceml.events import get_logs_path
+
     if offline:
         offline_path = ctx_paths.get_offline_path(
             entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
@@ -1573,6 +1634,9 @@ def inspect(ctx, project, uid):
     \b
     $ polyaxon ops inspect -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -1617,6 +1681,9 @@ def exec_command(ctx, project, uid, pod, container, command):
     \b
     $ polyaxon ops exec -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80 -- python -V
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     run_uuid = uid or ctx.obj.get("run_uuid")
     try:
         owner, _, project_name, run_uuid = get_project_run_or_local(
@@ -1702,6 +1769,8 @@ def shell(ctx, project, uid, command, pod, container):
     \b
     $ polyaxon ops shell -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80 -cmd="/bin/bash"
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._pty.k8s import PseudoTerminal
 
     owner, _, project_name, run_uuid = get_project_run_or_local(
@@ -1809,6 +1878,9 @@ def artifacts(
     \b
     $ polyaxon ops artifacts -uid 8aac02e3a62a4f0aaa257c59da5eab80 -l-kind model -l-kind env --path="this/path"
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -1998,6 +2070,9 @@ def upload(
     \b
     $ polyaxon ops upload -uid 8aac02e3a62a4f0aaa257c59da5eab80 --path-to="path/to/upload/to"
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -2078,6 +2153,9 @@ def transfer(ctx, project, uid, to_project):
     \b
     $ polyaxon ops transfer -p acme/foobar -uid 8aac02e3a62a4f0aaa257c59da5eab80 -to=dest-project
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -2133,6 +2211,11 @@ def transfer(ctx, project, uid, to_project):
 @clean_outputs
 def dashboard(ctx, project, uid, yes, url, offline, path, server_config):
     """Open this operation's dashboard details in browser."""
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+
     if offline:
         offline_path = ctx_paths.get_offline_path(
             entity_value=uid, entity_kind=V1ProjectFeature.RUNTIME, path=path
@@ -2198,6 +2281,10 @@ def service(ctx, project, uid, yes, external, url):
     You can open the service embedded in Polyaxon UI or using the real service URL,
     please use the `--external` flag.
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._flow import V1RunKind
+
     owner, team, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
@@ -2343,6 +2430,9 @@ def pull(
     \b
     $ polyaxon ops pull -a
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
@@ -2502,6 +2592,11 @@ def push(
     \b
     $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --reset-project -p send-to-project
     """
+    from polyaxon._client.run import RunClient
+    from polyaxon._contexts import paths as ctx_paths
+    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._schemas.lifecycle import V1ProjectFeature
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
@@ -2587,7 +2682,9 @@ def push(
         sys.exit(1)
 
 
-def _wait_for_running_condition(client: RunClient, live_update: Any):
+def _wait_for_running_condition(client: "RunClient", live_update: Any):
+    from polyaxon._schemas.lifecycle import LifeCycle, V1Statuses
+
     client.refresh_data()
     if LifeCycle.is_running(client.run_data.status):
         return
@@ -2610,7 +2707,7 @@ def _wait_for_running_condition(client: RunClient, live_update: Any):
         sys.exit()
 
 
-def wait_for_running_condition(client: RunClient):
+def wait_for_running_condition(client: "RunClient"):
     with Printer.console.status("Waiting for running condition ...") as live_update:
         try:
             _wait_for_running_condition(client, live_update)

@@ -3,13 +3,7 @@ import sys
 import click
 
 from clipped.formatting import Printer
-from polyaxon import settings
 from polyaxon._cli.errors import handle_cli_error
-from polyaxon._deploy.schemas.deployment_types import DeploymentTypes
-from polyaxon._managers.auth import AuthConfigManager
-from polyaxon._managers.cli import CliConfigManager
-from polyaxon._managers.client import ClientConfigManager
-from polyaxon._managers.user import UserConfigManager
 from polyaxon.logger import clean_outputs
 
 
@@ -43,7 +37,13 @@ def port_forward(port, namespace, deployment_type, release_name, service, addres
     """If you deploy Polyaxon using ClusterIP, you can use this command
     to access the gateway through `localhost:port`.
     """
+    from polyaxon import settings
     from polyaxon._deploy.operators.kubectl import KubectlOperator
+    from polyaxon._deploy.schemas.deployment_types import DeploymentTypes
+    from polyaxon._managers.auth import AuthConfigManager
+    from polyaxon._managers.cli import CliConfigManager
+    from polyaxon._managers.client import ClientConfigManager
+    from polyaxon._managers.user import UserConfigManager
 
     if not port and deployment_type in [
         DeploymentTypes.MICRO_K8S,

@@ -8,7 +8,6 @@ from clipped.utils.lists import to_list
 from clipped.utils.validation import validate_tags
 from polyaxon._cli.dashboard import get_dashboard, get_dashboard_url
 from polyaxon._cli.errors import handle_cli_error
-from polyaxon._managers.deploy import DeployConfigManager
 from polyaxon._utils.fqn_utils import get_resource_name
 from polyaxon.logger import clean_outputs
 
@@ -75,6 +74,8 @@ def admin():
 @clean_outputs
 def deploy(config_file, deployment_type, manager_path, check, dry_run):
     """Deploy polyaxon."""
+    from polyaxon._managers.deploy import DeployConfigManager
+
     config = read_deployment_config(config_file, command="deploy")
     manager = DeployConfigManager(
         config=config,
@@ -140,6 +141,8 @@ def deploy(config_file, deployment_type, manager_path, check, dry_run):
 @clean_outputs
 def upgrade(config_file, deployment_type, manager_path, check, dry_run):
     """Upgrade a Polyaxon deployment."""
+    from polyaxon._managers.deploy import DeployConfigManager
+
     config = read_deployment_config(config_file, command="upgrade")
     manager = DeployConfigManager(
         config=config,
@@ -195,6 +198,8 @@ def upgrade(config_file, deployment_type, manager_path, check, dry_run):
 @clean_outputs
 def teardown(config_file, manager_path, yes):
     """Teardown a polyaxon deployment given a config file."""
+    from polyaxon._managers.deploy import DeployConfigManager
+
     config = read_deployment_config(config_file, command="teardown")
     manager = DeployConfigManager(
         config=config, filepath=config_file, manager_path=manager_path

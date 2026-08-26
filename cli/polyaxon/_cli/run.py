@@ -1,41 +1,19 @@
 from collections import namedtuple
 import sys
 import time
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import click
 from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
-from clipped.utils import git as git_utils
-from clipped.utils.validation import validate_tags
-from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
-from polyaxon._cli.errors import handle_cli_error
-from polyaxon._cli.operations import (
-    approve,
-    execute as run_execute,
-    get_op_agent_host,
-    logs as run_logs,
-    shell as run_shell,
-    statuses,
-    upload as run_upload,
-)
 from polyaxon._cli.options import OPTIONS_NAME, OPTIONS_PROJECT
-from polyaxon._cli.utils import handle_output
-from polyaxon._constants.globals import DEFAULT_UPLOADS_PATH
-from polyaxon._constants.metadata import META_UPLOAD_ARTIFACTS
-from polyaxon._env_vars.getters import get_project_or_local
-from polyaxon._flow import V1Operation, V1RunPending
-from polyaxon._managers.git import GitConfigManager
-from polyaxon._managers.run import RunConfigManager
-from polyaxon._polyaxonfile import CompiledOperationSpecification, check_polyaxonfile
-from polyaxon._runner.kinds import RunnerKind
-from polyaxon._schemas.lifecycle import ManagedBy
-from polyaxon._utils import cache
-from polyaxon._utils.fqn_utils import get_owner_team_space
-from polyaxon.client import RunClient
-from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs
+
+
+if TYPE_CHECKING:
+    from polyaxon._flow import V1Operation
+    from polyaxon._runner.kinds import RunnerKind
 
 
 class RunWatchSpec(namedtuple("RunWatchSpec", "uuid name")):
@@ -50,7 +28,7 @@ def _run(
     project_name: str,
     description: str,
     tags: List[str],
-    op_spec: V1Operation,
+    op_spec: "V1Operation",
     log: bool,
     shell: bool,
     upload: bool,
@@ -60,8 +38,31 @@ def _run(
     approve_after: Optional[int] = None,
     output: Optional[str] = None,
     local: Optional[bool] = False,
-    executor: Optional[RunnerKind] = None,
+    executor: Optional["RunnerKind"] = None,
 ):
+    from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
+    from polyaxon._cli.errors import handle_cli_error
+    from polyaxon._cli.operations import (
+        approve,
+        execute as run_execute,
+        get_op_agent_host,
+        logs as run_logs,
+        shell as run_shell,
+        statuses,
+        upload as run_upload,
+    )
+    from polyaxon._cli.utils import handle_output
+    from polyaxon._client.run import RunClient
+    from polyaxon._constants.globals import DEFAULT_UPLOADS_PATH
+    from polyaxon._constants.metadata import META_UPLOAD_ARTIFACTS
+    from polyaxon._flow import V1RunPending
+    from polyaxon._managers.run import RunConfigManager
+    from polyaxon._polyaxonfile import CompiledOperationSpecification
+    from polyaxon._schemas.lifecycle import ManagedBy
+    from polyaxon._utils import cache
+    from polyaxon._utils.fqn_utils import get_owner_team_space
+    from polyaxon.exceptions import ApiException
+
     polyaxon_client = RunClient(
         owner=owner, project=project_name, manual_exceptions_handling=True
     )
@@ -545,6 +546,13 @@ def run(
     \b
     $ polyaxon run ... -m ./src:code -m ./data:datasets -m ./models
     """
+    from clipped.utils import git as git_utils
+    from clipped.utils.validation import validate_tags
+    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._managers.git import GitConfigManager
+    from polyaxon._polyaxonfile import check_polyaxonfile
+    from polyaxon._utils import cache
+
     if log and shell:
         Printer.error(
             "You can't use `--logs` and `--shell` at the same, please keep one option.",

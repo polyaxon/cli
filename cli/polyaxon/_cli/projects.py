@@ -4,23 +4,9 @@ import click
 from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
-from clipped.utils.dicts import list_dicts_to_tabulate
-from clipped.utils.responses import get_meta_response
-from clipped.utils.validation import validate_tags
 from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
 from polyaxon._cli.errors import handle_cli_error
-from polyaxon._cli.init import init as init_project
 from polyaxon._cli.options import OPTIONS_NAME, OPTIONS_OWNER, OPTIONS_PROJECT
-from polyaxon._cli.utils import get_entity_details
-from polyaxon._env_vars.getters import get_project_or_local
-from polyaxon._env_vars.getters.owner_entity import resolve_entity_info
-from polyaxon._env_vars.getters.user import get_local_owner
-from polyaxon._managers.project import ProjectConfigManager
-from polyaxon._utils import cache
-from polyaxon._utils.cache import get_local_project
-from polyaxon._utils.fqn_utils import get_owner_team_space
-from polyaxon.client import ProjectClient, V1Project
-from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs
 
 
@@ -68,6 +54,15 @@ def create(ctx, name, description, tags, public, init):
     \b
     $ polyaxon project create --name=owner/name --description="Project Description"
     """
+    from clipped.utils.validation import validate_tags
+    from polyaxon._client.project import ProjectClient
+    from polyaxon._env_vars.getters.owner_entity import resolve_entity_info
+    from polyaxon._managers.project import ProjectConfigManager
+    from polyaxon._sdk.schemas.v1_project import V1Project
+    from polyaxon._utils import cache
+    from polyaxon._utils.fqn_utils import get_owner_team_space
+    from polyaxon.exceptions import ApiException
+
     if not name:
         Printer.error(
             "Please provide a valid name to create a project.",
@@ -112,6 +107,8 @@ def create(ctx, name, description, tags, public, init):
     )
 
     if init:
+        from polyaxon._cli.init import init as init_project
+
         ctx.obj = {}
         ctx.invoke(
             init_project,
@@ -136,6 +133,12 @@ def ls(owner, query, sort, limit, offset):
 
     Uses /docs/references/cli/cache/#caching
     """
+    from clipped.utils.dicts import list_dicts_to_tabulate
+    from clipped.utils.responses import get_meta_response
+    from polyaxon._client.project import ProjectClient
+    from polyaxon._env_vars.getters.user import get_local_owner
+    from polyaxon.exceptions import ApiException
+
     owner = owner or get_local_owner(is_cli=True)
     if not owner:
         Printer.error("Please provide a valid owner: --owner/-o.")
@@ -199,6 +202,13 @@ def get(ctx, _project):
     \b
     $ polyaxon project get -p owner/project
     """
+    from polyaxon._cli.utils import get_entity_details
+    from polyaxon._client.project import ProjectClient
+    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._managers.project import ProjectConfigManager
+    from polyaxon._utils import cache
+    from polyaxon.exceptions import ApiException
+
     owner, team, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )
@@ -248,6 +258,12 @@ def delete(ctx, _project, yes):
 
     Uses /docs/references/cli/cache/#caching
     """
+    from polyaxon._client.project import ProjectClient
+    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._managers.project import ProjectConfigManager
+    from polyaxon._utils.cache import get_local_project
+    from polyaxon.exceptions import ApiException
+
     owner, _, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )
@@ -311,6 +327,12 @@ def update(ctx, _project, name, description, tags, private):
     \b
     $ polyaxon update --tags="foo, bar"
     """
+    from clipped.utils.validation import validate_tags
+    from polyaxon._cli.utils import get_entity_details
+    from polyaxon._client.project import ProjectClient
+    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon.exceptions import ApiException
+
     owner, _, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )
@@ -368,6 +390,8 @@ def update(ctx, _project, name, description, tags, private):
 @clean_outputs
 def dashboard(ctx, _project, yes, url):
     """Open this project's dashboard details in browser."""
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, team, project_name = get_project_or_local(
         _project or ctx.obj.get("project"), is_cli=True
     )

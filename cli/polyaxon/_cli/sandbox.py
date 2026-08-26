@@ -8,15 +8,14 @@ from clipped.formatting import Printer
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import OPTIONS_PROJECT, OPTIONS_RUN_UID
 from polyaxon._cli.utils import CommandSeparatorCommand, write_stream
-from polyaxon._env_vars.getters import get_project_run_or_local
-from polyaxon._pty.sandbox import SandboxPseudoTerminal
-from polyaxon._sandbox.client_utils import validate_remote_path
-from polyaxon.client import SandboxClient
 from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.logger import clean_outputs
 
 
 def _sandbox_client(project, uid):
+    from polyaxon._client.sandbox import SandboxClient
+    from polyaxon._env_vars.getters import get_project_run_or_local
+
     owner, _, project_name, run_uuid = get_project_run_or_local(
         project,
         uid,
@@ -55,6 +54,8 @@ def _shell_command(command: str):
 
 
 def _validate_remote_file_path(path: str):
+    from polyaxon._sandbox.client_utils import validate_remote_path
+
     if not path:
         raise click.ClickException("remote path is empty")
     if path.endswith("/"):
@@ -321,6 +322,8 @@ def shell(project, uid, command, cols, rows, replay_bytes):
     \b
     $ polyaxon sandbox shell -p acme/project -uid UUID --command "python -i"
     """
+    from polyaxon._pty.sandbox import SandboxPseudoTerminal
+
     try:
         client = _sandbox_client(project, uid)
         cols, rows = _terminal_size(cols=cols, rows=rows)

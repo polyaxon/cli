@@ -6,13 +6,8 @@ from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.types.docker_image import validate_image
 from clipped.utils.paths import copy_file
-from polyaxon._cli.check import check_polyaxonfile
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._config.spec import ConfigSpec
-from polyaxon._polyaxonfile import (
-    CompiledOperationSpecification,
-    OperationSpecification,
-)
 from polyaxon._schemas.types import V1DockerfileType
 from polyaxon.exceptions import PolyaxonBuildException, PolyaxonSchemaError
 
@@ -66,6 +61,11 @@ def generate(
     from clipped.utils.hashing import hash_value
     from polyaxon._docker.builder import DockerFileGenerator
     from polyaxon._init.dockerfile import create_dockerfile_lineage
+    from polyaxon._polyaxonfile import (
+        CompiledOperationSpecification,
+        OperationSpecification,
+        check_polyaxonfile,
+    )
 
     if all([polyaxonfile, build_context]):
         Printer.error("Only a polyaxonfile or a build context option is required.")

@@ -7,8 +7,6 @@ from clipped.utils import indentation
 from clipped.utils.dicts import dict_to_tabulate
 from clipped.utils.versions import clean_version_for_check, compare_versions
 from polyaxon import pkg
-from polyaxon._cli.session import set_versions_config
-from polyaxon._deploy.operators.pip import PipOperator
 from polyaxon.logger import clean_outputs, logger
 
 
@@ -16,6 +14,8 @@ PROJECT_CLI_NAME = "polyaxon"
 
 
 def pip_upgrade(project_name=PROJECT_CLI_NAME):
+    from polyaxon._deploy.operators.pip import PipOperator
+
     PipOperator.execute(["install", "--upgrade", project_name], stream=True)
     Printer.print("polyaxon upgraded!")
 
@@ -90,6 +90,8 @@ def version(check):
     """Print the current version of the cli and platform."""
     Printer.heading("Current cli version: {}".format(pkg.VERSION))
     if check:
+        from polyaxon._cli.session import set_versions_config
+
         config = set_versions_config()
         Printer.heading("Platform version:")
         config_installation = (

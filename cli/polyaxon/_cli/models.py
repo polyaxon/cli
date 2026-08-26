@@ -2,21 +2,6 @@ import click
 
 from clipped.formatting import Printer
 from polyaxon._cli.options import OPTIONS_MODEL_VERSION, OPTIONS_NAME, OPTIONS_PROJECT
-from polyaxon._cli.project_versions import (
-    copy_project_version,
-    delete_project_version,
-    get_project_version,
-    get_project_version_stages,
-    list_project_versions,
-    open_project_version_dashboard,
-    pull_one_or_many_project_versions,
-    push_one_or_many_project_versions,
-    register_project_version,
-    stage_project_version,
-    transfer_project_version,
-    update_project_version,
-)
-from polyaxon._env_vars.getters import get_project_or_local
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1Stages
 from polyaxon.logger import clean_outputs
 
@@ -68,9 +53,13 @@ def ls(ctx, project, query, sort, limit, offset):
     \b
     $ polyaxon models ls -p=acme/project-name
     """
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+
+    from polyaxon._cli.project_versions import list_project_versions
 
     list_project_versions(
         owner=owner,
@@ -142,9 +131,13 @@ def register(
     $ polyaxon models register -p owner/name -ver v1 --tags="tag1,tag2"
     """
     version = version or ctx.obj.get("version")
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import register_project_version
+
     register_project_version(
         owner=owner,
         team=team,
@@ -225,9 +218,13 @@ def copy(
     $ polyaxon models copy -p owner/name -ver v1 --tags="tag1,tag2" --name new-v1
     """
     version = version or ctx.obj.get("version")
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import copy_project_version
+
     copy_project_version(
         owner=owner,
         team=team,
@@ -263,9 +260,13 @@ def get(ctx, project, version):
     $ polyaxon models get -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import get_project_version
+
     get_project_version(
         owner=owner,
         team=team,
@@ -295,9 +296,13 @@ def stages(ctx, project, version):
     $ polyaxon models stages -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import get_project_version_stages
+
     get_project_version_stages(
         owner=owner,
         project_name=project_name,
@@ -334,9 +339,13 @@ def delete(ctx, project, version, yes):
     $ polyaxon models get -p owner/my-project -ver rc12
     """
     version = version or ctx.obj.get("version") or "latest"
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import delete_project_version
+
     delete_project_version(
         owner=owner,
         project_name=project_name,
@@ -377,9 +386,13 @@ def update(ctx, project, version, name, description, tags):
     $ polyaxon models update --tags="foo, bar"
     """
     version = version or ctx.obj.get("version") or "latest"
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import update_project_version
+
     update_project_version(
         owner=owner,
         project_name=project_name,
@@ -425,9 +438,13 @@ def stage(ctx, project, version, to, reason, message):
     $ polyaxon models stage -p acme/foobar -ver rc12 --to=staging --reason GithubAction --message="Use carefully!"
     """
     version = version or ctx.obj.get("version") or "latest"
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import stage_project_version
+
     stage_project_version(
         owner=owner,
         project_name=project_name,
@@ -463,9 +480,13 @@ def transfer(ctx, project, version, to_project):
     $ polyaxon models transfer -p acme/foobar -ver rc12 --to-project=dest-project
     """
     version = version or ctx.obj.get("version") or "latest"
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import transfer_project_version
+
     transfer_project_version(
         owner=owner,
         project_name=project_name,
@@ -532,9 +553,13 @@ def pull(
     \b
     $ polyaxon models pull -p acme/foobar -a --path /tmp/versions
     """
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import pull_one_or_many_project_versions
+
     pull_one_or_many_project_versions(
         owner=owner,
         project_name=project_name,
@@ -613,9 +638,13 @@ def push(
     \b
     $ polyaxon models pull -p acme/foobar -a --path /tmp/versions
     """
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, _, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import push_one_or_many_project_versions
+
     push_one_or_many_project_versions(
         owner=owner,
         project_name=project_name,
@@ -651,9 +680,13 @@ def push(
 def dashboard(ctx, project, version, yes, url):
     """Open this model version's dashboard details in browser."""
     version = version or ctx.obj.get("version") or "latest"
+    from polyaxon._env_vars.getters import get_project_or_local
+
     owner, team, project_name = get_project_or_local(
         project or ctx.obj.get("project"), is_cli=True
     )
+    from polyaxon._cli.project_versions import open_project_version_dashboard
+
     open_project_version_dashboard(
         owner=owner,
         team=team,

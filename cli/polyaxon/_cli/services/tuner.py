@@ -32,8 +32,8 @@ def bayes(matrix, configs, metrics, iteration):
     from hypertune.search_managers.bayesian_optimization.manager import (
         BayesSearchManager,
     )
+    from polyaxon._client.run import RunClient
     from polyaxon._flow import V1Bayes
-    from polyaxon.client import RunClient
 
     matrix = V1Bayes.read(matrix)
     if configs:
@@ -93,8 +93,8 @@ def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
     """Create suggestions based on hyperband."""
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
     from hypertune.search_managers.hyperband.manager import HyperbandManager
+    from polyaxon._client.run import RunClient
     from polyaxon._flow import V1Hyperband
-    from polyaxon.client import RunClient
 
     matrix = V1Hyperband.read(matrix)
     matrix.set_tuning_params()
@@ -151,8 +151,8 @@ def hyperopt(matrix, configs, metrics, iteration):
     """Create suggestions based on hyperopt."""
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
     from hypertune.search_managers.hyperopt.manager import HyperoptManager
+    from polyaxon._client.run import RunClient
     from polyaxon._flow import V1Hyperopt
-    from polyaxon.client import RunClient
 
     matrix = V1Hyperopt.read(matrix)
     if configs:

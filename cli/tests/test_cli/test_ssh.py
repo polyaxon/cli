@@ -27,25 +27,27 @@ class TestCliSsh(BaseCommandTestCase):
     def setUp(self):
         super().setUp()
         self.project_run = patch(
-            "polyaxon._cli.ssh.get_project_run_or_local",
+            "polyaxon._env_vars.getters.get_project_run_or_local",
             return_value=("owner", None, "project", RUN_UUID),
         )
-        self.client_class = patch("polyaxon._cli.ssh.SandboxClient")
-        self.prepare = patch("polyaxon._cli.ssh.prepare_ssh_access")
-        self.known_hosts = patch("polyaxon._cli.ssh.write_known_hosts_entry")
-        self.tunnel_client = patch("polyaxon._cli.ssh.SandboxSshTunnelClient")
-        self.tunnel_runner = patch("polyaxon._cli.ssh.run_tunnel")
+        self.client_class = patch("polyaxon._client.sandbox.SandboxClient")
+        self.prepare = patch("polyaxon._ssh.prepare_ssh_access")
+        self.known_hosts = patch("polyaxon._ssh.write_known_hosts_entry")
+        self.tunnel_client = patch(
+            "polyaxon._client.transport.ssh_tunnel.SandboxSshTunnelClient"
+        )
+        self.tunnel_runner = patch("polyaxon._ssh.tunnel.run_tunnel")
         self.ensure_keypair = patch(
-            "polyaxon._cli.ssh.ensure_local_keypair",
+            "polyaxon._ssh.ensure_local_keypair",
             return_value=Path("/tmp/polyaxon_sandbox_ed25519"),
         )
         self.ssh_call = patch("polyaxon._cli.ssh.subprocess.call", return_value=0)
         self.resolve_identity = patch(
-            "polyaxon._cli.ssh.resolve_identity_file",
+            "polyaxon._ssh.resolve_identity_file",
             return_value=Path("/tmp/polyaxon_sandbox_ed25519"),
         )
         self.resolve_known_hosts = patch(
-            "polyaxon._cli.ssh.resolve_known_hosts_file",
+            "polyaxon._ssh.resolve_known_hosts_file",
             return_value=Path("/tmp/polyaxon_known_hosts"),
         )
         self.get_project_run_or_local = self.project_run.start()

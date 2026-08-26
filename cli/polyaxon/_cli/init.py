@@ -8,20 +8,12 @@ from clipped.formatting import Printer
 from clipped.utils import indentation
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._cli.options import OPTIONS_PROJECT
-from polyaxon._env_vars.getters import get_project_or_local
-from polyaxon._managers.git import GitConfigManager
-from polyaxon._managers.ignore import IgnoreConfigManager
-from polyaxon._managers.project import ProjectConfigManager
-from polyaxon._polyaxonfile import check_polyaxonfile
-from polyaxon._schemas.types import V1GitType
-from polyaxon._utils import cli_constants
-from polyaxon._utils.cache import get_local_project
-from polyaxon.client import ProjectClient
-from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs
 
 
 def create_init_file() -> bool:
+    from polyaxon._utils import cli_constants
+
     if os.path.exists(cli_constants.INIT_FILE_PATH):
         return False
 
@@ -32,6 +24,9 @@ def create_init_file() -> bool:
 
 
 def create_polyaxonfile():
+    from polyaxon._polyaxonfile import check_polyaxonfile
+    from polyaxon._utils import cli_constants
+
     if os.path.isfile(cli_constants.INIT_FILE_PATH):
         try:
             _ = check_polyaxonfile(cli_constants.INIT_FILE_PATH)  # noqa
@@ -105,6 +100,15 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
     Note: Make sure to add the local cache `.polyaxon`
     to your `.gitignore` and `.dockerignore` files.
     """
+    from polyaxon._client.project import ProjectClient
+    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._managers.git import GitConfigManager
+    from polyaxon._managers.ignore import IgnoreConfigManager
+    from polyaxon._managers.project import ProjectConfigManager
+    from polyaxon._schemas.types import V1GitType
+    from polyaxon._utils.cache import get_local_project
+    from polyaxon.exceptions import ApiException
+
     if not any([project, git_connection, git_url, polyaxonfile, polyaxonignore]):
         Printer.warning(
             "`polyaxon init` did not receive any valid option.",

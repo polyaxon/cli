@@ -5,26 +5,12 @@ from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from clipped.utils.dicts import dict_to_tabulate
-from polyaxon import settings
 from polyaxon._cli.dashboard import get_dashboard_url
 from polyaxon._cli.errors import handle_cli_error, handle_command_not_in_ce, not_in_ce
-from polyaxon._cli.session import (
-    ensure_cli_config,
-    session_expired,
-    set_versions_config,
-)
-from polyaxon._managers.auth import AuthConfigManager
-from polyaxon._managers.cli import CliConfigManager
-from polyaxon._managers.user import UserConfigManager
-from polyaxon._schemas.authentication import AccessTokenConfig, V1Credentials
-from polyaxon._sdk.schemas.v1_auth import V1Auth
-from polyaxon._sdk.schemas.v1_user import V1User
-from polyaxon.client import PolyaxonClient
-from polyaxon.exceptions import ApiException
 from polyaxon.logger import clean_outputs, logger
 
 
-def get_user_info(user: V1User):
+def get_user_info(user):
     response = dict_to_tabulate(user.to_dict(), exclude_attrs=["role", "theme"])
     Printer.heading("User info:")
     Printer.dict_tabulate(response)
@@ -37,6 +23,16 @@ def get_user_info(user: V1User):
 @clean_outputs
 def login(token, username, password):
     """Login to Polyaxon Cloud or Polyaxon EE."""
+    from polyaxon import settings
+    from polyaxon._cli.session import ensure_cli_config, set_versions_config
+    from polyaxon._client.client import PolyaxonClient
+    from polyaxon._managers.auth import AuthConfigManager
+    from polyaxon._managers.cli import CliConfigManager
+    from polyaxon._managers.user import UserConfigManager
+    from polyaxon._schemas.authentication import AccessTokenConfig, V1Credentials
+    from polyaxon._sdk.schemas.v1_auth import V1Auth
+    from polyaxon.exceptions import ApiException
+
     polyaxon_client = PolyaxonClient()
     ensure_cli_config()
 
@@ -122,6 +118,10 @@ def login(token, username, password):
 @clean_outputs
 def logout():
     """Logout from Polyaxon Cloud or Polyaxon EE."""
+    from polyaxon._managers.auth import AuthConfigManager
+    from polyaxon._managers.cli import CliConfigManager
+    from polyaxon._managers.user import UserConfigManager
+
     AuthConfigManager.purge()
     UserConfigManager.purge()
     CliConfigManager.purge()
@@ -133,6 +133,10 @@ def logout():
 @clean_outputs
 def whoami():
     """Show current logged Polyaxon Cloud or Polyaxon EE user."""
+    from polyaxon._cli.session import session_expired
+    from polyaxon._client.client import PolyaxonClient
+    from polyaxon.exceptions import ApiException
+
     try:
         polyaxon_client = PolyaxonClient()
         user = polyaxon_client.users_v1.get_user()

@@ -5,7 +5,6 @@ import click
 
 from clipped.formatting import Printer
 from clipped.utils.http import clean_host
-from polyaxon import settings
 from polyaxon.api import POLYAXON_CLOUD_HOST
 from polyaxon.logger import clean_outputs
 
@@ -19,6 +18,8 @@ def get_project_subpath_url(owner: str, team: Optional[str], project: str):
 def get_dashboard_url(
     base: str = "ui", subpath: str = "", use_cloud: bool = False, host: str = None
 ) -> str:
+    from polyaxon import settings
+
     if not host:
         host = POLYAXON_CLOUD_HOST if use_cloud else settings.CLIENT_CONFIG.host
     host = clean_host(host)

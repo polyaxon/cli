@@ -190,7 +190,7 @@ class TestCliRuns(BaseCommandTestCase):
         )
         assert download_outputs.call_count == 1
 
-    @patch("polyaxon._cli.operations.RunClient")
+    @patch("polyaxon._client.run.RunClient")
     def test_exec_requires_separator(self, run_client):
         result = self.runner.invoke(
             ops,
@@ -202,8 +202,8 @@ class TestCliRuns(BaseCommandTestCase):
         run_client.assert_not_called()
 
     @patch("polyaxon._cli.operations.wait_for_running_condition")
-    @patch("polyaxon._cli.operations.get_project_run_or_local")
-    @patch("polyaxon._cli.operations.RunClient")
+    @patch("polyaxon._env_vars.getters.get_project_run_or_local")
+    @patch("polyaxon._client.run.RunClient")
     def test_exec_streams_output_and_exit_code(self, run_client, get_run, wait):
         get_run.return_value = ("admin", None, "foo", RUN_UUID)
         shell = ExecShell(stdout="out\n", stderr="err\n", error=K8S_EXIT_7)
@@ -244,8 +244,8 @@ class TestCliRuns(BaseCommandTestCase):
         assert shell.closed
 
     @patch("polyaxon._cli.operations.wait_for_running_condition")
-    @patch("polyaxon._cli.operations.get_project_run_or_local")
-    @patch("polyaxon._cli.operations.RunClient")
+    @patch("polyaxon._env_vars.getters.get_project_run_or_local")
+    @patch("polyaxon._client.run.RunClient")
     def test_exec_returns_zero_on_success_status(self, run_client, get_run, wait):
         get_run.return_value = ("admin", None, "foo", RUN_UUID)
         run_client.return_value.shell.return_value = ExecShell(stdout="ok\n")

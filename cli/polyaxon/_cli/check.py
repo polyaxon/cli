@@ -1,7 +1,6 @@
 import click
 
 from clipped.formatting import Printer
-from polyaxon._polyaxonfile.check import check_polyaxonfile
 from polyaxon.logger import clean_outputs
 
 
@@ -45,6 +44,8 @@ from polyaxon.logger import clean_outputs
 @clean_outputs
 def check(polyaxonfile, python_module, version, params, lint):
     """Check a polyaxonfile."""
+    from polyaxon._polyaxonfile.check import check_polyaxonfile
+
     specification = check_polyaxonfile(
         polyaxonfile=polyaxonfile,
         python_module=python_module,

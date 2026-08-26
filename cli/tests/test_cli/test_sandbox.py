@@ -53,10 +53,10 @@ class TestCliSandbox(BaseCommandTestCase):
     def setUp(self):
         super().setUp()
         self.project_run = patch(
-            "polyaxon._cli.sandbox.get_project_run_or_local",
+            "polyaxon._env_vars.getters.get_project_run_or_local",
             return_value=("owner", None, "project", RUN_UUID),
         )
-        self.client_class = patch("polyaxon._cli.sandbox.SandboxClient")
+        self.client_class = patch("polyaxon._client.sandbox.SandboxClient")
         self.get_project_run_or_local = self.project_run.start()
         self.sandbox_client_class = self.client_class.start()
         self.client = make_client()
@@ -349,7 +349,7 @@ class TestCliSandbox(BaseCommandTestCase):
                 "polyaxon._cli.sandbox.shutil.get_terminal_size",
                 return_value=SimpleNamespace(columns=100, lines=30),
             ),
-            patch("polyaxon._cli.sandbox.SandboxPseudoTerminal") as terminal,
+            patch("polyaxon._pty.sandbox.SandboxPseudoTerminal") as terminal,
         ):
             terminal.return_value.start.return_value = 7
 
@@ -370,7 +370,7 @@ class TestCliSandbox(BaseCommandTestCase):
     def test_shell_forwards_command_size_and_replay_options(self):
         ws = MagicMock()
         self.client.pty.attach.return_value = ws
-        with patch("polyaxon._cli.sandbox.SandboxPseudoTerminal") as terminal:
+        with patch("polyaxon._pty.sandbox.SandboxPseudoTerminal") as terminal:
             terminal.return_value.start.return_value = 0
 
             result = self.runner.invoke(

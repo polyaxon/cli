@@ -2,9 +2,7 @@ import os
 
 import click
 
-from clipped.formatting import Printer
 from clipped.utils.bools import to_bool
-from polyaxon import settings
 from polyaxon._cli.admin import admin
 from polyaxon._cli.artifacts import artifacts
 from polyaxon._cli.auth import login, logout, whoami
@@ -20,7 +18,6 @@ from polyaxon._cli.port_forward import port_forward
 from polyaxon._cli.projects import project
 from polyaxon._cli.run import run
 from polyaxon._cli.sandbox import sandbox
-from polyaxon._cli.session import set_versions_config
 from polyaxon._cli.ssh import ssh
 from polyaxon._cli.version import check_cli_version, upgrade, version
 from polyaxon._services.values import PolyaxonServices
@@ -28,6 +25,7 @@ from polyaxon.logger import clean_outputs, configure_logger
 
 
 DOCS_GEN = to_bool(os.environ.get("POLYAXON_DOCS_GEN", False))
+PolyaxonServices.set_service_name()
 
 
 @click.group()
@@ -106,6 +104,10 @@ def cli(context, verbose, offline):
 
     Check the help available for each command listed below by appending `-h`.
     """
+    from clipped.formatting import Printer
+    from polyaxon import settings
+    from polyaxon._cli.session import set_versions_config
+
     settings.set_cli_config()
     configure_logger(verbose)
     if settings.CLIENT_CONFIG.no_op:
