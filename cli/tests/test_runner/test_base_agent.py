@@ -16,10 +16,10 @@ class TestBaseSyncAgent(BaseTestCase):
     SET_AGENT_SETTINGS = True
 
     @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._check_status")
-    @patch("polyaxon._sdk.api.AgentsV1Api.sync_agent")
-    @patch("polyaxon._sdk.api.AgentsV1Api.create_agent_status")
-    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent_state")
-    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.sync_agent")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.create_agent_status")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent_state")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent")
     @patch("polyaxon._k8s.executor.executor.Executor.manager")
     def test_init_base_agent(
         self,

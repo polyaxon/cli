@@ -6,15 +6,13 @@ from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
 from polyaxon._constants.globals import NO_AUTH
 from polyaxon._schemas.client import ClientConfig
-from polyaxon._sdk.api import (
-    AgentsV1Api,
-    AuthV1Api,
-    ProjectsV1Api,
-    RunsV1Api,
-    SandboxV1Api,
-    UsersV1Api,
-    VersionsV1Api,
-)
+from polyaxon._sdk.api.agents_v1_api import AgentsV1Api
+from polyaxon._sdk.api.auth_v1_api import AuthV1Api
+from polyaxon._sdk.api.projects_v1_api import ProjectsV1Api
+from polyaxon._sdk.api.runs_v1_api import RunsV1Api
+from polyaxon._sdk.api.sandbox_v1_api import SandboxV1Api
+from polyaxon._sdk.api.users_v1_api import UsersV1Api
+from polyaxon._sdk.api.versions_v1_api import VersionsV1Api
 from polyaxon._utils.test_utils import BaseTestCase, patch_settings
 from polyaxon.exceptions import PolyaxonClientException
 

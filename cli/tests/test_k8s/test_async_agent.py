@@ -25,10 +25,10 @@ async def test_init_agent_component(register):
 @pytest.mark.agent_mark
 @pytest.mark.asyncio
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-@patch("polyaxon._sdk.api.AgentsV1Api.sync_agent", new_callable=AsyncMock)
-@patch("polyaxon._sdk.api.AgentsV1Api.create_agent_status", new_callable=AsyncMock)
-@patch("polyaxon._sdk.api.AgentsV1Api.get_agent_state", new_callable=AsyncMock)
-@patch("polyaxon._sdk.api.AgentsV1Api.get_agent", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.sync_agent", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.create_agent_status", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent_state", new_callable=AsyncMock)
+@patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent", new_callable=AsyncMock)
 @patch(
     "polyaxon._k8s.executor.async_executor.AsyncExecutor.manager",
     new_callable=AsyncMock,

@@ -19,10 +19,10 @@ class TestAgent(BaseTestCase):
         assert isinstance(agent.client, AgentClient)
         assert register.call_count == 0
 
-    @patch("polyaxon._sdk.api.AgentsV1Api.sync_agent")
-    @patch("polyaxon._sdk.api.AgentsV1Api.create_agent_status")
-    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent_state")
-    @patch("polyaxon._sdk.api.AgentsV1Api.get_agent")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.sync_agent")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.create_agent_status")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent_state")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent")
     @patch("polyaxon._k8s.executor.executor.Executor.manager")
     def test_init_agent(
         self, _, get_agent, get_agent_state, create_agent_status, sync_agent

@@ -25,8 +25,8 @@ class TestImpersonate(BaseTestCase):
         create_context_auth(AccessTokenConfig(token=token), context_mount_auth)
         assert os.path.exists(context_mount_auth) is True
 
-    @patch("polyaxon._sdk.api.RunsV1Api.impersonate_token")
-    @patch("polyaxon._sdk.api.UsersV1Api.get_user")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.impersonate_token")
+    @patch("polyaxon._sdk.api.users_v1_api.UsersV1Api.get_user")
     @patch("polyaxon._client.impersonate.create_context_auth")
     def test_login_impersonate(self, create_context, get_user, impersonate_token):
         get_user.return_value = MagicMock(username="foobar", email="foo@bar.com")

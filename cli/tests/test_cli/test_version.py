@@ -19,8 +19,8 @@ class TestCliVersion(BaseCommandTestCase):
         self.runner.invoke(upgrade)
         pip_upgrade.assert_called_once()
 
-    @patch("polyaxon._sdk.api.VersionsV1Api.get_installation")
-    @patch("polyaxon._sdk.api.VersionsV1Api.get_compatibility")
+    @patch("polyaxon._sdk.api.versions_v1_api.VersionsV1Api.get_installation")
+    @patch("polyaxon._sdk.api.versions_v1_api.VersionsV1Api.get_compatibility")
     @patch("polyaxon._cli.version.Printer.dict_tabulate")
     @patch("polyaxon._managers.cli.CliConfigManager.reset")
     def test_versions(

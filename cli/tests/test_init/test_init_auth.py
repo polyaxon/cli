@@ -23,8 +23,8 @@ class TestInitAuth(BaseTestCase):
             create_auth_context()
         del os.environ[ENV_KEYS_RUN_INSTANCE]
 
-    @patch("polyaxon._sdk.api.RunsV1Api.impersonate_token")
-    @patch("polyaxon._sdk.api.UsersV1Api.get_user")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.impersonate_token")
+    @patch("polyaxon._sdk.api.users_v1_api.UsersV1Api.get_user")
     @patch("polyaxon._client.impersonate.create_context_auth")
     def test_init_auth(self, create_context, get_user, impersonate_token):
         get_user.return_value = MagicMock(username="foobar", email="foo@bar.com")

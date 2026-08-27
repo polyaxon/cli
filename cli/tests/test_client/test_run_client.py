@@ -138,7 +138,7 @@ class TestRunClient(BaseTestCase):
         )
 
     # Basic Run Operations Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.get_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.get_run")
     def test_refresh_data(self, mock_get):
         """Test fetching run data from API"""
         mock_run = V1Run(
@@ -157,7 +157,7 @@ class TestRunClient(BaseTestCase):
         mock_get.assert_called_with(self.owner, self.project, self.run_uuid)
         assert client.run_data.name == "test-run"
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_create_run(self, mock_create):
         """Test creating a new run (non-managed)"""
         mock_run = V1Run(
@@ -174,7 +174,7 @@ class TestRunClient(BaseTestCase):
         assert mock_create.call_count == 1
         assert result.name == "new-run"
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_update_run(self, mock_patch):
         """Test updating a run"""
         update_data = {"description": "Updated description"}
@@ -192,7 +192,7 @@ class TestRunClient(BaseTestCase):
         assert mock_patch.call_count == 1
         assert result.description == "Updated description"
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.delete_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.delete_run")
     def test_delete_run(self, mock_delete):
         """Test deleting a run"""
         client = RunClient(
@@ -203,7 +203,7 @@ class TestRunClient(BaseTestCase):
         assert mock_delete.call_count == 1
         mock_delete.assert_called_with(self.owner, self.project, self.run_uuid)
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.transfer_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.transfer_run")
     def test_transfer_run(self, mock_transfer):
         """Test transferring a run to another project"""
         to_project = "destination-project"
@@ -251,7 +251,7 @@ class TestRunClient(BaseTestCase):
         assert artifact_call[1]["body"].run == self.run_uuid
 
     # Metadata Operations Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_set_name(self, mock_patch):
         """Test setting run name"""
         client = RunClient(
@@ -262,7 +262,7 @@ class TestRunClient(BaseTestCase):
         assert mock_patch.call_count == 1
         assert client.run_data.name == "new-run-name"
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_set_description(self, mock_patch):
         """Test setting run description"""
         client = RunClient(
@@ -273,7 +273,7 @@ class TestRunClient(BaseTestCase):
         assert mock_patch.call_count == 1
         assert client.run_data.description == "New description"
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_log_tags(self, mock_patch):
         """Test logging tags to a run"""
         client = RunClient(
@@ -286,7 +286,7 @@ class TestRunClient(BaseTestCase):
         assert mock_patch.call_count == 1
         assert client.run_data.tags == ["foo", "bar"]
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_log_tags_with_reset(self, mock_patch):
         """Test resetting tags on a run"""
         client = RunClient(
@@ -298,7 +298,7 @@ class TestRunClient(BaseTestCase):
 
         assert client.run_data.tags == ["new-tag"]
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_log_meta(self, mock_patch):
         """Test logging metadata to a run"""
         client = RunClient(
@@ -312,7 +312,7 @@ class TestRunClient(BaseTestCase):
         assert client.run_data.meta_info["baz"] == 123
 
     # Inputs/Outputs Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_log_inputs(self, mock_patch):
         """Test logging inputs to a run"""
         client = RunClient(
@@ -325,7 +325,7 @@ class TestRunClient(BaseTestCase):
         assert client.run_data.inputs["learning_rate"] == 0.01
         assert client.run_data.inputs["batch_size"] == 32
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.patch_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_log_outputs(self, mock_patch):
         """Test logging outputs to a run"""
         client = RunClient(
@@ -338,7 +338,7 @@ class TestRunClient(BaseTestCase):
         assert client.run_data.outputs["accuracy"] == 0.95
         assert client.run_data.outputs["loss"] == 0.05
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.get_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.get_run")
     def test_get_inputs(self, mock_get):
         """Test getting run inputs"""
         client = RunClient(
@@ -352,7 +352,7 @@ class TestRunClient(BaseTestCase):
         # refresh_data should not be called since inputs are set
         assert mock_get.call_count == 0
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.get_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.get_run")
     def test_get_outputs(self, mock_get):
         """Test getting run outputs"""
         client = RunClient(
@@ -369,7 +369,7 @@ class TestRunClient(BaseTestCase):
         assert mock_get.call_count == 0
 
     # Status Operations Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_status")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_status")
     def test_log_status(self, mock_create_status):
         """Test logging a status to a run"""
         client = RunClient(
@@ -387,7 +387,7 @@ class TestRunClient(BaseTestCase):
         # Access condition as an object attribute, not a dict
         assert call_args[1]["body"]["condition"].type == V1Statuses.RUNNING
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.get_run_statuses")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.get_run_statuses")
     def test_get_statuses(self, mock_get_statuses):
         """Test getting run statuses"""
         mock_condition = V1StatusCondition(
@@ -410,7 +410,7 @@ class TestRunClient(BaseTestCase):
         assert len(conditions) == 1
         assert conditions[0].type == V1Statuses.RUNNING
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.approve_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.approve_run")
     def test_approve(self, mock_approve):
         """Test approving a run"""
         client = RunClient(
@@ -421,7 +421,7 @@ class TestRunClient(BaseTestCase):
         assert mock_approve.call_count == 1
         mock_approve.assert_called_with(self.owner, self.project, self.run_uuid)
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.skip_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.skip_run")
     def test_skip(self, mock_skip):
         """Test skipping a run"""
         client = RunClient(
@@ -432,7 +432,7 @@ class TestRunClient(BaseTestCase):
         assert mock_skip.call_count == 1
         mock_skip.assert_called_with(self.owner, self.project, self.run_uuid)
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.invalidate_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.invalidate_run")
     def test_invalidate(self, mock_invalidate):
         """Test invalidating a run"""
         client = RunClient(
@@ -443,7 +443,7 @@ class TestRunClient(BaseTestCase):
         assert mock_invalidate.call_count == 1
         mock_invalidate.assert_called_with(self.owner, self.project, self.run_uuid)
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.stop_run")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.stop_run")
     def test_stop(self, mock_stop):
         """Test stopping a run"""
         client = RunClient(
@@ -455,7 +455,7 @@ class TestRunClient(BaseTestCase):
         mock_stop.assert_called_with(self.owner, self.project, self.run_uuid)
 
     # Lifecycle Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_status")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_status")
     def test_start(self, mock_create_status):
         """Test starting a run"""
         client = RunClient(
@@ -468,7 +468,7 @@ class TestRunClient(BaseTestCase):
         # Access condition as an object attribute
         assert call_args[1]["body"]["condition"].type == V1Statuses.RUNNING
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_status")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_status")
     def test_log_succeeded(self, mock_create_status):
         """Test logging run as succeeded"""
         client = RunClient(
@@ -481,7 +481,7 @@ class TestRunClient(BaseTestCase):
         # Access condition as an object attribute
         assert call_args[1]["body"]["condition"].type == V1Statuses.SUCCEEDED
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_status")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_status")
     def test_log_stopped(self, mock_create_status):
         """Test logging run as stopped"""
         client = RunClient(
@@ -494,7 +494,7 @@ class TestRunClient(BaseTestCase):
         # Access condition as an object attribute
         assert call_args[1]["body"]["condition"].type == V1Statuses.STOPPED
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_status")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_status")
     def test_log_failed(self, mock_create_status):
         """Test logging run as failed"""
         client = RunClient(
@@ -509,7 +509,7 @@ class TestRunClient(BaseTestCase):
         assert call_args[1]["body"]["condition"].reason == "Error"
 
     # Artifact Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.get_run_artifacts_lineage")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.get_run_artifacts_lineage")
     def test_get_artifacts_lineage(self, mock_get):
         """Test getting artifacts lineage for a run"""
         mock_artifact = V1RunArtifact(name="model.pkl", kind="model", path="models/")
@@ -527,7 +527,7 @@ class TestRunClient(BaseTestCase):
         assert result.results[0].name == "model.pkl"
 
     # List Operations Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.list_runs")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.list_runs")
     def test_list_runs(self, mock_list):
         """Test listing runs in a project"""
         mock_run = V1Run(uuid=self.run_uuid_2, name="test-run")
@@ -543,7 +543,7 @@ class TestRunClient(BaseTestCase):
         )
         assert len(result.results) == 1
 
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.list_runs")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.list_runs")
     def test_list_children(self, mock_list):
         """Test listing children runs"""
         mock_run = V1Run(uuid=self.run_uuid_2, name="child-run")
@@ -561,7 +561,7 @@ class TestRunClient(BaseTestCase):
         assert "pipeline" in call_args[1]["query"]
 
     # Code Reference Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_artifacts_lineage")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_artifacts_lineage")
     def test_log_code_ref(self, mock_create_lineage):
         """Test logging code reference"""
         code_ref = {
@@ -578,7 +578,7 @@ class TestRunClient(BaseTestCase):
         assert mock_create_lineage.call_count == 1
 
     # Data Reference Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_artifacts_lineage")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_artifacts_lineage")
     def test_log_data_ref(self, mock_create_lineage):
         """Test logging data reference"""
         client = RunClient(
@@ -592,7 +592,7 @@ class TestRunClient(BaseTestCase):
         assert mock_create_lineage.call_count == 1
 
     # Model Reference Tests
-    @mock.patch("polyaxon._sdk.api.RunsV1Api.create_run_artifacts_lineage")
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run_artifacts_lineage")
     def test_log_model_ref(self, mock_create_lineage):
         """Test logging model reference"""
         client = RunClient(
