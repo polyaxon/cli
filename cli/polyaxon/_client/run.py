@@ -64,10 +64,11 @@ from polyaxon._schemas.lifecycle import (
     V1Statuses,
 )
 from polyaxon._schemas.types import V1ArtifactsType
-from polyaxon._sdk.schemas import V1RunEdgeLineage, V1RunEdgesGraph
 from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_run_edge_lineage import V1RunEdgeLineage
+from polyaxon._sdk.schemas.v1_run_edges_graph import V1RunEdgesGraph
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._sdk.schemas.v1_settings_catalog import V1SettingsCatalog
 from polyaxon._utils.fqn_utils import (

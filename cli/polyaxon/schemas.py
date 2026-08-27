@@ -157,97 +157,121 @@ from polyaxon._schemas.lifecycle import (
 )
 from polyaxon._schemas.log_handler import V1LogHandler
 from polyaxon._schemas.version import V1Version
-from polyaxon._sdk.schemas import (
-    V1Activity,
-    V1Agent,
-    V1AgentStateResponse,
+from polyaxon._sdk.schemas.v1_activity import V1Activity
+from polyaxon._sdk.schemas.v1_agent import V1Agent
+from polyaxon._sdk.schemas.v1_agent_state_response import V1AgentStateResponse
+from polyaxon._sdk.schemas.v1_agent_state_response_agent_state import (
     V1AgentStateResponseAgentState,
-    V1AgentStatusBodyRequest,
-    V1AnalyticsSpec,
-    V1ArtifactTree,
-    V1Auth,
-    V1Cloning,
-    V1ConnectionResponse,
-    V1CreatePtyRequest,
-    V1Dashboard,
-    V1DashboardSpec,
-    V1EntitiesTags,
-    V1EntitiesTransfer,
-    V1EntityNotificationBody,
-    V1EntityStageBodyRequest,
-    V1EntityStatusBodyRequest,
-    V1ExecBgList,
-    V1ExecBgLogs,
-    V1ExecBgRequest,
-    V1ExecBgStart,
-    V1ExecBgStatus,
-    V1ExecRequest,
-    V1ExecResult,
-    V1EventsResponse,
-    V1FsEntry,
-    V1FsListResult,
-    V1FsMkdirRequest,
-    V1FsPathResult,
-    V1FsStatResult,
-    V1ListActivitiesResponse,
-    V1ListAgentsResponse,
-    V1ListBookmarksResponse,
-    V1ListConnectionsResponse,
-    V1ListDashboardsResponse,
-    V1ListOrganizationMembersResponse,
-    V1ListOrganizationsResponse,
-    V1ListPresetsResponse,
-    V1ListProjectsResponse,
-    V1ListProjectVersionsResponse,
-    V1ListQueuesResponse,
-    V1ListRunArtifactsResponse,
-    V1ListRunConnectionsResponse,
-    V1ListRunEdgesResponse,
-    V1ListRunsResponse,
-    V1ListSearchesResponse,
-    V1ListServiceAccountsResponse,
-    V1ListTagsResponse,
-    V1ListTeamMembersResponse,
-    V1ListTeamsResponse,
-    V1ListTokenResponse,
-    V1MultiEventsResponse,
-    V1OperationBody,
-    V1Organization,
-    V1OrganizationMember,
-    V1PasswordChange,
-    V1PingResponse,
-    V1Pipeline,
-    V1Preset,
-    V1Project,
-    V1ProjectSettings,
-    V1ProjectVersion,
-    V1Pty,
-    V1PtyList,
-    V1Queue,
-    V1ResizePtyRequest,
-    V1Run,
-    V1RunConnection,
-    V1RunEdge,
-    V1RunReferenceCatalog,
-    V1RunSettings,
-    V1Search,
-    V1SearchSpec,
-    V1SectionSpec,
-    V1ServiceAccount,
-    V1SettingsCatalog,
-    V1SignalRequest,
-    V1Tag,
-    V1Team,
-    V1TeamMember,
-    V1TeamSettings,
-    V1Token,
-    V1TrialStart,
-    V1User,
-    V1UserAccess,
-    V1UserEmail,
-    V1UserSingup,
-    V1Uuids,
 )
+from polyaxon._sdk.schemas.v1_agent_status_body_request import (
+    V1AgentStatusBodyRequest,
+)
+from polyaxon._sdk.schemas.v1_analytics_spec import V1AnalyticsSpec
+from polyaxon._sdk.schemas.v1_artifact_tree import V1ArtifactTree
+from polyaxon._sdk.schemas.v1_auth import V1Auth
+from polyaxon._sdk.schemas.v1_cloning import V1Cloning
+from polyaxon._sdk.schemas.v1_connection_response import V1ConnectionResponse
+from polyaxon._sdk.schemas.v1_create_pty_request import V1CreatePtyRequest
+from polyaxon._sdk.schemas.v1_dashboard import V1Dashboard
+from polyaxon._sdk.schemas.v1_dashboard_spec import V1DashboardSpec
+from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
+from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
+from polyaxon._sdk.schemas.v1_entity_notification_body import V1EntityNotificationBody
+from polyaxon._sdk.schemas.v1_entity_stage_body_request import V1EntityStageBodyRequest
+from polyaxon._sdk.schemas.v1_entity_status_body_request import (
+    V1EntityStatusBodyRequest,
+)
+from polyaxon._sdk.schemas.v1_events_response import (
+    V1EventsResponse,
+    V1MultiEventsResponse,
+)
+from polyaxon._sdk.schemas.v1_exec_bg_list import V1ExecBgList
+from polyaxon._sdk.schemas.v1_exec_bg_logs import V1ExecBgLogs
+from polyaxon._sdk.schemas.v1_exec_bg_request import V1ExecBgRequest
+from polyaxon._sdk.schemas.v1_exec_bg_start import V1ExecBgStart
+from polyaxon._sdk.schemas.v1_exec_bg_status import V1ExecBgStatus
+from polyaxon._sdk.schemas.v1_exec_request import V1ExecRequest
+from polyaxon._sdk.schemas.v1_exec_result import V1ExecResult
+from polyaxon._sdk.schemas.v1_fs_entry import V1FsEntry
+from polyaxon._sdk.schemas.v1_fs_list_result import V1FsListResult
+from polyaxon._sdk.schemas.v1_fs_mkdir_request import V1FsMkdirRequest
+from polyaxon._sdk.schemas.v1_fs_path_result import V1FsPathResult
+from polyaxon._sdk.schemas.v1_fs_stat_result import V1FsStatResult
+from polyaxon._sdk.schemas.v1_list_activities_response import (
+    V1ListActivitiesResponse,
+)
+from polyaxon._sdk.schemas.v1_list_agents_response import V1ListAgentsResponse
+from polyaxon._sdk.schemas.v1_list_bookmarks_response import V1ListBookmarksResponse
+from polyaxon._sdk.schemas.v1_list_connections_response import (
+    V1ListConnectionsResponse,
+)
+from polyaxon._sdk.schemas.v1_list_dashboards_response import V1ListDashboardsResponse
+from polyaxon._sdk.schemas.v1_list_organization_members_response import (
+    V1ListOrganizationMembersResponse,
+)
+from polyaxon._sdk.schemas.v1_list_organizations_response import (
+    V1ListOrganizationsResponse,
+)
+from polyaxon._sdk.schemas.v1_list_presets_response import V1ListPresetsResponse
+from polyaxon._sdk.schemas.v1_list_project_versions_response import (
+    V1ListProjectVersionsResponse,
+)
+from polyaxon._sdk.schemas.v1_list_projects_response import V1ListProjectsResponse
+from polyaxon._sdk.schemas.v1_list_queues_response import V1ListQueuesResponse
+from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
+    V1ListRunArtifactsResponse,
+)
+from polyaxon._sdk.schemas.v1_list_run_connections_response import (
+    V1ListRunConnectionsResponse,
+)
+from polyaxon._sdk.schemas.v1_list_run_edges_response import V1ListRunEdgesResponse
+from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
+from polyaxon._sdk.schemas.v1_list_searches_response import V1ListSearchesResponse
+from polyaxon._sdk.schemas.v1_list_service_accounts_response import (
+    V1ListServiceAccountsResponse,
+)
+from polyaxon._sdk.schemas.v1_list_tags_response import V1ListTagsResponse
+from polyaxon._sdk.schemas.v1_list_team_members_response import (
+    V1ListTeamMembersResponse,
+)
+from polyaxon._sdk.schemas.v1_list_teams_response import V1ListTeamsResponse
+from polyaxon._sdk.schemas.v1_list_token_response import V1ListTokenResponse
+from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
+from polyaxon._sdk.schemas.v1_organization import V1Organization
+from polyaxon._sdk.schemas.v1_organization_member import V1OrganizationMember
+from polyaxon._sdk.schemas.v1_password_change import V1PasswordChange
+from polyaxon._sdk.schemas.v1_ping_response import V1PingResponse
+from polyaxon._sdk.schemas.v1_pipeline import V1Pipeline
+from polyaxon._sdk.schemas.v1_preset import V1Preset
+from polyaxon._sdk.schemas.v1_project import V1Project
+from polyaxon._sdk.schemas.v1_project_settings import V1ProjectSettings
+from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
+from polyaxon._sdk.schemas.v1_pty import V1Pty
+from polyaxon._sdk.schemas.v1_pty_list import V1PtyList
+from polyaxon._sdk.schemas.v1_queue import V1Queue
+from polyaxon._sdk.schemas.v1_resize_pty_request import V1ResizePtyRequest
+from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_run_connection import V1RunConnection
+from polyaxon._sdk.schemas.v1_run_edge import V1RunEdge
+from polyaxon._sdk.schemas.v1_run_reference_catalog import V1RunReferenceCatalog
+from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
+from polyaxon._sdk.schemas.v1_search import V1Search
+from polyaxon._sdk.schemas.v1_search_spec import V1SearchSpec
+from polyaxon._sdk.schemas.v1_section_spec import V1SectionSpec
+from polyaxon._sdk.schemas.v1_service_account import V1ServiceAccount
+from polyaxon._sdk.schemas.v1_settings_catalog import V1SettingsCatalog
+from polyaxon._sdk.schemas.v1_signal_request import V1SignalRequest
+from polyaxon._sdk.schemas.v1_tag import V1Tag
+from polyaxon._sdk.schemas.v1_team import V1Team
+from polyaxon._sdk.schemas.v1_team_member import V1TeamMember
+from polyaxon._sdk.schemas.v1_team_settings import V1TeamSettings
+from polyaxon._sdk.schemas.v1_token import V1Token
+from polyaxon._sdk.schemas.v1_trial_start import V1TrialStart
+from polyaxon._sdk.schemas.v1_user import V1User
+from polyaxon._sdk.schemas.v1_user_access import V1UserAccess
+from polyaxon._sdk.schemas.v1_user_email import V1UserEmail
+from polyaxon._sdk.schemas.v1_user_singup import V1UserSingup
+from polyaxon._sdk.schemas.v1_uuids import V1Uuids
 from polyaxon._services import (
     AuthenticationError,
     AuthenticationTypes,

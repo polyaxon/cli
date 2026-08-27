@@ -26,13 +26,11 @@ from polyaxon._sandbox.client_utils import (
     validate_remote_path,
 )
 from polyaxon._schemas.lifecycle import V1Statuses
-from polyaxon._sdk.schemas import (
-    V1ExecBgLogs,
-    V1ExecBgStart,
-    V1ExecBgStatus,
-    V1Run,
-    V1RunSettings,
-)
+from polyaxon._sdk.schemas.v1_exec_bg_logs import V1ExecBgLogs
+from polyaxon._sdk.schemas.v1_exec_bg_start import V1ExecBgStart
+from polyaxon._sdk.schemas.v1_exec_bg_status import V1ExecBgStatus
+from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import PolyaxonClientException
 

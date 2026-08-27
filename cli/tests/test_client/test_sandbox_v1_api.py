@@ -5,28 +5,26 @@ from unittest.mock import AsyncMock
 
 from polyaxon import schemas
 from polyaxon._schemas.client import ClientConfig
-from polyaxon._sdk.api import SandboxV1Api
+from polyaxon._sdk.api.sandbox_v1_api import SandboxV1Api
 from polyaxon._sdk.async_client.api_client import AsyncApiClient
-from polyaxon._sdk.schemas import (
-    V1CreatePtyRequest,
-    V1ExecBgList,
-    V1ExecBgLogs,
-    V1ExecBgRequest,
-    V1ExecBgStart,
-    V1ExecBgStatus,
-    V1ExecRequest,
-    V1ExecResult,
-    V1FsEntry,
-    V1FsListResult,
-    V1FsMkdirRequest,
-    V1FsPathResult,
-    V1FsStatResult,
-    V1PingResponse,
-    V1Pty,
-    V1PtyList,
-    V1ResizePtyRequest,
-    V1SignalRequest,
-)
+from polyaxon._sdk.schemas.v1_create_pty_request import V1CreatePtyRequest
+from polyaxon._sdk.schemas.v1_exec_bg_list import V1ExecBgList
+from polyaxon._sdk.schemas.v1_exec_bg_logs import V1ExecBgLogs
+from polyaxon._sdk.schemas.v1_exec_bg_request import V1ExecBgRequest
+from polyaxon._sdk.schemas.v1_exec_bg_start import V1ExecBgStart
+from polyaxon._sdk.schemas.v1_exec_bg_status import V1ExecBgStatus
+from polyaxon._sdk.schemas.v1_exec_request import V1ExecRequest
+from polyaxon._sdk.schemas.v1_exec_result import V1ExecResult
+from polyaxon._sdk.schemas.v1_fs_entry import V1FsEntry
+from polyaxon._sdk.schemas.v1_fs_list_result import V1FsListResult
+from polyaxon._sdk.schemas.v1_fs_mkdir_request import V1FsMkdirRequest
+from polyaxon._sdk.schemas.v1_fs_path_result import V1FsPathResult
+from polyaxon._sdk.schemas.v1_fs_stat_result import V1FsStatResult
+from polyaxon._sdk.schemas.v1_ping_response import V1PingResponse
+from polyaxon._sdk.schemas.v1_pty import V1Pty
+from polyaxon._sdk.schemas.v1_pty_list import V1PtyList
+from polyaxon._sdk.schemas.v1_resize_pty_request import V1ResizePtyRequest
+from polyaxon._sdk.schemas.v1_signal_request import V1SignalRequest
 from polyaxon._sdk.sync_client.api_client import ApiClient
 from polyaxon._utils.test_utils import patch_settings
 

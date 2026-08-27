@@ -45,17 +45,15 @@ from polyaxon._sandbox.client_utils import (
     validate_remote_path,
 )
 from polyaxon._schemas.lifecycle import ManagedBy, V1Statuses
-from polyaxon._sdk.schemas import (
-    V1CreatePtyRequest,
-    V1ExecBgRequest,
-    V1ExecRequest,
-    V1FsMkdirRequest,
-    V1OperationBody,
-    V1ResizePtyRequest,
-    V1Run,
-    V1RunSettings,
-    V1SignalRequest,
-)
+from polyaxon._sdk.schemas.v1_create_pty_request import V1CreatePtyRequest
+from polyaxon._sdk.schemas.v1_exec_bg_request import V1ExecBgRequest
+from polyaxon._sdk.schemas.v1_exec_request import V1ExecRequest
+from polyaxon._sdk.schemas.v1_fs_mkdir_request import V1FsMkdirRequest
+from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
+from polyaxon._sdk.schemas.v1_resize_pty_request import V1ResizePtyRequest
+from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
+from polyaxon._sdk.schemas.v1_signal_request import V1SignalRequest
 from polyaxon._utils.fqn_utils import get_entity_full_name, split_owner_team_space
 from polyaxon._utils.urls_utils import get_proxy_run_url
 from polyaxon.api import SANDBOX_V1_LOCATION
