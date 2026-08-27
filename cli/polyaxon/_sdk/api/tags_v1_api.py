@@ -151,7 +151,7 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": V1Tag,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -482,7 +482,7 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": V1Tag,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -724,7 +724,7 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListTagsResponse",
+            "200": V1ListTagsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1140,7 +1140,7 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": V1Tag,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1475,7 +1475,7 @@ class TagsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Tag",
+            "200": V1Tag,
             "204": "object",
             "403": "object",
             "404": "object",

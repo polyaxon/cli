@@ -192,7 +192,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ExecResult",
+            "200": V1ExecResult,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -387,8 +387,8 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Pty",
-            "201": "V1Pty",
+            "200": V1Pty,
+            "201": V1Pty,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -946,8 +946,8 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ExecBgStart",
-            "202": "V1ExecBgStart",
+            "200": V1ExecBgStart,
+            "202": V1ExecBgStart,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1159,7 +1159,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1FsListResult",
+            "200": V1FsListResult,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1353,7 +1353,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1FsPathResult",
+            "200": V1FsPathResult,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1548,7 +1548,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1FsPathResult",
+            "200": V1FsPathResult,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1734,7 +1734,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1FsStatResult",
+            "200": V1FsStatResult,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1921,7 +1921,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ExecBgStatus",
+            "200": V1ExecBgStatus,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2144,7 +2144,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ExecBgLogs",
+            "200": V1ExecBgLogs,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2330,7 +2330,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Pty",
+            "200": V1Pty,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2517,7 +2517,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ExecBgList",
+            "200": V1ExecBgList,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2703,7 +2703,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1PtyList",
+            "200": V1PtyList,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2878,7 +2878,7 @@ class SandboxV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1PingResponse",
+            "200": V1PingResponse,
             "204": "object",
             "403": "object",
             "404": "object",

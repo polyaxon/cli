@@ -10,7 +10,7 @@ from urllib.parse import quote
 from dateutil.parser import parse
 
 from clipped.utils.json import orjson_dumps, orjson_loads
-from polyaxon import pkg, schemas
+from polyaxon import pkg
 from polyaxon._sdk.configuration import Configuration
 from polyaxon.exceptions import ApiException, ApiValueError
 
@@ -348,6 +348,8 @@ class ApiClient(object):
             if klass in self.NATIVE_TYPES_MAPPING:
                 klass = self.NATIVE_TYPES_MAPPING[klass]
             else:
+                from polyaxon import schemas
+
                 klass = getattr(schemas, klass)
 
         if klass in self.PRIMITIVE_TYPES:

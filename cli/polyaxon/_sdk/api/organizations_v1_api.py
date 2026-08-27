@@ -637,7 +637,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -822,7 +822,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1725,7 +1725,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1968,7 +1968,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListActivitiesResponse",
+            "200": V1ListActivitiesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2243,7 +2243,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2401,7 +2401,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2699,7 +2699,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1MultiEventsResponse",
+            "200": V1MultiEventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2891,7 +2891,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1MultiEventsResponse",
+            "200": V1MultiEventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3053,7 +3053,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3296,7 +3296,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunsResponse",
+            "200": V1ListRunsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3553,7 +3553,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunArtifactsResponse",
+            "200": V1ListRunArtifactsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4000,7 +4000,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4550,7 +4550,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListProjectVersionsResponse",
+            "200": V1ListProjectVersionsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4954,7 +4954,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListOrganizationMembersResponse",
+            "200": V1ListOrganizationMembersResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5197,7 +5197,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListOrganizationMembersResponse",
+            "200": V1ListOrganizationMembersResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5332,7 +5332,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListOrganizationsResponse",
+            "200": V1ListOrganizationsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5467,7 +5467,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListOrganizationsResponse",
+            "200": V1ListOrganizationsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5633,7 +5633,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5799,7 +5799,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5965,7 +5965,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6150,7 +6150,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6344,7 +6344,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6510,7 +6510,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6695,7 +6695,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -7666,7 +7666,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -7851,7 +7851,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -8045,7 +8045,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1OrganizationMember",
+            "200": V1OrganizationMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -8211,7 +8211,7 @@ class OrganizationsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Organization",
+            "200": V1Organization,
             "204": "object",
             "403": "object",
             "404": "object",

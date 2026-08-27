@@ -5,7 +5,6 @@ from typing_extensions import Annotated
 from clipped.compact.pydantic import Field, StrictInt, StrictStr, validate_call
 from polyaxon._schemas.lifecycle import V1Status
 from polyaxon._sdk.base_api import BaseApi
-from polyaxon._sdk.schemas import V1RunEdgesGraph
 from polyaxon._sdk.schemas.v1_artifact_tree import V1ArtifactTree
 from polyaxon._sdk.schemas.v1_auth import V1Auth
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
@@ -29,6 +28,7 @@ from polyaxon._sdk.schemas.v1_list_run_edges_response import V1ListRunEdgesRespo
 from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_operation_body import V1OperationBody
 from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_run_edges_graph import V1RunEdgesGraph
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._sdk.schemas.v1_uuids import V1Uuids
 from polyaxon.exceptions import ApiTypeError
@@ -1427,7 +1427,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1606,7 +1606,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1989,7 +1989,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Status",
+            "200": V1Status,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3239,7 +3239,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1MultiEventsResponse",
+            "200": V1MultiEventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3429,7 +3429,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1MultiEventsResponse",
+            "200": V1MultiEventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3609,7 +3609,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4057,7 +4057,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1RunArtifact",
+            "200": V1RunArtifact,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4531,7 +4531,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunArtifactsResponse",
+            "200": V1ListRunArtifactsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4770,7 +4770,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunArtifactsResponse",
+            "200": V1ListRunArtifactsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4982,7 +4982,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ArtifactTree",
+            "200": V1ArtifactTree,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5221,7 +5221,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunsResponse",
+            "200": V1ListRunsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5460,7 +5460,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunConnectionsResponse",
+            "200": V1ListRunConnectionsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5699,7 +5699,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunEdgesResponse",
+            "200": V1ListRunEdgesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5995,7 +5995,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1EventsResponse",
+            "200": V1EventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6275,7 +6275,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Logs",
+            "200": V1Logs,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6456,7 +6456,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1RunSettings",
+            "200": V1RunSettings,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6756,7 +6756,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1EventsResponse",
+            "200": V1EventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6937,7 +6937,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1RunSettings",
+            "200": V1RunSettings,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -7477,7 +7477,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Status",
+            "200": V1Status,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -7716,7 +7716,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunEdgesResponse",
+            "200": V1ListRunEdgesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -7973,7 +7973,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunArtifactsResponse",
+            "200": V1ListRunArtifactsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -8154,7 +8154,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Auth",
+            "200": V1Auth,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -9008,7 +9008,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunsResponse",
+            "200": V1ListRunsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -9216,7 +9216,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListBookmarksResponse",
+            "200": V1ListBookmarksResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -9472,7 +9472,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunsResponse",
+            "200": V1ListRunsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -9857,7 +9857,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -10045,7 +10045,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -10579,7 +10579,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -12509,7 +12509,7 @@ class RunsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",

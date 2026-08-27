@@ -163,7 +163,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Queue",
+            "200": V1Queue,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -519,7 +519,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Queue",
+            "200": V1Queue,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1121,7 +1121,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListQueuesResponse",
+            "200": V1ListQueuesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1364,7 +1364,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListQueuesResponse",
+            "200": V1ListQueuesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1621,7 +1621,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListQueuesResponse",
+            "200": V1ListQueuesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1878,7 +1878,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListQueuesResponse",
+            "200": V1ListQueuesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2066,7 +2066,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Queue",
+            "200": V1Queue,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2256,7 +2256,7 @@ class QueuesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Queue",
+            "200": V1Queue,
             "204": "object",
             "403": "object",
             "404": "object",

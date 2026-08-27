@@ -168,7 +168,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Dashboard",
+            "200": V1Dashboard,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -527,7 +527,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Dashboard",
+            "200": V1Dashboard,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -804,7 +804,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListDashboardsResponse",
+            "200": V1ListDashboardsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1081,7 +1081,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListDashboardsResponse",
+            "200": V1ListDashboardsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1271,7 +1271,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Dashboard",
+            "200": V1Dashboard,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1656,7 +1656,7 @@ class ProjectDashboardsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Dashboard",
+            "200": V1Dashboard,
             "204": "object",
             "403": "object",
             "404": "object",

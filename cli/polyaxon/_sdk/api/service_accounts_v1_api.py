@@ -158,7 +158,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ServiceAccount",
+            "200": V1ServiceAccount,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -335,7 +335,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -832,7 +832,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ServiceAccount",
+            "200": V1ServiceAccount,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1015,7 +1015,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1258,7 +1258,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListServiceAccountsResponse",
+            "200": V1ListServiceAccountsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1497,7 +1497,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListTokenResponse",
+            "200": V1ListTokenResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1740,7 +1740,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListServiceAccountsResponse",
+            "200": V1ListServiceAccountsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1919,7 +1919,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ServiceAccount",
+            "200": V1ServiceAccount,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2105,7 +2105,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2286,7 +2286,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ServiceAccount",
+            "200": V1ServiceAccount,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2472,7 +2472,7 @@ class ServiceAccountsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",

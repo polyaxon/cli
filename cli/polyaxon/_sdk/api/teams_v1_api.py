@@ -677,7 +677,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Team",
+            "200": V1Team,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -852,7 +852,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1TeamMember",
+            "200": V1TeamMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1494,7 +1494,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Team",
+            "200": V1Team,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1751,7 +1751,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListActivitiesResponse",
+            "200": V1ListActivitiesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1918,7 +1918,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1TeamMember",
+            "200": V1TeamMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2214,7 +2214,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1MultiEventsResponse",
+            "200": V1MultiEventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2404,7 +2404,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1MultiEventsResponse",
+            "200": V1MultiEventsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2585,7 +2585,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Run",
+            "200": V1Run,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2842,7 +2842,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunsResponse",
+            "200": V1ListRunsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3099,7 +3099,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListRunArtifactsResponse",
+            "200": V1ListRunArtifactsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3686,7 +3686,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListProjectVersionsResponse",
+            "200": V1ListProjectVersionsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4113,7 +4113,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListTeamMembersResponse",
+            "200": V1ListTeamMembersResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4356,7 +4356,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListTeamsResponse",
+            "200": V1ListTeamsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4599,7 +4599,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListTeamsResponse",
+            "200": V1ListTeamsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4774,7 +4774,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Team",
+            "200": V1Team,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4960,7 +4960,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1TeamMember",
+            "200": V1TeamMember,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5985,7 +5985,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Team",
+            "200": V1Team,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6171,7 +6171,7 @@ class TeamsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1TeamMember",
+            "200": V1TeamMember,
             "204": "object",
             "403": "object",
             "404": "object",

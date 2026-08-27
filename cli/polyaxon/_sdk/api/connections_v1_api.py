@@ -154,7 +154,7 @@ class ConnectionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ConnectionResponse",
+            "200": V1ConnectionResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -473,7 +473,7 @@ class ConnectionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ConnectionResponse",
+            "200": V1ConnectionResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -716,7 +716,7 @@ class ConnectionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListConnectionsResponse",
+            "200": V1ListConnectionsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -959,7 +959,7 @@ class ConnectionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListConnectionsResponse",
+            "200": V1ListConnectionsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1140,7 +1140,7 @@ class ConnectionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ConnectionResponse",
+            "200": V1ConnectionResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1321,7 +1321,7 @@ class ConnectionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ConnectionResponse",
+            "200": V1ConnectionResponse,
             "204": "object",
             "403": "object",
             "404": "object",

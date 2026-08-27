@@ -150,7 +150,7 @@ class PoliciesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Policy",
+            "200": V1Policy,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -499,7 +499,7 @@ class PoliciesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Policy",
+            "200": V1Policy,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -742,7 +742,7 @@ class PoliciesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListPoliciesResponse",
+            "200": V1ListPoliciesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -985,7 +985,7 @@ class PoliciesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListPoliciesResponse",
+            "200": V1ListPoliciesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1160,7 +1160,7 @@ class PoliciesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Policy",
+            "200": V1Policy,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1335,7 +1335,7 @@ class PoliciesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Policy",
+            "200": V1Policy,
             "204": "object",
             "403": "object",
             "404": "object",

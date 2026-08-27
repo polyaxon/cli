@@ -330,7 +330,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Agent",
+            "200": V1Agent,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -509,7 +509,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Status",
+            "200": V1Status,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -675,7 +675,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1AgentStateResponse",
+            "200": V1AgentStateResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1023,7 +1023,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Agent",
+            "200": V1Agent,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1200,7 +1200,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Agent",
+            "200": V1Agent,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1429,7 +1429,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Logs",
+            "200": V1Logs,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1591,7 +1591,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1AgentStateResponse",
+            "200": V1AgentStateResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2127,7 +2127,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Status",
+            "200": V1Status,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2289,7 +2289,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2438,7 +2438,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1AgentStateResponse",
+            "200": V1AgentStateResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2910,7 +2910,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListAgentsResponse",
+            "200": V1ListAgentsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3153,7 +3153,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListAgentsResponse",
+            "200": V1ListAgentsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3328,7 +3328,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Agent",
+            "200": V1Agent,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3503,7 +3503,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4215,7 +4215,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Agent",
+            "200": V1Agent,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4392,7 +4392,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Agent",
+            "200": V1Agent,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4567,7 +4567,7 @@ class AgentsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",

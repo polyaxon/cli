@@ -166,7 +166,7 @@ class ProjectSearchesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Search",
+            "200": V1Search,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -523,7 +523,7 @@ class ProjectSearchesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Search",
+            "200": V1Search,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -780,7 +780,7 @@ class ProjectSearchesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListSearchesResponse",
+            "200": V1ListSearchesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1037,7 +1037,7 @@ class ProjectSearchesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListSearchesResponse",
+            "200": V1ListSearchesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1227,7 +1227,7 @@ class ProjectSearchesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Search",
+            "200": V1Search,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1612,7 +1612,7 @@ class ProjectSearchesV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Search",
+            "200": V1Search,
             "204": "object",
             "403": "object",
             "404": "object",

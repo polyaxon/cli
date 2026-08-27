@@ -465,7 +465,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Project",
+            "200": V1Project,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -640,7 +640,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Project",
+            "200": V1Project,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -836,7 +836,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ProjectVersion",
+            "200": V1ProjectVersion,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1047,7 +1047,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Stage",
+            "200": V1Stage,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1845,7 +1845,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Project",
+            "200": V1Project,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2102,7 +2102,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListActivitiesResponse",
+            "200": V1ListActivitiesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2260,7 +2260,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ProjectSettings",
+            "200": V1ProjectSettings,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2794,7 +2794,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ProjectVersion",
+            "200": V1ProjectVersion,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -2982,7 +2982,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Stage",
+            "200": V1Stage,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3190,7 +3190,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListProjectsResponse",
+            "200": V1ListProjectsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3398,7 +3398,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListBookmarksResponse",
+            "200": V1ListBookmarksResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3641,7 +3641,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListProjectsResponse",
+            "200": V1ListProjectsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -3884,7 +3884,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListProjectsResponse",
+            "200": V1ListProjectsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4123,7 +4123,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListProjectVersionsResponse",
+            "200": V1ListProjectVersionsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4362,7 +4362,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListProjectVersionsResponse",
+            "200": V1ListProjectVersionsResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4537,7 +4537,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Project",
+            "200": V1Project,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4718,7 +4718,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ProjectSettings",
+            "200": V1ProjectSettings,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -4935,7 +4935,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ProjectVersion",
+            "200": V1ProjectVersion,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5628,7 +5628,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Project",
+            "200": V1Project,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -5809,7 +5809,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ProjectSettings",
+            "200": V1ProjectSettings,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -6026,7 +6026,7 @@ class ProjectsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ProjectVersion",
+            "200": V1ProjectVersion,
             "204": "object",
             "403": "object",
             "404": "object",

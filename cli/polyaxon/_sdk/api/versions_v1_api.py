@@ -152,7 +152,7 @@ class VersionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Compatibility",
+            "200": V1Compatibility,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -311,7 +311,7 @@ class VersionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Installation",
+            "200": V1Installation,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -446,7 +446,7 @@ class VersionsV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1LogHandler",
+            "200": V1LogHandler,
             "204": "object",
             "403": "object",
             "404": "object",

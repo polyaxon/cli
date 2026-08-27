@@ -140,7 +140,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -484,7 +484,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListActivitiesResponse",
+            "200": V1ListActivitiesResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -832,7 +832,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -966,7 +966,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1User",
+            "200": V1User,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1366,7 +1366,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1ListTokenResponse",
+            "200": V1ListTokenResponse,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1532,7 +1532,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1682,7 +1682,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1User",
+            "200": V1User,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1848,7 +1848,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Token",
+            "200": V1Token,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -1998,7 +1998,7 @@ class UsersV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1User",
+            "200": V1User,
             "204": "object",
             "403": "object",
             "404": "object",

@@ -279,7 +279,7 @@ class AuthV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Auth",
+            "200": V1Auth,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -574,7 +574,7 @@ class AuthV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Auth",
+            "200": V1Auth,
             "204": "object",
             "403": "object",
             "404": "object",
@@ -723,7 +723,7 @@ class AuthV1Api(BaseApi):
         _auth_settings = ["ApiKey"]  # noqa: E501
 
         _response_types_map = {
-            "200": "V1Auth",
+            "200": V1Auth,
             "204": "object",
             "403": "object",
             "404": "object",
