@@ -1,9 +1,9 @@
 aiofiles<=25.1.0
 aiohttp>=3.0.0
 click>=7.1.1,<9.0.0
-clipped==0.11.*
+clipped==0.12.*
 parsimonious>=0.10.0
-vents==0.7.*
+vents==0.8.*
 Jinja2>=2.10.3,<3.1.5
 kubernetes>=10.0.1
 python-dateutil>=2.7.3
