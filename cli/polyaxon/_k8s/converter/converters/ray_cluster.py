@@ -3,7 +3,10 @@ from typing import Dict, Iterable, Optional
 from clipped.utils.json import orjson_dumps
 from polyaxon import pkg
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1CompiledOperation, V1Plugins, V1RayCluster, V1RayReplica
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.ray.ray import V1RayCluster
+from polyaxon._flow.run.ray.replica import V1RayReplica
 from polyaxon._k8s.converter.base import BaseConverter
 from polyaxon._k8s.converter.mixins import RayClusterMixin
 from polyaxon._k8s.custom_resources.ray_cluster import get_ray_cluster_custom_resource

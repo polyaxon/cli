@@ -3,7 +3,9 @@ from typing import Dict, Optional
 
 from polyaxon._compiler.contexts.base import BaseContextsManager
 from polyaxon._connections import V1Connection
-from polyaxon._flow import V1CompiledOperation, V1RayCluster, V1RayReplica
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.run.ray.ray import V1RayCluster
+from polyaxon._flow.run.ray.replica import V1RayReplica
 
 
 class RayClusterContextsManager(BaseContextsManager):

@@ -1,15 +1,12 @@
 import copy
 from typing import Dict, List, Optional, Set, Type, Union
 
-from polyaxon._flow import (
-    ParamSpec,
-    V1CompiledOperation,
-    V1Dag,
-    V1Hook,
-    V1Init,
-    V1Param,
-    validate_run_patch,
-)
+from polyaxon._flow.hooks import V1Hook
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.params.params import ParamSpec, V1Param
+from polyaxon._flow.run.dag import V1Dag
+from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
 from polyaxon._polyaxonfile.specs.libs.parser import PolyaxonfileParser

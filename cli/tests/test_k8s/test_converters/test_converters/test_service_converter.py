@@ -6,7 +6,9 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_SANDBOX_TOKEN,
     ENV_KEYS_SECRET_INTERNAL_TOKEN,
 )
-from polyaxon._flow import V1CompiledOperation, V1Plugins, V1Service
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.service import V1Service
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.converters.service import ServiceConverter
 from polyaxon._sandbox.auth import derive_sandbox_token

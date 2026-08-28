@@ -3,7 +3,8 @@ from typing import Dict, Iterable, List, Optional
 from clipped.utils.lists import to_list
 from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._env_vars.keys import ENV_KEYS_SANDBOX_TOKEN
-from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._runner.converter import BaseConverter as _BaseConverter
 from polyaxon._sandbox.auth import derive_sandbox_token_from_env

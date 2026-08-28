@@ -13,7 +13,7 @@ from polyaxon._connections import (
     V1ConnectionKind,
     V1ConnectionResource,
 )
-from polyaxon._flow import V1CompiledOperation
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._managers.agent import AgentConfigManager
 from polyaxon._polyaxonfile.specs import kinds

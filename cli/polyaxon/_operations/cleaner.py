@@ -3,14 +3,12 @@ from typing import List, Optional
 from polyaxon._auxiliaries import get_default_cleaner_container
 from polyaxon._auxiliaries.cleaner import V1PolyaxonCleaner, get_batch_cleaner_container
 from polyaxon._connections import V1Connection
-from polyaxon._flow import (
-    V1CleanerJob,
-    V1Component,
-    V1Environment,
-    V1Operation,
-    V1Plugins,
-    V1Termination,
-)
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.cleaner import V1CleanerJob
+from polyaxon._flow.termination import V1Termination
 
 
 def get_cleaner_operation(

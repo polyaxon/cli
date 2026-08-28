@@ -8,7 +8,8 @@ from polyaxon._connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s.converter.common.volumes import get_volume
 from polyaxon._runner.converter.common.volumes import get_volume_name
 from tests.test_k8s.test_converters.base import BaseConverterTest

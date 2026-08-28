@@ -1,7 +1,12 @@
 import pytest
 
 from clipped.compact.pydantic import ValidationError
-from polyaxon._flow import V1Build, V1EventKind, V1Hook, V1Operation, V1Param, V1RunKind
+from polyaxon._flow.builds import V1Build
+from polyaxon._flow.events.enums import V1EventKind
+from polyaxon._flow.hooks import V1Hook
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.params.params import V1Param
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._utils.test_utils import BaseTestCase
 
 

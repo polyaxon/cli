@@ -1,6 +1,8 @@
 from uuid import UUID
 
-from polyaxon._flow import V1EventKind, V1MatrixKind, V1RunKind
+from polyaxon._flow.events.enums import V1EventKind
+from polyaxon._flow.matrix.enums import V1MatrixKind
+from polyaxon._flow.run.enums import V1RunKind
 
 
 def get_fxt_templated_pipeline_without_params():

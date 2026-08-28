@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon._flow import V1Operation
+from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._utils.fixtures import get_fxt_schedule_with_inputs_outputs
 from polyaxon._utils.test_utils import BaseTestCase
 

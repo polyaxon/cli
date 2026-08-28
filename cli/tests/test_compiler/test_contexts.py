@@ -4,7 +4,8 @@ from clipped.utils.tz import now
 from polyaxon._compiler.contexts import resolve_contexts
 from polyaxon._connections import V1ClaimConnection, V1Connection, V1ConnectionKind
 from polyaxon._contexts import paths as ctx_paths
-from polyaxon._flow import V1CloningKind, V1CompiledOperation, V1RunKind
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.run.enums import V1CloningKind, V1RunKind
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._utils.test_utils import BaseTestCase
 

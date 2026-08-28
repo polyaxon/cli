@@ -12,7 +12,7 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_COLLECT_ARTIFACTS,
     ENV_KEYS_COLLECT_RESOURCES,
 )
-from polyaxon._flow import V1Plugins
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._services.values import PolyaxonServices
 from polyaxon.exceptions import PolyaxonConverterError
 from tests.test_docker.test_converters.base import BaseConverterTest

@@ -3,7 +3,7 @@ from typing import Optional
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
-from polyaxon._flow import V1PipelineKind
+from polyaxon._flow.run.enums import V1PipelineKind
 
 
 class V1Pipeline(BaseAllowSchemaModel):

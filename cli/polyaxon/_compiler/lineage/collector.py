@@ -2,7 +2,8 @@ from typing import Dict, List
 
 from polyaxon._compiler.lineage.io_collector import collect_io_artifacts
 from polyaxon._connections import V1Connection
-from polyaxon._flow import ParamSpec, V1CompiledOperation
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.params.params import ParamSpec
 from traceml.artifacts import V1RunArtifact
 
 

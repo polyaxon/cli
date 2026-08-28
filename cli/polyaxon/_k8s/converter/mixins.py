@@ -5,7 +5,7 @@ from polyaxon._containers.names import (
     PYTORCHJOBS_CONTAINER,
     TFJOBS_CONTAINER,
 )
-from polyaxon._flow import V1RunKind
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s.custom_resources import operation
 
 

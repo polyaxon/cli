@@ -2,7 +2,7 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
-from polyaxon._flow import V1Build
+from polyaxon._flow.builds import V1Build
 from polyaxon._utils.test_utils import BaseTestCase
 
 

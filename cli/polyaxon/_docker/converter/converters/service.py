@@ -4,7 +4,8 @@ from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._docker import docker_types
 from polyaxon._docker.converter.base import BaseConverter
 from polyaxon._docker.converter.mixins import ServiceMixin
-from polyaxon._flow import V1CompiledOperation, V1Plugins
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
 
 
 class ServiceConverter(ServiceMixin, BaseConverter):

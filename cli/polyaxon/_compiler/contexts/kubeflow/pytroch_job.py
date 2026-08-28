@@ -3,7 +3,9 @@ from typing import Dict, Optional
 
 from polyaxon._compiler.contexts.base import BaseContextsManager
 from polyaxon._connections import V1Connection
-from polyaxon._flow import V1CompiledOperation, V1KFReplica, V1PytorchJob
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.run.kubeflow.pytorch_job import V1PytorchJob
+from polyaxon._flow.run.kubeflow.replica import V1KFReplica
 
 
 class PytorchJobContextsManager(BaseContextsManager):

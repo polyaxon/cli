@@ -8,7 +8,8 @@ from polyaxon._connections import (
     V1ConnectionResource,
     V1HostPathConnection,
 )
-from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s.converter.common.volumes import (
     get_artifacts_context_volume,
     get_configs_context_volume,

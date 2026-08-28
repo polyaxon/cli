@@ -5,14 +5,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from clipped.utils.json import orjson_loads
 from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
-from polyaxon._flow import (
-    V1Component,
-    V1Job,
-    V1Operation,
-    V1Plugins,
-    V1RunKind,
-    V1Service,
-)
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._flow.run.job import V1Job
+from polyaxon._flow.run.service import V1Service
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._sandbox.client_utils import (
     FsReadResult,

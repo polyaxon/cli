@@ -1,4 +1,4 @@
-from polyaxon._flow import V1RunKind
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s.converter.converters.dask_cluster import DaskClusterConverter
 from polyaxon._k8s.converter.converters.helpers import (
     CleanerConverter,

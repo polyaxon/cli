@@ -6,7 +6,10 @@ from clipped.formatting import Printer
 from clipped.utils.lists import to_list
 from polyaxon._cli.errors import handle_cli_error
 from polyaxon._config.spec import ConfigSpec
-from polyaxon._flow import V1Dag, V1Init, V1Matrix, V1Operation
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.matrix.matrix import V1Matrix
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.run.dag import V1Dag
 from polyaxon._polyaxonfile.manager import get_op_specification
 from polyaxon._polyaxonfile.params import parse_hparams, parse_params
 from polyaxon._polyaxonfile.specs import get_specification, kinds

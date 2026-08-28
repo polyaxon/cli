@@ -9,7 +9,8 @@ from polyaxon._connections import (
     V1HostPathConnection,
 )
 from polyaxon._docker import docker_types
-from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._services.values import PolyaxonServices
 from polyaxon.exceptions import PolyaxonConverterError
 from tests.test_docker.test_converters.base import BaseConverterTest

@@ -1,6 +1,8 @@
 from typing import Dict, List
 
-from polyaxon._flow import V1Notification, V1SchedulingPolicy, V1Termination
+from polyaxon._flow.notifications import V1Notification
+from polyaxon._flow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
+from polyaxon._flow.termination import V1Termination
 
 
 def set_termination(custom_object: Dict, termination: V1Termination) -> Dict:

@@ -1,9 +1,10 @@
 import os
 import pytest
 
-from polyaxon._flow import V1CompiledOperation, V1Hyperband
+from polyaxon._flow.matrix.hyperband import V1Hyperband
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.io import V1IO
-from polyaxon._flow.matrix import V1GridSearch
+from polyaxon._flow.matrix.grid_search import V1GridSearch
 from polyaxon._flow.matrix.params import V1HpChoice, V1HpLinSpace
 from polyaxon._flow.params import V1Param
 from polyaxon._k8s import k8s_schemas

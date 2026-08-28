@@ -1,7 +1,7 @@
 from typing import Type
 
 from polyaxon._config.manager import ConfigManager
-from polyaxon._flow import V1Init
+from polyaxon._flow.init import V1Init
 from polyaxon._schemas.types import V1GitType
 
 

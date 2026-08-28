@@ -5,20 +5,17 @@ import pytest
 from polyaxon import pkg
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.keys import ENV_KEYS_USE_GIT_REGISTRY
-from polyaxon._flow import (
-    V1CompiledOperation,
-    V1Environment,
-    V1GridSearch,
-    V1HpChoice,
-    V1HpLinSpace,
-    V1Hyperband,
-    V1Mapping,
-    V1MetricEarlyStopping,
-    V1Plugins,
-    V1RandomSearch,
-    V1RunKind,
-    V1Termination,
-)
+from polyaxon._flow.early_stopping.policies import V1MetricEarlyStopping
+from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.matrix.grid_search import V1GridSearch
+from polyaxon._flow.matrix.hyperband import V1Hyperband
+from polyaxon._flow.matrix.mapping import V1Mapping
+from polyaxon._flow.matrix.params import V1HpChoice, V1HpLinSpace
+from polyaxon._flow.matrix.random_search import V1RandomSearch
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._flow.termination import V1Termination
 from polyaxon._polyaxonfile import check_polyaxonfile
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,

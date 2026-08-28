@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
-from polyaxon._flow import V1Notification, V1Termination
+from polyaxon._flow.notifications import V1Notification
+from polyaxon._flow.termination import V1Termination
 from polyaxon._flow.run.ray.autoscaler import V1RayAutoscalerOptions
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec

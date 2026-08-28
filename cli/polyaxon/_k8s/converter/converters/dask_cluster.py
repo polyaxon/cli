@@ -2,7 +2,10 @@ from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1CompiledOperation, V1DaskCluster, V1DaskReplica, V1Plugins
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.dask.dask import V1DaskCluster
+from polyaxon._flow.run.dask.replica import V1DaskReplica
 from polyaxon._k8s.converter.base import BaseConverter
 from polyaxon._k8s.converter.mixins import DaskClusterMixin
 from polyaxon._k8s.custom_resources.dask_cluster import get_dask_cluster_custom_resource

@@ -12,7 +12,7 @@ from polyaxon._connections import (
 from polyaxon._containers.names import INIT_TENSORBOARD_CONTAINER_PREFIX
 from polyaxon._containers.pull_policy import PullPolicy
 from polyaxon._contexts import paths as ctx_paths
-from polyaxon._flow import V1Plugins
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._runner.converter.common import constants
 from polyaxon._schemas.types import V1TensorboardType
 from tests.test_docker.test_converters.base import BaseConverterTest

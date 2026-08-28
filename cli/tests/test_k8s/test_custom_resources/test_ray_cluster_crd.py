@@ -1,4 +1,4 @@
-from polyaxon._flow import V1Notification
+from polyaxon._flow.notifications import V1Notification
 from polyaxon._flow.environment import V1Environment
 from polyaxon._flow.run.ray.autoscaler import V1RayAutoscalerOptions
 from polyaxon._flow.termination import V1Culling, V1Termination

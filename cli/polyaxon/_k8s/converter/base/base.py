@@ -6,7 +6,9 @@ from clipped.utils.sanitizers import sanitize_string_dict
 from clipped.utils.strings import slugify
 from polyaxon import pkg, settings
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1Environment, V1Init, V1Plugins
+from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.base.containers import ContainerMixin
 from polyaxon._k8s.converter.base.env_vars import EnvMixin

@@ -4,13 +4,10 @@ from typing import Any, Dict, List, Optional, Union
 from clipped.compact.pydantic import StrictStr
 from clipped.config.schema import BaseAllowSchemaModel
 from clipped.types.uuids import UUIDStr
-from polyaxon._flow import (
-    V1MatrixKind,
-    V1RunKind,
-    V1RunPending,
-    V1RunResources,
-    V1ScheduleKind,
-)
+from polyaxon._flow.matrix.enums import V1MatrixKind
+from polyaxon._flow.run.enums import V1RunKind, V1RunPending
+from polyaxon._flow.run.resources import V1RunResources
+from polyaxon._flow.schedules.enums import V1ScheduleKind
 from polyaxon._schemas.lifecycle import ManagedBy, V1StatusCondition, V1Statuses
 from polyaxon._sdk.schemas.v1_cloning import V1Cloning
 from polyaxon._sdk.schemas.v1_pipeline import V1Pipeline

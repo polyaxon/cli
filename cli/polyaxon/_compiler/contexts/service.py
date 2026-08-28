@@ -2,7 +2,7 @@ from typing import Dict
 
 from polyaxon._compiler.contexts.base import BaseContextsManager
 from polyaxon._connections import V1Connection
-from polyaxon._flow import V1CompiledOperation
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._utils.urls_utils import get_proxy_run_url
 from polyaxon.api import (
     EXTERNAL_V1_LOCATION,

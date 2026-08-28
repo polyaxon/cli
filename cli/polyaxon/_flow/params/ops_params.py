@@ -2,7 +2,8 @@ from typing import Dict, List, Optional, Union
 
 from polyaxon._flow.io.io import V1IO
 from polyaxon._flow.joins import V1Join
-from polyaxon._flow.matrix import V1Mapping, V1Matrix
+from polyaxon._flow.matrix.mapping import V1Mapping
+from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.params.params import ParamSpec, V1Param
 from polyaxon.exceptions import PolyaxonValidationError
 

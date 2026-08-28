@@ -10,7 +10,8 @@ from polyaxon._auxiliaries import (
     get_default_sidecar_container,
 )
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1CompiledOperation, V1Init
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._schemas.agent import AgentConfig
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonCompilerError

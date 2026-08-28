@@ -1,6 +1,8 @@
 from typing import Dict, List, Optional
 
-from polyaxon._flow import V1Environment, V1Notification, V1Termination
+from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.notifications import V1Notification
+from polyaxon._flow.termination import V1Termination
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec, get_pod_template_spec
 from polyaxon._k8s.custom_resources.operation import (

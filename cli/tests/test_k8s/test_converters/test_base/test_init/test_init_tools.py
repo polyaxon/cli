@@ -4,7 +4,7 @@ from polyaxon._auxiliaries.init import V1PolyaxonInitContainer, get_init_resourc
 from polyaxon._containers.names import INIT_TOOLS_CONTAINER
 from polyaxon._containers.pull_policy import PullPolicy
 from polyaxon._contexts import paths as ctx_paths
-from polyaxon._flow import V1Plugins
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._runner.converter.common import constants
 from polyaxon.exceptions import PolyaxonConverterError
 from tests.test_k8s.test_converters.base import BaseConverterTest

@@ -1,4 +1,5 @@
-from polyaxon._flow import V1MatrixKind, V1RunKind
+from polyaxon._flow.matrix.enums import V1MatrixKind
+from polyaxon._flow.run.enums import V1RunKind
 
 
 def get_fxt_mapping_with_inputs_outputs():

@@ -1,4 +1,6 @@
-from polyaxon._flow import V1HpDateRange, V1MatrixKind, V1RunKind
+from polyaxon._flow.matrix.enums import V1MatrixKind
+from polyaxon._flow.matrix.params import V1HpDateRange
+from polyaxon._flow.run.enums import V1RunKind
 
 
 def get_fxt_backfill_with_inputs_outputs():

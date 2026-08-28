@@ -6,7 +6,8 @@ from clipped.config.schema import skip_partial
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import ParamSpec, ops_params
-from polyaxon._flow.run import RunMixin, V1RunKind, V1Runtime
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon.exceptions import PolyaxonSchemaError
 
 

@@ -1,7 +1,7 @@
 import pytest
 from uuid import uuid4
 
-from polyaxon._flow import V1Operation
+from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._utils.fixtures import (
     get_fxt_build_run_pipeline,
     get_fxt_build_run_pipeline_with_inputs,

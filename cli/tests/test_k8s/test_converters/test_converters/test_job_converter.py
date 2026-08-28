@@ -10,7 +10,8 @@ from polyaxon._connections import (
     V1ConnectionResource,
 )
 from polyaxon._env_vars.keys import ENV_KEYS_RUN_INSTANCE
-from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._schemas.types import (
     V1ArtifactsType,

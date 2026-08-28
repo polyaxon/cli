@@ -11,7 +11,7 @@ from polyaxon._compiler import resolver
 from polyaxon._compiler.resolver import AgentResolver
 from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._contexts import paths as ctx_paths
-from polyaxon._flow import V1CompiledOperation
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,

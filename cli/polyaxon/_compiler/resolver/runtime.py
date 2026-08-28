@@ -5,7 +5,9 @@ from polyaxon import settings
 from polyaxon._compiler.contexts import resolve_contexts, resolve_globals_contexts
 from polyaxon._compiler.lineage import resolve_artifacts_lineage
 from polyaxon._compiler.resolver import AgentResolver
-from polyaxon._flow import V1CloningKind, V1CompiledOperation, V1Operation, V1RunKind
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.run.enums import V1CloningKind, V1RunKind
 from polyaxon._polyaxonfile import CompiledOperationSpecification
 from polyaxon.exceptions import PolyaxonCompilerError
 

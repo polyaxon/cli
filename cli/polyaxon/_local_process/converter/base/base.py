@@ -3,7 +3,9 @@ from typing import Dict, Iterable, List, Optional, Union
 from polyaxon import settings
 from polyaxon._auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1Environment, V1Init, V1Plugins
+from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._local_process import process_types
 from polyaxon._local_process.converter.base.containers import ContainerMixin

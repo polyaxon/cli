@@ -4,7 +4,10 @@ from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.dicts import deep_update
 from clipped.utils.tz import now
 from polyaxon import pkg
-from polyaxon._flow import V1Component, V1EventKind, V1Operation, V1RunKind
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.events.enums import V1EventKind
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,

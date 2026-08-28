@@ -1,6 +1,6 @@
 from typing import Type
 
-from polyaxon._flow import V1Component
+from polyaxon._flow.component.component import V1Component
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
 

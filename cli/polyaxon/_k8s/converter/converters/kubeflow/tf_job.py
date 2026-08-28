@@ -2,7 +2,10 @@ from typing import Dict, Iterable, Optional
 
 from polyaxon import pkg
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1CompiledOperation, V1KFReplica, V1Plugins, V1TFJob
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.kubeflow.replica import V1KFReplica
+from polyaxon._flow.run.kubeflow.tf_job import V1TFJob
 from polyaxon._k8s.converter.base.base import BaseConverter
 from polyaxon._k8s.converter.mixins import TFJobMixin
 from polyaxon._k8s.custom_resources.kubeflow import get_tf_job_custom_resource

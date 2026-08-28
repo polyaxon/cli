@@ -12,7 +12,7 @@ from polyaxon.logger import clean_outputs
 
 
 if TYPE_CHECKING:
-    from polyaxon._flow import V1Operation
+    from polyaxon._flow.operations.operation import V1Operation
     from polyaxon._runner.kinds import RunnerKind
 
 
@@ -55,7 +55,7 @@ def _run(
     from polyaxon._client.run import RunClient
     from polyaxon._constants.globals import DEFAULT_UPLOADS_PATH
     from polyaxon._constants.metadata import META_UPLOAD_ARTIFACTS
-    from polyaxon._flow import V1RunPending
+    from polyaxon._flow.run.enums import V1RunPending
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._polyaxonfile import CompiledOperationSpecification
     from polyaxon._schemas.lifecycle import ManagedBy

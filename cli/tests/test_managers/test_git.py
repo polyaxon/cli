@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon._flow import V1Init
+from polyaxon._flow.init import V1Init
 from polyaxon._managers.git import GitConfigManager
 from polyaxon._utils.test_utils import BaseTestCase
 

@@ -33,7 +33,7 @@ def bayes(matrix, configs, metrics, iteration):
         BayesSearchManager,
     )
     from polyaxon._client.run import RunClient
-    from polyaxon._flow import V1Bayes
+    from polyaxon._flow.matrix.bayes import V1Bayes
 
     matrix = V1Bayes.read(matrix)
     if configs:
@@ -94,7 +94,7 @@ def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
     from hypertune.search_managers.hyperband.manager import HyperbandManager
     from polyaxon._client.run import RunClient
-    from polyaxon._flow import V1Hyperband
+    from polyaxon._flow.matrix.hyperband import V1Hyperband
 
     matrix = V1Hyperband.read(matrix)
     matrix.set_tuning_params()
@@ -152,7 +152,7 @@ def hyperopt(matrix, configs, metrics, iteration):
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
     from hypertune.search_managers.hyperopt.manager import HyperoptManager
     from polyaxon._client.run import RunClient
-    from polyaxon._flow import V1Hyperopt
+    from polyaxon._flow.matrix.hyperopt import V1Hyperopt
 
     matrix = V1Hyperopt.read(matrix)
     if configs:

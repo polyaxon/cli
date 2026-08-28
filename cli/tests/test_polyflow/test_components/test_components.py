@@ -3,7 +3,9 @@ import pytest
 from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.tz import now
 from polyaxon import types
-from polyaxon._flow import V1Component, V1RunKind, ops_params
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.params import ops_params
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonValidationError
 

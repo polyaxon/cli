@@ -2,7 +2,8 @@ from typing import Dict, List, Optional
 
 from clipped.utils.lists import to_list
 from polyaxon._connections import V1Connection
-from polyaxon._flow import V1IO, V1CompiledOperation
+from polyaxon._flow.io.io import V1IO
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon.types import IMAGE, LINEAGE_VALUES
 from traceml.artifacts import V1ArtifactKind, V1RunArtifact
 

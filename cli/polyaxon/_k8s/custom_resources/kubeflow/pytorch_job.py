@@ -1,11 +1,9 @@
 from typing import Dict, List, Optional
 
-from polyaxon._flow import (
-    V1Notification,
-    V1PytorchElasticPolicy,
-    V1SchedulingPolicy,
-    V1Termination,
-)
+from polyaxon._flow.notifications import V1Notification
+from polyaxon._flow.run.kubeflow.pytorch_job import V1PytorchElasticPolicy
+from polyaxon._flow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
+from polyaxon._flow.termination import V1Termination
 from polyaxon._k8s.custom_resources.kubeflow.common import get_kf_replicas_template
 from polyaxon._k8s.custom_resources.operation import (
     KFJOB_KIND,

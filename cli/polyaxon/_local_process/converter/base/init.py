@@ -17,7 +17,7 @@ from polyaxon._containers.names import (
 )
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.keys import ENV_KEYS_SSH_PATH
-from polyaxon._flow import V1Plugins
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._local_process import process_types
 from polyaxon._runner.converter import BaseConverter as _BaseConverter
 from polyaxon._runner.converter.init.artifacts import init_artifact_context_args

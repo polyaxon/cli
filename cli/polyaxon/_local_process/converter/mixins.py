@@ -1,7 +1,7 @@
 from typing import Dict
 
 from polyaxon._containers.names import MAIN_JOB_CONTAINER
-from polyaxon._flow import V1RunKind
+from polyaxon._flow.run.enums import V1RunKind
 
 
 class JobMixin:

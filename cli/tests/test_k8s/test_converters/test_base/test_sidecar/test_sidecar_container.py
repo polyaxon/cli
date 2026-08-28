@@ -11,7 +11,7 @@ from polyaxon._connections import (
 )
 from polyaxon._containers.names import MAIN_JOB_CONTAINER, SIDECAR_CONTAINER
 from polyaxon._containers.pull_policy import PullPolicy
-from polyaxon._flow import V1Plugins
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon.exceptions import PolyaxonConverterError
 from tests.test_k8s.test_converters.base import BaseConverterTest
 

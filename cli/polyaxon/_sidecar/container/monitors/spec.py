@@ -3,7 +3,7 @@ import aiofiles
 from clipped.utils.json import orjson_dumps
 from clipped.utils.paths import check_or_create_path, set_permissions
 from polyaxon._contexts import paths as ctx_paths
-from polyaxon._flow import V1RunKind
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s.logging.async_monitor import get_op_spec
 from polyaxon._k8s.manager.async_manager import AsyncK8sManager
 

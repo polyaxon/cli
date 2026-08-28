@@ -52,10 +52,9 @@ from polyaxon._env_vars.getters import (
     get_run_info,
     get_run_or_local,
 )
-from polyaxon._flow import V1Matrix, V1Operation, V1RunKind
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._managers.ignore import IgnoreConfigManager
-from polyaxon._polyaxonfile import check_polyaxonfile
 from polyaxon._schemas.lifecycle import (
     LifeCycle,
     ManagedBy,
@@ -86,6 +85,8 @@ from traceml.logging.streamer import get_logs_streamer
 
 
 if TYPE_CHECKING:
+    from polyaxon._flow.matrix.matrix import V1Matrix
+    from polyaxon._flow.operations.operation import V1Operation
     from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
         V1ListRunArtifactsResponse,
     )
@@ -381,8 +382,10 @@ class RunClient(ClientMixin):
         self._artifacts_lineage = {}
 
     def _normalize_operation_content(
-        self, content: Optional[Union[str, Dict, V1Operation]]
+        self, content: Optional[Union[str, Dict, "V1Operation"]]
     ) -> Optional[str]:
+        from polyaxon._flow.operations.operation import V1Operation
+
         if isinstance(content, Mapping):
             content = V1Operation.from_dict(content)
         if isinstance(content, V1Operation):
@@ -394,12 +397,14 @@ class RunClient(ClientMixin):
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[List[str]] = None,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         managed_by: Optional[ManagedBy] = None,
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
     ) -> V1OperationBody:
+        from polyaxon._flow.operations.operation import V1Operation
+
         if not managed_by and is_managed is not None:
             managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
         if not content:
@@ -464,7 +469,7 @@ class RunClient(ClientMixin):
 
     def _build_restart_body(
         self,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         copy: bool = False,
         recompile: bool = False,
         copy_dirs: Optional[List[str]] = None,
@@ -501,7 +506,7 @@ class RunClient(ClientMixin):
 
     def _build_resume_body(
         self,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         recompile: bool = False,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -627,7 +632,7 @@ class RunClient(ClientMixin):
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         managed_by: Optional[ManagedBy] = None,
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
@@ -694,7 +699,7 @@ class RunClient(ClientMixin):
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
         params: Optional[Dict] = None,
-        matrix: Optional[Union[Dict, V1Matrix]] = None,
+        matrix: Optional[Union[Dict, "V1Matrix"]] = None,
         presets: Optional[List[str]] = None,
         queue: Optional[str] = None,
         namespace: Optional[str] = None,
@@ -748,6 +753,8 @@ class RunClient(ClientMixin):
         Returns:
             V1Run, run instance from the response.
         """
+        from polyaxon._polyaxonfile.check import check_polyaxonfile
+
         op_spec = check_polyaxonfile(
             polyaxonfile=polyaxonfile,
             params=params,
@@ -773,7 +780,7 @@ class RunClient(ClientMixin):
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
         params: Optional[Dict] = None,
-        matrix: Optional[Union[Dict, V1Matrix]] = None,
+        matrix: Optional[Union[Dict, "V1Matrix"]] = None,
         presets: Optional[List[str]] = None,
         queue: Optional[str] = None,
         namespace: Optional[str] = None,
@@ -826,6 +833,8 @@ class RunClient(ClientMixin):
         Returns:
             V1Run, run instance from the response.
         """
+        from polyaxon._polyaxonfile.check import check_polyaxonfile
+
         op_spec = check_polyaxonfile(
             url=url,
             params=params,
@@ -851,7 +860,7 @@ class RunClient(ClientMixin):
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
         params: Optional[Dict] = None,
-        matrix: Optional[Union[Dict, V1Matrix]] = None,
+        matrix: Optional[Union[Dict, "V1Matrix"]] = None,
         presets: Optional[List[str]] = None,
         queue: Optional[str] = None,
         namespace: Optional[str] = None,
@@ -903,6 +912,8 @@ class RunClient(ClientMixin):
         Returns:
             V1Run, run instance from the response.
         """
+        from polyaxon._polyaxonfile.check import check_polyaxonfile
+
         op_spec = check_polyaxonfile(
             hub=component,
             params=params,
@@ -1970,7 +1981,7 @@ class RunClient(ClientMixin):
     @client_handler(check_no_op=True, check_offline=True)
     def restart(
         self,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         copy: bool = False,
         recompile: bool = False,
         copy_dirs: Optional[List[str]] = None,
@@ -2018,7 +2029,7 @@ class RunClient(ClientMixin):
     @client_handler(check_no_op=True, check_offline=True)
     def resume(
         self,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         recompile: bool = False,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -3356,7 +3367,7 @@ class AsyncRunClient(RunClient):
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         managed_by: Optional[ManagedBy] = None,
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
@@ -3949,7 +3960,7 @@ class AsyncRunClient(RunClient):
     @async_client_handler(check_no_op=True, check_offline=True)
     async def restart(
         self,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         copy: bool = False,
         recompile: bool = False,
         copy_dirs: Optional[List[str]] = None,
@@ -3988,7 +3999,7 @@ class AsyncRunClient(RunClient):
     @async_client_handler(check_no_op=True, check_offline=True)
     async def resume(
         self,
-        content: Optional[Union[str, Dict, V1Operation]] = None,
+        content: Optional[Union[str, Dict, "V1Operation"]] = None,
         recompile: bool = False,
         name: Optional[str] = None,
         description: Optional[str] = None,

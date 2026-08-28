@@ -2,7 +2,8 @@ from typing import Dict, Iterable, Optional
 
 from clipped.utils.lists import to_list
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1CompiledOperation, V1Plugins
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s.converter.base import BaseConverter
 from polyaxon._k8s.converter.mixins import ServiceMixin
 from polyaxon._k8s.custom_resources.service import get_service_custom_resource

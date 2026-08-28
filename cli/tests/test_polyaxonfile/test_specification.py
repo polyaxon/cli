@@ -3,13 +3,11 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 from polyaxon import types
-from polyaxon._flow import (
-    V1CompiledOperation,
-    V1Component,
-    V1Operation,
-    V1Param,
-    V1RunKind,
-)
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.params.params import V1Param
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     ComponentSpecification,

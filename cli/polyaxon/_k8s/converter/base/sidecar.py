@@ -5,7 +5,7 @@ from polyaxon._auxiliaries import V1PolyaxonSidecarContainer
 from polyaxon._connections import V1Connection, V1ConnectionResource
 from polyaxon._containers.names import SIDECAR_CONTAINER
 from polyaxon._env_vars.keys import ENV_KEYS_ARTIFACTS_STORE_NAME, ENV_KEYS_CONTAINER_ID
-from polyaxon._flow import V1Plugins
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._runner.converter import BaseConverter as _BaseConverter
 from polyaxon.exceptions import PolyaxonConverterError

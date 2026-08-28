@@ -2,7 +2,10 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from polyaxon._compiler.resolver.runtime import BaseResolver
-from polyaxon._flow import V1IO, V1CloningKind, V1CompiledOperation, V1Operation
+from polyaxon._flow.io.io import V1IO
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.run.enums import V1CloningKind
 
 
 def resolve(

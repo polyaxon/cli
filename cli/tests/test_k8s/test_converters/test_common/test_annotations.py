@@ -7,7 +7,7 @@ from polyaxon._connections import (
     V1ConnectionKind,
     V1HostPathConnection,
 )
-from polyaxon._flow import V1Init
+from polyaxon._flow.init import V1Init
 from polyaxon._k8s.converter.common.annotations import get_connection_annotations
 from polyaxon._utils.test_utils import BaseTestCase
 

@@ -1,15 +1,13 @@
 from typing import Dict, Union
 
 from polyaxon._auxiliaries import get_default_notification_container
-from polyaxon._flow import (
-    V1IO,
-    V1Component,
-    V1NotifierJob,
-    V1Operation,
-    V1Param,
-    V1Plugins,
-    V1Termination,
-)
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.io.io import V1IO
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.params.params import V1Param
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.notifier import V1NotifierJob
+from polyaxon._flow.termination import V1Termination
 
 
 def get_notifier_operation(

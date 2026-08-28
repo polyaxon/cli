@@ -17,7 +17,9 @@ from polyaxon._contexts import (
     paths as ctx_paths,
     sections as ctx_sections,
 )
-from polyaxon._flow import V1CloningKind, V1CompiledOperation, V1Plugins, V1RunKind
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.enums import V1CloningKind, V1RunKind
 from polyaxon._utils.fqn_utils import get_project_instance, get_run_instance
 from polyaxon.exceptions import PolyaxonCompilerError
 

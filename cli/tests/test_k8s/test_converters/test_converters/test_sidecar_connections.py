@@ -4,7 +4,7 @@ from polyaxon._connections import (
     V1Connection,
     V1ConnectionKind,
 )
-from polyaxon._flow import V1Plugins
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from tests.test_k8s.test_converters.base import BaseConverterTest
 

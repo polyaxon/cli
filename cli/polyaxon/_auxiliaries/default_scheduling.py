@@ -12,7 +12,7 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 
 if TYPE_CHECKING:
-    from polyaxon._flow import V1Environment
+    from polyaxon._flow.environment import V1Environment
 
 
 class V1DefaultScheduling(BaseSchemaModel):
@@ -43,7 +43,7 @@ class V1DefaultScheduling(BaseSchemaModel):
         service: Any,
         default_scheduling: "V1DefaultScheduling",
     ) -> "V1Environment":
-        from polyaxon._flow import V1Environment
+        from polyaxon._flow.environment import V1Environment
 
         env = V1Environment.model_construct()
         if service and service.node_selector:

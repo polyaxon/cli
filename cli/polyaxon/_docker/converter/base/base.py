@@ -9,7 +9,9 @@ from polyaxon._docker.converter.base.env_vars import EnvMixin
 from polyaxon._docker.converter.base.init import InitConverter
 from polyaxon._docker.converter.base.main import MainConverter
 from polyaxon._docker.converter.base.mounts import MountsMixin
-from polyaxon._flow import V1Environment, V1Init, V1Plugins
+from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._runner.converter import BaseConverter as _BaseConverter
 from polyaxon._runner.kinds import RunnerKind

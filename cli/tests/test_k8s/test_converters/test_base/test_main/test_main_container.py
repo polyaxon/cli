@@ -14,7 +14,8 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_SANDBOX_TOKEN,
     ENV_KEYS_SECRET_INTERNAL_TOKEN,
 )
-from polyaxon._flow import V1Init, V1Plugins
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._sandbox.auth import derive_sandbox_token
 from polyaxon._sandbox.constants import SANDBOX_BOOTSTRAP_PATH, SANDBOX_PORT

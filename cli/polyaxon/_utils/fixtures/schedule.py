@@ -1,13 +1,10 @@
 from datetime import timedelta
 
 from clipped.utils.tz import now
-from polyaxon._flow import (
-    V1HpRange,
-    V1HpUniform,
-    V1MatrixKind,
-    V1Optimization,
-    V1RunKind,
-)
+from polyaxon._flow.matrix.enums import V1MatrixKind
+from polyaxon._flow.matrix.params import V1HpRange, V1HpUniform
+from polyaxon._flow.optimization.enums import V1Optimization
+from polyaxon._flow.run.enums import V1RunKind
 
 
 def get_fxt_schedule_with_inputs_outputs(start_at=None, delta=7):

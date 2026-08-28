@@ -1142,7 +1142,7 @@ def execute(ctx, project, uid, executor):
     from polyaxon import settings
     from polyaxon._client.run import RunClient
     from polyaxon._env_vars.getters import get_project_run_or_local
-    from polyaxon._flow import V1RunKind
+    from polyaxon._flow.run.enums import V1RunKind
     from polyaxon._runner.kinds import RunnerKind
     from polyaxon._schemas.lifecycle import LifeCycle, V1Statuses
     from polyaxon._sdk.schemas.v1_run import V1Run
@@ -2283,7 +2283,7 @@ def service(ctx, project, uid, yes, external, url):
     """
     from polyaxon._client.run import RunClient
     from polyaxon._env_vars.getters import get_project_run_or_local
-    from polyaxon._flow import V1RunKind
+    from polyaxon._flow.run.enums import V1RunKind
 
     owner, team, project_name, run_uuid = get_project_run_or_local(
         project or ctx.obj.get("project"),

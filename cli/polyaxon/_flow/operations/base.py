@@ -6,7 +6,7 @@ from polyaxon._contexts import refs as ctx_refs
 from polyaxon._flow.component.base import BaseComponent
 from polyaxon._flow.events import V1EventKind, V1EventTrigger
 from polyaxon._flow.joins import V1Join
-from polyaxon._flow.matrix import MatrixMixin, V1Matrix
+from polyaxon._flow.matrix.matrix import MatrixMixin, V1Matrix
 from polyaxon._flow.schedules import ScheduleMixin, V1Schedule
 from polyaxon._flow.trigger_policies import V1TriggerPolicy
 from polyaxon._schemas.lifecycle import V1Statuses

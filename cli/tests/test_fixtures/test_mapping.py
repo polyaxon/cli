@@ -1,6 +1,6 @@
 import pytest
 
-from polyaxon._flow import V1Operation
+from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._utils.fixtures import (
     get_fxt_mapping_with_inputs_outputs,
     get_fxt_mapping_with_run_patch,

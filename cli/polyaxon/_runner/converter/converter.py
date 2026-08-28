@@ -25,7 +25,9 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_NO_API,
     ENV_KEYS_RUN_INSTANCE,
 )
-from polyaxon._flow import V1CompiledOperation, V1Init, V1Plugins
+from polyaxon._flow.init import V1Init
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
 from polyaxon._runner.converter.common import constants
 from polyaxon._runner.converter.common.containers import ensure_container_name

@@ -3,7 +3,9 @@ from typing import Dict, Optional
 
 from polyaxon._compiler.contexts.base import BaseContextsManager
 from polyaxon._connections import V1Connection
-from polyaxon._flow import V1CompiledOperation, V1DaskCluster, V1DaskReplica
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.run.dask.dask import V1DaskCluster
+from polyaxon._flow.run.dask.replica import V1DaskReplica
 
 
 class DaskClusterContextsManager(BaseContextsManager):

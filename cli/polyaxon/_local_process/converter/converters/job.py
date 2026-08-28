@@ -1,7 +1,9 @@
 from typing import Dict, Iterable, List, Optional
 
 from polyaxon._connections import V1Connection, V1ConnectionResource
-from polyaxon._flow import V1CompiledOperation, V1Job, V1Plugins
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.job import V1Job
 from polyaxon._k8s.converter.mixins import JobMixin
 from polyaxon._local_process import process_types
 from polyaxon._local_process.converter.base import BaseConverter

@@ -1,6 +1,6 @@
 import copy
 
-from polyaxon._flow import V1Environment
+from polyaxon._flow.environment import V1Environment
 from polyaxon.exceptions import PolyaxonfileError
 
 

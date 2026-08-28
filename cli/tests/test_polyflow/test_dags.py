@@ -1,7 +1,7 @@
 from mock import MagicMock
 import pytest
 
-from polyaxon._flow import dags
+import polyaxon._flow.dags as dags
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonSchemaError
 

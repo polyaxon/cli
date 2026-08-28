@@ -4,7 +4,7 @@ from typing_extensions import Literal
 from polyaxon._flow.component.base import BaseComponent
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.references import RefMixin
-from polyaxon._flow.run import RunMixin, V1Runtime
+from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 
 

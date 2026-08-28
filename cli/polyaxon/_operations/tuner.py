@@ -1,15 +1,13 @@
 from typing import Optional
 
-from polyaxon._flow import (
-    V1Bayes,
-    V1Hyperband,
-    V1Hyperopt,
-    V1Join,
-    V1Matrix,
-    V1Operation,
-    V1Param,
-    V1Tuner,
-)
+from polyaxon._flow.joins import V1Join
+from polyaxon._flow.matrix.matrix import V1Matrix
+from polyaxon._flow.matrix.bayes import V1Bayes
+from polyaxon._flow.matrix.hyperband import V1Hyperband
+from polyaxon._flow.matrix.hyperopt import V1Hyperopt
+from polyaxon._flow.matrix.tuner import V1Tuner
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.params.params import V1Param
 
 
 def get_tuner(
