@@ -1,6 +1,6 @@
 from collections import namedtuple
 from collections.abc import Mapping
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from clipped.compact.pydantic import Field, StrictStr, field_validator
 from clipped.config.schema import skip_partial
@@ -9,9 +9,12 @@ from clipped.utils.strings import to_string
 from polyaxon import types
 from polyaxon._contexts import refs as ctx_refs, sections as ctx_sections
 from polyaxon._contexts.params import PARAM_REGEX
-from polyaxon._flow.init import V1Init
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonValidationError
+
+
+if TYPE_CHECKING:
+    from polyaxon._flow.init import V1Init
 
 
 # V1Param fields that indicate full-form param definition
@@ -627,9 +630,12 @@ class ParamSpec(
             )
         )
 
-    def to_init(self) -> Optional[V1Init]:
+    def to_init(self) -> Optional["V1Init"]:
         if not self.param.to_init:
             return None
+
+        from polyaxon._flow.init import V1Init
+
         if self.type == types.GIT:
             return V1Init.from_dict(
                 dict(git=self.param.value, connection=self.param.connection)
