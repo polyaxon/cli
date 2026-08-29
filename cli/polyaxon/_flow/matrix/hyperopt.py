@@ -8,7 +8,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.types.ref_or_obj import IntOrRef, RefField
-from clipped.utils.enums import PEnum
 from polyaxon._flow.early_stopping import V1EarlyStopping
 from polyaxon._flow.matrix.base import BaseSearchConfig
 from polyaxon._flow.matrix.enums import V1MatrixKind
@@ -17,21 +16,15 @@ from polyaxon._flow.matrix.tuner import V1Tuner
 from polyaxon._flow.optimization import V1OptimizationMetric
 
 
-class V1HyperoptAlgorithms(str, PEnum):
-    TPE = "tpe"
-    ANNEAL = "anneal"
-
-
 class V1Hyperopt(BaseSearchConfig):
     """Hyperopt is a search algorithm that is backed by the
     [Hyperopt](http://hyperopt.github.io/hyperopt/) library
     to perform sequential model-based hyperparameter optimization.
 
-    the Hyperopt integration exposes 2 algorithms: `tpe`, `anneal`.
+    The Hyperopt integration uses the `tpe` algorithm.
 
     Args:
         kind: hyperopt
-        algorithm: str, one of tpe, anneal
         params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/#discrete-values)]]  # noqa
         metric: V1OptimizationMetric
         max_iterations: int, optional
@@ -47,7 +40,6 @@ class V1Hyperopt(BaseSearchConfig):
     ```yaml
     >>> matrix:
     >>>   kind: hyperopt
-    >>>   algorithm:
     >>>   maxIterations:
     >>>   metric:
     >>>   concurrency:
@@ -65,7 +57,6 @@ class V1Hyperopt(BaseSearchConfig):
     >>>     V1Hyperopt, V1HpLogSpace, V1HpUniform, V1FailureEarlyStopping, V1MetricEarlyStopping
     >>> )
     >>> matrix = V1Hyperopt(
-    >>>   algorithm="tpe",
     >>>   num_runs=20,
     >>>   concurrency=2,
     >>>   seed=23,
@@ -87,17 +78,6 @@ class V1Hyperopt(BaseSearchConfig):
     ```yaml
     >>> matrix:
     >>>   kind: hyperopt
-    ```
-
-    ### algorithm
-
-    The algorithm to use from the hyperopt library, the supported
-    algorithms: `tpe`, `anneal`.
-
-    ```yaml
-    >>> matrix:
-    >>>   kind: hyperopt
-    >>>   algorithm: anneal
     ```
 
     ### concurrency
@@ -217,7 +197,6 @@ class V1Hyperopt(BaseSearchConfig):
     kind: Literal[V1MatrixKind.HYPEROPT] = _IDENTIFIER
     max_iterations: Optional[IntOrRef] = Field(alias="maxIterations", default=None)
     metric: V1OptimizationMetric
-    algorithm: Optional[V1HyperoptAlgorithms] = None
     params: Union[Dict[str, V1HpParam], RefField]
     num_runs: Union[PositiveInt, RefField] = Field(alias="numRuns", default=None)
     seed: Optional[IntOrRef] = None

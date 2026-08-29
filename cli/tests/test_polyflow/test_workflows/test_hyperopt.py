@@ -11,7 +11,6 @@ class TestWorkflowV1Hyperopt(BaseTestCase):
     def test_hyperopt_algorithms(self):
         config_dict = {
             "kind": "hyperopt",
-            "algorithm": "tpe",
             "numRuns": 10,
             "metric": {"name": "loss", "optimization": "minimize"},
             "params": {"lr": {"kind": "choice", "value": [0.1, 0.9]}},
@@ -20,10 +19,7 @@ class TestWorkflowV1Hyperopt(BaseTestCase):
         config = V1Hyperopt.from_dict(config_dict)
         assert_equal_dict(config.to_dict(), config_dict)
 
-        config_dict["algorithm"] = "anneal"
-        config = V1Hyperopt.from_dict(config_dict)
-        assert_equal_dict(config.to_dict(), config_dict)
-
-        config_dict["algorithm"] = "rand"
-        with self.assertRaises(ValidationError):
-            V1Hyperopt.from_dict(config_dict)
+        for algorithm in ("tpe", "rand", "anneal"):
+            config_dict["algorithm"] = algorithm
+            with self.assertRaises(ValidationError):
+                V1Hyperopt.from_dict(config_dict)
