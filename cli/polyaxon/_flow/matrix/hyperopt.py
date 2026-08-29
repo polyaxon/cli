@@ -19,7 +19,6 @@ from polyaxon._flow.optimization import V1OptimizationMetric
 
 class V1HyperoptAlgorithms(str, PEnum):
     TPE = "tpe"
-    RAND = "rand"
     ANNEAL = "anneal"
 
 
@@ -28,11 +27,11 @@ class V1Hyperopt(BaseSearchConfig):
     [Hyperopt](http://hyperopt.github.io/hyperopt/) library
     to perform sequential model-based hyperparameter optimization.
 
-    the Hyperopt integration exposes 3 algorithms: `tpe`, `rand`, `anneal`.
+    the Hyperopt integration exposes 2 algorithms: `tpe`, `anneal`.
 
     Args:
         kind: hyperopt
-        algorithm: str, one of tpe, rand, anneal
+        algorithm: str, one of tpe, anneal
         params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/#discrete-values)]]  # noqa
         metric: V1OptimizationMetric
         max_iterations: int, optional
@@ -93,7 +92,7 @@ class V1Hyperopt(BaseSearchConfig):
     ### algorithm
 
     The algorithm to use from the hyperopt library, the supported
-    algorithms: `tpe`, `rand`, `anneal`.
+    algorithms: `tpe`, `anneal`.
 
     ```yaml
     >>> matrix:
