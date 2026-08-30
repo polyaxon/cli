@@ -2,21 +2,21 @@ from typing import Union
 from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field
-
 from polyaxon._flow.matrix.bayes import V1Bayes
 from polyaxon._flow.matrix.grid_search import V1GridSearch
 from polyaxon._flow.matrix.hyperband import V1Hyperband
-from polyaxon._flow.matrix.hyperopt import V1Hyperopt
 from polyaxon._flow.matrix.iterative import V1Iterative
 from polyaxon._flow.matrix.mapping import V1Mapping
 from polyaxon._flow.matrix.random_search import V1RandomSearch
+from polyaxon._flow.matrix.tpe import V1TPE
+
 
 V1Matrix = Annotated[
     Union[
         V1Bayes,
         V1GridSearch,
         V1Hyperband,
-        V1Hyperopt,
+        V1TPE,
         V1Iterative,
         V1Mapping,
         V1RandomSearch,
@@ -50,8 +50,8 @@ class MatrixMixin:
         return self.get_matrix_kind() == V1Bayes._IDENTIFIER
 
     @property
-    def has_hyperopt_matrix(self):
-        return self.get_matrix_kind() == V1Hyperopt._IDENTIFIER
+    def has_tpe_matrix(self):
+        return self.get_matrix_kind() == V1TPE._IDENTIFIER
 
     @property
     def has_iterative_matrix(self):

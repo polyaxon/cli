@@ -2,6 +2,7 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
+from polyaxon._flow.joins import V1Join
 from polyaxon._flow.matrix.bayes import (
     AcquisitionFunctions,
     GaussianProcessConfig,
@@ -10,6 +11,7 @@ from polyaxon._flow.matrix.bayes import (
     V1Bayes,
 )
 from polyaxon._flow.optimization import V1Optimization, V1OptimizationMetric
+from polyaxon._operations import get_bo_tuner
 from polyaxon._utils.test_utils import BaseTestCase
 
 
@@ -82,3 +84,23 @@ class TestWorkflowV1Bayes(BaseTestCase):
         }
         config = V1Bayes.from_dict(config_dict)
         assert_equal_dict(config.to_dict(), config_dict)
+
+    def test_bayes_tuner_operation(self):
+        matrix = V1Bayes.from_dict(
+            {
+                "kind": "bayes",
+                "metric": {"name": "loss", "optimization": "minimize"},
+                "numInitialRuns": 2,
+                "maxIterations": 10,
+                "params": {"lr": {"kind": "choice", "value": [0.1, 0.9]}},
+            }
+        )
+
+        operation = get_bo_tuner(
+            matrix=matrix,
+            join=V1Join(query="metrics.loss:<1"),
+            iteration=1,
+        )
+
+        assert operation.hub_ref == "bayes-tuner"
+        assert_equal_dict(operation.params["matrix"].value, matrix.to_light_dict())

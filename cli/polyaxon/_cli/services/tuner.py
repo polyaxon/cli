@@ -136,7 +136,7 @@ def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
 
 @tuner.command()
 @click.option(
-    "--matrix", help="A string representing the matrix configuration for hyperopt."
+    "--matrix", help="A string representing the matrix configuration for TPE."
 )
 @click.option(
     "--configs",
@@ -147,14 +147,14 @@ def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
     help="A string representing the list of metrics.",
 )
 @click.option("--iteration", type=int, help="The current iteration.")
-def hyperopt(matrix, configs, metrics, iteration):
-    """Create suggestions based on hyperopt."""
+def tpe(matrix, configs, metrics, iteration):
+    """Create suggestions using native TPE."""
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
-    from hypertune.search_managers.hyperopt.manager import HyperoptManager
+    from hypertune.search_managers.tpe.manager import TPEManager
     from polyaxon._client.run import RunClient
-    from polyaxon._flow.matrix.hyperopt import V1Hyperopt
+    from polyaxon._flow.matrix.tpe import V1TPE
 
-    matrix = V1Hyperopt.read(matrix)
+    matrix = V1TPE.read(matrix)
     if configs:
         configs = orjson_loads(configs)
     if metrics:
@@ -169,7 +169,7 @@ def hyperopt(matrix, configs, metrics, iteration):
         if retry:
             time.sleep(retry**2)
         try:
-            suggestions = HyperoptManager(config=matrix).get_suggestions(
+            suggestions = TPEManager(config=matrix).get_suggestions(
                 configs=configs, metrics=metrics
             )
             exp = None

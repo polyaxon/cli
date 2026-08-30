@@ -68,7 +68,6 @@ from polyaxon._flow.matrix.enums import (
 )
 from polyaxon._flow.matrix.grid_search import V1GridSearch
 from polyaxon._flow.matrix.hyperband import V1Hyperband
-from polyaxon._flow.matrix.hyperopt import V1Hyperopt
 from polyaxon._flow.matrix.iterative import V1Iterative
 from polyaxon._flow.matrix.mapping import V1Mapping
 from polyaxon._flow.matrix.params import (
@@ -91,6 +90,7 @@ from polyaxon._flow.matrix.params import (
     validate_pchoice,
 )
 from polyaxon._flow.matrix.random_search import V1RandomSearch
+from polyaxon._flow.matrix.tpe import V1TPE
 from polyaxon._flow.matrix.tuner import V1Tuner
 from polyaxon._flow.mounts.artifacts_mounts import V1ArtifactsMount
 from polyaxon._flow.notifications import V1Notification

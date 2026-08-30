@@ -16,15 +16,20 @@ from polyaxon._flow.matrix.tuner import V1Tuner
 from polyaxon._flow.optimization import V1OptimizationMetric
 
 
-class V1Hyperopt(BaseSearchConfig):
-    """Hyperopt is a search algorithm that is backed by the
-    [Hyperopt](http://hyperopt.github.io/hyperopt/) library
-    to perform sequential model-based hyperparameter optimization.
+class V1TPE(BaseSearchConfig):
+    """Configure Polyaxon's Tree-structured Parzen Estimator search.
 
-    The Hyperopt integration uses the `tpe` algorithm.
+    TPE uses completed trials to learn which parts of the search space are more
+    promising. It separates better and worse observations, fits a probability
+    model for each parameter in both groups, and selects values favored by the
+    better model. The first trials use random sampling to collect enough
+    observations.
+
+    Unlike grid and random search, later TPE suggestions depend on the metric
+    history from earlier trials.
 
     Args:
-        kind: hyperopt
+        kind: tpe
         params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/#discrete-values)]]  # noqa
         metric: V1OptimizationMetric
         max_iterations: int, optional
@@ -39,7 +44,7 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   maxIterations:
     >>>   metric:
     >>>   concurrency:
@@ -54,9 +59,9 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```python
     >>> from polyaxon.schemas import (
-    >>>     V1Hyperopt, V1HpLogSpace, V1HpUniform, V1FailureEarlyStopping, V1MetricEarlyStopping
+    >>>     V1TPE, V1HpLogSpace, V1HpUniform, V1FailureEarlyStopping, V1MetricEarlyStopping
     >>> )
-    >>> matrix = V1Hyperopt(
+    >>> matrix = V1TPE(
     >>>   num_runs=20,
     >>>   concurrency=2,
     >>>   seed=23,
@@ -70,14 +75,14 @@ class V1Hyperopt(BaseSearchConfig):
 
     ### kind
 
-    The kind signals to the CLI, client, and other tools that this matrix is hyperopt.
+    The kind signals to the CLI, client, and other tools that this matrix is TPE.
 
     If you are using the python client to create the mapping,
     this field is not required and is set by default.
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     ```
 
     ### concurrency
@@ -90,7 +95,7 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   concurrency: 2
     ```
 
@@ -111,7 +116,7 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   params:
     >>>     param1:
     >>>        kind: ...
@@ -127,7 +132,7 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   numRuns: 5
     ```
 
@@ -137,7 +142,7 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   maxIterations: 5
     ```
 
@@ -148,7 +153,7 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   metric:
     >>>     name: loss
     >>>     optimization: minimize
@@ -161,7 +166,7 @@ class V1Hyperopt(BaseSearchConfig):
 
      ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   seed: 523
     ```
 
@@ -174,27 +179,27 @@ class V1Hyperopt(BaseSearchConfig):
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   earlyStopping: ...
     ```
 
     ### tuner
 
     The tuner reference (w/o component hub reference) to use.
-    The component contains the logic for creating new suggestions based on hyperopt library,
+    The component contains the native TPE logic for creating new suggestions,
     users can override this section to provide a different tuner component.
 
     ```yaml
     >>> matrix:
-    >>>   kind: hyperopt
+    >>>   kind: tpe
     >>>   tuner:
-    >>>     hubRef: 'acme/my-hyperopt-tuner:version'
+    >>>     hubRef: 'acme/my-tpe-tuner:version'
     ```
     """
 
-    _IDENTIFIER = V1MatrixKind.HYPEROPT
+    _IDENTIFIER = V1MatrixKind.TPE
 
-    kind: Literal[V1MatrixKind.HYPEROPT] = _IDENTIFIER
+    kind: Literal[V1MatrixKind.TPE] = _IDENTIFIER
     max_iterations: Optional[IntOrRef] = Field(alias="maxIterations", default=None)
     metric: V1OptimizationMetric
     params: Union[Dict[str, V1HpParam], RefField]

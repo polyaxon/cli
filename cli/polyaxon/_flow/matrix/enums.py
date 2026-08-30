@@ -6,7 +6,7 @@ class V1MatrixKind(str, PEnum):
     GRID = "grid"
     HYPERBAND = "hyperband"
     BAYES = "bayes"
-    HYPEROPT = "hyperopt"
+    TPE = "tpe"
     ITERATIVE = "iterative"
     MAPPING = "mapping"
 
@@ -15,7 +15,7 @@ class V1MatrixKind(str, PEnum):
         return {
             cls.HYPERBAND,
             cls.BAYES,
-            cls.HYPEROPT,
+            cls.TPE,
             cls.ITERATIVE,
         }
 
