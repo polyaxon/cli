@@ -1,10 +1,12 @@
 from mock import MagicMock, patch
 import pytest
 
+from polyaxon import settings
 from polyaxon._k8s.agent.async_agent import AsyncAgent
 from polyaxon._k8s.executor.async_executor import AsyncExecutor
 from polyaxon._runner.agent.client import AsyncAgentClient
 from polyaxon._utils.test_utils import AsyncMock, patch_settings
+from polyaxon.exceptions import ApiException
 
 
 @pytest.mark.agent_mark
@@ -80,3 +82,29 @@ async def test_async_agent_aexit_closes_client_in_finally():
         await agent.__aexit__(None, None, None)
 
     agent.client.aclose.assert_called_once()
+
+
+@pytest.mark.agent_mark
+@pytest.mark.asyncio
+async def test_async_agent_reconcile_continues_after_collect_failure(caplog):
+    patch_settings()
+    settings.CLIENT_CONFIG.namespace = "client-namespace"
+    settings.AGENT_CONFIG.namespace = "agent-namespace"
+    agent = AsyncAgent(owner="foo", agent_uuid="uuid")
+    agent.client = MagicMock()
+    agent.client.collect_agent_data = AsyncMock(
+        side_effect=ApiException(status=500, reason="failure")
+    )
+    agent.client.reconcile_agent = AsyncMock()
+    agent.executor = MagicMock()
+    agent.executor.list_ops = AsyncMock(return_value=[])
+
+    await agent.reconcile()
+
+    agent.client.collect_agent_data.assert_called_once_with(
+        namespace="client-namespace",
+    )
+    agent.executor.list_ops.assert_called_once_with(namespace="agent-namespace")
+    assert "Agent failed to collect agent data" in caplog.text
+    assert "status=500" in caplog.text
+    assert "reason=failure" in caplog.text

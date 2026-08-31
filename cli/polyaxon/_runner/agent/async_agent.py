@@ -86,6 +86,20 @@ class BaseAsyncAgent(BaseAgent):
             ),
         )
 
+    async def collect_agent_data(self):
+        logger.info("Collecting agent data.")
+        self._last_data_collected_at = now()
+        try:
+            return await self.client.collect_agent_data(
+                namespace=settings.CLIENT_CONFIG.namespace
+            )
+        except Exception as e:
+            logger.warning(
+                "Agent failed to collect agent data: {}\nRetrying ...".format(
+                    format_agent_exception(e)
+                )
+            )
+
     async def reconcile(self):
         if (
             now() - self._last_data_collected_at
