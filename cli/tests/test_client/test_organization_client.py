@@ -54,7 +54,9 @@ class TestOrganizationClient(BaseTestCase):
             OrganizationClient(owner=None)
 
     # Organization Management Tests
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.list_organizations")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.list_organizations"
+    )
     def test_list_organizations(self, mock_list):
         """Test listing organizations"""
         mock_response = V1ListOrganizationsResponse(
@@ -68,7 +70,9 @@ class TestOrganizationClient(BaseTestCase):
         assert mock_list.call_count == 1
         assert result == mock_response
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization"
+    )
     def test_refresh_data(self, mock_get):
         """Test fetching organization data from API"""
         mock_org = V1Organization(name=self.owner, description="Test org")
@@ -81,7 +85,9 @@ class TestOrganizationClient(BaseTestCase):
         assert client.organization_data == mock_org
 
     # Member Management Tests
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.list_organization_members")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.list_organization_members"
+    )
     def test_list_members(self, mock_list):
         """Test listing organization members"""
         mock_response = V1ListOrganizationMembersResponse(
@@ -98,7 +104,9 @@ class TestOrganizationClient(BaseTestCase):
         assert mock_list.call_count == 1
         assert result == mock_response
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_member")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_member"
+    )
     def test_get_member(self, mock_get):
         """Test getting specific member details"""
         username = "test-user"
@@ -111,7 +119,9 @@ class TestOrganizationClient(BaseTestCase):
         assert mock_get.call_count == 1
         assert result == mock_member
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.create_organization_member")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.create_organization_member"
+    )
     def test_create_member(self, mock_create):
         """Test creating/inviting a new member"""
         member_data = {"user": "new-user", "role": "member"}
@@ -124,7 +134,9 @@ class TestOrganizationClient(BaseTestCase):
         assert mock_create.call_count == 1
         assert result == mock_member
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.delete_organization_member")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.delete_organization_member"
+    )
     def test_delete_member(self, mock_delete):
         """Test removing a member from organization"""
         username = "test-user"
@@ -151,7 +163,9 @@ class TestOrganizationClient(BaseTestCase):
         assert result == mock_response
 
     # Runs Management Tests - Organization Scope
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_runs"
+    )
     def test_list_runs_organization_scope(self, mock_list):
         """Test listing runs across all projects (no team)"""
         mock_response = V1ListRunsResponse(results=[V1Run(uuid=self.run_uuid)])
@@ -177,7 +191,9 @@ class TestOrganizationClient(BaseTestCase):
         mock_list.assert_called_with(self.owner, self.team, limit=10)
         assert result == mock_response
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_run")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_run"
+    )
     def test_get_run_organization_scope(self, mock_get):
         """Test getting run by UUID (organization scope)"""
         mock_run = V1Run(uuid=self.run_uuid)
@@ -203,7 +219,9 @@ class TestOrganizationClient(BaseTestCase):
         assert result == mock_run
 
     # Batch Run Operations Tests
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.delete_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.delete_organization_runs"
+    )
     def test_delete_runs_with_list(self, mock_delete):
         """Test batch deleting runs with list of UUIDs"""
         uuids = [self.uuid1, self.uuid2, self.uuid3]
@@ -216,7 +234,9 @@ class TestOrganizationClient(BaseTestCase):
         assert isinstance(call_args[1]["body"], V1Uuids)
         assert call_args[1]["body"].uuids == uuids
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.delete_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.delete_organization_runs"
+    )
     def test_delete_runs_with_v1uuids(self, mock_delete):
         """Test batch deleting runs with V1Uuids object"""
         uuids = V1Uuids(uuids=[self.uuid1, self.uuid2])
@@ -237,7 +257,9 @@ class TestOrganizationClient(BaseTestCase):
         assert mock_delete.call_count == 1
         mock_delete.assert_called_with(self.owner, self.team, body=mock.ANY)
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.stop_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.stop_organization_runs"
+    )
     def test_stop_runs_organization_scope(self, mock_stop):
         """Test batch stopping runs (organization scope)"""
         uuids = [self.uuid1, self.uuid2]
@@ -257,7 +279,9 @@ class TestOrganizationClient(BaseTestCase):
 
         assert mock_stop.call_count == 1
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.approve_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.approve_organization_runs"
+    )
     def test_approve_runs(self, mock_approve):
         """Test batch approving runs"""
         uuids = [self.uuid1, self.uuid2]
@@ -267,7 +291,9 @@ class TestOrganizationClient(BaseTestCase):
 
         assert mock_approve.call_count == 1
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.archive_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.archive_organization_runs"
+    )
     def test_archive_runs(self, mock_archive):
         """Test batch archiving runs"""
         uuids = V1Uuids(uuids=[self.uuid1, self.uuid2])
@@ -277,7 +303,9 @@ class TestOrganizationClient(BaseTestCase):
 
         assert mock_archive.call_count == 1
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.restore_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.restore_organization_runs"
+    )
     def test_restore_runs(self, mock_restore):
         """Test batch restoring runs"""
         uuids = [self.uuid1, self.uuid2]
@@ -287,7 +315,9 @@ class TestOrganizationClient(BaseTestCase):
 
         assert mock_restore.call_count == 1
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.invalidate_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.invalidate_organization_runs"
+    )
     def test_invalidate_runs_organization_scope(self, mock_invalidate):
         """Test batch invalidating runs (organization scope)"""
         uuids = [self.uuid1, self.uuid2]
@@ -307,7 +337,9 @@ class TestOrganizationClient(BaseTestCase):
 
         assert mock_invalidate.call_count == 1
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.bookmark_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.bookmark_organization_runs"
+    )
     def test_bookmark_runs(self, mock_bookmark):
         """Test batch bookmarking runs"""
         uuids = [self.uuid1, self.uuid2]
@@ -317,7 +349,9 @@ class TestOrganizationClient(BaseTestCase):
 
         assert mock_bookmark.call_count == 1
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.skip_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.skip_organization_runs"
+    )
     def test_skip_runs(self, mock_skip):
         """Test batch skipping runs"""
         uuids = [self.uuid1, self.uuid2]
@@ -327,7 +361,9 @@ class TestOrganizationClient(BaseTestCase):
 
         assert mock_skip.call_count == 1
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.tag_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.tag_organization_runs"
+    )
     def test_tag_runs(self, mock_tag):
         """Test batch tagging runs"""
         uuids = [self.uuid1, self.uuid2]
@@ -341,7 +377,9 @@ class TestOrganizationClient(BaseTestCase):
         assert call_args[1]["body"].uuids == uuids
         assert call_args[1]["body"].tags == tags
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.transfer_organization_runs")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.transfer_organization_runs"
+    )
     def test_transfer_runs(self, mock_transfer):
         """Test transferring runs to different project"""
         uuids = [self.uuid1, self.uuid2]
@@ -369,7 +407,9 @@ class TestOrganizationClient(BaseTestCase):
         with pytest.raises(ValueError):
             client._validate_kind("invalid_kind")
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_versions")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_versions"
+    )
     def test_list_versions_organization_scope(self, mock_list):
         """Test listing versions across all projects"""
         mock_response = V1ListProjectVersionsResponse(results=[])
@@ -410,7 +450,9 @@ class TestOrganizationClient(BaseTestCase):
         )
         assert result == mock_response
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_versions")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_versions"
+    )
     def test_list_component_versions(self, mock_list):
         """Test listing component versions convenience method"""
         mock_response = V1ListProjectVersionsResponse(results=[])
@@ -423,7 +465,9 @@ class TestOrganizationClient(BaseTestCase):
         call_args = mock_list.call_args
         assert call_args[0] == (self.owner, V1ProjectVersionKind.COMPONENT)
 
-    @mock.patch("polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_versions")
+    @mock.patch(
+        "polyaxon._sdk.api.organizations_v1_api.OrganizationsV1Api.get_organization_versions"
+    )
     def test_list_model_versions(self, mock_list):
         """Test listing model versions convenience method"""
         client = OrganizationClient(owner=self.owner)

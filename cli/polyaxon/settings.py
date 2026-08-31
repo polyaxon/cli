@@ -1,11 +1,9 @@
 import os
-
 from typing import TYPE_CHECKING, Optional
 
 from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
 from clipped.utils.bools import to_bool
-
 from polyaxon._env_vars.keys import ENV_KEYS_NO_CONFIG, ENV_KEYS_SET_AGENT
 from polyaxon._managers.client import ClientConfigManager
 from polyaxon._managers.home import HomeConfigManager

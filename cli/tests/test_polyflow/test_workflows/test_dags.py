@@ -1,8 +1,8 @@
 import pytest
 
 from clipped.compact.pydantic import ValidationError
-import polyaxon._flow.dags as dags
 from polyaxon import types
+import polyaxon._flow.dags as dags
 from polyaxon._flow.io.io import V1IO
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.params import ops_params

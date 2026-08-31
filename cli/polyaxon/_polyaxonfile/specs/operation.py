@@ -4,10 +4,9 @@ from clipped.utils.lists import to_list
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.io.io import V1IO
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
-from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.operations.operation import PartialV1Operation, V1Operation
 from polyaxon._flow.params.params import V1Param
 from polyaxon._flow.run.patch import validate_run_patch
-from polyaxon._flow.operations.operation import PartialV1Operation
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
 from polyaxon.exceptions import PolyaxonSchemaError

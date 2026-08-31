@@ -88,7 +88,9 @@ class TestPolyaxonfiles(BaseTestCase):
         del os.environ[ENV_KEYS_USE_GIT_REGISTRY]
 
     def test_from_public_hub(self):
-        with patch("polyaxon._sdk.api.projects_v1_api.ProjectsV1Api.get_version") as request_mock:
+        with patch(
+            "polyaxon._sdk.api.projects_v1_api.ProjectsV1Api.get_version"
+        ) as request_mock:
             request_mock.return_value = MagicMock(
                 kind=V1ProjectVersionKind.COMPONENT,
                 content=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
@@ -100,7 +102,9 @@ class TestPolyaxonfiles(BaseTestCase):
         assert operation.hub_ref == "component:12"
 
     def test_from_hub(self):
-        with patch("polyaxon._sdk.api.projects_v1_api.ProjectsV1Api.get_version") as request_mock:
+        with patch(
+            "polyaxon._sdk.api.projects_v1_api.ProjectsV1Api.get_version"
+        ) as request_mock:
             request_mock.return_value = MagicMock(
                 kind=V1ProjectVersionKind.COMPONENT,
                 content=os.path.abspath("tests/fixtures/plain/simple_job.yml"),

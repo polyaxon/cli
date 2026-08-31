@@ -1,5 +1,5 @@
-from polyaxon._flow.notifications import V1Notification
 from polyaxon._flow.environment import V1Environment
+from polyaxon._flow.notifications import V1Notification
 from polyaxon._flow.termination import V1Termination
 from polyaxon._k8s.custom_resources.crd import get_custom_object
 from polyaxon._k8s.custom_resources.dask_cluster import get_dask_cluster_custom_resource

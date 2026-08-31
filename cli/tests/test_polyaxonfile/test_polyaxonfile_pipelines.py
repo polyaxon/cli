@@ -3,16 +3,16 @@ import os
 import pytest
 
 from polyaxon._flow.component.component import V1Component
-from polyaxon._flow.io.io import V1IO
-from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
-from polyaxon._flow.run.enums import V1RunKind
-from polyaxon._flow.run.job import V1Job
 from polyaxon._flow.early_stopping import V1FailureEarlyStopping, V1MetricEarlyStopping
+from polyaxon._flow.io.io import V1IO
 from polyaxon._flow.matrix.grid_search import V1GridSearch
 from polyaxon._flow.matrix.hyperband import V1Hyperband
-from polyaxon._flow.matrix.random_search import V1RandomSearch
 from polyaxon._flow.matrix.params import V1HpChoice, V1HpLinSpace
+from polyaxon._flow.matrix.random_search import V1RandomSearch
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.run.dag import V1Dag
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._flow.run.job import V1Job
 from polyaxon._k8s.k8s_schemas import V1Container
 from polyaxon._polyaxonfile import check_polyaxonfile
 from polyaxon._polyaxonfile.check import collect_dag_components

@@ -8,8 +8,8 @@ from polyaxon import pkg
 from polyaxon._env_vars.getters.queue import get_queue_info
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.init import V1Init
-from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.matrix.enums import V1MatrixKind
+from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
