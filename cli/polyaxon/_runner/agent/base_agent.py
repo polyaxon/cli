@@ -9,6 +9,7 @@ from polyaxon._auxiliaries import V1PolyaxonInitContainer, V1PolyaxonSidecarCont
 from polyaxon._connections import V1Connection
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._runner.agent.client import AgentClient, AsyncAgentClient
+from polyaxon._runner.agent.exceptions import format_agent_exception
 from polyaxon._runner.executor import BaseExecutor
 from polyaxon._schemas.checks import ChecksConfig
 from polyaxon._schemas.lifecycle import LiveState, V1Statuses
@@ -67,7 +68,9 @@ class BaseAgent:
             )
         except Exception as e:
             logger.warning(
-                "Agent failed to collect agent data: {}\nRetrying ...".format(repr(e))
+                "Agent failed to collect agent data: {}\nRetrying ...".format(
+                    format_agent_exception(e)
+                )
             )
 
     def sync_compatible_updates(self, compatible_updates: Dict):

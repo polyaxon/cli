@@ -11,6 +11,7 @@ from clipped.utils.workers import async_exit_context, get_wait
 from polyaxon import pkg, settings
 from polyaxon._env_vars.getters import get_run_info
 from polyaxon._runner.agent.base_agent import BaseAgent
+from polyaxon._runner.agent.exceptions import format_agent_exception
 from polyaxon._sdk.schemas.v1_agent import V1Agent
 from polyaxon._sdk.schemas.v1_agent_state_response import V1AgentStateResponse
 from polyaxon._utils.fqn_utils import get_run_instance
@@ -39,12 +40,13 @@ class BaseAsyncAgent(BaseAgent):
             return self
         except (ApiException, SDKApiException, HTTPError) as e:
             message = "Could not start the agent."
-            if e.status == 404:
+            error_status = getattr(e, "status", None)
+            if error_status == 404:
                 reason = "Agent not found."
-            elif e.status == 403:
+            elif error_status == 403:
                 reason = "Agent is not approved yet or has invalid token."
             else:
-                reason = "Error {}.".format(repr(e))
+                reason = "Error {}.".format(format_agent_exception(e))
             await self.client.log_agent_failed(message="{} {}".format(message, reason))
             raise PolyaxonAgentError(message="{} {}".format(message, reason))
         except Exception as e:
@@ -161,7 +163,9 @@ class BaseAsyncAgent(BaseAgent):
                         timeout = get_wait(index, max_interval=self.max_interval)
                         logger.info("Sleeping for {} seconds".format(timeout))
         except Exception as e:
-            logger.warning("Agent failed to start: {}".format(repr(e)))
+            logger.warning(
+                "Agent failed to start: {}".format(format_agent_exception(e))
+            )
         finally:
             self.end()
 

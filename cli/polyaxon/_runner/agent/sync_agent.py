@@ -12,6 +12,7 @@ from clipped.utils.workers import get_pool_workers, get_wait, sync_exit_context
 from polyaxon import pkg, settings
 from polyaxon._env_vars.getters import get_run_info
 from polyaxon._runner.agent.base_agent import BaseAgent
+from polyaxon._runner.agent.exceptions import format_agent_exception
 from polyaxon._utils.fqn_utils import get_run_instance
 from polyaxon.client import V1Agent, V1AgentStateResponse
 from polyaxon.exceptions import (
@@ -38,12 +39,13 @@ class BaseSyncAgent(BaseAgent):
             return self
         except (ApiException, SDKApiException, HTTPError) as e:
             message = "Could not start the agent."
-            if e.status == 404:
+            error_status = getattr(e, "status", None)
+            if error_status == 404:
                 reason = "Agent not found."
-            elif e.status == 403:
+            elif error_status == 403:
                 reason = "Agent is not approved yet or has invalid token."
             else:
-                reason = "Error {}.".format(repr(e))
+                reason = "Error {}.".format(format_agent_exception(e))
             self.client.log_agent_failed(message="{} {}".format(message, reason))
             raise PolyaxonAgentError(message="{} {}".format(message, reason))
         except Exception as e:
