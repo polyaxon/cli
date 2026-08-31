@@ -21,7 +21,7 @@ def get_cleaner_resources() -> k8s_schemas.V1ResourceRequirements:
 class V1PolyaxonCleaner(BaseServiceConfig):
     """Polyaxon cleaner is a helper job that gets scheduled to clean artifacts when a run is deleted.
 
-    Polyaxon CE and Polyaxon Agent are deployed with default values for the cleaner,
+    Polyaxon CE and Polyaxon Agent (compute cluster) are deployed with default values for the cleaner,
     however if you need to control or update one or several aspects
     of how the cleaner is scheduled, this guide walks through the possible options.
 

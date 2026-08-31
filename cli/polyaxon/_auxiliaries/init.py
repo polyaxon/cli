@@ -25,7 +25,7 @@ class V1PolyaxonInitContainer(BaseSchemaModel):
     """Polyaxon init is a helper container that initialize the environment
     required for the main container to function correctly.
 
-    Polyaxon CE and Polyaxon Agent are deployed with default values for the init container,
+    Polyaxon CE and Polyaxon Agent (compute cluster) are deployed with default values for the init container,
     however if you need to control or update one or several aspects
     of how the init container that gets injected, this guide walks through the possible options.
 

@@ -20,7 +20,7 @@ class V1PolyaxonSidecarContainer(BaseSchemaModel):
     """Polyaxon sidecar is a helper container that collects outputs, artifacts,
     and metadata about the main container.
 
-    Polyaxon CE and Polyaxon Agent are deployed with default values for the sidecar container,
+    Polyaxon CE and Polyaxon Agent (compute cluster) are deployed with default values for the sidecar container,
     however if you need to control or update one or several aspects
     of how the sidecar container that gets injected, this guide walks through the possible options.
 
