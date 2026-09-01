@@ -551,7 +551,6 @@ def run(
     from polyaxon._env_vars.getters import get_project_or_local
     from polyaxon._managers.git import GitConfigManager
     from polyaxon._polyaxonfile import check_polyaxonfile
-    from polyaxon._utils import cache
 
     if log and shell:
         Printer.error(
