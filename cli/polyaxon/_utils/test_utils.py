@@ -71,7 +71,7 @@ def patch_settings(
     settings.CLIENT_CONFIG = None
     if set_client:
         settings.CLIENT_CONFIG = ClientConfig(host="1.2.3.4")
-        settings.CLIENT_CONFIG.tracking_timeout = 0
+        settings.CLIENT_CONFIG.tracking_flush_delay = 0
 
     settings.CLI_CONFIG = None
     if set_cli:

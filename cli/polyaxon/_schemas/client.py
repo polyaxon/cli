@@ -33,7 +33,7 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_SSL_CA_CERT,
     ENV_KEYS_TIME_ZONE,
     ENV_KEYS_TIMEOUT,
-    ENV_KEYS_TRACKING_TIMEOUT,
+    ENV_KEYS_TRACKING_FLUSH_DELAY,
     ENV_KEYS_VERIFY_SSL,
     ENV_KEYS_WATCH_INTERVAL,
 )
@@ -65,8 +65,8 @@ class ClientConfig(BaseSchemaModel):
     in_cluster: Optional[bool] = Field(default=False, alias=ENV_KEYS_K8S_IN_CLUSTER)
     no_op: Optional[bool] = Field(default=False, alias=ENV_KEYS_NO_OP)
     timeout: Optional[float] = Field(default=60, alias=ENV_KEYS_TIMEOUT)
-    tracking_timeout: Optional[float] = Field(
-        default=1, alias=ENV_KEYS_TRACKING_TIMEOUT
+    tracking_flush_delay: Optional[float] = Field(
+        default=1, alias=ENV_KEYS_TRACKING_FLUSH_DELAY
     )
     timezone: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_TIME_ZONE)
     watch_interval: Optional[int] = Field(default=5, alias=ENV_KEYS_WATCH_INTERVAL)

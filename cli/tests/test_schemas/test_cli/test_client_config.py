@@ -1,6 +1,11 @@
 import pytest
 
-from polyaxon._env_vars.keys import ENV_KEYS_DEBUG, ENV_KEYS_HOST, ENV_KEYS_VERIFY_SSL
+from polyaxon._env_vars.keys import (
+    ENV_KEYS_DEBUG,
+    ENV_KEYS_HOST,
+    ENV_KEYS_TRACKING_FLUSH_DELAY,
+    ENV_KEYS_VERIFY_SSL,
+)
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._services.auth import AuthenticationTypes
 from polyaxon._utils.test_utils import BaseTestCase
@@ -24,6 +29,12 @@ class TestClientConfig(BaseTestCase):
         assert config.host == "http://localhost:8000"
         assert config.base_url == "http://localhost:8000/api/v1"
         assert config.verify_ssl is True
+
+    def test_tracking_flush_delay(self):
+        assert self.config.tracking_flush_delay == 1
+
+        config = ClientConfig.from_dict({ENV_KEYS_TRACKING_FLUSH_DELAY: 0})
+        assert config.tracking_flush_delay == 0
 
     def test_base_urls(self):
         assert self.config.base_url == "{}/api/v1".format(self.host)
