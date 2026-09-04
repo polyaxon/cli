@@ -64,7 +64,7 @@ class ClientConfig(BaseSchemaModel):
     is_offline: Optional[bool] = Field(default=False, alias=ENV_KEYS_IS_OFFLINE)
     in_cluster: Optional[bool] = Field(default=False, alias=ENV_KEYS_K8S_IN_CLUSTER)
     no_op: Optional[bool] = Field(default=False, alias=ENV_KEYS_NO_OP)
-    timeout: Optional[float] = Field(default=20, alias=ENV_KEYS_TIMEOUT)
+    timeout: Optional[float] = Field(default=60, alias=ENV_KEYS_TIMEOUT)
     tracking_timeout: Optional[float] = Field(
         default=1, alias=ENV_KEYS_TRACKING_TIMEOUT
     )
@@ -176,7 +176,7 @@ class ClientConfig(BaseSchemaModel):
                 "Api config requires at least a host if not running in-cluster."
             )
 
-        config = Configuration()
+        config = Configuration(timeout=self.timeout)
         config.retries = self.retries
         config.debug = self.debug
         config.host = clean_host(self.host)

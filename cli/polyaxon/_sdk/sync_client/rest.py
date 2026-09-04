@@ -37,6 +37,8 @@ class RESTResponse(io.IOBase):
 
 class RESTClientObject(object):
     def __init__(self, configuration, pools_size=4, maxsize=None):
+        self.configuration = configuration
+
         # urllib3.PoolManager will pass all kw parameters to connectionpool
         # https://github.com/shazow/urllib3/blob/f9409436f83aeb79fbaf090181cd81b784f1b8ce/urllib3/poolmanager.py#L75  # noqa: E501
         # https://github.com/shazow/urllib3/blob/f9409436f83aeb79fbaf090181cd81b784f1b8ce/urllib3/connectionpool.py#L680  # noqa: E501
@@ -140,13 +142,17 @@ class RESTClientObject(object):
         # so reset query_params to empty dict
         query_params = {}
 
+        request_timeout = _request_timeout
+        if request_timeout is None:
+            request_timeout = self.configuration.timeout
+
         timeout = None
-        if _request_timeout:
-            if isinstance(_request_timeout, (int, float)):  # noqa: E501,F821
-                timeout = urllib3.Timeout(total=_request_timeout)
-            elif isinstance(_request_timeout, tuple) and len(_request_timeout) == 2:
+        if request_timeout:
+            if isinstance(request_timeout, (int, float)):  # noqa: E501,F821
+                timeout = urllib3.Timeout(total=request_timeout)
+            elif isinstance(request_timeout, tuple) and len(request_timeout) == 2:
                 timeout = urllib3.Timeout(
-                    connect=_request_timeout[0], read=_request_timeout[1]
+                    connect=request_timeout[0], read=request_timeout[1]
                 )
 
         try:

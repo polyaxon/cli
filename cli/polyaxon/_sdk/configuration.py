@@ -51,6 +51,7 @@ class Configuration(object):
           The validation of enums is performed for variables with defined enum values before.
         :param ssl_ca_cert: str - the path to a file of concatenated CA certificates
           in PEM format.
+        :param timeout: Default HTTP request timeout in seconds.
 
         :Example:
 
@@ -89,6 +90,7 @@ class Configuration(object):
         server_operation_index=None,
         server_operation_variables=None,
         ssl_ca_cert=None,
+        timeout=None,
     ):
         """Constructor"""
         self._base_path = "http://localhost" if host is None else host
@@ -189,6 +191,9 @@ class Configuration(object):
         """
         self.retries = None
         """Adding retries to override urllib3 default value 3
+        """
+        self.timeout = timeout
+        """Default HTTP request timeout in seconds.
         """
         # Enable client side validation
         self.client_side_validation = True

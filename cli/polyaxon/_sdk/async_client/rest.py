@@ -116,7 +116,9 @@ class RESTClientObject(object):
         # url already contains the URL query string
         # so reset query_params to empty dict
         query_params = {}
-        timeout = _request_timeout or 5 * 60
+        timeout = _request_timeout
+        if timeout is None:
+            timeout = self.configuration.timeout
 
         if "Content-Type" not in headers:
             headers["Content-Type"] = "application/json"
