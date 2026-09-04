@@ -19,15 +19,23 @@ class TestAgent(BaseTestCase):
         assert isinstance(agent.client, AgentClient)
         assert register.call_count == 0
 
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.check_agent_connection")
     @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.sync_agent")
     @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.create_agent_status")
     @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent_state")
     @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent")
     @patch("polyaxon._k8s.executor.executor.Executor.manager")
     def test_init_agent(
-        self, _, get_agent, get_agent_state, create_agent_status, sync_agent
+        self,
+        _,
+        get_agent,
+        get_agent_state,
+        create_agent_status,
+        sync_agent,
+        check_agent_connection,
     ):
         get_agent.return_value = MagicMock(status=None, live_state=1)
+        check_agent_connection.return_value = {"status": "passed", "results": []}
         get_agent_state.return_value = MagicMock(status=None, live_state=1)
         agent = Agent(owner="foo", agent_uuid="uuid")
         agent.executor.manager.get_version.return_value = {}
@@ -38,6 +46,7 @@ class TestAgent(BaseTestCase):
         assert get_agent_state.call_count == 0
         assert create_agent_status.call_count == 0
         assert sync_agent.call_count == 0
+        assert check_agent_connection.call_count == 0
         assert agent.executor.manager.get_version.call_count == 0
 
         agent._enter()
@@ -48,4 +57,5 @@ class TestAgent(BaseTestCase):
         assert get_agent_state.call_count == 0
         assert create_agent_status.call_count == 1
         assert sync_agent.call_count == 1
+        assert check_agent_connection.call_count == 1
         assert agent.executor.manager.get_version.call_count == 1

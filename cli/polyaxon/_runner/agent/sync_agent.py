@@ -26,6 +26,32 @@ from polyaxon.logger import logger
 class BaseSyncAgent(BaseAgent):
     IS_ASYNC = False
 
+    def _check_connections(self):
+        result = None
+        try:
+            result = self.client.check_agent_connections(
+                namespace=settings.CLIENT_CONFIG.namespace
+            )
+            self._validate_connections_check(result)
+        except Exception as e:
+            message, meta_info = self._get_connections_check_failure(result, e)
+            try:
+                self.client.log_agent_failed(
+                    message=message,
+                    reason=self.CONNECTION_CHECK_REASON,
+                    meta_info=meta_info,
+                )
+            except Exception as report_error:
+                logger.warning(
+                    "Agent failed to report connection check failure: {}".format(
+                        format_agent_exception(report_error)
+                    )
+                )
+            if isinstance(e, PolyaxonAgentError):
+                raise
+            raise PolyaxonAgentError(message=message) from e
+        logger.info("Agent connection check passed.")
+
     def _enter(self):
         if not self.client._is_managed:
             return self
@@ -33,6 +59,7 @@ class BaseSyncAgent(BaseAgent):
         try:
             agent = self.client.get_info()
             self._check_status(agent)
+            self._check_connections()
             self.sync()
             self.client.log_agent_running()
             logger.warning("Agent is running.")
@@ -48,6 +75,8 @@ class BaseSyncAgent(BaseAgent):
                 reason = "Error {}.".format(format_agent_exception(e))
             self.client.log_agent_failed(message="{} {}".format(message, reason))
             raise PolyaxonAgentError(message="{} {}".format(message, reason))
+        except PolyaxonAgentError:
+            raise
         except Exception as e:
             raise PolyaxonAgentError(f"Unexpected error: {str(e)}") from e
 
@@ -59,7 +88,18 @@ class BaseSyncAgent(BaseAgent):
         time.sleep(1)
 
     def __enter__(self):
-        return self._enter()
+        try:
+            return self._enter()
+        except BaseException:
+            try:
+                self.client.close()
+            except Exception as e:
+                logger.warning(
+                    "Agent client cleanup after startup failure failed: {}".format(
+                        format_agent_exception(e)
+                    )
+                )
+            raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:

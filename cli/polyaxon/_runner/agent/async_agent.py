@@ -26,14 +26,42 @@ from polyaxon.logger import logger
 class BaseAsyncAgent(BaseAgent):
     IS_ASYNC = True
 
+    async def _check_connections(self):
+        result = None
+        try:
+            result = await self.client.check_agent_connections(
+                namespace=settings.CLIENT_CONFIG.namespace
+            )
+            self._validate_connections_check(result)
+        except Exception as e:
+            message, meta_info = self._get_connections_check_failure(result, e)
+            try:
+                await self.client.log_agent_failed(
+                    message=message,
+                    reason=self.CONNECTION_CHECK_REASON,
+                    meta_info=meta_info,
+                )
+            except Exception as report_error:
+                logger.warning(
+                    "Agent failed to report connection check failure: {}".format(
+                        format_agent_exception(report_error)
+                    )
+                )
+            if isinstance(e, PolyaxonAgentError):
+                raise
+            raise PolyaxonAgentError(message=message) from e
+        logger.info("Agent connection check passed.")
+
     async def _enter(self):
         logger.warning("Agent is starting.")
-        await self.executor.refresh()
         if not self.client._is_managed:
+            await self.executor.refresh()
             return self
         try:
             agent = await self.client.get_info()
             self._check_status(agent)
+            await self._check_connections()
+            await self.executor.refresh()
             await self.sync()
             await self.client.log_agent_running()
             logger.warning("Agent is running.")
@@ -49,6 +77,8 @@ class BaseAsyncAgent(BaseAgent):
                 reason = "Error {}.".format(format_agent_exception(e))
             await self.client.log_agent_failed(message="{} {}".format(message, reason))
             raise PolyaxonAgentError(message="{} {}".format(message, reason))
+        except PolyaxonAgentError:
+            raise
         except Exception as e:
             raise PolyaxonAgentError from e
 
@@ -60,7 +90,18 @@ class BaseAsyncAgent(BaseAgent):
         await asyncio.sleep(1)
 
     async def __aenter__(self):
-        return await self._enter()
+        try:
+            return await self._enter()
+        except BaseException:
+            try:
+                await self.client.aclose()
+            except Exception as e:
+                logger.warning(
+                    "Agent client cleanup after startup failure failed: {}".format(
+                        format_agent_exception(e)
+                    )
+                )
+            raise
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         try:

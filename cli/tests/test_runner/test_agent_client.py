@@ -2,6 +2,7 @@ from mock import MagicMock, patch
 import pytest
 
 from polyaxon._runner.agent.client import AgentClient, AsyncAgentClient
+from polyaxon._schemas.lifecycle import V1Statuses
 from polyaxon.exceptions import PolyaxonClientException
 
 
@@ -54,6 +55,52 @@ async def test_agent_client_aclose_closes_owned_clients(client_cls):
 
     assert public_client.aclose_calls == 1
     assert internal_client.aclose_calls == 1
+
+
+def test_agent_client_checks_connections_with_public_client():
+    public_client = ClientMock(is_async=False)
+    internal_client = ClientMock(is_async=False)
+    client = AgentClient(
+        owner="foo",
+        agent_uuid="uuid",
+        client=public_client,
+        internal_client=internal_client,
+    )
+
+    client.check_agent_connections(namespace="agent-namespace")
+
+    public_client.agents_v1.check_agent_connection.assert_called_once_with(
+        namespace="agent-namespace",
+        owner="foo",
+        uuid="uuid",
+        body={},
+    )
+    internal_client.agents_v1.check_agent_connection.assert_not_called()
+
+
+def test_agent_client_reports_failed_status_with_details():
+    public_client = ClientMock(is_async=False)
+    details = {"connection_check": {"status": "failed", "results": []}}
+    client = AgentClient(
+        owner="foo",
+        agent_uuid="uuid",
+        client=public_client,
+    )
+
+    client.log_agent_failed(
+        message="Agent connection check failed.",
+        reason="AgentConnectionCheck",
+        meta_info=details,
+    )
+
+    call = public_client.agents_v1.create_agent_status.call_args
+    assert call.kwargs["owner"] == "foo"
+    assert call.kwargs["uuid"] == "uuid"
+    condition = call.kwargs["body"]["condition"]
+    assert condition.type == V1Statuses.FAILED
+    assert condition.reason == "AgentConnectionCheck"
+    assert condition.message == "Agent connection check failed."
+    assert condition.meta_info == details
 
 
 def test_agent_client_close_does_not_close_injected_clients():

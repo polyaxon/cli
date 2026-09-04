@@ -63,6 +63,14 @@ class _AgentClientBase:
     def get_info(self) -> V1Agent:
         return self.client.agents_v1.get_agent(owner=self.owner, uuid=self.agent_uuid)
 
+    def check_agent_connections(self, namespace: str):
+        return self.client.agents_v1.check_agent_connection(
+            namespace=namespace,
+            owner=self.owner,
+            uuid=self.agent_uuid,
+            body={},
+        )
+
     def get_state(self) -> V1AgentStateResponse:
         if self._is_managed:
             return self.client.agents_v1.get_agent_state(
@@ -71,12 +79,20 @@ class _AgentClientBase:
         return self.client.agents_v1.get_global_state(owner=self.owner)
 
     def log_agent_status(
-        self, status: str, reason: Optional[str] = None, message: Optional[str] = None
+        self,
+        status: str,
+        reason: Optional[str] = None,
+        message: Optional[str] = None,
+        meta_info: Optional[Dict] = None,
     ):
         if not self._is_managed:
             return
         status_condition = V1StatusCondition.get_condition(
-            type=status, status=True, reason=reason, message=message
+            type=status,
+            status=True,
+            reason=reason,
+            message=message,
+            meta_info=meta_info,
         )
         return self.client.agents_v1.create_agent_status(
             owner=self.owner,
@@ -113,9 +129,17 @@ class _AgentClientBase:
     def log_agent_running(self):
         return self.log_agent_status(status=V1Statuses.RUNNING, reason="AgentLogger")
 
-    def log_agent_failed(self, message=None):
+    def log_agent_failed(
+        self,
+        message: Optional[str] = None,
+        reason: str = "AgentLogger",
+        meta_info: Optional[Dict] = None,
+    ):
         return self.log_agent_status(
-            status=V1Statuses.FAILED, reason="AgentLogger", message=message
+            status=V1Statuses.FAILED,
+            reason=reason,
+            message=message,
+            meta_info=meta_info,
         )
 
     def log_agent_warning(self):

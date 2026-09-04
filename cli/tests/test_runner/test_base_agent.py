@@ -1,10 +1,12 @@
 from mock import MagicMock, patch
 import pytest
 
+from polyaxon import settings
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._runner.agent.client import AgentClient, AsyncAgentClient
 from polyaxon._runner.agent.sync_agent import BaseSyncAgent
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonAgentError
 
 
 class DummyAgent(BaseSyncAgent):
@@ -16,6 +18,7 @@ class TestBaseSyncAgent(BaseTestCase):
     SET_AGENT_SETTINGS = True
 
     @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._check_status")
+    @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.check_agent_connection")
     @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.sync_agent")
     @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.create_agent_status")
     @patch("polyaxon._sdk.api.agents_v1_api.AgentsV1Api.get_agent_state")
@@ -28,8 +31,10 @@ class TestBaseSyncAgent(BaseTestCase):
         get_agent_state,
         create_agent_status,
         sync_agent,
+        check_agent_connection,
         agent_check,
     ):
+        check_agent_connection.return_value = {"status": "passed", "results": []}
         agent = DummyAgent()
         agent.executor.manager.get_version.return_value = {}
         assert agent.max_interval == 4
@@ -81,6 +86,13 @@ class TestBaseSyncAgent(BaseTestCase):
         assert get_agent_state.call_count == 0
         assert create_agent_status.call_count == 1
         assert sync_agent.call_count == 1
+        assert check_agent_connection.call_count == 1
+        check_agent_connection.assert_called_with(
+            namespace=settings.CLIENT_CONFIG.namespace,
+            owner="foo",
+            uuid="uuid",
+            body={},
+        )
         assert agent.executor.manager.get_version.call_count == 1
         assert agent_check.call_count == 1
 
@@ -110,8 +122,84 @@ class TestBaseSyncAgent(BaseTestCase):
         assert get_agent_state.call_count == 0
         assert create_agent_status.call_count == 2
         assert sync_agent.call_count == 2
+        assert check_agent_connection.call_count == 2
         assert agent.executor.manager.get_version.call_count == 1
         assert agent_check.call_count == 2
+
+    def test_connection_failure_blocks_sync_agent_startup(self):
+        result = {"status": "failed", "results": []}
+        agent = DummyAgent(owner="foo", agent_uuid="uuid")
+        agent.client = MagicMock()
+        agent.client._is_managed = True
+        agent.client.get_info.return_value = MagicMock(status=None, live_state=1)
+        agent.client.check_agent_connections.return_value = result
+        agent.sync = MagicMock()
+
+        with pytest.raises(PolyaxonAgentError, match="Agent connection check failed"):
+            agent.__enter__()
+
+        agent.client.check_agent_connections.assert_called_once_with(
+            namespace=settings.CLIENT_CONFIG.namespace
+        )
+        agent.sync.assert_not_called()
+        agent.client.log_agent_running.assert_not_called()
+        agent.client.log_agent_failed.assert_called_once_with(
+            message="Agent connection check failed: {}".format(result),
+            reason="AgentConnectionCheck",
+            meta_info={"connection_check": result},
+        )
+        agent.client.close.assert_called_once()
+
+    def test_connection_request_failure_blocks_sync_agent_startup(self):
+        agent = DummyAgent(owner="foo", agent_uuid="uuid")
+        agent.client = MagicMock()
+        agent.client._is_managed = True
+        agent.client.get_info.return_value = MagicMock(status=None, live_state=1)
+        agent.client.check_agent_connections.side_effect = TimeoutError()
+        agent.sync = MagicMock()
+
+        with pytest.raises(
+            PolyaxonAgentError, match="Agent connection check request failed"
+        ):
+            agent.__enter__()
+
+        failure = agent.client.log_agent_failed.call_args.kwargs
+        assert failure["reason"] == "AgentConnectionCheck"
+        check = failure["meta_info"]["connection_check"]
+        assert check["status"] == "failed"
+        assert check["error"]["code"] == "connection_check_request_failed"
+        assert check["error"]["exception"] == "TimeoutError"
+        agent.sync.assert_not_called()
+        agent.client.log_agent_running.assert_not_called()
+        agent.client.close.assert_called_once()
+
+    def test_invalid_connection_response_blocks_sync_agent_startup(self):
+        agent = DummyAgent(owner="foo", agent_uuid="uuid")
+        agent.client = MagicMock()
+        agent.client._is_managed = True
+        agent.client.get_info.return_value = MagicMock(status=None, live_state=1)
+        agent.client.check_agent_connections.return_value = None
+        agent.sync = MagicMock()
+
+        with pytest.raises(PolyaxonAgentError, match="returned an invalid response"):
+            agent.__enter__()
+
+        agent.client.log_agent_failed.assert_called_once_with(
+            message="Agent connection check returned an invalid response.",
+            reason="AgentConnectionCheck",
+            meta_info={
+                "connection_check": {
+                    "status": "failed",
+                    "error": {
+                        "code": "connection_check_invalid_response",
+                        "exception": "PolyaxonAgentError",
+                    },
+                }
+            },
+        )
+        agent.sync.assert_not_called()
+        agent.client.log_agent_running.assert_not_called()
+        agent.client.close.assert_called_once()
 
     @patch("polyaxon._runner.agent.sync_agent.BaseSyncAgent._enter")
     def test_init_agent_component(self, register):

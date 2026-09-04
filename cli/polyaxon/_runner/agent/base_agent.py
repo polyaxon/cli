@@ -14,7 +14,7 @@ from polyaxon._runner.executor import BaseExecutor
 from polyaxon._schemas.checks import ChecksConfig
 from polyaxon._schemas.lifecycle import LiveState, V1Statuses
 from polyaxon.client import V1AgentStateResponse
-from polyaxon.exceptions import PolyaxonConverterError
+from polyaxon.exceptions import PolyaxonAgentError, PolyaxonConverterError
 from polyaxon.logger import logger
 
 
@@ -25,6 +25,7 @@ class BaseAgent:
     SLEEP_ARCHIVED_TIME = 60 * 60
     SLEEP_AGENT_DATA_COLLECT_TIME = 60 * 15
     SLEEP_AGENT_DATA_RECONCILE_TIME = 60 * 5
+    CONNECTION_CHECK_REASON = "AgentConnectionCheck"
     IS_ASYNC = False
 
     def __init__(
@@ -118,6 +119,48 @@ class BaseAgent:
         if not config:
             return False
         return not config.should_check(interval=interval)
+
+    @staticmethod
+    def _validate_connections_check(result: Any) -> None:
+        if isinstance(result, dict) and result.get("status") == "passed":
+            return
+        if not isinstance(result, dict):
+            raise PolyaxonAgentError(
+                message="Agent connection check returned an invalid response."
+            )
+        raise PolyaxonAgentError(
+            message="Agent connection check failed: {}".format(result)
+        )
+
+    @staticmethod
+    def _get_connections_check_failure(
+        result: Any, exception: Exception
+    ) -> Tuple[str, Dict]:
+        if isinstance(exception, PolyaxonAgentError):
+            message = str(exception)
+            details = (
+                result
+                if isinstance(result, dict)
+                else {
+                    "status": "failed",
+                    "error": {
+                        "code": "connection_check_invalid_response",
+                        "exception": exception.__class__.__name__,
+                    },
+                }
+            )
+        else:
+            error = format_agent_exception(exception)
+            message = "Agent connection check request failed: {}".format(error)
+            details = {
+                "status": "failed",
+                "error": {
+                    "code": "connection_check_request_failed",
+                    "exception": exception.__class__.__name__,
+                    "message": error,
+                },
+            }
+        return message, {"connection_check": details}
 
     def refresh_executor(self):
         raise NotImplementedError
