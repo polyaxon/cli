@@ -1,3 +1,5 @@
+import hashlib
+import re
 from typing import Optional
 
 
@@ -28,15 +30,24 @@ def generate_container_name(
 ) -> str:
     import uuid
 
-    prefix = prefix or "container"
-    unique_value = uuid.uuid4().hex[:10]
+    name = prefix or "container"
     if suffix:
-        suffix = suffix.replace("_", "-")
-        if unique:
-            suffix = "{}-{}".format(suffix, unique_value)
-    else:
-        suffix = unique_value
-    return "{}-{}".format(prefix, suffix)
+        name = "{}-{}".format(name, suffix)
+
+    unique_value = uuid.uuid4().hex[:10] if unique or not suffix else None
+    candidate = "{}-{}".format(name, unique_value) if unique_value else name
+    if len(candidate) <= 63 and re.fullmatch(
+        r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", candidate
+    ):
+        return candidate
+
+    name = re.sub(r"[^a-z0-9-]+", "-", name.lower()).strip("-") or "container"
+    if unique_value is None:
+        if len(name) <= 63:
+            return name
+        unique_value = hashlib.sha256(candidate.encode("utf-8")).hexdigest()[:10]
+
+    return "{}-{}".format(name[:52].rstrip("-"), unique_value)
 
 
 def sanitize_container_name(name: str) -> str:
