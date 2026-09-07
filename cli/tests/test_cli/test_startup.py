@@ -15,19 +15,27 @@ HEAVY_STARTUP_MODULES = {
     "polyaxon._polyaxonfile",
     "polyaxon._sdk.api",
     "polyaxon.settings",
+    "rich",
 }
 
 
 @pytest.mark.cli_mark
-def test_cli_import_does_not_load_command_dependencies():
+@pytest.mark.parametrize("show_help", [False, True])
+def test_cli_import_does_not_load_command_dependencies(show_help):
     code = """
+from contextlib import redirect_stdout
+from io import StringIO
 import sys
 
 from polyaxon.cli import cli
 
+if {show_help!r}:
+    with redirect_stdout(StringIO()):
+        cli.main(["--help"], standalone_mode=False)
+
 heavy_modules = {heavy_modules!r}
 print("\\n".join(sorted(heavy_modules.intersection(sys.modules))))
-""".format(heavy_modules=HEAVY_STARTUP_MODULES)
+""".format(heavy_modules=HEAVY_STARTUP_MODULES, show_help=show_help)
 
     result = subprocess.run(
         [sys.executable, "-c", code],
