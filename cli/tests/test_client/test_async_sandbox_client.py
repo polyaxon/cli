@@ -275,7 +275,7 @@ async def test_async_sandbox_client_does_not_expose_namespace_constructor_arg():
 async def test_async_sandbox_client_can_initialize_without_run_uuid_for_create():
     patch_settings()
 
-    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
         client = AsyncSandboxClient(
             owner=OWNER,
             project=PROJECT,
@@ -288,7 +288,7 @@ async def test_async_sandbox_client_can_initialize_without_run_uuid_for_create()
 @pytest.mark.asyncio
 async def test_async_sandbox_operations_require_run_uuid_before_create():
     patch_settings()
-    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
         client = AsyncSandboxClient(
             owner=OWNER,
             project=PROJECT,
@@ -308,7 +308,7 @@ async def test_async_create_builds_default_sandbox_service_and_mutates_state():
     )
     sdk_client.runs_v1.create_run = AsyncMock(return_value=created)
     patch_settings()
-    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
         client = AsyncSandboxClient(
             owner=OWNER,
             project=PROJECT,
@@ -350,7 +350,7 @@ async def test_async_create_merges_sandbox_plugin_into_existing_inline_content()
         )
     )
     patch_settings()
-    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
         client = AsyncSandboxClient(
             owner=OWNER,
             project=PROJECT,
@@ -377,7 +377,7 @@ async def test_async_create_rejects_non_service_inline_content():
         )
     )
     patch_settings()
-    with patch("polyaxon._client.sandbox.get_run_or_local", return_value=None):
+    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
         client = AsyncSandboxClient(
             owner=OWNER,
             project=PROJECT,

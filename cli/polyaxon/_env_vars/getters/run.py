@@ -1,5 +1,7 @@
 import os
-from typing import Optional
+from typing import NamedTuple, Optional
+
+import click
 
 from clipped.formatting import Printer
 from clipped.utils.bools import to_bool
@@ -9,35 +11,80 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_COLLECT_RESOURCES,
     ENV_KEYS_RUN_INSTANCE,
 )
+from polyaxon._utils.fqn_utils import split_owner_team_space
 from polyaxon.exceptions import PolyaxonClientException
 
 
-def get_run_or_local(run_uuid=None, is_cli: bool = False):
+class _RunContext(NamedTuple):
+    uuid: Optional[str]
+    owner: Optional[str] = None
+    project: Optional[str] = None
+    path: Optional[str] = None
+
+    def validate(self, owner: Optional[str], project: Optional[str]):
+        if not self.path or not self.uuid:
+            return
+
+        cached_owner, _ = split_owner_team_space(self.owner)
+        owner, _ = split_owner_team_space(owner)
+        if (cached_owner and owner and cached_owner != owner) or (
+            self.project and project and self.project != project
+        ):
+            raise PolyaxonClientException(
+                "Cached run `{}/{}/{}` from `{}` conflicts with project `{}/{}`. "
+                "Provide both `--project OWNER/PROJECT` and `--uid UUID` in the CLI, "
+                "or `owner`, `project`, and `run_uuid` in the Python client.".format(
+                    cached_owner or "unknown",
+                    self.project or "unknown",
+                    self.uuid,
+                    self.path,
+                    owner,
+                    project,
+                )
+            )
+
+
+def _get_run_context(run_uuid=None, is_cli: bool = False) -> _RunContext:
     from polyaxon._managers.run import RunConfigManager
 
     if run_uuid:
-        return run_uuid
+        return _RunContext(uuid=run_uuid)
     if is_cli:
-        return RunConfigManager.get_config_or_raise().uuid
-
-    try:
-        run = RunConfigManager.get_config()
-    except TypeError:
-        Printer.error(
-            "Found an invalid run config or run config cache, "
-            "if you are using Polyaxon CLI please run: "
-            "`polyaxon config purge --cache-only`",
-            sys_exit=True,
-        )
+        run = RunConfigManager.get_config_or_raise()
+    else:
+        try:
+            run = RunConfigManager.get_config()
+        except TypeError:
+            Printer.error(
+                "Found an invalid run config or run config cache, "
+                "if you are using Polyaxon CLI please run: "
+                "`polyaxon config purge --cache-only`",
+                sys_exit=True,
+            )
     if run:
-        return run.uuid
-    return None
+        return _RunContext(
+            uuid=run.uuid,
+            owner=run.owner,
+            project=run.project,
+            path=os.path.abspath(RunConfigManager.get_config_filepath(create=False)),
+        )
+    return _RunContext(uuid=None)
+
+
+def get_run_or_local(run_uuid=None, is_cli: bool = False):
+    return _get_run_context(run_uuid, is_cli=is_cli).uuid
 
 
 def get_project_run_or_local(project=None, run_uuid=None, is_cli: bool = True):
     owner, team, project_name = get_project_or_local(project, is_cli=is_cli)
-    run_uuid = get_run_or_local(run_uuid, is_cli=is_cli)
-    return owner, team, project_name, run_uuid
+    context = _get_run_context(run_uuid, is_cli=is_cli)
+    try:
+        context.validate(owner, project_name)
+    except PolyaxonClientException as e:
+        if is_cli:
+            raise click.ClickException(str(e)) from e
+        raise
+    return owner, team, project_name, context.uuid
 
 
 def get_collect_artifacts(arg: Optional[bool] = None, default: Optional[bool] = None):

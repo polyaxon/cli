@@ -1,7 +1,14 @@
 from mock import patch
+from pathlib import Path
 import pytest
+import tempfile
 
+from polyaxon._cli.init import init
 from polyaxon._cli.operations import ops
+from polyaxon._managers.project import ProjectConfigManager
+from polyaxon._managers.run import RunConfigManager
+from polyaxon._sdk.schemas.v1_project import V1Project
+from polyaxon._sdk.schemas.v1_run import V1Run
 from tests.test_cli.utils import BaseCommandTestCase
 
 
@@ -9,6 +16,79 @@ RUN_UUID = "8aac02e3a62a4f0aaa257c59da5eab80"
 K8S_EXIT_7 = (
     '{"status":"Failure","details":{"causes":[{"reason":"ExitCode","message":"7"}]}}'
 )
+
+
+@pytest.mark.cli_mark
+class TestCliCachedRunContext(BaseCommandTestCase):
+    def setUp(self):
+        super().setUp()
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.local_cache = Path(directory.name) / "local" / ".polyaxon"
+        self.global_cache = Path(directory.name) / "global" / ".polyaxon"
+        for manager in (ProjectConfigManager, RunConfigManager):
+            patcher = patch.multiple(
+                manager,
+                CONFIG_PATH=None,
+                _PROJECT=str(self.local_cache),
+                _PROJECT_PATH=str(self.global_cache),
+            )
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        ProjectConfigManager.set_config(
+            V1Project(owner="owner", name="project-a"), visibility="local"
+        )
+        RunConfigManager.set_config(
+            V1Run(uuid=RUN_UUID, owner="owner", project="project-a"),
+            visibility="local",
+        )
+
+    def assert_conflicting_context(self, result, run_path):
+        assert result.exit_code != 0
+        assert "owner/project-a" in result.output
+        assert "owner/project-b" in result.output
+        assert RUN_UUID in result.output
+        assert str(run_path) in result.output
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_statuses_rejects_explicit_project_conflict(self, run_client):
+        result = self.runner.invoke(ops, ["--project", "owner/project-b", "statuses"])
+
+        self.assert_conflicting_context(result, self.local_cache / ".run")
+        run_client.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_stop_rejects_explicit_project_conflict(self, run_client):
+        result = self.runner.invoke(
+            ops, ["--project", "owner/project-b", "stop", "--yes"]
+        )
+
+        self.assert_conflicting_context(result, self.local_cache / ".run")
+        run_client.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    @patch("polyaxon._client.project.ProjectClient")
+    def test_statuses_rejects_stale_run_after_project_reinit(
+        self, project_client, run_client
+    ):
+        project_client.return_value.client.sanitize_for_serialization.return_value = {
+            "owner": "owner",
+            "name": "project-b",
+        }
+
+        initialized = self.runner.invoke(
+            init, ["--project", "owner/project-b", "--yes"]
+        )
+
+        assert initialized.exit_code == 0, initialized.output
+        assert ProjectConfigManager.get_config().name == "project-b"
+        assert RunConfigManager.get_config().uuid == RUN_UUID
+        assert RunConfigManager.get_config().project == "project-a"
+
+        result = self.runner.invoke(ops, ["statuses"])
+
+        self.assert_conflicting_context(result, self.local_cache / ".run")
+        run_client.assert_not_called()
 
 
 class ExecShell:

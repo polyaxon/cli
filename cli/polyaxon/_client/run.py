@@ -50,8 +50,8 @@ from polyaxon._env_vars.getters import (
     get_project_error_message,
     get_project_or_local,
     get_run_info,
-    get_run_or_local,
 )
+from polyaxon._env_vars.getters.run import _get_run_context
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._managers.ignore import IgnoreConfigManager
@@ -116,6 +116,27 @@ class RunClient(ClientMixin):
 
     If you intend to create a new run instance or to list runs,
     only the `owner` and `project` parameters are required.
+
+    When an online client uses a cached run UUID, it retains the cached identity
+    resolved at construction. If the cached owner or project is known and conflicts
+    with the client's target, accessing `run_uuid` raises `PolyaxonClientException`.
+    Run-specific API methods access this property, so the check happens before their
+    request, not during client construction. `create()` and `list()` do not consume
+    the cached UUID and are not blocked by this check.
+    The same behavior applies to `AsyncRunClient`.
+
+    To select an existing run explicitly, pass all three values:
+
+    ```python
+    >>> from polyaxon.client import RunClient
+    >>> client = RunClient(owner="acme", project="project-b", run_uuid="RUN_UUID")
+    ```
+
+    Changing cache files does not update an existing client's identity. Construct a
+    new client with explicit values, or use `set_run_uuid()` if its owner and project
+    already match the intended run.
+    See [conflicting cached run context](/docs/references/cli/cache/#conflicting-cached-run-context)
+    for cache recovery and the limits of this check.
 
     You can always access the `self.client` to execute more APIs.
 
@@ -194,11 +215,12 @@ class RunClient(ClientMixin):
         self._owner = owner
         self._team = team
         self._project = project
-        self._run_uuid = (
-            get_run_or_local(run_uuid)
-            if not self._is_offline
-            else run_uuid or uuid.uuid4().hex
-        )
+        self._run_context = None
+        if self._is_offline:
+            self._run_uuid = run_uuid or uuid.uuid4().hex
+        else:
+            self._run_context = _get_run_context(run_uuid)
+            self._run_uuid = self._run_context.uuid
         default_runtime = (
             V1RunKind.JOB
             if self._is_offline or not settings.CLIENT_CONFIG.is_managed
@@ -294,10 +316,13 @@ class RunClient(ClientMixin):
 
     @property
     def run_uuid(self) -> str:
+        if self._run_context is not None:
+            self._run_context.validate(self.owner, self.project)
         return self._run_uuid
 
     def set_run_uuid(self, run_uuid):
         self._run_uuid = run_uuid
+        self._run_context = None
 
     @property
     def run_data(self):
@@ -372,10 +397,11 @@ class RunClient(ClientMixin):
     def _set_transferred_project(self, to_project: str):
         self._project = to_project
         self._run_data.project = to_project
+        self._run_context = None
 
     def _apply_created_run(self, response: V1Run):
         self._run_data = response
-        self._run_uuid = self._run_data.uuid
+        self.set_run_uuid(self._run_data.uuid)
         self._run_data.status = V1Statuses.CREATED
         self._namespace = None
         self._results = {}
@@ -3142,7 +3168,7 @@ class RunClient(ClientMixin):
                     project = run_client.project
                 run_client._owner = owner
                 run_client._project = project
-                run_client._run_uuid = run_config.uuid
+                run_client.set_run_uuid(run_config.uuid)
             else:
                 run_client = cls(
                     owner=owner,

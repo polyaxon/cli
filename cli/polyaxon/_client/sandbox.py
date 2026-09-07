@@ -28,8 +28,8 @@ from polyaxon._client.transport import async_sandbox_ws, sandbox_ws
 from polyaxon._env_vars.getters import (
     get_project_error_message,
     get_project_or_local,
-    get_run_or_local,
 )
+from polyaxon._env_vars.getters.run import _get_run_context
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.plugins import V1Plugins
@@ -82,6 +82,19 @@ class SandboxClient(ClientMixin):
        the client will default to that cached run unless you override the values.
      * If you use this client in the context of a job or a service managed by Polyaxon,
        a configuration will be available to resolve the values based on that run.
+
+    When an online client uses a cached run UUID, accessing `run_uuid` raises
+    `PolyaxonClientException` if the cached owner or project is known and conflicts
+    with the client's target. The check happens before a request using that UUID,
+    not during construction, so `create()` can still create a new sandbox run.
+    A successful `create()` replaces the cached identity with the new run.
+    This also applies to `AsyncSandboxClient`.
+
+    To attach to an existing run explicitly, construct a client with `owner`,
+    `project`, and `run_uuid`.
+    Changing cache files does not update an existing client's identity.
+    See [conflicting cached run context](/docs/references/cli/cache/#conflicting-cached-run-context)
+    for cache recovery and the limits of this check.
 
     The functionality is split into sub-clients:
      * `process`: one-shot, streaming, and background command execution.
@@ -160,14 +173,14 @@ class SandboxClient(ClientMixin):
         if error_message:
             raise PolyaxonClientException(error_message)
 
-        run_uuid = get_run_or_local(run_uuid)
+        self._run_context = _get_run_context(run_uuid)
 
         owner, team = split_owner_team_space(owner)
         self._set_client(client)
         self._owner = owner
         self._team = team
         self._project = project
-        self._run_uuid = run_uuid
+        self._run_uuid = self._run_context.uuid
         self._run_data = V1Run.model_construct(
             owner=self._owner,
             project=self._project,
@@ -182,6 +195,8 @@ class SandboxClient(ClientMixin):
 
     @property
     def run_uuid(self) -> Optional[str]:
+        if not self._is_offline and self._run_context is not None:
+            self._run_context.validate(self.owner, self.project)
         return self._run_uuid
 
     @property
@@ -217,6 +232,7 @@ class SandboxClient(ClientMixin):
     def _apply_created_run(self, response: V1Run):
         self._run_data = response
         self._run_uuid = self._run_data.uuid
+        self._run_context = None
         self._run_data.status = V1Statuses.CREATED
         self._namespace = None
 
