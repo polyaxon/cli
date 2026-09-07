@@ -11,5 +11,6 @@ class V1TeamMember(BaseAllowSchemaModel):
     user_email: Optional[EmailStr] = None
     role: Optional[StrictStr] = None
     org_role: Optional[StrictStr] = None
+    kind: Optional[StrictStr] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
