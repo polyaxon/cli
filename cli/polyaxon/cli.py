@@ -3,6 +3,7 @@ import os
 import click
 
 from clipped.utils.bools import to_bool
+from clipped.utils.click import AliasGroup
 from polyaxon._cli.admin import admin
 from polyaxon._cli.artifacts import artifacts
 from polyaxon._cli.auth import login, logout, whoami
@@ -28,7 +29,7 @@ DOCS_GEN = to_bool(os.environ.get("POLYAXON_DOCS_GEN", False))
 PolyaxonServices.set_service_name()
 
 
-@click.group()
+@click.group(cls=AliasGroup)
 @click.option(
     "-v", "--verbose", is_flag=True, default=False, help="Turn on debug logging"
 )

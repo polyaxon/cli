@@ -54,3 +54,10 @@ def test_cli_help_lists_commands():
     assert result.exit_code == 0
     for command in ["artifacts", "components", "models", "ops", "project", "run"]:
         assert command in result.output
+    project_rows = [
+        line.strip()
+        for line in result.output.splitlines()
+        if line.strip().startswith("project")
+    ]
+    assert len(project_rows) == 1
+    assert project_rows[0].startswith("project (aliases: projects)")

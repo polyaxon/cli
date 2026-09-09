@@ -15,7 +15,10 @@ from polyaxon.logger import clean_outputs
 @click.pass_context
 @clean_outputs
 def project(ctx, _project):  # pylint:disable=redefined-outer-name
-    """Commands for projects."""
+    """Commands for projects.
+
+    Alias: projects.
+    """
     if _project:
         Printer.warning(
             "Passing arguments to command groups is deprecated and will be removed in v2! "
