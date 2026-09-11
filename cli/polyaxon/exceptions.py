@@ -77,6 +77,7 @@ class ApiKeyError(OpenApiException, KeyError):
 
 class ApiException(OpenApiException):
     def __init__(self, status=None, reason=None, http_resp=None):
+        self.request_context = None
         if http_resp:
             self.status = http_resp.status
             self.reason = http_resp.reason
@@ -88,9 +89,15 @@ class ApiException(OpenApiException):
             self.body = None
             self.headers = None
 
+    def set_request_context(self, method, resource_path):
+        self.request_context = "{} {}".format(method.upper(), resource_path)
+
     def __str__(self):
         """Custom error messages for exception"""
         error_message = "({0})\nReason: {1}\n".format(self.status, self.reason)
+        if self.request_context:
+            error_message += "HTTP request: {}\n".format(self.request_context)
+
         if self.headers:
             error_message += "HTTP response headers: {0}\n".format(self.headers)
 
@@ -129,47 +136,6 @@ def render_path(path_to_item):
         else:
             result += "['{0}']".format(pth)
     return result
-
-
-def handle_api_error(
-    e,
-    logger: Any,
-    message: Optional[str] = None,
-    http_messages_mapping: Optional[Dict] = None,
-    sys_exit: bool = False,
-):
-    if http_messages_mapping:
-        http_messages_mapping.update(HTTP_ERROR_MESSAGES_MAPPING)
-    else:
-        http_messages_mapping = HTTP_ERROR_MESSAGES_MAPPING
-    if message:
-        logger.error(message)
-    if e and hasattr(e, "status"):
-        if e.status not in http_messages_mapping.keys():
-            logger.error("Exception:")
-            logger.error(e, stack_info=True, exc_info=True)
-        elif getattr(e, "body") and e.status != 404:
-            logger.error("Error: %s" % e.body)
-        if getattr(e, "reason"):
-            logger.error("Reason: %s" % e.reason)
-        message = http_messages_mapping.get(e.status)
-        if message:
-            logger.error(message)
-    elif e and hasattr(e, "message"):  # Handling of HTML errors
-        error_found = False
-        for k in http_messages_mapping.keys():
-            if str(k) in e.message:
-                logger.error(http_messages_mapping.get(k))
-                error_found = True
-                break
-        if not error_found:
-            logger.error("Error:")
-            logger.error(e.message)
-    elif e:
-        logger.error("Exception:")
-        logger.error(e, stack_info=True, exc_info=True)
-    if sys_exit:
-        sys.exit(1)
 
 
 class PolyaxonOperatorException(PolyaxonException):
@@ -298,8 +264,11 @@ def handle_api_error(
         if e.status not in http_messages_mapping.keys():
             logger.error("Exception:")
             logger.error(e, stack_info=True, exc_info=True)
-        elif getattr(e, "body") and e.status != 404:
-            logger.error("Error: %s" % e.body)
+        else:
+            if getattr(e, "request_context", None):
+                logger.error("HTTP request: %s" % e.request_context)
+            if getattr(e, "body") and e.status != 404:
+                logger.error("Error: %s" % e.body)
         if getattr(e, "reason"):
             logger.error("Reason: %s" % e.reason)
         message = http_messages_mapping.get(e.status)
