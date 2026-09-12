@@ -442,7 +442,9 @@ def ls(
                 "  2. You can select the columns to show using `-c col1,cl2,col3,...`"
             )
             Printer.heading("Runs:")
-            Printer.dict_tabulate(objects, is_list_dict=True)
+            Printer.dict_tabulate(
+                objects, is_list_dict=True, full_width_columns=["uuid"]
+            )
 
 
 @ops.command()

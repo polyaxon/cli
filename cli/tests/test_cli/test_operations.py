@@ -1,18 +1,27 @@
+import csv
+from io import StringIO
+import json
 from mock import patch
 from pathlib import Path
 import pytest
 import tempfile
 
+from rich.console import Console
+from rich.theme import Theme
+
+from clipped.formatting import Printer
 from polyaxon._cli.init import init
 from polyaxon._cli.operations import ops
 from polyaxon._managers.project import ProjectConfigManager
 from polyaxon._managers.run import RunConfigManager
+from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_run import V1Run
 from tests.test_cli.utils import BaseCommandTestCase
 
 
 RUN_UUID = "8aac02e3a62a4f0aaa257c59da5eab80"
+LIST_RUN_UUIDS = (RUN_UUID, "85f07474-715c-4f04-b801-dbd0466d749e")
 K8S_EXIT_7 = (
     '{"status":"Failure","details":{"causes":[{"reason":"ExitCode","message":"7"}]}}'
 )
@@ -135,10 +144,144 @@ class ExecShell:
 
 @pytest.mark.cli_mark
 class TestCliRuns(BaseCommandTestCase):
+    @staticmethod
+    def list_runs_response():
+        return V1ListRunsResponse.model_construct(
+            count=len(LIST_RUN_UUIDS),
+            results=[
+                V1Run.model_construct(
+                    uuid=uuid,
+                    name="long-operation-name-" * 20,
+                    status="succeeded",
+                    inputs={"parameter": "long-input-value-" * 20},
+                    outputs={"result": "long-output-value-" * 20},
+                )
+                for uuid in LIST_RUN_UUIDS
+            ],
+        )
+
+    def invoke_list_runs(self, options=(), width=80):
+        output = StringIO()
+        console = Console(
+            file=output,
+            width=width,
+            color_system=None,
+            theme=Theme(
+                {
+                    "header": "yellow",
+                    "success": "green",
+                    "info": "cyan",
+                    "warning": "magenta",
+                    "error": "red",
+                    "white": "white",
+                }
+            ),
+        )
+        with patch.object(Printer, "console", console):
+            result = self.runner.invoke(ops, ["ls", "-p", "admin/foo", *options])
+        assert result.exit_code == 0, (
+            result.output,
+            output.getvalue(),
+            result.exception,
+        )
+        return result, output.getvalue()
+
     @patch("polyaxon.client.RunClient.list")
     def test_list_runs(self, list_runs):
-        self.runner.invoke(ops, ["-p", "admin/foo", "ls"])
-        assert list_runs.call_count == 1
+        list_runs.return_value = self.list_runs_response()
+        cases = (
+            ([], 20),
+            (["--io"], 80),
+            (["--columns", "name,uuid,status"], 80),
+            (["--io", "--columns", "uuid,parameter,result"], 160),
+        )
+
+        for options, width in cases:
+            with self.subTest(options=options, width=width):
+                _, output = self.invoke_list_runs(options, width=width)
+
+                for uuid in LIST_RUN_UUIDS:
+                    assert uuid in output
+                if "--io" in options:
+                    assert "in.parameter" in output
+                    assert "out.result" in output
+                else:
+                    assert "in.parameter" not in output
+                    assert "out.result" not in output
+                list_runs.assert_called_with(
+                    limit=None, offset=None, query=None, sort=None
+                )
+
+        assert list_runs.call_count == len(cases)
+
+    @patch("polyaxon.client.RunClient.list")
+    def test_list_runs_omits_unselected_uuid(self, list_runs):
+        list_runs.return_value = self.list_runs_response()
+
+        _, output = self.invoke_list_runs(["--columns", "name,status"])
+
+        assert "uuid" not in output
+        for uuid in LIST_RUN_UUIDS:
+            assert uuid not in output
+        assert "name | status" in output
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_list_runs_offline(self, run_client):
+        runs = [V1Run(**run.to_dict()) for run in self.list_runs_response().results]
+        with tempfile.TemporaryDirectory() as directory:
+            for run in runs:
+                run_path = Path(directory) / "runs" / run.uuid / "run.plx.json"
+                run_path.parent.mkdir(parents=True)
+                run_path.write_text(json.dumps(run.to_dict()), encoding="utf8")
+
+            _, output = self.invoke_list_runs(
+                ["--offline", "--path", directory, "--io"], width=20
+            )
+
+        for run in runs:
+            assert run.uuid in output
+        run_client.assert_not_called()
+
+    @patch("polyaxon.client.RunClient.list")
+    def test_list_runs_empty(self, list_runs):
+        list_runs.return_value = V1ListRunsResponse(count=0, results=[])
+
+        _, output = self.invoke_list_runs()
+
+        assert "No runs found for project `admin/foo`." in output
+        assert "Displayed columns" not in output
+        assert "Runs:" not in output
+
+    @patch("polyaxon.client.RunClient.list")
+    def test_list_runs_json(self, list_runs):
+        response = self.list_runs_response()
+        list_runs.return_value = response
+
+        result, table_output = self.invoke_list_runs(["--output", "json"], width=20)
+
+        data = json.loads(result.output)
+        assert [run["uuid"] for run in data["results"]] == list(LIST_RUN_UUIDS)
+        assert data == response.to_dict()
+        assert table_output == ""
+
+    @patch("polyaxon.client.RunClient.list")
+    def test_list_runs_csv(self, list_runs):
+        list_runs.return_value = self.list_runs_response()
+
+        for options in ([], ["--io"]):
+            with self.subTest(options=options), self.runner.isolated_filesystem():
+                self.invoke_list_runs(["--to-csv", *options], width=20)
+                with Path("results.csv").open(encoding="utf8", newline="") as stream:
+                    rows = list(csv.DictReader(stream))
+
+                assert [row["uuid"] for row in rows] == list(LIST_RUN_UUIDS)
+                assert [row["status"] for row in rows] == ["succeeded"] * 2
+                if options:
+                    assert rows[0]["in.parameter"] == "long-input-value-" * 20
+                    assert rows[0]["out.result"] == "long-output-value-" * 20
+                else:
+                    assert "inputs" not in rows[0]
+                    assert "outputs" not in rows[0]
 
     @patch("polyaxon.client.RunClient.refresh_data")
     @patch("polyaxon._managers.project.ProjectConfigManager.is_initialized")
