@@ -26,8 +26,8 @@ def _cli_runner_with_stderr():
 class TestCliSsh(BaseCommandTestCase):
     def setUp(self):
         super().setUp()
-        self.project_run = patch(
-            "polyaxon._env_vars.getters.get_project_run_or_local",
+        self.resolve_run_patcher = patch(
+            "polyaxon._cli.context.resolve_run",
             return_value=("owner", None, "project", RUN_UUID),
         )
         self.client_class = patch("polyaxon._client.sandbox.SandboxClient")
@@ -50,7 +50,7 @@ class TestCliSsh(BaseCommandTestCase):
             "polyaxon._ssh.resolve_known_hosts_file",
             return_value=Path("/tmp/polyaxon_known_hosts"),
         )
-        self.get_project_run_or_local = self.project_run.start()
+        self.resolve_run = self.resolve_run_patcher.start()
         self.sandbox_client_class = self.client_class.start()
         self.prepare_ssh_access = self.prepare.start()
         self.write_known_hosts_entry = self.known_hosts.start()
@@ -78,7 +78,7 @@ class TestCliSsh(BaseCommandTestCase):
             public_key="ssh-ed25519 AAA polyaxon",
             host_public_key="ssh-ed25519 HOST sandbox",
         )
-        self.addCleanup(self.project_run.stop)
+        self.addCleanup(self.resolve_run_patcher.stop)
         self.addCleanup(self.client_class.stop)
         self.addCleanup(self.prepare.stop)
         self.addCleanup(self.known_hosts.stop)
@@ -597,7 +597,7 @@ class TestCliSsh(BaseCommandTestCase):
         self.resolve_known_hosts_file.assert_called_once_with("/tmp/known_hosts")
 
     def test_config_handles_resolution_errors(self):
-        self.get_project_run_or_local.side_effect = PolyaxonClientException("bad run")
+        self.resolve_run.side_effect = PolyaxonClientException("bad run")
 
         result = self.runner.invoke(
             ssh,

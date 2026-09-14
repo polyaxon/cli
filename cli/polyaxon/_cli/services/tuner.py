@@ -3,11 +3,14 @@ import time
 import click
 
 from clipped.utils.json import orjson_loads
+from polyaxon._cli.context import report_client_context
 from polyaxon.logger import logger
 
 
 @click.group()
-def tuner():
+@click.pass_context
+def tuner(ctx):
+    ctx.obj = ctx.obj or {}
     logger.info("Creating new suggestions...")
     pass
 
@@ -26,7 +29,8 @@ def tuner():
     help="A string representing the list of metrics.",
 )
 @click.option("--iteration", type=int, help="The current iteration.")
-def bayes(matrix, configs, metrics, iteration):
+@click.pass_context
+def bayes(ctx, matrix, configs, metrics, iteration):
     """Create suggestions based on bayesian optimization."""
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
     from hypertune.search_managers.bayesian_optimization.manager import (
@@ -60,6 +64,12 @@ def bayes(matrix, configs, metrics, iteration):
             logger.warning(e)
             exp = e
 
+    report_client_context(
+        client,
+        include_run=True,
+        show_context=ctx.obj.get("show_context", False),
+    )
+
     if exp:
         handle_iteration_failure(client=client, exp=exp)
         return
@@ -89,7 +99,8 @@ def bayes(matrix, configs, metrics, iteration):
     type=int,
     help="The current hyperband bracket iteration.",
 )
-def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
+@click.pass_context
+def hyperband(ctx, matrix, configs, metrics, iteration, bracket_iteration):
     """Create suggestions based on hyperband."""
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
     from hypertune.search_managers.hyperband.manager import HyperbandManager
@@ -124,6 +135,12 @@ def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
             logger.warning(e)
             exp = e
 
+    report_client_context(
+        client,
+        include_run=True,
+        show_context=ctx.obj.get("show_context", False),
+    )
+
     if exp:
         handle_iteration_failure(client=client, exp=exp)
         return
@@ -147,7 +164,8 @@ def hyperband(matrix, configs, metrics, iteration, bracket_iteration):
     help="A string representing the list of metrics.",
 )
 @click.option("--iteration", type=int, help="The current iteration.")
-def tpe(matrix, configs, metrics, iteration):
+@click.pass_context
+def tpe(ctx, matrix, configs, metrics, iteration):
     """Create suggestions using native TPE."""
     from hypertune.iteration_lineage import handle_iteration, handle_iteration_failure
     from hypertune.search_managers.tpe.manager import TPEManager
@@ -178,6 +196,12 @@ def tpe(matrix, configs, metrics, iteration):
             retry += 1
             logger.warning(e)
             exp = e
+
+    report_client_context(
+        client,
+        include_run=True,
+        show_context=ctx.obj.get("show_context", False),
+    )
 
     if exp:
         handle_iteration_failure(client=client, exp=exp)

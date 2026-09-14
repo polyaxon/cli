@@ -34,6 +34,12 @@ PolyaxonServices.set_service_name()
     "-v", "--verbose", is_flag=True, default=False, help="Turn on debug logging"
 )
 @click.option(
+    "--show-context",
+    is_flag=True,
+    default=False,
+    help="Show resolved context and cache sources on stderr.",
+)
+@click.option(
     "--offline",
     is_flag=True,
     default=False,
@@ -42,7 +48,7 @@ PolyaxonServices.set_service_name()
 )
 @click.pass_context
 @clean_outputs
-def cli(context, verbose, offline):
+def cli(context, verbose, show_context, offline):
     """Polyaxon - Cloud Native Machine Learning Automation & Experimentation tool.
 
     This CLI provides tools to:
@@ -118,6 +124,7 @@ def cli(context, verbose, offline):
     if not settings.CLIENT_CONFIG.client_header:
         settings.CLIENT_CONFIG.set_cli_header()
     context.obj["offline"] = offline
+    context.obj["show_context"] = show_context or verbose
     if offline:
         os.environ["POLYAXON_IS_OFFLINE"] = "true"
         settings.CLIENT_CONFIG.is_offline = True

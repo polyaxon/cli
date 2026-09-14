@@ -1,4 +1,5 @@
 import csv
+import inspect
 from io import StringIO
 import json
 from mock import patch
@@ -6,17 +7,21 @@ from pathlib import Path
 import pytest
 import tempfile
 
+from click.testing import CliRunner
 from rich.console import Console
 from rich.theme import Theme
 
 from clipped.formatting import Printer
+from clipped.utils.json import orjson_loads
 from polyaxon._cli.init import init
 from polyaxon._cli.operations import ops
 from polyaxon._managers.project import ProjectConfigManager
 from polyaxon._managers.run import RunConfigManager
+from polyaxon._managers.user import UserConfigManager
 from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_user import V1User
 from tests.test_cli.utils import BaseCommandTestCase
 
 
@@ -31,11 +36,21 @@ K8S_EXIT_7 = (
 class TestCliCachedRunContext(BaseCommandTestCase):
     def setUp(self):
         super().setUp()
+        if "mix_stderr" in inspect.signature(CliRunner.__init__).parameters:
+            self.runner = CliRunner(mix_stderr=False)
+        console_width = pytest.MonkeyPatch()
+        console_width.setattr(Printer.stderr_console, "width", 200)
+        self.addCleanup(console_width.undo)
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
-        self.local_cache = Path(directory.name) / "local" / ".polyaxon"
+        # Cache paths must be printed literally, even with Rich markup characters.
+        self.local_cache = Path(directory.name) / "local[red]" / ".polyaxon"
         self.global_cache = Path(directory.name) / "global" / ".polyaxon"
-        for manager in (ProjectConfigManager, RunConfigManager):
+        for manager in (
+            ProjectConfigManager,
+            RunConfigManager,
+            UserConfigManager,
+        ):
             patcher = patch.multiple(
                 manager,
                 CONFIG_PATH=None,
@@ -52,25 +67,102 @@ class TestCliCachedRunContext(BaseCommandTestCase):
             visibility="local",
         )
 
+    def invoke_ops(self, args, show_context=True):
+        return self.runner.invoke(ops, args, obj={"show_context": show_context})
+
+    @patch("polyaxon.cli.configure_logger")
+    @patch("polyaxon.settings.set_cli_config")
+    @patch("polyaxon._client.run.RunClient")
+    def test_global_context_flags_default_to_quiet(
+        self, run_client, set_cli_config, configure_logger
+    ):
+        from polyaxon import settings
+        from polyaxon._schemas.cli import CliConfig
+        from polyaxon.cli import cli
+
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "results": []
+        }
+        with patch.object(settings, "CLI_CONFIG", CliConfig()):
+            for args, expect_context in (
+                ([], False),
+                (["--show-context"], True),
+                (["--verbose"], True),
+            ):
+                with self.subTest(args=args):
+                    result = self.runner.invoke(
+                        cli, args + ["ops", "ls", "--output", "json"]
+                    )
+
+                    assert result.exit_code == 0, result.output
+                    assert orjson_loads(result.stdout) == {"results": []}
+                    if expect_context:
+                        assert self.context_rows(result)["Project"][0] == "project-a"
+                    else:
+                        assert result.stderr == ""
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_hidden_context_still_rejects_cached_run_conflicts(self, run_client):
+        result = self.invoke_ops(
+            ["statuses", "--project", "owner/project-b"], show_context=False
+        )
+
+        self.assert_conflicting_context(result, self.local_cache / ".run")
+        assert "owner: explicit; project: explicit" in result.stderr
+        run_client.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_conflicts_report_project_sources_with_or_without_context(self, run_client):
+        for visibility in ("local", "global"):
+            if visibility == "global":
+                (self.local_cache / ".project").unlink()
+            ProjectConfigManager.set_config(
+                V1Project(owner="owner", name="project-b"), visibility=visibility
+            )
+            project_path = ProjectConfigManager.get_config_filepath(create=False)
+            for show_context in (False, True):
+                with self.subTest(visibility=visibility, show_context=show_context):
+                    result = self.invoke_ops(["statuses"], show_context=show_context)
+
+                    self.assert_conflicting_context(result, self.local_cache / ".run")
+                    assert (
+                        f"owner: {visibility} cache · {project_path}" in result.stderr
+                    )
+                    assert (
+                        f"project: {visibility} cache · {project_path}" in result.stderr
+                    )
+                    run_client.assert_not_called()
+
     def assert_conflicting_context(self, result, run_path):
         assert result.exit_code != 0
-        assert "owner/project-a" in result.output
-        assert "owner/project-b" in result.output
-        assert RUN_UUID in result.output
-        assert str(run_path) in result.output
+        assert "owner/project-a" in result.stderr
+        assert "owner/project-b" in result.stderr
+        assert RUN_UUID in result.stderr
+        assert str(run_path) in result.stderr
+        assert "Context:" not in result.stderr
+
+    def context_rows(self, result):
+        assert result.stderr.count("Context:") == 1
+        assert "\x1b[" not in result.stderr
+        rows = [
+            line.split(None, 2)
+            for line in result.stderr.splitlines()
+            if line.lstrip().startswith(("Owner ", "Project ", "Run "))
+        ]
+        fields = {name: (value, source.rstrip()) for name, value, source in rows}
+        assert len(fields) == len(rows)
+        return fields
 
     @patch("polyaxon._client.run.RunClient")
     def test_statuses_rejects_explicit_project_conflict(self, run_client):
-        result = self.runner.invoke(ops, ["--project", "owner/project-b", "statuses"])
+        result = self.invoke_ops(["--project", "owner/project-b", "statuses"])
 
         self.assert_conflicting_context(result, self.local_cache / ".run")
         run_client.assert_not_called()
 
     @patch("polyaxon._client.run.RunClient")
     def test_stop_rejects_explicit_project_conflict(self, run_client):
-        result = self.runner.invoke(
-            ops, ["--project", "owner/project-b", "stop", "--yes"]
-        )
+        result = self.invoke_ops(["--project", "owner/project-b", "stop", "--yes"])
 
         self.assert_conflicting_context(result, self.local_cache / ".run")
         run_client.assert_not_called()
@@ -94,10 +186,312 @@ class TestCliCachedRunContext(BaseCommandTestCase):
         assert RunConfigManager.get_config().uuid == RUN_UUID
         assert RunConfigManager.get_config().project == "project-a"
 
-        result = self.runner.invoke(ops, ["statuses"])
+        result = self.invoke_ops(["statuses"])
 
         self.assert_conflicting_context(result, self.local_cache / ".run")
         run_client.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_list_reports_local_project_cache_on_stderr(self, run_client):
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "results": []
+        }
+
+        result = self.invoke_ops(["ls", "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout) == {"results": []}
+        source = f"local cache · {self.local_cache / '.project'}"
+        assert self.context_rows(result) == {
+            "Owner": ("owner", source),
+            "Project": ("project-a", source),
+        }
+        assert RUN_UUID not in result.stderr
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_list_reports_global_project_cache_on_stderr(self, run_client):
+        ProjectConfigManager.purge(visibility="local")
+        ProjectConfigManager.set_config(
+            V1Project(owner="owner", name="project-b"), visibility="global"
+        )
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "results": []
+        }
+
+        result = self.invoke_ops(["ls", "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout) == {"results": []}
+        source = f"global cache · {self.global_cache / '.project'}"
+        assert self.context_rows(result) == {
+            "Owner": ("owner", source),
+            "Project": ("project-b", source),
+        }
+        assert str(self.local_cache) not in result.stderr
+        assert RUN_UUID not in result.stderr
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_list_reports_owner_from_user_cache(self, run_client):
+        UserConfigManager.set_config(V1User(organization="cached-owner"))
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "results": []
+        }
+
+        result = self.invoke_ops(["ls", "--project", "project-a", "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout) == {"results": []}
+        assert self.context_rows(result) == {
+            "Owner": (
+                "cached-owner",
+                f"global cache · {self.global_cache / '.user'}",
+            ),
+            "Project": ("project-a", "explicit"),
+        }
+        run_client.assert_called_once_with(
+            owner="cached-owner", project="project-a", manual_exceptions_handling=True
+        )
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_list_keeps_project_and_fallback_owner_sources_separate(self, run_client):
+        ProjectConfigManager.set_config(V1Project(name="project-a"), visibility="local")
+        UserConfigManager.set_config(V1User(organization="cached-owner"))
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "results": []
+        }
+
+        result = self.invoke_ops(["ls", "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout) == {"results": []}
+        assert self.context_rows(result) == {
+            "Owner": (
+                "cached-owner",
+                f"global cache · {self.global_cache / '.user'}",
+            ),
+            "Project": (
+                "project-a",
+                f"local cache · {self.local_cache / '.project'}",
+            ),
+        }
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_list_with_explicit_project_does_not_report_cache(self, run_client):
+        UserConfigManager.set_config(V1User(organization="cached-owner"))
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "results": []
+        }
+
+        result = self.invoke_ops(
+            ["ls", "--project", "owner/project-b", "--output", "json"]
+        )
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout) == {"results": []}
+        assert result.stderr == ""
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_get_reports_local_run_cache_on_stderr(self, run_client):
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "uuid": RUN_UUID
+        }
+
+        result = self.invoke_ops(["get", "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout)["uuid"] == RUN_UUID
+        source = f"local cache · {self.local_cache / '.project'}"
+        assert self.context_rows(result) == {
+            "Owner": ("owner", source),
+            "Project": ("project-a", source),
+            "Run": (RUN_UUID, f"local cache · {self.local_cache / '.run'}"),
+        }
+        assert "Cached owner/project metadata is incomplete;" not in " ".join(
+            result.stderr.split()
+        )
+        run_client.assert_called_once_with(
+            owner="owner",
+            project="project-a",
+            run_uuid=RUN_UUID,
+            manual_exceptions_handling=True,
+        )
+
+    @patch("polyaxon._env_vars.getters.run.logger")
+    @patch("polyaxon._client.mixin.PolyaxonClient")
+    def test_cli_resolved_run_is_not_reported_again_by_client(
+        self, client_class, logger
+    ):
+        sdk = client_class.return_value
+        sdk.is_async = False
+        sdk.config = None
+        sdk.runs_v1.get_run.return_value = V1Run(
+            uuid=RUN_UUID, owner="owner", project="project-a"
+        )
+        sdk.sanitize_for_serialization.return_value = {"uuid": RUN_UUID}
+
+        result = self.invoke_ops(["get", "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout)["uuid"] == RUN_UUID
+        assert self.context_rows(result)["Run"][0] == RUN_UUID
+        assert result.stderr.count(RUN_UUID) == 1
+        logger.info.assert_not_called()
+        logger.warning.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_get_reports_global_run_cache_on_stderr(self, run_client):
+        RunConfigManager.purge(visibility="local")
+        RunConfigManager.set_config(
+            V1Run(uuid=RUN_UUID, owner="owner", project="project-a"),
+            visibility="global",
+        )
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "uuid": RUN_UUID
+        }
+
+        result = self.invoke_ops(["get", "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout)["uuid"] == RUN_UUID
+        fields = self.context_rows(result)
+        assert fields["Run"] == (
+            RUN_UUID,
+            f"global cache · {self.global_cache / '.run'}",
+        )
+        assert fields["Project"] == (
+            "project-a",
+            f"local cache · {self.local_cache / '.project'}",
+        )
+        assert str(self.local_cache / ".run") not in result.stderr
+        assert "Cached owner/project metadata is incomplete;" not in " ".join(
+            result.stderr.split()
+        )
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_get_warns_for_incomplete_cached_ownership(self, run_client):
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "uuid": RUN_UUID
+        }
+        for owner, project in ((None, None), ("owner", None), (None, "project-a")):
+            with self.subTest(owner=owner, project=project):
+                RunConfigManager.set_config(
+                    V1Run(uuid=RUN_UUID, owner=owner, project=project),
+                    visibility="local",
+                )
+
+                result = self.invoke_ops(["get", "--output", "json"])
+
+                assert result.exit_code == 0, result.output
+                assert orjson_loads(result.stdout)["uuid"] == RUN_UUID
+                fields = self.context_rows(result)
+                assert fields["Project"] == (
+                    "project-a",
+                    f"local cache · {self.local_cache / '.project'}",
+                )
+                assert fields["Run"] == (
+                    RUN_UUID,
+                    f"local cache · {self.local_cache / '.run'}",
+                )
+                assert "Cached owner/project metadata is incomplete;" in " ".join(
+                    result.stderr.split()
+                )
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_explicit_uuid_does_not_report_run_cache(self, run_client):
+        explicit_uuid = "22222222222222222222222222222222"
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "uuid": explicit_uuid
+        }
+        for owner, project in ((None, None), ("other-owner", "project-b")):
+            with self.subTest(owner=owner, project=project):
+                RunConfigManager.set_config(
+                    V1Run(uuid=RUN_UUID, owner=owner, project=project),
+                    visibility="local",
+                )
+
+                result = self.invoke_ops(
+                    [
+                        "get",
+                        "--project",
+                        "owner/project-a",
+                        "--uid",
+                        explicit_uuid,
+                        "--output",
+                        "json",
+                    ],
+                )
+
+                assert result.exit_code == 0, result.output
+                assert orjson_loads(result.stdout)["uuid"] == explicit_uuid
+                assert result.stderr == ""
+                run_client.assert_called_with(
+                    owner="owner",
+                    project="project-a",
+                    run_uuid=explicit_uuid,
+                    manual_exceptions_handling=True,
+                )
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_explicit_uuid_is_shown_alongside_cached_project(self, run_client):
+        explicit_uuid = "22222222222222222222222222222222"
+        run_client.return_value.client.sanitize_for_serialization.return_value = {
+            "uuid": explicit_uuid
+        }
+
+        result = self.invoke_ops(["get", "--uid", explicit_uuid, "--output", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert orjson_loads(result.stdout)["uuid"] == explicit_uuid
+        source = f"local cache · {self.local_cache / '.project'}"
+        assert self.context_rows(result) == {
+            "Owner": ("owner", source),
+            "Project": ("project-a", source),
+            "Run": (explicit_uuid, "explicit"),
+        }
+        assert str(self.local_cache / ".run") not in result.stderr
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_incomplete_cache_still_rejects_known_conflicts_before_notice(
+        self, run_client
+    ):
+        for owner, project in (("other-owner", None), (None, "project-b")):
+            with self.subTest(owner=owner, project=project):
+                RunConfigManager.set_config(
+                    V1Run(uuid=RUN_UUID, owner=owner, project=project),
+                    visibility="local",
+                )
+
+                result = self.invoke_ops(["get", "--output", "json"])
+
+                assert result.exit_code != 0
+                assert result.stdout == ""
+                assert "conflicts with project `owner/project-a`" in result.stderr
+                assert "Context:" not in result.stderr
+                run_client.assert_not_called()
+
+    @patch("polyaxon._cli.operations.wait_for_running_condition")
+    @patch("polyaxon._client.run.RunClient")
+    def test_exec_keeps_cache_notices_off_streamed_stdout(self, run_client, wait):
+        shell = ExecShell(stdout="out\n", stderr="err\n", error=K8S_EXIT_7)
+        run_client.return_value.shell.return_value = shell
+
+        result = self.invoke_ops(
+            ["exec", "--pod", "pod-1", "--container", "main", "--", "echo", "hi"]
+        )
+
+        assert result.exit_code == 7, result.output
+        assert result.stdout == "out\n"
+        fields = self.context_rows(result)
+        assert fields["Project"] == (
+            "project-a",
+            f"local cache · {self.local_cache / '.project'}",
+        )
+        assert fields["Run"] == (
+            RUN_UUID,
+            f"local cache · {self.local_cache / '.run'}",
+        )
+        assert result.stderr.endswith("err\n")
+        assert shell.closed
 
 
 class ExecShell:
@@ -425,7 +819,7 @@ class TestCliRuns(BaseCommandTestCase):
         run_client.assert_not_called()
 
     @patch("polyaxon._cli.operations.wait_for_running_condition")
-    @patch("polyaxon._env_vars.getters.get_project_run_or_local")
+    @patch("polyaxon._cli.context.resolve_run")
     @patch("polyaxon._client.run.RunClient")
     def test_exec_streams_output_and_exit_code(self, run_client, get_run, wait):
         get_run.return_value = ("admin", None, "foo", RUN_UUID)
@@ -467,7 +861,7 @@ class TestCliRuns(BaseCommandTestCase):
         assert shell.closed
 
     @patch("polyaxon._cli.operations.wait_for_running_condition")
-    @patch("polyaxon._env_vars.getters.get_project_run_or_local")
+    @patch("polyaxon._cli.context.resolve_run")
     @patch("polyaxon._client.run.RunClient")
     def test_exec_returns_zero_on_success_status(self, run_client, get_run, wait):
         get_run.return_value = ("admin", None, "foo", RUN_UUID)

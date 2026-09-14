@@ -2,6 +2,8 @@ from typing import Optional
 
 from polyaxon import settings
 from polyaxon._client.client import PolyaxonClient
+from polyaxon._env_vars.getters._context import _ContextSource
+from polyaxon._env_vars.getters.project import _ProjectContext
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._utils.fqn_utils import split_owner_team_space
 from polyaxon.exceptions import PolyaxonClientException
@@ -9,6 +11,8 @@ from polyaxon.exceptions import PolyaxonClientException
 
 class ClientMixin:
     _IS_ASYNC: bool = False
+    _owner_source: _ContextSource = _ContextSource()
+    _project_source: _ContextSource = _ContextSource()
 
     def _raise_sync_only(self, method_name: str):
         raise PolyaxonClientException(
@@ -106,10 +110,21 @@ class ClientMixin:
     def project(self) -> str:
         return self._project
 
+    def _project_context_snapshot(self) -> _ProjectContext:
+        return _ProjectContext(
+            owner=self.owner,
+            team=self.team,
+            project=self.project,
+            owner_source=self._owner_source,
+            project_source=self._project_source,
+        )
+
     def set_project(self, project: str):
         self._project = project
+        self._project_source = _ContextSource()
 
     def set_owner(self, owner: str):
         owner, team = split_owner_team_space(owner)
         self._owner = owner
         self._team = team
+        self._owner_source = _ContextSource()

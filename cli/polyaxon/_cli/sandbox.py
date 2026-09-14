@@ -12,14 +12,12 @@ from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.logger import clean_outputs
 
 
-def _sandbox_client(project, uid):
+def _sandbox_client(project, uid, *, show_context):
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.sandbox import SandboxClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
-        project,
-        uid,
-        is_cli=True,
+    owner, _, project_name, run_uuid = resolve_run(
+        project, uid, is_cli=True, show_context=show_context
     )
     return SandboxClient(
         owner=owner,
@@ -68,19 +66,26 @@ def _validate_remote_file_path(path: str):
 
 
 @click.group()
+@click.pass_context
 @clean_outputs
-def sandbox():
+def sandbox(ctx):
     """Commands for sandbox-enabled runs."""
+    ctx.obj = ctx.obj or {}
 
 
 @sandbox.command()
 @click.option(*OPTIONS_PROJECT["args"], **OPTIONS_PROJECT["kwargs"])
 @click.option(*OPTIONS_RUN_UID["args"], **OPTIONS_RUN_UID["kwargs"])
+@click.pass_context
 @clean_outputs
-def ping(project, uid):
+def ping(ctx, project, uid):
     """Check sandbox health."""
     try:
-        client = _sandbox_client(project, uid)
+        client = _sandbox_client(
+            project,
+            uid,
+            show_context=ctx.obj.get("show_context", False),
+        )
         response = client.ping()
     except (ApiException, HTTPError, PolyaxonClientException) as e:
         handle_cli_error(
@@ -115,7 +120,11 @@ def exec_command(ctx, project, uid, stream, detach, tag, timeout_ms, command):
         raise click.UsageError("Use only one of --stream or --detach.")
 
     try:
-        client = _sandbox_client(project, uid)
+        client = _sandbox_client(
+            project,
+            uid,
+            show_context=ctx.obj.get("show_context", False),
+        )
         if detach:
             bg = client.process.exec_bg(
                 command=command,
@@ -173,11 +182,16 @@ def exec_command(ctx, project, uid, stream, detach, tag, timeout_ms, command):
 @click.option("--offset", type=int, default=0, show_default=True, help="Log offset.")
 @click.option("--max-bytes", type=int, help="Maximum bytes to read.")
 @click.argument("exec_id")
+@click.pass_context
 @clean_outputs
-def logs(project, uid, stream, offset, max_bytes, exec_id):
+def logs(ctx, project, uid, stream, offset, max_bytes, exec_id):
     """Read background exec logs."""
     try:
-        client = _sandbox_client(project, uid)
+        client = _sandbox_client(
+            project,
+            uid,
+            show_context=ctx.obj.get("show_context", False),
+        )
         response = client.process.logs(
             exec_id,
             stream=stream,
@@ -197,11 +211,16 @@ def logs(project, uid, stream, offset, max_bytes, exec_id):
 @click.option("--recursive", is_flag=True, default=False, help="List recursively.")
 @click.option("--max-entries", type=int, help="Maximum entries to return.")
 @click.argument("path")
+@click.pass_context
 @clean_outputs
-def ls(project, uid, recursive, max_entries, path):
+def ls(ctx, project, uid, recursive, max_entries, path):
     """List a sandbox directory."""
     try:
-        client = _sandbox_client(project, uid)
+        client = _sandbox_client(
+            project,
+            uid,
+            show_context=ctx.obj.get("show_context", False),
+        )
         response = client.fs.ls(
             path,
             recursive=recursive,
@@ -234,12 +253,17 @@ def ls(project, uid, recursive, max_entries, path):
 )
 @click.argument("path_from")
 @click.argument("path_to")
+@click.pass_context
 @clean_outputs
-def upload(project, uid, chunk_size, path_from, path_to):
+def upload(ctx, project, uid, chunk_size, path_from, path_to):
     """Upload one local file to a sandbox run."""
     path_to = _validate_remote_file_path(path_to)
     try:
-        client = _sandbox_client(project, uid)
+        client = _sandbox_client(
+            project,
+            uid,
+            show_context=ctx.obj.get("show_context", False),
+        )
         client.fs.upload_file(
             local_path=path_from,
             path=path_to,
@@ -261,12 +285,17 @@ def upload(project, uid, chunk_size, path_from, path_to):
 )
 @click.argument("path_from")
 @click.argument("path_to")
+@click.pass_context
 @clean_outputs
-def download(project, uid, chunk_size, path_from, path_to):
+def download(ctx, project, uid, chunk_size, path_from, path_to):
     """Download one sandbox file to a local path."""
     path_from = _validate_remote_file_path(path_from)
     try:
-        client = _sandbox_client(project, uid)
+        client = _sandbox_client(
+            project,
+            uid,
+            show_context=ctx.obj.get("show_context", False),
+        )
         client.fs.download_file(
             path=path_from,
             local_path=path_to,
@@ -297,8 +326,9 @@ def download(project, uid, chunk_size, path_from, path_to):
     show_default=True,
     help="PTY output bytes to replay on attach.",
 )
+@click.pass_context
 @clean_outputs
-def shell(project, uid, command, cols, rows, replay_bytes):
+def shell(ctx, project, uid, command, cols, rows, replay_bytes):
     """Start an interactive PTY in a sandbox-enabled service.
 
     The run must use ``kind: service`` with ``plugins.sandbox: true``.
@@ -325,7 +355,11 @@ def shell(project, uid, command, cols, rows, replay_bytes):
     from polyaxon._pty.sandbox import SandboxPseudoTerminal
 
     try:
-        client = _sandbox_client(project, uid)
+        client = _sandbox_client(
+            project,
+            uid,
+            show_context=ctx.obj.get("show_context", False),
+        )
         cols, rows = _terminal_size(cols=cols, rows=rows)
         pty = client.pty.create(
             command=_shell_command(command),

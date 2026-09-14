@@ -29,13 +29,10 @@ from polyaxon._env_vars.getters import (
     get_log_level,
     get_model_info,
     get_project_error_message,
-    get_project_or_local,
-    get_project_run_or_local,
     get_queue_info,
     get_run_info,
     get_run_or_local,
     get_versioned_entity_info,
-    resolve_entity_info,
 )
 from polyaxon._flow.builds import V1Build
 from polyaxon._flow.cache import V1Cache

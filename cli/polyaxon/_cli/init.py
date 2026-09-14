@@ -93,15 +93,16 @@ def create_polyaxonfile():
     help="Automatic yes to prompts. "
     'Assume "yes" as answer to all prompts and run non-interactively.',
 )
+@click.pass_context
 @clean_outputs
-def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
+def init(ctx, project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
     """Initialize a new local project and cache directory.
 
     Note: Make sure to add the local cache `.polyaxon`
     to your `.gitignore` and `.dockerignore` files.
     """
+    from polyaxon._cli.context import resolve_project
     from polyaxon._client.project import ProjectClient
-    from polyaxon._env_vars.getters import get_project_or_local
     from polyaxon._managers.git import GitConfigManager
     from polyaxon._managers.ignore import IgnoreConfigManager
     from polyaxon._managers.project import ProjectConfigManager
@@ -109,13 +110,19 @@ def init(project, git_connection, git_url, polyaxonfile, polyaxonignore, yes):
     from polyaxon._utils.cache import get_local_project
     from polyaxon.exceptions import ApiException
 
+    ctx.obj = ctx.obj or {}
+
     if not any([project, git_connection, git_url, polyaxonfile, polyaxonignore]):
         Printer.warning(
             "`polyaxon init` did not receive any valid option.",
             command_help="polyaxon init",
         )
     if project:
-        owner, _, project_name = get_project_or_local(project, is_cli=True)
+        owner, _, project_name = resolve_project(
+            project,
+            is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
+        )
         try:
             polyaxon_client = ProjectClient(
                 owner=owner, project=project_name, manual_exceptions_handling=True

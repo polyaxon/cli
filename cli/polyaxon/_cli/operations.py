@@ -327,9 +327,9 @@ def ls(
     \b
     $ polyaxon ops ls -q "kind: service"
     """
+    from polyaxon._cli.context import resolve_project
     from polyaxon._client.run import RunClient
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_or_local
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._schemas.lifecycle import V1ProjectFeature
 
@@ -351,8 +351,10 @@ def ls(
             else:
                 Printer.warning(f"Skipping run {uid}, offline data not found.")
     else:
-        owner, _, project_name = get_project_or_local(
-            project or ctx.obj.get("project"), is_cli=True
+        owner, _, project_name = resolve_project(
+            project or ctx.obj.get("project"),
+            is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
 
         try:
@@ -483,9 +485,9 @@ def get(ctx, project, uid, offline, path, output):
     $ polyaxon ops get -p alain/cats-vs-dogs --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
 
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._schemas.lifecycle import V1ProjectFeature
     from polyaxon._utils import cache
@@ -504,10 +506,11 @@ def get(ctx, project, uid, offline, path, output):
             sys.exit(1)
         run_data = RunConfigManager.read_from_path(offline_path)
     else:
-        owner, team, project_name, run_uuid = get_project_run_or_local(
+        owner, team, project_name, run_uuid = resolve_run(
             project or ctx.obj.get("project"),
             uid,
             is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
 
         try:
@@ -582,9 +585,9 @@ def delete(ctx, project, uid, yes, offline, path):
     \b
     $ polyaxon ops delete --project=cats-vs-dogs -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._schemas.lifecycle import V1ProjectFeature
 
@@ -608,10 +611,11 @@ def delete(ctx, project, uid, yes, offline, path):
         return
 
     # Resume normal flow
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     if not yes and not click.confirm(
         "Are sure you want to delete run `{}`".format(run_uuid)
@@ -662,9 +666,9 @@ def update(ctx, project, uid, name, description, tags, offline, path):
     \b
     $ polyaxon ops update --project=cats-vs-dogs -uid 8aac02e3a62a4f0aaa257c59da5eab80 --tags="foo, bar" --name="unique-name"
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._schemas.lifecycle import V1ProjectFeature
 
@@ -707,10 +711,11 @@ def update(ctx, project, uid, name, description, tags, offline, path):
             )
             sys.exit(1)
     else:
-        owner, _, project_name, run_uuid = get_project_run_or_local(
+        owner, _, project_name, run_uuid = resolve_run(
             project or ctx.obj.get("project"),
             uid or ctx.obj.get("run_uuid"),
             is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
         try:
             polyaxon_client = RunClient(
@@ -746,13 +751,14 @@ def approve(ctx, project, uid):
     \b
     $ polyaxon ops approve --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     try:
@@ -796,13 +802,14 @@ def stop(ctx, project, uid, yes):
     \b
     $ polyaxon ops stop --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     if not yes and not click.confirm(
         "Are sure you want to stop run `{}`".format(run_uuid)
@@ -851,13 +858,14 @@ def skip(ctx, project, uid, yes):
     \b
     $ polyaxon ops skip --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     if not yes and not click.confirm(
         "Are sure you want to stop run `{}`".format(run_uuid)
@@ -954,18 +962,19 @@ def restart(
     \b
     $ polyaxon ops restart --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._polyaxonfile import OperationSpecification
 
     content = None
     if polyaxonfile:
         content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     try:
         polyaxon_client = RunClient(
@@ -1043,18 +1052,19 @@ def resume(
     \b
     $ polyaxon ops resume --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._polyaxonfile import OperationSpecification
 
     content = None
     if polyaxonfile:
         content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     try:
         polyaxon_client = RunClient(
@@ -1094,13 +1104,14 @@ def invalidate(ctx, project, uid):
     \b
     $ polyaxon ops invalidate --uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     try:
         polyaxon_client = RunClient(
@@ -1142,8 +1153,8 @@ def execute(ctx, project, uid, executor):
     """
 
     from polyaxon import settings
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._flow.run.enums import V1RunKind
     from polyaxon._runner.kinds import RunnerKind
     from polyaxon._schemas.lifecycle import LifeCycle, V1Statuses
@@ -1294,10 +1305,11 @@ def execute(ctx, project, uid, executor):
                 message="Operation failed.\n{}".format(result["message"]),
             )
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     try:
@@ -1393,9 +1405,9 @@ def statuses(ctx, project, uid, watch, offline, path):
     \b
     $ polyaxon ops statuses -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._schemas.lifecycle import V1ProjectFeature
 
@@ -1422,10 +1434,11 @@ def statuses(ctx, project, uid, watch, offline, path):
             sys.exit(1)
         return
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     client = RunClient(
@@ -1490,7 +1503,7 @@ def statuses(ctx, project, uid, watch, offline, path):
 #             )
 #             sys.exit(1)
 #
-#     owner, team, project_name, run_uuid = get_project_run_or_local(
+#     owner, team, project_name, run_uuid = resolve_run(
 #         ctx.obj.get("project"), ctx.obj.get("run_uuid"), is_cli=True,
 #     )
 #
@@ -1548,9 +1561,9 @@ def logs(
     \b
     $ polyaxon ops logs -uid 8aac02e3a62a4f0aaa257c59da5eab80 -p mnist
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient, get_run_logs
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._schemas.lifecycle import V1ProjectFeature
     from traceml.events import get_logs_path
@@ -1590,10 +1603,11 @@ def logs(
             sys.exit(1)
         return
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     client = RunClient(
         owner=owner,
@@ -1636,13 +1650,14 @@ def inspect(ctx, project, uid):
     \b
     $ polyaxon ops inspect -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     try:
         client = RunClient(
@@ -1683,15 +1698,16 @@ def exec_command(ctx, project, uid, pod, container, command):
     \b
     $ polyaxon ops exec -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80 -- python -V
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
     run_uuid = uid or ctx.obj.get("run_uuid")
     try:
-        owner, _, project_name, run_uuid = get_project_run_or_local(
+        owner, _, project_name, run_uuid = resolve_run(
             project or ctx.obj.get("project"),
             run_uuid,
             is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
         client = RunClient(
             owner=owner,
@@ -1771,14 +1787,15 @@ def shell(ctx, project, uid, command, pod, container):
     \b
     $ polyaxon ops shell -p acme/project -uid 8aac02e3a62a4f0aaa257c59da5eab80 -cmd="/bin/bash"
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._pty.k8s import PseudoTerminal
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     client = RunClient(
         owner=owner,
@@ -1880,13 +1897,14 @@ def artifacts(
     \b
     $ polyaxon ops artifacts -uid 8aac02e3a62a4f0aaa257c59da5eab80 -l-kind model -l-kind env --path="this/path"
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     client = RunClient(
         owner=owner,
@@ -2072,13 +2090,14 @@ def upload(
     \b
     $ polyaxon ops upload -uid 8aac02e3a62a4f0aaa257c59da5eab80 --path-to="path/to/upload/to"
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     is_file = os.path.isfile(path_from) if path_from else False
     try:
@@ -2155,13 +2174,14 @@ def transfer(ctx, project, uid, to_project):
     \b
     $ polyaxon ops transfer -p acme/foobar -uid 8aac02e3a62a4f0aaa257c59da5eab80 -to=dest-project
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
+    owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     try:
@@ -2213,8 +2233,8 @@ def transfer(ctx, project, uid, to_project):
 @clean_outputs
 def dashboard(ctx, project, uid, yes, url, offline, path, server_config):
     """Open this operation's dashboard details in browser."""
+    from polyaxon._cli.context import resolve_run
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._managers.run import RunConfigManager
     from polyaxon._schemas.lifecycle import V1ProjectFeature
 
@@ -2232,10 +2252,11 @@ def dashboard(ctx, project, uid, yes, url, offline, path, server_config):
         owner, project_name, run_uuid = run_data.owner, run_data.project, run_data.uuid
         team = None
     else:
-        owner, team, project_name, run_uuid = get_project_run_or_local(
+        owner, team, project_name, run_uuid = resolve_run(
             project or ctx.obj.get("project"),
             uid or ctx.obj.get("run_uuid"),
             is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
     subpath = "{}/runs/{}".format(
         get_project_subpath_url(owner, team, project_name), run_uuid
@@ -2283,14 +2304,15 @@ def service(ctx, project, uid, yes, external, url):
     You can open the service embedded in Polyaxon UI or using the real service URL,
     please use the `--external` flag.
     """
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._flow.run.enums import V1RunKind
 
-    owner, team, project_name, run_uuid = get_project_run_or_local(
+    owner, team, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
         uid or ctx.obj.get("run_uuid"),
         is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     client = RunClient(
         owner=owner,
@@ -2432,11 +2454,13 @@ def pull(
     \b
     $ polyaxon ops pull -a
     """
+    from polyaxon._cli.context import resolve_project
     from polyaxon._client.run import RunClient
-    from polyaxon._env_vars.getters import get_project_or_local
 
-    owner, _, project_name = get_project_or_local(
-        project or ctx.obj.get("project"), is_cli=True
+    owner, _, project_name = resolve_project(
+        project or ctx.obj.get("project"),
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     def _pull(run_uuid: str):
@@ -2594,13 +2618,15 @@ def push(
     \b
     $ polyaxon ops push -uid 8aac02e3a62a4f0aaa257c59da5eab80 --reset-project -p send-to-project
     """
+    from polyaxon._cli.context import resolve_project
     from polyaxon._client.run import RunClient
     from polyaxon._contexts import paths as ctx_paths
-    from polyaxon._env_vars.getters import get_project_or_local
     from polyaxon._schemas.lifecycle import V1ProjectFeature
 
-    owner, _, project_name = get_project_or_local(
-        project or ctx.obj.get("project"), is_cli=True
+    owner, _, project_name = resolve_project(
+        project or ctx.obj.get("project"),
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     offline_path = ctx_paths.get_offline_base_path(

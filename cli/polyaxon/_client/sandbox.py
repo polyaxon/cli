@@ -25,10 +25,8 @@ from polyaxon._client.decorators import (
 )
 from polyaxon._client.mixin import ClientMixin
 from polyaxon._client.transport import async_sandbox_ws, sandbox_ws
-from polyaxon._env_vars.getters import (
-    get_project_error_message,
-    get_project_or_local,
-)
+from polyaxon._env_vars.getters import get_project_error_message
+from polyaxon._env_vars.getters.project import _get_project_context, _ProjectContext
 from polyaxon._env_vars.getters.run import _get_run_context
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.operation import V1Operation
@@ -90,6 +88,15 @@ class SandboxClient(ClientMixin):
     A successful `create()` replaces the cached identity with the new run.
     This also applies to `AsyncSandboxClient`.
 
+    Context logging is disabled by default. Set `log_context=True` to log cached
+    owner and project values with their cache paths at construction. After
+    validation succeeds, the first access to a cached `run_uuid` logs its UUID
+    and cache path once per client. Notices use INFO through the `polyaxon.cli`
+    logger, or WARNING when cached run ownership metadata is incomplete.
+    An explicit `run_uuid` produces no run-cache notice. Logging uses your
+    existing configuration. Set `client.log_context=False` to suppress further
+    notices; cached ownership is still checked on every run UUID access.
+
     To attach to an existing run explicitly, construct a client with `owner`,
     `project`, and `run_uuid`.
     Changing cache files does not update an existing client's identity.
@@ -134,6 +141,9 @@ class SandboxClient(ClientMixin):
              To trigger the offline mode manually instead of depending on `POLYAXON_IS_OFFLINE`.
         no_op: bool, optional,
              To set the NO_OP mode manually instead of depending on `POLYAXON_NO_OP`.
+        log_context: bool, optional, default: False,
+             Log cached context through the Python logger.
+             Can also be changed on the client instance.
 
     Raises:
         PolyaxonClientException: If the owner and/or project are not passed
@@ -150,8 +160,11 @@ class SandboxClient(ClientMixin):
         is_offline: Optional[bool] = None,
         no_op: Optional[bool] = None,
         manual_exceptions_handling: bool = False,
+        *,
+        log_context: bool = False,
     ):
         self._manual_exceptions_handling = manual_exceptions_handling
+        self.log_context = log_context
         self._is_offline = get_global_or_inline_config(
             config_key="is_offline", config_value=is_offline, client=client
         )
@@ -162,10 +175,14 @@ class SandboxClient(ClientMixin):
         if self._no_op:
             return
 
+        project_context = _ProjectContext(owner, None, project)
         try:
-            owner, _, project = get_project_or_local(
+            project_context = _get_project_context(
                 get_entity_full_name(owner=owner, entity=project)
             )
+            owner, project = project_context.owner, project_context.project
+            if self.log_context:
+                project_context.report()
         except PolyaxonClientException:
             pass
 
@@ -174,12 +191,16 @@ class SandboxClient(ClientMixin):
             raise PolyaxonClientException(error_message)
 
         self._run_context = _get_run_context(run_uuid)
+        self._run_context_reported = False
 
         owner, team = split_owner_team_space(owner)
+        team = team or project_context.team
         self._set_client(client)
         self._owner = owner
         self._team = team
         self._project = project
+        self._owner_source = project_context.owner_source
+        self._project_source = project_context.project_source
         self._run_uuid = self._run_context.uuid
         self._run_data = V1Run.model_construct(
             owner=self._owner,
@@ -195,8 +216,17 @@ class SandboxClient(ClientMixin):
 
     @property
     def run_uuid(self) -> Optional[str]:
-        if not self._is_offline and self._run_context is not None:
-            self._run_context.validate(self.owner, self.project)
+        context = self._run_context
+        if not self._is_offline and context is not None:
+            context.validate(self._project_context_snapshot())
+            if (
+                self.log_context
+                and context.path
+                and context.uuid
+                and not self._run_context_reported
+            ):
+                self._run_context_reported = True
+                context.report()
         return self._run_uuid
 
     @property

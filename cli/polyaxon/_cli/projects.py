@@ -19,6 +19,7 @@ def project(ctx, _project):  # pylint:disable=redefined-outer-name
 
     Alias: projects.
     """
+    ctx.obj = ctx.obj or {}
     if _project:
         Printer.warning(
             "Passing arguments to command groups is deprecated and will be removed in v2! "
@@ -26,7 +27,6 @@ def project(ctx, _project):  # pylint:disable=redefined-outer-name
             "`polyaxon project SUB_COMMAND --help`"
         )
     if ctx.invoked_subcommand not in ["create", "ls"]:
-        ctx.obj = ctx.obj or {}
         ctx.obj["project"] = _project
 
 
@@ -58,8 +58,8 @@ def create(ctx, name, description, tags, public, init):
     $ polyaxon project create --name=owner/name --description="Project Description"
     """
     from clipped.utils.validation import validate_tags
+    from polyaxon._cli.context import resolve_project
     from polyaxon._client.project import ProjectClient
-    from polyaxon._env_vars.getters.owner_entity import resolve_entity_info
     from polyaxon._managers.project import ProjectConfigManager
     from polyaxon._sdk.schemas.v1_project import V1Project
     from polyaxon._utils import cache
@@ -72,8 +72,10 @@ def create(ctx, name, description, tags, public, init):
             command_help="project create",
             sys_exit=True,
         )
-    owner, team, project_name = resolve_entity_info(
-        name or ctx.obj.get("project"), is_cli=True, entity_name="project"
+    owner, team, project_name = resolve_project(
+        name or ctx.obj.get("project"),
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     tags = validate_tags(tags, validate_yaml=True)
@@ -112,7 +114,7 @@ def create(ctx, name, description, tags, public, init):
     if init:
         from polyaxon._cli.init import init as init_project
 
-        ctx.obj = {}
+        ctx.obj = {"show_context": ctx.obj.get("show_context", False)}
         ctx.invoke(
             init_project,
             project="{}/{}".format(owner, project_name),
@@ -130,19 +132,22 @@ def create(ctx, name, description, tags, public, init):
 )
 @click.option("--limit", type=int, help="To limit the list of projects.")
 @click.option("--offset", type=int, help="To offset the list of projects.")
+@click.pass_context
 @clean_outputs
-def ls(owner, query, sort, limit, offset):
+def ls(ctx, owner, query, sort, limit, offset):
     """List projects.
 
     Uses /docs/references/cli/cache/#caching
     """
     from clipped.utils.dicts import list_dicts_to_tabulate
     from clipped.utils.responses import get_meta_response
+    from polyaxon._cli.context import resolve_owner
     from polyaxon._client.project import ProjectClient
-    from polyaxon._env_vars.getters.user import get_local_owner
     from polyaxon.exceptions import ApiException
 
-    owner = owner or get_local_owner(is_cli=True)
+    owner = owner or resolve_owner(
+        is_cli=True, show_context=ctx.obj.get("show_context", False)
+    )
     if not owner:
         Printer.error("Please provide a valid owner: --owner/-o.")
         sys.exit(1)
@@ -205,15 +210,17 @@ def get(ctx, _project):
     \b
     $ polyaxon project get -p owner/project
     """
+    from polyaxon._cli.context import resolve_project
     from polyaxon._cli.utils import get_entity_details
     from polyaxon._client.project import ProjectClient
-    from polyaxon._env_vars.getters import get_project_or_local
     from polyaxon._managers.project import ProjectConfigManager
     from polyaxon._utils import cache
     from polyaxon.exceptions import ApiException
 
-    owner, team, project_name = get_project_or_local(
-        _project or ctx.obj.get("project"), is_cli=True
+    owner, team, project_name = resolve_project(
+        _project or ctx.obj.get("project"),
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     try:
@@ -261,14 +268,16 @@ def delete(ctx, _project, yes):
 
     Uses /docs/references/cli/cache/#caching
     """
+    from polyaxon._cli.context import resolve_project
     from polyaxon._client.project import ProjectClient
-    from polyaxon._env_vars.getters import get_project_or_local
     from polyaxon._managers.project import ProjectConfigManager
     from polyaxon._utils.cache import get_local_project
     from polyaxon.exceptions import ApiException
 
-    owner, _, project_name = get_project_or_local(
-        _project or ctx.obj.get("project"), is_cli=True
+    owner, _, project_name = resolve_project(
+        _project or ctx.obj.get("project"),
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     if not yes and not click.confirm(
@@ -331,13 +340,15 @@ def update(ctx, _project, name, description, tags, private):
     $ polyaxon update --tags="foo, bar"
     """
     from clipped.utils.validation import validate_tags
+    from polyaxon._cli.context import resolve_project
     from polyaxon._cli.utils import get_entity_details
     from polyaxon._client.project import ProjectClient
-    from polyaxon._env_vars.getters import get_project_or_local
     from polyaxon.exceptions import ApiException
 
-    owner, _, project_name = get_project_or_local(
-        _project or ctx.obj.get("project"), is_cli=True
+    owner, _, project_name = resolve_project(
+        _project or ctx.obj.get("project"),
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
 
     update_dict = {}
@@ -393,10 +404,12 @@ def update(ctx, _project, name, description, tags, private):
 @clean_outputs
 def dashboard(ctx, _project, yes, url):
     """Open this project's dashboard details in browser."""
-    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._cli.context import resolve_project
 
-    owner, team, project_name = get_project_or_local(
-        _project or ctx.obj.get("project"), is_cli=True
+    owner, team, project_name = resolve_project(
+        _project or ctx.obj.get("project"),
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
     )
     project_url = get_dashboard_url(
         subpath=get_project_subpath_url(owner, team, project_name)

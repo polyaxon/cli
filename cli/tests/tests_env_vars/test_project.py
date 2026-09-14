@@ -1,4 +1,5 @@
-from polyaxon._env_vars.getters import get_project_error_message, get_project_or_local
+from polyaxon._env_vars.getters import get_project_error_message
+from polyaxon._env_vars.getters.project import _get_project_context
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException
 
@@ -10,12 +11,19 @@ class TestProjectEnvVars(BaseTestCase):
         assert get_project_error_message("", "test") is not None
         assert get_project_error_message("test", "test") is None
 
-    def test_get_project_or_local(self):
+    def test_get_project_context(self):
         with self.assertRaises(PolyaxonClientException):
-            get_project_or_local(None)
+            _get_project_context(None)
 
-        assert get_project_or_local("owner.project") == ("owner", None, "project")
-        assert get_project_or_local("owner.team.project") == (
+        context = _get_project_context("owner.project")
+        assert (context.owner, context.team, context.project) == (
+            "owner",
+            None,
+            "project",
+        )
+
+        context = _get_project_context("owner.team.project")
+        assert (context.owner, context.team, context.project) == (
             "owner",
             "team",
             "project",

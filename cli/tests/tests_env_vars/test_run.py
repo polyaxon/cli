@@ -2,11 +2,14 @@ from mock import patch
 from pathlib import Path
 import tempfile
 
-from polyaxon._env_vars.getters import get_project_run_or_local, get_run_or_local
+from polyaxon._env_vars.getters import get_run_or_local
+from polyaxon._env_vars.getters.run import _get_project_run_context
 from polyaxon._managers.project import ProjectConfigManager
 from polyaxon._managers.run import RunConfigManager
+from polyaxon._managers.user import UserConfigManager
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_run import V1Run
+from polyaxon._sdk.schemas.v1_user import V1User
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException
 
@@ -27,7 +30,11 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.addCleanup(directory.cleanup)
         self.local_cache = Path(directory.name) / "local" / ".polyaxon"
         self.global_cache = Path(directory.name) / "global" / ".polyaxon"
-        for manager in (ProjectConfigManager, RunConfigManager):
+        for manager in (
+            ProjectConfigManager,
+            RunConfigManager,
+            UserConfigManager,
+        ):
             patcher = patch.multiple(
                 manager,
                 CONFIG_PATH=None,
@@ -51,7 +58,13 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.cache_project()
         self.cache_run()
 
-        assert get_project_run_or_local(is_cli=False) == (
+        project_context, run_context = _get_project_run_context(is_cli=False)
+        assert (
+            project_context.owner,
+            project_context.team,
+            project_context.project,
+            run_context.uuid,
+        ) == (
             "owner",
             None,
             "project-a",
@@ -62,7 +75,13 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.cache_project(visibility="global")
         self.cache_run(visibility="global")
 
-        assert get_project_run_or_local(is_cli=False) == (
+        project_context, run_context = _get_project_run_context(is_cli=False)
+        assert (
+            project_context.owner,
+            project_context.team,
+            project_context.project,
+            run_context.uuid,
+        ) == (
             "owner",
             None,
             "project-a",
@@ -75,7 +94,13 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.cache_project()
         self.cache_run()
 
-        assert get_project_run_or_local(is_cli=False) == (
+        project_context, run_context = _get_project_run_context(is_cli=False)
+        assert (
+            project_context.owner,
+            project_context.team,
+            project_context.project,
+            run_context.uuid,
+        ) == (
             "owner",
             None,
             "project-a",
@@ -86,7 +111,15 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.cache_project(project="project-b")
         self.cache_run()
 
-        assert get_project_run_or_local("owner/project-a", is_cli=False) == (
+        project_context, run_context = _get_project_run_context(
+            "owner/project-a", is_cli=False
+        )
+        assert (
+            project_context.owner,
+            project_context.team,
+            project_context.project,
+            run_context.uuid,
+        ) == (
             "owner",
             None,
             "project-a",
@@ -98,20 +131,21 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.cache_run()
 
         with self.assertRaises(PolyaxonClientException) as error:
-            get_project_run_or_local("owner/project-b", is_cli=False)
+            _get_project_run_context("owner/project-b", is_cli=False)
 
         message = str(error.exception)
         assert "owner/project-a" in message
         assert "owner/project-b" in message
         assert RUN_UUID in message
-        assert str(self.local_cache / ".run") in message
+        assert f"local cache · {self.local_cache / '.run'}" in message
+        assert "owner: explicit; project: explicit" in message
 
     def test_same_project_slug_with_different_owner_is_rejected(self):
         self.cache_project(owner="other-owner")
         self.cache_run()
 
         with self.assertRaises(PolyaxonClientException) as error:
-            get_project_run_or_local(is_cli=False)
+            _get_project_run_context(is_cli=False)
 
         assert "owner/project-a" in str(error.exception)
         assert "other-owner/project-a" in str(error.exception)
@@ -120,7 +154,13 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.cache_project(owner="owner/team")
         self.cache_run(owner="owner/team")
 
-        assert get_project_run_or_local(is_cli=False) == (
+        project_context, run_context = _get_project_run_context(is_cli=False)
+        assert (
+            project_context.owner,
+            project_context.team,
+            project_context.project,
+            run_context.uuid,
+        ) == (
             "owner",
             "team",
             "project-a",
@@ -133,26 +173,71 @@ class TestCachedRunEnvVars(BaseTestCase):
         self.cache_run(visibility="global")
 
         with self.assertRaises(PolyaxonClientException) as error:
-            get_project_run_or_local(is_cli=False)
+            _get_project_run_context(is_cli=False)
 
         message = str(error.exception)
         assert "owner/project-a" in message
         assert "owner/project-b" in message
-        assert str(self.global_cache / ".run") in message
+        assert f"global cache · {self.global_cache / '.run'}" in message
+        assert f"owner: local cache · {self.local_cache / '.project'}" in message
+        assert f"project: local cache · {self.local_cache / '.project'}" in message
+
+    def test_conflict_reports_global_project_source(self):
+        self.cache_project(project="project-b", visibility="global")
+        self.cache_run()
+
+        with self.assertRaises(PolyaxonClientException) as error:
+            _get_project_run_context(is_cli=False)
+
+        message = str(error.exception)
+        assert "owner/project-a" in message
+        assert "owner/project-b" in message
+        assert f"local cache · {self.local_cache / '.run'}" in message
+        assert f"owner: global cache · {self.global_cache / '.project'}" in message
+        assert f"project: global cache · {self.global_cache / '.project'}" in message
+
+    def test_conflict_reports_separate_owner_and_project_sources(self):
+        self.cache_project(owner=None, project="project-b")
+        UserConfigManager.set_config(V1User(organization="owner/team"))
+        self.cache_run(owner="owner/run-team", visibility="global")
+
+        with self.assertRaises(PolyaxonClientException) as error:
+            _get_project_run_context(is_cli=False)
+
+        message = str(error.exception)
+        assert f"owner/run-team/project-a/{RUN_UUID}" in message
+        assert "owner/team/project-b" in message
+        assert f"global cache · {self.global_cache / '.run'}" in message
+        assert f"owner: global cache · {self.global_cache / '.user'}" in message
+        assert f"project: local cache · {self.local_cache / '.project'}" in message
 
     def test_explicit_uuid_ignores_conflicting_cached_run(self):
         self.cache_project()
         self.cache_run()
 
-        assert get_project_run_or_local(
+        project_context, run_context = _get_project_run_context(
             "other-owner/project-b", EXPLICIT_RUN_UUID, is_cli=False
+        )
+        assert (
+            project_context.owner,
+            project_context.team,
+            project_context.project,
+            run_context.uuid,
         ) == ("other-owner", None, "project-b", EXPLICIT_RUN_UUID)
 
     def test_explicit_uuid_with_cached_project_ignores_cached_run(self):
         self.cache_project(project="project-b")
         self.cache_run()
 
-        assert get_project_run_or_local(run_uuid=EXPLICIT_RUN_UUID, is_cli=False) == (
+        project_context, run_context = _get_project_run_context(
+            run_uuid=EXPLICIT_RUN_UUID, is_cli=False
+        )
+        assert (
+            project_context.owner,
+            project_context.team,
+            project_context.project,
+            run_context.uuid,
+        ) == (
             "owner",
             None,
             "project-b",
@@ -165,7 +250,13 @@ class TestCachedRunEnvVars(BaseTestCase):
             with self.subTest(owner=owner, project=project):
                 self.cache_run(owner=owner, project=project)
 
-                assert get_project_run_or_local(is_cli=False) == (
+                project_context, run_context = _get_project_run_context(is_cli=False)
+                assert (
+                    project_context.owner,
+                    project_context.team,
+                    project_context.project,
+                    run_context.uuid,
+                ) == (
                     "owner",
                     None,
                     "project-a",
@@ -179,4 +270,4 @@ class TestCachedRunEnvVars(BaseTestCase):
                 self.cache_run(owner=owner, project=project)
 
                 with self.assertRaises(PolyaxonClientException):
-                    get_project_run_or_local(is_cli=False)
+                    _get_project_run_context(is_cli=False)

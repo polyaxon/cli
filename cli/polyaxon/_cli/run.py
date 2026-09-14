@@ -135,6 +135,7 @@ def _run(
 
     def execute_run_locally(run_uuid: str):
         ctx.obj = {
+            "show_context": ctx.obj.get("show_context", False),
             "project": "{}/{}".format(owner_team, project_name),
             "run_uuid": run_uuid,
             "executor": executor,
@@ -143,6 +144,7 @@ def _run(
 
     def watch_run_statuses(run_uuid: str):
         ctx.obj = {
+            "show_context": ctx.obj.get("show_context", False),
             "project": "{}/{}".format(owner_team, project_name),
             "run_uuid": run_uuid,
         }
@@ -150,6 +152,7 @@ def _run(
 
     def watch_run_logs(run_uuid: str):
         ctx.obj = {
+            "show_context": ctx.obj.get("show_context", False),
             "project": "{}/{}".format(owner_team, project_name),
             "run_uuid": run_uuid,
         }
@@ -157,6 +160,7 @@ def _run(
 
     def start_run_shell(run_uuid: str):
         ctx.obj = {
+            "show_context": ctx.obj.get("show_context", False),
             "project": "{}/{}".format(owner_team, project_name),
             "run_uuid": run_uuid,
         }
@@ -164,6 +168,7 @@ def _run(
 
     def upload_run(run_uuid: str, path_from: str, path_to: str):
         ctx.obj = {
+            "show_context": ctx.obj.get("show_context", False),
             "project": "{}/{}".format(owner_team, project_name),
             "run_uuid": run_uuid,
         }
@@ -548,9 +553,11 @@ def run(
     """
     from clipped.utils import git as git_utils
     from clipped.utils.validation import validate_tags
-    from polyaxon._env_vars.getters import get_project_or_local
+    from polyaxon._cli.context import resolve_project
     from polyaxon._managers.git import GitConfigManager
     from polyaxon._polyaxonfile import check_polyaxonfile
+
+    ctx.obj = ctx.obj or {}
 
     if log and shell:
         Printer.error(
@@ -625,7 +632,11 @@ def run(
         Printer.print("Please customize the specification or disable the template!")
         sys.exit(1)
 
-    owner, team, project_name = get_project_or_local(project, is_cli=True)
+    owner, team, project_name = resolve_project(
+        project,
+        is_cli=True,
+        show_context=ctx.obj.get("show_context", False),
+    )
     tags = validate_tags(tags, validate_yaml=True)
 
     # Handle CLI uploads - merge with polyaxonfile mount section

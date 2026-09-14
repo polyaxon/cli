@@ -14,12 +14,12 @@ from polyaxon.exceptions import ApiException, PolyaxonClientException
 from polyaxon.logger import clean_outputs
 
 
-def _sandbox_client(project, uid):
+def _sandbox_client(project, uid, *, show_context):
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.sandbox import SandboxClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
 
-    owner, _, project_name, run_uuid = get_project_run_or_local(
-        project, uid, is_cli=True
+    owner, _, project_name, run_uuid = resolve_run(
+        project, uid, is_cli=True, show_context=show_context
     )
     return SandboxClient(
         owner=owner,
@@ -141,9 +141,11 @@ def _ssh_config(project_ref, run_uuid, identity_file, known_hosts_file):
 
 
 @click.group()
+@click.pass_context
 @clean_outputs
-def ssh():
+def ssh(ctx):
     """SSH access for sandbox-enabled runs."""
+    ctx.obj = ctx.obj or {}
 
 
 @ssh.command()
@@ -160,19 +162,23 @@ def ssh():
     help="Known hosts file to use. Defaults to Polyaxon's managed file.",
 )
 @click.argument("connect_args", nargs=-1, type=click.UNPROCESSED)
+@click.pass_context
 @clean_outputs
-def connect(project, uid, identity_file, known_hosts_file, connect_args):
+def connect(ctx, project, uid, identity_file, known_hosts_file, connect_args):
     """Connect to a sandbox run over SSH.
 
     Pass SSH options or a remote command after `--`. Use a second `--` to
     separate SSH options from the remote command.
     """
-    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._cli.context import resolve_run
     from polyaxon._ssh import ensure_local_keypair, resolve_known_hosts_file
 
     try:
-        owner, _, project_name, run_uuid = get_project_run_or_local(
-            project, uid, is_cli=True
+        owner, _, project_name, run_uuid = resolve_run(
+            project,
+            uid,
+            is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
         identity_path = ensure_local_keypair(identity_file)
         known_hosts_path = resolve_known_hosts_file(known_hosts_file)
@@ -217,11 +223,12 @@ def connect(project, uid, identity_file, known_hosts_file, connect_args):
     show_default=True,
     help="Remote SSH setup timeout in milliseconds.",
 )
+@click.pass_context
 @clean_outputs
-def setup(project, uid, identity_file, known_hosts_file, timeout_ms):
+def setup(ctx, project, uid, identity_file, known_hosts_file, timeout_ms):
     """Prepare SSH access for a sandbox run."""
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.sandbox import SandboxClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._ssh import (
         prepare_ssh_access,
         resolve_known_hosts_file,
@@ -229,8 +236,11 @@ def setup(project, uid, identity_file, known_hosts_file, timeout_ms):
     )
 
     try:
-        owner, _, project_name, run_uuid = get_project_run_or_local(
-            project, uid, is_cli=True
+        owner, _, project_name, run_uuid = resolve_run(
+            project,
+            uid,
+            is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
         client = SandboxClient(
             owner=owner,
@@ -280,15 +290,19 @@ def setup(project, uid, identity_file, known_hosts_file, timeout_ms):
     type=click.Path(dir_okay=False),
     help="Known hosts file to use. Defaults to Polyaxon's managed file.",
 )
+@click.pass_context
 @clean_outputs
-def config_command(project, uid, identity_file, known_hosts_file):
+def config_command(ctx, project, uid, identity_file, known_hosts_file):
     """Print an SSH config block for a sandbox run."""
-    from polyaxon._env_vars.getters import get_project_run_or_local
+    from polyaxon._cli.context import resolve_run
     from polyaxon._ssh import resolve_identity_file, resolve_known_hosts_file
 
     try:
-        owner, _, project_name, run_uuid = get_project_run_or_local(
-            project, uid, is_cli=True
+        owner, _, project_name, run_uuid = resolve_run(
+            project,
+            uid,
+            is_cli=True,
+            show_context=ctx.obj.get("show_context", False),
         )
     except PolyaxonClientException as e:
         handle_cli_error(
@@ -321,12 +335,13 @@ def config_command(project, uid, identity_file, known_hosts_file):
     type=click.Path(dir_okay=False),
     help="Known hosts file to use. Defaults to Polyaxon's managed file.",
 )
+@click.pass_context
 @clean_outputs
-def tunnel(project, uid, identity_file, known_hosts_file):
+def tunnel(ctx, project, uid, identity_file, known_hosts_file):
     """Open an SSH tunnel to a sandbox run."""
+    from polyaxon._cli.context import resolve_run
     from polyaxon._client.sandbox import SandboxClient
     from polyaxon._client.transport.ssh_tunnel import SandboxSshTunnelClient
-    from polyaxon._env_vars.getters import get_project_run_or_local
     from polyaxon._ssh import (
         prepare_ssh_access,
         resolve_known_hosts_file,
@@ -336,8 +351,11 @@ def tunnel(project, uid, identity_file, known_hosts_file):
 
     with _disable_tunnel_logging():
         try:
-            owner, _, project_name, run_uuid = get_project_run_or_local(
-                project, uid, is_cli=True
+            owner, _, project_name, run_uuid = resolve_run(
+                project,
+                uid,
+                is_cli=True,
+                show_context=ctx.obj.get("show_context", False),
             )
             client = SandboxClient(
                 owner=owner,

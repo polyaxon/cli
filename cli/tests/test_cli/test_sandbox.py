@@ -52,16 +52,16 @@ def make_client():
 class TestCliSandbox(BaseCommandTestCase):
     def setUp(self):
         super().setUp()
-        self.project_run = patch(
-            "polyaxon._env_vars.getters.get_project_run_or_local",
+        self.resolve_run_patcher = patch(
+            "polyaxon._cli.context.resolve_run",
             return_value=("owner", None, "project", RUN_UUID),
         )
         self.client_class = patch("polyaxon._client.sandbox.SandboxClient")
-        self.get_project_run_or_local = self.project_run.start()
+        self.resolve_run = self.resolve_run_patcher.start()
         self.sandbox_client_class = self.client_class.start()
         self.client = make_client()
         self.sandbox_client_class.return_value = self.client
-        self.addCleanup(self.project_run.stop)
+        self.addCleanup(self.resolve_run_patcher.stop)
         self.addCleanup(self.client_class.stop)
 
     def test_command_is_registered(self):

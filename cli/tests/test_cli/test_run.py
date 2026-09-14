@@ -9,9 +9,9 @@ from tests.test_cli.utils import BaseCommandTestCase
 @pytest.mark.cli_mark
 class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._cli.run._run")
-    @patch("polyaxon._env_vars.getters.get_project_or_local")
-    def test_run_without_cache_option(self, get_project_or_local, run_operation):
-        get_project_or_local.return_value = ("owner", None, "project")
+    @patch("polyaxon._cli.context.resolve_project")
+    def test_run_without_cache_option(self, resolve_project, run_operation):
+        resolve_project.return_value = ("owner", None, "project")
 
         result = self.runner.invoke(
             run,
