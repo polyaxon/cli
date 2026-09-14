@@ -17,7 +17,7 @@ from polyaxon._client.decorators import (
 from polyaxon._client.mixin import ClientMixin
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._contexts import paths as ctx_paths
-from polyaxon._env_vars.getters.user import get_local_owner
+from polyaxon._env_vars.getters.user import _get_local_owner_context
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind, V1StageCondition, V1Stages
 from polyaxon._sdk.schemas.v1_entities_tags import V1EntitiesTags
 from polyaxon._sdk.schemas.v1_entities_transfer import V1EntitiesTransfer
@@ -115,6 +115,12 @@ class ProjectClient(ClientMixin):
     If you intend to create a new project instance or to list projects,
     only the `owner` parameter is required.
 
+    Context logging is disabled by default. Set `log_context=True` to log the
+    cached owner, including team scope, and its cache path once at construction.
+    Notices use INFO through the `polyaxon.cli` logger and your existing logging
+    configuration. Explicit owners and the community default owner produce no
+    cache-use notice. The same behavior applies to `AsyncProjectClient`.
+
     Team Scoping:
 
         Projects can be scoped to a specific team within an organization by providing
@@ -147,6 +153,8 @@ class ProjectClient(ClientMixin):
              To trigger the offline mode manually instead of depending on `POLYAXON_IS_OFFLINE`.
         no_op: bool, optional,
              To set the NO_OP mode manually instead of depending on `POLYAXON_NO_OP`.
+        log_context: bool, optional, default: False,
+             Log cached owner and its cache path at construction through the Python logger.
 
     Raises:
         PolyaxonClientException: If no owner is passed and Polyaxon cannot
@@ -162,8 +170,11 @@ class ProjectClient(ClientMixin):
         is_offline: Optional[bool] = None,
         no_op: Optional[bool] = None,
         manual_exceptions_handling: bool = False,
+        *,
+        log_context: bool = False,
     ):
         self._manual_exceptions_handling = manual_exceptions_handling
+        self.log_context = log_context
         self._is_offline = get_global_or_inline_config(
             config_key="is_offline", config_value=is_offline, client=client
         )
@@ -180,7 +191,11 @@ class ProjectClient(ClientMixin):
             )
 
         if not owner:
-            owner = get_local_owner()
+            owner, self._owner_source = _get_local_owner_context()
+            if self.log_context and self._owner_source.path:
+                logger.info(
+                    f"Using cached owner `{owner}` from `{self._owner_source.path}`."
+                )
         if not owner:
             raise PolyaxonClientException("Please provide a valid owner.")
 
