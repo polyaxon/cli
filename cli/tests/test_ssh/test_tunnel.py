@@ -1,7 +1,12 @@
 import io
+import os
+import tempfile
 import threading
+from unittest.mock import patch
 
+from polyaxon._contexts import paths as ctx_paths
 from polyaxon._ssh.tunnel import run_tunnel
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 class FakeClient:
@@ -63,202 +68,205 @@ class FakeStdout:
         return self.buffer.getvalue()
 
 
-def test_run_tunnel_sends_stdin_bytes_to_client():
-    client = FakeClient()
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+class TestSshTunnel(BaseTestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        patcher = patch.object(
+            ctx_paths,
+            "CONTEXT_USER_POLYAXON_PATH",
+            os.path.join(directory.name, ".polyaxon"),
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        super().setUp()
 
-    code = run_tunnel(
-        client=client,
-        stdin=io.BytesIO(b"input"),
-        stdout=stdout,
-        stderr=stderr,
-    )
+    def test_run_tunnel_sends_stdin_bytes_to_client(self):
+        client = FakeClient()
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-    assert code == 0
-    assert client.sent == [b"input"]
-    assert stdout.getvalue() == b""
-    assert stderr.getvalue() == ""
+        code = run_tunnel(
+            client=client,
+            stdin=io.BytesIO(b"input"),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
+        assert code == 0
+        assert client.sent == [b"input"]
+        assert stdout.getvalue() == b""
+        assert stderr.getvalue() == ""
 
-def test_run_tunnel_writes_recv_bytes_to_stdout_and_flushes():
-    client = FakeClient(recv_items=[b"one", b"two", b""])
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+    def test_run_tunnel_writes_recv_bytes_to_stdout_and_flushes(self):
+        client = FakeClient(recv_items=[b"one", b"two", b""])
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-    code = run_tunnel(
-        client=client,
-        stdin=BlockingStdin(client.close_event),
-        stdout=stdout,
-        stderr=stderr,
-    )
+        code = run_tunnel(
+            client=client,
+            stdin=BlockingStdin(client.close_event),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
-    assert code == 0
-    assert stdout.getvalue() == b"onetwo"
-    assert stdout.flushes == 2
-    assert stderr.getvalue() == ""
+        assert code == 0
+        assert stdout.getvalue() == b"onetwo"
+        assert stdout.flushes == 2
+        assert stderr.getvalue() == ""
 
+    def test_run_tunnel_stdin_eof_closes_client_and_exits_zero(self):
+        client = FakeClient()
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-def test_run_tunnel_stdin_eof_closes_client_and_exits_zero():
-    client = FakeClient()
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+        code = run_tunnel(
+            client=client,
+            stdin=io.BytesIO(b""),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
-    code = run_tunnel(
-        client=client,
-        stdin=io.BytesIO(b""),
-        stdout=stdout,
-        stderr=stderr,
-    )
+        assert code == 0
+        assert client.close_count == 1
+        assert client.sent == []
+        assert stderr.getvalue() == ""
 
-    assert code == 0
-    assert client.close_count == 1
-    assert client.sent == []
-    assert stderr.getvalue() == ""
+    def test_run_tunnel_websocket_eof_exits_zero(self):
+        client = FakeClient(recv_items=[b""])
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
+        code = run_tunnel(
+            client=client,
+            stdin=BlockingStdin(client.close_event),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
-def test_run_tunnel_websocket_eof_exits_zero():
-    client = FakeClient(recv_items=[b""])
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+        assert code == 0
+        assert client.close_count == 1
+        assert stderr.getvalue() == ""
 
-    code = run_tunnel(
-        client=client,
-        stdin=BlockingStdin(client.close_event),
-        stdout=stdout,
-        stderr=stderr,
-    )
+    def test_run_tunnel_send_error_exits_one_and_keeps_stdout_empty(self):
+        client = FakeClient(send_error=RuntimeError("send boom"))
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-    assert code == 0
-    assert client.close_count == 1
-    assert stderr.getvalue() == ""
+        code = run_tunnel(
+            client=client,
+            stdin=io.BytesIO(b"input"),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
+        assert code == 1
+        assert stdout.getvalue() == b""
+        assert stderr.getvalue().count("\n") == 1
+        assert "stdin send failed: send boom" in stderr.getvalue()
 
-def test_run_tunnel_send_error_exits_one_and_keeps_stdout_empty():
-    client = FakeClient(send_error=RuntimeError("send boom"))
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+    def test_run_tunnel_recv_error_exits_one_and_preserves_partial_stdout(self):
+        client = FakeClient(recv_items=[b"partial", RuntimeError("recv boom")])
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-    code = run_tunnel(
-        client=client,
-        stdin=io.BytesIO(b"input"),
-        stdout=stdout,
-        stderr=stderr,
-    )
+        code = run_tunnel(
+            client=client,
+            stdin=BlockingStdin(client.close_event),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
-    assert code == 1
-    assert stdout.getvalue() == b""
-    assert stderr.getvalue().count("\n") == 1
-    assert "stdin send failed: send boom" in stderr.getvalue()
+        assert code == 1
+        assert stdout.getvalue() == b"partial"
+        assert stderr.getvalue().count("\n") == 1
+        assert "websocket recv failed: recv boom" in stderr.getvalue()
 
+    def test_run_tunnel_simultaneous_errors_write_one_stderr_line(self):
+        client = FakeClient(
+            recv_items=[RuntimeError("recv boom")],
+            send_error=RuntimeError("send boom"),
+        )
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-def test_run_tunnel_recv_error_exits_one_and_preserves_partial_stdout():
-    client = FakeClient(recv_items=[b"partial", RuntimeError("recv boom")])
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+        code = run_tunnel(
+            client=client,
+            stdin=io.BytesIO(b"input"),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
-    code = run_tunnel(
-        client=client,
-        stdin=BlockingStdin(client.close_event),
-        stdout=stdout,
-        stderr=stderr,
-    )
+        assert code == 1
+        assert stderr.getvalue().count("\n") == 1
 
-    assert code == 1
-    assert stdout.getvalue() == b"partial"
-    assert stderr.getvalue().count("\n") == 1
-    assert "websocket recv failed: recv boom" in stderr.getvalue()
+    def test_run_tunnel_closes_client_once_when_both_threads_exit(self):
+        client = FakeClient(recv_items=[b""])
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
+        code = run_tunnel(
+            client=client,
+            stdin=io.BytesIO(b""),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
-def test_run_tunnel_simultaneous_errors_write_one_stderr_line():
-    client = FakeClient(
-        recv_items=[RuntimeError("recv boom")],
-        send_error=RuntimeError("send boom"),
-    )
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+        assert code == 0
+        assert client.close_count == 1
 
-    code = run_tunnel(
-        client=client,
-        stdin=io.BytesIO(b"input"),
-        stdout=stdout,
-        stderr=stderr,
-    )
+    def test_run_tunnel_stdin_eof_wins_over_late_websocket_bytes(self):
+        recv_unblock_event = threading.Event()
+        client = FakeClient(
+            recv_items=[b"late"],
+            recv_unblock_event=recv_unblock_event,
+        )
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-    assert code == 1
-    assert stderr.getvalue().count("\n") == 1
+        code = run_tunnel(
+            client=client,
+            stdin=io.BytesIO(b""),
+            stdout=stdout,
+            stderr=stderr,
+        )
+        recv_unblock_event.set()
 
+        assert code == 0
+        assert stdout.getvalue() == b""
+        assert stderr.getvalue() == ""
 
-def test_run_tunnel_closes_client_once_when_both_threads_exit():
-    client = FakeClient(recv_items=[b""])
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+    def test_run_tunnel_stdin_os_error_is_clean_eof(self):
+        class BrokenStdin:
+            def read1(self, chunk_size):
+                raise OSError("closed")
 
-    code = run_tunnel(
-        client=client,
-        stdin=io.BytesIO(b""),
-        stdout=stdout,
-        stderr=stderr,
-    )
+        client = FakeClient()
+        stdout = FakeStdout()
+        stderr = io.StringIO()
 
-    assert code == 0
-    assert client.close_count == 1
+        code = run_tunnel(
+            client=client,
+            stdin=BrokenStdin(),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
+        assert code == 0
+        assert stderr.getvalue() == ""
 
-def test_run_tunnel_stdin_eof_wins_over_late_websocket_bytes():
-    recv_unblock_event = threading.Event()
-    client = FakeClient(
-        recv_items=[b"late"],
-        recv_unblock_event=recv_unblock_event,
-    )
-    stdout = FakeStdout()
-    stderr = io.StringIO()
+    def test_run_tunnel_stdout_write_error_exits_one(self):
+        client = FakeClient(recv_items=[b"data"])
+        stdout = FakeStdout(write_error=RuntimeError("write boom"))
+        stderr = io.StringIO()
 
-    code = run_tunnel(
-        client=client,
-        stdin=io.BytesIO(b""),
-        stdout=stdout,
-        stderr=stderr,
-    )
-    recv_unblock_event.set()
+        code = run_tunnel(
+            client=client,
+            stdin=BlockingStdin(client.close_event),
+            stdout=stdout,
+            stderr=stderr,
+        )
 
-    assert code == 0
-    assert stdout.getvalue() == b""
-    assert stderr.getvalue() == ""
-
-
-def test_run_tunnel_stdin_os_error_is_clean_eof():
-    class BrokenStdin:
-        def read1(self, chunk_size):
-            raise OSError("closed")
-
-    client = FakeClient()
-    stdout = FakeStdout()
-    stderr = io.StringIO()
-
-    code = run_tunnel(
-        client=client,
-        stdin=BrokenStdin(),
-        stdout=stdout,
-        stderr=stderr,
-    )
-
-    assert code == 0
-    assert stderr.getvalue() == ""
-
-
-def test_run_tunnel_stdout_write_error_exits_one():
-    client = FakeClient(recv_items=[b"data"])
-    stdout = FakeStdout(write_error=RuntimeError("write boom"))
-    stderr = io.StringIO()
-
-    code = run_tunnel(
-        client=client,
-        stdin=BlockingStdin(client.close_event),
-        stdout=stdout,
-        stderr=stderr,
-    )
-
-    assert code == 1
-    assert stderr.getvalue().count("\n") == 1
-    assert "stdout write failed: write boom" in stderr.getvalue()
+        assert code == 1
+        assert stderr.getvalue().count("\n") == 1
+        assert "stdout write failed: write boom" in stderr.getvalue()

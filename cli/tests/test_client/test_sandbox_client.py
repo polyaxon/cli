@@ -1,11 +1,15 @@
 import inspect
+import os
+from pathlib import Path
 import pytest
+import tempfile
 from unittest.mock import MagicMock, patch
 
 from clipped.utils.json import orjson_loads
 from polyaxon._client import sandbox as sandbox_module
 from polyaxon._client.sandbox import AsyncSandboxClient, SandboxClient
 from polyaxon._client.transport import sandbox_ws
+from polyaxon._contexts import paths as ctx_paths
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.plugins import V1Plugins
@@ -29,7 +33,7 @@ from polyaxon._sdk.schemas.v1_exec_bg_start import V1ExecBgStart
 from polyaxon._sdk.schemas.v1_exec_bg_status import V1ExecBgStatus
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
-from polyaxon._utils.test_utils import patch_settings
+from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException
 
 
@@ -142,1277 +146,1231 @@ class FakeSyncWS:
         self.closed = True
 
 
-def make_client(sdk_client=None, run_namespace="ns"):
-    patch_settings()
-    client = SandboxClient(
-        owner=OWNER,
-        project=PROJECT,
-        run_uuid=RUN_UUID,
-        client=sdk_client or SyncPolyaxonClientMock(),
-    )
-    if run_namespace:
-        client.run_data.settings = V1RunSettings(namespace=run_namespace)
-    return client
-
-
-def get_created_operation(sdk_client):
-    body = sdk_client.runs_v1.create_run.call_args.kwargs["body"]
-    return V1Operation.read(body.content)
-
-
 @pytest.mark.client_mark
-def test_sse_frame_buffer_parses_split_frames_and_suppresses_ping():
-    buffer = SseFrameBuffer()
+class TestSandboxClient(BaseTestCase):
+    SET_AGENT_SETTINGS = True
 
-    assert buffer.feed(b"") == []
-    assert buffer.feed(b": keepalive\n\n") == []
-    assert buffer.feed(b'event: stdout\ndata: {"text":"hel') == []
-    assert buffer.feed(b'lo","offset":5}\n\n') == [
-        {"type": "stdout", "text": "hello", "offset": 5}
-    ]
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.tmp_path = Path(directory.name)
+        patcher = patch.object(
+            ctx_paths,
+            "CONTEXT_USER_POLYAXON_PATH",
+            os.path.join(directory.name, ".polyaxon"),
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        super().setUp()
 
-    events = buffer.feed(
-        b'event: ping\ndata: {}\n\nevent: execution_complete\ndata: {"exit_code":0}\n\n'
-    )
-
-    assert events == [
-        {
-            "type": "execution_complete",
-            "exit_code": 0,
-        }
-    ]
-
-
-@pytest.mark.client_mark
-def test_sse_frame_buffer_yields_error_event():
-    buffer = SseFrameBuffer()
-
-    assert buffer.feed(b'event: error\ndata: {"message":"boom"}\n\n') == [
-        {"type": "error", "message": "boom"}
-    ]
-
-
-@pytest.mark.client_mark
-def test_sse_frame_buffer_rejects_invalid_json():
-    buffer = SseFrameBuffer()
-
-    with pytest.raises(PolyaxonClientException, match="Invalid SSE event JSON"):
-        buffer.feed(b"event: stdout\ndata: nope\n\n")
-
-
-@pytest.mark.client_mark
-def test_sandbox_client_public_export():
-    from polyaxon.client import (
-        AsyncSandboxClient as ExportedAsync,
-        SandboxClient as ExportedSync,
-    )
-
-    assert ExportedSync is SandboxClient
-    assert ExportedAsync is AsyncSandboxClient
-
-
-@pytest.mark.client_mark
-def test_sandbox_client_rejects_async_client():
-    patch_settings()
-
-    with pytest.raises(PolyaxonClientException):
-        SandboxClient(
+    def make_client(self, sdk_client=None, run_namespace="ns"):
+        client = SandboxClient(
             owner=OWNER,
             project=PROJECT,
             run_uuid=RUN_UUID,
-            client=AsyncPolyaxonClientMock(),
+            client=sdk_client or SyncPolyaxonClientMock(),
+        )
+        if run_namespace:
+            client.run_data.settings = V1RunSettings(namespace=run_namespace)
+        return client
+
+    def get_created_operation(self, sdk_client):
+        body = sdk_client.runs_v1.create_run.call_args.kwargs["body"]
+        return V1Operation.read(body.content)
+
+    def test_sse_frame_buffer_parses_split_frames_and_suppresses_ping(self):
+        buffer = SseFrameBuffer()
+
+        assert buffer.feed(b"") == []
+        assert buffer.feed(b": keepalive\n\n") == []
+        assert buffer.feed(b'event: stdout\ndata: {"text":"hel') == []
+        assert buffer.feed(b'lo","offset":5}\n\n') == [
+            {"type": "stdout", "text": "hello", "offset": 5}
+        ]
+
+        events = buffer.feed(
+            b'event: ping\ndata: {}\n\nevent: execution_complete\ndata: {"exit_code":0}\n\n'
         )
 
+        assert events == [
+            {
+                "type": "execution_complete",
+                "exit_code": 0,
+            }
+        ]
 
-@pytest.mark.client_mark
-def test_sandbox_client_does_not_expose_namespace_constructor_arg():
-    assert "namespace" not in inspect.signature(SandboxClient).parameters
+    def test_sse_frame_buffer_yields_error_event(self):
+        buffer = SseFrameBuffer()
 
+        assert buffer.feed(b'event: error\ndata: {"message":"boom"}\n\n') == [
+            {"type": "error", "message": "boom"}
+        ]
 
-@pytest.mark.client_mark
-def test_sandbox_client_can_initialize_without_run_uuid_for_create():
-    patch_settings()
+    def test_sse_frame_buffer_rejects_invalid_json(self):
+        buffer = SseFrameBuffer()
 
-    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
-        client = SandboxClient(
-            owner=OWNER,
-            project=PROJECT,
-            client=SyncPolyaxonClientMock(),
+        with self.assertRaisesRegex(PolyaxonClientException, "Invalid SSE event JSON"):
+            buffer.feed(b"event: stdout\ndata: nope\n\n")
+
+    def test_sandbox_client_public_export(self):
+        from polyaxon.client import (
+            AsyncSandboxClient as ExportedAsync,
+            SandboxClient as ExportedSync,
         )
 
-    assert client.run_uuid is None
+        assert ExportedSync is SandboxClient
+        assert ExportedAsync is AsyncSandboxClient
 
+    def test_sandbox_client_rejects_async_client(self):
+        with self.assertRaises(PolyaxonClientException):
+            SandboxClient(
+                owner=OWNER,
+                project=PROJECT,
+                run_uuid=RUN_UUID,
+                client=AsyncPolyaxonClientMock(),
+            )
 
-@pytest.mark.client_mark
-def test_sandbox_operations_require_run_uuid_before_create():
-    patch_settings()
-    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
-        client = SandboxClient(
-            owner=OWNER,
-            project=PROJECT,
-            client=SyncPolyaxonClientMock(),
+    def test_sandbox_client_does_not_expose_namespace_constructor_arg(self):
+        assert "namespace" not in inspect.signature(SandboxClient).parameters
+
+    def test_sandbox_client_can_initialize_without_run_uuid_for_create(self):
+        with patch(
+            "polyaxon._managers.run.RunConfigManager.get_config", return_value=None
+        ):
+            client = SandboxClient(
+                owner=OWNER,
+                project=PROJECT,
+                client=SyncPolyaxonClientMock(),
+            )
+
+        assert client.run_uuid is None
+
+    def test_sandbox_operations_require_run_uuid_before_create(self):
+        with patch(
+            "polyaxon._managers.run.RunConfigManager.get_config", return_value=None
+        ):
+            client = SandboxClient(
+                owner=OWNER,
+                project=PROJECT,
+                client=SyncPolyaxonClientMock(),
+            )
+
+        with self.assertRaisesRegex(
+            PolyaxonClientException, "call `create\\(\\)` first"
+        ):
+            client.ping()
+
+    def test_create_builds_default_sandbox_service_and_mutates_state(self):
+        sdk_client = SyncPolyaxonClientMock()
+        created = V1Run.model_construct(
+            uuid=RUN_UUID,
+            settings=V1RunSettings(namespace="created-ns"),
         )
+        sdk_client.runs_v1.create_run.return_value = created
+        with patch(
+            "polyaxon._managers.run.RunConfigManager.get_config", return_value=None
+        ):
+            client = SandboxClient(
+                owner=OWNER,
+                project=PROJECT,
+                client=sdk_client,
+            )
 
-    with pytest.raises(PolyaxonClientException, match="call `create\\(\\)` first"):
-        client.ping()
+        result = client.create(name="sandbox", tags=["debug"])
 
+        assert result is created
+        assert client.run_uuid == RUN_UUID
+        assert client.run_data is created
+        assert client.run_data.status == V1Statuses.CREATED
+        sdk_client.runs_v1.create_run.assert_called_once()
+        assert sdk_client.runs_v1.create_run.call_args.kwargs["owner"] == OWNER
+        assert sdk_client.runs_v1.create_run.call_args.kwargs["project"] == PROJECT
+        body = sdk_client.runs_v1.create_run.call_args.kwargs["body"]
+        assert body.name == "sandbox"
+        assert body.tags == ["debug"]
 
-@pytest.mark.client_mark
-def test_create_builds_default_sandbox_service_and_mutates_state():
-    sdk_client = SyncPolyaxonClientMock()
-    created = V1Run.model_construct(
-        uuid=RUN_UUID,
-        settings=V1RunSettings(namespace="created-ns"),
-    )
-    sdk_client.runs_v1.create_run.return_value = created
-    patch_settings()
-    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
-        client = SandboxClient(
-            owner=OWNER,
-            project=PROJECT,
-            client=sdk_client,
+        operation = self.get_created_operation(sdk_client)
+        assert operation.component.run.kind == V1RunKind.SERVICE
+        assert operation.component.plugins.sandbox is True
+        assert client.process._parent is client
+        assert client.fs._parent is client
+        assert client.pty._parent is client
+
+    def test_create_merges_sandbox_plugin_into_existing_inline_content(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.runs_v1.create_run.return_value = V1Run.model_construct(
+            uuid=RUN_UUID
         )
-
-    result = client.create(name="sandbox", tags=["debug"])
-
-    assert result is created
-    assert client.run_uuid == RUN_UUID
-    assert client.run_data is created
-    assert client.run_data.status == V1Statuses.CREATED
-    sdk_client.runs_v1.create_run.assert_called_once()
-    assert sdk_client.runs_v1.create_run.call_args.kwargs["owner"] == OWNER
-    assert sdk_client.runs_v1.create_run.call_args.kwargs["project"] == PROJECT
-    body = sdk_client.runs_v1.create_run.call_args.kwargs["body"]
-    assert body.name == "sandbox"
-    assert body.tags == ["debug"]
-
-    operation = get_created_operation(sdk_client)
-    assert operation.component.run.kind == V1RunKind.SERVICE
-    assert operation.component.plugins.sandbox is True
-    assert client.process._parent is client
-    assert client.fs._parent is client
-    assert client.pty._parent is client
-
-
-@pytest.mark.client_mark
-def test_create_merges_sandbox_plugin_into_existing_inline_content():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.runs_v1.create_run.return_value = V1Run.model_construct(uuid=RUN_UUID)
-    content = V1Operation(
-        component=V1Component(
-            run=V1Service(),
-            plugins=V1Plugins(tmux=True),
+        content = V1Operation(
+            component=V1Component(
+                run=V1Service(),
+                plugins=V1Plugins(tmux=True),
+            )
         )
-    )
-    patch_settings()
-    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
-        client = SandboxClient(
-            owner=OWNER,
-            project=PROJECT,
-            client=sdk_client,
-        )
+        with patch(
+            "polyaxon._managers.run.RunConfigManager.get_config", return_value=None
+        ):
+            client = SandboxClient(
+                owner=OWNER,
+                project=PROJECT,
+                client=sdk_client,
+            )
 
-    client.create(content=content)
-
-    operation = get_created_operation(sdk_client)
-    assert operation.component.run.kind == V1RunKind.SERVICE
-    assert operation.component.plugins.tmux is True
-    assert operation.component.plugins.sandbox is True
-    assert content.component.plugins.sandbox is None
-
-
-@pytest.mark.client_mark
-def test_create_rejects_non_service_inline_content():
-    sdk_client = SyncPolyaxonClientMock()
-    content = V1Operation(
-        component=V1Component(
-            run=V1Job(),
-            plugins=V1Plugins(),
-        )
-    )
-    patch_settings()
-    with patch("polyaxon._managers.run.RunConfigManager.get_config", return_value=None):
-        client = SandboxClient(
-            owner=OWNER,
-            project=PROJECT,
-            client=sdk_client,
-        )
-
-    with pytest.raises(PolyaxonClientException, match="requires a service"):
         client.create(content=content)
 
-    sdk_client.runs_v1.create_run.assert_not_called()
+        operation = self.get_created_operation(sdk_client)
+        assert operation.component.run.kind == V1RunKind.SERVICE
+        assert operation.component.plugins.tmux is True
+        assert operation.component.plugins.sandbox is True
+        assert content.component.plugins.sandbox is None
 
+    def test_create_rejects_non_service_inline_content(self):
+        sdk_client = SyncPolyaxonClientMock()
+        content = V1Operation(
+            component=V1Component(
+                run=V1Job(),
+                plugins=V1Plugins(),
+            )
+        )
+        with patch(
+            "polyaxon._managers.run.RunConfigManager.get_config", return_value=None
+        ):
+            client = SandboxClient(
+                owner=OWNER,
+                project=PROJECT,
+                client=sdk_client,
+            )
 
-@pytest.mark.client_mark
-def test_namespace_property_uses_run_settings_or_default_namespace():
-    client = make_client(run_namespace=None)
+        with self.assertRaisesRegex(PolyaxonClientException, "requires a service"):
+            client.create(content=content)
 
-    assert client.namespace == DEFAULT_NAMESPACE
+        sdk_client.runs_v1.create_run.assert_not_called()
 
-    client.run_data.settings = V1RunSettings(namespace="settings-ns")
-    assert client.namespace == "settings-ns"
+    def test_namespace_property_uses_run_settings_or_default_namespace(self):
+        client = self.make_client(run_namespace=None)
 
+        assert client.namespace == DEFAULT_NAMESPACE
 
-@pytest.mark.client_mark
-def test_ping_uses_namespace_from_run_settings():
-    sdk_client = SyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client, run_namespace="settings-ns")
+        client.run_data.settings = V1RunSettings(namespace="settings-ns")
+        assert client.namespace == "settings-ns"
 
-    client.ping()
+    def test_ping_uses_namespace_from_run_settings(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = self.make_client(sdk_client=sdk_client, run_namespace="settings-ns")
 
-    sdk_client.runs_v1.get_run_namespace.assert_not_called()
-    sdk_client.sandbox_v1.ping.assert_called_once_with(
-        "settings-ns",
-        OWNER,
-        PROJECT,
-        RUN_UUID,
-    )
-
-
-@pytest.mark.client_mark
-def test_ping_resolves_and_caches_namespace():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.runs_v1.get_run_namespace.return_value = V1RunSettings(
-        namespace="lazy-ns"
-    )
-    client = make_client(sdk_client=sdk_client, run_namespace=None)
-
-    client.ping()
-    client.ping()
-
-    sdk_client.runs_v1.get_run_namespace.assert_called_once_with(
-        OWNER,
-        PROJECT,
-        RUN_UUID,
-    )
-    assert sdk_client.sandbox_v1.ping.call_args_list[0].args[0] == "lazy-ns"
-    assert sdk_client.sandbox_v1.ping.call_args_list[1].args[0] == "lazy-ns"
-    assert client.run_data.settings.namespace == "lazy-ns"
-
-
-@pytest.mark.client_mark
-def test_namespace_resolution_raises_when_missing():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.runs_v1.get_run_namespace.return_value = V1RunSettings()
-    client = make_client(sdk_client=sdk_client, run_namespace=None)
-
-    with pytest.raises(PolyaxonClientException):
         client.ping()
 
-
-@pytest.mark.client_mark
-def test_process_exec_normalizes_command_env_and_stdin():
-    sdk_client = SyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client)
-
-    client.process.exec(
-        ("echo", "hi"),
-        env={"A": "B", "EMPTY": None},
-        stdin=b"x",
-        timeout_ms=1000,
-    )
-
-    body = sdk_client.sandbox_v1.call_exec.call_args.kwargs["body"]
-    assert body.command == ["echo", "hi"]
-    assert body.env == {"A": "B", "EMPTY": None}
-    assert body.stdin == "eA=="
-    assert body.timeout_ms == 1000
-
-
-@pytest.mark.client_mark
-def test_process_exec_rejects_invalid_command_and_env():
-    client = make_client()
-
-    with pytest.raises(TypeError):
-        client.process.exec("echo hi")
-    with pytest.raises(ValueError):
-        client.process.exec([])
-    with pytest.raises(TypeError):
-        client.process.exec(["echo", 1])
-    with pytest.raises(TypeError):
-        client.process.exec(["env"], env={"A": 1})
-    with pytest.raises(TypeError):
-        client.process.exec(["env"], env={"A": {"nested": "bad"}})
-
-
-@pytest.mark.client_mark
-def test_sandbox_client_utils_normalize_command_and_env():
-    assert normalize_command(arg for arg in ("echo", "hi")) == ["echo", "hi"]
-    assert normalize_env({"A": "B", "EMPTY": None}) == {"A": "B", "EMPTY": None}
-
-    with pytest.raises(TypeError, match="iterable of strings"):
-        normalize_command("echo hi")
-    with pytest.raises(TypeError, match="env must be a mapping"):
-        normalize_env([("A", "B")])
-
-
-@pytest.mark.client_mark
-def test_logs_does_not_expose_follow_kwarg():
-    client = make_client()
-
-    with pytest.raises(TypeError):
-        client.process.logs("exec-1", follow=True)
-
-
-@pytest.mark.client_mark
-def test_exec_stream_does_not_expose_session_kwarg():
-    client = make_client()
-
-    assert "session" not in inspect.signature(client.process.exec_stream).parameters
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_returns_handle_and_delegates_operations():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(
-        exec_id="exec-1",
-        pid=123,
-        tag="nightly",
-    )
-    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
-        exec_id="exec-1",
-        state="running",
-    )
-    sdk_client.sandbox_v1.get_bg_exec_logs.return_value = "logs"
-    sdk_client.sandbox_v1.signal_bg_exec.return_value = None
-    sdk_client.sandbox_v1.delete_bg_exec.return_value = None
-    client = make_client(sdk_client=sdk_client)
-
-    handle = client.process.exec_bg(
-        ("sleep", "1"),
-        env={"A": "B"},
-        stdin=b"x",
-        tag="nightly",
-    )
-
-    assert handle.id == "exec-1"
-    assert handle.exec_id == "exec-1"
-    assert handle.pid == 123
-    assert handle.tag == "nightly"
-    body = sdk_client.sandbox_v1.exec_bg.call_args.kwargs["body"]
-    assert body.command == ["sleep", "1"]
-    assert body.env == {"A": "B"}
-    assert body.stdin == "eA=="
-    assert body.tag == "nightly"
-
-    assert handle.get().state == "running"
-    assert handle.logs(stream="stdout", offset=5, max_bytes=10) == "logs"
-    handle.signal("SIGTERM")
-    handle.delete()
-
-    sdk_client.sandbox_v1.get_bg_exec.assert_called_with(
-        "ns",
-        OWNER,
-        PROJECT,
-        RUN_UUID,
-        id="exec-1",
-    )
-    sdk_client.sandbox_v1.get_bg_exec_logs.assert_called_with(
-        "ns",
-        OWNER,
-        PROJECT,
-        RUN_UUID,
-        id="exec-1",
-        stream="stdout",
-        offset=5,
-        max_bytes=10,
-    )
-    signal_body = sdk_client.sandbox_v1.signal_bg_exec.call_args.kwargs["body"]
-    assert signal_body.signal == "SIGTERM"
-    sdk_client.sandbox_v1.delete_bg_exec.assert_called_with(
-        "ns",
-        OWNER,
-        PROJECT,
-        RUN_UUID,
-        id="exec-1",
-    )
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_handle_exposes_log_and_kill_sugar():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec_logs.side_effect = [
-        V1ExecBgLogs(data="out"),
-        V1ExecBgLogs(data="err"),
-        V1ExecBgLogs(data="out2"),
-        V1ExecBgLogs(data="err2"),
-    ]
-    client = make_client(sdk_client=sdk_client)
-
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    assert handle.stdout(offset=1, max_bytes=2) == "out"
-    assert handle.stderr() == "err"
-    assert handle.output() == SandboxBgOutput(stdout="out2", stderr="err2")
-    handle.kill("SIGKILL")
-
-    assert sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list[0].kwargs == {
-        "id": "exec-1",
-        "stream": "stdout",
-        "offset": 1,
-        "max_bytes": 2,
-    }
-    assert sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list[1].kwargs == {
-        "id": "exec-1",
-        "stream": "stderr",
-        "offset": 0,
-        "max_bytes": None,
-    }
-    signal_body = sdk_client.sandbox_v1.signal_bg_exec.call_args.kwargs["body"]
-    assert signal_body.signal == "SIGKILL"
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_iter_logs_polls_offsets_until_terminal():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec_logs.side_effect = [
-        V1ExecBgLogs(data="one", next_offset=3, eof=False, state="running"),
-        V1ExecBgLogs(data="", next_offset=3, eof=True, state="running"),
-        V1ExecBgLogs(data="two", next_offset=6, eof=True, state="exited"),
-    ]
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    with patch("polyaxon._client.sandbox.time.sleep") as sleep:
-        chunks = list(handle.iter_stdout(max_bytes=10, timeout=10, interval=0.1))
-
-    assert chunks == ["one", "two"]
-    assert sleep.call_count == 2
-    assert [
-        call.kwargs["offset"]
-        for call in sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list
-    ] == [0, 3, 3]
-    assert [
-        call.kwargs["stream"]
-        for call in sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list
-    ] == ["stdout", "stdout", "stdout"]
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_iter_logs_rejects_non_advancing_data():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec_logs.return_value = V1ExecBgLogs(
-        data="x",
-        next_offset=0,
-        eof=False,
-        state="running",
-    )
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    with pytest.raises(PolyaxonClientException, match="did not advance"):
-        list(handle.iter_logs(timeout=10))
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_iter_logs_validates_args_and_timeout():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec_logs.return_value = V1ExecBgLogs(
-        data="",
-        next_offset=0,
-        eof=True,
-        state="running",
-    )
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    with pytest.raises(ValueError, match="offset"):
-        list(handle.iter_logs(offset=-1))
-    with pytest.raises(ValueError, match="max_bytes"):
-        list(handle.iter_logs(max_bytes=0))
-    with pytest.raises(PolyaxonClientException, match="Timed out"):
-        list(handle.iter_logs(timeout=0, interval=0.1))
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_wait_polls_until_terminal_status():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec.side_effect = [
-        V1ExecBgStatus(exec_id="exec-1", state="running"),
-        V1ExecBgStatus(exec_id="exec-1", state="exited", exit_code=0),
-    ]
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    with patch("polyaxon._client.sandbox.time.sleep") as sleep:
-        status = handle.wait(timeout=10, interval=0.1)
-
-    assert status.state == "exited"
-    assert sleep.call_count == 1
-
-
-@pytest.mark.client_mark
-def test_bg_exec_state_sets_match_server_enum():
-    assert sandbox_module._BG_RUNNING_STATES == {"running"}
-    assert sandbox_module._BG_TERMINAL_STATES == {
-        "exited",
-        "signaled",
-        "timed_out",
-        "failed_to_start",
-        "orphaned",
-    }
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_wait_returns_terminal_status_without_sleeping():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
-        exec_id="exec-1",
-        state="exited",
-        exit_code=0,
-    )
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("true",))
-
-    with patch("polyaxon._client.sandbox.time.sleep") as sleep:
-        status = handle.wait(timeout=10, interval=0.1)
-
-    assert status.state == "exited"
-    sleep.assert_not_called()
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_wait_validates_timeout_and_interval():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
-        exec_id="exec-1",
-        state="running",
-    )
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    with pytest.raises(ValueError, match="interval"):
-        handle.wait(interval=0)
-    with pytest.raises(PolyaxonClientException, match="Timed out"):
-        handle.wait(timeout=0, interval=0.1)
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_wait_rejects_unknown_state():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
-        exec_id="exec-1",
-        state="paused",
-    )
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    with pytest.raises(PolyaxonClientException, match="Unknown sandbox"):
-        handle.wait(timeout=10)
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_handle_does_not_delegate_unknown_attrs_to_start():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
-    client = make_client(sdk_client=sdk_client)
-    handle = client.process.exec_bg(("sleep", "1"))
-
-    with pytest.raises(AttributeError):
-        handle.exit_code
-
-
-@pytest.mark.client_mark
-def test_process_exec_bg_requires_exec_id():
-    sdk_client = SyncPolyaxonClientMock()
-    sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart()
-    client = make_client(sdk_client=sdk_client)
-
-    with pytest.raises(PolyaxonClientException, match="exec_id"):
-        client.process.exec_bg(("sleep", "1"))
-
-
-@pytest.mark.client_mark
-def test_pty_attach_connects_and_uses_raw_frames():
-    sdk_client = SyncPolyaxonClientMock()
-    ws = FakeSyncWS(
-        frames=[
-            (
-                sandbox_ws.OPCODE_TEXT,
-                b'{"type":"attached","pty_id":"pty-1","pid":123}',
-            ),
-            (sandbox_ws.OPCODE_BINARY, b"output"),
-            (sandbox_ws.OPCODE_TEXT, b'{"type":"exited","exit_code":0}'),
-        ]
-    )
-    client = make_client(sdk_client=sdk_client)
-
-    with patch(
-        "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
-        return_value=ws,
-    ) as connect:
-        attached = client.pty.attach("pty-1", replay_bytes=20)
-
-    assert connect.call_args.args[0] == (
-        "ws://polyaxon/sandbox/v1/ns/owner/project/runs/{}/pty/pty-1/ws"
-        "?replay_bytes=20".format(RUN_UUID)
-    )
-    assert "authorization: Bearer token" in connect.call_args.kwargs["header"]
-    assert attached.attached_event == {
-        "type": "attached",
-        "pty_id": "pty-1",
-        "pid": 123,
-    }
-
-    attached.send_stdin(b"echo\n")
-    attached.send_control({"type": "resize", "cols": 100, "rows": 30})
-    attached.resize(cols=120, rows=40)
-    attached.kill("SIGKILL")
-
-    assert ws.sent[0] == (sandbox_ws.OPCODE_BINARY, b"echo\n")
-    assert ws.sent[1][0] == sandbox_ws.OPCODE_TEXT
-    assert orjson_loads(ws.sent[1][1].encode("utf-8")) == {
-        "type": "resize",
-        "cols": 100,
-        "rows": 30,
-    }
-    assert attached.recv() == b"output"
-    assert attached.recv() == {"type": "exited", "exit_code": 0}
-    resize_body = sdk_client.sandbox_v1.resize_pty.call_args.kwargs["body"]
-    assert resize_body.cols == 120
-    assert resize_body.rows == 40
-    signal_body = sdk_client.sandbox_v1.signal_pty.call_args.kwargs["body"]
-    assert signal_body.signal == "SIGKILL"
-
-    attached.close()
-    assert ws.closed is True
-
-
-@pytest.mark.client_mark
-@pytest.mark.parametrize(
-    "frame, match",
-    [
-        ((1, b'{"type":"error","message":"bad attach"}'), "bad attach"),
-        ((2, b"not attached"), "binary frame"),
-        ((1, b"not json"), "Invalid PTY websocket event JSON"),
-        ((1, b'{"type":"ready"}'), "ready"),
-    ],
-)
-def test_pty_attach_closes_and_raises_on_bad_initial_frame(frame, match):
-    ws = FakeSyncWS(frames=[frame])
-    client = make_client()
-
-    with patch(
-        "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
-        return_value=ws,
-    ):
-        with pytest.raises(PolyaxonClientException, match=match):
-            client.pty.attach("pty-1")
-
-    assert ws.closed is True
-
-
-@pytest.mark.client_mark
-def test_pty_attach_uses_server_error_from_bad_handshake():
-    client = make_client()
-    error = sandbox_ws.websocket.WebSocketBadStatusException(
-        "Handshake status 404 Not Found -+-+- headers -+-+- body",
-        404,
-        resp_body=b'{"error":{"code":"not_found","message":"pty not found"}}',
-    )
-
-    with patch(
-        "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
-        side_effect=error,
-    ):
-        with pytest.raises(PolyaxonClientException) as exc:
-            client.pty.attach("missing-pty")
-
-    message = str(exc.value)
-    assert "pty.attach failed: pty not found" == message
-    assert "Handshake status" not in message
-
-
-@pytest.mark.client_mark
-def test_process_exec_stream_sends_request_and_closes_on_context_exit():
-    response = FakeResponse(
-        chunks=[
-            b'event: start\ndata: {"exec_id":"exec-1","pid":123}\n\n',
-            b'event: stdout\ndata: {"text":"hello","offset":5}\n\n',
-        ]
-    )
-    session = FakeSession(response)
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        stream = client.process.exec_stream(
+        sdk_client.runs_v1.get_run_namespace.assert_not_called()
+        sdk_client.sandbox_v1.ping.assert_called_once_with(
+            "settings-ns",
+            OWNER,
+            PROJECT,
+            RUN_UUID,
+        )
+
+    def test_ping_resolves_and_caches_namespace(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.runs_v1.get_run_namespace.return_value = V1RunSettings(
+            namespace="lazy-ns"
+        )
+        client = self.make_client(sdk_client=sdk_client, run_namespace=None)
+
+        client.ping()
+        client.ping()
+
+        sdk_client.runs_v1.get_run_namespace.assert_called_once_with(
+            OWNER,
+            PROJECT,
+            RUN_UUID,
+        )
+        assert sdk_client.sandbox_v1.ping.call_args_list[0].args[0] == "lazy-ns"
+        assert sdk_client.sandbox_v1.ping.call_args_list[1].args[0] == "lazy-ns"
+        assert client.run_data.settings.namespace == "lazy-ns"
+
+    def test_namespace_resolution_raises_when_missing(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.runs_v1.get_run_namespace.return_value = V1RunSettings()
+        client = self.make_client(sdk_client=sdk_client, run_namespace=None)
+
+        with self.assertRaises(PolyaxonClientException):
+            client.ping()
+
+    def test_process_exec_normalizes_command_env_and_stdin(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = self.make_client(sdk_client=sdk_client)
+
+        client.process.exec(
             ("echo", "hi"),
-            env={"A": "B"},
+            env={"A": "B", "EMPTY": None},
             stdin=b"x",
             timeout_ms=1000,
         )
 
-    url, kwargs = session.post_calls[0]
-    assert url == (
-        "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/exec/stream".format(
-            RUN_UUID
+        body = sdk_client.sandbox_v1.call_exec.call_args.kwargs["body"]
+        assert body.command == ["echo", "hi"]
+        assert body.env == {"A": "B", "EMPTY": None}
+        assert body.stdin == "eA=="
+        assert body.timeout_ms == 1000
+
+    def test_process_exec_rejects_invalid_command_and_env(self):
+        client = self.make_client()
+
+        with self.assertRaises(TypeError):
+            client.process.exec("echo hi")
+        with self.assertRaises(ValueError):
+            client.process.exec([])
+        with self.assertRaises(TypeError):
+            client.process.exec(["echo", 1])
+        with self.assertRaises(TypeError):
+            client.process.exec(["env"], env={"A": 1})
+        with self.assertRaises(TypeError):
+            client.process.exec(["env"], env={"A": {"nested": "bad"}})
+
+    def test_sandbox_client_utils_normalize_command_and_env(self):
+        assert normalize_command(arg for arg in ("echo", "hi")) == ["echo", "hi"]
+        assert normalize_env({"A": "B", "EMPTY": None}) == {"A": "B", "EMPTY": None}
+
+        with self.assertRaisesRegex(TypeError, "iterable of strings"):
+            normalize_command("echo hi")
+        with self.assertRaisesRegex(TypeError, "env must be a mapping"):
+            normalize_env([("A", "B")])
+
+    def test_logs_does_not_expose_follow_kwarg(self):
+        client = self.make_client()
+
+        with self.assertRaises(TypeError):
+            client.process.logs("exec-1", follow=True)
+
+    def test_exec_stream_does_not_expose_session_kwarg(self):
+        client = self.make_client()
+
+        assert "session" not in inspect.signature(client.process.exec_stream).parameters
+
+    def test_process_exec_bg_returns_handle_and_delegates_operations(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(
+            exec_id="exec-1",
+            pid=123,
+            tag="nightly",
         )
-    )
-    assert kwargs["stream"] is True
-    assert kwargs["headers"]["Accept"] == "text/event-stream"
-    assert kwargs["headers"]["Content-Type"] == "application/json"
-    assert kwargs["headers"]["authorization"] == "Bearer token"
-    payload = orjson_loads(kwargs["data"])
-    assert payload["command"] == ["echo", "hi"]
-    assert payload["env"] == {"A": "B"}
-    assert payload["stdin"] == "eA=="
-    assert payload["timeout_ms"] == 1000
+        sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+            exec_id="exec-1",
+            state="running",
+        )
+        sdk_client.sandbox_v1.get_bg_exec_logs.return_value = "logs"
+        sdk_client.sandbox_v1.signal_bg_exec.return_value = None
+        sdk_client.sandbox_v1.delete_bg_exec.return_value = None
+        client = self.make_client(sdk_client=sdk_client)
 
-    with stream as events:
-        assert next(events) == {"type": "start", "exec_id": "exec-1", "pid": 123}
+        handle = client.process.exec_bg(
+            ("sleep", "1"),
+            env={"A": "B"},
+            stdin=b"x",
+            tag="nightly",
+        )
 
-    assert response.closed is True
-    assert session.closed is True
+        assert handle.id == "exec-1"
+        assert handle.exec_id == "exec-1"
+        assert handle.pid == 123
+        assert handle.tag == "nightly"
+        body = sdk_client.sandbox_v1.exec_bg.call_args.kwargs["body"]
+        assert body.command == ["sleep", "1"]
+        assert body.env == {"A": "B"}
+        assert body.stdin == "eA=="
+        assert body.tag == "nightly"
 
+        assert handle.get().state == "running"
+        assert handle.logs(stream="stdout", offset=5, max_bytes=10) == "logs"
+        handle.signal("SIGTERM")
+        handle.delete()
 
-@pytest.mark.client_mark
-def test_process_exec_stream_raises_on_4xx_with_server_error_envelope():
-    response = FakeResponse(
-        status_code=403,
-        content=b'{"error":{"code":"forbidden","message":"denied"}}',
-    )
-    session = FakeSession(response)
-    client = make_client()
+        sdk_client.sandbox_v1.get_bg_exec.assert_called_with(
+            "ns",
+            OWNER,
+            PROJECT,
+            RUN_UUID,
+            id="exec-1",
+        )
+        sdk_client.sandbox_v1.get_bg_exec_logs.assert_called_with(
+            "ns",
+            OWNER,
+            PROJECT,
+            RUN_UUID,
+            id="exec-1",
+            stream="stdout",
+            offset=5,
+            max_bytes=10,
+        )
+        signal_body = sdk_client.sandbox_v1.signal_bg_exec.call_args.kwargs["body"]
+        assert signal_body.signal == "SIGTERM"
+        sdk_client.sandbox_v1.delete_bg_exec.assert_called_with(
+            "ns",
+            OWNER,
+            PROJECT,
+            RUN_UUID,
+            id="exec-1",
+        )
 
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        with pytest.raises(PolyaxonClientException, match="denied"):
-            client.process.exec_stream(("echo", "hi"))
-
-    assert session.closed is True
-
-
-@pytest.mark.client_mark
-def test_process_exec_stream_rejects_invalid_command_before_opening_session():
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session") as session:
-        with pytest.raises(TypeError):
-            client.process.exec_stream("echo hi")
-
-    session.assert_not_called()
-
-
-@pytest.mark.client_mark
-def test_process_exec_stream_error_envelope_closes_and_raises():
-    response = FakeResponse(
-        status_code=403,
-        content=b'{"error":{"code":"forbidden","message":"denied"}}',
-    )
-    session = FakeSession(response)
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        with pytest.raises(PolyaxonClientException, match="denied"):
-            client.process.exec_stream(["echo", "hi"])
-
-    assert response.closed is True
-    assert session.closed is True
-
-
-@pytest.mark.client_mark
-def test_fs_mkdir_serializes_mode_as_octal_string():
-    sdk_client = SyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client)
-
-    client.fs.mkdir("/tmp/data", mode=0o755)
-
-    body = sdk_client.sandbox_v1.fs_mkdir.call_args.kwargs["body"]
-    assert body.path == "/tmp/data"
-    assert body.mode == "0755"
-
-
-@pytest.mark.client_mark
-def test_pty_create_allows_default_command_and_normalizes_explicit_command():
-    sdk_client = SyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client)
-
-    client.pty.create()
-    assert sdk_client.sandbox_v1.create_pty.call_args.kwargs["body"].command is None
-
-    client.pty.create(command=("sh", "-l"))
-    body = sdk_client.sandbox_v1.create_pty.call_args.kwargs["body"]
-    assert body.command == ["sh", "-l"]
-
-
-@pytest.mark.client_mark
-def test_fs_read_parses_raw_response_headers():
-    response = FakeResponse(
-        content=b"hello",
-        headers={
-            "X-Polyaxon-Next-Offset": "5",
-            "X-Polyaxon-Eof": "true",
-        },
-    )
-    session = FakeSession(response)
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        result = client.fs.read("/tmp/file.txt", offset=1, length=4)
-
-    assert result == FsReadResult(data=b"hello", next_offset=5, eof=True)
-    url, kwargs = session.get_calls[0]
-    assert url == (
-        "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/fs/read".format(RUN_UUID)
-    )
-    assert kwargs["params"] == {"path": "/tmp/file.txt", "offset": 1, "length": 4}
-    assert kwargs["headers"]["Accept"] == "application/octet-stream"
-    assert kwargs["headers"]["authorization"] == "Bearer token"
-
-
-@pytest.mark.client_mark
-def test_fs_write_sends_raw_bytes_and_octal_mode():
-    response = FakeResponse(
-        content=b'{"path":"/tmp/file.txt","bytes_written":1,"created":true}'
-    )
-    session = FakeSession(response)
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        result = client.fs.write("/tmp/file.txt", bytearray(b"x"), mode=0o644)
-
-    assert result == FsWriteResult(
-        path="/tmp/file.txt",
-        bytes_written=1,
-        created=True,
-    )
-    url, kwargs = session.post_calls[0]
-    assert url == (
-        "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/fs/write".format(RUN_UUID)
-    )
-    assert kwargs["params"] == {
-        "path": "/tmp/file.txt",
-        "mode": "0644",
-        "create": "true",
-        "append": "false",
-    }
-    assert kwargs["data"] == b"x"
-    assert kwargs["headers"]["Content-Type"] == "application/octet-stream"
-
-
-@pytest.mark.client_mark
-def test_fs_write_accepts_memoryview_and_rejects_str():
-    response = FakeResponse(
-        content=b'{"path":"/tmp/file.txt","bytes_written":1,"created":true}'
-    )
-    session = FakeSession(response)
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        client.fs.write("/tmp/file.txt", memoryview(b"x"))
-        with pytest.raises(TypeError):
-            client.fs.write("/tmp/file.txt", "x")
-
-    assert session.post_calls[0][1]["data"] == b"x"
-
-
-@pytest.mark.client_mark
-def test_validate_remote_path_matches_server_contract():
-    assert validate_remote_path("/tmp/file.txt") == "/tmp/file.txt"
-    max_path = "/" + ("a" * (MAX_REMOTE_PATH_BYTES - 1))
-    assert validate_remote_path(max_path) == max_path
-
-    with pytest.raises(TypeError):
-        validate_remote_path(1)
-    with pytest.raises(ValueError, match="required"):
-        validate_remote_path("")
-    with pytest.raises(ValueError, match="absolute"):
-        validate_remote_path("tmp/file.txt")
-    with pytest.raises(ValueError, match="NUL"):
-        validate_remote_path("/tmp/\x00file.txt")
-    with pytest.raises(ValueError, match="exceeds"):
-        validate_remote_path("/" + ("a" * MAX_REMOTE_PATH_BYTES))
-
-
-@pytest.mark.client_mark
-def test_fs_validates_remote_paths_before_transport():
-    sdk_client = SyncPolyaxonClientMock()
-    client = make_client(sdk_client=sdk_client)
-
-    with patch("polyaxon._client.sandbox.requests.Session") as session:
-        with pytest.raises(ValueError, match="absolute"):
-            client.fs.read("tmp/file.txt")
-        with pytest.raises(ValueError, match="absolute"):
-            client.fs.write("tmp/file.txt", b"x")
-        with pytest.raises(ValueError, match="absolute"):
-            list(client.fs.iter_bytes("tmp/file.txt"))
-
-    session.assert_not_called()
-
-    with pytest.raises(ValueError, match="absolute"):
-        client.fs.ls("tmp")
-    with pytest.raises(ValueError, match="absolute"):
-        client.fs.mkdir("tmp")
-    with pytest.raises(ValueError, match="absolute"):
-        client.fs.rm("tmp")
-    with pytest.raises(ValueError, match="absolute"):
-        client.fs.stat("tmp")
-
-    sdk_client.sandbox_v1.fs_ls.assert_not_called()
-    sdk_client.sandbox_v1.fs_mkdir.assert_not_called()
-    sdk_client.sandbox_v1.fs_rm.assert_not_called()
-    sdk_client.sandbox_v1.fs_stat.assert_not_called()
-
-
-@pytest.mark.client_mark
-def test_fs_transfer_helpers_validate_remote_path_before_local_side_effects(tmp_path):
-    client = make_client()
-
-    with pytest.raises(ValueError, match="absolute"):
-        client.fs.upload_file(tmp_path / "missing.txt", "tmp/file.txt")
-
-    destination = tmp_path / "missing-dir" / "file.txt"
-    with pytest.raises(ValueError, match="absolute"):
-        client.fs.download_file("tmp/file.txt", destination)
-
-    assert not destination.parent.exists()
-
-
-@pytest.mark.client_mark
-def test_fs_read_write_byte_and_text_helpers():
-    read_response = FakeResponse(
-        content=b"hello",
-        headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
-    )
-    read_session = FakeSession(read_response)
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=read_session):
-        assert client.fs.read_bytes("/tmp/file.txt") == b"hello"
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=read_session):
-        assert client.fs.read_text("/tmp/file.txt") == "hello"
-
-    write_response = FakeResponse(
-        content=b'{"path":"/tmp/file.txt","bytes_written":5,"created":false}'
-    )
-    write_session = FakeSession(write_response)
-
-    with patch(
-        "polyaxon._client.sandbox.requests.Session",
-        return_value=write_session,
-    ):
-        result = client.fs.write_text("/tmp/file.txt", "hello")
-
-    assert result == FsWriteResult(
-        path="/tmp/file.txt",
-        bytes_written=5,
-        created=False,
-    )
-    assert write_session.post_calls[0][1]["data"] == b"hello"
-
-    with pytest.raises(TypeError):
-        client.fs.write_text("/tmp/file.txt", b"not text")
-
-
-@pytest.mark.client_mark
-def test_fs_read_bytes_pages_until_eof():
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b"he",
-                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
-            ),
-            FakeResponse(
-                content=b"llo",
-                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
-            ),
+    def test_process_exec_bg_handle_exposes_log_and_kill_sugar(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec_logs.side_effect = [
+            V1ExecBgLogs(data="out"),
+            V1ExecBgLogs(data="err"),
+            V1ExecBgLogs(data="out2"),
+            V1ExecBgLogs(data="err2"),
         ]
-    )
-    client = make_client()
+        client = self.make_client(sdk_client=sdk_client)
 
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        assert client.fs.read_bytes("/tmp/file.txt") == b"hello"
+        handle = client.process.exec_bg(("sleep", "1"))
 
-    assert [call[1]["params"] for call in session.get_calls] == [
-        {
-            "path": "/tmp/file.txt",
+        assert handle.stdout(offset=1, max_bytes=2) == "out"
+        assert handle.stderr() == "err"
+        assert handle.output() == SandboxBgOutput(stdout="out2", stderr="err2")
+        handle.kill("SIGKILL")
+
+        assert sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list[0].kwargs == {
+            "id": "exec-1",
+            "stream": "stdout",
+            "offset": 1,
+            "max_bytes": 2,
+        }
+        assert sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list[1].kwargs == {
+            "id": "exec-1",
+            "stream": "stderr",
             "offset": 0,
-            "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
-        },
-        {
+            "max_bytes": None,
+        }
+        signal_body = sdk_client.sandbox_v1.signal_bg_exec.call_args.kwargs["body"]
+        assert signal_body.signal == "SIGKILL"
+
+    def test_process_exec_bg_iter_logs_polls_offsets_until_terminal(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec_logs.side_effect = [
+            V1ExecBgLogs(data="one", next_offset=3, eof=False, state="running"),
+            V1ExecBgLogs(data="", next_offset=3, eof=True, state="running"),
+            V1ExecBgLogs(data="two", next_offset=6, eof=True, state="exited"),
+        ]
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("sleep", "1"))
+
+        with patch("polyaxon._client.sandbox.time.sleep") as sleep:
+            chunks = list(handle.iter_stdout(max_bytes=10, timeout=10, interval=0.1))
+
+        assert chunks == ["one", "two"]
+        assert sleep.call_count == 2
+        assert [
+            call.kwargs["offset"]
+            for call in sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list
+        ] == [0, 3, 3]
+        assert [
+            call.kwargs["stream"]
+            for call in sdk_client.sandbox_v1.get_bg_exec_logs.call_args_list
+        ] == ["stdout", "stdout", "stdout"]
+
+    def test_process_exec_bg_iter_logs_rejects_non_advancing_data(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec_logs.return_value = V1ExecBgLogs(
+            data="x",
+            next_offset=0,
+            eof=False,
+            state="running",
+        )
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("sleep", "1"))
+
+        with self.assertRaisesRegex(PolyaxonClientException, "did not advance"):
+            list(handle.iter_logs(timeout=10))
+
+    def test_process_exec_bg_iter_logs_validates_args_and_timeout(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec_logs.return_value = V1ExecBgLogs(
+            data="",
+            next_offset=0,
+            eof=True,
+            state="running",
+        )
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("sleep", "1"))
+
+        with self.assertRaisesRegex(ValueError, "offset"):
+            list(handle.iter_logs(offset=-1))
+        with self.assertRaisesRegex(ValueError, "max_bytes"):
+            list(handle.iter_logs(max_bytes=0))
+        with self.assertRaisesRegex(PolyaxonClientException, "Timed out"):
+            list(handle.iter_logs(timeout=0, interval=0.1))
+
+    def test_process_exec_bg_wait_polls_until_terminal_status(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec.side_effect = [
+            V1ExecBgStatus(exec_id="exec-1", state="running"),
+            V1ExecBgStatus(exec_id="exec-1", state="exited", exit_code=0),
+        ]
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("sleep", "1"))
+
+        with patch("polyaxon._client.sandbox.time.sleep") as sleep:
+            status = handle.wait(timeout=10, interval=0.1)
+
+        assert status.state == "exited"
+        assert sleep.call_count == 1
+
+    def test_bg_exec_state_sets_match_server_enum(self):
+        assert sandbox_module._BG_RUNNING_STATES == {"running"}
+        assert sandbox_module._BG_TERMINAL_STATES == {
+            "exited",
+            "signaled",
+            "timed_out",
+            "failed_to_start",
+            "orphaned",
+        }
+
+    def test_process_exec_bg_wait_returns_terminal_status_without_sleeping(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+            exec_id="exec-1",
+            state="exited",
+            exit_code=0,
+        )
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("true",))
+
+        with patch("polyaxon._client.sandbox.time.sleep") as sleep:
+            status = handle.wait(timeout=10, interval=0.1)
+
+        assert status.state == "exited"
+        sleep.assert_not_called()
+
+    def test_process_exec_bg_wait_validates_timeout_and_interval(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+            exec_id="exec-1",
+            state="running",
+        )
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("sleep", "1"))
+
+        with self.assertRaisesRegex(ValueError, "interval"):
+            handle.wait(interval=0)
+        with self.assertRaisesRegex(PolyaxonClientException, "Timed out"):
+            handle.wait(timeout=0, interval=0.1)
+
+    def test_process_exec_bg_wait_rejects_unknown_state(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        sdk_client.sandbox_v1.get_bg_exec.return_value = V1ExecBgStatus(
+            exec_id="exec-1",
+            state="paused",
+        )
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("sleep", "1"))
+
+        with self.assertRaisesRegex(PolyaxonClientException, "Unknown sandbox"):
+            handle.wait(timeout=10)
+
+    def test_process_exec_bg_handle_does_not_delegate_unknown_attrs_to_start(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        client = self.make_client(sdk_client=sdk_client)
+        handle = client.process.exec_bg(("sleep", "1"))
+
+        with self.assertRaises(AttributeError):
+            handle.exit_code
+
+    def test_process_exec_bg_requires_exec_id(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart()
+        client = self.make_client(sdk_client=sdk_client)
+
+        with self.assertRaisesRegex(PolyaxonClientException, "exec_id"):
+            client.process.exec_bg(("sleep", "1"))
+
+    def test_pty_attach_connects_and_uses_raw_frames(self):
+        sdk_client = SyncPolyaxonClientMock()
+        ws = FakeSyncWS(
+            frames=[
+                (
+                    sandbox_ws.OPCODE_TEXT,
+                    b'{"type":"attached","pty_id":"pty-1","pid":123}',
+                ),
+                (sandbox_ws.OPCODE_BINARY, b"output"),
+                (sandbox_ws.OPCODE_TEXT, b'{"type":"exited","exit_code":0}'),
+            ]
+        )
+        client = self.make_client(sdk_client=sdk_client)
+
+        with patch(
+            "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+            return_value=ws,
+        ) as connect:
+            attached = client.pty.attach("pty-1", replay_bytes=20)
+
+        assert connect.call_args.args[0] == (
+            "ws://polyaxon/sandbox/v1/ns/owner/project/runs/{}/pty/pty-1/ws"
+            "?replay_bytes=20".format(RUN_UUID)
+        )
+        assert "authorization: Bearer token" in connect.call_args.kwargs["header"]
+        assert attached.attached_event == {
+            "type": "attached",
+            "pty_id": "pty-1",
+            "pid": 123,
+        }
+
+        attached.send_stdin(b"echo\n")
+        attached.send_control({"type": "resize", "cols": 100, "rows": 30})
+        attached.resize(cols=120, rows=40)
+        attached.kill("SIGKILL")
+
+        assert ws.sent[0] == (sandbox_ws.OPCODE_BINARY, b"echo\n")
+        assert ws.sent[1][0] == sandbox_ws.OPCODE_TEXT
+        assert orjson_loads(ws.sent[1][1].encode("utf-8")) == {
+            "type": "resize",
+            "cols": 100,
+            "rows": 30,
+        }
+        assert attached.recv() == b"output"
+        assert attached.recv() == {"type": "exited", "exit_code": 0}
+        resize_body = sdk_client.sandbox_v1.resize_pty.call_args.kwargs["body"]
+        assert resize_body.cols == 120
+        assert resize_body.rows == 40
+        signal_body = sdk_client.sandbox_v1.signal_pty.call_args.kwargs["body"]
+        assert signal_body.signal == "SIGKILL"
+
+        attached.close()
+        assert ws.closed is True
+
+    def test_pty_attach_closes_and_raises_on_error_frame(self):
+        ws = FakeSyncWS(frames=[(1, b'{"type":"error","message":"bad attach"}')])
+        client = self.make_client()
+
+        with patch(
+            "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+            return_value=ws,
+        ):
+            with self.assertRaisesRegex(PolyaxonClientException, "bad attach"):
+                client.pty.attach("pty-1")
+
+        assert ws.closed is True
+
+    def test_pty_attach_closes_and_raises_on_binary_frame(self):
+        ws = FakeSyncWS(frames=[(2, b"not attached")])
+        client = self.make_client()
+
+        with patch(
+            "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+            return_value=ws,
+        ):
+            with self.assertRaisesRegex(PolyaxonClientException, "binary frame"):
+                client.pty.attach("pty-1")
+
+        assert ws.closed is True
+
+    def test_pty_attach_closes_and_raises_on_invalid_json(self):
+        ws = FakeSyncWS(frames=[(1, b"not json")])
+        client = self.make_client()
+
+        with patch(
+            "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+            return_value=ws,
+        ):
+            with self.assertRaisesRegex(
+                PolyaxonClientException, "Invalid PTY websocket event JSON"
+            ):
+                client.pty.attach("pty-1")
+
+        assert ws.closed is True
+
+    def test_pty_attach_closes_and_raises_on_unexpected_event(self):
+        ws = FakeSyncWS(frames=[(1, b'{"type":"ready"}')])
+        client = self.make_client()
+
+        with patch(
+            "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+            return_value=ws,
+        ):
+            with self.assertRaisesRegex(PolyaxonClientException, "ready"):
+                client.pty.attach("pty-1")
+
+        assert ws.closed is True
+
+    def test_pty_attach_uses_server_error_from_bad_handshake(self):
+        client = self.make_client()
+        error = sandbox_ws.websocket.WebSocketBadStatusException(
+            "Handshake status 404 Not Found -+-+- headers -+-+- body",
+            404,
+            resp_body=b'{"error":{"code":"not_found","message":"pty not found"}}',
+        )
+
+        with patch(
+            "polyaxon._client.transport.sandbox_ws.websocket.create_connection",
+            side_effect=error,
+        ):
+            with self.assertRaises(PolyaxonClientException) as exc:
+                client.pty.attach("missing-pty")
+
+        message = str(exc.exception)
+        assert "pty.attach failed: pty not found" == message
+        assert "Handshake status" not in message
+
+    def test_process_exec_stream_sends_request_and_closes_on_context_exit(self):
+        response = FakeResponse(
+            chunks=[
+                b'event: start\ndata: {"exec_id":"exec-1","pid":123}\n\n',
+                b'event: stdout\ndata: {"text":"hello","offset":5}\n\n',
+            ]
+        )
+        session = FakeSession(response)
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            stream = client.process.exec_stream(
+                ("echo", "hi"),
+                env={"A": "B"},
+                stdin=b"x",
+                timeout_ms=1000,
+            )
+
+        url, kwargs = session.post_calls[0]
+        assert url == (
+            "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/exec/stream".format(
+                RUN_UUID
+            )
+        )
+        assert kwargs["stream"] is True
+        assert kwargs["headers"]["Accept"] == "text/event-stream"
+        assert kwargs["headers"]["Content-Type"] == "application/json"
+        assert kwargs["headers"]["authorization"] == "Bearer token"
+        payload = orjson_loads(kwargs["data"])
+        assert payload["command"] == ["echo", "hi"]
+        assert payload["env"] == {"A": "B"}
+        assert payload["stdin"] == "eA=="
+        assert payload["timeout_ms"] == 1000
+
+        with stream as events:
+            assert next(events) == {"type": "start", "exec_id": "exec-1", "pid": 123}
+
+        assert response.closed is True
+        assert session.closed is True
+
+    def test_process_exec_stream_raises_on_4xx_with_server_error_envelope(self):
+        response = FakeResponse(
+            status_code=403,
+            content=b'{"error":{"code":"forbidden","message":"denied"}}',
+        )
+        session = FakeSession(response)
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            with self.assertRaisesRegex(PolyaxonClientException, "denied"):
+                client.process.exec_stream(("echo", "hi"))
+
+        assert session.closed is True
+
+    def test_process_exec_stream_rejects_invalid_command_before_opening_session(self):
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session") as session:
+            with self.assertRaises(TypeError):
+                client.process.exec_stream("echo hi")
+
+        session.assert_not_called()
+
+    def test_process_exec_stream_error_envelope_closes_and_raises(self):
+        response = FakeResponse(
+            status_code=403,
+            content=b'{"error":{"code":"forbidden","message":"denied"}}',
+        )
+        session = FakeSession(response)
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            with self.assertRaisesRegex(PolyaxonClientException, "denied"):
+                client.process.exec_stream(["echo", "hi"])
+
+        assert response.closed is True
+        assert session.closed is True
+
+    def test_fs_mkdir_serializes_mode_as_octal_string(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = self.make_client(sdk_client=sdk_client)
+
+        client.fs.mkdir("/tmp/data", mode=0o755)
+
+        body = sdk_client.sandbox_v1.fs_mkdir.call_args.kwargs["body"]
+        assert body.path == "/tmp/data"
+        assert body.mode == "0755"
+
+    def test_pty_create_allows_default_command_and_normalizes_explicit_command(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = self.make_client(sdk_client=sdk_client)
+
+        client.pty.create()
+        assert sdk_client.sandbox_v1.create_pty.call_args.kwargs["body"].command is None
+
+        client.pty.create(command=("sh", "-l"))
+        body = sdk_client.sandbox_v1.create_pty.call_args.kwargs["body"]
+        assert body.command == ["sh", "-l"]
+
+    def test_fs_read_parses_raw_response_headers(self):
+        response = FakeResponse(
+            content=b"hello",
+            headers={
+                "X-Polyaxon-Next-Offset": "5",
+                "X-Polyaxon-Eof": "true",
+            },
+        )
+        session = FakeSession(response)
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            result = client.fs.read("/tmp/file.txt", offset=1, length=4)
+
+        assert result == FsReadResult(data=b"hello", next_offset=5, eof=True)
+        url, kwargs = session.get_calls[0]
+        assert url == (
+            "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/fs/read".format(
+                RUN_UUID
+            )
+        )
+        assert kwargs["params"] == {"path": "/tmp/file.txt", "offset": 1, "length": 4}
+        assert kwargs["headers"]["Accept"] == "application/octet-stream"
+        assert kwargs["headers"]["authorization"] == "Bearer token"
+
+    def test_fs_write_sends_raw_bytes_and_octal_mode(self):
+        response = FakeResponse(
+            content=b'{"path":"/tmp/file.txt","bytes_written":1,"created":true}'
+        )
+        session = FakeSession(response)
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            result = client.fs.write("/tmp/file.txt", bytearray(b"x"), mode=0o644)
+
+        assert result == FsWriteResult(
+            path="/tmp/file.txt",
+            bytes_written=1,
+            created=True,
+        )
+        url, kwargs = session.post_calls[0]
+        assert url == (
+            "http://polyaxon/sandbox/v1/ns/owner/project/runs/{}/fs/write".format(
+                RUN_UUID
+            )
+        )
+        assert kwargs["params"] == {
             "path": "/tmp/file.txt",
-            "offset": 2,
-            "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
-        },
-    ]
+            "mode": "0644",
+            "create": "true",
+            "append": "false",
+        }
+        assert kwargs["data"] == b"x"
+        assert kwargs["headers"]["Content-Type"] == "application/octet-stream"
 
-
-@pytest.mark.client_mark
-def test_fs_iter_bytes_yields_chunks():
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b"he",
-                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
-            ),
-            FakeResponse(
-                content=b"llo",
-                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
-            ),
-        ]
-    )
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        assert list(client.fs.iter_bytes("/tmp/file.txt", chunk_size=2)) == [
-            b"he",
-            b"llo",
-        ]
-
-    assert [call[1]["params"] for call in session.get_calls] == [
-        {"path": "/tmp/file.txt", "offset": 0, "length": 2},
-        {"path": "/tmp/file.txt", "offset": 2, "length": 2},
-    ]
-
-
-@pytest.mark.client_mark
-def test_fs_read_bytes_honors_length_across_pages():
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b"ab",
-                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
-            ),
-            FakeResponse(
-                content=b"cdef",
-                headers={"X-Polyaxon-Next-Offset": "6", "X-Polyaxon-Eof": "false"},
-            ),
-        ]
-    )
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        assert client.fs.read_bytes("/tmp/file.txt", length=4) == b"abcd"
-
-    assert [call[1]["params"] for call in session.get_calls] == [
-        {"path": "/tmp/file.txt", "offset": 0, "length": 4},
-        {"path": "/tmp/file.txt", "offset": 2, "length": 2},
-    ]
-
-
-@pytest.mark.client_mark
-def test_fs_read_text_decodes_after_paging():
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b"\xc3",
-                headers={"X-Polyaxon-Next-Offset": "1", "X-Polyaxon-Eof": "false"},
-            ),
-            FakeResponse(
-                content=b"\xa9",
-                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "true"},
-            ),
-        ]
-    )
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        assert client.fs.read_text("/tmp/file.txt") == "é"
-
-
-@pytest.mark.client_mark
-def test_fs_read_bytes_rejects_non_advancing_response():
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b"x",
-                headers={"X-Polyaxon-Next-Offset": "0", "X-Polyaxon-Eof": "false"},
-            ),
-        ]
-    )
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        with pytest.raises(PolyaxonClientException, match="did not advance"):
-            client.fs.read_bytes("/tmp/file.txt")
-
-
-@pytest.mark.client_mark
-def test_fs_read_bytes_length_zero_does_not_request():
-    session = FakeSequenceSession([])
-    client = make_client()
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        assert client.fs.read_bytes("/tmp/file.txt", length=0) == b""
-
-    assert session.get_calls == []
-
-
-@pytest.mark.client_mark
-def test_fs_download_file_writes_chunks_and_replaces_tmp(tmp_path):
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b"he",
-                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
-            ),
-            FakeResponse(
-                content=b"llo",
-                headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
-            ),
-        ]
-    )
-    client = make_client()
-    destination = tmp_path / "nested" / "file.txt"
-
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        result = client.fs.download_file(
-            "/tmp/file.txt",
-            destination,
-            chunk_size=2,
+    def test_fs_write_accepts_memoryview_and_rejects_str(self):
+        response = FakeResponse(
+            content=b'{"path":"/tmp/file.txt","bytes_written":1,"created":true}'
         )
+        session = FakeSession(response)
+        client = self.make_client()
 
-    assert result == str(destination)
-    assert destination.read_bytes() == b"hello"
-    assert not (destination.parent / "file.txt.part").exists()
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            client.fs.write("/tmp/file.txt", memoryview(b"x"))
+            with self.assertRaises(TypeError):
+                client.fs.write("/tmp/file.txt", "x")
 
+        assert session.post_calls[0][1]["data"] == b"x"
 
-@pytest.mark.client_mark
-def test_fs_download_file_cleans_tmp_on_error(tmp_path):
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b"he",
-                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
-            ),
-            FakeResponse(
-                content=b"x",
-                headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
-            ),
-        ]
-    )
-    client = make_client()
-    destination = tmp_path / "file.txt"
+    def test_validate_remote_path_matches_server_contract(self):
+        assert validate_remote_path("/tmp/file.txt") == "/tmp/file.txt"
+        max_path = "/" + ("a" * (MAX_REMOTE_PATH_BYTES - 1))
+        assert validate_remote_path(max_path) == max_path
 
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        with pytest.raises(PolyaxonClientException, match="did not advance"):
-            client.fs.download_file("/tmp/file.txt", destination, chunk_size=2)
+        with self.assertRaises(TypeError):
+            validate_remote_path(1)
+        with self.assertRaisesRegex(ValueError, "required"):
+            validate_remote_path("")
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            validate_remote_path("tmp/file.txt")
+        with self.assertRaisesRegex(ValueError, "NUL"):
+            validate_remote_path("/tmp/\x00file.txt")
+        with self.assertRaisesRegex(ValueError, "exceeds"):
+            validate_remote_path("/" + ("a" * MAX_REMOTE_PATH_BYTES))
 
-    assert not destination.exists()
-    assert not (tmp_path / "file.txt.part").exists()
+    def test_fs_validates_remote_paths_before_transport(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = self.make_client(sdk_client=sdk_client)
 
+        with patch("polyaxon._client.sandbox.requests.Session") as session:
+            with self.assertRaisesRegex(ValueError, "absolute"):
+                client.fs.read("tmp/file.txt")
+            with self.assertRaisesRegex(ValueError, "absolute"):
+                client.fs.write("tmp/file.txt", b"x")
+            with self.assertRaisesRegex(ValueError, "absolute"):
+                list(client.fs.iter_bytes("tmp/file.txt"))
 
-@pytest.mark.client_mark
-def test_fs_upload_file_writes_chunks_with_append(tmp_path):
-    local_path = tmp_path / "local.txt"
-    local_path.write_bytes(b"hello")
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":true}'
-            ),
-            FakeResponse(
-                content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":false}'
-            ),
-            FakeResponse(
-                content=b'{"path":"/tmp/file.txt","bytes_written":1,"created":false}'
-            ),
-        ]
-    )
-    client = make_client()
+        session.assert_not_called()
 
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        result = client.fs.upload_file(
-            local_path,
-            "/tmp/file.txt",
-            chunk_size=2,
-            mode=0o600,
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            client.fs.ls("tmp")
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            client.fs.mkdir("tmp")
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            client.fs.rm("tmp")
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            client.fs.stat("tmp")
+
+        sdk_client.sandbox_v1.fs_ls.assert_not_called()
+        sdk_client.sandbox_v1.fs_mkdir.assert_not_called()
+        sdk_client.sandbox_v1.fs_rm.assert_not_called()
+        sdk_client.sandbox_v1.fs_stat.assert_not_called()
+
+    def test_fs_transfer_helpers_validate_remote_path_before_local_side_effects(self):
+        client = self.make_client()
+
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            client.fs.upload_file(self.tmp_path / "missing.txt", "tmp/file.txt")
+
+        destination = self.tmp_path / "missing-dir" / "file.txt"
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            client.fs.download_file("tmp/file.txt", destination)
+
+        assert not destination.parent.exists()
+
+    def test_fs_read_write_byte_and_text_helpers(self):
+        read_response = FakeResponse(
+            content=b"hello",
+            headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
         )
+        read_session = FakeSession(read_response)
+        client = self.make_client()
 
-    assert result == FsWriteResult(
-        path="/tmp/file.txt",
-        bytes_written=5,
-        created=True,
-    )
-    assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o"]
-    assert [call[1]["params"] for call in session.post_calls] == [
-        {"path": "/tmp/file.txt", "mode": "0600", "create": "true", "append": "false"},
-        {"path": "/tmp/file.txt", "mode": "0600", "create": "false", "append": "true"},
-        {"path": "/tmp/file.txt", "mode": "0600", "create": "false", "append": "true"},
-    ]
+        with patch(
+            "polyaxon._client.sandbox.requests.Session", return_value=read_session
+        ):
+            assert client.fs.read_bytes("/tmp/file.txt") == b"hello"
 
+        with patch(
+            "polyaxon._client.sandbox.requests.Session", return_value=read_session
+        ):
+            assert client.fs.read_text("/tmp/file.txt") == "hello"
 
-@pytest.mark.client_mark
-def test_fs_upload_file_writes_empty_file(tmp_path):
-    local_path = tmp_path / "empty.txt"
-    local_path.write_bytes(b"")
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b'{"path":"/tmp/empty.txt","bytes_written":0,"created":true}'
-            ),
+        write_response = FakeResponse(
+            content=b'{"path":"/tmp/file.txt","bytes_written":5,"created":false}'
+        )
+        write_session = FakeSession(write_response)
+
+        with patch(
+            "polyaxon._client.sandbox.requests.Session",
+            return_value=write_session,
+        ):
+            result = client.fs.write_text("/tmp/file.txt", "hello")
+
+        assert result == FsWriteResult(
+            path="/tmp/file.txt",
+            bytes_written=5,
+            created=False,
+        )
+        assert write_session.post_calls[0][1]["data"] == b"hello"
+
+        with self.assertRaises(TypeError):
+            client.fs.write_text("/tmp/file.txt", b"not text")
+
+    def test_fs_read_bytes_pages_until_eof(self):
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b"he",
+                    headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+                ),
+                FakeResponse(
+                    content=b"llo",
+                    headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+                ),
+            ]
+        )
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            assert client.fs.read_bytes("/tmp/file.txt") == b"hello"
+
+        assert [call[1]["params"] for call in session.get_calls] == [
+            {
+                "path": "/tmp/file.txt",
+                "offset": 0,
+                "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
+            },
+            {
+                "path": "/tmp/file.txt",
+                "offset": 2,
+                "length": sandbox_module._DEFAULT_FILE_CHUNK_SIZE,
+            },
         ]
-    )
-    client = make_client()
 
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        result = client.fs.upload_file(local_path, "/tmp/empty.txt", chunk_size=2)
+    def test_fs_iter_bytes_yields_chunks(self):
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b"he",
+                    headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+                ),
+                FakeResponse(
+                    content=b"llo",
+                    headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+                ),
+            ]
+        )
+        client = self.make_client()
 
-    assert result == FsWriteResult(
-        path="/tmp/empty.txt",
-        bytes_written=0,
-        created=True,
-    )
-    assert len(session.post_calls) == 1
-    assert session.post_calls[0][1]["data"] == b""
-    assert session.post_calls[0][1]["params"]["append"] == "false"
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            assert list(client.fs.iter_bytes("/tmp/file.txt", chunk_size=2)) == [
+                b"he",
+                b"llo",
+            ]
 
-
-@pytest.mark.client_mark
-def test_fs_upload_file_validates_chunk_size(tmp_path):
-    local_path = tmp_path / "local.txt"
-    local_path.write_bytes(b"hello")
-    client = make_client()
-
-    with pytest.raises(ValueError, match="chunk_size"):
-        client.fs.upload_file(local_path, "/tmp/file.txt", chunk_size=0)
-
-
-@pytest.mark.client_mark
-def test_fs_upload_file_stops_on_mid_upload_failure(tmp_path):
-    local_path = tmp_path / "local.txt"
-    local_path.write_bytes(b"hello!")
-    session = FakeSequenceSession(
-        [
-            FakeResponse(
-                content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":true}'
-            ),
-            FakeResponse(
-                content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":false}'
-            ),
-            PolyaxonClientException("write failed"),
-            FakeResponse(
-                content=b'{"path":"/tmp/file.txt","bytes_written":0,"created":false}'
-            ),
+        assert [call[1]["params"] for call in session.get_calls] == [
+            {"path": "/tmp/file.txt", "offset": 0, "length": 2},
+            {"path": "/tmp/file.txt", "offset": 2, "length": 2},
         ]
-    )
-    client = make_client()
 
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        with pytest.raises(PolyaxonClientException, match="write failed"):
-            client.fs.upload_file(local_path, "/tmp/file.txt", chunk_size=2)
+    def test_fs_read_bytes_honors_length_across_pages(self):
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b"ab",
+                    headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+                ),
+                FakeResponse(
+                    content=b"cdef",
+                    headers={"X-Polyaxon-Next-Offset": "6", "X-Polyaxon-Eof": "false"},
+                ),
+            ]
+        )
+        client = self.make_client()
 
-    assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o!"]
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            assert client.fs.read_bytes("/tmp/file.txt", length=4) == b"abcd"
 
+        assert [call[1]["params"] for call in session.get_calls] == [
+            {"path": "/tmp/file.txt", "offset": 0, "length": 4},
+            {"path": "/tmp/file.txt", "offset": 2, "length": 2},
+        ]
 
-@pytest.mark.client_mark
-def test_raw_fs_error_envelope_raises_client_exception():
-    response = FakeResponse(
-        status_code=404,
-        content=b'{"error":{"code":"not_found","message":"missing file"}}',
-    )
-    session = FakeSession(response)
-    client = make_client()
+    def test_fs_read_text_decodes_after_paging(self):
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b"\xc3",
+                    headers={"X-Polyaxon-Next-Offset": "1", "X-Polyaxon-Eof": "false"},
+                ),
+                FakeResponse(
+                    content=b"\xa9",
+                    headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "true"},
+                ),
+            ]
+        )
+        client = self.make_client()
 
-    with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
-        with pytest.raises(PolyaxonClientException, match="missing file"):
-            client.fs.read("/tmp/missing.txt")
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            assert client.fs.read_text("/tmp/file.txt") == "é"
+
+    def test_fs_read_bytes_rejects_non_advancing_response(self):
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b"x",
+                    headers={"X-Polyaxon-Next-Offset": "0", "X-Polyaxon-Eof": "false"},
+                ),
+            ]
+        )
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            with self.assertRaisesRegex(PolyaxonClientException, "did not advance"):
+                client.fs.read_bytes("/tmp/file.txt")
+
+    def test_fs_read_bytes_length_zero_does_not_request(self):
+        session = FakeSequenceSession([])
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            assert client.fs.read_bytes("/tmp/file.txt", length=0) == b""
+
+        assert session.get_calls == []
+
+    def test_fs_download_file_writes_chunks_and_replaces_tmp(self):
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b"he",
+                    headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+                ),
+                FakeResponse(
+                    content=b"llo",
+                    headers={"X-Polyaxon-Next-Offset": "5", "X-Polyaxon-Eof": "true"},
+                ),
+            ]
+        )
+        client = self.make_client()
+        destination = self.tmp_path / "nested" / "file.txt"
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            result = client.fs.download_file(
+                "/tmp/file.txt",
+                destination,
+                chunk_size=2,
+            )
+
+        assert result == str(destination)
+        assert destination.read_bytes() == b"hello"
+        assert not (destination.parent / "file.txt.part").exists()
+
+    def test_fs_download_file_cleans_tmp_on_error(self):
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b"he",
+                    headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+                ),
+                FakeResponse(
+                    content=b"x",
+                    headers={"X-Polyaxon-Next-Offset": "2", "X-Polyaxon-Eof": "false"},
+                ),
+            ]
+        )
+        client = self.make_client()
+        destination = self.tmp_path / "file.txt"
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            with self.assertRaisesRegex(PolyaxonClientException, "did not advance"):
+                client.fs.download_file("/tmp/file.txt", destination, chunk_size=2)
+
+        assert not destination.exists()
+        assert not (self.tmp_path / "file.txt.part").exists()
+
+    def test_fs_upload_file_writes_chunks_with_append(self):
+        local_path = self.tmp_path / "local.txt"
+        local_path.write_bytes(b"hello")
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":true}'
+                ),
+                FakeResponse(
+                    content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":false}'
+                ),
+                FakeResponse(
+                    content=b'{"path":"/tmp/file.txt","bytes_written":1,"created":false}'
+                ),
+            ]
+        )
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            result = client.fs.upload_file(
+                local_path,
+                "/tmp/file.txt",
+                chunk_size=2,
+                mode=0o600,
+            )
+
+        assert result == FsWriteResult(
+            path="/tmp/file.txt",
+            bytes_written=5,
+            created=True,
+        )
+        assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o"]
+        assert [call[1]["params"] for call in session.post_calls] == [
+            {
+                "path": "/tmp/file.txt",
+                "mode": "0600",
+                "create": "true",
+                "append": "false",
+            },
+            {
+                "path": "/tmp/file.txt",
+                "mode": "0600",
+                "create": "false",
+                "append": "true",
+            },
+            {
+                "path": "/tmp/file.txt",
+                "mode": "0600",
+                "create": "false",
+                "append": "true",
+            },
+        ]
+
+    def test_fs_upload_file_writes_empty_file(self):
+        local_path = self.tmp_path / "empty.txt"
+        local_path.write_bytes(b"")
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b'{"path":"/tmp/empty.txt","bytes_written":0,"created":true}'
+                ),
+            ]
+        )
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            result = client.fs.upload_file(local_path, "/tmp/empty.txt", chunk_size=2)
+
+        assert result == FsWriteResult(
+            path="/tmp/empty.txt",
+            bytes_written=0,
+            created=True,
+        )
+        assert len(session.post_calls) == 1
+        assert session.post_calls[0][1]["data"] == b""
+        assert session.post_calls[0][1]["params"]["append"] == "false"
+
+    def test_fs_upload_file_validates_chunk_size(self):
+        local_path = self.tmp_path / "local.txt"
+        local_path.write_bytes(b"hello")
+        client = self.make_client()
+
+        with self.assertRaisesRegex(ValueError, "chunk_size"):
+            client.fs.upload_file(local_path, "/tmp/file.txt", chunk_size=0)
+
+    def test_fs_upload_file_stops_on_mid_upload_failure(self):
+        local_path = self.tmp_path / "local.txt"
+        local_path.write_bytes(b"hello!")
+        session = FakeSequenceSession(
+            [
+                FakeResponse(
+                    content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":true}'
+                ),
+                FakeResponse(
+                    content=b'{"path":"/tmp/file.txt","bytes_written":2,"created":false}'
+                ),
+                PolyaxonClientException("write failed"),
+                FakeResponse(
+                    content=b'{"path":"/tmp/file.txt","bytes_written":0,"created":false}'
+                ),
+            ]
+        )
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            with self.assertRaisesRegex(PolyaxonClientException, "write failed"):
+                client.fs.upload_file(local_path, "/tmp/file.txt", chunk_size=2)
+
+        assert [call[1]["data"] for call in session.post_calls] == [b"he", b"ll", b"o!"]
+
+    def test_raw_fs_error_envelope_raises_client_exception(self):
+        response = FakeResponse(
+            status_code=404,
+            content=b'{"error":{"code":"not_found","message":"missing file"}}',
+        )
+        session = FakeSession(response)
+        client = self.make_client()
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            with self.assertRaisesRegex(PolyaxonClientException, "missing file"):
+                client.fs.read("/tmp/missing.txt")

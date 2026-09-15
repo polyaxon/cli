@@ -1,8 +1,12 @@
 import inspect
 from mock import mock
+import os
 import pytest
+import tempfile
+from unittest import IsolatedAsyncioTestCase
 
 from polyaxon._client.organization import AsyncOrganizationClient, OrganizationClient
+from polyaxon._contexts import paths as ctx_paths
 from polyaxon._schemas.lifecycle import V1ProjectVersionKind
 from polyaxon._sdk.schemas.v1_list_organization_members_response import (
     V1ListOrganizationMembersResponse,
@@ -20,11 +24,9 @@ from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_organization import V1Organization
 from polyaxon._sdk.schemas.v1_organization_member import V1OrganizationMember
 from polyaxon._sdk.schemas.v1_uuids import V1Uuids
-from polyaxon._utils.test_utils import AsyncMock, patch_settings
+from polyaxon._utils.test_utils import AsyncMock, BaseTestCase
 from polyaxon.exceptions import PolyaxonClientException
 
-
-pytestmark = pytest.mark.client_mark
 
 OWNER = "test-owner"
 TEAM = "test-team"
@@ -79,417 +81,373 @@ class SyncPolyaxonClientMock:
     config = None
 
 
-def test_async_organization_client_rejects_sync_client():
-    patch_settings()
+@pytest.mark.client_mark
+@pytest.mark.asyncio
+class TestAsyncOrganizationClient(BaseTestCase, IsolatedAsyncioTestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        patcher = mock.patch.object(
+            ctx_paths,
+            "CONTEXT_USER_POLYAXON_PATH",
+            os.path.join(directory.name, ".polyaxon"),
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        super().setUp()
 
-    with pytest.raises(PolyaxonClientException):
-        AsyncOrganizationClient(owner=OWNER, client=SyncPolyaxonClientMock())
+    def test_async_organization_client_rejects_sync_client(self):
+        with self.assertRaises(PolyaxonClientException):
+            AsyncOrganizationClient(owner=OWNER, client=SyncPolyaxonClientMock())
 
+    def test_async_organization_client_method_surface_is_async(self):
+        for method in ASYNC_METHODS:
+            assert inspect.iscoroutinefunction(getattr(AsyncOrganizationClient, method))
+            assert getattr(AsyncOrganizationClient, method) is not getattr(
+                OrganizationClient, method
+            )
 
-def test_async_organization_client_method_surface_is_async():
-    for method in ASYNC_METHODS:
-        assert inspect.iscoroutinefunction(getattr(AsyncOrganizationClient, method))
-        assert getattr(AsyncOrganizationClient, method) is not getattr(
-            OrganizationClient, method
+    def test_async_organization_client_validate_kind_stays_local(self):
+        assert (
+            AsyncOrganizationClient._validate_kind is OrganizationClient._validate_kind
+        )
+        assert not inspect.iscoroutinefunction(AsyncOrganizationClient._validate_kind)
+
+    async def test_async_organization_client_context_manager_smoke(self):
+        client = AsyncOrganizationClient(owner=OWNER, client=AsyncPolyaxonClientMock())
+
+        async with client as context_client:
+            assert context_client is client
+
+    async def test_refresh_data_awaits_api_and_mutates_state(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1Organization(name=None)
+        sdk_client.organizations_v1.get_organization = AsyncMock(return_value=response)
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+
+        await client.refresh_data()
+
+        sdk_client.organizations_v1.get_organization.assert_called_once_with(OWNER)
+        assert client.organization_data is response
+        assert client.organization_data.name == OWNER
+
+    async def test_refresh_data_returns_none_when_offline(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.organizations_v1.get_organization = AsyncMock()
+        client = AsyncOrganizationClient(
+            owner=OWNER, client=sdk_client, is_offline=True
         )
 
+        assert await client.refresh_data() is None
+        assert sdk_client.organizations_v1.get_organization.call_count == 0
 
-def test_async_organization_client_validate_kind_stays_local():
-    assert AsyncOrganizationClient._validate_kind is OrganizationClient._validate_kind
-    assert not inspect.iscoroutinefunction(AsyncOrganizationClient._validate_kind)
+    async def test_list_organizations_awaits_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListOrganizationsResponse(results=[])
+        sdk_client.organizations_v1.list_organizations = AsyncMock(
+            return_value=response
+        )
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
+        result = await client.list(limit=10, offset=5, query="q", sort="-created_at")
 
-@pytest.mark.asyncio
-async def test_async_organization_client_context_manager_smoke():
-    patch_settings()
-    client = AsyncOrganizationClient(owner=OWNER, client=AsyncPolyaxonClientMock())
+        assert result is response
+        sdk_client.organizations_v1.list_organizations.assert_called_once_with(
+            limit=10, offset=5, query="q", sort="-created_at"
+        )
 
-    async with client as context_client:
-        assert context_client is client
+    async def test_member_reads_await_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListOrganizationMembersResponse(results=[])
+        sdk_client.organizations_v1.list_organization_members = AsyncMock(
+            return_value=response
+        )
+        sdk_client.organizations_v1.get_organization_member = AsyncMock(
+            return_value=V1OrganizationMember(user="user1")
+        )
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
+        assert await client.list_members(limit=10) is response
+        assert (await client.get_member("user1")).user == "user1"
 
-@pytest.mark.asyncio
-async def test_refresh_data_awaits_api_and_mutates_state():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    response = V1Organization(name=None)
-    sdk_client.organizations_v1.get_organization = AsyncMock(return_value=response)
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        sdk_client.organizations_v1.list_organization_members.assert_called_once_with(
+            OWNER, limit=10
+        )
+        sdk_client.organizations_v1.get_organization_member.assert_called_once_with(
+            OWNER, "user1"
+        )
 
-    await client.refresh_data()
+    async def test_member_writes_do_not_pass_async_req(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        member = V1OrganizationMember(user="user1")
+        sdk_client.organizations_v1.create_organization_member = AsyncMock(
+            return_value=member
+        )
+        sdk_client.organizations_v1.update_organization_member = AsyncMock(
+            return_value=member
+        )
+        sdk_client.organizations_v1.patch_organization_member = AsyncMock(
+            return_value=member
+        )
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-    sdk_client.organizations_v1.get_organization.assert_called_once_with(OWNER)
-    assert client.organization_data is response
-    assert client.organization_data.name == OWNER
+        assert await client.create_member({"user": "user1"}, email="user@example.com")
+        assert await client.update_member("user1", {"role": "admin"})
+        assert await client.patch_member("user1", {"role": "member"})
 
+        for call in (
+            sdk_client.organizations_v1.create_organization_member.call_args,
+            sdk_client.organizations_v1.update_organization_member.call_args,
+            sdk_client.organizations_v1.patch_organization_member.call_args,
+        ):
+            assert "async_req" not in call[1]
 
-@pytest.mark.asyncio
-async def test_refresh_data_returns_none_when_offline():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_client.organizations_v1.get_organization = AsyncMock()
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client, is_offline=True)
+    async def test_delete_member_awaits_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.organizations_v1.delete_organization_member = AsyncMock(
+            return_value=None
+        )
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-    assert await client.refresh_data() is None
-    assert sdk_client.organizations_v1.get_organization.call_count == 0
+        assert await client.delete_member("user1") is None
+        sdk_client.organizations_v1.delete_organization_member.assert_called_once_with(
+            OWNER, "user1"
+        )
 
+    async def test_list_teams_awaits_api_with_extra_params(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.teams_v1.list_teams = AsyncMock(return_value=mock.Mock())
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-@pytest.mark.asyncio
-async def test_list_organizations_awaits_api():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    response = V1ListOrganizationsResponse(results=[])
-    sdk_client.organizations_v1.list_organizations = AsyncMock(return_value=response)
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        await client.list_teams(limit=10, bookmarks=True, mode="stats")
 
-    result = await client.list(limit=10, offset=5, query="q", sort="-created_at")
+        sdk_client.teams_v1.list_teams.assert_called_once_with(
+            OWNER, limit=10, bookmarks=True, mode="stats"
+        )
 
-    assert result is response
-    sdk_client.organizations_v1.list_organizations.assert_called_once_with(
-        limit=10, offset=5, query="q", sort="-created_at"
-    )
+    async def test_list_runs_awaits_organization_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListRunsResponse(results=[])
+        sdk_method = AsyncMock(return_value=response)
+        sdk_client.organizations_v1.get_organization_runs = sdk_method
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
+        result = await client.list_runs(query="status:running", limit=10)
 
-@pytest.mark.asyncio
-async def test_member_reads_await_api():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    response = V1ListOrganizationMembersResponse(results=[])
-    sdk_client.organizations_v1.list_organization_members = AsyncMock(
-        return_value=response
-    )
-    sdk_client.organizations_v1.get_organization_member = AsyncMock(
-        return_value=V1OrganizationMember(user="user1")
-    )
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        assert result is response
+        sdk_method.assert_called_once_with(OWNER, limit=10, query="status:running")
 
-    assert await client.list_members(limit=10) is response
-    assert (await client.get_member("user1")).user == "user1"
+    async def test_list_runs_awaits_team_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListRunsResponse(results=[])
+        sdk_method = AsyncMock(return_value=response)
+        sdk_client.teams_v1.get_team_runs = sdk_method
+        client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
 
-    sdk_client.organizations_v1.list_organization_members.assert_called_once_with(
-        OWNER, limit=10
-    )
-    sdk_client.organizations_v1.get_organization_member.assert_called_once_with(
-        OWNER, "user1"
-    )
+        result = await client.list_runs(query="status:running", limit=10)
 
+        assert result is response
+        sdk_method.assert_called_once_with(
+            OWNER, TEAM, limit=10, query="status:running"
+        )
 
-@pytest.mark.asyncio
-async def test_member_writes_do_not_pass_async_req():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    member = V1OrganizationMember(user="user1")
-    sdk_client.organizations_v1.create_organization_member = AsyncMock(
-        return_value=member
-    )
-    sdk_client.organizations_v1.update_organization_member = AsyncMock(
-        return_value=member
-    )
-    sdk_client.organizations_v1.patch_organization_member = AsyncMock(
-        return_value=member
-    )
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+    async def test_get_run_awaits_organization_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_method = AsyncMock(return_value=mock.Mock())
+        sdk_client.organizations_v1.get_organization_run = sdk_method
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-    assert await client.create_member({"user": "user1"}, email="user@example.com")
-    assert await client.update_member("user1", {"role": "admin"})
-    assert await client.patch_member("user1", {"role": "member"})
+        await client.get_run("run-uuid")
 
-    for call in (
-        sdk_client.organizations_v1.create_organization_member.call_args,
-        sdk_client.organizations_v1.update_organization_member.call_args,
-        sdk_client.organizations_v1.patch_organization_member.call_args,
-    ):
-        assert "async_req" not in call[1]
+        sdk_method.assert_called_once_with(OWNER, "run-uuid")
 
+    async def test_get_run_awaits_team_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_method = AsyncMock(return_value=mock.Mock())
+        sdk_client.teams_v1.get_team_run = sdk_method
+        client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
 
-@pytest.mark.asyncio
-async def test_delete_member_awaits_api():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_client.organizations_v1.delete_organization_member = AsyncMock(
-        return_value=None
-    )
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        await client.get_run("run-uuid")
 
-    assert await client.delete_member("user1") is None
-    sdk_client.organizations_v1.delete_organization_member.assert_called_once_with(
-        OWNER, "user1"
-    )
+        sdk_method.assert_called_once_with(OWNER, TEAM, "run-uuid")
 
+    async def test_approve_runs_awaits_organization_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_method = AsyncMock(return_value=None)
+        sdk_client.organizations_v1.approve_organization_runs = sdk_method
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-@pytest.mark.asyncio
-async def test_list_teams_awaits_api_with_extra_params():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_client.teams_v1.list_teams = AsyncMock(return_value=mock.Mock())
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        assert await client.approve_runs([RUN_UUID1, RUN_UUID2]) is None
 
-    await client.list_teams(limit=10, bookmarks=True, mode="stats")
-
-    sdk_client.teams_v1.list_teams.assert_called_once_with(
-        OWNER, limit=10, bookmarks=True, mode="stats"
-    )
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "owner, api_group, method, expected_args",
-    [
-        (OWNER, "organizations_v1", "get_organization_runs", (OWNER,)),
-        (
-            f"{OWNER}/{TEAM}",
-            "teams_v1",
-            "get_team_runs",
-            (OWNER, TEAM),
-        ),
-    ],
-)
-async def test_list_runs_awaits_correct_scope(owner, api_group, method, expected_args):
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    response = V1ListRunsResponse(results=[])
-    sdk_method = AsyncMock(return_value=response)
-    setattr(getattr(sdk_client, api_group), method, sdk_method)
-    client = AsyncOrganizationClient(owner=owner, client=sdk_client)
-
-    result = await client.list_runs(query="status:running", limit=10)
-
-    assert result is response
-    sdk_method.assert_called_once_with(*expected_args, limit=10, query="status:running")
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "owner, api_group, method, expected_args",
-    [
-        (OWNER, "organizations_v1", "get_organization_run", (OWNER, "run-uuid")),
-        (
-            f"{OWNER}/{TEAM}",
-            "teams_v1",
-            "get_team_run",
-            (OWNER, TEAM, "run-uuid"),
-        ),
-    ],
-)
-async def test_get_run_awaits_correct_scope(owner, api_group, method, expected_args):
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_method = AsyncMock(return_value=mock.Mock())
-    setattr(getattr(sdk_client, api_group), method, sdk_method)
-    client = AsyncOrganizationClient(owner=owner, client=sdk_client)
-
-    await client.get_run("run-uuid")
-
-    sdk_method.assert_called_once_with(*expected_args)
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "method_name, api_group, sdk_method_name, owner, expected_args, uses_body",
-    [
-        (
-            "approve_runs",
-            "organizations_v1",
-            "approve_organization_runs",
-            OWNER,
-            (OWNER,),
-            True,
-        ),
-        (
-            "approve_runs",
-            "teams_v1",
-            "approve_team_runs",
-            f"{OWNER}/{TEAM}",
-            (OWNER, TEAM),
-            False,
-        ),
-        (
-            "delete_runs",
-            "organizations_v1",
-            "delete_organization_runs",
-            OWNER,
-            (OWNER,),
-            True,
-        ),
-        (
-            "delete_runs",
-            "teams_v1",
-            "delete_team_runs",
-            f"{OWNER}/{TEAM}",
-            (OWNER, TEAM),
-            True,
-        ),
-    ],
-)
-async def test_run_batch_methods_await_correct_scope(
-    method_name,
-    api_group,
-    sdk_method_name,
-    owner,
-    expected_args,
-    uses_body,
-):
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_method = AsyncMock(return_value=None)
-    setattr(getattr(sdk_client, api_group), sdk_method_name, sdk_method)
-    client = AsyncOrganizationClient(owner=owner, client=sdk_client)
-
-    assert await getattr(client, method_name)([RUN_UUID1, RUN_UUID2]) is None
-
-    sdk_method.assert_called_once()
-    assert sdk_method.call_args[0][: len(expected_args)] == expected_args
-    if uses_body:
+        sdk_method.assert_called_once()
+        assert sdk_method.call_args[0][:1] == (OWNER,)
         payload = sdk_method.call_args[1]["body"]
-    else:
+        assert isinstance(payload, V1Uuids)
+        assert payload.uuids == [RUN_UUID1, RUN_UUID2]
+
+    async def test_approve_runs_awaits_team_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_method = AsyncMock(return_value=None)
+        sdk_client.teams_v1.approve_team_runs = sdk_method
+        client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
+
+        assert await client.approve_runs([RUN_UUID1, RUN_UUID2]) is None
+
+        sdk_method.assert_called_once()
+        assert sdk_method.call_args[0][:2] == (OWNER, TEAM)
         payload = sdk_method.call_args[0][-1]
-    assert isinstance(payload, V1Uuids)
-    assert payload.uuids == [RUN_UUID1, RUN_UUID2]
+        assert isinstance(payload, V1Uuids)
+        assert payload.uuids == [RUN_UUID1, RUN_UUID2]
 
+    async def test_delete_runs_awaits_organization_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_method = AsyncMock(return_value=None)
+        sdk_client.organizations_v1.delete_organization_runs = sdk_method
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-@pytest.mark.asyncio
-async def test_tag_runs_awaits_api_with_entities_tags():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_client.organizations_v1.tag_organization_runs = AsyncMock(return_value=None)
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        assert await client.delete_runs([RUN_UUID1, RUN_UUID2]) is None
 
-    assert await client.tag_runs([RUN_UUID1], ["tag1"]) is None
+        sdk_method.assert_called_once()
+        assert sdk_method.call_args[0][:1] == (OWNER,)
+        payload = sdk_method.call_args[1]["body"]
+        assert isinstance(payload, V1Uuids)
+        assert payload.uuids == [RUN_UUID1, RUN_UUID2]
 
-    body = sdk_client.organizations_v1.tag_organization_runs.call_args[1]["body"]
-    assert body.uuids == [RUN_UUID1]
-    assert body.tags == ["tag1"]
+    async def test_delete_runs_awaits_team_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_method = AsyncMock(return_value=None)
+        sdk_client.teams_v1.delete_team_runs = sdk_method
+        client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
 
+        assert await client.delete_runs([RUN_UUID1, RUN_UUID2]) is None
 
-@pytest.mark.asyncio
-async def test_transfer_runs_awaits_api_with_entities_transfer():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_client.teams_v1.transfer_team_runs = AsyncMock(return_value=None)
-    client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
+        sdk_method.assert_called_once()
+        assert sdk_method.call_args[0][:2] == (OWNER, TEAM)
+        payload = sdk_method.call_args[1]["body"]
+        assert isinstance(payload, V1Uuids)
+        assert payload.uuids == [RUN_UUID1, RUN_UUID2]
 
-    assert await client.transfer_runs(V1Uuids(uuids=[RUN_UUID1]), "project-b") is None
+    async def test_tag_runs_awaits_api_with_entities_tags(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.organizations_v1.tag_organization_runs = AsyncMock(return_value=None)
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-    sdk_client.teams_v1.transfer_team_runs.assert_called_once()
-    body = sdk_client.teams_v1.transfer_team_runs.call_args[1]["body"]
-    assert body.uuids == [RUN_UUID1]
-    assert body.project == "project-b"
+        assert await client.tag_runs([RUN_UUID1], ["tag1"]) is None
 
+        body = sdk_client.organizations_v1.tag_organization_runs.call_args[1]["body"]
+        assert body.uuids == [RUN_UUID1]
+        assert body.tags == ["tag1"]
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "owner, api_group, method, expected_args",
-    [
-        (
-            OWNER,
-            "organizations_v1",
-            "get_organization_versions",
-            (OWNER, V1ProjectVersionKind.MODEL),
-        ),
-        (
-            f"{OWNER}/{TEAM}",
-            "teams_v1",
-            "get_team_versions",
-            (OWNER, TEAM, V1ProjectVersionKind.MODEL),
-        ),
-    ],
-)
-async def test_list_versions_awaits_correct_scope(
-    owner, api_group, method, expected_args
-):
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    response = V1ListProjectVersionsResponse(results=[])
-    sdk_method = AsyncMock(return_value=response)
-    setattr(getattr(sdk_client, api_group), method, sdk_method)
-    client = AsyncOrganizationClient(owner=owner, client=sdk_client)
+    async def test_transfer_runs_awaits_api_with_entities_transfer(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.teams_v1.transfer_team_runs = AsyncMock(return_value=None)
+        client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
 
-    result = await client.list_versions(
-        kind=V1ProjectVersionKind.MODEL,
-        query="stage:prod",
-        limit=10,
-    )
+        assert (
+            await client.transfer_runs(V1Uuids(uuids=[RUN_UUID1]), "project-b") is None
+        )
 
-    assert result is response
-    sdk_method.assert_called_once_with(
-        *expected_args,
-        limit=10,
-        query="stage:prod",
-    )
+        sdk_client.teams_v1.transfer_team_runs.assert_called_once()
+        body = sdk_client.teams_v1.transfer_team_runs.call_args[1]["body"]
+        assert body.uuids == [RUN_UUID1]
+        assert body.project == "project-b"
 
+    async def test_list_versions_awaits_organization_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListProjectVersionsResponse(results=[])
+        sdk_method = AsyncMock(return_value=response)
+        sdk_client.organizations_v1.get_organization_versions = sdk_method
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-@pytest.mark.asyncio
-async def test_list_versions_validates_kind_locally():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_client.organizations_v1.get_organization_versions = AsyncMock()
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        result = await client.list_versions(
+            kind=V1ProjectVersionKind.MODEL,
+            query="stage:prod",
+            limit=10,
+        )
 
-    with pytest.raises(ValueError):
-        await client.list_versions(kind="wrong")
+        assert result is response
+        sdk_method.assert_called_once_with(
+            OWNER, V1ProjectVersionKind.MODEL, limit=10, query="stage:prod"
+        )
 
-    assert sdk_client.organizations_v1.get_organization_versions.call_count == 0
+    async def test_list_versions_awaits_team_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListProjectVersionsResponse(results=[])
+        sdk_method = AsyncMock(return_value=response)
+        sdk_client.teams_v1.get_team_versions = sdk_method
+        client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
 
+        result = await client.list_versions(
+            kind=V1ProjectVersionKind.MODEL,
+            query="stage:prod",
+            limit=10,
+        )
 
-@pytest.mark.asyncio
-async def test_version_shortcuts_await_list_versions():
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    sdk_client.organizations_v1.get_organization_versions = AsyncMock(
-        return_value=V1ListProjectVersionsResponse(results=[])
-    )
-    client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+        assert result is response
+        sdk_method.assert_called_once_with(
+            OWNER, TEAM, V1ProjectVersionKind.MODEL, limit=10, query="stage:prod"
+        )
 
-    await client.list_component_versions(limit=1)
-    await client.list_model_versions(limit=2)
-    await client.list_artifact_versions(limit=3)
+    async def test_list_versions_validates_kind_locally(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.organizations_v1.get_organization_versions = AsyncMock()
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-    calls = sdk_client.organizations_v1.get_organization_versions.call_args_list
-    assert calls[0][0] == (OWNER, V1ProjectVersionKind.COMPONENT)
-    assert calls[1][0] == (OWNER, V1ProjectVersionKind.MODEL)
-    assert calls[2][0] == (OWNER, V1ProjectVersionKind.ARTIFACT)
+        with self.assertRaises(ValueError):
+            await client.list_versions(kind="wrong")
 
+        assert sdk_client.organizations_v1.get_organization_versions.call_count == 0
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "owner, api_group, method, expected_args",
-    [
-        (
-            OWNER,
-            "organizations_v1",
-            "get_organization_runs_artifacts_lineage",
-            (OWNER,),
-        ),
-        (
-            f"{OWNER}/{TEAM}",
-            "teams_v1",
-            "get_team_runs_artifacts_lineage",
-            (OWNER, TEAM),
-        ),
-    ],
-)
-async def test_list_runs_artifacts_lineage_awaits_correct_scope(
-    owner, api_group, method, expected_args
-):
-    patch_settings()
-    sdk_client = AsyncPolyaxonClientMock()
-    response = V1ListRunArtifactsResponse(results=[])
-    sdk_method = AsyncMock(return_value=response)
-    setattr(getattr(sdk_client, api_group), method, sdk_method)
-    client = AsyncOrganizationClient(owner=owner, client=sdk_client)
+    async def test_version_shortcuts_await_list_versions(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.organizations_v1.get_organization_versions = AsyncMock(
+            return_value=V1ListProjectVersionsResponse(results=[])
+        )
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
 
-    result = await client.list_runs_artifacts_lineage(
-        name="artifact",
-        limit=10,
-        bookmarks=True,
-        mode="stats",
-    )
+        await client.list_component_versions(limit=1)
+        await client.list_model_versions(limit=2)
+        await client.list_artifact_versions(limit=3)
 
-    assert result is response
-    sdk_method.assert_called_once_with(
-        *expected_args,
-        limit=10,
-        name="artifact",
-        bookmarks=True,
-        mode="stats",
-    )
+        calls = sdk_client.organizations_v1.get_organization_versions.call_args_list
+        assert calls[0][0] == (OWNER, V1ProjectVersionKind.COMPONENT)
+        assert calls[1][0] == (OWNER, V1ProjectVersionKind.MODEL)
+        assert calls[2][0] == (OWNER, V1ProjectVersionKind.ARTIFACT)
+
+    async def test_list_runs_artifacts_lineage_awaits_organization_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListRunArtifactsResponse(results=[])
+        sdk_method = AsyncMock(return_value=response)
+        sdk_client.organizations_v1.get_organization_runs_artifacts_lineage = sdk_method
+        client = AsyncOrganizationClient(owner=OWNER, client=sdk_client)
+
+        result = await client.list_runs_artifacts_lineage(
+            name="artifact",
+            limit=10,
+            bookmarks=True,
+            mode="stats",
+        )
+
+        assert result is response
+        sdk_method.assert_called_once_with(
+            OWNER, limit=10, name="artifact", bookmarks=True, mode="stats"
+        )
+
+    async def test_list_runs_artifacts_lineage_awaits_team_api(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        response = V1ListRunArtifactsResponse(results=[])
+        sdk_method = AsyncMock(return_value=response)
+        sdk_client.teams_v1.get_team_runs_artifacts_lineage = sdk_method
+        client = AsyncOrganizationClient(owner=f"{OWNER}/{TEAM}", client=sdk_client)
+
+        result = await client.list_runs_artifacts_lineage(
+            name="artifact",
+            limit=10,
+            bookmarks=True,
+            mode="stats",
+        )
+
+        assert result is response
+        sdk_method.assert_called_once_with(
+            OWNER, TEAM, limit=10, name="artifact", bookmarks=True, mode="stats"
+        )

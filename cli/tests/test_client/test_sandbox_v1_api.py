@@ -1,9 +1,13 @@
 import json
 from mock import patch
+import os
 import pytest
+import tempfile
+from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock
 
 from polyaxon import schemas
+from polyaxon._contexts import paths as ctx_paths
 from polyaxon._schemas.client import ClientConfig
 from polyaxon._sdk.api.sandbox_v1_api import SandboxV1Api
 from polyaxon._sdk.async_client.api_client import AsyncApiClient
@@ -26,7 +30,7 @@ from polyaxon._sdk.schemas.v1_pty_list import V1PtyList
 from polyaxon._sdk.schemas.v1_resize_pty_request import V1ResizePtyRequest
 from polyaxon._sdk.schemas.v1_signal_request import V1SignalRequest
 from polyaxon._sdk.sync_client.api_client import ApiClient
-from polyaxon._utils.test_utils import patch_settings
+from polyaxon._utils.test_utils import BaseTestCase
 
 
 SANDBOX_SCHEMAS = [
@@ -66,72 +70,83 @@ class _Response:
 
 
 @pytest.mark.client_mark
-def test_public_sandbox_schema_exports():
-    for schema_cls in SANDBOX_SCHEMAS:
-        assert getattr(schemas, schema_cls.__name__) is schema_cls
+class TestSandboxV1Api(BaseTestCase, IsolatedAsyncioTestCase):
+    SET_AGENT_SETTINGS = True
 
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        patcher = patch.object(
+            ctx_paths,
+            "CONTEXT_USER_POLYAXON_PATH",
+            os.path.join(directory.name, ".polyaxon"),
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        super().setUp()
 
-@pytest.mark.client_mark
-def test_exec_bg_202_response_deserializes():
-    patch_settings()
-    api_client = ApiClient(ClientConfig(host="http://polyaxon").sdk_config)
-    response = _Response(
-        202,
-        {
-            "exec_id": "exec-1",
-            "pid": 12,
-            "started_at": "2026-01-01T00:00:00Z",
-            "tag": "build",
-        },
-    )
+    def test_public_sandbox_schema_exports(self):
+        for schema_cls in SANDBOX_SCHEMAS:
+            assert getattr(schemas, schema_cls.__name__) is schema_cls
 
-    with patch.object(api_client, "request", return_value=response):
-        result = SandboxV1Api(api_client).exec_bg(
-            namespace="ns",
-            owner="owner",
-            project="project",
-            uuid="run-uuid",
-            body=V1ExecBgRequest(command=["echo", "hi"]),
+    def test_exec_bg_202_response_deserializes(self):
+        api_client = ApiClient(ClientConfig(host="http://polyaxon").sdk_config)
+        self.addCleanup(api_client.close)
+        response = _Response(
+            202,
+            {
+                "exec_id": "exec-1",
+                "pid": 12,
+                "started_at": "2026-01-01T00:00:00Z",
+                "tag": "build",
+            },
         )
 
-    assert isinstance(result, V1ExecBgStart)
-    assert result.exec_id == "exec-1"
-    assert result.pid == 12
-    assert result.tag == "build"
+        with patch.object(api_client, "request", return_value=response):
+            result = SandboxV1Api(api_client).exec_bg(
+                namespace="ns",
+                owner="owner",
+                project="project",
+                uuid="run-uuid",
+                body=V1ExecBgRequest(command=["echo", "hi"]),
+            )
 
+        assert isinstance(result, V1ExecBgStart)
+        assert result.exec_id == "exec-1"
+        assert result.pid == 12
+        assert result.tag == "build"
 
-@pytest.mark.client_mark
-@pytest.mark.asyncio
-async def test_create_pty_201_response_deserializes_with_async_client():
-    patch_settings()
-    api_client = AsyncApiClient(ClientConfig(host="http://polyaxon").async_sdk_config)
-    response = _Response(
-        201,
-        {
-            "pty_id": "pty-1",
-            "pid": 13,
-            "state": "running",
-            "started_at": "2026-01-01T00:00:00Z",
-            "duration_ms": 0,
-            "last_activity": "2026-01-01T00:00:00Z",
-            "last_client_activity": "2026-01-01T00:00:00Z",
-            "attached": False,
-            "cols": 80,
-            "rows": 24,
-        },
-    )
-
-    with patch.object(api_client, "request", AsyncMock(return_value=response)):
-        result = await SandboxV1Api(api_client).create_pty(
-            namespace="ns",
-            owner="owner",
-            project="project",
-            uuid="run-uuid",
-            body=V1CreatePtyRequest(command=["sh"], cols=80, rows=24),
+    async def test_create_pty_201_response_deserializes_with_async_client(self):
+        api_client = AsyncApiClient(
+            ClientConfig(host="http://polyaxon").async_sdk_config
+        )
+        self.addAsyncCleanup(api_client.close)
+        response = _Response(
+            201,
+            {
+                "pty_id": "pty-1",
+                "pid": 13,
+                "state": "running",
+                "started_at": "2026-01-01T00:00:00Z",
+                "duration_ms": 0,
+                "last_activity": "2026-01-01T00:00:00Z",
+                "last_client_activity": "2026-01-01T00:00:00Z",
+                "attached": False,
+                "cols": 80,
+                "rows": 24,
+            },
         )
 
-    await api_client.close()
-    assert isinstance(result, V1Pty)
-    assert result.pty_id == "pty-1"
-    assert result.duration_ms == 0
-    assert result.cols == 80
+        with patch.object(api_client, "request", AsyncMock(return_value=response)):
+            result = await SandboxV1Api(api_client).create_pty(
+                namespace="ns",
+                owner="owner",
+                project="project",
+                uuid="run-uuid",
+                body=V1CreatePtyRequest(command=["sh"], cols=80, rows=24),
+            )
+
+        assert isinstance(result, V1Pty)
+        assert result.pty_id == "pty-1"
+        assert result.duration_ms == 0
+        assert result.cols == 80
