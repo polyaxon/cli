@@ -1,3 +1,6 @@
+SYMLINK_MODES = ("resolve-safe", "skip", "error", "resolve-all")
+
+
 INIT_COMMAND = (
     "`polyaxon init -p PROJECT_NAME [--polyaxonfile] [--git-connection] [--git-url]`"
 )

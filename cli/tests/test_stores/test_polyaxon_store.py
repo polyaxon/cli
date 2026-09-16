@@ -1,10 +1,12 @@
 from mock import mock, patch
 import os
 import pytest
+import tarfile
 import uuid
 
 from clipped.utils.paths import check_or_create_path
 from polyaxon import settings
+from polyaxon._managers.ignore import IgnoreConfigManager
 from polyaxon._utils.test_utils import AsyncMock, BaseTestCase, patch_settings
 from polyaxon.client import AsyncPolyaxonStore, PolyaxonStore, RunClient
 from polyaxon.exceptions import PolyaxonClientException
@@ -19,6 +21,80 @@ class StoreClient:
     def __init__(self, run_uuid):
         self.run_uuid = run_uuid
         self.client = mock.Mock(config=StoreConfig())
+
+
+@pytest.mark.parametrize("mode", ["resolve-safe", "resolve-all", "skip"])
+def test_upload_directory_symlink_archive_contents(tmp_path, monkeypatch, mode):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".polyaxonignore").write_text("*.skip\n")
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "content.txt").write_text("content")
+    (source / "ignored.skip").write_text("excluded")
+    (tmp_path / "file-link").symlink_to("source/content.txt")
+    (tmp_path / "directory-link").symlink_to("source", target_is_directory=True)
+    store = PolyaxonStore(StoreClient(uuid.uuid4().hex))
+    captured = {}
+
+    def capture_upload(url, files, files_size, json_data):
+        stream = files[0][1][1]
+        captured["path"] = stream.name
+        with tarfile.open(fileobj=stream, mode="r:gz") as archive:
+            captured["members"] = {
+                member.name: member for member in archive.getmembers()
+            }
+            captured["contents"] = {
+                member.name: archive.extractfile(member).read()
+                for member in archive.getmembers()
+                if member.isfile()
+            }
+        return "uploaded"
+
+    store.upload = mock.Mock(side_effect=capture_upload)
+    files = IgnoreConfigManager.get_unignored_filepaths(
+        str(tmp_path), symlink_mode=mode
+    )
+    result = store.upload_dir(
+        url="url",
+        files=files,
+        relative_to=str(tmp_path),
+        dereference=mode in ("resolve-safe", "resolve-all"),
+        recursive=False,
+    )
+
+    assert result == "uploaded"
+    assert not os.path.exists(captured["path"])
+    members = captured["members"]
+    assert captured["contents"]["source/content.txt"] == b"content"
+    assert not any(name.endswith(".skip") for name in members)
+    if mode in ("resolve-safe", "resolve-all"):
+        assert members["directory-link"].isdir()
+        assert captured["contents"]["directory-link/content.txt"] == b"content"
+        assert captured["contents"]["file-link"] == b"content"
+        assert all(member.isfile() or member.isdir() for member in members.values())
+    else:
+        assert "file-link" not in members
+        assert "directory-link" not in members
+
+
+def test_upload_file_list_retains_archive_defaults(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "content.txt").write_text("content")
+    link = tmp_path / "link"
+    link.symlink_to("source", target_is_directory=True)
+    store = PolyaxonStore(StoreClient(uuid.uuid4().hex))
+
+    def capture_upload(url, files, files_size, json_data):
+        with tarfile.open(fileobj=files[0][1][1], mode="r:gz") as archive:
+            assert set(archive.getnames()) == {"source", "source/content.txt", "link"}
+            assert archive.getmember("link").issym()
+
+    store.upload = mock.Mock(side_effect=capture_upload)
+    store.upload_dir(
+        url="url", files=[str(source), str(link)], relative_to=str(tmp_path)
+    )
+    store.upload.assert_called_once()
 
 
 class FakeContent:

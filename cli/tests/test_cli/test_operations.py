@@ -5,8 +5,10 @@ import json
 from mock import patch
 from pathlib import Path
 import pytest
+from requests import Request, Response
 import tempfile
 
+import click
 from click.testing import CliRunner
 from rich.console import Console
 from rich.theme import Theme
@@ -14,7 +16,8 @@ from rich.theme import Theme
 from clipped.formatting import Printer
 from clipped.utils.json import orjson_loads
 from polyaxon._cli.init import init
-from polyaxon._cli.operations import ops
+from polyaxon._cli.operations import ops, upload
+from polyaxon._client.run import UPLOAD_SKIPPED
 from polyaxon._managers.project import ProjectConfigManager
 from polyaxon._managers.run import RunConfigManager
 from polyaxon._managers.user import UserConfigManager
@@ -22,6 +25,8 @@ from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_user import V1User
+from polyaxon._utils.cli_constants import SYMLINK_MODES
+from polyaxon.exceptions import PolyaxonClientException
 from tests.test_cli.utils import BaseCommandTestCase
 
 
@@ -30,6 +35,206 @@ LIST_RUN_UUIDS = (RUN_UUID, "85f07474-715c-4f04-b801-dbd0466d749e")
 K8S_EXIT_7 = (
     '{"status":"Failure","details":{"causes":[{"reason":"ExitCode","message":"7"}]}}'
 )
+
+
+@pytest.mark.cli_mark
+class TestCliUploads(BaseCommandTestCase):
+    @patch("polyaxon._client.run.RunClient")
+    def test_upload_symlink_options(self, run_client):
+        run_client.return_value.upload_artifacts_dir.return_value.status_code = 200
+        for mode in (None, *SYMLINK_MODES):
+            with self.subTest(mode=mode):
+                args = ["upload", "-p", "owner/project", "-uid", RUN_UUID]
+                if mode:
+                    args += ["--symlink-mode", mode, "--symlink-report-limit", "2"]
+                result = self.runner.invoke(ops, args)
+
+                assert result.exit_code == 0, (result.output, result.exception)
+                kwargs = run_client.return_value.upload_artifacts_dir.call_args.kwargs
+                assert kwargs["symlink_mode"] == (mode or "skip")
+                assert kwargs["symlink_report_limit"] == (2 if mode else 20)
+                run_client.return_value.upload_artifact.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_upload_symlink_invalid_options(self, run_client):
+        for options in (
+            ["--symlink-mode", "unknown"],
+            ["--symlink-mode", "preserve"],
+            ["--symlink-report-limit", "-1"],
+        ):
+            result = self.runner.invoke(ops, ["upload", *options])
+            assert result.exit_code == 2, result.output
+            run_client.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_upload_symlink_preflight_error(self, run_client):
+        run_client.return_value.upload_artifacts_dir.side_effect = (
+            PolyaxonClientException(
+                "link -> ../outside: link target is outside the upload root. "
+                "Use --symlink-mode skip to omit it."
+            )
+        )
+        result = self.runner.invoke(
+            ops, ["upload", "-p", "owner/project", "-uid", RUN_UUID]
+        )
+        assert result.exit_code == 1, result.output
+        output = " ".join(result.output.split())
+        assert "link -> ../outside" in output
+        assert "--symlink-mode skip" in output
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_upload_explicit_file_symlink_keeps_single_file_behavior(self, run_client):
+        run_client.return_value.upload_artifact.return_value.status_code = 200
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "content.txt"
+            source.write_text("content")
+            link = Path(directory) / "link"
+            link.symlink_to(source)
+            result = self.runner.invoke(
+                ops,
+                [
+                    "upload",
+                    "-p",
+                    "owner/project",
+                    "-uid",
+                    RUN_UUID,
+                    "--path-from",
+                    str(link),
+                    "--symlink-mode",
+                    "error",
+                ],
+            )
+            assert result.exit_code == 0, (result.output, result.exception)
+            assert run_client.return_value.upload_artifact.call_args.kwargs[
+                "filepath"
+            ] == str(link)
+            run_client.return_value.upload_artifacts_dir.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_upload_symlink_defaults_for_indirect_invocation(self, run_client):
+        run_client.return_value.upload_artifacts_dir.return_value.status_code = 200
+
+        @click.command()
+        @click.pass_context
+        def upload_code(ctx):
+            ctx.invoke(upload, project="owner/project", uid=RUN_UUID)
+
+        result = self.runner.invoke(upload_code, obj={})
+        assert result.exit_code == 0, (result.output, result.exception)
+        kwargs = run_client.return_value.upload_artifacts_dir.call_args.kwargs
+        assert kwargs["symlink_mode"] == "skip"
+        assert kwargs["symlink_report_limit"] == 20
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_upload_status_failure_does_not_hide_preflight_error(self, run_client):
+        run_client.return_value.upload_artifacts_dir.side_effect = (
+            PolyaxonClientException(
+                "link target is outside the upload root; token=fake-token"
+            )
+        )
+        run_client.return_value.log_failed.side_effect = PolyaxonClientException(
+            "status update unavailable"
+        )
+
+        @click.command()
+        @click.pass_context
+        def upload_code(ctx):
+            ctx.invoke(upload, project="owner/project", uid=RUN_UUID, sync_failure=True)
+
+        result = self.runner.invoke(upload_code, obj={})
+        assert result.exit_code == 1, result.output
+        output = " ".join(result.output.split())
+        assert "outside the upload root" in output
+        assert "status update unavailable" in output
+        assert "token=fake-token" in output
+        run_client.return_value.log_failed.assert_called_once_with(
+            reason="OperationCli",
+            message="Operation failed uploading artifacts. "
+            "Check CLI output for details.",
+        )
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_empty_selection_is_distinct_from_missing_upload_response(self, run_client):
+        for sync_failure in (False, True):
+            for response in (UPLOAD_SKIPPED, None):
+                with self.subTest(sync_failure=sync_failure, response=response):
+                    client = run_client.return_value
+                    client.reset_mock()
+                    client.upload_artifacts_dir.return_value = response
+                    args = ["upload", "-p", "owner/project", "-uid", RUN_UUID]
+                    if sync_failure:
+                        args.append("--sync-failure")
+                    result = self.runner.invoke(ops, args)
+                    empty = response is UPLOAD_SKIPPED
+                    assert result.exit_code == (0 if empty and not sync_failure else 1)
+                    output = " ".join(result.output.split())
+                    assert "Artifacts uploaded" not in output
+                    if sync_failure:
+                        client.log_failed.assert_called_once()
+                        status = client.log_failed.call_args.kwargs
+                        assert status["reason"] == (
+                            "UploadEmpty" if empty else "OperationCli"
+                        )
+                        assert status["message"] in output
+                    else:
+                        client.log_failed.assert_not_called()
+                        if empty:
+                            assert "upload skipped" in output
+                    if empty:
+                        assert "Upload is empty" in output
+                        assert "folder contains files" in output
+                        assert "ignore rules" in output
+                        assert "symlinks" in output
+                        assert "--symlink-mode resolve-safe" in output
+                        assert "--symlink-mode resolve-all" in output
+                    else:
+                        assert "No upload response was received" in output
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_empty_upload_status_failure_preserves_details(self, run_client):
+        client = run_client.return_value
+        client.upload_artifacts_dir.return_value = UPLOAD_SKIPPED
+        client.log_failed.side_effect = PolyaxonClientException(
+            "status update unavailable"
+        )
+        result = self.runner.invoke(
+            ops,
+            ["upload", "-p", "owner/project", "-uid", RUN_UUID, "--sync-failure"],
+        )
+        assert result.exit_code == 1, result.output
+        output = " ".join(result.output.split())
+        assert "status update unavailable" in output
+        assert "Upload is empty" in output
+        assert "--symlink-mode resolve-safe" in output
+
+    @patch("polyaxon._client.run.RunClient")
+    def test_upload_failed_response_includes_body_without_request_headers(
+        self, run_client
+    ):
+        client = run_client.return_value
+        response = Response()
+        response.status_code = 500
+        response._content = b"Upload unavailable"
+        response.request = Request(
+            "POST",
+            "https://example.test/upload",
+            headers={"Authorization": "Bearer fake-token"},
+        ).prepare()
+        client.upload_artifacts_dir.return_value = response
+        result = self.runner.invoke(
+            ops,
+            ["upload", "-p", "owner/project", "-uid", RUN_UUID, "--sync-failure"],
+        )
+        assert result.exit_code == 1, result.output
+        client.log_failed.assert_called_once_with(
+            reason="OperationCli",
+            message="Error uploading artifacts. Status: 500. "
+            "Error: b'Upload unavailable'.",
+        )
+        output = " ".join(result.output.split())
+        assert "Status: 500" in output
+        assert "Upload unavailable" in output
+        assert "fake-token" not in client.log_failed.call_args.kwargs["message"]
 
 
 @pytest.mark.cli_mark

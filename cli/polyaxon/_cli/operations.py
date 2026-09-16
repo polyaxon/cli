@@ -34,6 +34,7 @@ from polyaxon._cli.options import (
 )
 from polyaxon._cli.utils import CommandSeparatorCommand, handle_output, write_stream
 from polyaxon._constants.metadata import META_IS_EXTERNAL, META_PORTS, META_REWRITE_PATH
+from polyaxon._utils.cli_constants import SYMLINK_MODES
 from polyaxon.api import (
     EXTERNAL_V1,
     REWRITE_EXTERNAL_V1,
@@ -2070,10 +2071,35 @@ def artifacts(
     default=False,
     help="Optional, to ignore the agent host.",
 )
+@click.option(
+    "--symlink-mode",
+    type=click.Choice(SYMLINK_MODES),
+    default="skip",
+    show_default=True,
+    help="Directory uploads: resolve-safe materializes internal targets; skip omits "
+    "links; error rejects links; resolve-all also includes targets outside "
+    "--path-from. Skipped links are reported in a warning.",
+)
+@click.option(
+    "--symlink-report-limit",
+    type=click.IntRange(min=0),
+    default=20,
+    show_default=True,
+    help="Maximum symlinks listed in a directory-upload report. Use 0 for totals only.",
+)
 @click.pass_context
 @clean_outputs
 def upload(
-    ctx, project, uid, path_from, path_to, sync_failure, agent, ignore_agent_host
+    ctx,
+    project,
+    uid,
+    path_from,
+    path_to,
+    sync_failure,
+    agent,
+    ignore_agent_host,
+    symlink_mode,
+    symlink_report_limit,
 ):
     """Upload runs' artifacts.
 
@@ -2091,7 +2117,7 @@ def upload(
     $ polyaxon ops upload -uid 8aac02e3a62a4f0aaa257c59da5eab80 --path-to="path/to/upload/to"
     """
     from polyaxon._cli.context import resolve_run
-    from polyaxon._client.run import RunClient
+    from polyaxon._client.run import UPLOAD_SKIPPED, RunClient
 
     owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
@@ -2100,6 +2126,7 @@ def upload(
         show_context=ctx.obj.get("show_context", False),
     )
     is_file = os.path.isfile(path_from) if path_from else False
+    client = None
     try:
         client = RunClient(
             owner=owner,
@@ -2123,6 +2150,8 @@ def upload(
                 relative_to=path_from,
                 agent=agent,
                 ignore_agent_host=ignore_agent_host,
+                symlink_mode=symlink_mode,
+                symlink_report_limit=symlink_report_limit,
             )
     except (
         ApiException,
@@ -2131,24 +2160,51 @@ def upload(
         PolyaxonShouldExitError,
         PolyaxonClientException,
     ) as e:
+        if sync_failure and client is not None:
+            try:
+                client.log_failed(
+                    reason="OperationCli",
+                    message="Operation failed uploading artifacts. "
+                    "Check CLI output for details.",
+                )
+            except Exception as status_error:
+                Printer.error("Could not mark the run failed: {}".format(status_error))
         handle_cli_error(
             e, message="Could not upload artifacts for run `{}`".format(run_uuid)
         )
         sys.exit(1)
 
-    if response and response.status_code == 200:
+    if not is_file and response is UPLOAD_SKIPPED:
+        reason = "UploadEmpty"
+        message = (
+            "Upload is empty: no files selected from `{}` "
+            "with symlink mode `{}`. Check that the folder contains files and "
+            "that ignore rules do not exclude them. If the folder contains "
+            "symlinks, use --symlink-mode resolve-safe to include targets within "
+            "the upload folder, or --symlink-mode resolve-all only if you intend "
+            "to include targets outside it."
+        ).format(path_from or ".", symlink_mode)
+        if not sync_failure:
+            Printer.print("No artifacts selected; upload skipped. " + message)
+            return
+    elif response and response.status_code == 200:
         Printer.success("Artifacts uploaded")
+        return
     else:
-        if sync_failure:
-            client.log_failed(
-                reason="OperationCli", message="Operation failed uploading artifacts"
-            )
-        message = "Error uploading artifacts. "
-        if response:
-            message += "Status: {}. Error: {}.".format(
+        reason = "OperationCli"
+        message = "Error uploading artifacts."
+        if response is not None:
+            message += " Status: {}. Error: {}.".format(
                 response.status_code, response.content
             )
-        Printer.error(message, sys_exit=True)
+        else:
+            message += " No upload response was received."
+    if sync_failure:
+        try:
+            client.log_failed(reason=reason, message=message)
+        except Exception as status_error:
+            Printer.error("Could not mark the run failed: {}".format(status_error))
+    Printer.error(message, sys_exit=True)
 
 
 @ops.command()

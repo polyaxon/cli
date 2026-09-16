@@ -304,7 +304,15 @@ class PolyaxonStore:
                 show_progress=show_progress,
             )
 
-    def upload_dir(self, url: str, files: List[str], connection: str = None, **kwargs):
+    def upload_dir(
+        self,
+        url: str,
+        files: List[str],
+        connection: str = None,
+        dereference: bool = False,
+        recursive: bool = True,
+        **kwargs,
+    ):
         path = kwargs.get("path", "")
         json_data = {
             "untar": True,
@@ -315,7 +323,11 @@ class PolyaxonStore:
             json_data["connection"] = connection
         dirname = os.path.basename(path) if path else DEFAULT_UPLOADS_PATH
         with create_tarfile_from_path(
-            files, dirname, relative_to=kwargs.get("relative_to", None)
+            files,
+            dirname,
+            relative_to=kwargs.get("relative_to", None),
+            dereference=dereference,
+            recursive=recursive,
         ) as filepath:
             with get_files_by_paths("upload_file", [filepath]) as (files, files_size):
                 return self.upload(

@@ -8,6 +8,7 @@ from urllib3.exceptions import HTTPError
 
 from clipped.formatting import Printer
 from polyaxon._cli.options import OPTIONS_NAME, OPTIONS_PROJECT
+from polyaxon._utils.cli_constants import SYMLINK_MODES
 from polyaxon.logger import clean_outputs
 
 
@@ -39,6 +40,8 @@ def _run(
     output: Optional[str] = None,
     local: Optional[bool] = False,
     executor: Optional["RunnerKind"] = None,
+    symlink_mode: str = "skip",
+    symlink_report_limit: int = 20,
 ):
     from polyaxon._cli.dashboard import get_dashboard_url, get_project_subpath_url
     from polyaxon._cli.errors import handle_cli_error
@@ -177,6 +180,8 @@ def _run(
             path_to=path_to,
             path_from=path_from,
             sync_failure=True,
+            symlink_mode=symlink_mode,
+            symlink_report_limit=symlink_report_limit,
         )
 
     def upload_mounts(run_uuid: str):
@@ -333,6 +338,22 @@ def _run(
     "To upload to root path you can use `/`, "
     "otherwise the values should start without the separator, "
     "e.g. `uploads`, `code`, `dataset/images/values`, ...",
+)
+@click.option(
+    "--symlink-mode",
+    type=click.Choice(SYMLINK_MODES),
+    default="skip",
+    show_default=True,
+    help="Directory uploads via --upload or mounts: skip omits links; resolve-safe "
+    "uploads internal target contents; resolve-all also includes external targets; "
+    "error rejects links. Skipped links are reported in a warning.",
+)
+@click.option(
+    "--symlink-report-limit",
+    type=click.IntRange(min=0),
+    default=20,
+    show_default=True,
+    help="Maximum symlinks listed per directory upload. Use 0 for totals only.",
 )
 @click.option(
     "--watch",
@@ -496,6 +517,8 @@ def run(
     git_revision,
     ignore_template,
     output,
+    symlink_mode,
+    symlink_report_limit,
 ):
     """Run polyaxonfile specification.
 
@@ -545,6 +568,11 @@ def run(
 
     \b
     $ polyaxon run ... -u -u-from ./code -u-to code
+
+    Uploading the contents of symlinks whose targets are inside the upload directory
+
+    \b
+    $ polyaxon run ... -u --symlink-mode resolve-safe
 
     Mounting multiple paths using -m
 
@@ -665,4 +693,6 @@ def run(
         shell=shell,
         local=local,
         executor=executor,
+        symlink_mode=symlink_mode,
+        symlink_report_limit=symlink_report_limit,
     )

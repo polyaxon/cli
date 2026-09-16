@@ -3,7 +3,8 @@ import pytest
 from types import SimpleNamespace
 import uuid
 
-from polyaxon._client.run import RunClient, _serialize_event_names
+from polyaxon import settings
+from polyaxon._client.run import UPLOAD_SKIPPED, RunClient, _serialize_event_names
 from polyaxon._schemas.lifecycle import (
     V1ProjectVersionKind,
     V1StatusCondition,
@@ -13,7 +14,7 @@ from polyaxon._sdk.schemas.v1_list_runs_response import V1ListRunsResponse
 from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
-from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon._utils.test_utils import BaseTestCase, patch_settings
 from polyaxon.exceptions import PolyaxonClientException
 from traceml.artifacts import V1RunArtifact
 
@@ -25,6 +26,120 @@ class SyncPolyaxonClientMock:
     def __init__(self):
         self.projects_v1 = MagicMock()
         self.runs_v1 = MagicMock()
+
+
+@pytest.fixture
+def upload_client():
+    patch_settings()
+    sdk_client = SyncPolyaxonClientMock()
+    sdk_client.config = settings.CLIENT_CONFIG
+    client = RunClient(
+        owner="owner",
+        project="project",
+        run_uuid=uuid.uuid4().hex,
+        client=sdk_client,
+        manual_exceptions_handling=True,
+    )
+    client._run_data = V1Run(settings=V1RunSettings())
+    return client
+
+
+@pytest.mark.parametrize("mode", [None, "resolve-safe", "resolve-all", "skip"])
+def test_upload_directory_symlink_archive_controls(
+    upload_client, tmp_path, monkeypatch, mode
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "content.txt").write_text("content")
+    (tmp_path / "link").symlink_to("content.txt")
+    upload_client.upload_artifacts = MagicMock(return_value="uploaded")
+    options = {"symlink_mode": mode} if mode else {}
+
+    result = upload_client.upload_artifacts_dir(
+        str(tmp_path), relative_to=str(tmp_path), symlink_report_limit=1, **options
+    )
+
+    assert result == "uploaded"
+    kwargs = upload_client.upload_artifacts.call_args.kwargs
+    assert kwargs["dereference"] == (mode in ("resolve-safe", "resolve-all"))
+    assert kwargs["recursive"] is False
+    assert kwargs["relative_to"] == str(tmp_path)
+    assert (str(tmp_path / "link") in kwargs["files"]) == (
+        mode in ("resolve-safe", "resolve-all")
+    )
+
+
+@pytest.mark.parametrize("mode", ["resolve-safe", "error"])
+def test_upload_directory_symlink_preflight_prevents_post(
+    upload_client, tmp_path, monkeypatch, mode
+):
+    monkeypatch.chdir(tmp_path)
+    root = tmp_path / "root"
+    root.mkdir()
+    outside = tmp_path / "outside.txt"
+    outside.write_text("external")
+    (root / "link").symlink_to(outside)
+    upload_client.store.upload = MagicMock()
+
+    with pytest.raises(PolyaxonClientException):
+        upload_client.upload_artifacts_dir(
+            str(root),
+            relative_to=str(tmp_path),
+            symlink_mode=mode,
+        )
+
+    upload_client.store.upload.assert_not_called()
+    upload_client.client.runs_v1.get_run.assert_not_called()
+
+
+def test_upload_directory_without_links_needs_no_mode(
+    upload_client, tmp_path, monkeypatch
+):
+    monkeypatch.chdir(tmp_path)
+    content = tmp_path / "content.txt"
+    content.write_text("content")
+    upload_client.upload_artifacts = MagicMock(return_value="uploaded")
+    assert upload_client.upload_artifacts_dir(str(tmp_path)) == "uploaded"
+    assert upload_client.upload_artifacts.call_args.kwargs["files"] == [str(content)]
+
+
+@pytest.mark.parametrize("contents", ["links", "empty", "ignored", "missing"])
+def test_upload_directory_empty_selection_skips_request(
+    upload_client, tmp_path, monkeypatch, contents
+):
+    monkeypatch.chdir(tmp_path)
+    root = tmp_path / "upload"
+    if contents != "missing":
+        root.mkdir()
+    if contents == "links":
+        target = tmp_path / "content.txt"
+        target.write_text("content")
+        (root / "link").symlink_to(target)
+        (root / "broken-link").symlink_to("missing")
+    elif contents == "ignored":
+        (tmp_path / ".polyaxonignore").write_text("*.skip\n")
+        (root / "content.skip").write_text("ignored")
+    upload_client.upload_artifacts = MagicMock()
+
+    result = upload_client.upload_artifacts_dir(str(root))
+
+    assert result is (None if contents == "missing" else UPLOAD_SKIPPED)
+    upload_client.upload_artifacts.assert_not_called()
+    upload_client.client.runs_v1.get_run.assert_not_called()
+
+
+@pytest.mark.parametrize("controls", [{}, {"dereference": True, "recursive": False}])
+def test_upload_artifacts_forwards_archive_controls(upload_client, controls):
+    upload_client._store = MagicMock()
+
+    result = upload_client.upload_artifacts(
+        ["content.txt"], ignore_agent_host=True, ignore_store=True, **controls
+    )
+
+    assert result is upload_client.store.upload_dir.return_value
+    kwargs = upload_client.store.upload_dir.call_args.kwargs
+    assert kwargs["files"] == ["content.txt"]
+    assert kwargs["dereference"] == controls.get("dereference", False)
+    assert kwargs["recursive"] == controls.get("recursive", True)
 
 
 @pytest.mark.client_mark

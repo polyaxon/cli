@@ -95,6 +95,7 @@ if TYPE_CHECKING:
 
 
 EventNames = Union[str, Set[str], List[str]]
+UPLOAD_SKIPPED = object()
 
 
 def _serialize_event_names(names: EventNames) -> str:
@@ -1836,11 +1837,25 @@ class RunClient(ClientMixin):
         agent: Optional[str] = None,
         ignore_agent_host: bool = False,
         ignore_store: Optional[bool] = None,
+        symlink_mode: str = "skip",
+        symlink_report_limit: int = 20,
     ):
         """Uploads a full directory to the run's artifacts store path.
 
         > This function crawls all files to upload and uses `upload_artifacts`,
         > it also respects `.polyaxonignore` file if it exists or the default ignore pattern.
+
+        Directory uploads skip file and directory symlinks by default and warn.
+        Previously, file symlinks were archived as links and directory symlinks
+        were omitted silently. Use resolve-safe to upload internal target contents,
+        or resolve-all to include external targets. Both resolving modes reject
+        broken targets and directory cycles. Ignored links are excluded first.
+
+        If an existing directory has no selected files, no upload request is made.
+        The result is UPLOAD_SKIPPED, which can be imported from polyaxon.client
+        and compared by identity. The CLI reports a skipped upload unless
+        sync_failure is enabled, as it is for run uploads and mounts. In that
+        case, it marks the run failed with reason UploadEmpty.
 
         Args:
             dirpath: str, the dirpath to upload.
@@ -1851,19 +1866,28 @@ class RunClient(ClientMixin):
             agent: str, optional, uuid reference of an agent to use.
             ignore_agent_host: bool, optional, flag to ignore agent host
             ignore_store: bool, optional, flag to ignore the ignore store and upload all files under the dirpath.
+            symlink_mode: str, resolve-safe materializes internal targets; skip omits
+                links; error rejects links; resolve-all also materializes external
+                targets. Defaults to skip, with a warning listing skipped links.
+            symlink_report_limit: int, maximum number of links listed in a report.
         Returns:
-            str.
+            Upload response, or UPLOAD_SKIPPED when an existing directory has no
+            selected files. No upload request is made in that case.
         """
         files = IgnoreConfigManager.get_unignored_filepaths(
-            path=dirpath, addtional_patterns=IgnoreConfigManager.get_push_patterns()
+            path=dirpath,
+            addtional_patterns=IgnoreConfigManager.get_push_patterns(),
+            symlink_mode=symlink_mode,
+            symlink_report_limit=symlink_report_limit,
         )
         if not files:
             logger.warning(
-                "No files detected under the path %s.\n"
-                "This could happen if the path is empty or "
-                "ignored by one of the patterns in the ignore manager.",
+                "No files selected under the path %s.\n"
+                "The directory may be empty, ignored, or contain only skipped symlinks.",
                 dirpath,
             )
+            if os.path.isdir(dirpath or "."):
+                return UPLOAD_SKIPPED
             return
         return self.upload_artifacts(
             files=files,
@@ -1873,6 +1897,8 @@ class RunClient(ClientMixin):
             agent=agent,
             ignore_agent_host=ignore_agent_host,
             ignore_store=ignore_store,
+            dereference=symlink_mode in ("resolve-safe", "resolve-all"),
+            recursive=False,
         )
 
     @client_handler(check_no_op=True, check_offline=True)
@@ -1885,6 +1911,8 @@ class RunClient(ClientMixin):
         agent: Optional[str] = None,
         ignore_agent_host: bool = False,
         ignore_store: Optional[bool] = None,
+        dereference: bool = False,
+        recursive: bool = True,
     ):
         """Uploads multiple artifacts to the run's artifacts store path.
 
@@ -1897,8 +1925,11 @@ class RunClient(ClientMixin):
             agent: str, optional, uuid reference of an agent to use.
             ignore_agent_host: bool, optional, flag to ignore agent host
             ignore_store: bool, optional, flag to ignore the ignore store and upload all files under the dirpath.
+            dereference: bool, materialize symlink targets in the archive.
+            recursive: bool, include directory descendants. Directory uploads disable
+                recursion after selecting files with their ignore and symlink policies.
         Returns:
-            str.
+            Upload response.
         """
         if not files:
             logger.warning("No files to upload to %s.", path)
@@ -1931,6 +1962,8 @@ class RunClient(ClientMixin):
             files=files,
             overwrite=overwrite,
             relative_to=relative_to,
+            dereference=dereference,
+            recursive=recursive,
             **params,
         )
 
