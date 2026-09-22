@@ -38,6 +38,7 @@ def get_op_specification(
     validate_params: bool = True,
     preset_files: Optional[List[str]] = None,
     git_init: Optional[V1Init] = None,
+    strict_params: Optional[bool] = None,
 ) -> V1Operation:
     if cache and nocache:
         raise PolyaxonfileError("Received both 'cache' and 'nocache'")
@@ -82,6 +83,8 @@ def get_op_specification(
     # Handle approval logic
     if approved is not None:
         op_data["isApproved"] = to_bool(approved)
+    if strict_params is not None:
+        op_data["strictParams"] = strict_params
 
     if config and config.kind == kinds.COMPONENT:
         op_data["component"] = config.to_dict()

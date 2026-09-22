@@ -50,6 +50,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         description: str, optional
         tags: List[str], optional
         presets: str, optional
+        strict_params: bool, optional, effective default is false
         queue: str, optional
         namespace: str, optional
         cache: [V1Cache](/docs/references/polyaxonfile/helpers/cache/), optional
@@ -88,6 +89,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     >>>   description:
     >>>   tags:
     >>>   presets:
+    >>>   strictParams:
     >>>   queue:
     >>>   namespace:
     >>>   cache:
@@ -120,6 +122,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     >>>     description="test",
     >>>     tags=["test"],
     >>>     presets=["test"],
+    >>>     strict_params=True,
     >>>     queue="test",
     >>>     namespace="test",
     >>>     cache=V1Cache(...),
@@ -241,6 +244,32 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     >>>   presets: [test]
     ```
 
+    ### strictParams
+
+    > **Note**: Available in Polyaxon 2.18+.
+
+    Set to `true` to reject undeclared params unless they explicitly set
+    `contextOnly: true`. The effective policy is strict if either the component or
+    operation is strict after presets and overrides have been applied.
+
+    ```yaml
+    >>> operation:
+    >>>   strictParams: true
+    ```
+
+    Setting this field to `false` cannot relax a strict component. Omitting it
+    preserves the operation's policy during patching. If neither object enables
+    strict mode, undeclared params become context values by default.
+
+    `polyaxon run` and `polyaxon check` accept `--strict-params` and
+    `--no-strict-params` to set this operation field. Additional `-f` preset files
+    retain their existing patch order. The compiled operation stores the effective
+    policy, which is preserved for scheduled runs and matrix children. Independently
+    defined DAG operations use their own policies.
+
+    See [params](/docs/references/polyaxonfile/specification/params/) for examples
+    and version compatibility.
+
     ### queue
 
     The [queue](/docs/scheduling/scheduling-strategies/queues/) to use for this operation run,
@@ -317,10 +346,11 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### params
 
-    The [params](/docs/references/polyaxonfile/specification/params/)  to pass to the component,
-    they will be validated against the inputs/outputs.
-    If a parameter is passed and the component does not define a corresponding inputs/outputs,
-    a validation error will be raised unless the param has the `contextOnly` flag enabled.
+    The [params](/docs/references/polyaxonfile/specification/params/) to pass to the
+    component. Params matching declared inputs/outputs retain their validation.
+    In Polyaxon 2.18+, undeclared params become context values by default. With
+    `strictParams: true`, they must explicitly set `contextOnly: true`.
+    An explicit `contextOnly: false` requires a matching declaration in either mode.
 
     ```yaml
     >>> operation:

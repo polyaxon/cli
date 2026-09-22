@@ -147,27 +147,19 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             run_config.run.container.args == "video_prediction_train --loss=bar --flag"
         )
 
-        # Adding extra value raises
-        with self.assertRaises(PolyaxonValidationError):
-            run_config.validate_params(
-                params={
-                    "loss": {"value": "bar"},
-                    "flag": {"value": True},
-                    "value": {"value": 1.1},
-                }
-            )
-        with self.assertRaises(PolyaxonfileError):
-            check_polyaxonfile(
-                polyaxonfile=os.path.abspath(
-                    "tests/fixtures/typing/required_inputs.yml"
-                ),
-                params={"loss": {"value": "bar"}, "value": {"value": 1.1}},
-                is_cli=False,
-            )
-
-        # Adding non valid params raises
-        with self.assertRaises(PolyaxonValidationError):
-            run_config.validate_params(params={"value": {"value": 1.1}})
+        # Extra values are inferred as context params
+        param_specs = {
+            p.name: p
+            for p in run_config.validate_params(params={"value": {"value": 1.1}})
+        }
+        assert param_specs["value"].is_context is True
+        assert param_specs["value"].param.value == 1.1
+        op_config = check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/typing/required_inputs.yml"),
+            params={"loss": "bar", "flag": True, "value": 1.1},
+            is_cli=False,
+        )
+        assert op_config.params["value"].value == 1.1
 
     def test_required_inputs_with_arg_format(self):
         run_config = V1CompiledOperation.read(
@@ -223,27 +215,19 @@ class TestPolyaxonfileWithTypes(BaseTestCase):
             run_config.run.container.args == "video_prediction_train --loss=bar --flag"
         )
 
-        # Adding extra value raises
-        with self.assertRaises(PolyaxonValidationError):
-            run_config.validate_params(
-                params={
-                    "loss": {"value": "bar"},
-                    "flag": {"value": True},
-                    "value": {"value": 1.1},
-                }
-            )
-        with self.assertRaises(PolyaxonfileError):
-            check_polyaxonfile(
-                polyaxonfile=os.path.abspath(
-                    "tests/fixtures/typing/required_inputs.yml"
-                ),
-                params={"loss": {"value": "bar"}, "value": {"value": 1.1}},
-                is_cli=False,
-            )
-
-        # Adding non valid params raises
-        with self.assertRaises(PolyaxonValidationError):
-            run_config.validate_params(params={"value": {"value": 1.1}})
+        # Extra values are inferred as context params
+        param_specs = {
+            p.name: p
+            for p in run_config.validate_params(params={"value": {"value": 1.1}})
+        }
+        assert param_specs["value"].is_context is True
+        assert param_specs["value"].param.value == 1.1
+        op_config = check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/typing/required_inputs.yml"),
+            params={"loss": "bar", "flag": True, "value": 1.1},
+            is_cli=False,
+        )
+        assert op_config.params["value"].value == 1.1
 
     def test_matrix_file_passes_int_float_types(self):
         plxfile = check_polyaxonfile(

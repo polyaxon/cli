@@ -91,6 +91,7 @@ def check_polyaxonfile(
     approved: Optional[Union[int, str, bool]] = None,
     git_init: Optional[V1Init] = None,
     ignore_template: bool = False,
+    strict_params: Optional[bool] = None,
 ):
     if sum([1 for i in [python_module, url, hub] if i]) > 1:
         message = (
@@ -185,6 +186,7 @@ def check_polyaxonfile(
                 validate_params=validate_params,
                 preset_files=polyaxonfile,
                 git_init=git_init,
+                strict_params=strict_params,
             )
         if verbose and is_cli:
             Printer.success("Polyaxonfile valid")

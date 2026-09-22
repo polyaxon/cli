@@ -22,6 +22,7 @@ class Sections:
     OUTPUTS = "outputs"
     CONTEXTS = "contexts"
     PARAMS = "params"
+    STRICT_PARAMS = "strictParams"
     CONNECTIONS = "connections"
     RUN = "run"
     RUN_PATCH = "runPatch"
@@ -50,6 +51,7 @@ class Sections:
         TAGS,
         IS_APPROVED,
         PARAMS,
+        STRICT_PARAMS,
         IS_PRESET,
         PRESETS,
         PATCH_STRATEGY,

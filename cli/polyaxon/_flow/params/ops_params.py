@@ -1,3 +1,4 @@
+import copy
 from typing import Dict, List, Optional, Union
 
 from polyaxon._flow.io.io import V1IO
@@ -20,6 +21,7 @@ def validate_params(
     check_all_refs: bool = False,
     extra_info: Optional[str] = None,
     parse_values: bool = False,
+    strict_params: bool = False,
 ) -> List[ParamSpec]:
     """
     Validates Params given inputs, and an optional context.
@@ -32,18 +34,18 @@ def validate_params(
     """
     contexts_by_keys = {k.name: k for k in contexts or []}
 
-    def parse_param(k, v) -> V1Param:
-        if not isinstance(v, V1Param):
-            v = V1Param.read(v, config_type=".yaml") if v is not None else V1Param()
-        if v and k in contexts_by_keys:
-            v.context_only = True
-            if v.to_init is None:
-                v.to_init = contexts_by_keys[k].to_init
-            if v.to_env is None:
-                v.to_env = contexts_by_keys[k].to_env
-            if v.connection is None:
-                v.connection = contexts_by_keys[k].connection
-        return v
+    def parse_param(v) -> V1Param:
+        v = copy.deepcopy(v)
+        if isinstance(v, V1Param):
+            return v
+        if v is None or v == {}:
+            return V1Param()
+        return V1Param.read(v, config_type=".yaml")
+
+    def raise_param_error(message: str):
+        if extra_info:
+            message += " Please check: {}".format(extra_info)
+        raise PolyaxonValidationError(message)
 
     def validate_matrix(io: V1IO) -> bool:
         if isinstance(matrix, V1Mapping):
@@ -55,12 +57,12 @@ def validate_params(
             return True
         return False
 
-    params = params or {}
-    params = {k: parse_param(k, params[k]) for k in params}
+    params = dict(params or {})
     # Extend with params coming from joins
     params.update(
         {k: v for j in (joins or []) for k, v in j.params.items() if k not in params}
     )
+    params = {k: parse_param(v) for k, v in params.items()}
 
     if requires_params(inputs, outputs):
         if not is_template and not params and not matrix:
@@ -72,21 +74,11 @@ def validate_params(
                 message += " Please check: {}".format(extra_info)
 
             raise PolyaxonValidationError(message)
-    elif not accepts_params(inputs, outputs) and params:
-        extra_params = set(params.keys()) - {
-            p for p in params if params[p].context_only
-        }
-        if extra_params:
-            message = "Received unexpected params `{}`".format(extra_params)
-            if extra_info:
-                message += " Please check: {}".format(extra_info)
-            raise PolyaxonValidationError(message)
-
     matrix = matrix or {}
     inputs = inputs or []
     outputs = outputs or []
 
-    processed_params = []
+    processed_params = set()
     validated_params = []
 
     for inp in inputs:
@@ -113,8 +105,7 @@ def validate_params(
                     if not param_spec.param.to_env and param_value.to_env:
                         param_spec.param.to_env = inp.to_env
             validated_params.append(param_spec)
-            if not param_spec.param.context_only:
-                processed_params.append(inp.name)
+            processed_params.add(inp.name)
         elif matrix and validate_matrix(inp):
             pass
         elif not (inp.is_optional or inp.delay_validation or is_template):
@@ -167,8 +158,7 @@ def validate_params(
                     if not param_spec.param.to_env and param_value.to_env:
                         param_spec.param.to_env = out.to_env
             validated_params.append(param_spec)
-            if not param_spec.param.context_only:
-                processed_params.append(out.name)
+            processed_params.add(out.name)
         # No validation for outputs we assume that the op might populate a context or send a metric
         elif out.delay_validation is not False:
             validated_params.append(
@@ -188,47 +178,71 @@ def validate_params(
                     arg_format=out.arg_format,
                 )
             )
-    extra_params = set(params.keys()) - set(processed_params)
-    context_params = {p for p in params if params[p].context_only}
-    extra_invalid_params = extra_params - context_params
-    if extra_invalid_params:
-        message = "Received unexpected params `{}`".format(extra_invalid_params)
-        if extra_info:
-            message += " Please check: {}".format(extra_info)
-        raise PolyaxonValidationError(message)
+    extra_params = [p for p in params if p not in processed_params]
+    for name in extra_params:
+        param_value = params[name]
+        if param_value.context_only is False:
+            raise_param_error(
+                "Param `{}` requires a matching input/output declaration.".format(name)
+            )
+        if strict_params and param_value.context_only is not True:
+            raise_param_error(
+                "Received undeclared param `{}`; declare an input/output or set "
+                "`contextOnly: true`.".format(name)
+            )
 
-    # Add all (extra) context params that were not processed during the IO check
-    for p in contexts_by_keys:
-        if p in extra_params:
-            param_value = params[p]
+        context_io = contexts_by_keys.get(name)
+        if context_io:
+            if param_value.to_init is None:
+                param_value.to_init = context_io.to_init
+            if param_value.to_env is None:
+                param_value.to_env = context_io.to_env
+            if param_value.connection is None:
+                param_value.connection = context_io.connection
+
+        if param_value.is_join_ref:
+            param_spec = ParamSpec(
+                name=name,
+                param=param_value,
+                type=None,
+                is_flag=None,
+                is_list=None,
+                is_context=True,
+                is_requested=True,
+                arg_format=None,
+            )
+        else:
             param_spec = param_value.get_spec(
-                name=p,
+                name=name,
                 iotype=None,
                 is_flag=None,
                 is_list=None,
                 is_context=True,
                 arg_format=None,
             )
-            validated_params.append(param_spec)
-        else:
-            context_io = contexts_by_keys[p]
-            validated_params.append(
-                ParamSpec(
-                    name=p,
-                    param=V1Param(
-                        value=context_io.value,
-                        connection=context_io.connection,
-                        to_init=context_io.to_init,
-                        to_env=context_io.to_env,
-                    ),
-                    type=None,
-                    is_flag=None,
-                    is_list=None,
-                    is_context=True,
-                    is_requested=True,
-                    arg_format=None,
-                )
+        validated_params.append(param_spec)
+
+    declared_params = {io.name for io in inputs + outputs}
+    for name, context_io in contexts_by_keys.items():
+        if name in params or name in declared_params:
+            continue
+        validated_params.append(
+            ParamSpec(
+                name=name,
+                param=V1Param(
+                    value=context_io.value,
+                    connection=context_io.connection,
+                    to_init=context_io.to_init,
+                    to_env=context_io.to_env,
+                ),
+                type=None,
+                is_flag=None,
+                is_list=None,
+                is_context=True,
+                is_requested=True,
+                arg_format=None,
             )
+        )
     return validated_params
 
 

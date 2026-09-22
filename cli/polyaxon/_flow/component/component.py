@@ -38,6 +38,7 @@ class V1Component(
         description: str, optional
         tags: List[str], optional
         presets: List[str], optional
+        strict_params: bool, optional, effective default is false
         queue: str, optional
         namespace: str, optional
         cache: [V1Cache](/docs/references/polyaxonfile/helpers/cache/), optional
@@ -61,6 +62,7 @@ class V1Component(
     >>>   description:
     >>>   tags:
     >>>   presets:
+    >>>   strictParams:
     >>>   queue:
     >>>   namespace:
     >>>   cache:
@@ -88,6 +90,7 @@ class V1Component(
     >>>     description="test",
     >>>     tags=["test"],
     >>>     presets=["test"],
+    >>>     strict_params=True,
     >>>     queue="test",
     >>>     namespace="test",
     >>>     cache=V1Cache(...),
@@ -181,6 +184,27 @@ class V1Component(
     >>> component:
     >>>   presets: [test]
     ```
+
+    ### strictParams
+
+    > **Note**: Available in Polyaxon 2.18+.
+
+    Set to `true` to require params to match declared inputs/outputs unless they
+    explicitly set `contextOnly: true`. Declared IO validation always applies.
+    With the default permissive policy, undeclared params become context values.
+
+    ```yaml
+    >>> component:
+    >>>   strictParams: true
+    ```
+
+    Presets and overrides are applied before the component and operation policies
+    are combined. Either can enable strict mode; an operation with
+    `strictParams: false` cannot relax a strict component. Omitting the field
+    preserves existing policy when patching.
+
+    See [params](/docs/references/polyaxonfile/specification/params/) for examples,
+    CLI overrides, and version compatibility.
 
     ### queue
 

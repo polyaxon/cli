@@ -191,13 +191,57 @@ class TestPolyaxonfiles(BaseTestCase):
             {"name": "foo", "mount_path": "~/.aws/credentials", "readOnly": True}
         ]
 
-    def test_passing_params_to_no_io_overrides_polyaxonfiles_raises(self):
-        with self.assertRaises(PolyaxonfileError):
+    def test_passing_params_to_no_io_overrides_polyaxonfiles(self):
+        op_config = check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
+            params={"flag": True, "loss": "some-loss"},
+            is_cli=False,
+        )
+        assert op_config.params["flag"].value is True
+        assert op_config.params["loss"].value == "some-loss"
+        assert "strictParams" not in op_config.to_dict()
+
+        op_config = check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
+            params={"flag": True, "loss": "some-loss"},
+            strict_params=False,
+            is_cli=False,
+        )
+        assert op_config.to_dict()["strictParams"] is False
+
+        with self.assertRaises(PolyaxonfileError) as error:
             check_polyaxonfile(
                 polyaxonfile=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
                 params={"flag": True, "loss": "some-loss"},
+                strict_params=True,
                 is_cli=False,
             )
+        assert isinstance(error.exception.__cause__, PolyaxonValidationError)
+        assert "undeclared param" in str(error.exception.__cause__)
+
+    def test_strict_params_preserves_preset_order(self):
+        for strict_params in (None, False):
+            op_config = check_polyaxonfile(
+                polyaxonfile=[
+                    os.path.abspath("tests/fixtures/plain/simple_job.yml"),
+                    os.path.abspath("tests/fixtures/plain/strict_params_preset.yml"),
+                ],
+                strict_params=strict_params,
+                is_cli=False,
+            )
+            assert op_config.strict_params is True
+
+        with self.assertRaises(PolyaxonfileError) as error:
+            check_polyaxonfile(
+                polyaxonfile=[
+                    os.path.abspath("tests/fixtures/plain/simple_job.yml"),
+                    os.path.abspath("tests/fixtures/plain/strict_params_preset.yml"),
+                ],
+                params={"flag": True, "loss": "some-loss"},
+                is_cli=False,
+            )
+        assert isinstance(error.exception.__cause__, PolyaxonValidationError)
+        assert "undeclared param" in str(error.exception.__cause__)
 
     def test_passing_params_overrides_polyaxonfiles(self):
         run_config = CompiledOperationSpecification.read(

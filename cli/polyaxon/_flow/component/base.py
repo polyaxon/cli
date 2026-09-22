@@ -26,6 +26,7 @@ class BaseComponent(BaseSchemaModel):
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
     presets: Optional[List[StrictStr]] = None
+    strict_params: Optional[bool] = Field(alias="strictParams", default=None)
     queue: Optional[StrictStr] = None
     namespace: Optional[StrictStr] = None
     cache: Optional[Union[V1Cache, RefField]] = None

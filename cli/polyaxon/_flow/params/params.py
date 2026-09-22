@@ -256,7 +256,7 @@ class ParamValueMixin:
 
 
 class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
-    """Params can provide values to inputs/outputs.
+    """Params provide values to declared inputs/outputs or to the operation context.
 
     Params can be passed in several ways
      * literal values that the user sets manually.
@@ -266,9 +266,10 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
      * a reference from an upstream operation in the context of a DAG.
 
 
-    When a param is passed from the CLI or directly in the YAML/Python specification,
-    it will be validated against the [inputs/outputs](/docs/references/polyaxonfile/specification/io/)
-    defined in the [component](/docs/references/polyaxonfile/specification/component/)
+    Params matching the [inputs/outputs](/docs/references/polyaxonfile/specification/io/)
+    declared by the [component](/docs/references/polyaxonfile/specification/component/)
+    are validated against those declarations. Other params follow the `strictParams`
+    policy described below.
 
     Args:
         value: any
@@ -344,6 +345,87 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     >>>     "outputs-path": V1Param(ref="ops.upstream_job1", value="outputs.images_path")
     >>> }
     ```
+
+    ## Undeclared params
+
+    > **Note**: The permissive default and `strictParams` are available in Polyaxon
+    > 2.18+. Use CLI and server versions that support this policy, and an SDK version
+    > that supports the field when submitting it through an SDK. Older validators
+    > may reject undeclared params or `strictParams`. Polyaxonfile `version` stays `1.1`.
+
+    By default, a param without a matching input/output declaration becomes a context
+    value. This applies whether the component has no IO, empty IO lists, or declared
+    IO alongside extra params. Required values, defaults, types, and constraints on
+    declared IO still apply.
+
+    ```yaml
+    >>> version: 1.1
+    >>> kind: operation
+    >>> params:
+    >>>   count: 3
+    >>>   message: hello
+    >>> component:
+    >>>   inputs:
+    >>>     - name: count
+    >>>       type: int
+    >>>   run:
+    >>>     kind: job
+    >>>     container:
+    >>>       image: busybox:1.36
+    >>>       command: [sh, '-c']
+    >>>       args: ['echo "count={{ count }} message={{ message }}"']
+    ```
+
+    This operation prints `count=3 message=hello`. The compiled operation keeps
+    `count` in `inputs` and `message` in `contexts`; it does not create an input
+    declaration for `message`. After resolution, both values are recorded in
+    `Run.inputs`: `{"count": 3, "message": "hello"}`.
+
+    Explicit and inferred context values are recorded the same way, including
+    resolved references. Declared output params keep their output recording
+    behavior. Context inference does not export environment variables or create
+    outputs or artifacts.
+
+    ### Strict mode
+
+    Set `strictParams: true` on a component or operation to reject undeclared params
+    unless they explicitly set `contextOnly: true`. This catches misspelled param
+    names that the permissive default would accept as context values.
+
+    To make the example above strict, keep its component and use these operation
+    fields:
+
+    ```yaml
+    >>> strictParams: true
+    >>> params:
+    >>>   count: 3
+    >>>   message:
+    >>>     value: hello
+    >>>     contextOnly: true
+    ```
+
+    After presets and overrides are applied, strict mode is enabled if either the
+    component or the operation enables it. An operation with `strictParams: false`
+    cannot relax a strict component. Omitting the field preserves the existing
+    policy during patching; it does not override it with `false`.
+
+    ### CLI and Python overrides
+
+    In Polyaxon 2.18+, `polyaxon run` and `polyaxon check` accept `--strict-params`
+    and `--no-strict-params` to set the operation policy:
+
+    ```bash
+    polyaxon check -f polyaxonfile.yaml --strict-params
+    polyaxon run -f polyaxonfile.yaml --no-strict-params -P message=hello
+    ```
+
+    Leaving both flags out preserves the specification's policy. A strict component
+    remains strict with `--no-strict-params`. Additional `-f` preset files follow
+    the existing patch order and can override the operation flag.
+
+    Python callers can pass `strict_params=True`, `False`, or `None` to
+    `check_polyaxonfile` with the same behavior. CLI `-P` values start as strings;
+    declared IO controls their type conversion.
 
     ## Fields
 
@@ -445,9 +527,22 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
     ### contextOnly
 
-    A flag to signal to Polyaxon that this param should not be validated
-    against the inputs/outputs, and it's only used to resolve some
-    information and inject it into the context.
+    Explicitly allow an undeclared param as a context value, including in strict
+    mode. A matching input/output declaration always takes precedence: the value
+    is validated and bound to that IO, even with `contextOnly: true`.
+
+    In Polyaxon 2.18+, an omitted or `null` flag follows the effective `strictParams`
+    policy. An explicit `false` requires a matching input/output declaration in
+    either mode. For example, this param requires a declared `count` IO:
+
+    ```yaml
+    >>> params:
+    >>>   count:
+    >>>     value: 3
+    >>>     contextOnly: false
+    ```
+
+    To pass an undeclared context value in strict mode:
 
     ```yaml
     >>> params:
@@ -464,9 +559,8 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     >>>          strides: [1, 1]
     ```
 
-    Polyaxon will not check if this param was required by an input/output,
-    and will inject it automatically in the context to be used.
-    You can use for example `{{ convolutions.conv1 }}` in the specification.
+    Without a matching IO declaration, `convolutions` is available in the context.
+    For example, use `{{ convolutions.conv1 }}` in the specification.
 
     ### connection
 
@@ -507,7 +601,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
 
     value: Optional[Any] = None
     ref: Optional[StrictStr] = None
-    context_only: Optional[bool] = Field(alias="contextOnly", default=False)
+    context_only: Optional[bool] = Field(alias="contextOnly", default=None)
     connection: Optional[StrictStr] = None
     to_init: Optional[bool] = Field(alias="toInit", default=None)
     to_env: Optional[StrictStr] = Field(alias="toEnv", default=None)

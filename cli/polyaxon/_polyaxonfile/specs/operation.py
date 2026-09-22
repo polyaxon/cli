@@ -1,5 +1,6 @@
 from typing import Dict, Optional, Type
 
+from clipped.utils.bools import to_bool
 from clipped.utils.lists import to_list
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.io.io import V1IO
@@ -43,6 +44,9 @@ class OperationSpecification(BaseSpecification):
                 "Please make sure that the polyaxonfile was correctly resolved "
                 "before to calling this operation."
             )
+        effective_strict_params = to_bool(
+            component.strict_params, handle_none=True
+        ) or to_bool(config.strict_params, handle_none=True)
         if config.run_patch:
             patch_strategy = (
                 preset_patch_strategy
@@ -120,7 +124,9 @@ class OperationSpecification(BaseSpecification):
             {cls.KIND: kinds.COMPILED_OPERATION},
         ]
         compiled = V1CompiledOperation.read(values)  # type: V1CompiledOperation
-        return compiled.patch(patch_compiled, strategy=config.patch_strategy)
+        compiled = compiled.patch(patch_compiled, strategy=config.patch_strategy)
+        compiled.strict_params = effective_strict_params
+        return compiled
 
     @classmethod
     def read(cls, values, partial: bool = False, is_preset: bool = False):

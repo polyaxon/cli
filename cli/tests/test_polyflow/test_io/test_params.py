@@ -146,6 +146,20 @@ class TestShortFormParams(BaseTestCase):
 
 @pytest.mark.polyflow_mark
 class TestV1Params(BaseTestCase):
+    def test_context_only_preserves_author_intent(self):
+        for config_dict in ({"value": "test"}, {"value": "test", "contextOnly": None}):
+            param = V1Param.from_dict(config_dict)
+
+            assert param.context_only is None
+            assert "contextOnly" not in param.to_dict()
+
+        for context_only in (False, True):
+            param = V1Param.from_dict({"value": "test", "contextOnly": context_only})
+
+            assert param.context_only is context_only
+            assert param.to_dict()["contextOnly"] is context_only
+            assert V1Param.from_dict(param.to_dict()).context_only is context_only
+
     def test_missing_value_param_config(self):
         param = V1Param.from_dict({})
         assert param.value is None

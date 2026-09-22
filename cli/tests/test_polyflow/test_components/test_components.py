@@ -4,6 +4,8 @@ from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.tz import now
 from polyaxon import types
 from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
+from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.params import ops_params
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._utils.test_utils import BaseTestCase
@@ -12,6 +14,32 @@ from polyaxon.exceptions import PolyaxonValidationError
 
 @pytest.mark.components_mark
 class TestComponentsConfigs(BaseTestCase):
+    def test_strict_params_preserves_author_intent(self):
+        run = {"kind": V1RunKind.JOB, "container": {"image": "test"}}
+        configurations = (
+            (V1Component, {"run": run}),
+            (V1Operation, {"component": {"run": run}}),
+            (V1CompiledOperation, {"run": run}),
+        )
+
+        for config_cls, config_dict in configurations:
+            config = config_cls.from_dict(config_dict)
+
+            assert config.strict_params is None
+            assert "strictParams" not in config.to_dict()
+
+            for strict_params in (False, True):
+                config = config_cls.from_dict(
+                    {**config_dict, "strictParams": strict_params}
+                )
+
+                assert config.strict_params is strict_params
+                assert config.to_dict()["strictParams"] is strict_params
+                assert (
+                    config_cls.from_dict(config.to_dict()).strict_params
+                    is strict_params
+                )
+
     def test_passing_params_declarations_raises(self):
         config_dict = {
             "params": {"foo": {"value": "bar"}},
@@ -311,6 +339,7 @@ class TestComponentsConfigs(BaseTestCase):
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
+                strict_params=True,
             )
         # inputs - short-form (GitHub issue #895)
         with self.assertRaises(PolyaxonValidationError):
@@ -319,6 +348,7 @@ class TestComponentsConfigs(BaseTestCase):
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
+                strict_params=True,
             )
 
         # outputs - full-form
@@ -333,6 +363,7 @@ class TestComponentsConfigs(BaseTestCase):
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
+                strict_params=True,
             )
         # outputs - short-form (GitHub issue #895)
         with self.assertRaises(PolyaxonValidationError):
@@ -341,6 +372,7 @@ class TestComponentsConfigs(BaseTestCase):
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
+                strict_params=True,
             )
 
     def test_param_validation_with_mismatched_inputs(self):

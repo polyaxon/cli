@@ -10,12 +10,53 @@ from polyaxon._flow.params.params import V1Param
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._utils.test_utils import BaseTestCase
-from polyaxon.exceptions import PolyaxonSchemaError
+from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
 from polyaxon.schemas import V1Statuses
 
 
 @pytest.mark.workflow_mark
 class TestWorkflowV1Dags(BaseTestCase):
+    def test_dag_operations_use_their_own_strict_params(self):
+        run = {"kind": V1RunKind.JOB, "container": {"image": "test"}}
+        config = V1Dag.from_dict(
+            {
+                "kind": V1RunKind.DAG,
+                "operations": [
+                    {
+                        "name": "permissive",
+                        "params": {"extra": {"value": 1}},
+                        "component": {"run": run},
+                    },
+                    {
+                        "name": "strict",
+                        "strictParams": False,
+                        "params": {"extra": {"value": 1, "contextOnly": True}},
+                        "component": {"strictParams": True, "run": run},
+                    },
+                ],
+            }
+        )
+        config.process_dag()
+        config.validate_dag()
+        config.process_components()
+
+        strict_config = V1Dag.from_dict(
+            {
+                "kind": V1RunKind.DAG,
+                "operations": [
+                    {
+                        "name": "strict",
+                        "params": {"extra": {"value": 1}},
+                        "component": {"strictParams": True, "run": run},
+                    }
+                ],
+            }
+        )
+        strict_config.process_dag()
+        strict_config.validate_dag()
+        with self.assertRaisesRegex(PolyaxonValidationError, "undeclared param"):
+            strict_config.process_components()
+
     def test_wrong_pipelines_ops(self):
         config_dict = {"operations": "foo"}
         with self.assertRaises(ValidationError):
@@ -1645,6 +1686,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 },
                 {
                     "name": "B",
+                    "strictParams": True,
                     "dependencies": ["A"],
                     "params": {
                         "param1": {"value": "outputs.x", "ref": "ops.A"},
@@ -1685,6 +1727,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 },
                 {
                     "name": "C",
+                    "strictParams": True,
                     "joins": [
                         {
                             "query": "name: build_template",
@@ -1715,6 +1758,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 {
                     "dagRef": "job-template",
                     "name": "B",
+                    "strictParams": True,
                     "dependencies": ["A"],
                     "params": {
                         "param1": {"value": "outputs.x", "ref": "ops.A"},
@@ -2325,6 +2369,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 {
                     "dagRef": "job-template",
                     "name": "B",
+                    "strictParams": True,
                     "dependencies": ["A"],
                     "params": {"param1": {"value": "outputs.x", "ref": "ops.A"}},
                 },
@@ -2356,6 +2401,7 @@ class TestWorkflowV1Dags(BaseTestCase):
                 {
                     "dagRef": "job-template",
                     "name": "B",
+                    "strictParams": True,
                     "dependencies": ["A"],
                     "joins": [
                         {

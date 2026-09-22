@@ -17,6 +17,39 @@ from tests.test_cli.utils import BaseCommandTestCase
 class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._cli.run._run")
     @patch("polyaxon._cli.context.resolve_project")
+    def test_run_strict_params(self, resolve_project, run_operation):
+        resolve_project.return_value = ("owner", None, "project")
+        cases = (
+            ([], None),
+            (["--strict-params"], True),
+            (["--no-strict-params"], False),
+        )
+        for options, strict_params in cases:
+            with self.subTest(strict_params=strict_params):
+                run_operation.reset_mock()
+                result = self.runner.invoke(
+                    run,
+                    [
+                        "--project=owner/project",
+                        "--file=tests/fixtures/plain/simple_job.yml",
+                        "-P",
+                        "extra=1",
+                        *options,
+                    ],
+                )
+                if strict_params:
+                    assert result.exit_code == 1, result.output
+                    assert "undeclared param" in result.output
+                    run_operation.assert_not_called()
+                else:
+                    assert result.exit_code == 0, (result.output, result.exception)
+                    run_operation.assert_called_once()
+                    op_spec = run_operation.call_args.kwargs["op_spec"]
+                    assert op_spec.strict_params is strict_params
+                    assert op_spec.params["extra"].value == "1"
+
+    @patch("polyaxon._cli.run._run")
+    @patch("polyaxon._cli.context.resolve_project")
     def test_run_without_cache_option(self, resolve_project, run_operation):
         resolve_project.return_value = ("owner", None, "project")
 

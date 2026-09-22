@@ -12,6 +12,7 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.types.ref_or_obj import RefField
+from clipped.utils.bools import to_bool
 from polyaxon import types
 from polyaxon._contexts import sections as ctx_sections
 import polyaxon._flow.dags as dags
@@ -557,13 +558,15 @@ class V1Dag(BaseRun):
 
         for op in self.operations:
             if op.has_component_reference:
-                component_ref = op.definition.name
-                outputs = op.definition.outputs
-                inputs = op.definition.inputs
+                component = op.definition
+                component_ref = component.name
+                outputs = component.outputs
+                inputs = component.inputs
             elif op.has_dag_reference:
                 component_ref = op.definition.name
-                outputs = self._components_by_names[component_ref].outputs
-                inputs = self._components_by_names[component_ref].inputs
+                component = self._components_by_names[component_ref]
+                outputs = component.outputs
+                inputs = component.inputs
             elif op.has_hub_reference and ignore_hub_validation:
                 continue
             else:
@@ -580,6 +583,8 @@ class V1Dag(BaseRun):
                 is_template=False,
                 check_all_refs=False,
                 extra_info="<op {}>.<component {}>".format(op.name, component_ref),
+                strict_params=to_bool(component.strict_params, handle_none=True)
+                or to_bool(op.strict_params, handle_none=True),
             )
 
     def set_op_component(self, op_name):

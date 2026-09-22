@@ -384,6 +384,13 @@ def _run(
     "form `-P name=value` or `--param name=value`.",
 )
 @click.option(
+    "--strict-params/--no-strict-params",
+    default=None,
+    help="Set the operation's strict parameter policy. Strict mode requires "
+    "undeclared params to set contextOnly: true. Defaults to the specification's "
+    "policy; a strict component remains strict.",
+)
+@click.option(
     "--hparams",
     "--hparam",
     "-HP",
@@ -502,6 +509,7 @@ def run(
     local,
     executor,
     params,
+    strict_params,
     hparams,
     matrix_kind,
     matrix_concurrency,
@@ -639,6 +647,7 @@ def run(
         url=url,
         hub=hub,
         params=params,
+        strict_params=strict_params,
         hparams=hparams,
         matrix_kind=matrix_kind,
         matrix_concurrency=matrix_concurrency,

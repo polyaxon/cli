@@ -35,6 +35,13 @@ from polyaxon.logger import clean_outputs
     help="A parameter to override the default params of the run, form -P name=value.",
 )
 @click.option(
+    "--strict-params/--no-strict-params",
+    default=None,
+    help="Set the operation's strict parameter policy. Strict mode requires "
+    "undeclared params to set contextOnly: true. Defaults to the specification's "
+    "policy; a strict component remains strict.",
+)
+@click.option(
     "--lint",
     "-l",
     is_flag=True,
@@ -42,7 +49,7 @@ from polyaxon.logger import clean_outputs
     help="To check the specification only without params validation.",
 )
 @clean_outputs
-def check(polyaxonfile, python_module, version, params, lint):
+def check(polyaxonfile, python_module, version, params, strict_params, lint):
     """Check a polyaxonfile."""
     from polyaxon._polyaxonfile.check import check_polyaxonfile
 
@@ -50,6 +57,7 @@ def check(polyaxonfile, python_module, version, params, lint):
         polyaxonfile=polyaxonfile,
         python_module=python_module,
         params=params,
+        strict_params=strict_params,
         validate_params=not lint,
     )
 

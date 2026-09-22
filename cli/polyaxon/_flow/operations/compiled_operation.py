@@ -3,6 +3,7 @@ from typing_extensions import Literal
 
 from clipped.compact.pydantic import model_validator, validation_after
 from clipped.config.schema import skip_partial
+from clipped.utils.bools import to_bool
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import ParamSpec, ops_params
@@ -70,6 +71,7 @@ class V1CompiledOperation(BaseOp, RunMixin):
             is_template=is_template,
             check_all_refs=check_all_refs,
             parse_values=parse_values,
+            strict_params=to_bool(self.strict_params, handle_none=True),
         )
 
     def apply_params(self, params=None, context=None):

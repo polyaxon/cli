@@ -4,7 +4,7 @@ from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.tz import now
 from polyaxon import types
 from polyaxon._flow.operations import V1CompiledOperation
-from polyaxon._flow.params import ops_params
+from polyaxon._flow.params import V1Param, ops_params
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonValidationError
@@ -218,6 +218,145 @@ class TestCompiledOperationsConfigs(BaseTestCase):
             is_template=False,
         )
 
+    def test_undeclared_param_policy(self):
+        run = {"kind": V1RunKind.JOB, "container": {"image": "test"}}
+        io_cases = (None, [], [{"name": "declared", "type": "int"}])
+
+        for inputs in io_cases:
+            config = V1CompiledOperation.from_dict({"inputs": inputs, "run": run})
+            params = {"extra": {"value": {"key": [None, False, 0]}}}
+            if inputs:
+                params["declared"] = {"value": 1}
+
+            validated_params = config.validate_params(
+                params=params,
+                is_template=False,
+            )
+            extra_param = next(p for p in validated_params if p.name == "extra")
+
+            assert extra_param.is_context is True
+            assert extra_param.param.value == {"key": [None, False, 0]}
+
+        inferred_config = V1CompiledOperation.from_dict({"run": run})
+        inferred_config.apply_params(params={"extra": {"value": "test"}})
+        assert len(inferred_config.contexts) == 1
+        assert inferred_config.contexts[0].name == "extra"
+        assert inferred_config.contexts[0].value == "test"
+
+        strict_config = V1CompiledOperation.from_dict(
+            {"strictParams": True, "run": run}
+        )
+        with self.assertRaisesRegex(PolyaxonValidationError, "undeclared param"):
+            strict_config.validate_params(
+                params={"extra": {"value": "test"}},
+                is_template=False,
+            )
+
+        validated_params = strict_config.validate_params(
+            params={"extra": {"value": "test", "contextOnly": True}},
+            is_template=False,
+        )
+        assert validated_params[0].is_context is True
+
+        for strict_params in (False, True):
+            config = V1CompiledOperation.from_dict(
+                {"strictParams": strict_params, "run": run}
+            )
+            with self.assertRaisesRegex(
+                PolyaxonValidationError, "matching input/output declaration"
+            ):
+                config.validate_params(
+                    params={"extra": {"value": "test", "contextOnly": False}},
+                    is_template=False,
+                )
+
+    def test_null_param_survives_serialization(self):
+        config = V1CompiledOperation.from_dict(
+            {"run": {"kind": V1RunKind.JOB, "container": {"image": "test"}}}
+        )
+        params = {"empty": V1Param(value=None).to_dict()}
+        assert params == {"empty": {}}
+
+        config.apply_params(params=params)
+
+        assert len(config.contexts) == 1
+        assert config.contexts[0].name == "empty"
+        assert config.contexts[0].value is None
+
+        config.strict_params = True
+        with self.assertRaisesRegex(PolyaxonValidationError, "undeclared param"):
+            config.validate_params(params=params, is_template=False)
+
+    def test_declared_params_win_over_context_only(self):
+        run = {"kind": V1RunKind.JOB, "container": {"image": "test"}}
+        config = V1CompiledOperation.from_dict(
+            {
+                "strictParams": True,
+                "inputs": [{"name": "declared", "type": "int"}],
+                "run": run,
+            }
+        )
+
+        for context_only in (None, False, True):
+            param = {"value": 1}
+            if context_only is not None:
+                param["contextOnly"] = context_only
+            validated_params = config.validate_params(
+                params={"declared": param},
+                is_template=False,
+            )
+
+            assert len(validated_params) == 1
+            assert validated_params[0].name == "declared"
+            assert validated_params[0].is_context is False
+
+        with self.assertRaises(PolyaxonValidationError):
+            config.validate_params(
+                params={"declared": {"value": "invalid", "contextOnly": True}},
+                is_template=False,
+            )
+
+    def test_param_validation_does_not_mutate_supplied_params(self):
+        config = V1CompiledOperation.from_dict(
+            {
+                "inputs": [{"name": "declared", "type": "int"}],
+                "run": {
+                    "kind": V1RunKind.JOB,
+                    "container": {"image": "test"},
+                },
+            }
+        )
+        param = V1Param(value="2")
+
+        config.apply_params(params={"declared": param})
+
+        assert param.value == "2"
+        assert param.context_only is None
+        assert config.inputs[0].value == 2
+
+    def test_strict_validation_replays_compiled_contexts(self):
+        config = V1CompiledOperation.from_dict(
+            {
+                "strictParams": True,
+                "contexts": [{"name": "accepted", "value": "original"}],
+                "run": {
+                    "kind": V1RunKind.JOB,
+                    "container": {"image": "test"},
+                },
+            }
+        )
+
+        validated_params = config.validate_params(is_template=False)
+        assert [(p.name, p.param.value) for p in validated_params] == [
+            ("accepted", "original")
+        ]
+
+        with self.assertRaisesRegex(PolyaxonValidationError, "undeclared param"):
+            config.validate_params(
+                params={"accepted": {"value": "replacement"}},
+                is_template=False,
+            )
+
     def test_extra_params(self):
         # inputs
         config_dict = {
@@ -231,6 +370,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
+                strict_params=True,
             )
 
         # outputs
@@ -245,6 +385,7 @@ class TestCompiledOperationsConfigs(BaseTestCase):
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
+                strict_params=True,
             )
 
     def test_param_validation_with_mismatched_inputs(self):

@@ -67,6 +67,9 @@ class PolyaxonfileParser:
             parsed_data[Sections.DESCRIPTION] = config.description
         if config.tags:
             parsed_data[Sections.TAGS] = config.tags
+        # Workflow parents still need the policy when validating generated children.
+        if config.has_pipeline and config.strict_params is not None:
+            parsed_data[Sections.STRICT_PARAMS] = config.strict_params
         contexts = getattr(config, Sections.CONTEXTS)
         if contexts:
             parsed_data[Sections.CONTEXTS] = [
