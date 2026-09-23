@@ -6,7 +6,6 @@ from polyaxon._config.spec import ConfigSpec
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.sections import Sections
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
-from polyaxon.pkg import SCHEMA_VERSION
 
 
 class BaseSpecification(Sections):
@@ -14,31 +13,8 @@ class BaseSpecification(Sections):
 
     _SPEC_KIND = None
 
-    MAX_VERSION = (
-        SCHEMA_VERSION  # Max Polyaxonfile specification version this CLI supports
-    )
-    MIN_VERSION = (
-        SCHEMA_VERSION  # Min Polyaxonfile specification version this CLI supports
-    )
-
     CONFIG = None
     PARTIAL_CONFIG = None
-
-    @classmethod
-    def check_version(cls, data):
-        if data.get(cls.IS_PRESET):
-            return
-        if cls.VERSION not in data:
-            raise PolyaxonfileError("The Polyaxonfile `version` must be specified.")
-        if not cls.MIN_VERSION <= data[cls.VERSION] <= cls.MAX_VERSION:
-            raise PolyaxonfileError(
-                "The Polyaxonfile's version specified is not supported by your current CLI."
-                "Your CLI support Polyaxonfile versions between: {} <= v <= {}."
-                "You can run `polyaxon upgrade` and "
-                "check documentation for the specification".format(
-                    cls.MIN_VERSION, cls.MAX_VERSION
-                )
-            )
 
     @classmethod
     def check_kind(cls, data):
@@ -54,7 +30,6 @@ class BaseSpecification(Sections):
 
     @classmethod
     def check_data(cls, data):
-        cls.check_version(data)
         cls.check_kind(data)
         if data[cls.KIND] != cls._SPEC_KIND:
             raise PolyaxonfileError(

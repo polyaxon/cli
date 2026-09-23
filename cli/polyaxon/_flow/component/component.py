@@ -32,7 +32,7 @@ class V1Component(
     with default queues, container resources requirements, node scheduling, ...
 
     Args:
-        version: str
+        version: float, optional
         kind: str, should be equal to `component`
         name: str, optional
         description: str, optional
@@ -109,10 +109,9 @@ class V1Component(
 
     ### version
 
-    The polyaxon specification version to use to validate the component.
-
-    If you are using the component inline in an operation, this field is not required since it
-    will be populated by the operation.
+    The optional Polyaxonfile version. Supplied values are retained for compatibility
+    but do not select a validation schema. Older CLI and server versions may require
+    `version: 1.1`.
 
     ```yaml
     >>> component:

@@ -41,7 +41,7 @@ class V1Operation(BaseOp, TemplateMixinConfig):
     ![polyaxonfile operation](/images/references/specification/operation.png)
 
     Args:
-        version: str
+        version: float, optional
         kind: str, should be equal to `operation`
         patch_strategy: str, optional, defaults to post_merge
         is_preset: bool, optional
@@ -141,7 +141,9 @@ class V1Operation(BaseOp, TemplateMixinConfig):
 
     ### version
 
-    The polyaxon specification version to use to validate the operation.
+    The optional Polyaxonfile version. Supplied values are retained for compatibility
+    but do not select a validation schema. Older CLI and server versions may require
+    `version: 1.1`.
 
     ```yaml
     >>> operation:

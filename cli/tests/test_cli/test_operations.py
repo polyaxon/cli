@@ -1,7 +1,6 @@
 import csv
 import inspect
 from io import StringIO
-import json
 from mock import patch
 from pathlib import Path
 import pytest
@@ -14,7 +13,7 @@ from rich.console import Console
 from rich.theme import Theme
 
 from clipped.formatting import Printer
-from clipped.utils.json import orjson_loads
+from clipped.utils.json import orjson_dumps, orjson_loads
 from polyaxon._cli.init import init
 from polyaxon._cli.operations import ops, upload
 from polyaxon._client.run import UPLOAD_SKIPPED
@@ -831,7 +830,7 @@ class TestCliRuns(BaseCommandTestCase):
             for run in runs:
                 run_path = Path(directory) / "runs" / run.uuid / "run.plx.json"
                 run_path.parent.mkdir(parents=True)
-                run_path.write_text(json.dumps(run.to_dict()), encoding="utf8")
+                run_path.write_text(orjson_dumps(run.to_dict()), encoding="utf8")
 
             _, output = self.invoke_list_runs(
                 ["--offline", "--path", directory, "--io"], width=20
@@ -858,7 +857,7 @@ class TestCliRuns(BaseCommandTestCase):
 
         result, table_output = self.invoke_list_runs(["--output", "json"], width=20)
 
-        data = json.loads(result.output)
+        data = orjson_loads(result.output)
         assert [run["uuid"] for run in data["results"]] == list(LIST_RUN_UUIDS)
         assert data == response.to_dict()
         assert table_output == ""

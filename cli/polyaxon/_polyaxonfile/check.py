@@ -147,7 +147,7 @@ def check_polyaxonfile(
             plx_file = (
                 ConfigSpec.get_from(python_module, config_type=".py")
                 .read()
-                .to_dict(include_kind=True, include_version=True)
+                .to_dict(include_kind=True)
             )
         elif url:
             plx_file = ConfigSpec.get_from(url, "url").read()
@@ -157,6 +157,11 @@ def check_polyaxonfile(
             path_context = polyaxonfile.pop(0)
             plx_file = ConfigSpec.read_from(path_context)
 
+        if is_cli and "version" in plx_file:
+            Printer.warning(
+                "Polyaxonfile `version` is no longer required. It is retained "
+                "for compatibility but ignored by validation."
+            )
         plx_file = get_specification(data=plx_file)
         if plx_file.kind == kinds.OPERATION:
             plx_file = collect_references(plx_file, path_context)

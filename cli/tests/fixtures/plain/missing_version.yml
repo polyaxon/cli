@@ -1,3 +1,9 @@
 ---
 kind: operation
+
+component:
+  run:
+    kind: job
+    container:
+      image: test:latest
 ...

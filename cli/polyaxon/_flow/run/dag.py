@@ -24,7 +24,6 @@ from polyaxon._flow.run.base import BaseRun
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon.exceptions import PolyaxonSchemaError
-from polyaxon.pkg import SCHEMA_VERSION
 
 
 V1Operation = ForwardRef("V1Operation")
@@ -614,18 +613,12 @@ class V1Dag(BaseRun):
         from polyaxon._polyaxonfile import OperationSpecification
 
         op_dict = self.operations[idx].to_dict()
-        op_dict[OperationSpecification.VERSION] = op_dict.get(
-            OperationSpecification.VERSION, SCHEMA_VERSION
-        )
         return OperationSpecification.read(op_dict)
 
     def get_op_spec_by_name(self, name):
         from polyaxon._polyaxonfile import OperationSpecification
 
         op_dict = self.dag[name].op.to_dict()
-        op_dict[OperationSpecification.VERSION] = op_dict.get(
-            OperationSpecification.VERSION, SCHEMA_VERSION
-        )
         return OperationSpecification.read(op_dict)
 
     def get_resources(self):

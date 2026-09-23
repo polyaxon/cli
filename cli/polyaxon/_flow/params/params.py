@@ -351,7 +351,8 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     > **Note**: The permissive default and `strictParams` are available in Polyaxon
     > 2.18+. Use CLI and server versions that support this policy, and an SDK version
     > that supports the field when submitting it through an SDK. Older validators
-    > may reject undeclared params or `strictParams`. Polyaxonfile `version` stays `1.1`.
+    > may reject undeclared params or `strictParams`. Polyaxonfile `version` is optional
+    > in 2.18+; keep `version: 1.1` when targeting older releases.
 
     By default, a param without a matching input/output declaration becomes a context
     value. This applies whether the component has no IO, empty IO lists, or declared

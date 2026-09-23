@@ -1,3 +1,5 @@
+from copy import deepcopy
+import json
 import os
 import pytest
 
@@ -17,6 +19,7 @@ from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     ComponentSpecification,
     OperationSpecification,
+    get_specification,
 )
 from polyaxon._schemas.types import V1GitType
 from polyaxon._utils.test_utils import BaseTestCase
@@ -29,6 +32,85 @@ from polyaxon.exceptions import (
 
 @pytest.mark.polyaxonfile_mark
 class TestSpecifications(BaseTestCase):
+    def test_version_is_optional_for_authored_specifications(self):
+        component = {
+            "kind": "component",
+            "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+        }
+        operation = {"kind": "operation", "component": component}
+
+        for data, specification in (
+            (component, ComponentSpecification),
+            (operation, OperationSpecification),
+        ):
+            original = deepcopy(data)
+
+            config = specification.read(data)
+            serialized = get_specification(json.dumps(data))
+
+            assert config.version is None
+            assert "version" not in config.to_dict()
+            assert serialized.to_dict() == config.to_dict()
+            assert data == original
+
+    def test_compilation_does_not_add_version(self):
+        operation = OperationSpecification.read(
+            {
+                "kind": "operation",
+                "component": {
+                    "kind": "component",
+                    "run": {
+                        "kind": V1RunKind.JOB,
+                        "container": {"image": "test"},
+                    },
+                },
+            }
+        )
+
+        compiled = OperationSpecification.compile_operation(operation)
+
+        assert operation.version is None
+        assert compiled.version is None
+        assert "version" not in compiled.to_dict()
+        assert CompiledOperationSpecification.read(compiled.to_dict()).version is None
+
+    def test_supplied_version_is_preserved(self):
+        operation = OperationSpecification.read(
+            {
+                "version": 0.4,
+                "kind": "operation",
+                "component": {
+                    "run": {
+                        "kind": V1RunKind.JOB,
+                        "container": {"image": "test"},
+                    }
+                },
+            }
+        )
+
+        compiled = OperationSpecification.compile_operation(operation)
+
+        assert operation.version == 0.4
+        assert compiled.version == 0.4
+        assert compiled.to_dict()["version"] == 0.4
+
+    def test_wrapped_component_remains_versionless(self):
+        component = ComponentSpecification.read(
+            {
+                "kind": "component",
+                "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
+            }
+        )
+
+        operation = get_op_specification(
+            config=component,
+            preset_files=[],
+            validate_params=False,
+        )
+
+        assert operation.version is None
+        assert operation.component.version is None
+
     def test_strict_params_overrides_operation_policy(self):
         for strict_params, expected in ((None, True), (False, False), (True, True)):
             operation = V1Operation.read(

@@ -114,7 +114,7 @@ class Sections:
         "skip_on_upstream_skip",
     )
 
-    REQUIRED_SECTIONS = (VERSION, KIND)
+    REQUIRED_SECTIONS = (KIND,)
     OPERATORS = set([])
 
     # OPERATORS = {ForConfig.IDENTIFIER: ForConfig, IfConfig.IDENTIFIER: IfConfig}

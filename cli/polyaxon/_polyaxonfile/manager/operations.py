@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, Union
 
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.bools import to_bool
-from polyaxon import pkg
 from polyaxon._env_vars.getters.queue import get_queue_info
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.init import V1Init
@@ -42,10 +41,9 @@ def get_op_specification(
 ) -> V1Operation:
     if cache and nocache:
         raise PolyaxonfileError("Received both 'cache' and 'nocache'")
-    op_data = {
-        "version": config.version if config else pkg.SCHEMA_VERSION,
-        "kind": kinds.OPERATION,
-    }
+    op_data = {"kind": kinds.OPERATION}
+    if config and config.version is not None:
+        op_data["version"] = config.version
     if params:
         if not isinstance(params, Mapping):
             raise PolyaxonfileError(

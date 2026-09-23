@@ -28,23 +28,37 @@ from polyaxon.schemas import V1ProjectVersionKind
 
 @pytest.mark.polyaxonfile_mark
 class TestPolyaxonfiles(BaseTestCase):
-    def test_missing_version_raises(self):
-        with self.assertRaises(PolyaxonfileError):
-            check_polyaxonfile(
-                polyaxonfile=os.path.abspath(
-                    "tests/fixtures/plain/missing_version.yml"
-                ),
-                is_cli=False,
-            )
+    def test_missing_version_passes(self):
+        operation = check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/plain/missing_version.yml"),
+            is_cli=False,
+        )
 
-    def test_non_supported_version_raises(self):
-        with self.assertRaises(PolyaxonfileError):
-            check_polyaxonfile(
-                polyaxonfile=os.path.abspath(
-                    "tests/fixtures/plain/non_supported_file.yml"
-                ),
-                is_cli=False,
-            )
+        assert operation.version is None
+        assert operation.component.version is None
+
+    @patch("polyaxon._polyaxonfile.check.Printer.warning")
+    def test_version_is_ignored(self, warning):
+        operation = check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/plain/non_supported_file.yml"),
+            is_cli=False,
+        )
+
+        assert operation.version == 0.4
+        assert operation.component.version == 0.4
+        warning.assert_not_called()
+
+    @patch("polyaxon._polyaxonfile.check.Printer.warning")
+    def test_cli_warns_for_supplied_version(self, warning):
+        check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/plain/non_supported_file.yml"),
+            is_cli=True,
+        )
+
+        warning.assert_called_once_with(
+            "Polyaxonfile `version` is no longer required. It is retained "
+            "for compatibility but ignored by validation."
+        )
 
     def test_non_existing_raises(self):
         with self.assertRaises(PolyaxonfileError):
