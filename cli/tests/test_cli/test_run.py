@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from polyaxon._cli.run import run
 from polyaxon._client.run import RunClient
 from polyaxon._flow.run.enums import V1RunPending
+from polyaxon._polyaxonfile.specs import OperationSpecification
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.cli_constants import SYMLINK_MODES
 from tests.test_cli.utils import BaseCommandTestCase
@@ -15,6 +16,52 @@ from tests.test_cli.utils import BaseCommandTestCase
 
 @pytest.mark.cli_mark
 class TestCliRun(BaseCommandTestCase):
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._client.run.RunClient")
+    def test_run_component_file_submits_wrapped_operation(
+        self, run_client, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        client = run_client.return_value
+        client.create.return_value = SimpleNamespace(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="run",
+            pending=None,
+            settings=V1RunSettings(),
+        )
+        client.client.sanitize_for_serialization.return_value = {}
+
+        result = self.runner.invoke(
+            run,
+            [
+                "--project=owner/project",
+                "--file=tests/fixtures/plain/simple_job.yml",
+            ],
+        )
+
+        assert result.exit_code == 0, (result.output, result.exception)
+        client.create.assert_called_once()
+        submitted = client.create.call_args.kwargs["content"]
+        assert submitted.kind == "operation"
+        assert submitted.component.kind == "component"
+        assert submitted.component.run.container.image == "python-with-boto3"
+        assert submitted.component.run.container.command == "python download-s3-bucket"
+
+        stored = OperationSpecification.read(submitted.to_dict())
+        compiled = OperationSpecification.compile_operation(stored)
+        assert compiled.run.container.image == "python-with-boto3"
+        assert compiled.run.container.command == "python download-s3-bucket"
+        assert compiled.run.container.resources == {
+            "requests": {"nvidia.com/gpu": 1},
+            "limits": {"nvidia.com/gpu": 1},
+        }
+        assert compiled.run.to_dict()["volumes"][0] == {
+            "name": "foo",
+            "secret": {"secretName": "mysecret"},
+        }
+
     @patch("polyaxon._cli.run._run")
     @patch("polyaxon._cli.context.resolve_project")
     def test_run_strict_params(self, resolve_project, run_operation):
