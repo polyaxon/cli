@@ -20,6 +20,76 @@ class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
     @patch("polyaxon._cli.context.resolve_project")
     @patch("polyaxon._client.run.RunClient")
+    def test_run_multiple_files_preserves_legacy_patch_order(
+        self, run_client, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        client = run_client.return_value
+        client.create.return_value = SimpleNamespace(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="run",
+            pending=None,
+            settings=V1RunSettings(),
+        )
+        client.client.sanitize_for_serialization.return_value = {}
+
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory) / "base.yml"
+            base.write_text(
+                "kind: operation\n"
+                "component:\n"
+                "  run:\n"
+                "    kind: job\n"
+                "    container: {image: base:v1}\n"
+                "runPatch:\n"
+                "  container: {image: initial:v1}\n"
+            )
+            first = Path(directory) / "first.yml"
+            first.write_text(
+                "kind: operation\n"
+                "patchStrategy: post_merge\n"
+                "runPatch:\n"
+                "  container: {image: first:v2}\n"
+            )
+            second = Path(directory) / "second.yml"
+            second.write_text(
+                "kind: operation\n"
+                "patchStrategy: pre_merge\n"
+                "runPatch:\n"
+                "  container: {image: second:v3}\n"
+                "  environment:\n"
+                "    annotations: {source: second}\n"
+            )
+
+            result = self.runner.invoke(
+                run,
+                [
+                    "--project=owner/project",
+                    "-f",
+                    str(base),
+                    "-f",
+                    str(first),
+                    "-f",
+                    str(second),
+                ],
+            )
+
+        assert result.exit_code == 0, (result.output, result.exception)
+        client.create.assert_called_once()
+        submitted = client.create.call_args.kwargs["content"]
+        assert submitted.component.run.container.image == "base:v1"
+        assert submitted.run_patch["container"]["image"] == "first:v2"
+        assert submitted.run_patch["environment"]["annotations"] == {"source": "second"}
+
+        stored = OperationSpecification.read(submitted.to_dict())
+        compiled = OperationSpecification.compile_operation(stored)
+        assert compiled.run.container.image == "first:v2"
+        assert compiled.run.environment.annotations == {"source": "second"}
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._client.run.RunClient")
     def test_run_component_file_submits_wrapped_operation(
         self, run_client, resolve_project, dashboard, cache
     ):
