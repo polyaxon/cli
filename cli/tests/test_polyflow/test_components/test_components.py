@@ -2,7 +2,7 @@ import pytest
 
 from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
 from clipped.utils.tz import now
-from polyaxon import types
+from polyaxon import schemas, types
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.operations.operation import V1Operation
@@ -14,6 +14,74 @@ from polyaxon.exceptions import PolyaxonValidationError
 
 @pytest.mark.components_mark
 class TestComponentsConfigs(BaseTestCase):
+    def test_legacy_component_and_operation_serialization(self):
+        job = {
+            "kind": V1RunKind.JOB,
+            "container": {
+                "image": "busybox:1.36",
+                "resources": {
+                    "requests": {"cpu": "500m"},
+                    "limits": {"nvidia.com/gpu": 1},
+                },
+            },
+        }
+        component_data = {
+            "version": 1.1,
+            "kind": "component",
+            "presets": [],
+            "strictParams": False,
+            "isApproved": False,
+            "inputs": [{"name": "count", "type": "int"}],
+            "run": job,
+        }
+        operation_data = {
+            "kind": "operation",
+            "strictParams": False,
+            "params": {"count": {"value": 3}},
+            "patchStrategy": "post_merge",
+            "runPatch": {"container": {"image": "patched:v2"}},
+            "component": component_data,
+        }
+
+        assert schemas.V1Component is V1Component
+        assert schemas.V1Operation is V1Operation
+        assert V1Component.from_dict(component_data).to_dict() == component_data
+        assert V1Operation.from_dict(operation_data).to_dict() == operation_data
+
+    def test_legacy_kind_defaults_and_field_presence(self):
+        job = {"kind": V1RunKind.JOB, "container": {"image": "busybox:1.36"}}
+        for config_cls, source, expected_kind in (
+            (V1Component, {"run": job}, "component"),
+            (V1Operation, {"component": {"run": job}}, "operation"),
+        ):
+            omitted = config_cls.from_dict(source)
+            assert omitted.kind == expected_kind
+            assert omitted.version is None
+            assert omitted.to_dict() == source
+            assert "queue" not in omitted.to_dict(
+                exclude_unset=True, exclude_none=False
+            )
+
+            explicit = config_cls.from_dict(
+                {
+                    **source,
+                    "queue": None,
+                    "isApproved": False,
+                    "presets": [],
+                    "strictParams": False,
+                }
+            )
+            assert explicit.to_dict() == {
+                **source,
+                "isApproved": False,
+                "presets": [],
+                "strictParams": False,
+            }
+            assert (
+                explicit.to_dict(exclude_unset=True, exclude_none=False)["queue"]
+                is None
+            )
+
     def test_strict_params_preserves_author_intent(self):
         run = {"kind": V1RunKind.JOB, "container": {"image": "test"}}
         configurations = (
