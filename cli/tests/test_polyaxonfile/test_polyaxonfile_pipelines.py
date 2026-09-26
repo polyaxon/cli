@@ -1,6 +1,8 @@
 from mock import patch
 import os
+from pathlib import Path
 import pytest
+import tempfile
 
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.early_stopping import V1FailureEarlyStopping, V1MetricEarlyStopping
@@ -26,6 +28,54 @@ from polyaxon.exceptions import PolyaxonSchemaError
 
 @pytest.mark.polyaxonfile_mark
 class TestPolyaxonfileWithPipelines(BaseTestCase):
+    def test_relative_dag_refs_are_collected_from_component_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            templates = root / "templates"
+            templates.mkdir()
+            (templates / "job.yml").write_text(
+                "kind: component\n"
+                "run:\n"
+                "  kind: job\n"
+                "  container: {image: busybox:1.36}\n"
+            )
+            source = root / "dag.yml"
+            source.write_text(
+                "kind: component\n"
+                "run:\n"
+                "  kind: dag\n"
+                "  operations:\n"
+                "    - name: external\n"
+                "      pathRef: ./templates/job.yml\n"
+                "    - name: local\n"
+                "      dagRef: local-template\n"
+                "  components:\n"
+                "    - name: local-template\n"
+                "      run:\n"
+                "        kind: job\n"
+                "        container: {image: alpine:3.20}\n"
+            )
+
+            component = check_polyaxonfile(
+                polyaxonfile=str(source), is_cli=False, to_op=False
+            )
+
+        assert component.kind == "component"
+        assert component.run.operations[0].path_ref == "./templates/job.yml"
+        external = component.run.operations[0]
+        assert external.component.run.container.image == "busybox:1.36"
+        assert component.run.operations[1].dag_ref == "local-template"
+        assert component.run.components[0].run.container.image == "alpine:3.20"
+
+        operation = OperationSpecification.read(
+            {"kind": "operation", "component": component.to_dict()}
+        )
+        compiled = OperationSpecification.compile_operation(operation)
+        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
+        external = compiled.run.operations[0]
+        assert external.component.run.container.image == "busybox:1.36"
+        assert compiled.run.components[0].run.container.image == "alpine:3.20"
+
     def test_pipeline_with_no_ops_raises(self):
         run_config = V1CompiledOperation.read(
             [

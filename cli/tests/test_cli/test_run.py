@@ -20,6 +20,68 @@ class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
     @patch("polyaxon._cli.context.resolve_project")
     @patch("polyaxon._client.run.RunClient")
+    def test_run_relative_path_ref_submits_resolved_component(
+        self, run_client, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        client = run_client.return_value
+        client.create.return_value = SimpleNamespace(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="run",
+            pending=None,
+            settings=V1RunSettings(),
+        )
+        client.client.sanitize_for_serialization.return_value = {}
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            templates = root / "templates"
+            templates.mkdir()
+            (templates / "job.yml").write_text(
+                "kind: component\n"
+                "inputs:\n"
+                "  - name: message\n"
+                "    type: str\n"
+                "    isOptional: true\n"
+                "run:\n"
+                "  kind: job\n"
+                "  container: {image: busybox:1.36}\n"
+            )
+            source = root / "run.yml"
+            source.write_text(
+                "kind: operation\n"
+                "pathRef: ./templates/job.yml\n"
+                "runPatch:\n"
+                "  container: {image: patched:v2}\n"
+            )
+
+            result = self.runner.invoke(
+                run,
+                [
+                    "--project=owner/project",
+                    "-f",
+                    str(source),
+                    "-P",
+                    "message=from-cli",
+                ],
+            )
+
+        assert result.exit_code == 0, (result.output, result.exception)
+        client.create.assert_called_once()
+        submitted = client.create.call_args.kwargs["content"]
+        assert submitted.path_ref == "./templates/job.yml"
+        assert submitted.component.run.container.image == "busybox:1.36"
+        assert submitted.params["message"].value == "from-cli"
+        assert submitted.run_patch["container"]["image"] == "patched:v2"
+
+        stored = OperationSpecification.read(submitted.to_dict())
+        compiled = OperationSpecification.compile_operation(stored)
+        assert compiled.run.container.image == "patched:v2"
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._client.run.RunClient")
     def test_run_multiple_files_preserves_legacy_patch_order(
         self, run_client, resolve_project, dashboard, cache
     ):

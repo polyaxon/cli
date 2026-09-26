@@ -1,6 +1,8 @@
 from mock import MagicMock, patch
 import os
+from pathlib import Path
 import pytest
+import tempfile
 
 from polyaxon import pkg
 from polyaxon._contexts import paths as ctx_paths
@@ -114,6 +116,22 @@ class TestPolyaxonfiles(BaseTestCase):
         assert request_mock.call_count == 1
         assert operation.kind == "operation"
         assert operation.hub_ref == "component:12"
+        assert operation.component.run.container.image == "python-with-boto3"
+
+    @patch("polyaxon._config.spec.ConfigSpec.read_from_url")
+    def test_operation_file_resolves_url_ref(self, read_from_url):
+        read_from_url.return_value = {
+            "kind": "component",
+            "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "run.yml"
+            source.write_text("kind: operation\nurlRef: https://example.com/job.yml\n")
+            operation = check_polyaxonfile(polyaxonfile=str(source), is_cli=False)
+
+        read_from_url.assert_called_once_with("https://example.com/job.yml")
+        assert operation.url_ref == "https://example.com/job.yml"
+        assert operation.component.run.container.image == "busybox:1.36"
 
     def test_from_hub(self):
         with patch(
