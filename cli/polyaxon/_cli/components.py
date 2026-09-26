@@ -177,9 +177,11 @@ def register(ctx, polyaxonfile, project, version, description, tags, force):
             sys_exit=True,
         )
     try:
-        from polyaxon._polyaxonfile import get_specification
+        from polyaxon._polyaxonfile import check_polyaxonfile
 
-        plx_file = get_specification(data=polyaxonfile)
+        plx_file = check_polyaxonfile(
+            polyaxonfile=polyaxonfile, is_cli=False, to_op=False, verbose=False
+        )
     except Exception as e:
         handle_cli_error(e, message="Polyaxonfile is not valid.")
         sys.exit(1)

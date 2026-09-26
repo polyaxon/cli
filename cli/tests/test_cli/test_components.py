@@ -13,7 +13,7 @@ class TestCliComponent(BaseCommandTestCase):
     @patch("polyaxon._client.run.RunClient")
     @patch("polyaxon._cli.project_versions.register_project_version")
     @patch("polyaxon._cli.context.resolve_project")
-    def test_register_dag_file_preserves_unresolved_path_reference(
+    def test_register_dag_file_collects_relative_path_reference(
         self, resolve_project, register_version, run_client
     ):
         resolve_project.return_value = ("owner", None, "project")
@@ -55,7 +55,8 @@ class TestCliComponent(BaseCommandTestCase):
         submitted = json.loads(register_version.call_args.kwargs["content"])
         assert submitted["kind"] == "component"
         assert submitted["run"]["operations"][0]["pathRef"] == "./templates/job.yml"
-        assert not submitted["run"]["operations"][0].get("component")
+        external = submitted["run"]["operations"][0]["component"]
+        assert external["run"]["container"]["image"] == "busybox:1.36"
         assert submitted["run"]["operations"][1]["dagRef"] == "local-template"
         local_component = submitted["run"]["components"][0]
         assert local_component["run"]["container"]["image"] == "alpine:3.20"
