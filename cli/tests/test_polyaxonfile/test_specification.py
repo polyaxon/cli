@@ -280,6 +280,70 @@ class TestSpecifications(BaseTestCase):
             assert child_compiled.contexts[0].value == expected_value
             assert child_compiled.contexts[0].to_env == "EXTRA"
 
+    def test_workflow_children_remove_only_role_specific_fields(self):
+        operation = V1Operation.read(
+            {
+                "isApproved": True,
+                "conditions": "true",
+                "schedule": {"kind": "interval", "frequency": 60},
+                "matrix": {
+                    "kind": "grid",
+                    "params": {"seed": {"kind": "choice", "value": [1]}},
+                },
+                "events": [{"kinds": ["run_status_scheduled"], "ref": "ops.upstream"}],
+                "dependencies": ["upstream"],
+                "trigger": "all_succeeded",
+                "build": {"hubRef": "builder"},
+                "skipOnUpstreamSkip": True,
+                "cache": {"disable": True},
+                "queue": "agent/queue",
+                "namespace": "test",
+                "component": {
+                    "inputs": [{"name": "seed", "type": "int"}],
+                    "outputs": [{"name": "result", "type": "str"}],
+                    "run": {
+                        "kind": V1RunKind.JOB,
+                        "container": {"image": "busybox:1.36"},
+                    },
+                },
+            }
+        )
+        compiled = OperationSpecification.compile_operation(operation)
+        scheduled = get_op_from_schedule(operation.to_dict(), compiled)
+        suggested = next(
+            get_ops_from_suggestions(
+                content=operation.to_dict(),
+                compiled_operation=compiled,
+                suggestions=[{"seed": 1}],
+            )
+        )
+
+        for field in (
+            "conditions",
+            "schedule",
+            "events",
+            "dependencies",
+            "trigger",
+            "build",
+            "skip_on_upstream_skip",
+        ):
+            assert getattr(operation, field) is not None
+            assert getattr(scheduled, field) is None
+            assert getattr(suggested, field) is None
+
+        assert scheduled.matrix == operation.matrix
+        assert scheduled.is_approved is True
+        assert suggested.matrix is None
+        assert suggested.is_approved is None
+        assert suggested.params["seed"].value == 1
+        for child in (scheduled, suggested):
+            assert child.cache == compiled.cache
+            assert child.queue == compiled.queue
+            assert child.namespace == compiled.namespace
+            assert child.component.inputs == compiled.inputs
+            assert child.component.outputs == compiled.outputs
+            assert child.component.run == compiled.run
+
     def test_non_yaml_spec(self):
         config = ",sdf;ldjks"
         with self.assertRaises(PolyaxonSchemaError):
