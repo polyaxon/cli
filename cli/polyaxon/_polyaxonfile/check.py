@@ -9,10 +9,11 @@ from polyaxon._config.spec import ConfigSpec
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._polyaxonfile.manager import get_op_specification
 from polyaxon._polyaxonfile.params import parse_hparams, parse_params
-from polyaxon._polyaxonfile.specs import get_specification, kinds
+from polyaxon._polyaxonfile.specs import get_specification, kinds, read_polyaxonfile
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 
@@ -32,7 +33,12 @@ def collect_dag_components(dag: V1Dag, path_context: Optional[str] = None):
                 )
 
 
-def collect_references(config: V1Operation, path_context: Optional[str] = None):
+def collect_references(
+    config: Union[V1Operation, V1Polyaxonfile], path_context: Optional[str] = None
+):
+    if isinstance(config, V1Polyaxonfile):
+        sources = (("pathRef", os.path.realpath(path_context)),) if path_context else ()
+        return _collect_shared_references(config, path_context, sources)
     if config.has_component_reference:
         return config
     elif config.has_hub_reference:
@@ -65,6 +71,56 @@ def collect_references(config: V1Operation, path_context: Optional[str] = None):
     config.component = component
     if component.is_dag_run:
         collect_dag_components(component.run, path_context)
+    return config
+
+
+def _collect_shared_references(config, path_context, sources):
+    if config.component is not None:
+        _collect_shared_references(config.component, path_context, sources)
+    else:
+        reference = None
+        source_path = path_context
+        if config.hub_ref:
+            reference = ("hubRef", config.hub_ref)
+            source = ConfigSpec.get_from(config.hub_ref, "hub")
+        elif config.url_ref:
+            reference = ("urlRef", config.url_ref)
+            source = ConfigSpec.get_from(config.url_ref, "url")
+        elif config.path_ref:
+            source_path = config.path_ref
+            if path_context:
+                source_path = os.path.join(
+                    os.path.dirname(os.path.abspath(path_context)), source_path
+                )
+            source_path = os.path.abspath(source_path)
+            reference = ("pathRef", os.path.realpath(source_path))
+            if not os.path.isfile(source_path):
+                raise PolyaxonfileError(
+                    "Path ref `{}` does not exist or is not a file.".format(source_path)
+                )
+            source = ConfigSpec.get_from(source_path)
+
+        if reference:
+            if reference in sources:
+                chain = " -> ".join(
+                    "{} `{}`".format(*ref) for ref in (*sources, reference)
+                )
+                raise PolyaxonfileError(
+                    "Polyaxonfile reference cycle: {}".format(chain)
+                )
+            try:
+                component = read_polyaxonfile(source)
+                _collect_shared_references(
+                    component, source_path, (*sources, reference)
+                )
+            except Exception as e:
+                raise PolyaxonfileError(
+                    "Could not resolve {} `{}`: {}".format(*reference, e)
+                ) from e
+            config.component = component
+
+    if config.is_dag_run and isinstance(config.run.operations, list):
+        collect_dag_components(config.run, path_context)
     return config
 
 

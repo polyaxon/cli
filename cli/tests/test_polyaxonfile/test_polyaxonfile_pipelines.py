@@ -56,25 +56,35 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
                 "        container: {image: alpine:3.20}\n"
             )
 
-            component = check_polyaxonfile(
-                polyaxonfile=str(source), is_cli=False, to_op=False
-            )
+            loaded = [
+                check_polyaxonfile(polyaxonfile=str(source), is_cli=False, to_op=to_op)
+                for to_op in (False, True)
+            ]
 
-        assert component.kind == "component"
-        assert component.run.operations[0].path_ref == "./templates/job.yml"
-        external = component.run.operations[0]
-        assert external.component.run.container.image == "busybox:1.36"
-        assert component.run.operations[1].dag_ref == "local-template"
-        assert component.run.components[0].run.container.image == "alpine:3.20"
+        for to_op, config in zip((False, True), loaded):
+            with self.subTest(to_op=to_op):
+                component = config.component if to_op else config
+                assert component.kind == "component"
+                assert component.run.operations[0].path_ref == "./templates/job.yml"
+                external = component.run.operations[0]
+                assert external.component.run.container.image == "busybox:1.36"
+                assert component.run.operations[1].dag_ref == "local-template"
+                assert component.run.components[0].run.container.image == "alpine:3.20"
 
-        operation = OperationSpecification.read(
-            {"kind": "operation", "component": component.to_dict()}
-        )
-        compiled = OperationSpecification.compile_operation(operation)
-        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
-        external = compiled.run.operations[0]
-        assert external.component.run.container.image == "busybox:1.36"
-        assert compiled.run.components[0].run.container.image == "alpine:3.20"
+                operation = (
+                    config
+                    if to_op
+                    else OperationSpecification.read(
+                        {"kind": "operation", "component": component.to_dict()}
+                    )
+                )
+                compiled = OperationSpecification.compile_operation(operation)
+                compiled = CompiledOperationSpecification.apply_operation_contexts(
+                    compiled
+                )
+                external = compiled.run.operations[0]
+                assert external.component.run.container.image == "busybox:1.36"
+                assert compiled.run.components[0].run.container.image == "alpine:3.20"
 
     def test_pipeline_with_no_ops_raises(self):
         run_config = V1CompiledOperation.read(
