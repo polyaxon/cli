@@ -98,6 +98,7 @@ from polyaxon._flow.optimization.enums import V1Optimization, V1ResourceType
 from polyaxon._flow.params import ops_params
 from polyaxon._flow.params.params import ParamSpec, V1Param
 from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._flow.references.dag import V1DagRef
 from polyaxon._flow.references.hub import V1HubRef
 from polyaxon._flow.references.mixin import RefMixin
