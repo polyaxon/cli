@@ -8,6 +8,7 @@ from polyaxon._polyaxonfile.specs.compiled_operation import (
 )
 from polyaxon._polyaxonfile.specs.component import ComponentSpecification
 from polyaxon._polyaxonfile.specs.operation import OperationSpecification
+from polyaxon._polyaxonfile.specs.polyaxonfile import read_polyaxonfile
 
 SPECIFICATION_BY_KIND = {
     spec_kinds.OPERATION: OperationSpecification,

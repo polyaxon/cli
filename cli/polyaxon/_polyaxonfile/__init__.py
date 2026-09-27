@@ -16,5 +16,6 @@ from polyaxon._polyaxonfile.specs import (
     ComponentSpecification,
     OperationSpecification,
     get_specification,
+    read_polyaxonfile,
     spec_kinds,
 )
