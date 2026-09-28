@@ -14,14 +14,12 @@ from polyaxon._utils.test_utils import BaseTestCase
 @pytest.mark.components_mark
 class TestPolyaxonfile(BaseTestCase):
     def test_existing_field_union_and_export(self):
-        fields = set(V1Component.get_model_fields()) | set(
-            V1Operation.get_model_fields()
-        )
-        assert set(V1Polyaxonfile.get_model_fields()) == fields
         assert schemas.V1Polyaxonfile is V1Polyaxonfile
 
         aliases = V1Polyaxonfile.get_aliases()
         for model in (V1Component, V1Operation):
+            assert issubclass(model, V1Polyaxonfile)
+            assert set(model.get_model_fields()) == set(V1Polyaxonfile.get_model_fields())
             for name, alias in model.get_aliases().items():
                 assert aliases[name] == alias
 
@@ -289,16 +287,21 @@ class TestPolyaxonfile(BaseTestCase):
             with self.subTest(field=field), self.assertRaises(ValidationError):
                 V1Polyaxonfile.from_dict({field: {}})
 
-    def test_legacy_readers_still_use_legacy_models(self):
+    def test_legacy_readers_use_shared_models_and_keep_defaults(self):
         assert ComponentSpecification.CONFIG is V1Component
         assert OperationSpecification.CONFIG is V1Operation
         run = {"kind": "job", "container": {"image": "busybox:1.36"}}
 
-        with self.assertRaises(ValidationError):
-            V1Component.from_dict({"run": run, "params": {"count": 3}})
-        with self.assertRaises(ValidationError):
-            V1Operation.from_dict({"run": run})
+        for model, kind in ((V1Component, "component"), (V1Operation, "operation")):
+            config = model.from_dict({"run": run, "params": {"count": 3}})
+            assert config.kind == kind
+            assert "kind" not in config.model_fields_set
+            assert config.params["count"].value == 3
+            assert config.to_dict() == {"run": run, "params": {"count": {"value": 3}}}
 
         assert V1Component.from_dict({"run": run}).to_dict() == {"run": run}
         source = {"component": {"run": run}}
-        assert V1Operation.from_dict(source).to_dict() == source
+        operation = V1Operation.from_dict(source)
+        assert operation.to_dict() == source
+        assert isinstance(operation.component, V1Component)
+        assert operation.component.kind == "component"

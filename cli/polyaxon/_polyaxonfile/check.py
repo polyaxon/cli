@@ -36,42 +36,8 @@ def collect_dag_components(dag: V1Dag, path_context: Optional[str] = None):
 def collect_references(
     config: Union[V1Operation, V1Polyaxonfile], path_context: Optional[str] = None
 ):
-    if isinstance(config, V1Polyaxonfile):
-        sources = (("pathRef", os.path.realpath(path_context)),) if path_context else ()
-        return _collect_shared_references(config, path_context, sources)
-    if config.has_component_reference:
-        return config
-    elif config.has_hub_reference:
-        component = ConfigSpec.get_from(config.hub_ref, "hub").read()
-    elif config.has_url_reference:
-        component = ConfigSpec.get_from(config.url_ref, "url").read()
-    elif config.has_path_reference:
-        path_ref = config.path_ref
-        if path_context:
-            path_ref = os.path.join(
-                os.path.dirname(os.path.abspath(path_context)), path_ref
-            )
-        component = ConfigSpec.get_from(path_ref).read()
-        path_context = path_ref
-    else:
-        raise PolyaxonfileError("Operation found without component")
-    component = get_specification(data=component)
-    if component.kind != kinds.COMPONENT:
-        if config.has_url_reference:
-            ref_type = "Url ref"
-            ref = config.url_ref
-        else:
-            ref_type = "Path ref"
-            ref = config.path_ref
-        raise PolyaxonfileError(
-            "the reference ({}) `{}` is of kind `{}`, it should be a `{}`".format(
-                ref, ref_type, component.kind, kinds.COMPONENT
-            )
-        )
-    config.component = component
-    if component.is_dag_run:
-        collect_dag_components(component.run, path_context)
-    return config
+    sources = (("pathRef", os.path.realpath(path_context)),) if path_context else ()
+    return _collect_shared_references(config, path_context, sources)
 
 
 def _collect_shared_references(config, path_context, sources):
@@ -219,14 +185,7 @@ def check_polyaxonfile(
                 "for compatibility but ignored by validation."
             )
         plx_file = get_specification(data=plx_file)
-        if plx_file.kind == kinds.OPERATION:
-            plx_file = collect_references(plx_file, path_context)
-            plx_component = plx_file.component
-        else:
-            plx_component = plx_file
-
-        if plx_component.is_dag_run:
-            collect_dag_components(plx_component.run, path_context)
+        plx_file = collect_references(plx_file, path_context)
 
         if to_op or hub:
             plx_file = get_op_specification(

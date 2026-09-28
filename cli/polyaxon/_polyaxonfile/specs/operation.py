@@ -1,13 +1,11 @@
 from typing import Dict, Optional, Type
 
-from clipped.utils.bools import to_bool
 from clipped.utils.lists import to_list
-from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.io.io import V1IO
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.operations.operation import PartialV1Operation, V1Operation
 from polyaxon._flow.params.params import V1Param
-from polyaxon._flow.run.patch import validate_run_patch
+from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
 from polyaxon.exceptions import PolyaxonSchemaError
@@ -24,10 +22,12 @@ class OperationSpecification(BaseSpecification):
     @classmethod
     def compile_operation(
         cls,
-        config: V1Operation,
+        config: V1Polyaxonfile,
         override: Optional[Dict] = None,
         use_override_patch_strategy: bool = False,
     ) -> V1CompiledOperation:
+        from polyaxon._polyaxonfile.manager.operations import compose_polyaxonfile
+
         preset_patch_strategy = None
         if override:
             preset = OperationSpecification.read(override, is_preset=True)
@@ -35,31 +35,13 @@ class OperationSpecification(BaseSpecification):
                 preset_patch_strategy = preset.patch_strategy
 
             config = config.patch(preset, preset.patch_strategy)
-        # Patch run
-        component: V1Component = config.component
-        if not component:
+        effective = compose_polyaxonfile(
+            config, run_patch_strategy=preset_patch_strategy
+        )
+        if effective.run is None:
             raise PolyaxonSchemaError(
                 "Compile operation received an invalid configuration: "
-                "the component is missing. "
-                "Please make sure that the polyaxonfile was correctly resolved "
-                "before to calling this operation."
-            )
-        effective_strict_params = to_bool(
-            component.strict_params, handle_none=True
-        ) or to_bool(config.strict_params, handle_none=True)
-        if config.run_patch:
-            patch_strategy = (
-                preset_patch_strategy
-                if use_override_patch_strategy and preset_patch_strategy is not None
-                else config.patch_strategy
-            )
-            component.run = component.run.patch(
-                validate_run_patch(
-                    config.run_patch,
-                    component.run.kind,
-                    replica_types=component.get_replica_types(),
-                ),
-                strategy=patch_strategy,
+                "the resolved Polyaxonfile has no run."
             )
 
         contexts = []
@@ -78,55 +60,20 @@ class OperationSpecification(BaseSpecification):
                 )
             )
 
-        # Collect contexts io form params
-        for p in config.params or {}:
-            get_context_io(c_name=p, c_io=config.params[p])
+        # Collect contexts IO from params.
+        for p in effective.params or {}:
+            get_context_io(c_name=p, c_io=effective.params[p])
 
-        # Collect contexts io form joins
-        for j in config.joins or []:
+        # Collect contexts IO from joins.
+        for j in effective.joins or []:
             for p in j.params or {}:
                 get_context_io(c_name=p, c_io=j.params[p], is_list=True)
 
-        patch_keys = {
-            "name",
-            "cost",
-            "description",
-            "contexts",
-            "tags",
-            "is_approved",
-            "presets",
-            "queue",
-            "namespace",
-            "cache",
-            "build",
-            "hooks",
-            "events",
-            "plugins",
-            "termination",
-            "matrix",
-            "joins",
-            "schedule",
-            "dependencies",
-            "trigger",
-            "conditions",
-            "skip_on_upstream_skip",
-            "mount",
-        }
-        patch_keys = patch_keys.intersection(config.model_fields_set)
-        patch_data = {k: getattr(config, k) for k in patch_keys}
-        patch_compiled = V1CompiledOperation.model_construct(
-            contexts=contexts, **patch_data
+        fields = effective.model_fields_set & set(V1CompiledOperation.get_model_fields())
+        values = {key: getattr(effective, key) for key in fields - {"kind"}}
+        return V1CompiledOperation(
+            kind=kinds.COMPILED_OPERATION, contexts=contexts, **values
         )
-
-        values = [
-            {cls.VERSION: config.version},
-            component.to_dict(),
-            {cls.KIND: kinds.COMPILED_OPERATION},
-        ]
-        compiled = V1CompiledOperation.read(values)  # type: V1CompiledOperation
-        compiled = compiled.patch(patch_compiled, strategy=config.patch_strategy)
-        compiled.strict_params = effective_strict_params
-        return compiled
 
     @classmethod
     def read(cls, values, partial: bool = False, is_preset: bool = False):

@@ -274,19 +274,16 @@ class TestSharedSpecification(BaseTestCase):
             with self.subTest(source=source), self.assertRaises(PolyaxonSchemaError):
                 read_polyaxonfile(source)
 
-    def test_production_dispatch_keeps_legacy_models(self):
+    def test_production_dispatch_uses_shared_models_and_keeps_compiled_separate(self):
         run = {"kind": "job", "container": {"image": "busybox:1.36"}}
         for source, model in (
             ({"kind": "component", "run": run}, V1Component),
             ({"kind": "operation", "component": {"run": run}}, V1Operation),
+            ({"kind": "component", "run": run, "params": {}}, V1Component),
+            ({"kind": "operation", "run": run}, V1Operation),
+            ({"run": run}, V1Polyaxonfile),
             ({"kind": "compiled_operation", "run": run}, V1CompiledOperation),
         ):
-            with self.subTest(kind=source["kind"]):
+            with self.subTest(kind=source.get("kind")):
                 assert isinstance(get_specification(source), model)
-
-        with self.assertRaises(PolyaxonfileError):
-            get_specification({"run": run})
-        with self.assertRaises(ValidationError):
-            get_specification({"kind": "component", "run": run, "params": {}})
-        with self.assertRaises(ValidationError):
-            get_specification({"kind": "operation", "run": run})
+        assert not issubclass(V1CompiledOperation, V1Polyaxonfile)

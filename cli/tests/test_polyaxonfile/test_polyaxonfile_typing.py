@@ -19,14 +19,36 @@ from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
 
 @pytest.mark.polyaxonfile_mark
 class TestPolyaxonfileWithTypes(BaseTestCase):
-    def test_using_untyped_params_raises(self):
-        with self.assertRaises(PolyaxonfileError):
+    def test_untyped_params_on_a_native_operation_are_available_in_context(self):
+        operation = check_polyaxonfile(
+            polyaxonfile=os.path.abspath("tests/fixtures/typing/untyped_params.yml"),
+            is_cli=False,
+        )
+        compiled = OperationSpecification.compile_operation(operation)
+        compiled.apply_params(params=operation.params)
+        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
+        compiled = CompiledOperationSpecification.apply_runtime_contexts(compiled)
+
+        assert [io.name for io in compiled.inputs] == ["loss"]
+        assert {io.name: io.value for io in compiled.contexts} == {"num_masks": 2}
+        assert compiled.run.container.args == [
+            "video_prediction_train",
+            "--num_masks=2",
+            "--loss=MeanSquaredError",
+        ]
+
+    def test_untyped_params_on_a_native_operation_are_rejected_in_strict_mode(self):
+        with self.assertRaises(PolyaxonfileError) as error:
             check_polyaxonfile(
                 polyaxonfile=os.path.abspath(
                     "tests/fixtures/typing/untyped_params.yml"
                 ),
                 is_cli=False,
+                strict_params=True,
             )
+        assert isinstance(error.exception.__cause__, PolyaxonValidationError)
+        assert "undeclared param" in str(error.exception.__cause__)
+        assert "num_masks" in str(error.exception.__cause__)
 
     def test_no_params_for_required_inputs_outputs_raises(self):
         # Get compiled_operation data

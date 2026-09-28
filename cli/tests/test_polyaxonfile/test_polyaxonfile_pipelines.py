@@ -158,14 +158,31 @@ class TestPolyaxonfileWithPipelines(BaseTestCase):
                 {"kind": "compiled_operation"},
             ]
         )
-        with patch("polyaxon._config.spec.ConfigSpec.read") as config_read:
-            config_read.return_value = V1Component(
-                kind="component",
-                version=" 1.1",
-                inputs=[V1IO(name="str-input", type="str")],
-                run=V1Job(container=V1Container(name="test")),
-            ).to_dict()
-            collect_dag_components(run_config.run)
+        component = V1Component(
+            kind="component",
+            version=" 1.1",
+            inputs=[V1IO(name="str-input", type="str")],
+            run=V1Job(container=V1Container(name="test")),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "component.yml"
+            source.write_text(component.to_yaml())
+            run_config.run.operations[0].path_ref = str(source)
+            with (
+                patch(
+                    "polyaxon._config.spec.ConfigSpec.read_from_url",
+                    return_value=component.to_dict(),
+                ) as read_url,
+                patch(
+                    "polyaxon._config.spec.ConfigSpec.read_from_custom_hub"
+                ) as read_hub,
+            ):
+                collect_dag_components(run_config.run)
+
+            read_url.assert_called_once_with("https://foo.bar")
+            read_hub.assert_not_called()
+            for op in run_config.run.operations[:2]:
+                assert op.component.to_dict() == component.to_dict()
         compiled_op = CompiledOperationSpecification.apply_operation_contexts(
             run_config
         )

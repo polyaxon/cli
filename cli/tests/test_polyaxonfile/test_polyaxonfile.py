@@ -71,7 +71,7 @@ class TestPolyaxonfiles(BaseTestCase):
                 is_cli=False,
             )
 
-    def test_missing_kind_raises(self):
+    def test_file_without_kind_or_runtime_raises(self):
         with self.assertRaises(PolyaxonfileError):
             check_polyaxonfile(
                 polyaxonfile=os.path.abspath("tests/fixtures/plain/missing_kind.yml"),

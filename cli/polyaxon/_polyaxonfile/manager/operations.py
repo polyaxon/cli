@@ -6,7 +6,7 @@ from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.bools import to_bool
 from polyaxon._config.spec import ConfigSpec
 from polyaxon._env_vars.getters.queue import get_queue_info
-from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.base import BaseOp
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.matrix.enums import V1MatrixKind
 from polyaxon._flow.matrix.matrix import V1Matrix
@@ -21,13 +21,6 @@ from polyaxon._polyaxonfile.specs import (
     read_polyaxonfile,
 )
 from polyaxon.exceptions import PolyaxonfileError
-
-
-def _get_native_run(config: V1Polyaxonfile):
-    run = _get_native_run(config.component) if config.component is not None else None
-    if "run" in config.model_fields_set:
-        run = patch_run(run, copy.deepcopy(config.run), config.patch_strategy)
-    return run
 
 
 def patch_polyaxonfile(
@@ -46,13 +39,13 @@ def patch_polyaxonfile(
             if isinstance(run, Mapping) and "kind" not in run:
                 native_run = config.run
                 if native_run is None and config.component is not None:
-                    native_run = _get_native_run(config.component)
+                    native_run = config.component.get_native_run()
                 if native_run is not None:
                     values["run"] = {"kind": native_run.kind, **run}
             preset = read_polyaxonfile(values, is_preset=True)
 
         strategy = preset.patch_strategy or PatchStrategy.POST_MERGE
-        fields = preset.model_fields_set - set(V1Operation._FIELDS_MANUAL_PATCH) - {"run"}
+        fields = preset.model_fields_set - set(V1Polyaxonfile._FIELDS_MANUAL_PATCH)
         config.patch(
             V1Polyaxonfile.model_construct(
                 **{key: getattr(preset, key) for key in fields}
@@ -67,7 +60,7 @@ def patch_polyaxonfile(
     # The final native runtime supplies the type for all retained runPatch layers.
     # Applying runPatch to run here would change precedence against later files.
     if run_patches:
-        run = _get_native_run(config)
+        run = config.get_native_run()
         replica_types = (
             run.get_replica_types()
             if run is not None and hasattr(run, "get_replica_types")
@@ -84,7 +77,10 @@ def patch_polyaxonfile(
     return config
 
 
-def compose_polyaxonfile(config: Union[Dict, V1Polyaxonfile]) -> V1Polyaxonfile:
+def compose_polyaxonfile(
+    config: Union[Dict, V1Polyaxonfile],
+    run_patch_strategy: Optional[PatchStrategy] = None,
+) -> V1Polyaxonfile:
     """Compose collected sources without changing the authored document."""
     if isinstance(config, V1Polyaxonfile):
         values = {key: getattr(config, key) for key in config.model_fields_set}
@@ -123,14 +119,18 @@ def compose_polyaxonfile(config: Union[Dict, V1Polyaxonfile]) -> V1Polyaxonfile:
         "run",
         "run_patch",
         "strict_params",
+        "version",
     }
-    effective.patch(
+    BaseOp.patch_obj(
+        effective,
         V1Polyaxonfile.model_construct(
             **{key: getattr(local, key) for key in patch_fields}
         ),
         strategy=strategy,
     )
     effective.strict_params = strict_params
+    if effective.version is None and local.version is not None:
+        effective.version = local.version
 
     if "run" in local.model_fields_set:
         effective.run = patch_run(effective.run, local.run, strategy)
@@ -144,13 +144,13 @@ def compose_polyaxonfile(config: Union[Dict, V1Polyaxonfile]) -> V1Polyaxonfile:
                 effective.run.kind,
                 replica_types=effective.get_replica_types(),
             ),
-            strategy=strategy,
+            strategy=run_patch_strategy or strategy,
         )
     return effective
 
 
 def get_op_specification(
-    config: Optional[Union[V1Component, V1Operation]] = None,
+    config: Optional[V1Polyaxonfile] = None,
     hub: Optional[str] = None,
     params: Optional[Dict] = None,
     hparams: Optional[Dict] = None,
@@ -214,7 +214,7 @@ def get_op_specification(
     if strict_params is not None:
         op_data["strictParams"] = strict_params
 
-    if config and config.kind == kinds.COMPONENT:
+    if config and config.kind in (None, kinds.COMPONENT):
         op_data["component"] = config.to_dict()
         config = get_specification(data=[op_data])
     elif config and config.kind == kinds.OPERATION:
@@ -227,9 +227,7 @@ def get_op_specification(
         config.hub_ref = hub
 
     # Check if there's presets
-    for preset_plx_file in preset_files:
-        preset_plx_file = OperationSpecification.read(preset_plx_file, is_preset=True)
-        config = config.patch(preset_plx_file, strategy=preset_plx_file.patch_strategy)
+    config = patch_polyaxonfile(config, preset_files or [])
     # Turn git_init to a pre_merge preset
     if git_init:
         git_preset = V1Operation(
@@ -238,8 +236,8 @@ def get_op_specification(
         config = config.patch(git_preset, strategy=PatchStrategy.PRE_MERGE)
 
     # Sanity check if params were passed and we are not dealing with a hub component
-    params = copy.deepcopy(config.params)
     if validate_params:
+        params = compose_polyaxonfile(config).params
         # Avoid in-place patch
         run_config = get_specification(config.to_dict())
         run_config = OperationSpecification.compile_operation(run_config)

@@ -8,6 +8,7 @@ from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.params import ops_params
 from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._polyaxonfile.specs import OperationSpecification
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonValidationError
 
@@ -118,16 +119,17 @@ class TestComponentsConfigs(BaseTestCase):
             V1Component.from_dict(config_dict)
 
     def test_passing_wrong_params(self):
-        config_dict = {"params": {"foo": "bar"}}
+        config_dict = {"params": "foo=bar"}
 
         with self.assertRaises(ValidationError):
             V1Component.from_dict(config_dict)
 
-    def test_passing_params_raises(self):
+    def test_passing_params_without_a_run(self):
         config_dict = {"params": {"foo": "bar"}}
 
-        with self.assertRaises(ValidationError):
-            V1Component.from_dict(config_dict)
+        component = V1Component.from_dict(config_dict)
+        assert component.params["foo"].value == "bar"
+        assert component.run is None
 
     def test_param_validation_with_inputs(self):
         config_dict = {
@@ -1011,8 +1013,12 @@ class TestComponentsConfigs(BaseTestCase):
             },
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
-        with self.assertRaises(ValidationError):
-            V1Component.from_dict(config_dict)
+        config = V1Component.from_dict(config_dict)
+        assert config.matrix.kind == "mapping"
+        assert config.matrix.concurrency == 2
+        assert config.matrix.values == [{"a": 1}, {"a": 1}]
+        compiled = OperationSpecification.compile_operation(config)
+        assert compiled.matrix == config.matrix
 
         config_dict = {
             "kind": "component",
@@ -1028,8 +1034,12 @@ class TestComponentsConfigs(BaseTestCase):
             "termination": {"timeout": 1000},
             "run": {"kind": V1RunKind.JOB, "container": {"image": "test"}},
         }
-        with self.assertRaises(ValidationError):
-            V1Component.from_dict(config_dict)
+        config = V1Component.from_dict(config_dict)
+        assert config.schedule.kind == "datetime"
+        compiled = OperationSpecification.compile_operation(config)
+        assert compiled.matrix == config.matrix
+        assert compiled.schedule == config.schedule
+        assert compiled.termination.timeout == 1000
 
         config_dict = {
             "kind": "component",

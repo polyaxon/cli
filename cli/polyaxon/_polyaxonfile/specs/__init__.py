@@ -20,5 +20,7 @@ SPECIFICATION_BY_KIND = {
 def get_specification(data):
     if not isinstance(data, Mapping):
         data = ConfigSpec.read_from(data)
+    if data.get("kind") is None:
+        return read_polyaxonfile(data)
     kind = BaseSpecification.get_kind(data=data)
     return SPECIFICATION_BY_KIND[kind].read(data)

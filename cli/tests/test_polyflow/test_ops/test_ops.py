@@ -7,7 +7,12 @@ from polyaxon._flow.hooks import V1Hook
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.params.params import V1Param
 from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._polyaxonfile.specs import (
+    CompiledOperationSpecification,
+    OperationSpecification,
+)
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonSchemaError
 
 
 @pytest.mark.ops_mark
@@ -88,15 +93,17 @@ class TestV1Operations(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1Operation.from_dict(config_dict)
 
-        # Embedding a template without container
+        # Partial templates may parse, but cannot compile without a runtime.
         config_dict = {
             "dependencies": ["foo", "bar"],
             "params": {"param1": {"value": "foo"}, "param2": {"value": "bar"}},
             "trigger": "all_succeeded",
             "component": {"name": "build-template", "tags": ["kaniko"]},
         }
-        with self.assertRaises(ValidationError):
-            V1Operation.from_dict(config_dict)
+        config = V1Operation.from_dict(config_dict)
+        assert config.to_dict() == config_dict
+        with self.assertRaisesRegex(PolyaxonSchemaError, "has no run"):
+            OperationSpecification.compile_operation(config)
 
         # Embedding a correct template
         config_dict = {
@@ -207,7 +214,7 @@ class TestV1Operations(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1Operation.from_dict(config_dict)
 
-        # Embedding a template without container
+        # Missing node definitions are rejected during DAG preparation.
         config_dict = {
             "dependencies": ["foo", "bar"],
             "params": {"param1": {"value": "foo"}, "param2": {"value": "bar"}},
@@ -236,8 +243,11 @@ class TestV1Operations(BaseTestCase):
                 }
             },
         }
-        with self.assertRaises(ValidationError):
-            V1Operation.from_dict(config_dict)
+        config = V1Operation.from_dict(config_dict)
+        assert config.to_dict() == config_dict
+        compiled = OperationSpecification.compile_operation(config)
+        with self.assertRaisesRegex(PolyaxonSchemaError, "no definition field `B`"):
+            CompiledOperationSpecification.apply_operation_contexts(compiled)
 
         # Embedding a correct template
         config_dict = {
