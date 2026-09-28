@@ -18,7 +18,7 @@ from polyaxon._flow.hooks import V1Hook
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import V1Param, normalize_param_value
 from polyaxon._flow.references import V1DagRef, V1HubRef, V1PathRef, V1UrlRef
-from polyaxon._flow.run.patch import validate_run_patch
+from polyaxon._flow.run.patch import patch_run_patch, validate_run_patch
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 
 
@@ -684,34 +684,21 @@ class V1Operation(BaseOp, TemplateMixinConfig):
         if value is None:
             return result
 
-        current_value = getattr(config, "run_patch", None)
-        if current_value is None:
-            setattr(result, "run_patch", value)
-            return result
-
+        component = config.component
+        kind = component.get_run_kind() if component else None
         if (
-            not config.component
-            or not config.component.run
-            or not config.component.run.kind
+            config.run_patch is not None
+            and not kind
+            and not PatchStrategy.is_replace(strategy)
         ):
-            # We don't have a kind, we don't do anything
-            if PatchStrategy.is_null(strategy):
-                return result
-            if PatchStrategy.is_replace(strategy):
-                setattr(result, "run_patch", value)
-                return result
             return result
-
-        kind = config.component.run.kind
-        replica_types = config.component.get_replica_types()
-        value = validate_run_patch(value, kind, replica_types=replica_types)
-        current_value = validate_run_patch(
-            current_value, kind, replica_types=replica_types
+        result.run_patch = patch_run_patch(
+            current=config.run_patch,
+            value=value,
+            kind=kind,
+            replica_types=component.get_replica_types() if kind else None,
+            strategy=strategy,
         )
-        run_patch = current_value.patch(value, strategy)
-        run_patch = run_patch.to_dict()
-        run_patch.pop("kind")
-        result.run_patch = run_patch
         return result
 
     @classmethod

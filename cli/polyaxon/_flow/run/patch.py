@@ -1,6 +1,7 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import ValidationError
+from clipped.config.patch_strategy import PatchStrategy
 from polyaxon._flow.run.cleaner import V1CleanerJob
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.dask import V1DaskCluster, V1DaskReplica
@@ -15,6 +16,37 @@ from polyaxon._flow.run.ray import V1RayCluster, V1RayReplica
 from polyaxon._flow.run.service import V1Service
 from polyaxon._flow.run.tuner import V1TunerJob
 from polyaxon.exceptions import PolyaxonValidationError
+
+
+def patch_run(current, value, strategy: Optional[PatchStrategy] = None):
+    strategy = strategy or PatchStrategy.POST_MERGE
+    if current is not None and value is not None and current.kind == value.kind:
+        return current.patch(value, strategy=strategy)
+    if current is None or strategy in (PatchStrategy.POST_MERGE, PatchStrategy.REPLACE):
+        return value
+    return current
+
+
+def patch_run_patch(
+    current: Optional[Dict],
+    value: Optional[Dict],
+    kind: Optional[V1RunKind] = None,
+    replica_types: Optional[List[str]] = None,
+    strategy: Optional[PatchStrategy] = None,
+):
+    """Merge runtime patches without applying them to the runtime."""
+    if value is None:
+        return current
+    if current is None:
+        return value
+    if not kind:
+        return value if PatchStrategy.is_replace(strategy) else current
+
+    value = validate_run_patch(value, kind, replica_types=replica_types)
+    current = validate_run_patch(current, kind, replica_types=replica_types)
+    result = current.patch(value, strategy).to_dict()
+    result.pop("kind")
+    return result
 
 
 def validate_run_patch(

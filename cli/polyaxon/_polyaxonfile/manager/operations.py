@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Union
 
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.bools import to_bool
+from polyaxon._config.spec import ConfigSpec
 from polyaxon._env_vars.getters.queue import get_queue_info
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.init import V1Init
@@ -11,7 +12,7 @@ from polyaxon._flow.matrix.enums import V1MatrixKind
 from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
-from polyaxon._flow.run.patch import validate_run_patch
+from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -20,6 +21,67 @@ from polyaxon._polyaxonfile.specs import (
     read_polyaxonfile,
 )
 from polyaxon.exceptions import PolyaxonfileError
+
+
+def _get_native_run(config: V1Polyaxonfile):
+    run = _get_native_run(config.component) if config.component is not None else None
+    if "run" in config.model_fields_set:
+        run = patch_run(run, copy.deepcopy(config.run), config.patch_strategy)
+    return run
+
+
+def patch_polyaxonfile(
+    config: V1Polyaxonfile,
+    preset_files: List[Union[str, Dict, V1Polyaxonfile]],
+) -> V1Polyaxonfile:
+    """Merge file overlays, keeping the source and runPatch for composition."""
+    config = read_polyaxonfile(config)
+    run_patches = []
+    for preset_file in preset_files:
+        if isinstance(preset_file, V1Polyaxonfile):
+            preset = read_polyaxonfile(preset_file, is_preset=True)
+        else:
+            values = copy.deepcopy(ConfigSpec.read_from(preset_file))
+            run = values.get("run")
+            if isinstance(run, Mapping) and "kind" not in run:
+                native_run = config.run
+                if native_run is None and config.component is not None:
+                    native_run = _get_native_run(config.component)
+                if native_run is not None:
+                    values["run"] = {"kind": native_run.kind, **run}
+            preset = read_polyaxonfile(values, is_preset=True)
+
+        strategy = preset.patch_strategy or PatchStrategy.POST_MERGE
+        fields = preset.model_fields_set - set(V1Operation._FIELDS_MANUAL_PATCH) - {"run"}
+        config.patch(
+            V1Polyaxonfile.model_construct(
+                **{key: getattr(preset, key) for key in fields}
+            ),
+            strategy=strategy,
+        )
+        if "run" in preset.model_fields_set:
+            config.run = patch_run(config.run, preset.run, strategy)
+        if preset.run_patch is not None:
+            run_patches.append((preset.run_patch, strategy))
+
+    # The final native runtime supplies the type for all retained runPatch layers.
+    # Applying runPatch to run here would change precedence against later files.
+    if run_patches:
+        run = _get_native_run(config)
+        replica_types = (
+            run.get_replica_types()
+            if run is not None and hasattr(run, "get_replica_types")
+            else None
+        )
+        for value, strategy in run_patches:
+            config.run_patch = patch_run_patch(
+                current=config.run_patch,
+                value=value,
+                kind=run.kind if run is not None else None,
+                replica_types=replica_types,
+                strategy=strategy,
+            )
+    return config
 
 
 def compose_polyaxonfile(config: Union[Dict, V1Polyaxonfile]) -> V1Polyaxonfile:
@@ -71,17 +133,7 @@ def compose_polyaxonfile(config: Union[Dict, V1Polyaxonfile]) -> V1Polyaxonfile:
     effective.strict_params = strict_params
 
     if "run" in local.model_fields_set:
-        if (
-            effective.run is not None
-            and local.run is not None
-            and effective.run.kind == local.run.kind
-        ):
-            effective.run.patch(local.run, strategy=strategy)
-        elif effective.run is None or strategy in (
-            PatchStrategy.POST_MERGE,
-            PatchStrategy.REPLACE,
-        ):
-            effective.run = local.run
+        effective.run = patch_run(effective.run, local.run, strategy)
 
     if local.run_patch:
         if effective.run is None:

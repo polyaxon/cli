@@ -9,6 +9,7 @@ from polyaxon._polyaxonfile.manager import (
     get_op_from_schedule,
     get_op_specification,
     get_ops_from_suggestions,
+    patch_polyaxonfile,
 )
 from polyaxon._polyaxonfile.params import parse_hparams, parse_params
 from polyaxon._polyaxonfile.specs import (
