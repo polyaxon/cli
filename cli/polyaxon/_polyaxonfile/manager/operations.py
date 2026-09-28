@@ -10,13 +10,91 @@ from polyaxon._flow.init import V1Init
 from polyaxon._flow.matrix.enums import V1MatrixKind
 from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.polyaxonfile import V1Polyaxonfile
+from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
     get_specification,
     kinds,
+    read_polyaxonfile,
 )
 from polyaxon.exceptions import PolyaxonfileError
+
+
+def compose_polyaxonfile(config: Union[Dict, V1Polyaxonfile]) -> V1Polyaxonfile:
+    """Compose collected sources without changing the authored document."""
+    if isinstance(config, V1Polyaxonfile):
+        values = {key: getattr(config, key) for key in config.model_fields_set}
+    elif isinstance(config, Mapping):
+        values = dict(config)
+    else:
+        raise PolyaxonfileError("Composition requires a mapping or a V1Polyaxonfile.")
+
+    component = values.pop("component", None)
+    effective = (
+        compose_polyaxonfile(component) if component is not None else V1Polyaxonfile()
+    )
+    run = values.get("run")
+    if isinstance(run, Mapping) and "kind" not in run and effective.run is not None:
+        values["run"] = {"kind": effective.run.kind, **run}
+
+    local = read_polyaxonfile(values)
+    if component is None and any(
+        (local.hub_ref, local.path_ref, local.url_ref, local.dag_ref)
+    ):
+        raise PolyaxonfileError(
+            "Collect the Polyaxonfile reference before composing its local fields."
+        )
+    strategy = local.patch_strategy or PatchStrategy.POST_MERGE
+    strict_params = to_bool(effective.strict_params, handle_none=True) or to_bool(
+        local.strict_params, handle_none=True
+    )
+    patch_fields = local.model_fields_set - {
+        "component",
+        "hub_ref",
+        "path_ref",
+        "url_ref",
+        "dag_ref",
+        "is_preset",
+        "patch_strategy",
+        "run",
+        "run_patch",
+        "strict_params",
+    }
+    effective.patch(
+        V1Polyaxonfile.model_construct(
+            **{key: getattr(local, key) for key in patch_fields}
+        ),
+        strategy=strategy,
+    )
+    effective.strict_params = strict_params
+
+    if "run" in local.model_fields_set:
+        if (
+            effective.run is not None
+            and local.run is not None
+            and effective.run.kind == local.run.kind
+        ):
+            effective.run.patch(local.run, strategy=strategy)
+        elif effective.run is None or strategy in (
+            PatchStrategy.POST_MERGE,
+            PatchStrategy.REPLACE,
+        ):
+            effective.run = local.run
+
+    if local.run_patch:
+        if effective.run is None:
+            raise PolyaxonfileError("runPatch requires a resolved runtime.")
+        effective.run.patch(
+            validate_run_patch(
+                local.run_patch,
+                effective.run.kind,
+                replica_types=effective.get_replica_types(),
+            ),
+            strategy=strategy,
+        )
+    return effective
 
 
 def get_op_specification(
