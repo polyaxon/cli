@@ -150,7 +150,9 @@ class TestSharedFilePatches(BaseTestCase):
                     assert merged.patch_strategy == "post_merge"
                     assert merged.queue == want["queue"]
                     assert [io.name for io in merged.inputs] == want["inputs"]
-                    assert {k: p.value for k, p in merged.params.items()} == want["params"]
+                    assert {k: p.value for k, p in merged.params.items()} == want[
+                        "params"
+                    ]
                     assert merged.run.connections == want["connections"]
                     assert merged.run.container.image == want["native_image"]
                     assert merged.run.container.command == ["sh", "-c"]
@@ -207,8 +209,7 @@ class TestSharedFilePatches(BaseTestCase):
             )
             second = root / "second.yaml"
             second.write_text(
-                "params: {count: 5}\n"
-                "run: {container: {image: second:v3}}\n"
+                "params: {count: 5}\nrun: {container: {image: second:v3}}\n"
             )
             source = read_polyaxonfile(str(base))
             collect_references(source, str(base))
@@ -286,9 +287,7 @@ class TestSharedFilePatches(BaseTestCase):
                 "runPatch: {environment: {annotations: {source: first}}}\n"
             )
             second = root / "second.yaml"
-            second.write_text(
-                "run: {kind: service, container: {image: server:v2}}\n"
-            )
+            second.write_text("run: {kind: service, container: {image: server:v2}}\n")
 
             merged = patch_polyaxonfile(source, [str(first), str(second)])
 
@@ -368,7 +367,9 @@ class TestSharedFilePatches(BaseTestCase):
                         definition=definition, value=value, strategy=strategy
                     ):
                         overlay = {"patchStrategy": strategy, "runPatch": value}
-                        merged = patch_polyaxonfile(read_polyaxonfile(source), [overlay])
+                        merged = patch_polyaxonfile(
+                            read_polyaxonfile(source), [overlay]
+                        )
                         legacy = OperationSpecification.read(deepcopy(source))
                         preset = OperationSpecification.read(
                             deepcopy(overlay), is_preset=True

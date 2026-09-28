@@ -13,7 +13,7 @@ from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._polyaxonfile.manager import get_op_specification
 from polyaxon._polyaxonfile.params import parse_hparams, parse_params
-from polyaxon._polyaxonfile.specs import get_specification, kinds, read_polyaxonfile
+from polyaxon._polyaxonfile.specs import get_specification, read_polyaxonfile
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 

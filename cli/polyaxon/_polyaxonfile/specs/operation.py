@@ -69,7 +69,9 @@ class OperationSpecification(BaseSpecification):
             for p in j.params or {}:
                 get_context_io(c_name=p, c_io=j.params[p], is_list=True)
 
-        fields = effective.model_fields_set & set(V1CompiledOperation.get_model_fields())
+        fields = effective.model_fields_set & set(
+            V1CompiledOperation.get_model_fields()
+        )
         values = {key: getattr(effective, key) for key in fields - {"kind"}}
         return V1CompiledOperation(
             kind=kinds.COMPILED_OPERATION, contexts=contexts, **values

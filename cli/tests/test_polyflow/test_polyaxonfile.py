@@ -19,7 +19,9 @@ class TestPolyaxonfile(BaseTestCase):
         aliases = V1Polyaxonfile.get_aliases()
         for model in (V1Component, V1Operation):
             assert issubclass(model, V1Polyaxonfile)
-            assert set(model.get_model_fields()) == set(V1Polyaxonfile.get_model_fields())
+            assert set(model.get_model_fields()) == set(
+                V1Polyaxonfile.get_model_fields()
+            )
             for name, alias in model.get_aliases().items():
                 assert aliases[name] == alias
 

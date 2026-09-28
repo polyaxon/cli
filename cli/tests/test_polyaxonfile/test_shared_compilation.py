@@ -89,9 +89,7 @@ class TestSharedCompilation(BaseTestCase):
                 compiled = CompiledOperationSpecification.apply_runtime_contexts(
                     compiled
                 )
-                assert compiled.run.container.args == [
-                    "echo 'count=3 message=hello'"
-                ]
+                assert compiled.run.container.args == ["echo 'count=3 message=hello'"]
                 assert authored.to_dict() == before
 
     def test_invocation_fields_on_a_component_reach_the_compiled_operation(self):
@@ -158,9 +156,7 @@ class TestSharedCompilation(BaseTestCase):
             "queue": "local",
             "params": {"count": 3},
             "run": {"container": {"image": "local:v2"}},
-            "runPatch": {
-                "container": {"image": "final:v3", "args": ["echo hello"]}
-            },
+            "runPatch": {"container": {"image": "final:v3", "args": ["echo hello"]}},
         }
         for model in (V1Polyaxonfile, V1Component, V1Operation):
             for strategy in PatchStrategy:
@@ -173,7 +169,8 @@ class TestSharedCompilation(BaseTestCase):
                     compiled = OperationSpecification.compile_operation(authored)
 
                     local_wins = strategy in (
-                        PatchStrategy.POST_MERGE, PatchStrategy.REPLACE
+                        PatchStrategy.POST_MERGE,
+                        PatchStrategy.REPLACE,
                     )
                     assert compiled.queue == ("local" if local_wins else "base")
                     assert compiled.run.container.image == (
@@ -188,9 +185,7 @@ class TestSharedCompilation(BaseTestCase):
 
     def test_run_patch_validation_uses_the_final_runtime_kind(self):
         source = {
-            "component": {
-                "run": {"kind": "job", "container": {"image": "base:v1"}}
-            },
+            "component": {"run": {"kind": "job", "container": {"image": "base:v1"}}},
             "run": {"kind": "service", "container": {"image": "service:v2"}},
             "runPatch": {"ports": [8080]},
         }
@@ -260,12 +255,8 @@ class TestSharedCompilation(BaseTestCase):
                     "strictParams": False,
                     "component": {
                         "strictParams": True,
-                        "params": {
-                            "message": {"value": "hello", "contextOnly": True}
-                        },
-                        "run": {
-                            "kind": "job", "container": {"image": "busybox:1.36"}
-                        },
+                        "params": {"message": {"value": "hello", "contextOnly": True}},
+                        "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
                     },
                     "params": {"extra": 1},
                 }
@@ -281,9 +272,7 @@ class TestSharedCompilation(BaseTestCase):
             ]
 
     def test_missing_runtime_is_rejected_at_compilation(self):
-        for source in (
-            {}, {"params": {"count": 3}}, {"component": {"inputs": []}}
-        ):
+        for source in ({}, {"params": {"count": 3}}, {"component": {"inputs": []}}):
             for model in (V1Polyaxonfile, V1Component, V1Operation):
                 with self.subTest(source=source, model=model):
                     authored = model.from_dict(source)
@@ -303,7 +292,9 @@ class TestSharedCompilation(BaseTestCase):
             ):
                 OperationSpecification.compile_operation(authored)
 
-    def test_authored_fields_are_removed_and_legacy_version_precedence_is_preserved(self):
+    def test_authored_fields_are_removed_and_legacy_version_precedence_is_preserved(
+        self,
+    ):
         authored = OperationSpecification.read(
             {
                 "version": 1.1,
@@ -328,9 +319,7 @@ class TestSharedCompilation(BaseTestCase):
                 "contexts": [],
                 "run": {"kind": "job", "container": {"image": "local:v2"}},
             }
-            assert (
-                get_specification(compiled.to_dict()).to_dict() == compiled.to_dict()
-            )
+            assert get_specification(compiled.to_dict()).to_dict() == compiled.to_dict()
             assert authored.to_dict() == before
 
     def test_submission_validation_uses_params_from_the_component(self):
@@ -348,7 +337,9 @@ class TestSharedCompilation(BaseTestCase):
         compiled.apply_params(compose_polyaxonfile(operation).params)
         assert compiled.inputs[0].value == 3
 
-    def test_public_model_imports_resolve_recursive_dags_without_importing_schemas(self):
+    def test_public_model_imports_resolve_recursive_dags_without_importing_schemas(
+        self,
+    ):
         source = {
             "run": {
                 "kind": "dag",
