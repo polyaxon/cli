@@ -2,7 +2,6 @@ import copy
 from typing import Dict, List
 
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
-from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.params.params import V1Param
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._polyaxonfile.manager.operations import compose_polyaxonfile
@@ -13,23 +12,41 @@ from polyaxon._polyaxonfile.specs.polyaxonfile import read_polyaxonfile
 def get_op_from_schedule(
     content: str,
     compiled_operation: V1CompiledOperation,
-) -> V1Operation:
-    op_spec = V1Operation.read(content)
-    op_spec.conditions = None
-    op_spec.schedule = None
-    op_spec.events = None
-    op_spec.dependencies = None
-    op_spec.trigger = None
-    op_spec.build = None
-    op_spec.skip_on_upstream_skip = None
-    op_spec.cache = compiled_operation.cache
+) -> V1Polyaxonfile:
+    op_spec = read_polyaxonfile(content)
+    # Keep params, matrix, and approval fields in their authored layers.
+    layer = op_spec
+    while layer is not None:
+        for field in (
+            "conditions",
+            "schedule",
+            "events",
+            "dependencies",
+            "trigger",
+            "build",
+            "skip_on_upstream_skip",
+            "inputs",
+            "outputs",
+            "run",
+            "run_patch",
+            "cache",
+            "queue",
+            "namespace",
+            "strict_params",
+        ):
+            setattr(layer, field, None)
+            layer.model_fields_set.discard(field)
+        layer = layer.component
+
+    op_spec.cache = copy.deepcopy(compiled_operation.cache)
     op_spec.queue = compiled_operation.queue
     op_spec.namespace = compiled_operation.namespace
     op_spec.strict_params = compiled_operation.strict_params
-    op_spec.component.inputs = compiled_operation.inputs
-    op_spec.component.outputs = compiled_operation.outputs
-    op_spec.component.run = compiled_operation.run
-    op_spec.component.strict_params = compiled_operation.strict_params
+    component = op_spec.component or op_spec
+    component.inputs = copy.deepcopy(compiled_operation.inputs)
+    component.outputs = copy.deepcopy(compiled_operation.outputs)
+    component.run = copy.deepcopy(compiled_operation.run)
+    component.strict_params = compiled_operation.strict_params
     return op_spec
 
 
