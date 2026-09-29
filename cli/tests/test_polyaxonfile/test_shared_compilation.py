@@ -70,14 +70,15 @@ class TestSharedCompilation(BaseTestCase):
                 authored = get_specification(deepcopy(source))
                 before = authored.to_dict()
 
-                compiled = OperationSpecification.compile_operation(authored)
+                compiled, params = OperationSpecification.compile_operation_with_params(
+                    authored
+                )
 
                 assert type(compiled) is V1CompiledOperation
                 assert not isinstance(compiled, V1Polyaxonfile)
                 assert compiled.to_dict() == expected
                 assert authored.to_dict() == before
-                effective = compose_polyaxonfile(authored)
-                compiled.apply_params(effective.params)
+                compiled.apply_params(params)
                 compiled = CompiledOperationSpecification.apply_operation_contexts(
                     compiled
                 )
@@ -166,13 +167,16 @@ class TestSharedCompilation(BaseTestCase):
                     )
                     before = authored.to_dict()
 
-                    compiled = OperationSpecification.compile_operation(authored)
+                    compiled, params = (
+                        OperationSpecification.compile_operation_with_params(authored)
+                    )
 
                     local_wins = strategy in (
                         PatchStrategy.POST_MERGE,
                         PatchStrategy.REPLACE,
                     )
                     assert compiled.queue == ("local" if local_wins else "base")
+                    assert params["count"].value == (3 if local_wins else 1)
                     assert compiled.run.container.image == (
                         "final:v3" if local_wins else "base:v1"
                     )
@@ -220,7 +224,8 @@ class TestSharedCompilation(BaseTestCase):
         }
         for use_override in (False, True):
             authored = OperationSpecification.read(deepcopy(source))
-            compiled = OperationSpecification.compile_operation(
+            before = authored.to_dict()
+            compiled, params = OperationSpecification.compile_operation_with_params(
                 authored,
                 override=deepcopy(override),
                 use_override_patch_strategy=use_override,
@@ -229,10 +234,84 @@ class TestSharedCompilation(BaseTestCase):
             assert compiled.run.container.image == (
                 "override:v4" if use_override else "base:v1"
             )
-            assert authored.patch_strategy == "pre_merge"
-            # Existing callers read override params from the operation after compilation.
-            assert authored.params["count"].value == 5
-            assert authored.component.run.container.image == "base:v1"
+            assert params["count"].value == 5
+            assert authored.to_dict() == before
+
+    def test_compilation_override_does_not_leak_into_later_compilations(self):
+        authored = read_polyaxonfile(
+            {
+                "component": {
+                    "inputs": [{"name": "count", "type": "int"}],
+                    "params": {
+                        "count": 1,
+                        "message": {
+                            "value": "inherited",
+                            "contextOnly": True,
+                            "toEnv": "MESSAGE",
+                        },
+                    },
+                    "run": {
+                        "kind": "job",
+                        "container": {
+                            "image": "base:v1",
+                            "command": ["sh", "-c"],
+                            "args": ["echo {{ count }} {{ message }}"],
+                        },
+                    },
+                },
+                "params": {"count": 3},
+            }
+        )
+        before = authored.to_dict()
+        override = {
+            "params": {"count": 5},
+            "run": {"container": {"image": "override:v2"}},
+        }
+        override_before = deepcopy(override)
+
+        compiled, params = OperationSpecification.compile_operation_with_params(
+            authored, override=override
+        )
+        assert compiled.run.container.image == "override:v2"
+        assert params["count"].value == 5
+        assert params["message"].context_only is True
+        assert params["message"].to_env == "MESSAGE"
+        assert (
+            OperationSpecification.compile_operation(
+                authored, override=override
+            ).to_dict()
+            == compiled.to_dict()
+        )
+
+        compiled.apply_params(params)
+        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
+        compiled = CompiledOperationSpecification.apply_runtime_contexts(compiled)
+        assert compiled.inputs[0].value == 5
+        assert compiled.run.container.args == ["echo 5 inherited"]
+        assert compiled.contexts[0].to_env == "MESSAGE"
+        assert authored.to_dict() == before
+        assert override == override_before
+
+        baseline, params = OperationSpecification.compile_operation_with_params(
+            authored
+        )
+        assert baseline.run.container.image == "base:v1"
+        assert params["count"].value == 3
+
+    def test_invalid_compilation_override_does_not_change_the_source(self):
+        authored = read_polyaxonfile(
+            {
+                "params": {"count": 3},
+                "run": {"kind": "job", "container": {"image": "base:v1"}},
+            }
+        )
+        before = authored.to_dict()
+        with self.assertRaises(ValidationError):
+            OperationSpecification.compile_operation(
+                authored,
+                override={"params": {"count": 5}, "runPatch": {"ports": [8080]}},
+            )
+        assert authored.to_dict() == before
 
     def test_component_can_receive_an_operation_shaped_override(self):
         component = ComponentSpecification.read(
@@ -293,14 +372,17 @@ class TestSharedCompilation(BaseTestCase):
                 authored = read_polyaxonfile(
                     {"run": {"kind": "service", "container": {"image": "base:v1"}}}
                 )
+                before = authored.to_dict()
 
-                compiled = OperationSpecification.compile_operation(
-                    authored, override=override
+                compiled, params = OperationSpecification.compile_operation_with_params(
+                    authored,
+                    override=override,
                 )
 
                 assert compiled.run.kind == "service"
                 assert compiled.run.container.image == "override:v2"
-                assert authored.params["count"].value == 5
+                assert params["count"].value == 5
+                assert authored.to_dict() == before
 
     def test_strict_component_stays_strict_and_context_only_still_bypasses_it(self):
         for model in (V1Polyaxonfile, V1Component, V1Operation):

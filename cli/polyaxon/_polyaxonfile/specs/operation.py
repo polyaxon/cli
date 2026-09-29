@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Dict, Optional, Type
+from typing import Dict, Optional, Tuple, Type
 
 from clipped.utils.lists import to_list
 from polyaxon._config.spec import ConfigSpec
@@ -28,11 +28,30 @@ class OperationSpecification(BaseSpecification):
         config: V1Polyaxonfile,
         override: Optional[Dict] = None,
         use_override_patch_strategy: bool = False,
+        is_dag_node: bool = False,
     ) -> V1CompiledOperation:
+        compiled, _ = cls.compile_operation_with_params(
+            config,
+            override=override,
+            use_override_patch_strategy=use_override_patch_strategy,
+            is_dag_node=is_dag_node,
+        )
+        return compiled
+
+    @classmethod
+    def compile_operation_with_params(
+        cls,
+        config: V1Polyaxonfile,
+        override: Optional[Dict] = None,
+        use_override_patch_strategy: bool = False,
+        is_dag_node: bool = False,
+    ) -> Tuple[V1CompiledOperation, Optional[Dict[str, V1Param]]]:
+        """Compile and return composed params without changing the source."""
         from polyaxon._polyaxonfile.manager.operations import compose_polyaxonfile
 
         preset_patch_strategy = None
         if override:
+            config = read_polyaxonfile(config)
             if not isinstance(override, V1Polyaxonfile):
                 override = ConfigSpec.read_from(override)
                 run = override.get("run")
@@ -49,7 +68,9 @@ class OperationSpecification(BaseSpecification):
 
             config = config.patch(preset, preset.patch_strategy)
         effective = compose_polyaxonfile(
-            config, run_patch_strategy=preset_patch_strategy
+            config,
+            run_patch_strategy=preset_patch_strategy,
+            is_dag_node=is_dag_node,
         )
         if effective.run is None:
             raise PolyaxonSchemaError(
@@ -86,9 +107,10 @@ class OperationSpecification(BaseSpecification):
             V1CompiledOperation.get_model_fields()
         )
         values = {key: getattr(effective, key) for key in fields - {"kind"}}
-        return V1CompiledOperation(
+        compiled = V1CompiledOperation(
             kind=kinds.COMPILED_OPERATION, contexts=contexts, **values
         )
+        return compiled, effective.params
 
     @classmethod
     def read(cls, values, partial: bool = False, is_preset: bool = False):

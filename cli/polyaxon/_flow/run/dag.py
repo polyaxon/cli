@@ -12,7 +12,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.types.ref_or_obj import RefField
-from clipped.utils.bools import to_bool
 from polyaxon import types
 from polyaxon._contexts import sections as ctx_sections
 import polyaxon._flow.dags as dags
@@ -26,8 +25,7 @@ from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
-V1Operation = ForwardRef("V1Operation")
-V1Component = ForwardRef("V1Component")
+V1Polyaxonfile = ForwardRef("V1Polyaxonfile")
 
 
 class V1Dag(BaseRun):
@@ -305,8 +303,8 @@ class V1Dag(BaseRun):
     _CUSTOM_DUMP_FIELDS = {"operations", "components", "environment"}
 
     kind: Literal[V1RunKind.DAG] = _IDENTIFIER
-    operations: Optional[Union[List[V1Operation], RefField]] = None
-    components: Optional[Union[List[V1Component], RefField]] = None
+    operations: Optional[Union[List[V1Polyaxonfile], RefField]] = None
+    components: Optional[Union[List[V1Polyaxonfile], RefField]] = None
     environment: Optional[Union[V1Environment, RefField]] = None
     connections: Optional[Union[List[StrictStr], RefField]] = None
     volumes: Optional[Union[List[k8s_schemas.V1Volume], RefField]] = None
@@ -316,9 +314,24 @@ class V1Dag(BaseRun):
     )
 
     _dag: Dict[str, "DagOpSpec"] = PrivateAttr()
-    _components_by_names: Dict[str, V1Component] = PrivateAttr()
+    _components_by_names: Dict[str, V1Polyaxonfile] = PrivateAttr()
     _op_component_mapping: Dict[str, str] = PrivateAttr()
+    _effective_ops: Dict[str, V1Polyaxonfile] = PrivateAttr()
     _context: Dict[str, Any] = PrivateAttr()
+
+    @field_validator("operations", "components", **validation_before)
+    def validate_polyaxonfiles(cls, value):
+        from polyaxon._flow.polyaxonfile import V1Component, V1Operation, V1Polyaxonfile
+
+        if not isinstance(value, list):
+            return value
+        models = {"component": V1Component, "operation": V1Operation}
+        return [
+            models.get(item.get("kind"), V1Polyaxonfile).from_dict(item)
+            if isinstance(item, Mapping)
+            else item
+            for item in value
+        ]
 
     @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):
@@ -331,6 +344,7 @@ class V1Dag(BaseRun):
         self._dag = {}  # OpName -> DagOpSpec
         self._components_by_names = {}  # ComponentName -> Component
         self._op_component_mapping = {}  # OpName -> ComponentName
+        self._effective_ops = {}
         self._context = {}  # Ops output names -> types
 
     @property
@@ -392,7 +406,7 @@ class V1Dag(BaseRun):
         return upstream
 
     def _process_op(self, op):
-        upstream = self._get_op_upstream(op=op)
+        upstream = self._get_op_upstream(op=self._effective_ops.get(op.name, op))
         self._dag = dags.set_dag_op(
             dag=self.dag, op_id=op.name, op=op, upstream=upstream, downstream=None
         )
@@ -435,11 +449,72 @@ class V1Dag(BaseRun):
 
         return dags.sort_topologically(dag or self.dag, flatten=flatten)
 
+    def resolve_operations(self, ignore_hub_validation: bool = False):
+        from polyaxon._polyaxonfile.manager.operations import compose_polyaxonfile
+
+        self._components_by_names = {}
+        self._op_component_mapping = {}
+        self._effective_ops = {}
+
+        if not self.operations:
+            raise PolyaxonSchemaError(
+                "Pipeline is not valid, it has no ops to validate components."
+            )
+
+        components = self.components or []
+
+        for component in components:
+            component_name = component.name
+            if not component_name:
+                raise PolyaxonSchemaError("Pipeline component requires a name.")
+            if component_name in self._components_by_names:
+                raise PolyaxonSchemaError(
+                    "Pipeline has multiple components with the same name `{}`".format(
+                        component_name
+                    )
+                )
+            self._components_by_names[component_name] = component
+
+        op_names = set()
+        effective_ops = {}
+        for op in self.operations:
+            op_name = op.name
+            if not op_name:
+                raise PolyaxonSchemaError("Pipeline op requires a name.")
+            if op_name in op_names:
+                raise PolyaxonSchemaError(
+                    "Pipeline has multiple ops with the same name `{}`".format(op_name)
+                )
+            op_names.add(op_name)
+            if not op.has_component_reference and (
+                op.has_hub_reference or op.has_path_reference or op.has_url_reference
+            ):
+                if op.has_hub_reference and ignore_hub_validation:
+                    continue
+                raise PolyaxonSchemaError(
+                    "Pipeline op has no definition field `{}`".format(op_name)
+                )
+            if op.has_dag_reference and not op.has_component_reference:
+                self._op_component_mapping[op_name] = op.dag_ref
+            effective = compose_polyaxonfile(self._get_op_spec(op), is_dag_node=True)
+            if effective.run is None:
+                raise PolyaxonSchemaError(
+                    "Pipeline op has no definition field `{}`".format(op_name)
+                )
+            effective_ops[op_name] = effective
+        self._effective_ops = effective_ops
+
     def process_components(self, inputs=None, ignore_hub_validation: bool = False):
         """`ignore_hub_validation` is currently used for ignoring validation
         during tests with hub_ref.
         """
+        if not self._effective_ops or len(self._effective_ops) != len(
+            self.operations or []
+        ):
+            self.resolve_operations(ignore_hub_validation=ignore_hub_validation)
+
         inputs = inputs or []
+        self._context = {}
 
         for g_context in ctx_sections.GLOBALS_CONTEXTS:
             self._context[
@@ -459,52 +534,10 @@ class V1Dag(BaseRun):
         for _input in inputs:
             self._context["dag.inputs.{}".format(_input.name)] = _input
 
-        if not self.operations:
-            raise PolyaxonSchemaError(
-                "Pipeline is not valid, it has no ops to validate components."
-            )
-
-        components = self.components or []
-
-        for component in components:
-            component_name = component.name
-            if component_name in self._components_by_names:
-                raise PolyaxonSchemaError(
-                    "Pipeline has multiple components with the same name `{}`".format(
-                        component_name
-                    )
-                )
-            self._components_by_names[component_name] = component
-
-        for op in self.operations:
+        for op in self._effective_ops.values():
             op_name = op.name
-            if op.has_component_reference:
-                outputs = op.component.outputs
-                inputs = op.component.inputs
-            elif op.has_dag_reference:
-                component_ref_name = op.dag_ref
-                if op_name in self._op_component_mapping:
-                    raise PolyaxonSchemaError(
-                        "Pipeline has multiple ops with the same name `{}`".format(
-                            op_name
-                        )
-                    )
-                if component_ref_name not in self._components_by_names:
-                    raise PolyaxonSchemaError(
-                        "Pipeline op with name `{}` requires a component with name `{}`, "
-                        "which is not defined on this pipeline.".format(
-                            op_name, component_ref_name
-                        )
-                    )
-                self._op_component_mapping[op_name] = component_ref_name
-                outputs = self._components_by_names[component_ref_name].outputs
-                inputs = self._components_by_names[component_ref_name].inputs
-            elif op.has_hub_reference and ignore_hub_validation:
-                continue
-            else:
-                raise PolyaxonSchemaError(
-                    "Pipeline op has no definition field `{}`".format(op_name)
-                )
+            outputs = op.outputs
+            inputs = op.inputs
 
             if outputs:
                 for output in outputs:
@@ -555,36 +588,48 @@ class V1Dag(BaseRun):
                 "ops.{}.{}".format(op_name, ctx_sections.INPUTS_OUTPUTS)
             ] = V1IO.model_construct(name="io", type="str", value={}, is_optional=True)  # fmt: skip
 
-        for op in self.operations:
-            if op.has_component_reference:
-                component = op.definition
-                component_ref = component.name
-                outputs = component.outputs
-                inputs = component.inputs
-            elif op.has_dag_reference:
-                component_ref = op.definition.name
-                component = self._components_by_names[component_ref]
-                outputs = component.outputs
-                inputs = component.inputs
-            elif op.has_hub_reference and ignore_hub_validation:
-                continue
-            else:
-                raise PolyaxonSchemaError(
-                    "Pipeline op has no definition field `{}`".format(op.name)
-                )
+        for op in self._effective_ops.values():
             ops_params.validate_params(
                 params=op.params,
-                inputs=inputs,
-                outputs=outputs,
+                inputs=op.inputs,
+                outputs=op.outputs,
                 context=self._context,
                 matrix=op.matrix,
                 joins=op.joins,
                 is_template=False,
                 check_all_refs=False,
-                extra_info="<op {}>.<component {}>".format(op.name, component_ref),
-                strict_params=to_bool(component.strict_params, handle_none=True)
-                or to_bool(op.strict_params, handle_none=True),
+                extra_info="<op {}>".format(op.name),
+                strict_params=op.strict_params,
             )
+
+    def _get_op_spec(self, op):
+        from polyaxon._polyaxonfile.specs import read_polyaxonfile
+
+        def resolve_template(config, sources=()):
+            if config.component is not None:
+                resolve_template(config.component, sources)
+            elif config.dag_ref:
+                name = config.dag_ref
+                if name in sources:
+                    raise PolyaxonSchemaError(
+                        "Pipeline op `{}` has a template reference cycle: {}".format(
+                            op.name, " -> ".join((*sources, name))
+                        )
+                    )
+                if name not in self._components_by_names:
+                    raise PolyaxonSchemaError(
+                        "Pipeline op with name `{}` requires a component with name `{}`, "
+                        "which is not defined on this pipeline.".format(op.name, name)
+                    )
+                config.component = read_polyaxonfile(self._components_by_names[name])
+                resolve_template(config.component, (*sources, name))
+
+        config = read_polyaxonfile(op)
+        resolve_template(config)
+        return config
+
+    def get_effective_op(self, name):
+        return self._effective_ops[name]
 
     def set_op_component(self, op_name):
         if op_name not in self.dag:
@@ -593,7 +638,9 @@ class V1Dag(BaseRun):
                 "make sure to run `process_dag`.".format(op_name)
             )
         op_spec = self.dag[op_name]
-        if op_spec.op.has_component_reference:
+        if op_spec.op.has_component_reference or (
+            op_spec.op.run is not None and op_spec.op.reference is None
+        ):
             return
 
         if op_name not in self._op_component_mapping:
@@ -606,20 +653,13 @@ class V1Dag(BaseRun):
                     op_spec.op.definition.get_kind_value(),
                 )
             )
-        component_ref_name = self._op_component_mapping[op_name]
-        op_spec.op.set_definition(self._components_by_names[component_ref_name])
+        op_spec.op.set_definition(self._get_op_spec(op_spec.op).component)
 
     def get_op_spec_by_index(self, idx):
-        from polyaxon._polyaxonfile import OperationSpecification
-
-        op_dict = self.operations[idx].to_dict()
-        return OperationSpecification.read(op_dict)
+        return self._get_op_spec(self.operations[idx])
 
     def get_op_spec_by_name(self, name):
-        from polyaxon._polyaxonfile import OperationSpecification
-
-        op_dict = self.dag[name].op.to_dict()
-        return OperationSpecification.read(op_dict)
+        return self._get_op_spec(self.dag[name].op)
 
     def get_resources(self):
         return None

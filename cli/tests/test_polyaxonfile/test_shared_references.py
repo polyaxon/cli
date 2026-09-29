@@ -13,6 +13,144 @@ from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 @pytest.mark.polyaxonfile_mark
 class TestSharedReferences(BaseTestCase):
+    def test_dag_templates_and_nested_nodes_collect_relative_references(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            jobs = root / "templates" / "jobs"
+            jobs.mkdir(parents=True)
+            (jobs / "job.yaml").write_text(
+                "kind: operation\n"
+                "params: {count: 3}\n"
+                "run: {kind: job, container: {image: busybox:1.36}}\n"
+            )
+            (root / "templates" / "nested.yaml").write_text(
+                "kind: component\n"
+                "run:\n"
+                "  kind: dag\n"
+                "  operations:\n"
+                "    - name: inner\n"
+                "      component: {pathRef: ./jobs/job.yaml}\n"
+            )
+            source = root / "pipeline.yaml"
+            source.write_text(
+                "run:\n"
+                "  kind: dag\n"
+                "  components:\n"
+                "    - name: template\n"
+                "      pathRef: ./templates/nested.yaml\n"
+                "  operations:\n"
+                "    - name: from-template\n"
+                "      dagRef: template\n"
+                "    - name: from-file\n"
+                "      pathRef: ./templates/nested.yaml\n"
+                "    - name: direct\n"
+                "      run:\n"
+                "        kind: dag\n"
+                "        operations:\n"
+                "          - name: inner\n"
+                "            pathRef: ./templates/jobs/job.yaml\n"
+            )
+            config = collect_references(read_polyaxonfile(str(source)), str(source))
+
+            template = config.run.components[0].component
+            referenced = config.run.operations[1].component
+            for nested in (template, referenced):
+                inner = nested.run.operations[0].component
+                assert inner.path_ref == "./jobs/job.yaml"
+                assert inner.component.kind == "operation"
+                assert inner.component.params["count"].value == 3
+                assert inner.component.run.container.image == "busybox:1.36"
+            direct = config.run.operations[2].run.operations[0]
+            assert direct.component.run.container.image == "busybox:1.36"
+            assert config.run.operations[0].component is None
+            assert template is not referenced
+            with patch.object(ConfigSpec, "read_from_file") as read_file:
+                collect_references(config, str(source))
+            read_file.assert_not_called()
+
+        assert read_polyaxonfile(config.to_json()).to_dict() == config.to_dict()
+
+    def test_dag_source_cycles_and_missing_files_include_the_entry_name(self):
+        with TemporaryDirectory() as directory:
+            source = Path(directory) / "pipeline.yaml"
+            for field in ("components", "operations"):
+                for path, error in (
+                    ("./pipeline.yaml", "reference cycle"),
+                    ("./missing.yaml", "does not exist"),
+                ):
+                    with self.subTest(field=field, path=path):
+                        source.write_text(
+                            "run:\n"
+                            "  kind: dag\n"
+                            f"  {field}:\n"
+                            "    - name: train\n"
+                            f"      component: {{pathRef: {path}}}\n"
+                        )
+                        with self.assertRaisesRegex(
+                            PolyaxonSchemaError, f"train.*{error}"
+                        ):
+                            collect_references(
+                                read_polyaxonfile(str(source)), str(source)
+                            )
+
+    @patch.object(ConfigSpec, "get_public_registry", return_value=None)
+    @patch.object(ConfigSpec, "read_from_custom_hub")
+    @patch.object(ConfigSpec, "read_from_url")
+    def test_dag_templates_collect_remote_sources(self, read_url, read_hub, registry):
+        read_url.return_value = {
+            "run": {
+                "kind": "dag",
+                "operations": [{"name": "train", "hubRef": "org/train:v1"}],
+            }
+        }
+        read_hub.return_value = {
+            "kind": "operation",
+            "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
+        }
+        config = read_polyaxonfile(
+            {
+                "run": {
+                    "kind": "dag",
+                    "components": [
+                        {"name": "template", "urlRef": "https://example.com/dag.yaml"}
+                    ],
+                    "operations": [{"name": "nested", "dagRef": "template"}],
+                }
+            }
+        )
+
+        collect_references(config)
+
+        train = config.run.components[0].component.run.operations[0]
+        assert train.component.kind == "operation"
+        assert train.component.run.container.image == "busybox:1.36"
+        read_url.assert_called_once_with("https://example.com/dag.yaml")
+        read_hub.assert_called_once_with("org/train:v1")
+        assert read_polyaxonfile(config.to_json()).to_dict() == config.to_dict()
+
+    def test_dag_expressions_survive_collection_and_serialization(self):
+        for run in (
+            {"kind": "dag", "operations": "{{ operations }}"},
+            {"kind": "dag", "components": "{{ components }}"},
+            {
+                "kind": "dag",
+                "operations": "{{ operations }}",
+                "components": "{{ components }}",
+                "environment": "{{ environment }}",
+            },
+            {
+                "kind": "dag",
+                "operations": [{"name": "train", "dagRef": "template"}],
+                "components": "{{ components }}",
+            },
+        ):
+            with self.subTest(run=run):
+                config = read_polyaxonfile({"run": run})
+                collect_references(config)
+                assert config.run.to_dict() == run
+                assert config.to_dict() == {"run": run}
+                assert read_polyaxonfile(config.to_json()).to_dict() == {"run": run}
+
     def test_relative_sources_keep_each_files_directory_and_authored_layers(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

@@ -80,6 +80,7 @@ def patch_polyaxonfile(
 def compose_polyaxonfile(
     config: Union[Dict, V1Polyaxonfile],
     run_patch_strategy: Optional[PatchStrategy] = None,
+    is_dag_node: bool = False,
 ) -> V1Polyaxonfile:
     """Compose collected sources without changing the authored document."""
     if isinstance(config, V1Polyaxonfile):
@@ -98,6 +99,10 @@ def compose_polyaxonfile(
         values["run"] = {"kind": effective.run.kind, **run}
 
     local = read_polyaxonfile(values)
+    if is_dag_node and local.schedule is not None:
+        raise PolyaxonfileError(
+            "DAG node `{}` cannot define a schedule.".format(local.name)
+        )
     if component is None and any(
         (local.hub_ref, local.path_ref, local.url_ref, local.dag_ref)
     ):
@@ -146,6 +151,17 @@ def compose_polyaxonfile(
             ),
             strategy=run_patch_strategy or strategy,
         )
+    if is_dag_node:
+        for field in (
+            "name",
+            "dependencies",
+            "trigger",
+            "conditions",
+            "joins",
+            "skip_on_upstream_skip",
+            "schedule",
+        ):
+            setattr(effective, field, copy.deepcopy(getattr(local, field)))
     return effective
 
 
@@ -237,10 +253,9 @@ def get_op_specification(
 
     # Sanity check if params were passed and we are not dealing with a hub component
     if validate_params:
-        params = compose_polyaxonfile(config).params
-        # Avoid in-place patch
-        run_config = get_specification(config.to_dict())
-        run_config = OperationSpecification.compile_operation(run_config)
+        run_config, params = OperationSpecification.compile_operation_with_params(
+            config
+        )
         run_config.validate_params(params=params, is_template=False)
         if run_config.is_dag_run:
             CompiledOperationSpecification.apply_operation_contexts(run_config)

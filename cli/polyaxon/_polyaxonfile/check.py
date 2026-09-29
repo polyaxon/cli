@@ -17,20 +17,22 @@ from polyaxon._polyaxonfile.specs import get_specification, read_polyaxonfile
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 
-def collect_dag_components(dag: V1Dag, path_context: Optional[str] = None):
+def collect_dag_components(dag: V1Dag, path_context: Optional[str] = None, sources=()):
     """Collect components that cannot be resolved by the scheduler"""
-    for op in dag.operations:
-        op_name = op.name
-        if op.has_url_reference or op.has_path_reference or op.has_hub_reference:
+    for field in ("components", "operations"):
+        entries = getattr(dag, field)
+        if not isinstance(entries, list):
+            continue
+        for op in entries:
             try:
-                op = collect_references(op, path_context)
+                _collect_shared_references(op, path_context, sources)
             except Exception as e:
                 raise PolyaxonSchemaError(
                     "Pipeline op with name `{}` requires a component with ref `{}`, "
                     "the reference could not be resolved. Error: {}".format(
-                        op_name, op.hub_ref or op.url_ref or op.path_ref, e
+                        op.name, op.hub_ref or op.url_ref or op.path_ref, e
                     )
-                )
+                ) from e
 
 
 def collect_references(
@@ -85,8 +87,8 @@ def _collect_shared_references(config, path_context, sources):
                 ) from e
             config.component = component
 
-    if config.is_dag_run and isinstance(config.run.operations, list):
-        collect_dag_components(config.run, path_context)
+    if config.is_dag_run:
+        collect_dag_components(config.run, path_context, sources)
     return config
 
 
