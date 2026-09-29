@@ -1,6 +1,8 @@
+from collections.abc import Mapping
 from typing import Dict, Optional, Type
 
 from clipped.utils.lists import to_list
+from polyaxon._config.spec import ConfigSpec
 from polyaxon._flow.io.io import V1IO
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.operations.operation import PartialV1Operation, V1Operation
@@ -8,6 +10,7 @@ from polyaxon._flow.params.params import V1Param
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
+from polyaxon._polyaxonfile.specs.polyaxonfile import read_polyaxonfile
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
@@ -30,7 +33,17 @@ class OperationSpecification(BaseSpecification):
 
         preset_patch_strategy = None
         if override:
-            preset = OperationSpecification.read(override, is_preset=True)
+            if not isinstance(override, V1Polyaxonfile):
+                override = ConfigSpec.read_from(override)
+                run = override.get("run")
+                if isinstance(run, Mapping) and "kind" not in run:
+                    native_run = config.get_native_run()
+                    if native_run is not None:
+                        override = {
+                            **override,
+                            "run": {"kind": native_run.kind, **run},
+                        }
+            preset = read_polyaxonfile(override, is_preset=True)
             if use_override_patch_strategy and preset.patch_strategy:
                 preset_patch_strategy = preset.patch_strategy
 

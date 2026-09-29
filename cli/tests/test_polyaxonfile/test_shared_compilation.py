@@ -248,6 +248,60 @@ class TestSharedCompilation(BaseTestCase):
         assert component.kind == "component"
         assert compiled.run.container.image == "override:v2"
 
+    def test_native_override_inherits_the_collected_runtime_kind(self):
+        for runtime in ("job", "service"):
+            for kind in (None, "component", "operation"):
+                with self.subTest(runtime=runtime, kind=kind):
+                    source = {
+                        "kind": "component",
+                        "component": {
+                            "run": {
+                                "kind": runtime,
+                                "container": {
+                                    "image": "base:v1",
+                                    "command": ["sh", "-c"],
+                                },
+                            }
+                        },
+                    }
+                    override = {"run": {"container": {"image": "override:v2"}}}
+                    if kind:
+                        override["kind"] = kind
+                    before = deepcopy(override)
+
+                    compiled = OperationSpecification.compile_operation(
+                        read_polyaxonfile(source), override=override
+                    )
+
+                    assert compiled.run.kind == runtime
+                    assert compiled.run.container.image == "override:v2"
+                    assert compiled.run.container.command == ["sh", "-c"]
+                    assert override == before
+
+    def test_override_reading_keeps_existing_input_forms(self):
+        values = {
+            "params": {"count": 5},
+            "run": {"kind": "service", "container": {"image": "override:v2"}},
+        }
+        for override in (
+            V1Operation.from_dict(values),
+            V1Component.from_dict(values),
+            V1Operation.from_dict(values).to_json(),
+            [{"params": {"count": 3}}, values],
+        ):
+            with self.subTest(override=override):
+                authored = read_polyaxonfile(
+                    {"run": {"kind": "service", "container": {"image": "base:v1"}}}
+                )
+
+                compiled = OperationSpecification.compile_operation(
+                    authored, override=override
+                )
+
+                assert compiled.run.kind == "service"
+                assert compiled.run.container.image == "override:v2"
+                assert authored.params["count"].value == 5
+
     def test_strict_component_stays_strict_and_context_only_still_bypasses_it(self):
         for model in (V1Polyaxonfile, V1Component, V1Operation):
             authored = model.from_dict(
