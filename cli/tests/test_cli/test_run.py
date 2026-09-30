@@ -13,11 +13,37 @@ from polyaxon._polyaxonfile.specs import OperationSpecification
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.cli_constants import SYMLINK_MODES
+from polyaxon.exceptions import ApiException
 from tests.test_cli.utils import BaseCommandTestCase
 
 
 @pytest.mark.cli_mark
 class TestCliRun(BaseCommandTestCase):
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_shared_file_reports_server_version_error(
+        self, create_run, resolve_project
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        error = ApiException(status=400, reason="Bad Request")
+        error.body = '["The Polyaxonfile `version` must be specified."]'
+        create_run.side_effect = error
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yaml"
+            source.write_text("run: {kind: job, container: {image: busybox:1.36}}\n")
+
+            result = self.runner.invoke(
+                run, ["--project=owner/project", "-f", str(source)]
+            )
+
+        assert result.exit_code == 1, (result.output, result.exception)
+        assert "The Polyaxonfile `version` must be specified." in result.output
+        create_run.assert_called_once()
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        assert "version" not in submitted
+        assert "component" not in submitted
+        assert submitted["run"]["container"]["image"] == "busybox:1.36"
+
     @patch("polyaxon._utils.cache.cache")
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
     @patch("polyaxon._cli.context.resolve_project")

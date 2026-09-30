@@ -86,7 +86,6 @@ from traceml.logging.streamer import get_logs_streamer
 
 if TYPE_CHECKING:
     from polyaxon._flow.matrix.matrix import V1Matrix
-    from polyaxon._flow.operations.operation import V1Operation
     from polyaxon._flow.polyaxonfile import V1Polyaxonfile
     from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
         V1ListRunArtifactsResponse,
@@ -530,7 +529,7 @@ class RunClient(ClientMixin):
 
     def _build_restart_body(
         self,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         copy: bool = False,
         recompile: bool = False,
         copy_dirs: Optional[List[str]] = None,
@@ -567,7 +566,7 @@ class RunClient(ClientMixin):
 
     def _build_resume_body(
         self,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         recompile: bool = False,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -2074,7 +2073,7 @@ class RunClient(ClientMixin):
     @client_handler(check_no_op=True, check_offline=True)
     def restart(
         self,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         copy: bool = False,
         recompile: bool = False,
         copy_dirs: Optional[List[str]] = None,
@@ -2122,7 +2121,7 @@ class RunClient(ClientMixin):
     @client_handler(check_no_op=True, check_offline=True)
     def resume(
         self,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         recompile: bool = False,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -4051,7 +4050,7 @@ class AsyncRunClient(RunClient):
     @async_client_handler(check_no_op=True, check_offline=True)
     async def restart(
         self,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         copy: bool = False,
         recompile: bool = False,
         copy_dirs: Optional[List[str]] = None,
@@ -4090,7 +4089,7 @@ class AsyncRunClient(RunClient):
     @async_client_handler(check_no_op=True, check_offline=True)
     async def resume(
         self,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         recompile: bool = False,
         name: Optional[str] = None,
         description: Optional[str] = None,

@@ -951,6 +951,133 @@ class TestCliRuns(BaseCommandTestCase):
         )
         assert stop.call_count == 1
 
+    @patch("polyaxon._cli.context.resolve_run")
+    def test_rerun_shared_files_preserve_content_and_metadata(self, resolve_run):
+        resolve_run.return_value = ("owner", None, "project", RUN_UUID)
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yaml"
+            source.write_text(
+                "strictParams: true\n"
+                "inputs: [{name: count, type: int}]\n"
+                "params: {count: 1}\n"
+                "presets: [cpu]\n"
+                "run:\n"
+                "  kind: job\n"
+                "  container:\n"
+                "    image: busybox:1.36\n"
+                "    command: [sh, -c]\n"
+                "    args: ['echo {{ count }}']\n"
+                "    resources: {limits: {nvidia.com/gpu: 1}}\n"
+            )
+            params = Path(directory) / "params.yaml"
+            params.write_text("params: {count: 1}\npresets: [cpu]\n")
+            override = Path(directory) / "override.yaml"
+            for strategy in ("post_merge", "pre_merge"):
+                override.write_text(
+                    "patchStrategy: {}\n"
+                    "params: {{count: 3}}\n"
+                    "run:\n"
+                    "  kind: job\n"
+                    "  container:\n"
+                    "    image: busybox:1.37\n"
+                    "    resources: {{limits: {{nvidia.com/gpu: 2}}}}\n".format(
+                        strategy
+                    )
+                )
+                for command, endpoint, options in (
+                    ("restart", "restart_run", []),
+                    (
+                        "restart",
+                        "copy_run",
+                        [
+                            "--copy",
+                            "--copy-dir",
+                            "checkpoints",
+                            "--copy-file",
+                            "model.bin",
+                        ],
+                    ),
+                    ("resume", "resume_run", []),
+                ):
+                    for recompile in (False, True):
+                        with self.subTest(
+                            endpoint=endpoint, strategy=strategy, recompile=recompile
+                        ):
+                            with patch(
+                                "polyaxon._sdk.api.runs_v1_api.RunsV1Api.{}".format(
+                                    endpoint
+                                ),
+                                return_value=V1Run(uuid=RUN_UUID),
+                            ) as request:
+                                result = self.runner.invoke(
+                                    ops,
+                                    [
+                                        "--project=owner/project",
+                                        "--uid={}".format(RUN_UUID),
+                                        command,
+                                        "-f",
+                                        str(source if recompile else params),
+                                        "-f",
+                                        str(override),
+                                        "--name=rerun",
+                                        "--description=native rerun",
+                                        "--tags=native,rerun",
+                                        *options,
+                                        *(["--recompile"] if recompile else []),
+                                    ],
+                                )
+
+                            assert result.exit_code == 0, (
+                                result.output,
+                                result.exception,
+                            )
+                            request.assert_called_once()
+                            assert request.call_args.args == (
+                                "owner",
+                                "project",
+                                RUN_UUID,
+                            )
+                            body = request.call_args.kwargs["body"]
+                            submitted = orjson_loads(body.content)
+                            assert submitted["kind"] == "operation"
+                            assert "version" not in submitted
+                            assert "component" not in submitted
+                            if recompile:
+                                assert submitted["strictParams"] is True
+                                assert submitted["inputs"] == [
+                                    {"name": "count", "type": "int"}
+                                ]
+                            else:
+                                assert "strictParams" not in submitted
+                                assert "inputs" not in submitted
+                            assert submitted["params"] == {"count": {"value": 3}}
+                            assert submitted["presets"] == ["cpu"]
+                            assert submitted["patchStrategy"] == strategy
+                            expected_run = {
+                                "kind": "job",
+                                "container": {
+                                    "image": "busybox:1.37",
+                                    "resources": {"limits": {"nvidia.com/gpu": 2}},
+                                },
+                            }
+                            if recompile:
+                                expected_run["container"].update(
+                                    command=["sh", "-c"], args=["echo {{ count }}"]
+                                )
+                            assert submitted["run"] == expected_run
+                            assert body.name == "rerun"
+                            assert body.description == "native rerun"
+                            assert body.tags == ["native", "rerun"]
+                            metadata = {}
+                            if endpoint == "copy_run":
+                                metadata["copy_artifacts"] = {
+                                    "dirs": ["{}/checkpoints".format(RUN_UUID)],
+                                    "files": ["{}/model.bin".format(RUN_UUID)],
+                                }
+                            if recompile:
+                                metadata["recompile"] = True
+                            assert body.meta_info == (metadata or None)
+
     @patch("polyaxon.client.RunClient.restart")
     def test_restart_run(self, restart):
         self.runner.invoke(

@@ -1022,6 +1022,80 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
         with self.assertRaises(PolyaxonClientException):
             await AsyncRunClient.load_offline_run("/tmp/run")
 
+    async def test_rerun_shared_and_legacy_content_preserves_payload(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        client = self.make_client(sdk_client)
+        runtime = {
+            "kind": "job",
+            "container": {
+                "image": "busybox:1.36",
+                "resources": {"limits": {"nvidia.com/gpu": 1}},
+            },
+        }
+        for content in (
+            V1Polyaxonfile(params={"count": 3}, run=runtime),
+            json.dumps(
+                {
+                    "version": 1.1,
+                    "kind": "operation",
+                    "params": {"count": {"value": 3}},
+                    "component": {"kind": "component", "run": runtime},
+                    "runPatch": {"container": {"image": "debug:v2"}},
+                }
+            ),
+        ):
+            for action, endpoint, options in (
+                ("restart", "restart_run", {}),
+                (
+                    "restart",
+                    "copy_run",
+                    {"copy": True, "copy_dirs": ["checkpoints"]},
+                ),
+                ("resume", "resume_run", {}),
+            ):
+                for recompile in (False, True):
+                    with self.subTest(
+                        content_type=type(content).__name__,
+                        endpoint=endpoint,
+                        recompile=recompile,
+                    ):
+                        response = self.make_run(name="rerun")
+                        request = AsyncMock(return_value=response)
+                        setattr(sdk_client.runs_v1, endpoint, request)
+
+                        result = await getattr(client, action)(
+                            content=content,
+                            recompile=recompile,
+                            name="rerun",
+                            **options,
+                        )
+
+                        assert result is response
+                        request.assert_called_once()
+                        assert request.call_args.args == (OWNER, PROJECT, RUN_UUID)
+                        assert "async_req" not in request.call_args.kwargs
+                        body = request.call_args.kwargs["body"]
+                        assert isinstance(body.content, str)
+                        submitted = json.loads(body.content)
+                        assert submitted["params"] == {"count": {"value": 3}}
+                        if isinstance(content, str):
+                            assert body.content == content
+                            assert submitted["version"] == 1.1
+                            assert submitted["component"]["run"] == runtime
+                        else:
+                            assert "version" not in submitted
+                            assert "component" not in submitted
+                            assert submitted["run"] == runtime
+                        assert body.name == "rerun"
+                        metadata = {}
+                        if endpoint == "copy_run":
+                            metadata["copy_artifacts"] = {
+                                "dirs": ["{}/checkpoints".format(RUN_UUID)]
+                            }
+                        if recompile:
+                            metadata["recompile"] = True
+                        assert body.meta_info == (metadata or None)
+
     async def test_restart_routes_to_copy_when_copy_flag_set(self):
         sdk_client = AsyncPolyaxonClientMock()
         response = self.make_run(name="restarted")
@@ -1035,6 +1109,9 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
         assert sdk_client.runs_v1.copy_run.call_count == 1
         assert sdk_client.runs_v1.restart_run.call_count == 0
         assert "async_req" not in sdk_client.runs_v1.copy_run.call_args[1]
+        body = sdk_client.runs_v1.copy_run.call_args.kwargs["body"]
+        assert body.content is None
+        assert body.meta_info is None
 
     async def test_restart_routes_to_restart_when_copy_not_set(self):
         sdk_client = AsyncPolyaxonClientMock()
@@ -1049,6 +1126,9 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
         assert sdk_client.runs_v1.restart_run.call_count == 1
         assert sdk_client.runs_v1.copy_run.call_count == 0
         assert "async_req" not in sdk_client.runs_v1.restart_run.call_args[1]
+        body = sdk_client.runs_v1.restart_run.call_args.kwargs["body"]
+        assert body.content is None
+        assert body.meta_info is None
 
     async def test_resume_awaits_resume_run_with_built_body(self):
         sdk_client = AsyncPolyaxonClientMock()
@@ -1061,6 +1141,9 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
         assert result is response
         assert sdk_client.runs_v1.resume_run.call_count == 1
         assert "async_req" not in sdk_client.runs_v1.resume_run.call_args[1]
+        body = sdk_client.runs_v1.resume_run.call_args.kwargs["body"]
+        assert body.content is None
+        assert body.meta_info is None
 
     async def test_log_succeeded_awaits_create_run_status_via_log_status(self):
         sdk_client = AsyncPolyaxonClientMock()

@@ -377,6 +377,137 @@ class TestRunClient(BaseTestCase):
                 assert submitted["version"] == version
                 assert content.version == version
 
+    def test_rerun_shared_and_legacy_content_preserves_payload(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            client=sdk_client,
+            manual_exceptions_handling=True,
+        )
+        runtime = {
+            "kind": "job",
+            "container": {
+                "image": "busybox:1.36",
+                "resources": {"limits": {"nvidia.com/gpu": 1}},
+            },
+        }
+        for model, source in (
+            (
+                V1Polyaxonfile,
+                {"params": {"count": {"value": 3}}, "run": runtime},
+            ),
+            (
+                V1Operation,
+                {
+                    "version": 1.1,
+                    "kind": "operation",
+                    "params": {"count": {"value": 3}},
+                    "component": {"kind": "component", "run": runtime},
+                    "runPatch": {"container": {"image": "debug:v2"}},
+                },
+            ),
+        ):
+            for content in (source, model.from_dict(source), json.dumps(source)):
+                for action, endpoint, options in (
+                    ("restart", "restart_run", {}),
+                    (
+                        "restart",
+                        "copy_run",
+                        {
+                            "copy": True,
+                            "copy_dirs": ["checkpoints"],
+                            "copy_files": ["model.bin"],
+                        },
+                    ),
+                    ("resume", "resume_run", {}),
+                ):
+                    for recompile in (False, True):
+                        with self.subTest(
+                            model=model.__name__,
+                            content_type=type(content).__name__,
+                            endpoint=endpoint,
+                            recompile=recompile,
+                        ):
+                            sdk_client.runs_v1.reset_mock()
+                            request = getattr(sdk_client.runs_v1, endpoint)
+                            response = V1Run(uuid=self.run_uuid_2)
+                            request.return_value = response
+
+                            result = getattr(client, action)(
+                                content=content,
+                                recompile=recompile,
+                                name="rerun",
+                                description="rerun description",
+                                tags=["native", "rerun"],
+                                **options,
+                            )
+
+                            assert result is response
+                            request.assert_called_once()
+                            assert request.call_args.args == (
+                                self.owner,
+                                self.project,
+                                self.run_uuid,
+                            )
+                            body = request.call_args.kwargs["body"]
+                            assert isinstance(body.content, str)
+                            submitted = json.loads(body.content)
+                            assert submitted.get("version") == source.get("version")
+                            assert ("version" in submitted) == ("version" in source)
+                            assert submitted.get("kind") == source.get("kind")
+                            assert submitted["params"] == source["params"]
+                            if "component" in source:
+                                assert submitted["component"] == source["component"]
+                                assert submitted["runPatch"]["container"] == {
+                                    "image": "debug:v2"
+                                }
+                            else:
+                                assert "component" not in submitted
+                                assert submitted["run"] == runtime
+                            if isinstance(content, str):
+                                assert body.content == content
+                            assert body.name == "rerun"
+                            assert body.description == "rerun description"
+                            assert body.tags == ["native", "rerun"]
+                            metadata = {}
+                            if endpoint == "copy_run":
+                                metadata["copy_artifacts"] = {
+                                    "dirs": ["{}/checkpoints".format(self.run_uuid)],
+                                    "files": ["{}/model.bin".format(self.run_uuid)],
+                                }
+                            if recompile:
+                                metadata["recompile"] = True
+                            assert body.meta_info == (metadata or None)
+                            assert source["params"] == {"count": {"value": 3}}
+                            assert runtime["container"]["image"] == "busybox:1.36"
+
+    def test_rerun_without_content_keeps_empty_payload(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            client=sdk_client,
+        )
+        for action, endpoint, options in (
+            ("restart", "restart_run", {}),
+            ("restart", "copy_run", {"copy": True}),
+            ("resume", "resume_run", {}),
+        ):
+            with self.subTest(endpoint=endpoint):
+                request = getattr(sdk_client.runs_v1, endpoint)
+                request.return_value = V1Run(uuid=self.run_uuid_2)
+
+                result = getattr(client, action)(**options)
+
+                assert result is request.return_value
+                request.assert_called_once()
+                body = request.call_args.kwargs["body"]
+                assert body.content is None
+                assert body.meta_info is None
+
     @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_create_from_shared_file_submits_native_content(self, create_run):
         create_run.return_value = V1Run(uuid=self.run_uuid)
