@@ -1,4 +1,5 @@
 import inspect
+import json
 from mock import mock
 import os
 from pathlib import Path
@@ -11,6 +12,9 @@ from polyaxon import settings
 from polyaxon._client.run import AsyncRunClient, RunClient
 from polyaxon._client.store import AsyncPolyaxonStore
 from polyaxon._contexts import paths as ctx_paths
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._schemas.lifecycle import (
     V1ProjectVersionKind,
     V1StatusCondition,
@@ -329,6 +333,39 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
         assert sdk_client.runs_v1.create_run.call_args[1]["owner"] == OWNER
         assert sdk_client.runs_v1.create_run.call_args[1]["project"] == PROJECT
         assert "async_req" not in sdk_client.runs_v1.create_run.call_args[1]
+
+    async def test_create_shared_polyaxonfile_content(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.runs_v1.create_run = AsyncMock(return_value=self.make_run())
+        client = self.make_client(sdk_client)
+        for kind, model in (
+            (None, V1Polyaxonfile),
+            ("component", V1Component),
+            ("operation", V1Operation),
+        ):
+            source = {
+                "params": {"count": 3},
+                "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
+            }
+            if kind:
+                source["kind"] = kind
+            for content in (source, model.from_dict(source)):
+                with self.subTest(kind=kind, content_type=type(content).__name__):
+                    sdk_client.runs_v1.create_run.reset_mock()
+
+                    await client.create(content=content, name="shared")
+
+                    sdk_client.runs_v1.create_run.assert_called_once()
+                    request = sdk_client.runs_v1.create_run.call_args.kwargs
+                    assert "async_req" not in request
+                    assert isinstance(request["body"].content, str)
+                    submitted = json.loads(request["body"].content)
+                    assert "version" not in submitted
+                    assert submitted.get("kind") == kind
+                    assert "component" not in submitted
+                    assert submitted["params"] == {"count": {"value": 3}}
+                    assert submitted["run"] == source["run"]
+                    assert request["body"].name == "shared"
 
     async def test_status_methods_await_api_without_async_req(self):
         sdk_client = AsyncPolyaxonClientMock()

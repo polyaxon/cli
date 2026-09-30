@@ -87,6 +87,7 @@ from traceml.logging.streamer import get_logs_streamer
 if TYPE_CHECKING:
     from polyaxon._flow.matrix.matrix import V1Matrix
     from polyaxon._flow.operations.operation import V1Operation
+    from polyaxon._flow.polyaxonfile import V1Polyaxonfile
     from polyaxon._sdk.schemas.v1_list_run_artifacts_response import (
         V1ListRunArtifactsResponse,
     )
@@ -441,13 +442,14 @@ class RunClient(ClientMixin):
         self._artifacts_lineage = {}
 
     def _normalize_operation_content(
-        self, content: Optional[Union[str, Dict, "V1Operation"]]
+        self, content: Optional[Union[str, Dict, "V1Polyaxonfile"]]
     ) -> Optional[str]:
-        from polyaxon._flow.operations.operation import V1Operation
+        from polyaxon._flow.polyaxonfile import V1Polyaxonfile
+        from polyaxon._polyaxonfile.specs import read_polyaxonfile
 
         if isinstance(content, Mapping):
-            content = V1Operation.from_dict(content)
-        if isinstance(content, V1Operation):
+            content = read_polyaxonfile(content)
+        if isinstance(content, V1Polyaxonfile):
             content = content.to_json()
         return content
 
@@ -456,20 +458,20 @@ class RunClient(ClientMixin):
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[List[str]] = None,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         managed_by: Optional[ManagedBy] = None,
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
     ) -> V1OperationBody:
-        from polyaxon._flow.operations.operation import V1Operation
+        from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 
         if not managed_by and is_managed is not None:
             managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
         if not content:
             managed_by = ManagedBy.USER
             is_managed = False
-        elif not isinstance(content, (str, Mapping, V1Operation)):
+        elif not isinstance(content, (str, Mapping, V1Polyaxonfile)):
             raise PolyaxonClientException(
                 "Received an invalid content: {}".format(content)
             )
@@ -691,7 +693,7 @@ class RunClient(ClientMixin):
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         managed_by: Optional[ManagedBy] = None,
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
@@ -717,7 +719,7 @@ class RunClient(ClientMixin):
                  it will override the description in the operation if provided.
             tags: str or List[str], optional, list of tags,
                  it will override the tags in the operation if provided.
-            content: str or Dict or V1Operation, optional.
+            content: str or Dict or V1Polyaxonfile, optional.
             is_managed: bool, flag to create a managed run.
             managed_by: ManagedBy, optional, service that manages the operation.
             pending: str, to specify if the run is pending approval (requires human validation) or pending upload.  # noqa
@@ -3456,7 +3458,7 @@ class AsyncRunClient(RunClient):
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[str, List[str]]] = None,
-        content: Optional[Union[str, Dict, "V1Operation"]] = None,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]] = None,
         managed_by: Optional[ManagedBy] = None,
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,

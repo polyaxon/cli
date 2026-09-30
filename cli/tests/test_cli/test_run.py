@@ -1,3 +1,4 @@
+import json
 from mock import patch
 import os
 from pathlib import Path
@@ -9,6 +10,7 @@ from polyaxon._cli.run import run
 from polyaxon._client.run import RunClient
 from polyaxon._flow.run.enums import V1RunPending
 from polyaxon._polyaxonfile.specs import OperationSpecification
+from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.cli_constants import SYMLINK_MODES
 from tests.test_cli.utils import BaseCommandTestCase
@@ -16,6 +18,198 @@ from tests.test_cli.utils import BaseCommandTestCase
 
 @pytest.mark.cli_mark
 class TestCliRun(BaseCommandTestCase):
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_python_component_preserves_explicit_schema_version(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="typed",
+            settings=V1RunSettings(),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "typed.py"
+            source.write_text(
+                "from polyaxon.schemas import V1Component, V1IO, V1Job\n"
+                "from polyaxon._k8s.k8s_schemas import V1Container\n"
+                "component = V1Component(\n"
+                "    version=1.1,\n"
+                "    inputs=[V1IO(name='epochs', type='int')],\n"
+                "    run=V1Job(container=V1Container(\n"
+                "        image='busybox:1.36',\n"
+                "        command=['sh', '-c'],\n"
+                "        args=['echo {{ epochs }}'],\n"
+                "    )),\n"
+                ")\n"
+            )
+
+            result = self.runner.invoke(
+                run,
+                [
+                    "--project=owner/project",
+                    "-pm",
+                    "{}:component".format(source),
+                    "-P",
+                    "epochs=1",
+                ],
+            )
+
+        assert result.exit_code == 0, (result.output, result.exception)
+        create_run.assert_called_once()
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        assert submitted["version"] == 1.1
+        assert submitted["kind"] == "operation"
+        assert submitted["params"] == {"epochs": {"value": "1"}}
+        assert submitted["component"]["kind"] == "component"
+        assert submitted["component"]["version"] == 1.1
+        assert submitted["component"]["run"]["container"]["image"] == "busybox:1.36"
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_shared_file_submits_native_content(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="shared",
+            settings=V1RunSettings(),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yml"
+            for kind in (None, "operation"):
+                with self.subTest(kind=kind):
+                    create_run.reset_mock()
+                    content = {
+                        "inputs": [{"name": "count", "type": "int"}],
+                        "params": {"count": 3},
+                        "presets": ["team-defaults"],
+                        "run": {
+                            "kind": "job",
+                            "container": {
+                                "image": "busybox:1.36",
+                                "command": ["sh", "-c"],
+                                "args": ['echo "{{ count }} {{ message }}"'],
+                                "resources": {"limits": {"nvidia.com/gpu": 1}},
+                            },
+                        },
+                    }
+                    if kind:
+                        content["kind"] = kind
+                    source.write_text(json.dumps(content))
+
+                    result = self.runner.invoke(
+                        run,
+                        [
+                            "--project=owner/project",
+                            "-f",
+                            str(source),
+                            "-P",
+                            "message=from-cli",
+                        ],
+                    )
+
+                    assert result.exit_code == 0, (result.output, result.exception)
+                    create_run.assert_called_once()
+                    body = create_run.call_args.kwargs["body"]
+                    assert isinstance(body.content, str)
+                    submitted = json.loads(body.content)
+                    assert "component" not in submitted
+                    assert submitted["run"] == content["run"]
+                    assert submitted["inputs"] == content["inputs"]
+                    assert submitted["params"] == {
+                        "count": {"value": 3},
+                        "message": {"value": "from-cli"},
+                    }
+                    assert submitted["presets"] == ["team-defaults"]
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_shared_reference_with_multiple_files(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="shared",
+            settings=V1RunSettings(),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            templates = root / "templates"
+            templates.mkdir()
+            (templates / "job.yml").write_text(
+                "inputs: [{name: count, type: int}]\n"
+                "params: {count: 1}\n"
+                "run:\n"
+                "  kind: job\n"
+                "  container:\n"
+                "    image: busybox:1.36\n"
+                "    resources: {limits: {nvidia.com/gpu: 1}}\n"
+            )
+            source = root / "run.yml"
+            source.write_text(
+                "pathRef: ./templates/job.yml\n"
+                "params: {count: 2}\n"
+                "run:\n"
+                "  kind: job\n"
+                "  container: {image: local:v1}\n"
+            )
+            first = root / "first.yml"
+            first.write_text(
+                "patchStrategy: post_merge\n"
+                "params: {count: 5}\n"
+                "run:\n"
+                "  container: {image: first:v2}\n"
+            )
+            second = root / "second.yml"
+            second.write_text(
+                "patchStrategy: pre_merge\n"
+                "params: {count: 7}\n"
+                "run:\n"
+                "  container: {image: second:v3}\n"
+                "  environment:\n"
+                "    annotations: {source: second}\n"
+            )
+
+            result = self.runner.invoke(
+                run,
+                [
+                    "--project=owner/project",
+                    "-f",
+                    str(source),
+                    "-f",
+                    str(first),
+                    "-f",
+                    str(second),
+                ],
+            )
+
+        assert result.exit_code == 0, (result.output, result.exception)
+        create_run.assert_called_once()
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        assert submitted["pathRef"] == "./templates/job.yml"
+        assert "component" not in submitted["component"]
+        assert submitted["component"]["params"] == {"count": {"value": 1}}
+        assert submitted["component"]["run"]["container"]["image"] == "busybox:1.36"
+        assert submitted["params"] == {"count": {"value": 5}}
+        assert submitted["run"]["container"]["image"] == "first:v2"
+        assert submitted["run"]["environment"]["annotations"] == {"source": "second"}
+
+        compiled = OperationSpecification.compile_operation(
+            OperationSpecification.read(submitted)
+        )
+        assert compiled.run.container.image == "first:v2"
+        assert compiled.run.container.resources == {"limits": {"nvidia.com/gpu": 1}}
+
     @patch("polyaxon._utils.cache.cache")
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
     @patch("polyaxon._cli.context.resolve_project")

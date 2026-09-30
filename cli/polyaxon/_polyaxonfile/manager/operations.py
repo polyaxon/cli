@@ -230,10 +230,10 @@ def get_op_specification(
     if strict_params is not None:
         op_data["strictParams"] = strict_params
 
-    if config and config.kind in (None, kinds.COMPONENT):
+    if config and (hub or config.kind == kinds.COMPONENT):
         op_data["component"] = config.to_dict()
         config = get_specification(data=[op_data])
-    elif config and config.kind == kinds.OPERATION:
+    elif config and config.kind in (None, kinds.OPERATION):
         config = get_specification(data=[config.to_dict(), op_data])
     elif hub:
         op_data["hubRef"] = hub
