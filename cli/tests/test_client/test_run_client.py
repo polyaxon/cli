@@ -1,10 +1,16 @@
+import json
 from mock import MagicMock, mock, patch
+from pathlib import Path
 import pytest
+import tempfile
 from types import SimpleNamespace
 import uuid
 
 from polyaxon import settings
 from polyaxon._client.run import UPLOAD_SKIPPED, RunClient, _serialize_event_names
+from polyaxon._flow.component.component import V1Component
+from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._schemas.lifecycle import (
     V1ProjectVersionKind,
     V1StatusCondition,
@@ -288,6 +294,151 @@ class TestRunClient(BaseTestCase):
 
         assert mock_create.call_count == 1
         assert result.name == "new-run"
+
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_create_shared_polyaxonfile_content(self, create_run):
+        create_run.return_value = V1Run(uuid=self.run_uuid, name="shared")
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            manual_exceptions_handling=True,
+        )
+        for kind, model in (
+            (None, V1Polyaxonfile),
+            ("component", V1Component),
+            ("operation", V1Operation),
+        ):
+            source = {
+                "strictParams": True,
+                "inputs": [{"name": "count", "type": "int"}],
+                "params": {"count": 3},
+                "run": {
+                    "kind": "job",
+                    "container": {
+                        "image": "busybox:1.36",
+                        "args": ["echo {{ count }}"],
+                        "resources": {"limits": {"nvidia.com/gpu": 1}},
+                    },
+                },
+            }
+            if kind:
+                source["kind"] = kind
+            for content in (source, model.from_dict(source), json.dumps(source)):
+                with self.subTest(kind=kind, content_type=type(content).__name__):
+                    create_run.reset_mock()
+
+                    client.create(
+                        content=content,
+                        name="shared",
+                        tags=["native"],
+                        meta_info={"source": "python"},
+                    )
+
+                    create_run.assert_called_once()
+                    body = create_run.call_args.kwargs["body"]
+                    payload = client.client.sanitize_for_serialization(body)
+                    assert isinstance(payload["content"], str)
+                    submitted = json.loads(payload["content"])
+                    assert "version" not in submitted
+                    assert submitted.get("kind") == kind
+                    assert "component" not in submitted
+                    assert submitted["run"] == source["run"]
+                    assert submitted["inputs"] == source["inputs"]
+                    assert submitted["strictParams"] is True
+                    if isinstance(content, str):
+                        assert payload["content"] == content
+                    else:
+                        assert submitted["params"] == {"count": {"value": 3}}
+                    if isinstance(content, V1Polyaxonfile):
+                        assert content.version is None
+                        assert "version" not in content.to_dict()
+                    assert "version" not in source
+                    assert source["params"] == {"count": 3}
+                    assert payload["name"] == "shared"
+                    assert payload["tags"] == ["native"]
+                    assert payload["meta_info"] == {"source": "python"}
+
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_create_preserves_explicit_schema_version(self, create_run):
+        create_run.return_value = V1Run(uuid=self.run_uuid)
+        client = RunClient(owner=self.owner, project=self.project)
+        for version in (0.4, 1.1):
+            with self.subTest(version=version):
+                content = V1Operation(
+                    version=version,
+                    component=V1Component(
+                        run={"kind": "job", "container": {"image": "busybox:1.36"}}
+                    ),
+                )
+
+                client.create(content=content)
+
+                submitted = json.loads(create_run.call_args.kwargs["body"].content)
+                assert submitted["version"] == version
+                assert content.version == version
+
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_create_from_shared_file_submits_native_content(self, create_run):
+        create_run.return_value = V1Run(uuid=self.run_uuid)
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            manual_exceptions_handling=True,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yml"
+            source.write_text(
+                "inputs: [{name: count, type: int}]\n"
+                "params: {count: 1}\n"
+                "run: {kind: job, container: {image: busybox:1.36}}\n"
+            )
+
+            client.create_from_polyaxonfile(str(source), params={"count": 3})
+
+        create_run.assert_called_once()
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        assert "component" not in submitted
+        assert submitted["run"]["container"]["image"] == "busybox:1.36"
+        assert submitted["params"] == {"count": {"value": 3}}
+
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    @mock.patch("polyaxon._sdk.api.projects_v1_api.ProjectsV1Api.get_version")
+    def test_create_from_shared_hub_entry_keeps_reference_and_content(
+        self, get_version, create_run
+    ):
+        create_run.return_value = V1Run(uuid=self.run_uuid)
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            manual_exceptions_handling=True,
+        )
+        for kind in (None, "component", "operation"):
+            with self.subTest(kind=kind):
+                create_run.reset_mock()
+                get_version.reset_mock()
+                source = {
+                    "inputs": [{"name": "count", "type": "int"}],
+                    "params": {"count": 1},
+                    "run": {
+                        "kind": "job",
+                        "container": {"image": "busybox:1.36"},
+                    },
+                }
+                if kind:
+                    source["kind"] = kind
+                get_version.return_value = V1ProjectVersion(
+                    name="v1", kind="component", content=json.dumps(source)
+                )
+
+                client.create_from_hub("owner/echo:v1", params={"count": 3})
+
+                get_version.assert_called_once()
+                create_run.assert_called_once()
+                submitted = json.loads(create_run.call_args.kwargs["body"].content)
+                assert submitted["hubRef"] == "owner/echo:v1"
+                assert submitted["params"] == {"count": {"value": 3}}
+                assert submitted["component"]["params"] == {"count": {"value": 1}}
+                assert submitted["component"]["run"] == source["run"]
 
     @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.patch_run")
     def test_update_run(self, mock_patch):

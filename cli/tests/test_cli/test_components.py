@@ -5,11 +5,82 @@ import pytest
 import tempfile
 
 from polyaxon._cli.components import components
+from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
+from polyaxon.exceptions import ApiException
 from tests.test_cli.utils import BaseCommandTestCase
 
 
 @pytest.mark.cli_mark
 class TestCliComponent(BaseCommandTestCase):
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    @patch("polyaxon._cli.project_versions.get_dashboard_url", return_value="hub-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch(
+        "polyaxon._sdk.api.projects_v1_api.ProjectsV1Api.get_version",
+        side_effect=ApiException(status=404),
+    )
+    @patch("polyaxon._sdk.api.projects_v1_api.ProjectsV1Api.create_version")
+    def test_register_shared_file_preserves_native_fields(
+        self, create_version, get_version, resolve_project, dashboard, create_run
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_version.return_value = V1ProjectVersion(name="v1")
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yml"
+            for kind in (None, "component", "operation"):
+                with self.subTest(kind=kind):
+                    create_version.reset_mock()
+                    content = {
+                        "strictParams": True,
+                        "inputs": [{"name": "count", "type": "int"}],
+                        "params": {"count": 3},
+                        "presets": ["team-defaults"],
+                        "matrix": {
+                            "kind": "grid",
+                            "params": {"count": {"kind": "choice", "value": [1, 2]}},
+                        },
+                        "run": {
+                            "kind": "job",
+                            "container": {
+                                "image": "busybox:1.36",
+                                "resources": {"limits": {"nvidia.com/gpu": 1}},
+                            },
+                        },
+                    }
+                    if kind:
+                        content["kind"] = kind
+                    source.write_text(json.dumps(content))
+
+                    result = self.runner.invoke(
+                        components,
+                        [
+                            "register",
+                            "--project=owner/project",
+                            "--version=v1",
+                            "-f",
+                            str(source),
+                        ],
+                    )
+
+                    assert result.exit_code == 0, (result.output, result.exception)
+                    create_version.assert_called_once()
+                    assert create_version.call_args.args == (
+                        "owner",
+                        "project",
+                        "component",
+                    )
+                    body = create_version.call_args.kwargs["body"]
+                    assert body.name == "v1"
+                    assert isinstance(body.content, str)
+                    submitted = json.loads(body.content)
+                    assert submitted.get("kind") == kind
+                    assert "component" not in submitted
+                    assert submitted["strictParams"] is True
+                    assert submitted["params"] == {"count": {"value": 3}}
+                    for field in ("inputs", "presets", "matrix", "run"):
+                        assert submitted[field] == content[field]
+                    create_run.assert_not_called()
+
     @patch("polyaxon._client.run.RunClient")
     @patch("polyaxon._cli.project_versions.register_project_version")
     @patch("polyaxon._cli.context.resolve_project")
