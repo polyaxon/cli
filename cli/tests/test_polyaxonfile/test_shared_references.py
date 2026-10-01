@@ -3,9 +3,15 @@ from pathlib import Path
 import pytest
 from tempfile import TemporaryDirectory
 
+from clipped.compact.pydantic import ValidationError
+from clipped.config.patch_strategy import PatchStrategy
 from polyaxon._config.spec import ConfigSpec
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
-from polyaxon._polyaxonfile import read_polyaxonfile
+from polyaxon._polyaxonfile import (
+    CompiledOperationSpecification,
+    OperationSpecification,
+    read_polyaxonfile,
+)
 from polyaxon._polyaxonfile.check import collect_references
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
@@ -13,6 +19,280 @@ from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 @pytest.mark.polyaxonfile_mark
 class TestSharedReferences(BaseTestCase):
+    def test_kindless_run_in_partial_or_preset_can_wait_for_a_base(self):
+        source = {"run": {"container": {"image": "local:v2"}}}
+        for options in ({"partial": True}, {"is_preset": True}):
+            with self.subTest(options=options):
+                config = read_polyaxonfile(source, **options)
+
+                assert config.run == source["run"]
+                assert config.get_native_run() is None
+                assert config.to_dict()["run"] == source["run"]
+
+    def test_kindless_reference_patch_survives_serialization_before_collection(self):
+        for field, ref in (
+            ("pathRef", "./base.yaml"),
+            ("urlRef", "https://example.com/base.yaml"),
+            ("hubRef", "train:v1"),
+            ("dagRef", "train"),
+        ):
+            with self.subTest(field=field):
+                source = {
+                    field: ref,
+                    "run": {"container": {"image": "local:v2", "args": None}},
+                }
+                config = read_polyaxonfile(source)
+
+                assert config.run == source["run"]
+                assert config.get_run_kind() is None
+                assert config.get_native_run() is None
+                payload = config.to_dict(exclude_none=False)
+                assert payload == source
+                restored = read_polyaxonfile(config.to_json(exclude_none=False))
+                assert restored.run == source["run"]
+                payload["run"]["container"]["image"] = "changed:v3"
+                assert config.run["container"]["image"] == "local:v2"
+
+    def test_explicit_runtime_kind_cannot_fall_back_to_an_unvalidated_mapping(self):
+        for run in (
+            {"kind": "unknown"},
+            {"kind": None},
+            {"kind": "job", "ports": [8080]},
+            {"kind": "pytorchjob", "container": {"image": "invalid:v1"}},
+        ):
+            with self.subTest(run=run), self.assertRaises(ValidationError):
+                read_polyaxonfile({"hubRef": "train:v1", "run": run})
+
+    @patch.object(ConfigSpec, "read_from_url")
+    def test_local_patch_is_validated_against_the_resolved_runtime(self, read_url):
+        read_url.return_value = {
+            "run": {"kind": "job", "container": {"image": "base:v1"}},
+        }
+        config = read_polyaxonfile(
+            {"urlRef": "https://example.com/base.yaml", "run": {"ports": [8080]}}
+        )
+        read_url.assert_not_called()
+
+        collect_references(config)
+        with self.assertRaises(ValidationError):
+            OperationSpecification.compile_operation(config)
+
+        replacement = read_polyaxonfile(
+            {
+                "urlRef": "https://example.com/base.yaml",
+                "run": {"kind": "service", "ports": [8080]},
+            }
+        )
+        collect_references(replacement)
+        compiled = OperationSpecification.compile_operation(replacement)
+        assert compiled.run.kind == "service"
+        assert compiled.run.ports == [8080]
+
+    @patch.object(ConfigSpec, "read_from_url")
+    def test_reference_without_a_runtime_does_not_supply_a_guessed_kind(self, read_url):
+        with self.assertRaisesRegex(ValidationError, "run.kind must be provided"):
+            read_polyaxonfile({"run": {"container": {"image": "local:v2"}}})
+
+        read_url.return_value = {"params": {"count": 3}}
+        config = read_polyaxonfile(
+            {
+                "urlRef": "https://example.com/base.yaml",
+                "run": {"container": {"image": "local:v2"}},
+            }
+        )
+        collect_references(config)
+
+        with self.assertRaisesRegex(PolyaxonSchemaError, "run.kind must be provided"):
+            OperationSpecification.compile_operation(config)
+
+    @patch.object(ConfigSpec, "read_from_url")
+    def test_deferred_patch_and_null_keep_each_strategy_after_collection(
+        self, read_url
+    ):
+        read_url.return_value = {
+            "run": {"kind": "job", "container": {"image": "base:v1"}},
+        }
+        for strategy in (None, *PatchStrategy):
+            for run in ({"container": {"image": "local:v2"}}, None):
+                with self.subTest(strategy=strategy, run=run):
+                    source = {"urlRef": "https://example.com/base.yaml", "run": run}
+                    if strategy:
+                        source["patchStrategy"] = strategy
+                    config = read_polyaxonfile(source)
+                    collect_references(config)
+                    stored = config.to_dict(exclude_none=False)
+                    local_wins = strategy in (
+                        None,
+                        PatchStrategy.POST_MERGE,
+                        PatchStrategy.REPLACE,
+                    )
+                    if run is None:
+                        assert stored["run"] is None
+                    if run is None and local_wins:
+                        with self.assertRaisesRegex(
+                            PolyaxonSchemaError, "resolved Polyaxonfile has no run"
+                        ):
+                            OperationSpecification.compile_operation(config)
+                    else:
+                        compiled = OperationSpecification.compile_operation(config)
+                        assert compiled.run.container.image == (
+                            "local:v2" if run is not None and local_wins else "base:v1"
+                        )
+
+    def test_dag_reference_supplies_kind_before_node_validation(self):
+        source = {
+            "run": {
+                "kind": "dag",
+                "components": [
+                    {
+                        "name": "serve",
+                        "run": {
+                            "kind": "service",
+                            "ports": [8080],
+                            "container": {"image": "base:v1"},
+                        },
+                    }
+                ],
+                "operations": [
+                    {
+                        "name": "first",
+                        "dagRef": "serve",
+                        "run": {"container": {"image": "local:v2"}},
+                    }
+                ],
+            }
+        }
+        config = read_polyaxonfile(source)
+        compiled = OperationSpecification.compile_operation(config)
+
+        CompiledOperationSpecification.apply_operation_contexts(compiled)
+
+        node = compiled.run.get_effective_op("first")
+        assert node.run.kind == "service"
+        assert node.run.ports == [8080]
+        assert node.run.container.image == "local:v2"
+        assert config.run.operations[0].run == source["run"]["operations"][0]["run"]
+
+    @patch.object(ConfigSpec, "read_from_url")
+    def test_kindless_run_matches_job_service_and_replica_run_patches(self, read_url):
+        container = {"image": "base:v1", "command": ["sh", "-c"]}
+        replica = {"replicas": 2, "container": container}
+        runtimes = (
+            {"kind": "job", "container": container},
+            {"kind": "service", "ports": [8080], "container": container},
+            {"kind": "pytorchjob", "worker": replica},
+            {"kind": "tfjob", "worker": replica},
+            {"kind": "daskcluster", "worker": replica},
+            {
+                "kind": "raycluster",
+                "head": {"container": container},
+                "workers": {"small": replica},
+            },
+        )
+        local_run = {"container": {"image": "local:v2"}}
+        for runtime in runtimes:
+            for strategy in PatchStrategy:
+                with self.subTest(kind=runtime["kind"], strategy=strategy):
+                    read_url.return_value = {"run": runtime}
+                    config = read_polyaxonfile(
+                        {
+                            "urlRef": "https://example.com/base.yaml",
+                            "run": local_run,
+                            "patchStrategy": strategy,
+                        }
+                    )
+                    collect_references(config)
+
+                    compiled = OperationSpecification.compile_operation(config)
+                    legacy = OperationSpecification.compile_operation(
+                        read_polyaxonfile(
+                            {
+                                "component": {"run": runtime},
+                                "runPatch": local_run,
+                                "patchStrategy": strategy,
+                            }
+                        )
+                    )
+
+                    assert compiled.run.to_dict() == legacy.run.to_dict()
+                    assert compiled.run.kind == runtime["kind"]
+                    image = (
+                        "local:v2"
+                        if strategy
+                        in (
+                            PatchStrategy.POST_MERGE,
+                            PatchStrategy.REPLACE,
+                        )
+                        else "base:v1"
+                    )
+                    containers = compiled.run.get_all_containers()
+                    assert containers
+                    assert all(c.image == image for c in containers)
+                    assert all(c.command == ["sh", "-c"] for c in containers)
+                    assert config.run == local_run
+                    assert config.component.run.to_dict() == runtime
+
+    def test_kindless_dag_patch_collects_local_node_file_references(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "base.yaml").write_text("run: {kind: dag}\n")
+            (root / "job.yaml").write_text(
+                "run: {kind: job, container: {image: busybox:1.36}}\n"
+            )
+            source = root / "pipeline.yaml"
+            source.write_text(
+                "pathRef: ./base.yaml\n"
+                "run:\n"
+                "  operations:\n"
+                "    - name: train\n"
+                "      pathRef: ./job.yaml\n"
+                "      run: {container: {image: busybox:1.37}}\n"
+            )
+            config = read_polyaxonfile(str(source))
+
+            collect_references(config, str(source))
+
+            node = config.run.operations[0]
+            assert node.path_ref == "./job.yaml"
+            assert node.component.run.container.image == "busybox:1.36"
+            compiled = OperationSpecification.compile_operation(config)
+            CompiledOperationSpecification.apply_operation_contexts(compiled)
+            assert compiled.run.get_effective_op("train").run.container.image == (
+                "busybox:1.37"
+            )
+
+    @patch.object(ConfigSpec, "read_from_custom_hub")
+    def test_dag_hub_patch_waits_for_the_existing_lookup_stage(self, read_hub):
+        config = read_polyaxonfile(
+            {
+                "run": {
+                    "kind": "dag",
+                    "operations": [
+                        {
+                            "name": "train",
+                            "hubRef": "train:v1",
+                            "run": {"container": {"image": "local:v2"}},
+                        }
+                    ],
+                }
+            }
+        )
+        compiled = OperationSpecification.compile_operation(config)
+        compiled.run.resolve_operations(ignore_hub_validation=True)
+        node = compiled.run.operations[0]
+        assert node.component is None
+        assert node.run == {"container": {"image": "local:v2"}}
+        read_hub.assert_not_called()
+
+        node.set_definition(
+            read_polyaxonfile(
+                {"run": {"kind": "job", "container": {"image": "base:v1"}}}
+            )
+        )
+        compiled.run.resolve_operations()
+
+        assert compiled.run.get_effective_op("train").run.container.image == "local:v2"
+
     def test_dag_templates_and_nested_nodes_collect_relative_references(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -166,6 +446,7 @@ class TestSharedReferences(BaseTestCase):
             )
             (root / "templates" / "wrapper.yaml").write_text(
                 "kind: operation\npathRef: ./jobs/base.yaml\nparams: {count: 2}\n"
+                "run: {environment: {annotations: {source: wrapper}}}\n"
             )
             source = root / "run.yaml"
             source.write_text(
@@ -173,7 +454,6 @@ class TestSharedReferences(BaseTestCase):
                 "params: {count: 3}\n"
                 "queue: null\n"
                 "run:\n"
-                "  kind: job\n"
                 "  container: {image: local:v2}\n"
                 "runPatch: {container: {image: final:v3}}\n"
                 "patchStrategy: pre_merge\n"
@@ -185,7 +465,7 @@ class TestSharedReferences(BaseTestCase):
             assert result is config
             assert config.path_ref == "./templates/wrapper.yaml"
             assert config.params["count"].value == 3
-            assert config.run.container.image == "local:v2"
+            assert config.run == {"container": {"image": "local:v2"}}
             assert config.run_patch == {"container": {"image": "final:v3"}}
             assert config.patch_strategy == "pre_merge"
             assert config.queue is None
@@ -195,7 +475,9 @@ class TestSharedReferences(BaseTestCase):
             assert wrapper.kind == "operation"
             assert wrapper.path_ref == "./jobs/base.yaml"
             assert wrapper.params["count"].value == 2
-            assert wrapper.run is None
+            assert wrapper.run == {
+                "environment": {"annotations": {"source": "wrapper"}}
+            }
             base = wrapper.component
             assert base.kind == "component"
             assert base.inputs[0].name == "count"
@@ -219,14 +501,25 @@ class TestSharedReferences(BaseTestCase):
                 "kind": "operation",
                 "urlRef": base_url,
                 "params": {"count": 2},
+                "run": {"container": {"image": "wrapper:v2"}},
             },
             base_url: {
                 "params": {"count": 1},
-                "run": {"kind": "job", "container": {"image": "base:v1"}},
+                "run": {
+                    "kind": "service",
+                    "ports": [8080],
+                    "container": {"image": "base:v1"},
+                },
             },
         }
         read_url.side_effect = documents.__getitem__
-        config = read_polyaxonfile({"urlRef": wrapper_url, "params": {"count": 3}})
+        config = read_polyaxonfile(
+            {
+                "urlRef": wrapper_url,
+                "params": {"count": 3},
+                "run": {"container": {"image": "local:v3"}},
+            }
+        )
         read_url.assert_not_called()
 
         collect_references(config)
@@ -238,6 +531,10 @@ class TestSharedReferences(BaseTestCase):
         assert config.component.params["count"].value == 2
         assert config.component.component.params["count"].value == 1
         assert "component" not in documents[wrapper_url]
+        compiled = OperationSpecification.compile_operation(config)
+        assert compiled.run.kind == "service"
+        assert compiled.run.ports == [8080]
+        assert compiled.run.container.image == "local:v3"
 
     @patch.object(ConfigSpec, "get_public_registry", return_value=None)
     @patch.object(ConfigSpec, "read_from_custom_hub")
@@ -246,7 +543,13 @@ class TestSharedReferences(BaseTestCase):
             "params": {"count": 1},
             "run": {"kind": "job", "container": {"image": "hub:v1"}},
         }
-        config = read_polyaxonfile({"hubRef": "train:v1", "params": {"count": 3}})
+        config = read_polyaxonfile(
+            {
+                "hubRef": "train:v1",
+                "params": {"count": 3},
+                "run": {"container": {"image": "local:v2"}},
+            }
+        )
         read_hub.assert_not_called()
 
         collect_references(config)
@@ -257,6 +560,9 @@ class TestSharedReferences(BaseTestCase):
         assert config.params["count"].value == 3
         assert config.component.params["count"].value == 1
         assert config.component.run.container.image == "hub:v1"
+        compiled = OperationSpecification.compile_operation(config)
+        assert compiled.run.kind == "job"
+        assert compiled.run.container.image == "local:v2"
 
     def test_stored_reference_and_component_do_not_reload_the_source(self):
         for field, ref in (
@@ -301,7 +607,12 @@ class TestSharedReferences(BaseTestCase):
 
     def test_missing_path_reports_the_resolved_path(self):
         with TemporaryDirectory() as directory:
-            config = read_polyaxonfile({"pathRef": "missing.yaml"})
+            config = read_polyaxonfile(
+                {
+                    "pathRef": "missing.yaml",
+                    "run": {"container": {"image": "local:v2"}},
+                }
+            )
             with self.assertRaises(PolyaxonfileError) as error:
                 collect_references(config, str(Path(directory) / "root.yaml"))
 
@@ -352,7 +663,9 @@ class TestSharedReferences(BaseTestCase):
             second.write_text("pathRef: ../root.yaml\n")
 
             for ref in ("./root.yaml", "./nested/second.yaml"):
-                source.write_text("pathRef: {}\n".format(ref))
+                source.write_text(
+                    f"pathRef: {ref}\nrun: {{container: {{image: local:v2}}}}\n"
+                )
                 config = read_polyaxonfile(str(source))
                 with (
                     self.subTest(ref=ref),

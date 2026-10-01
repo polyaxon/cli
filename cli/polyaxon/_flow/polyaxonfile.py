@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from copy import copy, deepcopy
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import (
@@ -21,9 +21,10 @@ from polyaxon._flow.io import V1IO
 from polyaxon._flow.params import V1Param, normalize_param_value
 from polyaxon._flow.references import RefMixin, V1DagRef, V1HubRef, V1PathRef, V1UrlRef
 from polyaxon._flow.run.dag import V1Dag
-from polyaxon._flow.run.patch import patch_run, patch_run_patch
+from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
+from polyaxon.exceptions import PolyaxonValidationError
 
 
 class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
@@ -51,7 +52,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     kind: Optional[Literal["component", "operation"]] = None
     inputs: Optional[List[V1IO]] = None
     outputs: Optional[List[V1IO]] = None
-    run: Optional[V1Runtime] = None
+    run: Optional[Union[V1Runtime, Dict]] = None
     template: Optional[V1Template] = None
     params: Optional[Dict[StrictStr, V1Param]] = None
     hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
@@ -77,16 +78,20 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             component = model.from_dict(component)
             values = {**values, "component": component}
 
-        run = values.get("run")
-        if (
-            isinstance(component, V1Polyaxonfile)
-            and isinstance(run, Mapping)
-            and "kind" not in run
-        ):
-            native_run = component.get_native_run()
-            if native_run is not None:
-                values = {**values, "run": {"kind": native_run.kind, **run}}
         return values
+
+    @field_validator("run", **validation_before)
+    @classmethod
+    def validate_run(cls, run):
+        if isinstance(run, Mapping) and "kind" in run:
+            # Invalid typed runtimes must not fall back to the Dict alternative.
+            try:
+                return validate_run_patch(run, run["kind"])
+            except PolyaxonValidationError as e:
+                raise ValueError(
+                    "Unsupported run.kind: {!r}.".format(run["kind"])
+                ) from e
+        return run
 
     @field_validator("params", **validation_before)
     @classmethod
@@ -101,16 +106,25 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         if not values or cls.get_value_for_key("is_preset", values):
             return values
         references = ("hub_ref", "dag_ref", "url_ref", "path_ref")
-        if sum(bool(cls.get_value_for_key(ref, values)) for ref in references) > 1:
+        count = sum(bool(cls.get_value_for_key(ref, values)) for ref in references)
+        if count > 1:
             raise ValueError(
                 "At most one reference may be specified: "
                 "hub_ref, dag_ref, url_ref, path_ref."
+            )
+        if (
+            isinstance(cls.get_value_for_key("run", values), Mapping)
+            and not count
+            and cls.get_value_for_key("component", values) is None
+        ):
+            raise ValueError(
+                "run.kind must be provided locally or by a referenced base."
             )
         # Stored files can retain both a reference and its resolved component.
         return values
 
     def get_run_kind(self):
-        return self.run.kind if self.run else None
+        return self.run.kind if self.run and not isinstance(self.run, Mapping) else None
 
     def get_replica_types(self):
         if self.is_distributed_run:
@@ -170,6 +184,8 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     def get_native_run(self):
         run = self.component.get_native_run() if self.component is not None else None
         if "run" in self.model_fields_set:
+            if isinstance(self.run, Mapping) and run is None:
+                return None
             run = patch_run(run, deepcopy(self.run), self.patch_strategy)
         return run
 
@@ -178,7 +194,15 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         strategy = strategy or PatchStrategy.POST_MERGE
         result = super().patch_obj(config, values, strategy)
         if "run" in getattr(values, "model_fields_set", set()):
-            result.run = patch_run(config.run, deepcopy(values.run), strategy)
+            base = config.get_native_run()
+            if base is None and config.component is not None:
+                base = config.component.get_native_run()
+            result.run = patch_run(
+                config.run,
+                deepcopy(values.run),
+                strategy,
+                base=base,
+            )
 
         value = getattr(values, "run_patch", None)
         if value is not None:

@@ -31,29 +31,20 @@ def patch_polyaxonfile(
     config = read_polyaxonfile(config)
     run_patches = []
     for preset_file in preset_files:
-        if isinstance(preset_file, V1Polyaxonfile):
-            preset = read_polyaxonfile(preset_file, is_preset=True)
-        else:
-            values = copy.deepcopy(ConfigSpec.read_from(preset_file))
-            run = values.get("run")
-            if isinstance(run, Mapping) and "kind" not in run:
-                native_run = config.run
-                if native_run is None and config.component is not None:
-                    native_run = config.component.get_native_run()
-                if native_run is not None:
-                    values["run"] = {"kind": native_run.kind, **run}
-            preset = read_polyaxonfile(values, is_preset=True)
+        if not isinstance(preset_file, V1Polyaxonfile):
+            preset_file = ConfigSpec.read_from(preset_file)
+        preset = read_polyaxonfile(preset_file, is_preset=True)
 
         strategy = preset.patch_strategy or PatchStrategy.POST_MERGE
-        fields = preset.model_fields_set - set(V1Polyaxonfile._FIELDS_MANUAL_PATCH)
+        fields = preset.model_fields_set - (
+            set(V1Polyaxonfile._FIELDS_MANUAL_PATCH) - {"run"}
+        )
         config.patch(
             V1Polyaxonfile.model_construct(
                 **{key: getattr(preset, key) for key in fields}
             ),
             strategy=strategy,
         )
-        if "run" in preset.model_fields_set:
-            config.run = patch_run(config.run, preset.run, strategy)
         if preset.run_patch is not None:
             run_patches.append((preset.run_patch, strategy))
 
@@ -83,22 +74,14 @@ def compose_polyaxonfile(
     is_dag_node: bool = False,
 ) -> V1Polyaxonfile:
     """Compose collected sources without changing the authored document."""
-    if isinstance(config, V1Polyaxonfile):
-        values = {key: getattr(config, key) for key in config.model_fields_set}
-    elif isinstance(config, Mapping):
-        values = dict(config)
-    else:
+    if not isinstance(config, (V1Polyaxonfile, Mapping)):
         raise PolyaxonfileError("Composition requires a mapping or a V1Polyaxonfile.")
 
-    component = values.pop("component", None)
+    local = read_polyaxonfile(config)
+    component = local.component
     effective = (
         compose_polyaxonfile(component) if component is not None else V1Polyaxonfile()
     )
-    run = values.get("run")
-    if isinstance(run, Mapping) and "kind" not in run and effective.run is not None:
-        values["run"] = {"kind": effective.run.kind, **run}
-
-    local = read_polyaxonfile(values)
     if is_dag_node and local.schedule is not None:
         raise PolyaxonfileError(
             "DAG node `{}` cannot define a schedule.".format(local.name)

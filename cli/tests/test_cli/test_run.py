@@ -10,7 +10,10 @@ from polyaxon._cli.check import check
 from polyaxon._cli.run import run
 from polyaxon._client.run import RunClient
 from polyaxon._flow.run.enums import V1RunPending
-from polyaxon._polyaxonfile.specs import OperationSpecification
+from polyaxon._polyaxonfile.specs import (
+    CompiledOperationSpecification,
+    OperationSpecification,
+)
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.cli_constants import SYMLINK_MODES
@@ -265,6 +268,71 @@ class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
     @patch("polyaxon._cli.context.resolve_project")
     @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_kindless_path_patch_preserves_base_fields_and_param_metadata(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="shared",
+            settings=V1RunSettings(),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "base.yaml").write_text(
+                "inputs: [{name: count, type: int, isOptional: true, value: 1}]\n"
+                "params:\n"
+                "  count: 1\n"
+                "  message: {value: base, contextOnly: true, toEnv: MESSAGE}\n"
+                "run:\n"
+                "  kind: job\n"
+                "  container:\n"
+                "    image: busybox:1.36\n"
+                "    command: [sh, -c]\n"
+                "    args: ['echo \"base count={{ count }} message={{ message }}\"']\n"
+            )
+            source = root / "from-path.yaml"
+            source.write_text(
+                "pathRef: ./base.yaml\n"
+                "params: {count: 3}\n"
+                "run: {container: {image: busybox:1.37}}\n"
+            )
+
+            checked = self.runner.invoke(check, ["-f", str(source)])
+            result = self.runner.invoke(
+                run, ["--project=owner/project", "-f", str(source)]
+            )
+
+        assert checked.exit_code == 0, (checked.output, checked.exception)
+        assert result.exit_code == 0, (result.output, result.exception)
+        create_run.assert_called_once()
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        assert submitted["pathRef"] == "./base.yaml"
+        assert submitted["component"]["run"]["container"]["image"] == "busybox:1.36"
+        assert submitted["run"]["container"] == {"image": "busybox:1.37"}
+        assert submitted["params"] == {"count": {"value": 3}}
+        assert "version" not in submitted
+
+        compiled, params = OperationSpecification.compile_operation_with_params(
+            OperationSpecification.read(submitted)
+        )
+        compiled = CompiledOperationSpecification.apply_params(compiled, params)
+        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
+        compiled = CompiledOperationSpecification.apply_runtime_contexts(compiled)
+        assert compiled.run.kind == "job"
+        assert compiled.run.container.image == "busybox:1.37"
+        assert compiled.run.container.command == ["sh", "-c"]
+        assert compiled.run.container.args == ['echo "base count=3 message=base"']
+        assert compiled.inputs[0].name == "count"
+        assert compiled.inputs[0].value == 3
+        message = next(io for io in compiled.contexts if io.name == "message")
+        assert message.value == "base"
+        assert message.to_env == "MESSAGE"
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_run_shared_reference_with_multiple_files(
         self, create_run, resolve_project, dashboard, cache
     ):
@@ -292,7 +360,6 @@ class TestCliRun(BaseCommandTestCase):
                 "pathRef: ./templates/job.yml\n"
                 "params: {count: 2}\n"
                 "run:\n"
-                "  kind: job\n"
                 "  container: {image: local:v1}\n"
             )
             first = root / "first.yml"

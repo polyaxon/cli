@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 from typing import Dict, Optional, Tuple, Type
 
 from clipped.utils.lists import to_list
@@ -54,14 +53,6 @@ class OperationSpecification(BaseSpecification):
             config = read_polyaxonfile(config)
             if not isinstance(override, V1Polyaxonfile):
                 override = ConfigSpec.read_from(override)
-                run = override.get("run")
-                if isinstance(run, Mapping) and "kind" not in run:
-                    native_run = config.get_native_run()
-                    if native_run is not None:
-                        override = {
-                            **override,
-                            "run": {"kind": native_run.kind, **run},
-                        }
             preset = read_polyaxonfile(override, is_preset=True)
             if use_override_patch_strategy and preset.patch_strategy:
                 preset_patch_strategy = preset.patch_strategy

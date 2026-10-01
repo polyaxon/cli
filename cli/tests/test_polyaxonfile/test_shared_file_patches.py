@@ -15,10 +15,90 @@ from polyaxon._polyaxonfile import (
 )
 from polyaxon._polyaxonfile.check import collect_references
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonValidationError
 
 
 @pytest.mark.polyaxonfile_mark
 class TestSharedFilePatches(BaseTestCase):
+    def test_kindless_run_layers_keep_file_strategy_separate_from_component(self):
+        source = read_polyaxonfile(
+            {
+                "patchStrategy": "pre_merge",
+                "component": {
+                    "run": {
+                        "kind": "job",
+                        "container": {"image": "base:v1", "command": ["sh", "-c"]},
+                    },
+                },
+                "run": {"container": {"image": "first:v2"}},
+            }
+        )
+        before = source.to_dict()
+        for strategy in PatchStrategy:
+            with self.subTest(strategy=strategy):
+                overlay = {
+                    "patchStrategy": strategy,
+                    "run": {"container": {"image": "second:v3"}},
+                }
+
+                merged = patch_polyaxonfile(source, [overlay])
+                compiled = OperationSpecification.compile_operation(merged)
+                overridden = OperationSpecification.compile_operation(
+                    source, override=overlay
+                )
+
+                local_image = (
+                    "second:v3"
+                    if strategy in (PatchStrategy.POST_MERGE, PatchStrategy.REPLACE)
+                    else "first:v2"
+                )
+                assert merged.run.to_dict() == {
+                    "kind": "job",
+                    "container": {"image": local_image},
+                }
+                assert merged.patch_strategy == "pre_merge"
+                assert merged.component.to_dict() == source.component.to_dict()
+                assert compiled.run.container.image == "base:v1"
+                assert compiled.run.container.command == ["sh", "-c"]
+                assert overridden.run.to_dict() == compiled.run.to_dict()
+                assert source.to_dict() == before
+
+    def test_kindless_replica_patches_merge_before_legacy_run_patch(self):
+        source = read_polyaxonfile(
+            {
+                "component": {
+                    "run": {
+                        "kind": "pytorchjob",
+                        "worker": {
+                            "replicas": 2,
+                            "container": {
+                                "image": "base:v1",
+                                "command": ["sh", "-c"],
+                            },
+                        },
+                    },
+                },
+                "run": {"container": {"image": "first:v2"}},
+                "runPatch": {"container": {"image": "final:v4"}},
+            }
+        )
+        overlay = {"run": {"container": {"image": "second:v3"}}}
+
+        merged = patch_polyaxonfile(source, [overlay])
+        compiled = OperationSpecification.compile_operation(merged)
+        overridden = OperationSpecification.compile_operation(source, override=overlay)
+
+        assert merged.run.to_dict() == {
+            "kind": "pytorchjob",
+            "worker": {"container": {"image": "second:v3"}},
+        }
+        assert merged.run_patch == source.run_patch
+        assert compiled.run.worker.replicas == 2
+        assert compiled.run.worker.container.image == "final:v4"
+        assert compiled.run.worker.container.command == ["sh", "-c"]
+        assert compiled.run.master is None
+        assert overridden.run.to_dict() == compiled.run.to_dict()
+
     def test_multiple_files_match_legacy_cli_patch_order(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -442,11 +522,36 @@ class TestSharedFilePatches(BaseTestCase):
             with self.subTest(overlay=overlay), self.assertRaises(ValidationError):
                 patch_polyaxonfile(source, [overlay])
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaisesRegex(
+            PolyaxonValidationError, "run.kind must be provided"
+        ):
             patch_polyaxonfile(
                 read_polyaxonfile({"hubRef": "unresolved:v1"}),
                 [{"run": {"container": {"image": "local:v2"}}}],
             )
+
+    def test_file_overlay_reading_keeps_existing_input_forms(self):
+        values = {
+            "params": {"count": 5},
+            "run": {"kind": "service", "container": {"image": "override:v2"}},
+        }
+        source = read_polyaxonfile(
+            {"run": {"kind": "service", "container": {"image": "base:v1"}}}
+        )
+        before = source.to_dict()
+        for overlay in (
+            values,
+            read_polyaxonfile(values),
+            read_polyaxonfile(values).to_json(),
+            [{"params": {"count": 3}}, values],
+        ):
+            with self.subTest(overlay=overlay):
+                merged = patch_polyaxonfile(source, [overlay])
+
+                assert merged.run.kind == "service"
+                assert merged.run.container.image == "override:v2"
+                assert merged.params["count"].value == 5
+                assert source.to_dict() == before
 
     def test_file_override_cannot_relax_strict_component(self):
         source = read_polyaxonfile(

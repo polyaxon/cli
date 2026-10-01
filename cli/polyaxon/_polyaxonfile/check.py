@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from collections.abc import Mapping
 import os
 from typing import Dict, List, Optional, Union
 
@@ -11,6 +12,8 @@ from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._flow.run.dag import V1Dag
+from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._polyaxonfile.manager import get_op_specification
 from polyaxon._polyaxonfile.params import parse_hparams, parse_params
 from polyaxon._polyaxonfile.specs import get_specification, read_polyaxonfile
@@ -86,6 +89,12 @@ def _collect_shared_references(config, path_context, sources):
                     "Could not resolve {} `{}`: {}".format(*reference, e)
                 ) from e
             config.component = component
+
+    if isinstance(config.run, Mapping) and config.component is not None:
+        native_run = config.component.get_native_run()
+        if native_run is not None and native_run.kind == V1RunKind.DAG:
+            # Parse local DAG entries so their file references can be collected.
+            config.run = validate_run_patch(config.run, native_run.kind)
 
     if config.is_dag_run:
         collect_dag_components(config.run, path_context, sources)

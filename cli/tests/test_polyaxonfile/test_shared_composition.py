@@ -453,21 +453,26 @@ class TestSharedComposition(BaseTestCase):
         }
 
     def test_distributed_run_patch_uses_existing_replica_behavior(self):
-        result = compose_polyaxonfile(
-            {
-                "component": {
-                    "run": {
-                        "kind": "pytorchjob",
-                        "worker": {"replicas": 2, "container": {"image": "base:v1"}},
+        for field in ("run", "runPatch"):
+            with self.subTest(field=field):
+                result = compose_polyaxonfile(
+                    {
+                        "component": {
+                            "run": {
+                                "kind": "pytorchjob",
+                                "worker": {
+                                    "replicas": 2,
+                                    "container": {"image": "base:v1"},
+                                },
+                            },
+                        },
+                        field: {"container": {"image": "final:v2"}},
                     },
-                },
-                "runPatch": {"container": {"image": "final:v2"}},
-            }
-        )
+                )
 
-        assert result.run.worker.replicas == 2
-        assert result.run.worker.container.image == "final:v2"
-        assert result.run.master is None
+                assert result.run.worker.replicas == 2
+                assert result.run.worker.container.image == "final:v2"
+                assert result.run.master is None
 
     def test_model_input_keeps_nested_field_presence_and_is_not_modified(self):
         source = read_polyaxonfile(
@@ -522,7 +527,7 @@ class TestSharedComposition(BaseTestCase):
             with self.subTest(local=local), self.assertRaises(ValidationError):
                 compose_polyaxonfile({"component": {"run": {"kind": "job"}}, **local})
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaisesRegex(ValidationError, "run.kind must be provided"):
             compose_polyaxonfile({"run": {"container": {"image": "busybox:1.36"}}})
         with self.assertRaisesRegex(PolyaxonfileError, "runPatch requires"):
             compose_polyaxonfile({"runPatch": {"container": {"image": "busybox:1.36"}}})

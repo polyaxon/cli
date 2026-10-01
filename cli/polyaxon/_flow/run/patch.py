@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import ValidationError
@@ -18,8 +19,45 @@ from polyaxon._flow.run.tuner import V1TunerJob
 from polyaxon.exceptions import PolyaxonValidationError
 
 
-def patch_run(current, value, strategy: Optional[PatchStrategy] = None):
+def patch_run(current, value, strategy: Optional[PatchStrategy] = None, base=None):
     strategy = strategy or PatchStrategy.POST_MERGE
+    if isinstance(current, Mapping):
+        if base is None:
+            raise PolyaxonValidationError(
+                "Resolve the referenced runtime before merging native run patches."
+            )
+        # Merge only the local fields; inherited fields stay in component.run.
+        current = type(base)().patch(
+            validate_run_patch(
+                current,
+                base.kind,
+                replica_types=(
+                    base.get_replica_types()
+                    if hasattr(base, "get_replica_types")
+                    else None
+                ),
+            )
+        )
+    if isinstance(value, Mapping):
+        runtime = current if current is not None else base
+        if runtime is None:
+            raise PolyaxonValidationError(
+                "run.kind must be provided locally or by a referenced base."
+            )
+        if base is not None and base.kind == runtime.kind:
+            runtime = base
+        patch = validate_run_patch(
+            value,
+            runtime.kind,
+            replica_types=(
+                runtime.get_replica_types()
+                if hasattr(runtime, "get_replica_types")
+                else None
+            ),
+        )
+        if current is None:
+            return type(runtime)().patch(patch, strategy=strategy)
+        return current.patch(patch, strategy=strategy)
     if current is not None and value is not None and current.kind == value.kind:
         return current.patch(value, strategy=strategy)
     if current is None or strategy in (PatchStrategy.POST_MERGE, PatchStrategy.REPLACE):
