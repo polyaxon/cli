@@ -34,6 +34,7 @@ class TestSharedMatrix(BaseTestCase):
         }
         invocation = {
             "strictParams": True,
+            "cache": {"disable": True},
             "params": {
                 "count": {"value": 0, "contextOnly": False},
                 "rate": 0.5,
@@ -43,6 +44,7 @@ class TestSharedMatrix(BaseTestCase):
                     "contextOnly": True,
                     "toEnv": "FIXED",
                 },
+                "payload": {"value": {"items": [1, 2]}, "contextOnly": True},
             },
             "matrix": {
                 "kind": "grid",
@@ -84,10 +86,11 @@ class TestSharedMatrix(BaseTestCase):
                     assert (child.component is None) == (authored.component is None)
                     assert child.matrix is None
                     assert child.strict_params is True
-                    assert set(child.params) == {"count", "message", "fixed"}
+                    assert set(child.params) == {"count", "message", "fixed", "payload"}
                     assert child.params["count"].value == count
                     assert child.params["count"].context_only is False
                     assert child.params["fixed"].to_env == "FIXED"
+                    assert child.cache == parent.cache
                     runtime_source = child.component or child
                     assert runtime_source.run == parent.run
                     assert runtime_source.inputs == parent.inputs
@@ -120,6 +123,7 @@ class TestSharedMatrix(BaseTestCase):
                     assert {io.name: io.value for io in compiled.contexts} == {
                         "message": "updated",
                         "fixed": "hello",
+                        "payload": {"items": [1, 2]},
                     }
                     assert compiled.run.container.args == [
                         f"echo '{count} 0.5 updated hello'"
@@ -134,7 +138,10 @@ class TestSharedMatrix(BaseTestCase):
                 first_runtime.run.container.image = "changed"
                 first_runtime.run.container.resources["limits"]["nvidia.com/gpu"] = 8
                 first_runtime.inputs[0].value = 99
+                first_runtime.outputs[0].value = "changed"
                 children[0].params["fixed"].value = "changed"
+                children[0].params["payload"].value["items"].append(3)
+                children[0].cache.disable = False
                 assert children[1].to_dict() == second_before
                 assert parent.to_dict() == parent_before
                 assert authored.to_dict() == before
@@ -209,6 +216,10 @@ class TestSharedMatrix(BaseTestCase):
                         "run_patch",
                     ):
                         assert getattr(current, field) is None
+                        assert field not in current.model_fields_set
+                    if current is not child:
+                        assert current.params is None
+                        assert "params" not in current.model_fields_set
                     current = current.component
 
                 for saved in (child, read_polyaxonfile(child.to_json())):

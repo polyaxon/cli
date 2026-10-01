@@ -1,5 +1,5 @@
 import copy
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.params.params import V1Param
@@ -9,31 +9,32 @@ from polyaxon._polyaxonfile.specs.libs.parser import PolyaxonfileParser
 from polyaxon._polyaxonfile.specs.polyaxonfile import read_polyaxonfile
 
 
-def get_op_from_schedule(
-    content: str,
+def _prepare_child_source(
+    op_spec: V1Polyaxonfile,
     compiled_operation: V1CompiledOperation,
+    extra_fields_to_clear: Tuple[str, ...] = (),
 ) -> V1Polyaxonfile:
-    op_spec = read_polyaxonfile(content)
-    # Keep params, matrix, and approval fields in their authored layers.
+    fields_to_clear = (
+        *extra_fields_to_clear,
+        "conditions",
+        "schedule",
+        "events",
+        "dependencies",
+        "trigger",
+        "build",
+        "skip_on_upstream_skip",
+        "inputs",
+        "outputs",
+        "run",
+        "run_patch",
+        "cache",
+        "queue",
+        "namespace",
+        "strict_params",
+    )
     layer = op_spec
     while layer is not None:
-        for field in (
-            "conditions",
-            "schedule",
-            "events",
-            "dependencies",
-            "trigger",
-            "build",
-            "skip_on_upstream_skip",
-            "inputs",
-            "outputs",
-            "run",
-            "run_patch",
-            "cache",
-            "queue",
-            "namespace",
-            "strict_params",
-        ):
+        for field in fields_to_clear:
             setattr(layer, field, None)
             layer.model_fields_set.discard(field)
         layer = layer.component
@@ -48,6 +49,14 @@ def get_op_from_schedule(
     component.run = copy.deepcopy(compiled_operation.run)
     component.strict_params = compiled_operation.strict_params
     return op_spec
+
+
+def get_op_from_schedule(
+    content: str,
+    compiled_operation: V1CompiledOperation,
+) -> V1Polyaxonfile:
+    # Keep params, matrix, and approval fields in their authored layers.
+    return _prepare_child_source(read_polyaxonfile(content), compiled_operation)
 
 
 def get_ops_from_suggestions(
@@ -68,42 +77,11 @@ def get_ops_from_suggestions(
             to_env=source_param.to_env,
         )
 
-    # Clear every source layer so inherited fields cannot become active again.
-    layer = op_content
-    while layer is not None:
-        for field in (
-            "matrix",
-            "conditions",
-            "schedule",
-            "events",
-            "dependencies",
-            "trigger",
-            "build",
-            "is_approved",
-            "skip_on_upstream_skip",
-            "params",
-            "inputs",
-            "outputs",
-            "run",
-            "run_patch",
-            "cache",
-            "queue",
-            "namespace",
-            "strict_params",
-        ):
-            setattr(layer, field, None)
-            layer.model_fields_set.discard(field)
-        layer = layer.component
-
-    op_content.cache = copy.deepcopy(compiled_operation.cache)
-    op_content.queue = compiled_operation.queue
-    op_content.namespace = compiled_operation.namespace
-    op_content.strict_params = compiled_operation.strict_params
-    component = op_content.component or op_content
-    component.inputs = copy.deepcopy(compiled_operation.inputs)
-    component.outputs = copy.deepcopy(compiled_operation.outputs)
-    component.run = copy.deepcopy(compiled_operation.run)
-    component.strict_params = compiled_operation.strict_params
+    op_content = _prepare_child_source(
+        op_content,
+        compiled_operation,
+        extra_fields_to_clear=("matrix", "is_approved", "params"),
+    )
 
     # Declared values are already in inputs/outputs; contexts need child params.
     op_content.params = {

@@ -126,6 +126,7 @@ class TestSharedSchedule(BaseTestCase):
                     component.run.container.image = "changed"
                     component.run.container.resources["limits"]["nvidia.com/gpu"] = 8
                     component.inputs[0].value = 99
+                    component.outputs[0].value = "changed"
                     first.params["message"].value = "changed"
                     first.cache.disable = False
                     assert second.to_dict() == second_before
@@ -210,6 +211,10 @@ class TestSharedSchedule(BaseTestCase):
                     assert current.params == original.params
                     assert current.matrix == original.matrix
                     assert current.is_approved == original.is_approved
+                    for field in ("params", "matrix", "is_approved"):
+                        assert (field in current.model_fields_set) == (
+                            field in original.model_fields_set
+                        )
                     for field in (
                         "schedule",
                         "conditions",
@@ -221,6 +226,7 @@ class TestSharedSchedule(BaseTestCase):
                         "run_patch",
                     ):
                         assert getattr(current, field) is None
+                        assert field not in current.model_fields_set
                     current, original = current.component, original.component
 
                 for saved in (child, read_polyaxonfile(child.to_json())):
