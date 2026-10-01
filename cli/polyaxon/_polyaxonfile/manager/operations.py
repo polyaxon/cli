@@ -77,10 +77,33 @@ def compose_polyaxonfile(
     if not isinstance(config, (V1Polyaxonfile, Mapping)):
         raise PolyaxonfileError("Composition requires a mapping or a V1Polyaxonfile.")
 
-    local = read_polyaxonfile(config)
+    return _compose_polyaxonfile(
+        read_polyaxonfile(config),
+        run_patch_strategy=run_patch_strategy,
+        is_dag_node=is_dag_node,
+    )
+
+
+def _compose_polyaxonfile(
+    local: V1Polyaxonfile,
+    run_patch_strategy: Optional[PatchStrategy] = None,
+    is_dag_node: bool = False,
+) -> V1Polyaxonfile:
     component = local.component
+    if component is not None:
+        # Python files can share mutable objects between local fields and the base.
+        local = type(local).model_construct(
+            _fields_set=local.model_fields_set - {"component"},
+            **copy.deepcopy(
+                {
+                    key: getattr(local, key)
+                    for key in type(local).get_model_fields()
+                    if key != "component"
+                }
+            ),
+        )
     effective = (
-        compose_polyaxonfile(component) if component is not None else V1Polyaxonfile()
+        _compose_polyaxonfile(component) if component is not None else V1Polyaxonfile()
     )
     if is_dag_node and local.schedule is not None:
         raise PolyaxonfileError(

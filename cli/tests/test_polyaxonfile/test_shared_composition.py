@@ -1,10 +1,13 @@
 from copy import deepcopy
 import pytest
+from unittest.mock import patch
 
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
+from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._flow.run.job import V1Job
 from polyaxon._flow.run.service import V1Service
+from polyaxon._k8s.k8s_schemas import V1Container
 from polyaxon._polyaxonfile import (
     OperationSpecification,
     compose_polyaxonfile,
@@ -284,6 +287,95 @@ class TestSharedComposition(BaseTestCase):
         assert result.patch_strategy is None
         assert compose_polyaxonfile(result).to_dict() == result.to_dict()
 
+    def test_nested_sources_are_read_once(self):
+        for depth in (1, 4, 8):
+            source = {"run": {"kind": "job", "container": {"image": "base:v1"}}}
+            for _ in range(depth - 1):
+                source = {"component": source, "params": {"count": 3}}
+            for authored in (source, read_polyaxonfile(source)):
+                with self.subTest(
+                    depth=depth, model=isinstance(authored, V1Polyaxonfile)
+                ):
+                    before = deepcopy(authored)
+                    with patch(
+                        "polyaxon._polyaxonfile.manager.operations.read_polyaxonfile",
+                        wraps=read_polyaxonfile,
+                    ) as reader:
+                        result = compose_polyaxonfile(authored)
+
+                    reader.assert_called_once_with(authored)
+                    assert result.run.container.image == "base:v1"
+                    if depth > 1:
+                        assert result.params["count"].value == 3
+                    assert authored == before
+
+    def test_composition_options_only_apply_to_the_outer_layer(self):
+        source = {
+            "component": {
+                "component": {
+                    "schedule": {"kind": "interval", "frequency": 60},
+                    "run": {
+                        "kind": "job",
+                        "connections": ["base"],
+                        "container": {"image": "base:v1"},
+                    },
+                    "runPatch": {
+                        "connections": ["inner"],
+                        "container": {"image": "inner:v2"},
+                    },
+                },
+                "patchStrategy": "pre_merge",
+                "run": {"container": {"image": "middle:v3"}},
+            },
+            "name": "node",
+            "dependencies": ["prepare"],
+            "runPatch": {
+                "connections": ["outer"],
+                "container": {"image": "outer:v4"},
+            },
+        }
+        before = deepcopy(source)
+
+        result = compose_polyaxonfile(
+            source, run_patch_strategy=PatchStrategy.PRE_MERGE, is_dag_node=True
+        )
+
+        assert result.run.container.image == "inner:v2"
+        assert result.run.connections == ["outer", "base", "inner"]
+        assert result.schedule is None
+        assert result.name == "node"
+        assert result.dependencies == ["prepare"]
+        assert source == before
+
+    def test_python_layers_sharing_runtime_objects_remain_independent(self):
+        for shared_field in ("run", "container"):
+            with self.subTest(shared_field=shared_field):
+                base = V1Polyaxonfile(
+                    run=V1Job(container=V1Container(image="outer:v1")),
+                    run_patch={"container": {"image": "inner:v2"}},
+                )
+                outer_run = (
+                    base.run
+                    if shared_field == "run"
+                    else V1Job(container=base.run.container)
+                )
+                source = V1Polyaxonfile.model_construct(component=base, run=outer_run)
+                assert source.run.container is source.component.run.container
+                if shared_field == "run":
+                    assert source.run is source.component.run
+                before = deepcopy(source)
+
+                result = compose_polyaxonfile(source)
+
+                assert result.run.container.image == "outer:v1"
+                assert source == before
+                result.run.container.image = "changed:v3"
+                assert source.run.container.image == "outer:v1"
+                assert source.component.run.container.image == "outer:v1"
+                assert source.component.run_patch == {
+                    "container": {"image": "inner:v2"}
+                }
+
     def test_strict_base_cannot_be_relaxed_by_local_fields(self):
         for base, local, expected in (
             (None, None, False),
@@ -547,6 +639,31 @@ class TestSharedComposition(BaseTestCase):
         assert source.params["count"].value == 3
         assert source.run_patch == {"container": {"image": "final:v2"}}
         assert source.component.component.run.container.image == "base:v1"
+
+    def test_model_values_and_field_presence_are_preserved_separately(self):
+        source = V1Polyaxonfile.model_construct(
+            _fields_set={"component", "queue"},
+            component=read_polyaxonfile(
+                {
+                    "queue": "base",
+                    "run": {"kind": "job", "container": {"image": "base:v1"}},
+                }
+            ),
+            queue=None,
+            strict_params=True,
+            version=1.1,
+            run_patch={"container": {"image": "final:v2"}},
+        )
+        before = deepcopy(source)
+
+        result = compose_polyaxonfile(source)
+
+        assert result.queue is None
+        assert result.strict_params is True
+        assert result.version == 1.1
+        assert result.run.container.image == "final:v2"
+        assert source.model_fields_set == {"component", "queue"}
+        assert source == before
 
     def test_unresolved_references_are_rejected(self):
         for field, ref in (

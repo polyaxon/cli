@@ -253,6 +253,17 @@ class TestSharedDags(BaseTestCase):
         assert dag.get_effective_op("second").run.container.image == "base:v1"
         assert dag.get_effective_op("first").matrix.kind == "grid"
         assert dag.get_effective_op("second").params["message"].value == "hello"
+        first_effective = dag.get_effective_op("first")
+        first_effective.run.container.image = "changed:v3"
+        first_effective.params["message"].value = "changed"
+        first_effective.matrix.params["seed"].value.append(3)
+        second_effective = dag.get_effective_op("second")
+        assert second_effective.run.container.image == "base:v1"
+        assert second_effective.params["message"].value == "hello"
+        assert second_effective.matrix.params["seed"].value == [1, 2]
+        assert dag.components[0].run.container.image == "base:v1"
+        assert dag.components[0].matrix.params["seed"].value == [1, 2]
+        assert dag.components[1].params["message"].value == "hello"
         first = dag.get_op_spec_by_name("first")
         first.component.params["message"].value = "changed"
         second = dag.get_op_spec_by_name("second")
