@@ -359,6 +359,47 @@ class TestRunClient(BaseTestCase):
                     assert payload["meta_info"] == {"source": "python"}
 
     @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_create_preserves_explicit_nulls_in_nested_content(self, create_run):
+        create_run.return_value = V1Run(uuid=self.run_uuid)
+        client = RunClient(owner=self.owner, project=self.project)
+        for kind, model in (
+            (None, V1Polyaxonfile),
+            ("component", V1Component),
+            ("operation", V1Operation),
+        ):
+            source = {
+                "component": {
+                    "component": {
+                        "run": {
+                            "kind": "job",
+                            "container": {"image": "busybox:1.36"},
+                        },
+                    },
+                    "run": None,
+                    "termination": None,
+                },
+                "run": None,
+                "runPatch": None,
+                "queue": None,
+            }
+            if kind:
+                source["kind"] = kind
+            for content in (source, model.from_dict(source), json.dumps(source)):
+                with self.subTest(kind=kind, content_type=type(content).__name__):
+                    create_run.reset_mock()
+
+                    client.create(content=content)
+
+                    create_run.assert_called_once()
+                    body = create_run.call_args.kwargs["body"]
+                    payload = client.client.sanitize_for_serialization(body)
+                    assert json.loads(payload["content"]) == source
+                    assert "version" not in source
+                    if isinstance(content, V1Polyaxonfile):
+                        assert "run" not in content.to_dict()
+                        assert "run" not in content.component.to_dict()
+
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_create_preserves_explicit_schema_version(self, create_run):
         create_run.return_value = V1Run(uuid=self.run_uuid)
         client = RunClient(owner=self.owner, project=self.project)

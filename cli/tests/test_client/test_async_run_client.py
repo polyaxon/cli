@@ -367,6 +367,43 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
                     assert submitted["run"] == source["run"]
                     assert request["body"].name == "shared"
 
+    async def test_create_preserves_explicit_nulls_in_nested_content(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.runs_v1.create_run = AsyncMock(return_value=self.make_run())
+        client = self.make_client(sdk_client)
+        for kind, model in (
+            (None, V1Polyaxonfile),
+            ("component", V1Component),
+            ("operation", V1Operation),
+        ):
+            source = {
+                "component": {
+                    "component": {
+                        "run": {
+                            "kind": "job",
+                            "container": {"image": "busybox:1.36"},
+                        },
+                    },
+                    "run": None,
+                    "termination": None,
+                },
+                "run": None,
+                "runPatch": None,
+                "queue": None,
+            }
+            if kind:
+                source["kind"] = kind
+            for content in (source, model.from_dict(source), json.dumps(source)):
+                with self.subTest(kind=kind, content_type=type(content).__name__):
+                    sdk_client.runs_v1.create_run.reset_mock()
+
+                    await client.create(content=content)
+
+                    sdk_client.runs_v1.create_run.assert_called_once()
+                    request = sdk_client.runs_v1.create_run.call_args.kwargs
+                    assert "async_req" not in request
+                    assert json.loads(request["body"].content) == source
+
     async def test_status_methods_await_api_without_async_req(self):
         sdk_client = AsyncPolyaxonClientMock()
         sdk_client.runs_v1.create_run_status = AsyncMock(return_value=None)

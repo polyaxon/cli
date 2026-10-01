@@ -6,6 +6,7 @@ import pytest
 import tempfile
 from types import SimpleNamespace
 
+from polyaxon._cli.check import check
 from polyaxon._cli.run import run
 from polyaxon._client.run import RunClient
 from polyaxon._flow.run.enums import V1RunPending
@@ -19,6 +20,111 @@ from tests.test_cli.utils import BaseCommandTestCase
 
 @pytest.mark.cli_mark
 class TestCliRun(BaseCommandTestCase):
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_explicit_null_run_is_rejected_before_submission(
+        self, create_run, resolve_project
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "cleared.yaml"
+            for kind in (None, "component", "operation"):
+                prefix = "kind: {}\n".format(kind) if kind else ""
+                source.write_text(
+                    prefix + "component:\n"
+                    "  run: {kind: job, container: {image: busybox:1.36}}\n"
+                    "run: null\n"
+                )
+                for command, args in (
+                    (check, ["-f", str(source)]),
+                    (run, ["--project=owner/project", "-f", str(source)]),
+                ):
+                    with self.subTest(kind=kind, command=command.name):
+                        result = self.runner.invoke(command, args)
+
+                        assert result.exit_code == 1, (result.output, result.exception)
+                        output = " ".join(result.output.lower().split())
+                        assert "resolved polyaxonfile has no run" in output
+                        create_run.assert_not_called()
+
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_python_component_with_null_run_is_rejected_before_submission(
+        self, create_run, resolve_project
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "cleared_component.py"
+            source.write_text(
+                "from polyaxon.schemas import V1Component, V1Job\n"
+                "from polyaxon._k8s.k8s_schemas import V1Container\n"
+                "component = V1Component(\n"
+                "    component=V1Component(\n"
+                "        run=V1Job(container=V1Container(image='busybox:1.36')),\n"
+                "    ),\n"
+                "    run=None,\n"
+                ")\n"
+            )
+            for command, args in (
+                (check, ["-pm", "{}:component".format(source)]),
+                (
+                    run,
+                    ["--project=owner/project", "-pm", "{}:component".format(source)],
+                ),
+            ):
+                with self.subTest(command=command.name):
+                    result = self.runner.invoke(command, args)
+
+                    assert result.exit_code == 1, (result.output, result.exception)
+                    output = " ".join(result.output.lower().split())
+                    assert "resolved polyaxonfile has no run" in output
+                    create_run.assert_not_called()
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_preserves_authored_nulls_in_submitted_content(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="shared",
+            settings=V1RunSettings(),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "nulls.yaml"
+            for strategy in ("pre_merge", "isnull"):
+                with self.subTest(strategy=strategy):
+                    create_run.reset_mock()
+                    source.write_text(
+                        "component:\n"
+                        "  queue: base\n"
+                        "  run: {kind: job, container: {image: busybox:1.36}}\n"
+                        "queue: null\n"
+                        "termination: null\n"
+                        "run: null\n"
+                        f"patchStrategy: {strategy}\n"
+                    )
+
+                    result = self.runner.invoke(
+                        run, ["--project=owner/project", "-f", str(source)]
+                    )
+
+                    assert result.exit_code == 0, (result.output, result.exception)
+                    create_run.assert_called_once()
+                    submitted = json.loads(create_run.call_args.kwargs["body"].content)
+                    assert submitted["run"] is None
+                    assert submitted["queue"] is None
+                    assert submitted["termination"] is None
+                    assert "version" not in submitted
+                    compiled = OperationSpecification.compile_operation(
+                        OperationSpecification.read(submitted)
+                    )
+                    assert compiled.queue == "base"
+                    assert compiled.run.container.image == "busybox:1.36"
+
     @patch("polyaxon._cli.context.resolve_project")
     @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_run_shared_file_reports_server_version_error(

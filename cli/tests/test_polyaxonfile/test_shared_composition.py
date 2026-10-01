@@ -10,8 +10,9 @@ from polyaxon._polyaxonfile import (
     compose_polyaxonfile,
     read_polyaxonfile,
 )
+from polyaxon._polyaxonfile.manager import get_op_specification
 from polyaxon._utils.test_utils import BaseTestCase
-from polyaxon.exceptions import PolyaxonfileError
+from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 
 @pytest.mark.polyaxonfile_mark
@@ -380,6 +381,51 @@ class TestSharedComposition(BaseTestCase):
             else:
                 assert empty.inputs[0].name == "count"
                 assert empty.params["count"].value == 1
+
+    def test_operation_conversion_preserves_omitted_empty_and_null_run(self):
+        base = {
+            "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
+        }
+        for kind in (None, "component", "operation"):
+            for strategy in (None, *PatchStrategy):
+                for local in ({}, {"run": {}}, {"run": None}):
+                    with self.subTest(kind=kind, strategy=strategy, local=local):
+                        source = {"component": base, **local}
+                        if kind:
+                            source["kind"] = kind
+                        if strategy:
+                            source["patchStrategy"] = strategy
+                        converted = get_op_specification(
+                            config=read_polyaxonfile(source), validate_params=False
+                        )
+                        submitted = converted.to_dict(exclude_none=False)
+                        authored = (
+                            submitted["component"] if kind == "component" else submitted
+                        )
+                        assert ("run" in authored) == ("run" in local)
+                        assert "version" not in submitted
+                        if "run" in local and local["run"] is None:
+                            assert authored["run"] is None
+
+                        result = read_polyaxonfile(submitted)
+                        clears = (
+                            "run" in local
+                            and local["run"] is None
+                            and strategy
+                            in (
+                                None,
+                                PatchStrategy.POST_MERGE,
+                                PatchStrategy.REPLACE,
+                            )
+                        )
+                        if clears:
+                            with self.assertRaisesRegex(
+                                PolyaxonSchemaError, "resolved Polyaxonfile has no run"
+                            ):
+                                OperationSpecification.compile_operation(result)
+                        else:
+                            compiled = OperationSpecification.compile_operation(result)
+                            assert compiled.run.container.image == "busybox:1.36"
 
     def test_container_resource_patch_keeps_inherited_gpu(self):
         result = compose_polyaxonfile(

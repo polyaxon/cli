@@ -231,10 +231,10 @@ def get_op_specification(
         op_data["strictParams"] = strict_params
 
     if config and (hub or config.kind == kinds.COMPONENT):
-        op_data["component"] = config.to_dict()
+        op_data["component"] = config.to_dict(exclude_none=False)
         config = get_specification(data=[op_data])
     elif config and config.kind in (None, kinds.OPERATION):
-        config = get_specification(data=[config.to_dict(), op_data])
+        config = get_specification(data=[config.to_dict(exclude_none=False), op_data])
     elif hub:
         op_data["hubRef"] = hub
         config = get_specification(data=[op_data])

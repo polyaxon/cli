@@ -171,7 +171,7 @@ def check_polyaxonfile(
             plx_file = (
                 ConfigSpec.get_from(python_module, config_type=".py")
                 .read()
-                .to_dict(include_kind=True)
+                .to_dict(include_kind=True, exclude_none=False)
             )
         elif url:
             plx_file = ConfigSpec.get_from(url, "url").read()
