@@ -99,7 +99,7 @@ class TestSharedFilePatches(BaseTestCase):
         assert compiled.run.master is None
         assert overridden.run.to_dict() == compiled.run.to_dict()
 
-    def test_multiple_files_match_legacy_cli_patch_order(self):
+    def test_multiple_files_match_cli_entry_point(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             base = root / "base.yaml"
@@ -128,22 +128,23 @@ class TestSharedFilePatches(BaseTestCase):
             before = deepcopy(source)
 
             merged = patch_polyaxonfile(source, overlays)
-            legacy = get_op_specification(
+            cli_config = get_op_specification(
                 config=OperationSpecification.read(str(base)),
                 preset_files=overlays,
                 validate_params=False,
             )
 
-        assert merged.to_dict() == legacy.to_dict()
+        assert merged.to_dict() == cli_config.to_dict()
         assert source == before
         assert merged.component.run.container.image == "base:v1"
         assert merged.run_patch["container"]["image"] == "first:v2"
         assert merged.run_patch["environment"]["annotations"] == {"source": "second"}
         assert merged.patch_strategy is None
         effective = compose_polyaxonfile(merged)
-        compiled = OperationSpecification.compile_operation(legacy)
+        compiled = OperationSpecification.compile_operation(cli_config)
         assert effective.run.to_dict() == compiled.run.to_dict()
         assert effective.run.container.image == "first:v2"
+        assert effective.run.environment.annotations == {"source": "second"}
 
     def test_each_file_supplies_the_strategy_for_native_fields_and_run_patch(self):
         source = read_polyaxonfile(
@@ -427,22 +428,39 @@ class TestSharedFilePatches(BaseTestCase):
         assert effective.run.kind == "job"
         assert effective.run.container.image == "base:v1"
 
-    def test_null_and_empty_run_patch_match_legacy_with_or_without_runtime(self):
-        for definition in (
-            {"hubRef": "train:v1"},
-            {
-                "component": {
-                    "run": {"kind": "job", "container": {"image": "base:v1"}},
+    def test_null_and_empty_run_patch_keep_fixed_legacy_results(self):
+        retained_patch = {"container": {"image": "patch:v1"}}
+        for definition, expected_empty in (
+            (
+                {"hubRef": "train:v1"},
+                {
+                    PatchStrategy.POST_MERGE: retained_patch,
+                    PatchStrategy.PRE_MERGE: retained_patch,
+                    PatchStrategy.REPLACE: {},
+                    PatchStrategy.ISNULL: retained_patch,
                 },
-            },
+            ),
+            (
+                {
+                    "component": {
+                        "run": {"kind": "job", "container": {"image": "base:v1"}},
+                    },
+                },
+                {
+                    PatchStrategy.POST_MERGE: retained_patch,
+                    PatchStrategy.PRE_MERGE: retained_patch,
+                    PatchStrategy.REPLACE: retained_patch,
+                    PatchStrategy.ISNULL: retained_patch,
+                },
+            ),
         ):
             source = {
                 "kind": "operation",
                 **definition,
                 "runPatch": {"container": {"image": "patch:v1"}},
             }
-            for value in (None, {}):
-                for strategy in PatchStrategy:
+            for strategy, want_empty in expected_empty.items():
+                for value, want in ((None, retained_patch), ({}, want_empty)):
                     with self.subTest(
                         definition=definition, value=value, strategy=strategy
                     ):
@@ -450,13 +468,14 @@ class TestSharedFilePatches(BaseTestCase):
                         merged = patch_polyaxonfile(
                             read_polyaxonfile(source), [overlay]
                         )
-                        legacy = OperationSpecification.read(deepcopy(source))
-                        preset = OperationSpecification.read(
-                            deepcopy(overlay), is_preset=True
-                        )
-                        legacy.patch(preset, strategy=strategy)
-
-                        assert merged.to_dict() == legacy.to_dict()
+                        assert merged.run_patch == want
+                        assert merged.to_dict()["runPatch"] == want
+                        if "component" in definition:
+                            compiled = OperationSpecification.compile_operation(merged)
+                            assert compiled.run.to_dict() == {
+                                "kind": "job",
+                                "container": {"image": "patch:v1"},
+                            }
 
     def test_model_overlays_preserve_nulls_without_changing_the_inputs(self):
         source = read_polyaxonfile(

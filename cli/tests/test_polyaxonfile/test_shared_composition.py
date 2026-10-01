@@ -98,7 +98,7 @@ class TestSharedComposition(BaseTestCase):
                 assert result.run.container.args == ["echo hello"]
                 assert authored == before
 
-    def test_legacy_wrapper_matches_current_compiler(self):
+    def test_legacy_wrapper_has_fixed_results_across_entry_points(self):
         source = {
             "kind": "operation",
             "component": {
@@ -122,20 +122,57 @@ class TestSharedComposition(BaseTestCase):
                 "container": {"image": "final:v3", "args": ["echo hello"]},
             },
         }
-        for strategy in PatchStrategy:
+        expected = {
+            PatchStrategy.POST_MERGE: {
+                "queue": "local",
+                "tags": ["base", "local"],
+                "connections": ["base", "patch"],
+                "image": "final:v3",
+            },
+            PatchStrategy.PRE_MERGE: {
+                "queue": "base",
+                "tags": ["local", "base"],
+                "connections": ["patch", "base"],
+                "image": "base:v1",
+            },
+            PatchStrategy.REPLACE: {
+                "queue": "local",
+                "tags": ["local"],
+                "connections": ["patch"],
+                "image": "final:v3",
+            },
+            PatchStrategy.ISNULL: {
+                "queue": "base",
+                "tags": ["base"],
+                "connections": ["base"],
+                "image": "base:v1",
+            },
+        }
+        for strategy, want in expected.items():
             with self.subTest(strategy=strategy):
                 authored = {**source, "patchStrategy": strategy}
-                legacy = OperationSpecification.compile_operation(
+                compiled = OperationSpecification.compile_operation(
                     OperationSpecification.read(deepcopy(authored))
                 )
 
                 result = compose_polyaxonfile(authored)
 
-                assert result.run.to_dict() == legacy.run.to_dict()
-                assert result.inputs == legacy.inputs
-                assert result.queue == legacy.queue
-                assert result.tags == legacy.tags
-                assert result.strict_params is legacy.strict_params is True
+                for config in (result, compiled):
+                    assert config.run.to_dict() == {
+                        "kind": "job",
+                        "connections": want["connections"],
+                        "container": {
+                            "image": want["image"],
+                            "command": ["sh", "-c"],
+                            "args": ["echo hello"],
+                        },
+                    }
+                    assert [io.to_dict() for io in config.inputs] == [
+                        {"name": "count", "type": "int"}
+                    ]
+                    assert config.queue == want["queue"]
+                    assert config.tags == want["tags"]
+                    assert config.strict_params is True
 
     def test_partial_run_inherits_kind_from_embedded_or_resolved_base(self):
         references = (
@@ -426,6 +463,14 @@ class TestSharedComposition(BaseTestCase):
                         else:
                             compiled = OperationSpecification.compile_operation(result)
                             assert compiled.run.container.image == "busybox:1.36"
+                            if local == {"run": {}}:
+                                reloaded = read_polyaxonfile(converted.to_json())
+                                assert (
+                                    OperationSpecification.compile_operation(
+                                        reloaded
+                                    ).to_dict()
+                                    == compiled.to_dict()
+                                )
 
     def test_container_resource_patch_keeps_inherited_gpu(self):
         result = compose_polyaxonfile(
