@@ -196,7 +196,7 @@ def register(ctx, polyaxonfile, project, version, description, tags, force):
         kind=V1ProjectVersionKind.COMPONENT,
         description=description,
         tags=tags,
-        content=plx_file.to_json(),
+        content=plx_file.to_json(exclude_none=False),
         force=force,
     )
 
