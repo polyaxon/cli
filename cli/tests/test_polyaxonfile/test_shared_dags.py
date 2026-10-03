@@ -1,6 +1,7 @@
 from copy import deepcopy
 import pytest
 
+from clipped.utils.json import orjson_loads
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -82,6 +83,149 @@ class TestSharedDags(BaseTestCase):
                 assert dag.get_op_spec_by_index(2).dag_ref == "template"
                 assert authored.to_dict() == before
                 assert read_polyaxonfile(authored.to_json()).to_dict() == before
+
+    def test_compiled_dag_preserves_explicit_nulls_in_definitions(self):
+        for nested in (False, True):
+            with self.subTest(nested=nested):
+                source_dag = {
+                    "kind": "dag",
+                    "concurrency": None,
+                    "environment": None,
+                    "components": [
+                        {
+                            "kind": "component",
+                            "name": "train",
+                            "matrix": {
+                                "kind": "grid",
+                                "params": {
+                                    "count": {"kind": "choice", "value": [1, 2]}
+                                },
+                            },
+                            "schedule": {"kind": "cron", "cron": "0 * * * *"},
+                            "run": {
+                                "kind": "job",
+                                "container": {"image": "busybox:1.36"},
+                            },
+                        },
+                        {
+                            "kind": "operation",
+                            "name": "single",
+                            "dagRef": "train",
+                            "matrix": None,
+                            "schedule": None,
+                            "queue": None,
+                        },
+                    ],
+                    "operations": [
+                        {
+                            "kind": "operation",
+                            "name": "once",
+                            "dagRef": "train",
+                            "matrix": None,
+                            "schedule": None,
+                        },
+                        {"name": "from-template", "dagRef": "single"},
+                        {"name": "inherited", "dagRef": "train"},
+                    ],
+                }
+                source = {"queue": None, "schedule": None, "run": source_dag}
+                if nested:
+                    source["run"] = {
+                        "kind": "dag",
+                        "concurrency": None,
+                        "environment": None,
+                        "operations": [{"name": "nested", "run": source_dag}],
+                    }
+                authored = read_polyaxonfile(source)
+                before = authored.to_dict(exclude_none=False)
+                compiled = OperationSpecification.compile_operation(authored)
+
+                content = compiled.to_json()
+                saved = orjson_loads(content)
+                restored = CompiledOperationSpecification.read(content)
+                dag = CompiledOperationSpecification.apply_operation_contexts(
+                    restored
+                ).run
+                definitions = saved["run"]
+                if nested:
+                    definitions = definitions["operations"][0]["run"]
+                    child = OperationSpecification.compile_operation(
+                        dag.get_op_spec_by_name("nested"), is_dag_node=True
+                    )
+                    child = CompiledOperationSpecification.read(child.to_json())
+                    dag = CompiledOperationSpecification.apply_operation_contexts(
+                        child
+                    ).run
+
+                assert dag.get_effective_op("once").matrix is None
+                assert dag.get_effective_op("from-template").matrix is None
+                assert dag.get_effective_op("inherited").matrix.kind == "grid"
+                for field in ("operations", "components"):
+                    assert definitions[field] == source_dag[field]
+                assert "queue" not in saved
+                assert "schedule" not in saved
+                assert saved["run"]["concurrency"] is None
+                assert saved["run"]["environment"] is None
+                assert "matrix" not in saved
+                assert "queue" not in definitions["operations"][0]
+                assert authored.to_dict(exclude_none=False) == before
+                serialized = authored.to_dict()["run"]
+                if nested:
+                    serialized = serialized["operations"][0]["run"]
+                assert serialized == source_dag
+
+    def test_compiled_serialization_preserves_explicit_dag_nulls(self):
+        for kind in ("job", "service", "dag"):
+            with self.subTest(kind=kind):
+                run = {"kind": kind, "environment": None}
+                expected_run = {"kind": kind}
+                if kind == "dag":
+                    run.update({"operations": None, "components": None})
+                    expected_run.update(
+                        {"environment": None, "operations": None, "components": None}
+                    )
+                else:
+                    run["container"] = {"image": "busybox:1.36"}
+                    expected_run["container"] = run["container"]
+                compiled = CompiledOperationSpecification.read(
+                    {
+                        "kind": "compiled_operation",
+                        "queue": None,
+                        "schedule": None,
+                        "matrix": None,
+                        "run": run,
+                    }
+                )
+                expected = {"kind": "compiled_operation", "run": expected_run}
+
+                assert compiled.to_dict() == expected
+                assert orjson_loads(compiled.to_json()) == expected
+                explicit = compiled.to_dict(exclude_none=False)
+                for field in ("queue", "schedule", "matrix"):
+                    assert explicit[field] is None
+                assert explicit["run"]["environment"] is None
+
+    def test_compiled_dag_keeps_omitted_fields_absent(self):
+        source = {"kind": "compiled_operation", "run": {"kind": "dag"}}
+
+        compiled = CompiledOperationSpecification.read(source)
+
+        assert compiled.to_dict() == source
+        assert orjson_loads(compiled.to_json()) == source
+
+    def test_compiled_dag_keeps_templated_definitions(self):
+        source = {
+            "kind": "compiled_operation",
+            "run": {
+                "kind": "dag",
+                "operations": "{{ operations }}",
+                "components": "{{ components }}",
+            },
+        }
+
+        compiled = CompiledOperationSpecification.read(source)
+
+        assert orjson_loads(compiled.to_json()) == source
 
     def test_unused_template_does_not_add_nodes_or_edges(self):
         job = {"kind": "job", "container": {"image": "busybox:1.36"}}

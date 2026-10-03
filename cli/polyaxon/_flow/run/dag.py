@@ -319,6 +319,28 @@ class V1Dag(BaseRun):
     _effective_ops: Dict[str, V1Polyaxonfile] = PrivateAttr()
     _context: Dict[str, Any] = PrivateAttr()
 
+    @classmethod
+    def obj_to_dict(
+        cls,
+        obj: "V1Dag",
+        humanize_values: bool = False,
+        include_kind: bool = False,
+        include_version: bool = False,
+        exclude_unset: bool = True,
+        exclude_none: bool = True,
+        exclude_defaults: bool = False,
+    ) -> Dict:
+        # Child definitions are merged again when the scheduler creates their runs.
+        return super().obj_to_dict(
+            obj,
+            humanize_values=humanize_values,
+            include_kind=include_kind,
+            include_version=include_version,
+            exclude_unset=exclude_unset,
+            exclude_none=False,
+            exclude_defaults=exclude_defaults,
+        )
+
     @field_validator("operations", "components", **validation_before)
     def validate_polyaxonfiles(cls, value):
         from polyaxon._flow.polyaxonfile import V1Component, V1Operation, V1Polyaxonfile
