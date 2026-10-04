@@ -1,7 +1,10 @@
 from copy import deepcopy
 import pytest
+from unittest.mock import patch
 
 from clipped.utils.json import orjson_loads
+from polyaxon._flow.polyaxonfile import V1Component, V1Operation
+from polyaxon._flow.run.dag import V1Dag
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -140,9 +143,11 @@ class TestSharedDags(BaseTestCase):
                 before = authored.to_dict(exclude_none=False)
                 compiled = OperationSpecification.compile_operation(authored)
 
-                content = compiled.to_json()
+                content = compiled.to_compiled_json()
+                assert content == compiled.to_json()
                 saved = orjson_loads(content)
                 restored = CompiledOperationSpecification.read(content)
+                assert orjson_loads(restored.to_compiled_json()) == saved
                 dag = CompiledOperationSpecification.apply_operation_contexts(
                     restored
                 ).run
@@ -152,7 +157,9 @@ class TestSharedDags(BaseTestCase):
                     child = OperationSpecification.compile_operation(
                         dag.get_op_spec_by_name("nested"), is_dag_node=True
                     )
-                    child = CompiledOperationSpecification.read(child.to_json())
+                    child = CompiledOperationSpecification.read(
+                        child.to_compiled_json()
+                    )
                     dag = CompiledOperationSpecification.apply_operation_contexts(
                         child
                     ).run
@@ -180,9 +187,16 @@ class TestSharedDags(BaseTestCase):
                 run = {"kind": kind, "environment": None}
                 expected_run = {"kind": kind}
                 if kind == "dag":
-                    run.update({"operations": None, "components": None})
+                    run.update(
+                        {"operations": None, "components": None, "concurrency": None}
+                    )
                     expected_run.update(
-                        {"environment": None, "operations": None, "components": None}
+                        {
+                            "environment": None,
+                            "operations": None,
+                            "components": None,
+                            "concurrency": None,
+                        }
                     )
                 else:
                     run["container"] = {"image": "busybox:1.36"}
@@ -200,6 +214,11 @@ class TestSharedDags(BaseTestCase):
 
                 assert compiled.to_dict() == expected
                 assert orjson_loads(compiled.to_json()) == expected
+                assert orjson_loads(compiled.to_compiled_json()) == expected
+                restored = CompiledOperationSpecification.read(
+                    compiled.to_compiled_json()
+                )
+                assert orjson_loads(restored.to_compiled_json()) == expected
                 explicit = compiled.to_dict(exclude_none=False)
                 for field in ("queue", "schedule", "matrix"):
                     assert explicit[field] is None
@@ -212,6 +231,7 @@ class TestSharedDags(BaseTestCase):
 
         assert compiled.to_dict() == source
         assert orjson_loads(compiled.to_json()) == source
+        assert orjson_loads(compiled.to_compiled_json()) == source
 
     def test_compiled_dag_keeps_templated_definitions(self):
         source = {
@@ -226,6 +246,147 @@ class TestSharedDags(BaseTestCase):
         compiled = CompiledOperationSpecification.read(source)
 
         assert orjson_loads(compiled.to_json()) == source
+        assert orjson_loads(compiled.to_compiled_json()) == source
+        restored = CompiledOperationSpecification.read(compiled.to_compiled_json())
+        assert orjson_loads(restored.to_compiled_json()) == source
+
+    def test_compiled_serialization_retains_deferred_execution_fields(self):
+        source = {
+            "kind": "compiled_operation",
+            "inputs": [
+                {"name": "count", "type": "int", "value": 3, "isOptional": True}
+            ],
+            "outputs": [{"name": "result", "type": "int"}],
+            "contexts": [
+                {"name": "offset", "type": "int", "value": 3, "isOptional": True}
+            ],
+            "strictParams": False,
+            "matrix": {
+                "kind": "grid",
+                "params": {"seed": {"kind": "choice", "value": [1, 2]}},
+            },
+            "schedule": {"kind": "cron", "cron": "0 * * * *"},
+            "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
+        }
+        compiled = CompiledOperationSpecification.read(source)
+
+        content = compiled.to_compiled_json()
+        assert orjson_loads(content) == source
+        assert content == compiled.to_json()
+        restored = CompiledOperationSpecification.read(content)
+        assert orjson_loads(restored.to_compiled_json()) == source
+
+    def test_compiled_serialization_does_not_mutate_definitions(self):
+        source = {
+            "kind": "compiled_operation",
+            "run": {
+                "kind": "dag",
+                "environment": None,
+                "concurrency": None,
+                "components": [
+                    {
+                        "kind": "component",
+                        "name": "train",
+                        "queue": None,
+                        "params": {
+                            "options": {"value": {"items": [1, {"value": None}]}}
+                        },
+                        "run": {
+                            "kind": "job",
+                            "container": {
+                                "image": "busybox:1.36",
+                                "args": ["{{ options }}"],
+                            },
+                        },
+                    }
+                ],
+                "operations": [
+                    {
+                        "kind": "operation",
+                        "name": "once",
+                        "dagRef": "train",
+                        "schedule": None,
+                        "matrix": None,
+                    }
+                ],
+            },
+        }
+        compiled = CompiledOperationSpecification.read({**source, "queue": None})
+        template = compiled.run.components[0]
+        node = compiled.run.operations[0]
+        models = (
+            compiled,
+            compiled.run,
+            template,
+            template.run,
+            template.params["options"],
+            node,
+        )
+        fields_sets = [model.model_fields_set.copy() for model in models]
+        before = compiled.to_dict(exclude_none=False)
+
+        assert orjson_loads(compiled.to_compiled_json()) == source
+
+        assert compiled.to_dict(exclude_none=False) == before
+        assert [model.model_fields_set for model in models] == fields_sets
+        assert compiled.run.dag == {}
+
+    def test_compiled_serializer_visits_each_definition_once(self):
+        job = {"kind": "job", "container": {"image": "busybox:1.36"}}
+        source = {
+            "kind": "compiled_operation",
+            "run": {
+                "kind": "dag",
+                "components": [{"kind": "component", "name": "train", "run": job}],
+                "operations": [
+                    {
+                        "kind": "operation",
+                        "name": "once",
+                        "dagRef": "train",
+                        "schedule": None,
+                    },
+                    {
+                        "kind": "operation",
+                        "name": "nested",
+                        "run": {
+                            "kind": "dag",
+                            "components": [
+                                {"kind": "component", "name": "inner", "run": job}
+                            ],
+                            "operations": [
+                                {
+                                    "kind": "operation",
+                                    "name": "inner-once",
+                                    "dagRef": "inner",
+                                    "matrix": None,
+                                }
+                            ],
+                        },
+                    },
+                ],
+            },
+        }
+        compiled = CompiledOperationSpecification.read(source)
+
+        with patch.object(
+            V1Operation, "obj_to_dict", wraps=V1Operation.obj_to_dict
+        ) as operation_dump:
+            with patch.object(
+                V1Component, "obj_to_dict", wraps=V1Component.obj_to_dict
+            ) as component_dump:
+                with patch.object(
+                    V1Dag, "obj_to_dict", wraps=V1Dag.obj_to_dict
+                ) as dag_dump:
+                    payload = orjson_loads(compiled.to_compiled_json())
+
+        assert payload == source
+        assert operation_dump.call_count == 3
+        assert component_dump.call_count == 2
+        assert dag_dump.call_count == 2
+        dag_dump.assert_any_call(compiled.run, exclude_none=True, purpose="compiled")
+        dag_dump.assert_any_call(
+            compiled.run.operations[1].run, exclude_none=False, purpose="compiled"
+        )
 
     def test_unused_template_does_not_add_nodes_or_edges(self):
         job = {"kind": "job", "container": {"image": "busybox:1.36"}}

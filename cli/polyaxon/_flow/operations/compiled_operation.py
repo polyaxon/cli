@@ -22,6 +22,10 @@ class V1CompiledOperation(BaseOp, RunMixin):
     contexts: Optional[List[V1IO]] = None
     run: Optional[V1Runtime] = None
 
+    def to_compiled_json(self) -> str:
+        """Serialize runtime content as JSON with deferred DAG source preserved."""
+        return self.to_json(exclude_none=True, exclude_unset=True, purpose="compiled")
+
     def get_run_kind(self):
         return self.run.kind if self.run else None
 

@@ -301,6 +301,13 @@ class V1Dag(BaseRun):
     _IDENTIFIER = V1RunKind.DAG
     _SWAGGER_FIELDS = ["volumes"]
     _CUSTOM_DUMP_FIELDS = {"operations", "components", "environment"}
+    # DAG metadata and deferred definitions retain explicit nulls.
+    # Keep state rules separate so persistence changes cannot alter legacy hashes.
+    _DUMP_POLICY = {
+        "default": {"exclude_none": False},
+        "compiled": {"exclude_none": False},
+        "component_state": {"exclude_none": False},
+    }
 
     kind: Literal[V1RunKind.DAG] = _IDENTIFIER
     operations: Optional[Union[List[V1Polyaxonfile], RefField]] = None
@@ -318,28 +325,6 @@ class V1Dag(BaseRun):
     _op_component_mapping: Dict[str, str] = PrivateAttr()
     _effective_ops: Dict[str, V1Polyaxonfile] = PrivateAttr()
     _context: Dict[str, Any] = PrivateAttr()
-
-    @classmethod
-    def obj_to_dict(
-        cls,
-        obj: "V1Dag",
-        humanize_values: bool = False,
-        include_kind: bool = False,
-        include_version: bool = False,
-        exclude_unset: bool = True,
-        exclude_none: bool = True,
-        exclude_defaults: bool = False,
-    ) -> Dict:
-        # Child definitions are merged again when the scheduler creates their runs.
-        return super().obj_to_dict(
-            obj,
-            humanize_values=humanize_values,
-            include_kind=include_kind,
-            include_version=include_version,
-            exclude_unset=exclude_unset,
-            exclude_none=False,
-            exclude_defaults=exclude_defaults,
-        )
 
     @field_validator("operations", "components", **validation_before)
     def validate_polyaxonfiles(cls, value):

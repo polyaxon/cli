@@ -14,6 +14,7 @@ from clipped.compact.pydantic import (
 )
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
+from clipped.utils.json import orjson_dumps
 from polyaxon._flow.base import BaseOp
 from polyaxon._flow.builds import V1Build
 from polyaxon._flow.hooks import V1Hook
@@ -122,6 +123,34 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             )
         # Stored files can retain both a reference and its resolved component.
         return values
+
+    def to_source_json(self) -> str:
+        """Serialize authored fields as JSON, preserving nulls and omissions."""
+        return self.to_json(exclude_none=False, exclude_unset=True, purpose="source")
+
+    def to_component_state_dict(self) -> Dict:
+        """Project legacy component-state input without changing authored fields."""
+        # Reuse validated children; only root kind and its field presence change.
+        values = {
+            field: getattr(self, field) for field in V1Component.get_model_fields()
+        }
+        values["kind"] = "component"
+        component = V1Component.model_construct(
+            _fields_set=self.model_fields_set | {"kind"}, **values
+        )
+        return component.to_dict(
+            humanize_values=False,
+            include_kind=False,
+            include_version=False,
+            exclude_none=True,
+            exclude_unset=True,
+            exclude_defaults=False,
+            purpose="component_state",
+        )
+
+    def to_component_state_json(self) -> str:
+        """Serialize legacy state input without canonicalizing key order."""
+        return orjson_dumps(self.to_component_state_dict())
 
     def get_run_kind(self):
         return self.run.kind if self.run and not isinstance(self.run, Mapping) else None

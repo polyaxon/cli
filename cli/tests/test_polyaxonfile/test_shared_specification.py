@@ -122,6 +122,142 @@ class TestSharedSpecification(BaseTestCase):
         }
         assert config.component.run.container is None
         assert config.component.run.connections == []
+        assert json.loads(config.to_source_json()) == source
+
+    def test_source_serialization_keeps_unset_fields_omitted(self):
+        for kind in (None, "component", "operation"):
+            for fields in ({}, {"queue": None, "schedule": None, "matrix": None}):
+                with self.subTest(kind=kind, fields=fields):
+                    source = dict(fields)
+                    if kind:
+                        source["kind"] = kind
+                    config = read_polyaxonfile(source)
+                    fields_set = config.model_fields_set.copy()
+
+                    assert json.loads(config.to_source_json()) == source
+                    assert config.model_fields_set == fields_set
+                    assert "version" not in config.model_fields_set
+                    assert config.to_dict() == ({"kind": kind} if kind else {})
+
+    def test_source_serialization_preserves_nested_dag_definitions(self):
+        source = {
+            "schedule": None,
+            "component": {
+                "run": {
+                    "kind": "dag",
+                    "components": "{{ components }}",
+                    "operations": [
+                        {
+                            "name": "nested",
+                            "run": {
+                                "kind": "dag",
+                                "environment": None,
+                                "concurrency": None,
+                                "components": [
+                                    {
+                                        "name": "train",
+                                        "queue": None,
+                                        "run": {
+                                            "kind": "job",
+                                            "container": {"image": "busybox:1.36"},
+                                        },
+                                    }
+                                ],
+                                "operations": [
+                                    {
+                                        "name": "once",
+                                        "dagRef": "train",
+                                        "schedule": None,
+                                        "matrix": None,
+                                    },
+                                    {"name": "inherited", "dagRef": "train"},
+                                ],
+                            },
+                        }
+                    ],
+                }
+            },
+        }
+        config = read_polyaxonfile(source)
+
+        assert json.loads(config.to_source_json()) == source
+
+    def test_source_serialization_does_not_mutate_source(self):
+        source = {
+            "queue": None,
+            "params": {"options": {"value": {"items": [1, {"value": None}]}}},
+            "component": {
+                "queue": None,
+                "run": {
+                    "kind": "job",
+                    "environment": None,
+                    "container": {
+                        "image": "busybox:1.36",
+                        "args": ["{{ options }}"],
+                    },
+                },
+            },
+        }
+        config = read_polyaxonfile(source)
+        models = (
+            config,
+            config.component,
+            config.component.run,
+            config.params["options"],
+        )
+        fields_sets = [model.model_fields_set.copy() for model in models]
+        compact = config.to_dict()
+
+        assert json.loads(config.to_source_json()) == source
+
+        assert config.to_dict() == compact
+        assert [model.model_fields_set for model in models] == fields_sets
+
+    def test_source_serializer_visits_each_definition_once(self):
+        source = {
+            "run": {
+                "kind": "dag",
+                "components": [
+                    {
+                        "kind": "component",
+                        "name": "train",
+                        "run": {
+                            "kind": "job",
+                            "container": {"image": "busybox:1.36"},
+                        },
+                    }
+                ],
+                "operations": [
+                    {
+                        "kind": "operation",
+                        "name": "first",
+                        "dagRef": "train",
+                        "schedule": None,
+                    },
+                    {
+                        "kind": "operation",
+                        "name": "second",
+                        "dagRef": "train",
+                        "matrix": None,
+                    },
+                ],
+            }
+        }
+        config = read_polyaxonfile(source)
+
+        with patch.object(
+            V1Operation, "obj_to_dict", wraps=V1Operation.obj_to_dict
+        ) as operation_dump:
+            with patch.object(
+                V1Component, "obj_to_dict", wraps=V1Component.obj_to_dict
+            ) as component_dump:
+                payload = json.loads(config.to_source_json())
+
+        assert payload == source
+        assert operation_dump.call_count == 2
+        component_dump.assert_called_once_with(
+            config.run.components[0], exclude_none=False, purpose="source"
+        )
 
     def test_read_model_copies_nested_values_and_field_presence(self):
         source = V1Polyaxonfile.from_dict(

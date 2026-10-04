@@ -134,6 +134,50 @@ class TestCliComponent(BaseCommandTestCase):
     @patch("polyaxon._client.run.RunClient")
     @patch("polyaxon._cli.project_versions.register_project_version")
     @patch("polyaxon._cli.context.resolve_project")
+    def test_register_preserves_deferred_dag_source(
+        self, resolve_project, register_version, run_client
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        content = {
+            "run": {
+                "kind": "dag",
+                "environment": None,
+                "components": [
+                    {
+                        "name": "train",
+                        "schedule": {"kind": "cron", "cron": "0 * * * *"},
+                        "run": {
+                            "kind": "job",
+                            "container": {"image": "busybox:1.36"},
+                        },
+                    }
+                ],
+                "operations": [
+                    {"name": "once", "dagRef": "train", "schedule": None},
+                    {"name": "inherited", "dagRef": "train"},
+                ],
+            }
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "dag.yml"
+            original = json.dumps(content)
+            source.write_text(original)
+
+            result = self.runner.invoke(
+                components,
+                ["register", "--project=owner/project", "-f", str(source)],
+            )
+
+            assert source.read_text() == original
+        assert result.exit_code == 0, (result.output, result.exception)
+        register_version.assert_called_once()
+        submitted = register_version.call_args.kwargs["content"]
+        assert json.loads(submitted) == content
+        run_client.assert_not_called()
+
+    @patch("polyaxon._client.run.RunClient")
+    @patch("polyaxon._cli.project_versions.register_project_version")
+    @patch("polyaxon._cli.context.resolve_project")
     def test_register_dag_file_collects_relative_path_reference(
         self, resolve_project, register_version, run_client
     ):
