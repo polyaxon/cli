@@ -965,11 +965,13 @@ def restart(
     """
     from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._polyaxonfile import OperationSpecification
+    from polyaxon._config.spec import ConfigSpec
+    from polyaxon._polyaxonfile import read_polyaxonfile
 
     content = None
     if polyaxonfile:
-        content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
+        data = ConfigSpec.read_from(polyaxonfile)
+        content = read_polyaxonfile(data, is_preset=True).to_source_json()
 
     owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),
@@ -1055,11 +1057,13 @@ def resume(
     """
     from polyaxon._cli.context import resolve_run
     from polyaxon._client.run import RunClient
-    from polyaxon._polyaxonfile import OperationSpecification
+    from polyaxon._config.spec import ConfigSpec
+    from polyaxon._polyaxonfile import read_polyaxonfile
 
     content = None
     if polyaxonfile:
-        content = OperationSpecification.read(polyaxonfile, is_preset=True).to_json()
+        data = ConfigSpec.read_from(polyaxonfile)
+        content = read_polyaxonfile(data, is_preset=True).to_source_json()
 
     owner, _, project_name, run_uuid = resolve_run(
         project or ctx.obj.get("project"),

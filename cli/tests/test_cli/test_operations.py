@@ -25,7 +25,7 @@ from polyaxon._sdk.schemas.v1_project import V1Project
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_user import V1User
 from polyaxon._utils.cli_constants import SYMLINK_MODES
-from polyaxon.exceptions import PolyaxonClientException
+from polyaxon.exceptions import ApiException, PolyaxonClientException
 from tests.test_cli.utils import BaseCommandTestCase
 
 
@@ -961,6 +961,7 @@ class TestCliRuns(BaseCommandTestCase):
                 "inputs: [{name: count, type: int}]\n"
                 "params: {count: 1}\n"
                 "presets: [cpu]\n"
+                "patchStrategy: replace\n"
                 "run:\n"
                 "  kind: job\n"
                 "  container:\n"
@@ -970,12 +971,16 @@ class TestCliRuns(BaseCommandTestCase):
                 "    resources: {limits: {nvidia.com/gpu: 1}}\n"
             )
             params = Path(directory) / "params.yaml"
-            params.write_text("params: {count: 1}\npresets: [cpu]\n")
+            params.write_text(
+                "params: {count: 1}\npresets: [cpu]\npatchStrategy: replace\n"
+            )
             override = Path(directory) / "override.yaml"
-            for strategy in ("post_merge", "pre_merge"):
+            for strategy in ("post_merge", "pre_merge", "replace"):
                 override.write_text(
                     "patchStrategy: {}\n"
                     "params: {{count: 3}}\n"
+                    "schedule: null\n"
+                    "matrix: null\n"
                     "run:\n"
                     "  kind: job\n"
                     "  container:\n"
@@ -1039,9 +1044,11 @@ class TestCliRuns(BaseCommandTestCase):
                             )
                             body = request.call_args.kwargs["body"]
                             submitted = orjson_loads(body.content)
-                            assert submitted["kind"] == "operation"
+                            assert "kind" not in submitted
                             assert "version" not in submitted
                             assert "component" not in submitted
+                            assert submitted["schedule"] is None
+                            assert submitted["matrix"] is None
                             if recompile:
                                 assert submitted["strictParams"] is True
                                 assert submitted["inputs"] == [
@@ -1077,6 +1084,126 @@ class TestCliRuns(BaseCommandTestCase):
                             if recompile:
                                 metadata["recompile"] = True
                             assert body.meta_info == (metadata or None)
+
+    @patch("polyaxon._cli.context.resolve_run")
+    def test_rerun_shared_files_preserve_authored_forms(self, resolve_run):
+        resolve_run.return_value = ("owner", None, "project", RUN_UUID)
+        job = {
+            "params": {"message": {"value": "hello"}},
+            "run": {
+                "kind": "job",
+                "container": {
+                    "image": "busybox:1.36",
+                    "command": ["sh", "-c"],
+                    "args": ["echo '{{ message }}'"],
+                },
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "polyaxonfile.yaml"
+            for content, recompile in (
+                (job, True),
+                ({"kind": "component", "version": 0.4, **job}, True),
+                ({"kind": "operation", **job}, True),
+                (
+                    {
+                        "kind": "operation",
+                        "component": {"kind": "component", **job},
+                        "runPatch": {"container": {"image": "legacy:v2"}},
+                    },
+                    True,
+                ),
+                ({"run": {"container": {"image": "partial:v2"}}}, False),
+            ):
+                source.write_text(orjson_dumps(content))
+                for command, endpoint, options in (
+                    ("restart", "restart_run", []),
+                    ("restart", "copy_run", ["--copy"]),
+                    ("resume", "resume_run", []),
+                ):
+                    with (
+                        self.subTest(content=content, endpoint=endpoint),
+                        patch(
+                            "polyaxon._sdk.api.runs_v1_api.RunsV1Api.{}".format(
+                                endpoint
+                            ),
+                            return_value=V1Run(uuid=RUN_UUID),
+                        ) as request,
+                    ):
+                        result = self.runner.invoke(
+                            ops,
+                            [
+                                "--project=owner/project",
+                                "--uid={}".format(RUN_UUID),
+                                command,
+                                "-f",
+                                str(source),
+                                *options,
+                                *(["--recompile"] if recompile else []),
+                            ],
+                        )
+
+                        assert result.exit_code == 0, (result.output, result.exception)
+                        request.assert_called_once()
+                        body = request.call_args.kwargs["body"]
+                        assert orjson_loads(body.content) == {
+                            **content,
+                            "isPreset": True,
+                        }
+                        assert body.meta_info == (
+                            {"recompile": True} if recompile else None
+                        )
+
+    @patch("polyaxon._cli.context.resolve_run")
+    def test_rerun_recompile_reports_backend_errors(self, resolve_run):
+        resolve_run.return_value = ("owner", None, "project", RUN_UUID)
+        message = "Recompile requires a complete Polyaxonfile"
+        error = ApiException(status=400, reason="Bad Request")
+        error.body = orjson_dumps([message])
+        content = {"params": {"message": {"value": "hello"}}}
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "params.yaml"
+            source.write_text(orjson_dumps(content))
+            for command, endpoint, options in (
+                ("restart", "restart_run", []),
+                ("restart", "copy_run", ["--copy"]),
+                ("resume", "resume_run", []),
+            ):
+                for files in ([], ["-f", str(source)]):
+                    with (
+                        self.subTest(endpoint=endpoint, files=files),
+                        patch(
+                            "polyaxon._sdk.api.runs_v1_api.RunsV1Api.{}".format(
+                                endpoint
+                            ),
+                            side_effect=error,
+                        ) as request,
+                    ):
+                        result = self.runner.invoke(
+                            ops,
+                            [
+                                "--project=owner/project",
+                                "--uid={}".format(RUN_UUID),
+                                command,
+                                "--recompile",
+                                *files,
+                                *options,
+                            ],
+                        )
+
+                        assert result.exit_code == 1, (result.output, result.exception)
+                        assert message in result.output
+                        assert "Run was " not in result.output
+                        request.assert_called_once()
+                        body = request.call_args.kwargs["body"]
+                        assert body.meta_info == {"recompile": True}
+                        if files:
+                            assert orjson_loads(body.content) == {
+                                **content,
+                                "isPreset": True,
+                            }
+                        else:
+                            assert body.content is None
 
     @patch("polyaxon.client.RunClient.restart")
     def test_restart_run(self, restart):
