@@ -23,6 +23,7 @@ from polyaxon._polyaxonfile.specs import (
     kinds,
     read_polyaxonfile,
 )
+from polyaxon._polyaxonfile.specs.polyaxonfile import _ATOMIC_TYPES, _copy_model_value
 from polyaxon.exceptions import PolyaxonfileError
 
 
@@ -87,8 +88,10 @@ def compose_polyaxonfile(
     if not isinstance(config, (V1Polyaxonfile, Mapping)):
         raise PolyaxonfileError("Composition requires a mapping or a V1Polyaxonfile.")
 
+    if isinstance(config, Mapping):
+        config = read_polyaxonfile(config)
     return _compose_polyaxonfile(
-        read_polyaxonfile(config),
+        config,
         run_patch_strategy=run_patch_strategy,
         is_dag_node=is_dag_node,
     )
@@ -100,17 +103,16 @@ def _compose_polyaxonfile(
     is_dag_node: bool = False,
 ) -> V1Polyaxonfile:
     component = local.component
-    if component is not None:
-        # Python files can share mutable objects between local fields and the base.
+    # Own mutable layers once; shared Python objects must not alias their base.
+    values = {
+        key: getattr(local, key)
+        for key in type(local).get_model_fields()
+        if key != "component"
+    }
+    if any(type(value) not in _ATOMIC_TYPES for value in values.values()):
         local = type(local).model_construct(
             _fields_set=local.model_fields_set - {"component"},
-            **copy.deepcopy(
-                {
-                    key: getattr(local, key)
-                    for key in type(local).get_model_fields()
-                    if key != "component"
-                }
-            ),
+            **_copy_model_value(values, {}),
         )
     effective = (
         _compose_polyaxonfile(component) if component is not None else V1Polyaxonfile()
@@ -142,13 +144,7 @@ def _compose_polyaxonfile(
         "strict_params",
         "version",
     }
-    BaseOp.patch_obj(
-        effective,
-        V1Polyaxonfile.model_construct(
-            **{key: getattr(local, key) for key in patch_fields}
-        ),
-        strategy=strategy,
-    )
+    BaseOp.patch_obj(effective, local, strategy=strategy, fields=patch_fields)
     effective.strict_params = strict_params
     if effective.version is None and local.version is not None:
         effective.version = local.version

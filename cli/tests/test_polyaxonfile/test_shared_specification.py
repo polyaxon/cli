@@ -1,3 +1,4 @@
+from collections import defaultdict
 from copy import deepcopy
 import json
 from mock import patch
@@ -11,7 +12,8 @@ from polyaxon._config.spec import ConfigSpec
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.operations.operation import V1Operation
-from polyaxon._flow.polyaxonfile import V1Polyaxonfile
+from polyaxon._flow.params import V1Param
+from polyaxon._flow.polyaxonfile import PartialV1Polyaxonfile, V1Polyaxonfile
 from polyaxon._polyaxonfile import read_polyaxonfile
 from polyaxon._polyaxonfile.specs import get_specification
 from polyaxon._utils.test_utils import BaseTestCase
@@ -283,6 +285,208 @@ class TestSharedSpecification(BaseTestCase):
         config.params["count"].value = 5
         assert source.component.run.container.image == "base:v1"
         assert source.params["count"].value == 3
+
+    def test_read_model_preserves_type_values_and_unset_fields(self):
+        for model in (V1Polyaxonfile, V1Component, V1Operation, PartialV1Polyaxonfile):
+            with self.subTest(model=model):
+                source = model.model_construct(
+                    _fields_set={"component", "queue", "params", "presets"},
+                    component=read_polyaxonfile(
+                        {
+                            "queue": None,
+                            "strictParams": False,
+                            "inputs": [],
+                            "run": {"kind": "job", "container": None},
+                        }
+                    ),
+                    queue=None,
+                    params={},
+                    presets=[],
+                    strict_params=True,
+                    version=1.1,
+                    run_patch={"connections": ["artifacts"]},
+                )
+
+                config = read_polyaxonfile(source)
+
+                assert type(config) is model
+                assert config == deepcopy(source)
+                assert config.model_fields_set == source.model_fields_set
+                assert config.model_fields_set is not source.model_fields_set
+                assert config.component.model_fields_set == (
+                    source.component.model_fields_set
+                )
+                assert config.component.run.model_fields_set == {"kind", "container"}
+                assert config.component.strict_params is False
+                assert config.component.inputs == []
+                assert config.params == {}
+                assert config.presets == []
+                assert config.queue is None
+                assert config.strict_params is True
+                assert config.version == 1.1
+                config.run_patch["connections"].append("other")
+                config.component.queue = "local"
+                config.model_fields_set.add("name")
+                assert source.run_patch == {"connections": ["artifacts"]}
+                assert source.component.queue is None
+                assert "name" not in source.model_fields_set
+
+    def test_read_model_preserves_aliases_and_cycles_in_mutable_values(self):
+        shared = {"items": []}
+        param = V1Param.model_construct(value=shared)
+        source = V1Polyaxonfile.model_construct(
+            params={"first": param, "second": param}
+        )
+        shared["self"] = shared
+        shared["source"] = source
+        shared["items"].append(shared["items"])
+
+        config = read_polyaxonfile(source)
+
+        assert config.params["first"] is config.params["second"]
+        assert config.params["first"] is not param
+        copied = config.params["first"].value
+        assert copied is not shared
+        assert copied["self"] is copied
+        assert copied["source"] is config
+        assert copied["items"][0] is copied["items"]
+        copied["items"].append("changed")
+        assert len(shared["items"]) == 1
+
+    def test_read_model_copies_private_dag_state_with_shared_nodes(self):
+        source = read_polyaxonfile(
+            {
+                "run": {
+                    "kind": "dag",
+                    "operations": [
+                        {"name": "task", "run": {"kind": "job"}},
+                    ],
+                }
+            }
+        )
+        source.run._context = {"node": source.run.operations[0], "values": []}
+        source.run._effective_ops = {"task": source.run.operations[0]}
+
+        config = read_polyaxonfile(source)
+
+        assert config.run._context["node"] is config.run.operations[0]
+        assert config.run._effective_ops["task"] is config.run.operations[0]
+        assert config.run.operations[0] is not source.run.operations[0]
+        config.run._context["values"].append(1)
+        config.run.operations[0].name = "changed"
+        assert source.run._context["values"] == []
+        assert source.run.operations[0].name == "task"
+
+    def test_read_model_preserves_cached_attributes_and_their_aliases(self):
+        source = V1Polyaxonfile.model_construct(
+            params={"message": V1Param.model_construct(value={"items": []})}
+        )
+        source.__dict__["cached_value"] = source.params["message"].value
+
+        config = read_polyaxonfile(source)
+
+        assert config.__dict__["cached_value"] is config.params["message"].value
+        assert config.model_fields_set == {"params"}
+        config.__dict__["cached_value"]["items"].append(1)
+        assert source.__dict__["cached_value"] == {"items": []}
+
+    def test_read_model_respects_custom_deepcopy_hooks(self):
+        class CustomFile(V1Polyaxonfile):
+            def __deepcopy__(self, memo):
+                result = type(self).model_construct(description="custom copy")
+                memo[id(self)] = result
+                return result
+
+        source = V1Polyaxonfile.model_construct(component=CustomFile())
+
+        config = read_polyaxonfile(source)
+
+        assert type(config.component) is CustomFile
+        assert config.component.description == "custom copy"
+        assert source.component.description is None
+
+    def test_read_model_does_not_invoke_custom_shallow_copy_hooks(self):
+        def reject_copy(*args, **kwargs):
+            raise AssertionError("Custom shallow copy must not replace deepcopy")
+
+        for method in ("__copy__", "copy", "model_copy"):
+            with self.subTest(method=method):
+
+                class CustomFile(V1Polyaxonfile):
+                    pass
+
+                setattr(CustomFile, method, reject_copy)
+                source = CustomFile.model_construct(params={})
+
+                config = read_polyaxonfile(source)
+
+                assert type(config) is CustomFile
+                assert config.params == {}
+                assert config.params is not source.params
+
+    def test_read_model_preserves_extra_values(self):
+        class ExtraFile(V1Polyaxonfile):
+            class Config:
+                extra = "allow"
+
+        source = ExtraFile.from_dict({"extra_value": {"items": []}})
+
+        config = read_polyaxonfile(source)
+
+        assert type(config) is ExtraFile
+        assert config.model_fields_set == source.model_fields_set
+        config.extra_value["items"].append(1)
+        assert source.extra_value == {"items": []}
+
+    def test_read_model_preserves_references_to_model_metadata_in_either_order(self):
+        for reverse in (False, True):
+            param = V1Param.model_construct(value="message")
+            params = {
+                "message": param,
+                "metadata": V1Param.model_construct(
+                    value={
+                        "attributes": param.__dict__,
+                        "fields": param.model_fields_set,
+                    }
+                ),
+            }
+            if reverse:
+                params = dict(reversed(list(params.items())))
+            source = V1Polyaxonfile.model_construct(params=params)
+
+            config = read_polyaxonfile(source)
+
+            copied_param = config.params["message"]
+            metadata = config.params["metadata"].value
+            assert metadata["attributes"] is copied_param.__dict__
+            assert metadata["fields"] is copied_param.model_fields_set
+            metadata["fields"].add("name")
+            assert "name" not in param.model_fields_set
+
+    def test_read_model_falls_back_for_container_and_scalar_subclasses(self):
+        class Label(str):
+            pass
+
+        label = Label("message")
+        label.values = []
+        values = defaultdict(list, {"message": label})
+        source = V1Polyaxonfile.model_construct(
+            params={"message": V1Param.model_construct(value=(values, label, {label}))}
+        )
+
+        config = read_polyaxonfile(source)
+
+        copied_values, copied_label, copied_set = config.params["message"].value
+        assert type(copied_values) is defaultdict
+        assert copied_values.default_factory is list
+        assert type(copied_label) is Label
+        assert copied_values["message"] is copied_label
+        assert next(iter(copied_set)) is copied_label
+        assert copied_label is not label
+        copied_label.values.append(1)
+        copied_values["missing"].append(2)
+        assert label.values == []
+        assert "missing" not in values
 
     def test_read_incomplete_layers_without_adding_kind_or_version(self):
         for source in (

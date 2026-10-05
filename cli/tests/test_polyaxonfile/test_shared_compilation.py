@@ -298,6 +298,54 @@ class TestSharedCompilation(BaseTestCase):
         assert baseline.run.container.image == "base:v1"
         assert params["count"].value == 3
 
+    def test_repeated_dag_compilation_keeps_children_and_templates_independent(self):
+        run = {
+            "kind": "dag",
+            "operations": [
+                {
+                    "name": "first",
+                    "dagRef": "task",
+                    "params": {"config": {"value": {"items": [1]}}},
+                },
+                {
+                    "name": "second",
+                    "dagRef": "task",
+                    "dependencies": ["first"],
+                    "queue": None,
+                },
+            ],
+            "components": [
+                {
+                    "name": "task",
+                    "run": {"kind": "job", "container": {"image": "base:v1"}},
+                },
+            ],
+        }
+        for source in (
+            {"run": run},
+            {"kind": "operation", "component": {"kind": "component", "run": run}},
+        ):
+            with self.subTest(kind=source.get("kind")):
+                authored = read_polyaxonfile(source)
+                before = authored.to_dict(exclude_none=False)
+                first = OperationSpecification.compile_operation(authored)
+                second = OperationSpecification.compile_operation(authored)
+
+                first.run.operations[0].params["config"].value["items"].append(2)
+                first.run.operations[1].dependencies.append("other")
+                first.run.operations[1].queue = "local"
+                first.run.components[0].run.container.image = "changed:v2"
+
+                assert authored.to_dict(exclude_none=False) == before
+                assert second.run.operations[0].params["config"].value == {"items": [1]}
+                assert second.run.operations[1].dependencies == ["first"]
+                assert second.run.operations[1].queue is None
+                assert "queue" in second.run.operations[1].model_fields_set
+                assert second.run.components[0].run.container.image == "base:v1"
+                assert OperationSpecification.compile_operation(authored).to_dict(
+                    exclude_none=False
+                ) == second.to_dict(exclude_none=False)
+
     def test_invalid_compilation_override_does_not_change_the_source(self):
         authored = read_polyaxonfile(
             {

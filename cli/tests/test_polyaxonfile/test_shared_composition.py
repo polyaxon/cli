@@ -14,6 +14,7 @@ from polyaxon._polyaxonfile import (
     read_polyaxonfile,
 )
 from polyaxon._polyaxonfile.manager import get_op_specification
+from polyaxon._polyaxonfile.specs.polyaxonfile import _copy_model_value
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
@@ -287,7 +288,7 @@ class TestSharedComposition(BaseTestCase):
         assert result.patch_strategy is None
         assert compose_polyaxonfile(result).to_dict() == result.to_dict()
 
-    def test_nested_sources_are_read_once(self):
+    def test_nested_sources_are_read_once_and_copied_once_per_layer(self):
         for depth in (1, 4, 8):
             source = {"run": {"kind": "job", "container": {"image": "base:v1"}}}
             for _ in range(depth - 1):
@@ -297,17 +298,57 @@ class TestSharedComposition(BaseTestCase):
                     depth=depth, model=isinstance(authored, V1Polyaxonfile)
                 ):
                     before = deepcopy(authored)
-                    with patch(
-                        "polyaxon._polyaxonfile.manager.operations.read_polyaxonfile",
-                        wraps=read_polyaxonfile,
-                    ) as reader:
+                    with (
+                        patch(
+                            "polyaxon._polyaxonfile.manager.operations.read_polyaxonfile",
+                            wraps=read_polyaxonfile,
+                        ) as reader,
+                        patch(
+                            "polyaxon._polyaxonfile.manager.operations._copy_model_value",
+                            wraps=_copy_model_value,
+                        ) as copier,
+                    ):
                         result = compose_polyaxonfile(authored)
 
-                    reader.assert_called_once_with(authored)
+                    if isinstance(authored, V1Polyaxonfile):
+                        reader.assert_not_called()
+                    else:
+                        reader.assert_called_once_with(authored)
+                    assert copier.call_count == depth
+                    assert all(
+                        "component" not in call.args[0]
+                        for call in copier.call_args_list
+                    )
                     assert result.run.container.image == "base:v1"
                     if depth > 1:
                         assert result.params["count"].value == 3
                     assert authored == before
+
+    def test_atomic_outer_layer_is_read_only_and_does_not_need_a_copy(self):
+        source = read_polyaxonfile(
+            {
+                "component": {
+                    "queue": "base",
+                    "run": {"kind": "job", "container": {"image": "base:v1"}},
+                },
+                "queue": None,
+                "strictParams": False,
+            }
+        )
+        before = deepcopy(source)
+        with patch(
+            "polyaxon._polyaxonfile.manager.operations._copy_model_value",
+            wraps=_copy_model_value,
+        ) as copier:
+            result = compose_polyaxonfile(source)
+
+        assert copier.call_count == 1
+        assert result.queue is None
+        assert result.strict_params is False
+        result.run.container.image = "changed:v2"
+        assert source == before
+        assert source.component.run.container.image == "base:v1"
+        assert source.model_fields_set == {"component", "queue", "strict_params"}
 
     def test_composition_options_only_apply_to_the_outer_layer(self):
         source = {
