@@ -951,13 +951,17 @@ class V1IO(BaseSchemaModel):
     @model_validator(**validation_after)
     @skip_partial
     def validate_io(cls, values):
+        value = cls.get_value_for_key("value", values)
+        is_flag = cls.get_value_for_key("is_flag", values)
+        if value is None and not is_flag:
+            return values
         validate_io(
             name=cls.get_value_for_key("name", values),
             type=cls.get_value_for_key("type", values),
-            value=cls.get_value_for_key("value", values),
+            value=value,
             is_list=cls.get_value_for_key("is_list", values),
             is_optional=cls.get_value_for_key("is_optional", values),
-            is_flag=cls.get_value_for_key("is_flag", values),
+            is_flag=is_flag,
             validation=cls.get_value_for_key("validation", values),
         )
         return values

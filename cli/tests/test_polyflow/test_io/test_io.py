@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import pytest
+from unittest.mock import patch
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
@@ -11,6 +12,48 @@ from polyaxon.exceptions import PolyaxonValidationError
 
 @pytest.mark.polyflow_mark
 class TestV1IO(BaseTestCase):
+    def test_unvalued_non_flag_io_skips_value_validation(self):
+        with patch("polyaxon._flow.io.io.validate_io") as validate:
+            for is_optional in (None, False, True):
+                for is_flag in (None, False):
+                    values = {
+                        "name": "input1",
+                        "type": "int",
+                        "value": None,
+                        "is_optional": is_optional,
+                        "is_flag": is_flag,
+                    }
+                    for config in (values, V1IO.model_construct(**values)):
+                        assert V1IO.validate_io(config) is config
+            validate.assert_not_called()
+
+    def test_falsy_defaults_still_validate_on_model_revalidation(self):
+        for io_type, value, is_list in (
+            ("bool", False, False),
+            ("int", 0, False),
+            ("str", "", False),
+            ("int", [], True),
+            ("dict", {}, False),
+        ):
+            values = {
+                "name": "input1",
+                "type": io_type,
+                "value": value,
+                "is_list": is_list,
+                "is_optional": False,
+            }
+            for config in (values, V1IO.model_construct(**values)):
+                with self.subTest(io_type=io_type, value=value):
+                    with self.assertRaises(ValueError):
+                        V1IO.validate_io(config)
+
+    def test_unvalued_flags_still_validate_on_model_revalidation(self):
+        for io_type in (None, "int", "str"):
+            values = {"name": "input1", "type": io_type, "is_flag": True}
+            for config in (values, V1IO.model_construct(**values)):
+                with self.assertRaisesRegex(ValueError, "cannot be a flag"):
+                    V1IO.validate_io(config)
+
     def test_wrong_io_config(self):
         # No name
         with self.assertRaises(ValidationError):
