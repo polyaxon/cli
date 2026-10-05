@@ -17,7 +17,7 @@ from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.job import V1Job
 from polyaxon._k8s.k8s_schemas import V1Container
 from polyaxon._polyaxonfile import check_polyaxonfile
-from polyaxon._polyaxonfile.check import collect_dag_components
+from polyaxon._polyaxonfile.references import collect_dag_components
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
