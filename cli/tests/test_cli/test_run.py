@@ -412,6 +412,91 @@ class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._utils.cache.cache")
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
     @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_dag_file_overlays_resolve_relative_references(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="shared",
+            settings=V1RunSettings(),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            overlays = root / "overlays"
+            overlays.mkdir()
+            (root / "job.yaml").write_text(
+                "run: {kind: job, container: {image: base:v1}}\n"
+            )
+            (overlays / "job.yaml").write_text(
+                "run: {kind: job, container: {image: overlay:v2}}\n"
+            )
+            source = root / "base.yaml"
+            source.write_text(
+                "run:\n"
+                "  kind: dag\n"
+                "  operations:\n"
+                "    - {name: existing, pathRef: ./job.yaml}\n"
+            )
+            overlay = overlays / "extra.yaml"
+            for typed in (True, False):
+                with self.subTest(typed=typed):
+                    create_run.reset_mock()
+                    overlay.write_text(
+                        "pathRef: ./ignored.yaml\n"
+                        "component: {pathRef: ./ignored-base.yaml}\n"
+                        "run:\n"
+                        + ("  kind: dag\n" if typed else "")
+                        + "  operations:\n"
+                        "    - name: added\n"
+                        "      pathRef: ./job.yaml\n"
+                        "      schedule: null\n"
+                        "      matrix: null\n"
+                    )
+                    files = ["-f", str(source), "-f", str(overlay)]
+
+                    checked = self.runner.invoke(check, files)
+                    result = self.runner.invoke(
+                        run, ["--project=owner/project", *files]
+                    )
+
+                    assert checked.exit_code == 0, (checked.output, checked.exception)
+                    assert result.exit_code == 0, (result.output, result.exception)
+                    create_run.assert_called_once()
+                    submitted = json.loads(create_run.call_args.kwargs["body"].content)
+                    assert "pathRef" not in submitted
+                    assert "component" not in submitted
+                    operations = submitted["run"]["operations"]
+                    assert [op["name"] for op in operations] == ["existing", "added"]
+                    existing, added = operations
+                    assert existing["component"]["run"]["container"]["image"] == (
+                        "base:v1"
+                    )
+                    assert added["component"]["run"]["container"]["image"] == (
+                        "overlay:v2"
+                    )
+                    assert added["pathRef"] == "./job.yaml"
+                    assert added["schedule"] is None
+                    assert added["matrix"] is None
+                    assert "kind" not in added
+                    assert "schedule" not in existing
+                    assert "matrix" not in existing
+
+                    compiled = OperationSpecification.compile_operation(
+                        OperationSpecification.read(submitted)
+                    )
+                    CompiledOperationSpecification.apply_operation_contexts(compiled)
+                    for name, image in (
+                        ("existing", "base:v1"),
+                        ("added", "overlay:v2"),
+                    ):
+                        effective = compiled.run.get_effective_op(name)
+                        assert effective.run.container.image == image
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
     @patch("polyaxon._client.run.RunClient")
     def test_run_relative_path_ref_submits_resolved_component(
         self, run_client, resolve_project, dashboard, cache

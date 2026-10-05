@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 import copy
+import os
 from typing import Dict, List, Optional, Union
 
 from clipped.config.patch_strategy import PatchStrategy
@@ -12,7 +13,9 @@ from polyaxon._flow.matrix.enums import V1MatrixKind
 from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
+from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
+from polyaxon._polyaxonfile.references import collect_dag_components
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -31,9 +34,16 @@ def patch_polyaxonfile(
     config = read_polyaxonfile(config)
     run_patches = []
     for preset_file in preset_files:
+        path_context = (
+            preset_file
+            if isinstance(preset_file, str) and os.path.isfile(preset_file)
+            else None
+        )
         if not isinstance(preset_file, V1Polyaxonfile):
             preset_file = ConfigSpec.read_from(preset_file)
         preset = read_polyaxonfile(preset_file, is_preset=True)
+        if isinstance(preset.run, (V1Dag, Mapping)):
+            collect_dag_components(preset.run, path_context)
 
         strategy = preset.patch_strategy or PatchStrategy.POST_MERGE
         fields = preset.model_fields_set - (

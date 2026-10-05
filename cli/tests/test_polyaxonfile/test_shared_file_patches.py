@@ -7,6 +7,7 @@ import yaml
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
 from polyaxon._polyaxonfile import (
+    CompiledOperationSpecification,
     OperationSpecification,
     compose_polyaxonfile,
     get_op_specification,
@@ -15,7 +16,7 @@ from polyaxon._polyaxonfile import (
 )
 from polyaxon._polyaxonfile.check import collect_references
 from polyaxon._utils.test_utils import BaseTestCase
-from polyaxon.exceptions import PolyaxonValidationError
+from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
 
 
 @pytest.mark.polyaxonfile_mark
@@ -316,6 +317,191 @@ class TestSharedFilePatches(BaseTestCase):
             "limits": {"nvidia.com/gpu": 1},
         }
 
+    def test_dag_file_overlays_keep_reference_context_and_patch_strategy(self):
+        expected = {
+            "post_merge": ["base", "first", "second"],
+            "pre_merge": ["second", "base", "first"],
+            "replace": ["second"],
+            "isnull": ["base", "first"],
+        }
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("base", "first", "second"):
+                (root / name).mkdir()
+                (root / name / "job.yaml").write_text(
+                    "run: {kind: job, container: {image: " + name + ":v1}}\n"
+                )
+            base = root / "base" / "base.yaml"
+            base.write_text(
+                "run:\n"
+                "  kind: dag\n"
+                "  operations:\n"
+                "    - {name: base, pathRef: ./job.yaml}\n"
+            )
+            source = collect_references(read_polyaxonfile(str(base)), str(base))
+            before = deepcopy(source)
+            files = [str(root / name / "overlay.yaml") for name in ("first", "second")]
+            for typed in (True, False):
+                for strategy, names in expected.items():
+                    with self.subTest(typed=typed, strategy=strategy):
+                        for name, filename in zip(("first", "second"), files):
+                            node = {"name": name, "pathRef": "./job.yaml"}
+                            if name == "first":
+                                node.update(schedule=None, matrix=None)
+                            runtime = {"operations": [node]}
+                            if typed:
+                                runtime["kind"] = "dag"
+                            Path(filename).write_text(
+                                yaml.safe_dump(
+                                    {
+                                        "hubRef": "ignored:v1",
+                                        "urlRef": "https://example.com/ignored.yaml",
+                                        "pathRef": "./ignored.yaml",
+                                        "component": {"pathRef": "./ignored-base.yaml"},
+                                        "patchStrategy": (
+                                            "post_merge"
+                                            if name == "first"
+                                            else strategy
+                                        ),
+                                        "run": runtime,
+                                    }
+                                )
+                            )
+
+                        merged = patch_polyaxonfile(source, files)
+                        stored = read_polyaxonfile(merged.to_source_json())
+
+                        assert [op.name for op in stored.run.operations] == names
+                        assert stored.component is None
+                        assert stored.hub_ref is None
+                        assert stored.url_ref is None
+                        assert stored.path_ref is None
+                        assert source == before
+                        for op in stored.run.operations:
+                            assert op.path_ref == "./job.yaml"
+                            assert op.component.run.container.image == op.name + ":v1"
+                            assert op.schedule is None
+                            assert op.matrix is None
+                            assert ("schedule" in op.model_fields_set) == (
+                                op.name == "first"
+                            )
+                            assert ("matrix" in op.model_fields_set) == (
+                                op.name == "first"
+                            )
+
+    def test_dag_file_overlays_collect_templates_and_nested_references(self):
+        source = read_polyaxonfile({"run": {"kind": "dag"}})
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            nested = root / "nested"
+            nested.mkdir()
+            (root / "job.yaml").write_text(
+                "run: {kind: job, container: {image: outer:v1}}\n"
+            )
+            (nested / "job.yaml").write_text(
+                "run: {kind: job, container: {image: inner:v2}}\n"
+            )
+            (nested / "dag.yaml").write_text(
+                "kind: component\n"
+                "run:\n"
+                "  kind: dag\n"
+                "  operations:\n"
+                "    - {name: inner, pathRef: ./job.yaml}\n"
+            )
+            overlay = root / "overlay.yaml"
+            for typed in (True, False):
+                with self.subTest(typed=typed):
+                    runtime = {
+                        "components": [
+                            {"name": "template", "pathRef": "./nested/dag.yaml"}
+                        ],
+                        "operations": [
+                            {"name": "from-template", "dagRef": "template"},
+                            {"name": "from-file", "pathRef": "./nested/dag.yaml"},
+                            {
+                                "name": "direct",
+                                "run": {
+                                    "kind": "dag",
+                                    "operations": [
+                                        {"name": "inner", "pathRef": "./job.yaml"}
+                                    ],
+                                },
+                            },
+                        ],
+                    }
+                    if typed:
+                        runtime["kind"] = "dag"
+                    overlay.write_text(yaml.safe_dump({"run": runtime}))
+
+                    merged = patch_polyaxonfile(source, [str(overlay)])
+                    stored = read_polyaxonfile(merged.to_source_json())
+
+                    assert stored.run.components[0].component.kind == "component"
+                    assert stored.run.operations[0].component is None
+                    compiled = OperationSpecification.compile_operation(stored)
+                    CompiledOperationSpecification.apply_operation_contexts(compiled)
+                    for name in ("from-template", "from-file", "direct"):
+                        inner = compiled.run.get_effective_op(name).run.operations[0]
+                        assert inner.path_ref == "./job.yaml"
+                        assert inner.component.run.container.image == (
+                            "outer:v1" if name == "direct" else "inner:v2"
+                        )
+
+    def test_dag_file_overlay_reference_errors_include_the_entry_name(self):
+        source = read_polyaxonfile({"run": {"kind": "dag"}})
+        with TemporaryDirectory() as directory:
+            overlay = Path(directory) / "overlay.yaml"
+            for typed in (True, False):
+                for field in ("components", "operations"):
+                    for path, error in (
+                        ("./overlay.yaml", "reference cycle"),
+                        ("./missing.yaml", "does not exist"),
+                    ):
+                        with self.subTest(typed=typed, field=field, path=path):
+                            runtime = {field: [{"name": "train", "pathRef": path}]}
+                            if typed:
+                                runtime["kind"] = "dag"
+                            overlay.write_text(yaml.safe_dump({"run": runtime}))
+
+                            with self.assertRaisesRegex(
+                                PolyaxonSchemaError, "train.*" + error
+                            ):
+                                patch_polyaxonfile(source, [str(overlay)])
+
+    def test_dag_overlay_input_forms_do_not_mutate_authored_values(self):
+        source = read_polyaxonfile({"run": {"kind": "dag"}})
+        with TemporaryDirectory() as directory:
+            job = Path(directory) / "job.yaml"
+            job.write_text("run: {kind: job, container: {image: trainer:v1}}\n")
+            for typed in (True, False):
+                runtime = {
+                    "operations": [
+                        {"name": "train", "pathRef": str(job), "schedule": None}
+                    ]
+                }
+                if typed:
+                    runtime["kind"] = "dag"
+                values = {"run": runtime}
+                for overlay in (
+                    values,
+                    read_polyaxonfile(values, is_preset=True),
+                    yaml.safe_dump(values),
+                    [{"queue": "default"}, values],
+                ):
+                    with self.subTest(typed=typed, form=type(overlay)):
+                        before = deepcopy((source, overlay))
+
+                        merged = patch_polyaxonfile(source, [overlay])
+                        stored = read_polyaxonfile(merged.to_source_json())
+
+                        assert (source, overlay) == before
+                        node = stored.run.operations[0]
+                        assert node.component.run.container.image == "trainer:v1"
+                        assert node.schedule is None
+                        assert "schedule" in node.model_fields_set
+                        assert "kind" not in node.model_fields_set
+                        assert "matrix" not in node.model_fields_set
+
     def test_overlay_strategy_does_not_replace_composition_strategy_or_source(self):
         source = read_polyaxonfile(
             {
@@ -540,6 +726,12 @@ class TestSharedFilePatches(BaseTestCase):
         ):
             with self.subTest(overlay=overlay), self.assertRaises(ValidationError):
                 patch_polyaxonfile(source, [overlay])
+
+        with self.assertRaises(ValidationError):
+            patch_polyaxonfile(
+                read_polyaxonfile({"run": {"kind": "dag"}}),
+                [{"run": {"operations": ["not-a-node"]}}],
+            )
 
         with self.assertRaisesRegex(
             PolyaxonValidationError, "run.kind must be provided"

@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from collections.abc import Mapping
 import os
 from typing import Dict, List, Optional, Union
 
@@ -9,96 +8,13 @@ from polyaxon._cli.errors import handle_cli_error
 from polyaxon._config.spec import ConfigSpec
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.matrix.matrix import V1Matrix
-from polyaxon._flow.operations.operation import V1Operation
-from polyaxon._flow.polyaxonfile import V1Polyaxonfile
-from polyaxon._flow.run.dag import V1Dag
-from polyaxon._flow.run.enums import V1RunKind
-from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._polyaxonfile.manager import get_op_specification
 from polyaxon._polyaxonfile.params import parse_hparams, parse_params
-from polyaxon._polyaxonfile.specs import get_specification, read_polyaxonfile
-from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
-
-
-def collect_dag_components(dag: V1Dag, path_context: Optional[str] = None, sources=()):
-    """Collect components that cannot be resolved by the scheduler"""
-    for field in ("components", "operations"):
-        entries = getattr(dag, field)
-        if not isinstance(entries, list):
-            continue
-        for op in entries:
-            try:
-                _collect_shared_references(op, path_context, sources)
-            except Exception as e:
-                raise PolyaxonSchemaError(
-                    "Pipeline op with name `{}` requires a component with ref `{}`, "
-                    "the reference could not be resolved. Error: {}".format(
-                        op.name, op.hub_ref or op.url_ref or op.path_ref, e
-                    )
-                ) from e
-
-
-def collect_references(
-    config: Union[V1Operation, V1Polyaxonfile], path_context: Optional[str] = None
-):
-    sources = (("pathRef", os.path.realpath(path_context)),) if path_context else ()
-    return _collect_shared_references(config, path_context, sources)
-
-
-def _collect_shared_references(config, path_context, sources):
-    if config.component is not None:
-        _collect_shared_references(config.component, path_context, sources)
-    else:
-        reference = None
-        source_path = path_context
-        if config.hub_ref:
-            reference = ("hubRef", config.hub_ref)
-            source = ConfigSpec.get_from(config.hub_ref, "hub")
-        elif config.url_ref:
-            reference = ("urlRef", config.url_ref)
-            source = ConfigSpec.get_from(config.url_ref, "url")
-        elif config.path_ref:
-            source_path = config.path_ref
-            if path_context:
-                source_path = os.path.join(
-                    os.path.dirname(os.path.abspath(path_context)), source_path
-                )
-            source_path = os.path.abspath(source_path)
-            reference = ("pathRef", os.path.realpath(source_path))
-            if not os.path.isfile(source_path):
-                raise PolyaxonfileError(
-                    "Path ref `{}` does not exist or is not a file.".format(source_path)
-                )
-            source = ConfigSpec.get_from(source_path)
-
-        if reference:
-            if reference in sources:
-                chain = " -> ".join(
-                    "{} `{}`".format(*ref) for ref in (*sources, reference)
-                )
-                raise PolyaxonfileError(
-                    "Polyaxonfile reference cycle: {}".format(chain)
-                )
-            try:
-                component = read_polyaxonfile(source)
-                _collect_shared_references(
-                    component, source_path, (*sources, reference)
-                )
-            except Exception as e:
-                raise PolyaxonfileError(
-                    "Could not resolve {} `{}`: {}".format(*reference, e)
-                ) from e
-            config.component = component
-
-    if isinstance(config.run, Mapping) and config.component is not None:
-        native_run = config.component.get_native_run()
-        if native_run is not None and native_run.kind == V1RunKind.DAG:
-            # Parse local DAG entries so their file references can be collected.
-            config.run = validate_run_patch(config.run, native_run.kind)
-
-    if config.is_dag_run:
-        collect_dag_components(config.run, path_context, sources)
-    return config
+from polyaxon._polyaxonfile.references import (
+    collect_references,
+)
+from polyaxon._polyaxonfile.specs import get_specification
+from polyaxon.exceptions import PolyaxonfileError
 
 
 def check_polyaxonfile(
