@@ -246,7 +246,12 @@ def get_op_specification(
         op_data["component"] = config.to_dict(exclude_none=False)
         config = get_specification(data=[op_data])
     elif config and config.kind in (None, kinds.OPERATION):
-        config = get_specification(data=[config.to_dict(exclude_none=False), op_data])
+        if config.kind is None:
+            del op_data["kind"]
+        if op_data:
+            config = get_specification(
+                data=[config.to_dict(exclude_none=False), op_data]
+            )
     elif hub:
         op_data["hubRef"] = hub
         config = get_specification(data=[op_data])
