@@ -540,7 +540,8 @@ class TestSharedFilePatches(BaseTestCase):
         assert merged.run.container.image == "overlay:v3"
         assert compose_polyaxonfile(merged).run.container.image == "base:v1"
 
-    def test_run_patch_waits_for_runtime_kind_from_later_file(self):
+    def test_run_patch_merges_against_runtime_kind_of_each_file(self):
+        # Files merge like compilation overrides; a later kind cannot fix earlier patches.
         source = read_polyaxonfile(
             {
                 "run": {"kind": "job", "container": {"image": "base:v1"}},
@@ -556,14 +557,9 @@ class TestSharedFilePatches(BaseTestCase):
             second = root / "second.yaml"
             second.write_text("run: {kind: service, container: {image: server:v2}}\n")
 
-            merged = patch_polyaxonfile(source, [str(first), str(second)])
+            with pytest.raises(ValidationError, match="ports"):
+                patch_polyaxonfile(source, [str(first), str(second)])
 
-        assert merged.run.kind == "service"
-        assert merged.run.ports is None
-        assert merged.run_patch["ports"] == [8080]
-        effective = compose_polyaxonfile(merged)
-        assert effective.run.ports == [8080]
-        assert effective.run.environment.annotations == {"source": "first"}
         assert source.run.kind == "job"
         assert source.run_patch == {"ports": [8080]}
 

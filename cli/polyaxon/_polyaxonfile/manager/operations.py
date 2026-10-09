@@ -12,7 +12,6 @@ from polyaxon._flow.matrix.matrix import V1Matrix
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._flow.run.dag import V1Dag
-from polyaxon._flow.run.patch import patch_run_patch
 from polyaxon._polyaxonfile.references import collect_dag_components
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
@@ -28,9 +27,8 @@ def patch_polyaxonfile(
     config: V1Polyaxonfile,
     preset_files: List[Union[str, Dict, V1Polyaxonfile]],
 ) -> V1Polyaxonfile:
-    """Merge file overlays, keeping the source and runPatch for composition."""
+    """Merge file overlays in CLI order, each with its own patch strategy."""
     config = read_polyaxonfile(config)
-    run_patches = []
     for preset_file in preset_files:
         path_context = (
             preset_file
@@ -42,36 +40,7 @@ def patch_polyaxonfile(
         preset = read_polyaxonfile(preset_file, is_preset=True)
         if isinstance(preset.run, (V1Dag, Mapping)):
             collect_dag_components(preset.run, path_context)
-
-        strategy = preset.patch_strategy or PatchStrategy.POST_MERGE
-        # runPatch layers merge after all files, once the final run kind is known.
-        fields = preset.model_fields_set - {"run_patch"}
-        config.patch(
-            V1Polyaxonfile.model_construct(
-                **{key: getattr(preset, key) for key in fields}
-            ),
-            strategy=strategy,
-        )
-        if preset.run_patch is not None:
-            run_patches.append((preset.run_patch, strategy))
-
-    # The final native runtime supplies the type for all retained runPatch layers.
-    # Applying runPatch to run here would change precedence against later files.
-    if run_patches:
-        run = config.get_native_run()
-        replica_types = (
-            run.get_replica_types()
-            if run is not None and hasattr(run, "get_replica_types")
-            else None
-        )
-        for value, strategy in run_patches:
-            config.run_patch = patch_run_patch(
-                current=config.run_patch,
-                value=value,
-                kind=run.kind if run is not None else None,
-                replica_types=replica_types,
-                strategy=strategy,
-            )
+        config.patch(preset, strategy=preset.patch_strategy)
     return config
 
 
