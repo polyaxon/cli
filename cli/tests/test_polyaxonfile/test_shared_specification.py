@@ -258,7 +258,7 @@ class TestSharedSpecification(BaseTestCase):
         assert payload == source
         assert operation_dump.call_count == 2
         component_dump.assert_called_once_with(
-            config.run.components[0], exclude_none=False, purpose="source"
+            config.run.components[0], exclude_none=False
         )
 
     def test_read_model_copies_nested_values_and_field_presence(self):

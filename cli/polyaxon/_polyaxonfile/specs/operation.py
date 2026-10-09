@@ -9,7 +9,10 @@ from polyaxon._flow.params.params import V1Param
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
-from polyaxon._polyaxonfile.specs.polyaxonfile import read_polyaxonfile
+from polyaxon._polyaxonfile.specs.polyaxonfile import (
+    compose_polyaxonfile,
+    read_polyaxonfile,
+)
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
@@ -46,8 +49,6 @@ class OperationSpecification(BaseSpecification):
         is_dag_node: bool = False,
     ) -> Tuple[V1CompiledOperation, Optional[Dict[str, V1Param]]]:
         """Compile and return composed params without changing the source."""
-        from polyaxon._polyaxonfile.manager.operations import compose_polyaxonfile
-
         preset_patch_strategy = None
         if override:
             config = read_polyaxonfile(config)

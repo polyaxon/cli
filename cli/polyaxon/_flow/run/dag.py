@@ -301,13 +301,8 @@ class V1Dag(BaseRun):
     _IDENTIFIER = V1RunKind.DAG
     _SWAGGER_FIELDS = ["volumes"]
     _CUSTOM_DUMP_FIELDS = {"operations", "components", "environment"}
-    # DAG metadata and deferred definitions retain explicit nulls.
-    # Keep state rules separate so persistence changes cannot alter legacy hashes.
-    _DUMP_POLICY = {
-        "default": {"exclude_none": False},
-        "compiled": {"exclude_none": False},
-        "component_state": {"exclude_none": False},
-    }
+    # Nodes are re-read later; explicit nulls are patch values.
+    _KEEP_NONE = True
 
     kind: Literal[V1RunKind.DAG] = _IDENTIFIER
     operations: Optional[Union[List[V1Polyaxonfile], RefField]] = None
@@ -328,13 +323,12 @@ class V1Dag(BaseRun):
 
     @field_validator("operations", "components", **validation_before)
     def validate_polyaxonfiles(cls, value):
-        from polyaxon._flow.polyaxonfile import V1Component, V1Operation, V1Polyaxonfile
+        from polyaxon._flow.polyaxonfile import get_polyaxonfile_model
 
         if not isinstance(value, list):
             return value
-        models = {"component": V1Component, "operation": V1Operation}
         return [
-            models.get(item.get("kind"), V1Polyaxonfile).from_dict(item)
+            get_polyaxonfile_model(item.get("kind")).from_dict(item)
             if isinstance(item, Mapping)
             else item
             for item in value
@@ -457,7 +451,7 @@ class V1Dag(BaseRun):
         return dags.sort_topologically(dag or self.dag, flatten=flatten)
 
     def resolve_operations(self, ignore_hub_validation: bool = False):
-        from polyaxon._polyaxonfile.manager.operations import compose_polyaxonfile
+        from polyaxon._polyaxonfile.specs import compose_polyaxonfile
 
         self._components_by_names = {}
         self._op_component_mapping = {}
@@ -515,9 +509,7 @@ class V1Dag(BaseRun):
         """`ignore_hub_validation` is currently used for ignoring validation
         during tests with hub_ref.
         """
-        if not self._effective_ops or len(self._effective_ops) != len(
-            self.operations or []
-        ):
+        if not self._effective_ops:
             self.resolve_operations(ignore_hub_validation=ignore_hub_validation)
 
         inputs = inputs or []

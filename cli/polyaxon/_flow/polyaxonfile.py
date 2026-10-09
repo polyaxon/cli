@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from copy import copy, deepcopy
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Type, Union
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import (
@@ -72,12 +72,8 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             return values
         component = values.get("component")
         if isinstance(component, Mapping):
-            model = {
-                "component": V1Component,
-                "operation": V1Operation,
-            }.get(component.get("kind", "component"), V1Polyaxonfile)
-            component = model.from_dict(component)
-            values = {**values, "component": component}
+            model = get_polyaxonfile_model(component.get("kind", "component"))
+            values = {**values, "component": model.from_dict(component)}
 
         return values
 
@@ -126,7 +122,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
 
     def to_source_json(self) -> str:
         """Serialize authored fields as JSON, preserving nulls and omissions."""
-        return self.to_json(exclude_none=False, exclude_unset=True, purpose="source")
+        return self.to_json(exclude_none=False, exclude_unset=True)
 
     def to_component_state_dict(self) -> Dict:
         """Project legacy component-state input without changing authored fields."""
@@ -145,7 +141,6 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             exclude_none=True,
             exclude_unset=True,
             exclude_defaults=False,
-            purpose="component_state",
         )
 
     def to_component_state_json(self) -> str:
@@ -1246,6 +1241,14 @@ class V1Operation(V1Polyaxonfile):
     _IDENTIFIER = "operation"
 
     kind: Literal["operation"] = _IDENTIFIER
+
+
+def get_polyaxonfile_model(kind: Optional[str]) -> Type[V1Polyaxonfile]:
+    if kind == "component":
+        return V1Component
+    if kind == "operation":
+        return V1Operation
+    return V1Polyaxonfile
 
 
 PartialV1Polyaxonfile = to_partial(V1Polyaxonfile)

@@ -19,6 +19,16 @@ from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 
+_LAYER_COPY_FIELDS = set(V1Polyaxonfile.get_model_fields()) - {"component"}
+
+
+def count_polyaxonfile_layer_copy_calls(copier):
+    return sum(
+        isinstance(call.args[0], dict) and set(call.args[0]) == _LAYER_COPY_FIELDS
+        for call in copier.call_args_list
+    )
+
+
 @pytest.mark.polyaxonfile_mark
 class TestSharedComposition(BaseTestCase):
     def test_native_fields_and_run_patch_follow_each_strategy(self):
@@ -300,11 +310,11 @@ class TestSharedComposition(BaseTestCase):
                     before = deepcopy(authored)
                     with (
                         patch(
-                            "polyaxon._polyaxonfile.manager.operations.read_polyaxonfile",
+                            "polyaxon._polyaxonfile.specs.polyaxonfile.read_polyaxonfile",
                             wraps=read_polyaxonfile,
                         ) as reader,
                         patch(
-                            "polyaxon._polyaxonfile.manager.operations._copy_model_value",
+                            "polyaxon._polyaxonfile.specs.polyaxonfile._copy_model_value",
                             wraps=_copy_model_value,
                         ) as copier,
                     ):
@@ -314,11 +324,7 @@ class TestSharedComposition(BaseTestCase):
                         reader.assert_not_called()
                     else:
                         reader.assert_called_once_with(authored)
-                    assert copier.call_count == depth
-                    assert all(
-                        "component" not in call.args[0]
-                        for call in copier.call_args_list
-                    )
+                    assert count_polyaxonfile_layer_copy_calls(copier) == depth
                     assert result.run.container.image == "base:v1"
                     if depth > 1:
                         assert result.params["count"].value == 3
@@ -337,12 +343,12 @@ class TestSharedComposition(BaseTestCase):
         )
         before = deepcopy(source)
         with patch(
-            "polyaxon._polyaxonfile.manager.operations._copy_model_value",
+            "polyaxon._polyaxonfile.specs.polyaxonfile._copy_model_value",
             wraps=_copy_model_value,
         ) as copier:
             result = compose_polyaxonfile(source)
 
-        assert copier.call_count == 1
+        assert count_polyaxonfile_layer_copy_calls(copier) == 1
         assert result.queue is None
         assert result.strict_params is False
         result.run.container.image = "changed:v2"

@@ -449,7 +449,7 @@ class RunClient(ClientMixin):
         if isinstance(content, Mapping):
             content = read_polyaxonfile(content)
         if isinstance(content, V1Polyaxonfile):
-            content = content.to_json(exclude_none=False)
+            content = content.to_source_json()
         return content
 
     def _build_run_create_body(

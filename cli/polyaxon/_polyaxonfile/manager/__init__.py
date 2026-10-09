@@ -1,5 +1,4 @@
 from polyaxon._polyaxonfile.manager.operations import (
-    compose_polyaxonfile,
     get_op_specification,
     patch_polyaxonfile,
 )

@@ -5,7 +5,6 @@ from polyaxon._polyaxonfile.check import (
     check_polyaxonfile,
 )
 from polyaxon._polyaxonfile.manager import (
-    compose_polyaxonfile,
     get_op_from_schedule,
     get_op_specification,
     get_ops_from_suggestions,
@@ -17,6 +16,7 @@ from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     ComponentSpecification,
     OperationSpecification,
+    compose_polyaxonfile,
     get_specification,
     read_polyaxonfile,
     spec_kinds,

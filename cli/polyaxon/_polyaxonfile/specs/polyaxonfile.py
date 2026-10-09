@@ -1,10 +1,17 @@
 from collections.abc import Mapping
 from copy import deepcopy
+from typing import Dict, Optional, Union
 
+from clipped.config.patch_strategy import PatchStrategy
+from clipped.utils.bools import to_bool
 from polyaxon._config.spec import ConfigSpec
-from polyaxon._flow.component.component import V1Component
-from polyaxon._flow.operations.operation import V1Operation
-from polyaxon._flow.polyaxonfile import PartialV1Polyaxonfile, V1Polyaxonfile
+from polyaxon._flow.base import BaseOp
+from polyaxon._flow.polyaxonfile import (
+    PartialV1Polyaxonfile,
+    V1Polyaxonfile,
+    get_polyaxonfile_model,
+)
+from polyaxon._flow.run.patch import patch_run, validate_run_patch
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonfileError
 
@@ -96,13 +103,96 @@ def read_polyaxonfile(
         if not isinstance(values, Mapping):
             raise PolyaxonfileError("The Polyaxonfile must contain a mapping.")
 
-        model = {
-            "component": V1Component,
-            "operation": V1Operation,
-        }.get(values.get("kind"), V1Polyaxonfile)
-        if partial or is_preset:
-            model = PartialV1Polyaxonfile
+        model = (
+            PartialV1Polyaxonfile
+            if partial or is_preset
+            else get_polyaxonfile_model(values.get("kind"))
+        )
         config = model.from_dict(deepcopy(values))
     if is_preset:
         config.is_preset = True
     return config
+
+
+def compose_polyaxonfile(
+    local: Union[Dict, V1Polyaxonfile],
+    run_patch_strategy: Optional[PatchStrategy] = None,
+    is_dag_node: bool = False,
+) -> V1Polyaxonfile:
+    """Compose collected sources without changing the authored document."""
+    # Only mappings are read; nested components are already models.
+    if isinstance(local, Mapping):
+        local = read_polyaxonfile(local)
+    component = local.component
+    # Own mutable layers once; shared Python objects must not alias their base.
+    values = {
+        key: getattr(local, key)
+        for key in type(local).get_model_fields()
+        if key != "component"
+    }
+    if any(type(value) not in _ATOMIC_TYPES for value in values.values()):
+        local = type(local).model_construct(
+            _fields_set=local.model_fields_set - {"component"},
+            **_copy_model_value(values, {}),
+        )
+    effective = (
+        compose_polyaxonfile(component) if component is not None else V1Polyaxonfile()
+    )
+    if is_dag_node and local.schedule is not None:
+        raise PolyaxonfileError(
+            "DAG node `{}` cannot define a schedule.".format(local.name)
+        )
+    if component is None and any(
+        (local.hub_ref, local.path_ref, local.url_ref, local.dag_ref)
+    ):
+        raise PolyaxonfileError(
+            "Collect the Polyaxonfile reference before composing its local fields."
+        )
+    strategy = local.patch_strategy or PatchStrategy.POST_MERGE
+    strict_params = to_bool(effective.strict_params, handle_none=True) or to_bool(
+        local.strict_params, handle_none=True
+    )
+    patch_fields = local.model_fields_set - {
+        "component",
+        "hub_ref",
+        "path_ref",
+        "url_ref",
+        "dag_ref",
+        "is_preset",
+        "patch_strategy",
+        "run",
+        "run_patch",
+        "strict_params",
+        "version",
+    }
+    BaseOp.patch_obj(effective, local, strategy=strategy, fields=patch_fields)
+    effective.strict_params = strict_params
+    if effective.version is None and local.version is not None:
+        effective.version = local.version
+
+    if "run" in local.model_fields_set:
+        effective.run = patch_run(effective.run, local.run, strategy)
+
+    if local.run_patch:
+        if effective.run is None:
+            raise PolyaxonfileError("runPatch requires a resolved runtime.")
+        effective.run.patch(
+            validate_run_patch(
+                local.run_patch,
+                effective.run.kind,
+                replica_types=effective.get_replica_types(),
+            ),
+            strategy=run_patch_strategy or strategy,
+        )
+    if is_dag_node:
+        for field in (
+            "name",
+            "dependencies",
+            "trigger",
+            "conditions",
+            "joins",
+            "skip_on_upstream_skip",
+            "schedule",
+        ):
+            setattr(effective, field, deepcopy(getattr(local, field)))
+    return effective

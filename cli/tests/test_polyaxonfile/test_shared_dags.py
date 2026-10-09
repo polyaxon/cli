@@ -143,11 +143,11 @@ class TestSharedDags(BaseTestCase):
                 before = authored.to_dict(exclude_none=False)
                 compiled = OperationSpecification.compile_operation(authored)
 
-                content = compiled.to_compiled_json()
+                content = compiled.to_json()
                 assert content == compiled.to_json()
                 saved = orjson_loads(content)
                 restored = CompiledOperationSpecification.read(content)
-                assert orjson_loads(restored.to_compiled_json()) == saved
+                assert orjson_loads(restored.to_json()) == saved
                 dag = CompiledOperationSpecification.apply_operation_contexts(
                     restored
                 ).run
@@ -157,9 +157,7 @@ class TestSharedDags(BaseTestCase):
                     child = OperationSpecification.compile_operation(
                         dag.get_op_spec_by_name("nested"), is_dag_node=True
                     )
-                    child = CompiledOperationSpecification.read(
-                        child.to_compiled_json()
-                    )
+                    child = CompiledOperationSpecification.read(child.to_json())
                     dag = CompiledOperationSpecification.apply_operation_contexts(
                         child
                     ).run
@@ -214,11 +212,9 @@ class TestSharedDags(BaseTestCase):
 
                 assert compiled.to_dict() == expected
                 assert orjson_loads(compiled.to_json()) == expected
-                assert orjson_loads(compiled.to_compiled_json()) == expected
-                restored = CompiledOperationSpecification.read(
-                    compiled.to_compiled_json()
-                )
-                assert orjson_loads(restored.to_compiled_json()) == expected
+                assert orjson_loads(compiled.to_json()) == expected
+                restored = CompiledOperationSpecification.read(compiled.to_json())
+                assert orjson_loads(restored.to_json()) == expected
                 explicit = compiled.to_dict(exclude_none=False)
                 for field in ("queue", "schedule", "matrix"):
                     assert explicit[field] is None
@@ -231,7 +227,7 @@ class TestSharedDags(BaseTestCase):
 
         assert compiled.to_dict() == source
         assert orjson_loads(compiled.to_json()) == source
-        assert orjson_loads(compiled.to_compiled_json()) == source
+        assert orjson_loads(compiled.to_json()) == source
 
     def test_compiled_dag_keeps_templated_definitions(self):
         source = {
@@ -246,9 +242,8 @@ class TestSharedDags(BaseTestCase):
         compiled = CompiledOperationSpecification.read(source)
 
         assert orjson_loads(compiled.to_json()) == source
-        assert orjson_loads(compiled.to_compiled_json()) == source
-        restored = CompiledOperationSpecification.read(compiled.to_compiled_json())
-        assert orjson_loads(restored.to_compiled_json()) == source
+        restored = CompiledOperationSpecification.read(compiled.to_json())
+        assert orjson_loads(restored.to_json()) == source
 
     def test_compiled_serialization_retains_deferred_execution_fields(self):
         source = {
@@ -270,11 +265,11 @@ class TestSharedDags(BaseTestCase):
         }
         compiled = CompiledOperationSpecification.read(source)
 
-        content = compiled.to_compiled_json()
+        content = compiled.to_json()
         assert orjson_loads(content) == source
         assert content == compiled.to_json()
         restored = CompiledOperationSpecification.read(content)
-        assert orjson_loads(restored.to_compiled_json()) == source
+        assert orjson_loads(restored.to_json()) == source
 
     def test_compiled_serialization_does_not_mutate_definitions(self):
         source = {
@@ -325,7 +320,7 @@ class TestSharedDags(BaseTestCase):
         fields_sets = [model.model_fields_set.copy() for model in models]
         before = compiled.to_dict(exclude_none=False)
 
-        assert orjson_loads(compiled.to_compiled_json()) == source
+        assert orjson_loads(compiled.to_json()) == source
 
         assert compiled.to_dict(exclude_none=False) == before
         assert [model.model_fields_set for model in models] == fields_sets
@@ -377,16 +372,14 @@ class TestSharedDags(BaseTestCase):
                 with patch.object(
                     V1Dag, "obj_to_dict", wraps=V1Dag.obj_to_dict
                 ) as dag_dump:
-                    payload = orjson_loads(compiled.to_compiled_json())
+                    payload = orjson_loads(compiled.to_json())
 
         assert payload == source
         assert operation_dump.call_count == 3
         assert component_dump.call_count == 2
         assert dag_dump.call_count == 2
-        dag_dump.assert_any_call(compiled.run, exclude_none=True, purpose="compiled")
-        dag_dump.assert_any_call(
-            compiled.run.operations[1].run, exclude_none=False, purpose="compiled"
-        )
+        dag_dump.assert_any_call(compiled.run, exclude_none=True)
+        dag_dump.assert_any_call(compiled.run.operations[1].run, exclude_none=False)
 
     def test_unused_template_does_not_add_nodes_or_edges(self):
         job = {"kind": "job", "container": {"image": "busybox:1.36"}}

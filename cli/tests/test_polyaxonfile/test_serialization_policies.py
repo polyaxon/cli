@@ -11,7 +11,7 @@ import uuid
 
 from polyaxon._flow.polyaxonfile import V1Component, V1Operation
 from polyaxon._flow.run.dag import V1Dag
-from polyaxon._polyaxonfile import CompiledOperationSpecification, read_polyaxonfile
+from polyaxon._polyaxonfile import read_polyaxonfile
 from polyaxon._utils.test_utils import BaseTestCase
 
 
@@ -168,62 +168,6 @@ class TestSerializationPolicies(BaseTestCase):
                 assert spec.to_component_state_json() == previous.to_json()
                 assert spec.to_source_json() == before
 
-    def test_named_policies_ignore_generic_class_dump_defaults(self):
-        source = dag_source(explicit_nulls=True, environment_null=True)
-        source["kind"] = "operation"
-        source["queue"] = None
-        source["run"]["concurrency"] = None
-        spec = read_polyaxonfile(source)
-        compiled = CompiledOperationSpecification.read(
-            {**source, "kind": "compiled_operation"}
-        )
-        before_source = spec.to_source_json()
-        before_compiled = compiled.to_compiled_json()
-        before_state = spec.to_component_state_json()
-
-        with patch.dict(
-            V1Dag._DUMP_POLICY,
-            {"default": {"exclude_none": True}},
-        ):
-            assert "environment" not in spec.to_dict()["run"]
-            assert spec.to_source_json() == before_source
-            assert compiled.to_compiled_json() == before_compiled
-            assert spec.to_component_state_json() == before_state
-
-        assert json.loads(before_source) == source
-        assert json.loads(before_compiled) == {
-            "kind": "compiled_operation",
-            "run": source["run"],
-        }
-        assert json.loads(before_state) == {"kind": "component", "run": source["run"]}
-
-    def test_persistence_policies_do_not_change_component_state_input(self):
-        source = dag_source(explicit_nulls=True, environment_null=True)
-        spec = read_polyaxonfile(source)
-        compiled = CompiledOperationSpecification.read(
-            {**source, "kind": "compiled_operation"}
-        )
-        before_state = spec.to_component_state_json()
-        before_source = spec.to_source_json()
-        before_compiled = compiled.to_compiled_json()
-        state_policy = deepcopy(V1Dag._DUMP_POLICY["component_state"])
-
-        for purpose in ("source", "compiled"):
-            with self.subTest(purpose=purpose):
-                with patch.dict(
-                    V1Dag._DUMP_POLICY,
-                    {purpose: {"exclude_none": True}},
-                ):
-                    if purpose == "source":
-                        assert spec.to_source_json() != before_source
-                    else:
-                        assert compiled.to_compiled_json() != before_compiled
-                    assert spec.to_component_state_json() == before_state
-                    assert V1Dag._DUMP_POLICY["component_state"] == state_policy
-
-        assert spec.to_source_json() == before_source
-        assert compiled.to_compiled_json() == before_compiled
-
     def test_component_state_is_single_pass_without_mutating_or_aliasing_source(self):
         source = nested_dag_source()
         source["kind"] = "operation"
@@ -244,7 +188,6 @@ class TestSerializationPolicies(BaseTestCase):
         )
         before = spec.to_source_json()
         fields_sets = [model.model_fields_set.copy() for model in models]
-        before_policy = deepcopy(V1Dag._DUMP_POLICY)
         expected = {**source, "kind": "component"}
         expected.pop("queue")
 
@@ -267,12 +210,8 @@ class TestSerializationPolicies(BaseTestCase):
                 assert component_dump.call_count == 4
                 assert operation_dump.call_count == 3
                 assert dag_dump.call_count == 2
-                dag_dump.assert_any_call(
-                    spec.run, exclude_none=True, purpose="component_state"
-                )
-                dag_dump.assert_any_call(
-                    template.run, exclude_none=False, purpose="component_state"
-                )
+                dag_dump.assert_any_call(spec.run, exclude_none=True)
+                dag_dump.assert_any_call(template.run, exclude_none=False)
                 payload["params"]["options"]["value"]["items"][1]["value"] = "changed"
                 payload["run"]["operations"][0]["schedule"] = "changed"
                 payload["run"]["components"][0]["run"]["environment"] = "changed"
@@ -282,7 +221,6 @@ class TestSerializationPolicies(BaseTestCase):
                 assert spec.kind == "operation"
                 assert spec.run.dag == {}
                 assert template.run.dag == {}
-                assert V1Dag._DUMP_POLICY == before_policy
 
     def test_component_state_matches_legacy_bytes_across_hash_seeds(self):
         sources = {

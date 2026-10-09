@@ -4,9 +4,11 @@ from typing import Dict, List, Tuple
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.params.params import V1Param
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
-from polyaxon._polyaxonfile.manager.operations import compose_polyaxonfile
 from polyaxon._polyaxonfile.specs.libs.parser import PolyaxonfileParser
-from polyaxon._polyaxonfile.specs.polyaxonfile import read_polyaxonfile
+from polyaxon._polyaxonfile.specs.polyaxonfile import (
+    compose_polyaxonfile,
+    read_polyaxonfile,
+)
 
 
 def _prepare_child_source(
