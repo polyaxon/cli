@@ -25,6 +25,7 @@ class Sections:
     STRICT_PARAMS = "strictParams"
     CONNECTIONS = "connections"
     RUN = "run"
+    CONTAINER = "container"
     RUN_PATCH = "runPatch"
     MATRIX = "matrix"
     JOINS = "joins"
@@ -82,6 +83,7 @@ class Sections:
         OUTPUTS,
         CONTEXTS,
         RUN,
+        CONTAINER,
         RUN_PATCH,
         MOUNT,
     )

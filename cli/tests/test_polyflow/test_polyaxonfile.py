@@ -276,10 +276,9 @@ class TestPolyaxonfile(BaseTestCase):
             with self.subTest(source=source), self.assertRaises(ValidationError):
                 V1Polyaxonfile.from_dict(source)
 
-    def test_rejects_shortcuts_and_compiled_only_fields(self):
+    def test_rejects_unsupported_shortcuts_and_compiled_only_fields(self):
         for field in (
             "cmd",
-            "container",
             "env",
             "resources",
             "ports",

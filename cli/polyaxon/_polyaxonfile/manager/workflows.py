@@ -28,6 +28,7 @@ def _prepare_child_source(
         "inputs",
         "outputs",
         "run",
+        "container",
         "run_patch",
         "cache",
         "queue",

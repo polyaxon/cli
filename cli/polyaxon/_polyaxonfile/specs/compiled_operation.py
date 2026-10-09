@@ -306,6 +306,16 @@ class CompiledOperationSpecification(BaseSpecification):
         if not preset:
             return config
         preset = OperationSpecification.read(preset, is_preset=True)  # type: V1Operation
+        # Root container is a runPatch.container applied before the preset's runPatch.
+        if "container" in preset.model_fields_set:
+            config.run = config.run.patch(
+                validate_run_patch(
+                    {"container": preset.container},
+                    config.run.kind,
+                    replica_types=config.get_replica_types(),
+                ),
+                strategy=preset.patch_strategy,
+            )
         if preset.run_patch:
             config.run = config.run.patch(
                 validate_run_patch(

@@ -10,10 +10,12 @@ from clipped.compact.pydantic import (
     model_rebuild,
     model_validator,
     validation_after,
+    validation_always,
     validation_before,
 )
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
+from clipped.types.ref_or_obj import RefField
 from clipped.utils.json import orjson_dumps
 from polyaxon._flow.base import BaseOp
 from polyaxon._flow.builds import V1Build
@@ -25,6 +27,7 @@ from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
+from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon.exceptions import PolyaxonValidationError
 
 
@@ -35,6 +38,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     Runtime-dependent validation, including runPatch, belongs after composition.
     """
 
+    _SWAGGER_FIELDS = ["container"]
     _CUSTOM_DUMP_FIELDS = {"run", "component", "termination"}
     _FIELDS_MANUAL_PATCH = [
         "kind",
@@ -54,6 +58,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     inputs: Optional[List[V1IO]] = None
     outputs: Optional[List[V1IO]] = None
     run: Optional[Union[V1Runtime, Dict]] = None
+    container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
     template: Optional[V1Template] = None
     params: Optional[Dict[StrictStr, V1Param]] = None
     hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
@@ -89,6 +94,10 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                     "Unsupported run.kind: {!r}.".format(run["kind"])
                 ) from e
         return run
+
+    @field_validator("container", **validation_always, **validation_before)
+    def validate_container(cls, v):
+        return k8s_validation.validate_k8s_container(v)
 
     @field_validator("params", **validation_before)
     @classmethod
