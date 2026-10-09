@@ -5,7 +5,7 @@ clipped==0.13.*
 parsimonious>=0.10.0
 vents==0.9.*
 Jinja2>=2.10.3,<3.1.5
-kubernetes>=10.0.1
+kubernetes>=10.0.1,<37
 python-dateutil>=2.7.3
 pytz>=2019.2
 PyYAML>=5.1
