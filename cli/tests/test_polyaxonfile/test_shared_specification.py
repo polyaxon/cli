@@ -587,7 +587,7 @@ class TestSharedSpecification(BaseTestCase):
                 {"hubRef": ["train:v1"]},
                 {"component": {"unknown": True}},
                 {"run": {"kind": "unknown"}},
-                {"cmd": "echo hello"},
+                {"cmd": 1},
                 {"contexts": []},
             ):
                 with (

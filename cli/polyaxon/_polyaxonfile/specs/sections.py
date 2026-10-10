@@ -26,6 +26,7 @@ class Sections:
     CONNECTIONS = "connections"
     RUN = "run"
     CONTAINER = "container"
+    CMD = "cmd"
     RUN_PATCH = "runPatch"
     MATRIX = "matrix"
     JOINS = "joins"
@@ -84,6 +85,7 @@ class Sections:
         CONTEXTS,
         RUN,
         CONTAINER,
+        CMD,
         RUN_PATCH,
         MOUNT,
     )

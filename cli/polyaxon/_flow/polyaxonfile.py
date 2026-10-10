@@ -24,11 +24,27 @@ from polyaxon._flow.io import V1IO
 from polyaxon._flow.params import V1Param, normalize_param_value
 from polyaxon._flow.references import RefMixin, V1DagRef, V1HubRef, V1PathRef, V1UrlRef
 from polyaxon._flow.run.dag import V1Dag
+from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon.exceptions import PolyaxonValidationError
+
+
+def _patch_main_container(run, container, strategy: PatchStrategy):
+    if run is None:
+        return validate_run_patch({"container": container}, V1RunKind.JOB)
+    return run.patch(
+        validate_run_patch(
+            {"container": container},
+            run.kind,
+            replica_types=(
+                run.get_replica_types() if hasattr(run, "get_replica_types") else None
+            ),
+        ),
+        strategy=strategy,
+    )
 
 
 class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
@@ -50,6 +66,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         "path_ref",
         "component",
         "run",
+        "cmd",
         "run_patch",
         "patch_strategy",
     ]
@@ -59,6 +76,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     outputs: Optional[List[V1IO]] = None
     run: Optional[Union[V1Runtime, Dict]] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
+    cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
     template: Optional[V1Template] = None
     params: Optional[Dict[StrictStr, V1Param]] = None
     hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
@@ -98,6 +116,20 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     @field_validator("container", **validation_always, **validation_before)
     def validate_container(cls, v):
         return k8s_validation.validate_k8s_container(v)
+
+    @field_validator("cmd", **validation_after)
+    @classmethod
+    def validate_cmd(cls, cmd):
+        if isinstance(cmd, str):
+            if not cmd.strip():
+                raise ValueError("cmd must not be blank.")
+        elif cmd is not None:
+            if not cmd:
+                raise ValueError("cmd must not be empty.")
+            for index, line in enumerate(cmd):
+                if not line.strip():
+                    raise ValueError("cmd[{}] must not be blank.".format(index))
+        return cmd
 
     @field_validator("params", **validation_before)
     @classmethod
@@ -155,6 +187,33 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     def to_component_state_json(self) -> str:
         """Serialize legacy state input without canonicalizing key order."""
         return orjson_dumps(self.to_component_state_dict())
+
+    def apply_shortcuts(self, run, strategy: Optional[PatchStrategy] = None):
+        """Apply root shortcuts to the main container(s) in field-table order.
+
+        Without a runtime, the first shortcut creates a job.
+        """
+        strategy = strategy or PatchStrategy.POST_MERGE
+        if "container" in self.model_fields_set:
+            run = _patch_main_container(run, self.container, strategy)
+        if self.cmd:
+            lines = [self.cmd] if isinstance(self.cmd, str) else self.cmd
+            command = ["/bin/sh", "-c"]
+            args = ["\n".join(["set -e", *lines])]
+            if run is not None and strategy in (
+                PatchStrategy.PRE_MERGE,
+                PatchStrategy.ISNULL,
+            ):
+                # Each main container keeps its own argv; only empty ones get cmd.
+                for target in run.get_all_containers():
+                    if target.command is None and target.args is None:
+                        target.command, target.args = command, args
+            else:
+                # Write the full pair so it never mixes with a base argv.
+                run = _patch_main_container(
+                    run, {"command": command, "args": args}, PatchStrategy.REPLACE
+                )
+        return run
 
     def get_run_kind(self):
         return self.run.kind if self.run and not isinstance(self.run, Mapping) else None
@@ -226,6 +285,12 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     def patch_obj(cls, config, values, strategy: PatchStrategy = None):
         strategy = strategy or PatchStrategy.POST_MERGE
         result = super().patch_obj(config, values, strategy)
+        # cmd is one script: overlays replace or keep it, never merge its lines.
+        if "cmd" in getattr(values, "model_fields_set", set()) and (
+            config.cmd is None
+            or strategy in (PatchStrategy.POST_MERGE, PatchStrategy.REPLACE)
+        ):
+            result.cmd = deepcopy(values.cmd)
         if "run" in getattr(values, "model_fields_set", set()):
             base = config.get_native_run()
             if base is None and config.component is not None:

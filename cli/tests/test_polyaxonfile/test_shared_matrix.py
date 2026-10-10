@@ -175,6 +175,7 @@ class TestSharedMatrix(BaseTestCase):
                     "strictParams": True,
                     "run": {"kind": "job", "container": {"image": "source:v1"}},
                     "container": {"image": "root:v1"},
+                    "cmd": "echo root",
                     "runPatch": {"container": {"image": "patch:v2"}},
                 }
                 authored = read_polyaxonfile(
@@ -215,6 +216,7 @@ class TestSharedMatrix(BaseTestCase):
                         "is_approved",
                         "skip_on_upstream_skip",
                         "container",
+                        "cmd",
                         "run_patch",
                     ):
                         assert getattr(current, field) is None

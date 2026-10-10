@@ -11,7 +11,6 @@ from polyaxon._flow.polyaxonfile import (
     V1Polyaxonfile,
     get_polyaxonfile_model,
 )
-from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.patch import patch_run, validate_run_patch
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonfileError
@@ -163,6 +162,7 @@ def compose_polyaxonfile(
         "patch_strategy",
         "run",
         "container",
+        "cmd",
         "run_patch",
         "strict_params",
         "version",
@@ -175,19 +175,8 @@ def compose_polyaxonfile(
     if "run" in local.model_fields_set:
         effective.run = patch_run(effective.run, local.run, strategy)
 
-    # Root container is a runPatch.container applied before this layer's runPatch.
-    if "container" in local.model_fields_set:
-        container_patch = validate_run_patch(
-            {"container": local.container},
-            effective.run.kind if effective.run is not None else V1RunKind.JOB,
-            replica_types=effective.get_replica_types(),
-        )
-        if effective.run is None:
-            effective.run = container_patch
-        else:
-            effective.run.patch(
-                container_patch, strategy=run_patch_strategy or strategy
-            )
+    # Root shortcuts patch the main container before this layer's runPatch.
+    effective.run = local.apply_shortcuts(effective.run, run_patch_strategy or strategy)
 
     if local.run_patch:
         if effective.run is None:
