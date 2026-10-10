@@ -30,6 +30,7 @@ def _prepare_child_source(
         "run",
         "container",
         "cmd",
+        "env",
         "run_patch",
         "cache",
         "queue",

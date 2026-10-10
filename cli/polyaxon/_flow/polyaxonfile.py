@@ -29,6 +29,7 @@ from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_pa
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 from polyaxon._k8s import k8s_schemas, k8s_validation
+from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonValidationError
 
 
@@ -45,6 +46,46 @@ def _patch_main_container(run, container, strategy: PatchStrategy):
         ),
         strategy=strategy,
     )
+
+
+def _get_main_containers(run) -> List[k8s_schemas.V1Container]:
+    """Concrete main containers of a runtime; unresolved references are skipped."""
+    if "container" in type(run).model_fields:
+        container = run.container
+        return [container] if isinstance(container, k8s_schemas.V1Container) else []
+    containers = []
+    for field in type(run).model_fields:
+        value = getattr(run, field)
+        # Ray workers are a mapping of replicas; other runtimes use one field per role.
+        for replica in value.values() if isinstance(value, Mapping) else [value]:
+            if (
+                isinstance(replica, BaseSchemaModel)
+                and "container" in type(replica).model_fields
+            ):
+                containers += _get_main_containers(replica)
+    return containers
+
+
+def _get_env_name(entry) -> Optional[str]:
+    if isinstance(entry, Mapping):
+        if "name" in entry:
+            return entry["name"]
+        return next(iter(entry)) if len(entry) == 1 else None
+    return getattr(entry, "name", None)
+
+
+def _dedupe_env(env: List) -> List:
+    """Keep the last entry per name at its position, like the runtime converters."""
+    results = []
+    seen = set()
+    for entry in reversed(env):
+        name = _get_env_name(entry)
+        if name is not None:
+            if name in seen:
+                continue
+            seen.add(name)
+        results.append(entry)
+    return list(reversed(results))
 
 
 class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
@@ -77,6 +118,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     run: Optional[Union[V1Runtime, Dict]] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
     cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
+    env: Optional[Dict[StrictStr, StrictStr]] = None
     template: Optional[V1Template] = None
     params: Optional[Dict[StrictStr, V1Param]] = None
     hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
@@ -130,6 +172,21 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                 if not line.strip():
                     raise ValueError("cmd[{}] must not be blank.".format(index))
         return cmd
+
+    @field_validator("env", **validation_before)
+    @classmethod
+    def validate_env(cls, env):
+        if env is None:
+            return env
+        if not isinstance(env, Mapping):
+            raise ValueError("env must be a mapping of names to string values.")
+        for name, value in env.items():
+            if isinstance(value, (bool, int, float)):
+                literal = str(value).lower() if isinstance(value, bool) else value
+                raise ValueError(
+                    'env.{} must be a string; quote it: "{}".'.format(name, literal)
+                )
+        return env
 
     @field_validator("params", **validation_before)
     @classmethod
@@ -198,20 +255,54 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             run = _patch_main_container(run, self.container, strategy)
         if self.cmd:
             lines = [self.cmd] if isinstance(self.cmd, str) else self.cmd
-            command = ["/bin/sh", "-c"]
-            args = ["\n".join(["set -e", *lines])]
+            pair = {
+                "command": ["/bin/sh", "-c"],
+                "args": ["\n".join(["set -e", *lines])],
+            }
             if run is not None and strategy in (
                 PatchStrategy.PRE_MERGE,
                 PatchStrategy.ISNULL,
             ):
-                # Each main container keeps its own argv; only empty ones get cmd.
-                for target in run.get_all_containers():
-                    if target.command is None and target.args is None:
-                        target.command, target.args = command, args
+                # isnull fills missing keys in place and never replaces an existing
+                # container, so containers that already had either half get it back.
+                kept = [
+                    (container, container.command, container.args)
+                    for container in _get_main_containers(run)
+                    if container.command is not None or container.args is not None
+                ]
+                run = _patch_main_container(run, pair, PatchStrategy.ISNULL)
+                for container, command, args in kept:
+                    container.command, container.args = command, args
             else:
                 # Write the full pair so it never mixes with a base argv.
-                run = _patch_main_container(
-                    run, {"command": command, "args": args}, PatchStrategy.REPLACE
+                run = _patch_main_container(run, pair, PatchStrategy.REPLACE)
+        if self.env is not None:
+            entries = [
+                {"name": name, "value": value} for name, value in self.env.items()
+            ]
+            # Native list merging drops incoming entries equal to an existing one,
+            # which loses their position, so merges are computed from each original
+            # list. Deferred values such as "{{ env_vars }}" stay native.
+            originals = []
+            if run is not None and strategy in (
+                PatchStrategy.POST_MERGE,
+                PatchStrategy.PRE_MERGE,
+            ):
+                originals = [
+                    (container, list(container.env))
+                    for container in _get_main_containers(run)
+                    if isinstance(container.env, list)
+                ]
+            run = _patch_main_container(run, {"env": entries}, strategy)
+            for container, original in originals:
+                incoming = [
+                    k8s_schemas.V1EnvVar(name=name, value=value)
+                    for name, value in self.env.items()
+                ]
+                container.env = _dedupe_env(
+                    original + incoming
+                    if strategy == PatchStrategy.POST_MERGE
+                    else incoming + original
                 )
         return run
 

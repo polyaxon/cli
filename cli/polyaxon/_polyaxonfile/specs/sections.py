@@ -27,6 +27,7 @@ class Sections:
     RUN = "run"
     CONTAINER = "container"
     CMD = "cmd"
+    ENV = "env"
     RUN_PATCH = "runPatch"
     MATRIX = "matrix"
     JOINS = "joins"
@@ -86,6 +87,7 @@ class Sections:
         RUN,
         CONTAINER,
         CMD,
+        ENV,
         RUN_PATCH,
         MOUNT,
     )
