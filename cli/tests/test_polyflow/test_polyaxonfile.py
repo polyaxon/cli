@@ -278,7 +278,6 @@ class TestPolyaxonfile(BaseTestCase):
 
     def test_rejects_unsupported_shortcuts_and_compiled_only_fields(self):
         for field in (
-            "resources",
             "ports",
             "dag",
             "contexts",

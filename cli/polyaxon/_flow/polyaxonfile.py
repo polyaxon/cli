@@ -1,10 +1,15 @@
 from collections.abc import Mapping
 from copy import copy, deepcopy
+import math
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 from typing_extensions import Literal
 
+from kubernetes.utils import parse_quantity
+
 from clipped.compact.pydantic import (
     Field,
+    StrictFloat,
+    StrictInt,
     StrictStr,
     field_validator,
     model_rebuild,
@@ -17,6 +22,7 @@ from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
 from clipped.types.ref_or_obj import RefField
 from clipped.utils.json import orjson_dumps
+from clipped.utils.units import is_cpu_value, is_memory_value
 from polyaxon._flow.base import BaseOp
 from polyaxon._flow.builds import V1Build
 from polyaxon._flow.hooks import V1Hook
@@ -137,6 +143,71 @@ def _dedupe_env(env: List) -> List:
     return list(reversed(results))
 
 
+_GPU = "gpu"
+_NVIDIA_GPU = "nvidia.com/gpu"
+
+
+_MAX_INT = 2**63  # Kubernetes quantities and orjson stop at 64-bit integers.
+
+
+def _is_count(value: str) -> bool:
+    return value.isascii() and value.isdigit() and int(value) < _MAX_INT
+
+
+# Accepted quantity strings per resource; other keys are accelerator counts.
+_QUANTITIES = {"cpu": is_cpu_value, "memory": is_memory_value}
+
+
+def _parse_resource(key: str, value) -> Tuple:
+    """Return the (request, limit) pair of one resources shortcut entry."""
+    is_count = key not in _QUANTITIES
+    is_valid = _QUANTITIES.get(key, _is_count)
+    error = "resources.{} {}".format
+    if isinstance(value, bool) or not isinstance(value, (str, int, float)):
+        raise ValueError(error(key, "must be a number or a range such as 1..2."))
+    if not isinstance(value, str):
+        if (isinstance(value, float) and not math.isfinite(value)) or value < 0:
+            raise ValueError(error(key, "must be a finite non-negative number."))
+        if value >= _MAX_INT:
+            raise ValueError(error(key, "is too large."))
+        if is_count and not isinstance(value, int):
+            raise ValueError(error(key, "must be an integer count."))
+        return (value, value) if is_count else (value, None)
+
+    text = value.strip()
+    is_range = ".." in text
+    low, high = (p.strip() for p in text.split("..", 1)) if is_range else (text, "")
+    if not low and not high:
+        raise ValueError(error(key, "needs a request, a limit, or both."))
+    for part in (low, high):
+        if part and not is_valid(part):
+            raise ValueError(
+                error(
+                    key,
+                    "has an unsupported value `{}`; use container.resources for "
+                    "other quantities or templates.".format(part),
+                )
+            )
+    # Exact decimals; the reporting converters round fractional values.
+    if low and high and parse_quantity(low) > parse_quantity(high):
+        raise ValueError(error(key, "has a request greater than its limit."))
+    low, high = ((int(p) if is_count else p) if p else None for p in (low, high))
+    if not is_range:
+        return (low, low) if is_count else (low, None)
+    return low, high
+
+
+def _lower_resources(resources: Dict) -> Dict:
+    """Container `requests`/`limits` of the resources shortcut; empty sides omitted."""
+    lowered = {"requests": {}, "limits": {}}
+    for key, value in resources.items():
+        name = _NVIDIA_GPU if key == _GPU else key
+        for side, quantity in zip(lowered, _parse_resource(key, value)):
+            if quantity is not None:
+                lowered[side][name] = quantity
+    return {side: values for side, values in lowered.items() if values}
+
+
 class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     """Shared fields for authored components, operations, and kindless files.
 
@@ -168,6 +239,9 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
     cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
     env: Optional[Dict[StrictStr, StrictStr]] = None
+    resources: Optional[Dict[StrictStr, Union[StrictInt, StrictFloat, StrictStr]]] = (
+        None
+    )
     template: Optional[V1Template] = None
     params: Optional[Dict[StrictStr, V1Param]] = None
     hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
@@ -236,6 +310,27 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                     'env.{} must be a string; quote it: "{}".'.format(name, literal)
                 )
         return env
+
+    @field_validator("resources", **validation_before)
+    @classmethod
+    def validate_resources(cls, resources):
+        if resources is None:
+            return resources
+        if not isinstance(resources, Mapping):
+            raise ValueError("resources must be a mapping of resource names to values.")
+        if _NVIDIA_GPU in resources:
+            raise ValueError("resources.nvidia.com/gpu is spelled gpu.")
+        for key, value in resources.items():
+            # Kubernetes validates extended-resource names such as google.com/tpu.
+            if key not in ("cpu", "memory", _GPU) and not (
+                isinstance(key, str) and "/" in key
+            ):
+                raise ValueError(
+                    "Unknown resource `{}`; use cpu, memory, gpu, or an extended "
+                    "resource such as google.com/tpu.".format(key)
+                )
+            _parse_resource(key, value)
+        return resources
 
     @field_validator("params", **validation_before)
     @classmethod
@@ -355,6 +450,9 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                 run = _patch_and_merge_main_container(
                     run, {"env": entries}, strategy, "env", merge_env
                 )
+        if self.resources is not None:
+            resources = _lower_resources(self.resources)
+            run = _patch_main_container(run, {"resources": resources}, strategy)
         return run
 
     def get_run_kind(self):

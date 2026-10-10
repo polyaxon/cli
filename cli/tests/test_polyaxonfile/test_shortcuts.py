@@ -1,11 +1,17 @@
 from copy import deepcopy
+from itertools import product
 import pytest
+import re
 import subprocess
+
+from kubernetes.utils import parse_quantity
 
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
+from clipped.utils.units import to_cpu_value, to_memory_bytes
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile, _dedupe_env
 from polyaxon._k8s import k8s_schemas
+from polyaxon._k8s.converter.common.accelerators import requests_gpu
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -881,3 +887,350 @@ class TestShortcuts(BaseTestCase):
         )
         assert applied.run.kind == "service"
         assert _env(applied.run.container) == [("A", "2", False)]
+
+    def test_resources_lowers_each_value_form(self):
+        for resources, requests, limits in (
+            ({"cpu": 4}, {"cpu": 4}, None),
+            ({"cpu": "4.."}, {"cpu": "4"}, None),
+            ({"cpu": "..4"}, None, {"cpu": "4"}),
+            ({"cpu": "500m..1"}, {"cpu": "500m"}, {"cpu": "1"}),
+            ({"cpu": "4..4"}, {"cpu": "4"}, {"cpu": "4"}),
+            ({"memory": "512Mi..1Gi"}, {"memory": "512Mi"}, {"memory": "1Gi"}),
+            ({"memory": "16Gi"}, {"memory": "16Gi"}, None),
+            ({"memory": "1.1Ki..1126.4"}, {"memory": "1.1Ki"}, {"memory": "1126.4"}),
+            ({"gpu": 1}, {"nvidia.com/gpu": 1}, {"nvidia.com/gpu": 1}),
+            ({"gpu": "..2"}, None, {"nvidia.com/gpu": 2}),
+            ({"gpu": "1..2"}, {"nvidia.com/gpu": 1}, {"nvidia.com/gpu": 2}),
+            ({"google.com/tpu": 8}, {"google.com/tpu": 8}, {"google.com/tpu": 8}),
+            ({"amd.com/gpu": 0}, {"amd.com/gpu": 0}, {"amd.com/gpu": 0}),
+        ):
+            with self.subTest(resources=resources):
+                authored = read_polyaxonfile(
+                    {"container": {"image": "busybox:1.36"}, "resources": resources}
+                )
+                before = authored.to_dict()
+                compiled = OperationSpecification.compile_operation(authored)
+                expected = {}
+                if requests:
+                    expected["requests"] = requests
+                if limits:
+                    expected["limits"] = limits
+                assert compiled.run.kind == "job"
+                assert compiled.run.container.resources == expected
+                assert authored.to_dict() == before
+                replayed = read_polyaxonfile(authored.to_source_json())
+                assert replayed.resources == resources
+
+    def test_resources_rejects_invalid_values(self):
+        for resources, message in (
+            ({"cpu": ".."}, "resources.cpu needs a request"),
+            ({"cpu": "4..2"}, "request greater than its limit"),
+            ({"memory": "1Gi..512Mi"}, "request greater than its limit"),
+            ({"memory": "1.9..1.1"}, "request greater than its limit"),
+            ({"cpu": "1k"}, "unsupported value `1k`"),
+            ({"memory": "400m"}, "unsupported value `400m`"),
+            ({"memory": "1mi"}, "unsupported value `1mi`"),
+            ({"cpu": "1_000"}, "unsupported value `1_000`"),
+            ({"cpu": "1e3"}, "unsupported value `1e3`"),
+            ({"cpu": "{{ params.cpu }}"}, "use container.resources"),
+            ({"cpu": "١"}, "unsupported value `١`"),
+            ({"memory": "١Gi"}, "unsupported value `١Gi`"),
+            ({"gpu": "١"}, "unsupported value `١`"),
+            ({"cpu": -1}, "finite non-negative"),
+            ({"cpu": float("nan")}, "finite non-negative"),
+            ({"memory": float("inf")}, "finite non-negative"),
+            ({"cpu": True}, "number or a range"),
+            ({"gpu": 1.5}, "integer count"),
+            ({"gpu": "1.5"}, "unsupported value `1.5`"),
+            ({"gpu": 10**400}, "resources.gpu is too large"),
+            ({"gpu": "9" * 20}, "unsupported value `{}`".format("9" * 20)),
+            ({"gpu": "1.." + "9" * 20}, "unsupported value `{}`".format("9" * 20)),
+            ({"nvidia.com/gpu": 1}, "spelled gpu"),
+            ({"cpus": 1}, "Unknown resource `cpus`"),
+            ({"ephemeral-storage": "1Gi"}, "Unknown resource `ephemeral-storage`"),
+            ({"hugepages-2Mi": "1Gi"}, "Unknown resource `hugepages-2Mi`"),
+        ):
+            with self.subTest(resources=resources):
+                with self.assertRaisesRegex(ValidationError, re.escape(message)):
+                    V1Polyaxonfile.from_dict({"resources": resources})
+        for resources in ("cpu=1", ["cpu"]):
+            with self.subTest(resources=resources), self.assertRaises(ValidationError):
+                V1Polyaxonfile.from_dict({"resources": resources})
+
+    def test_resources_units_agree_with_reporting_and_converters(self):
+        for cpu in ("2", "0.5", "500m", ".5", "500u"):
+            with self.subTest(cpu=cpu):
+                V1Polyaxonfile.from_dict({"resources": {"cpu": cpu}})
+                assert to_cpu_value(cpu) == float(parse_quantity(cpu))
+        for memory in ("512", "1.5Gi", "1Ki", "1Mi", "1Gi", "1Ti", "1k", "1M", "1G"):
+            with self.subTest(memory=memory):
+                V1Polyaxonfile.from_dict({"resources": {"memory": memory}})
+                assert to_memory_bytes(memory) == int(parse_quantity(memory))
+
+        compiled = _compile({"container": {"image": "b"}, "resources": {"gpu": 2}})
+        resources = compiled.run.container.resources
+        assert requests_gpu(
+            k8s_schemas.V1ResourceRequirements(
+                requests=resources["requests"], limits=resources["limits"]
+            )
+        )
+
+    def test_resources_merge_like_the_native_run_patch(self):
+        base = {
+            "run": {"kind": "job", "container": {"image": "base:v1"}},
+            "resources": {"cpu": "2..8", "gpu": 1},
+        }
+        gpu = {"nvidia.com/gpu": 1}
+        lowered = {"requests": {"cpu": 4, "memory": "1Gi"}}
+        for strategy, expected in (
+            (
+                PatchStrategy.POST_MERGE,
+                {
+                    "requests": {"cpu": 4, "memory": "1Gi", **gpu},
+                    "limits": {"cpu": "8", **gpu},
+                },
+            ),
+            (
+                PatchStrategy.PRE_MERGE,
+                {
+                    "requests": {"cpu": "2", "memory": "1Gi", **gpu},
+                    "limits": {"cpu": "8", **gpu},
+                },
+            ),
+            (PatchStrategy.REPLACE, lowered),
+            (
+                PatchStrategy.ISNULL,
+                {"requests": {"cpu": "2", **gpu}, "limits": {"cpu": "8", **gpu}},
+            ),
+        ):
+            with self.subTest(strategy=strategy):
+                shortcut = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        "resources": {"cpu": 4, "memory": "1Gi"},
+                        "component": base,
+                    }
+                )
+                native = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        "runPatch": {"container": {"resources": deepcopy(lowered)}},
+                        "component": base,
+                    }
+                )
+                assert shortcut.run.container.resources == expected
+                assert native.run.container.resources == expected
+
+    def test_resources_with_same_layer_container_resources(self):
+        native = {"requests": {"cpu": "1", "memory": "1Gi"}, "limits": {"cpu": "2"}}
+        for strategy, expected in (
+            (
+                PatchStrategy.POST_MERGE,
+                {"requests": {"cpu": "3", "memory": "1Gi"}, "limits": {"cpu": "2"}},
+            ),
+            (PatchStrategy.PRE_MERGE, native),
+            (PatchStrategy.REPLACE, {"requests": {"cpu": "3"}}),
+            (PatchStrategy.ISNULL, native),
+        ):
+            with self.subTest(strategy=strategy):
+                compiled = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        "run": {"kind": "job", "container": {"image": "base:v1"}},
+                        "container": {"resources": deepcopy(native)},
+                        "resources": {"cpu": "3"},
+                    }
+                )
+                assert compiled.run.container.resources == expected
+
+    def test_resources_isolate_heterogeneous_replicas(self):
+        # Replica patches share one payload natively; both spellings must isolate.
+        native = {"container": {"resources": {"requests": {"cpu": "4"}}}}
+        for strategy, source in product(
+            PatchStrategy, ({"resources": {"cpu": "4"}}, {"runPatch": native})
+        ):
+            with self.subTest(strategy=strategy, source=source):
+                compiled = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        **source,
+                        "component": {
+                            "run": {
+                                "kind": "pytorchjob",
+                                "master": {
+                                    "replicas": 1,
+                                    "container": {
+                                        "image": "base:v1",
+                                        "resources": {"requests": {"cpu": "2"}},
+                                    },
+                                },
+                                "worker": {"replicas": 1},
+                            }
+                        },
+                    }
+                )
+                master = compiled.run.master.container.resources
+                worker = compiled.run.worker.container.resources
+                assert worker == {"requests": {"cpu": "4"}}
+                if strategy in (PatchStrategy.PRE_MERGE, PatchStrategy.ISNULL):
+                    assert master == {"requests": {"cpu": "2"}}
+                else:
+                    assert master == {"requests": {"cpu": "4"}}
+                # A later worker-only change must not reach the master.
+                before = deepcopy(master)
+                compiled.run.worker.container.resources["requests"]["cpu"] = "9"
+                assert master == before
+
+    def test_resources_targets_only_native_patch_roles(self):
+        replica = {
+            "replicas": 1,
+            "container": {"image": "base:v1", "resources": {"requests": {"cpu": "1"}}},
+        }
+        for strategy in PatchStrategy:
+            with self.subTest(strategy=strategy):
+                compiled = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        "resources": {"cpu": "4"},
+                        "component": {
+                            "run": {
+                                "kind": "mpijob",
+                                "launcher": deepcopy(replica),
+                                "worker": deepcopy(replica),
+                            }
+                        },
+                    }
+                )
+                for role in (compiled.run.launcher, compiled.run.worker):
+                    assert role.container.resources == {"requests": {"cpu": "1"}}
+
+    def test_resources_alone_empty_null_created_later_and_dags(self):
+        compiled = _compile({"resources": {"cpu": "1"}})
+        assert compiled.run.kind == "job"
+        assert compiled.run.container.resources == {"requests": {"cpu": "1"}}
+
+        for strategy in PatchStrategy:
+            with self.subTest(strategy=strategy, case="created later"):
+                compiled = _compile(
+                    {
+                        "run": {"kind": "job"},
+                        "patchStrategy": strategy,
+                        "resources": {"cpu": "1"},
+                        "runPatch": {"container": {"image": "busybox:1.36"}},
+                    }
+                )
+                assert compiled.run.container.image == "busybox:1.36"
+                assert compiled.run.container.resources == {"requests": {"cpu": "1"}}
+
+        base = {
+            "run": {
+                "kind": "job",
+                "container": {
+                    "image": "base:v1",
+                    "resources": {"requests": {"cpu": "1"}},
+                },
+            }
+        }
+        for strategy, expected in (
+            (PatchStrategy.POST_MERGE, {"requests": {"cpu": "1"}}),
+            (PatchStrategy.PRE_MERGE, {"requests": {"cpu": "1"}}),
+            (PatchStrategy.REPLACE, {}),
+            (PatchStrategy.ISNULL, {"requests": {"cpu": "1"}}),
+        ):
+            with self.subTest(strategy=strategy, case="empty"):
+                compiled = _compile(
+                    {"patchStrategy": strategy, "resources": {}, "component": base}
+                )
+                assert compiled.run.container.resources == expected
+
+        authored = read_polyaxonfile({**deepcopy(base), "resources": {"cpu": "4"}})
+        nulled = patch_polyaxonfile(authored.clone(), [{"resources": None}])
+        for config in (nulled, read_polyaxonfile(nulled.to_source_json())):
+            assert "resources" in config.model_fields_set
+            assert config.resources is None
+            compiled = OperationSpecification.compile_operation(config)
+            assert compiled.run.container.resources == {"requests": {"cpu": "1"}}
+        compiled = OperationSpecification.compile_operation(
+            authored.clone(), override={"resources": None}
+        )
+        assert compiled.run.container.resources == {"requests": {"cpu": "1"}}
+
+        dag = {
+            "run": {
+                "kind": "dag",
+                "operations": [{"name": "first", "dagRef": "task"}],
+                "components": [
+                    {
+                        "name": "task",
+                        "run": {"kind": "job", "container": {"image": "base:v1"}},
+                    }
+                ],
+            }
+        }
+        compiled_dag = _compile(dag)
+        for strategy in PatchStrategy:
+            for resources in ({}, {"cpu": "1"}):
+                with self.subTest(strategy=strategy, resources=resources):
+                    authored = read_polyaxonfile(
+                        {
+                            **deepcopy(dag),
+                            "patchStrategy": strategy,
+                            "resources": resources,
+                        }
+                    )
+                    with self.assertRaises(ValidationError):
+                        OperationSpecification.compile_operation(authored)
+                    with self.assertRaises(ValidationError):
+                        CompiledOperationSpecification.apply_preset(
+                            compiled_dag.clone(),
+                            {"patchStrategy": strategy, "resources": resources},
+                        )
+
+    def test_resources_overlays_merge_by_key(self):
+        base = {
+            "container": {"image": "busybox:1.36"},
+            "resources": {"gpu": 1, "cpu": "1"},
+        }
+        for strategy, expected in (
+            (None, {"gpu": 2, "cpu": "1", "memory": "1Gi"}),
+            (PatchStrategy.PRE_MERGE, {"gpu": 1, "cpu": "1", "memory": "1Gi"}),
+            (PatchStrategy.REPLACE, {"gpu": 2, "memory": "1Gi"}),
+            (PatchStrategy.ISNULL, {"gpu": 1, "cpu": "1"}),
+        ):
+            with self.subTest(strategy=strategy):
+                overlay = {"resources": {"gpu": 2, "memory": "1Gi"}}
+                if strategy:
+                    overlay["patchStrategy"] = strategy
+                config = patch_polyaxonfile(deepcopy(base), [overlay])
+                assert config.resources == expected
+                assert read_polyaxonfile(config.to_source_json()).resources == expected
+
+    def test_resources_apply_in_named_presets(self):
+        service = _compile(
+            {
+                "run": {
+                    "kind": "service",
+                    "ports": [8080],
+                    "container": {
+                        "image": "base:v1",
+                        "resources": {"requests": {"cpu": "1"}},
+                    },
+                }
+            }
+        )
+        kept = CompiledOperationSpecification.apply_preset(
+            service.clone(),
+            {"resources": {"cpu": "2", "gpu": 1}, "patchStrategy": "pre_merge"},
+        )
+        assert kept.run.container.resources == {
+            "requests": {"cpu": "1", "nvidia.com/gpu": 1},
+            "limits": {"nvidia.com/gpu": 1},
+        }
+        applied = CompiledOperationSpecification.apply_preset(
+            service, {"resources": {"cpu": "2..4"}}
+        )
+        assert applied.run.kind == "service"
+        assert applied.run.container.resources == {
+            "requests": {"cpu": "2"},
+            "limits": {"cpu": "4"},
+        }

@@ -164,6 +164,7 @@ def compose_polyaxonfile(
         "container",
         "cmd",
         "env",
+        "resources",
         "run_patch",
         "strict_params",
         "version",

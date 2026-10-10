@@ -589,6 +589,7 @@ class TestSharedSpecification(BaseTestCase):
                 {"run": {"kind": "unknown"}},
                 {"cmd": 1},
                 {"env": {"RETRIES": 3}},
+                {"resources": {"cpu": True}},
                 {"contexts": []},
             ):
                 with (

@@ -28,6 +28,7 @@ class Sections:
     CONTAINER = "container"
     CMD = "cmd"
     ENV = "env"
+    RESOURCES = "resources"
     RUN_PATCH = "runPatch"
     MATRIX = "matrix"
     JOINS = "joins"
@@ -88,6 +89,7 @@ class Sections:
         CONTAINER,
         CMD,
         ENV,
+        RESOURCES,
         RUN_PATCH,
         MOUNT,
     )

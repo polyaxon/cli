@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from copy import deepcopy
 from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import ValidationError
@@ -106,7 +107,9 @@ def validate_run_patch(
             patch = V1PytorchJob.from_dict(run_patch)
         except ValidationError:
             if replica_types:
-                patch = V1PytorchJob.from_dict({k: run_patch for k in replica_types})
+                patch = V1PytorchJob.from_dict(
+                    {k: deepcopy(run_patch) for k in replica_types}
+                )
             else:
                 patch = V1KFReplica.from_dict(run_patch)
     elif kind == V1RunKind.TFJOB:
@@ -114,7 +117,9 @@ def validate_run_patch(
             patch = V1TFJob.from_dict(run_patch)
         except ValidationError:
             if replica_types:
-                patch = V1TFJob.from_dict({k: run_patch for k in replica_types})
+                patch = V1TFJob.from_dict(
+                    {k: deepcopy(run_patch) for k in replica_types}
+                )
             else:
                 patch = V1KFReplica.from_dict(run_patch)
     elif kind == V1RunKind.RAYCLUSTER:
@@ -124,9 +129,11 @@ def validate_run_patch(
             if replica_types:
                 replicas = {}
                 if "head" in replica_types:
-                    replicas["head"] = run_patch
+                    replicas["head"] = deepcopy(run_patch)
                 replica_types = [r for r in replica_types if r != "head"]
-                replicas["workers"] = {replica: run_patch for replica in replica_types}
+                replicas["workers"] = {
+                    replica: deepcopy(run_patch) for replica in replica_types
+                }
                 patch = V1RayCluster.from_dict(replicas)
             else:
                 patch = V1RayReplica.from_dict(run_patch)
@@ -135,7 +142,9 @@ def validate_run_patch(
             patch = V1DaskCluster.from_dict(run_patch)
         except ValidationError:
             if replica_types:
-                patch = V1DaskCluster.from_dict({k: run_patch for k in replica_types})
+                patch = V1DaskCluster.from_dict(
+                    {k: deepcopy(run_patch) for k in replica_types}
+                )
             else:
                 patch = V1DaskReplica.from_dict(run_patch)
     elif kind == V1RunKind.NOTIFIER:

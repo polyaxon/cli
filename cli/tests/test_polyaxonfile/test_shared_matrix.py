@@ -177,6 +177,7 @@ class TestSharedMatrix(BaseTestCase):
                     "container": {"image": "root:v1"},
                     "cmd": "echo root",
                     "env": {"A": "root"},
+                    "resources": {"cpu": "1..2"},
                     "runPatch": {"container": {"image": "patch:v2"}},
                 }
                 authored = read_polyaxonfile(
@@ -219,6 +220,7 @@ class TestSharedMatrix(BaseTestCase):
                         "container",
                         "cmd",
                         "env",
+                        "resources",
                         "run_patch",
                     ):
                         assert getattr(current, field) is None
