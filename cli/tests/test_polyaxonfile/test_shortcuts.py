@@ -665,6 +665,54 @@ class TestShortcuts(BaseTestCase):
                 )
                 assert compiled.run.container.env == "{{ env_vars }}"
 
+    def test_env_targets_only_native_patch_roles(self):
+        # MPI does not receive native runPatch container fields (#1431); env
+        # must not reach it under any strategy either.
+        replica = {
+            "replicas": 1,
+            "container": {"image": "base:v1", "env": [{"name": "A", "value": "1"}]},
+        }
+        for strategy in PatchStrategy:
+            with self.subTest(strategy=strategy):
+                compiled = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        "env": {"B": "x"},
+                        "component": {
+                            "run": {
+                                "kind": "mpijob",
+                                "launcher": deepcopy(replica),
+                                "worker": deepcopy(replica),
+                            }
+                        },
+                    }
+                )
+                for role in (compiled.run.launcher, compiled.run.worker):
+                    assert _env(role.container) == [("A", "1", False)]
+
+    def test_env_fills_a_role_created_by_the_patch(self):
+        compiled = _compile(
+            {
+                "patchStrategy": PatchStrategy.PRE_MERGE,
+                "env": {"A": "x"},
+                "component": {
+                    "run": {
+                        "kind": "pytorchjob",
+                        "master": {
+                            "replicas": 1,
+                            "container": {
+                                "image": "base:v1",
+                                "env": [{"name": "A", "value": "m"}],
+                            },
+                        },
+                        "worker": {"replicas": 1},
+                    }
+                },
+            }
+        )
+        assert _env(compiled.run.master.container) == [("A", "m", False)]
+        assert _env(compiled.run.worker.container) == [("A", "x", False)]
+
     def test_env_normalizes_each_replica(self):
         def replica(*entries):
             return {

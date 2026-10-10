@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from copy import copy, deepcopy
-from typing import Dict, List, Optional, Type, Union
+from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import (
@@ -33,19 +33,68 @@ from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonValidationError
 
 
+def _get_main_container_patch(run, container):
+    return validate_run_patch(
+        {"container": container},
+        run.kind,
+        replica_types=(
+            run.get_replica_types() if hasattr(run, "get_replica_types") else None
+        ),
+    )
+
+
 def _patch_main_container(run, container, strategy: PatchStrategy):
     if run is None:
         return validate_run_patch({"container": container}, V1RunKind.JOB)
-    return run.patch(
-        validate_run_patch(
-            {"container": container},
-            run.kind,
-            replica_types=(
-                run.get_replica_types() if hasattr(run, "get_replica_types") else None
-            ),
-        ),
-        strategy=strategy,
-    )
+    return run.patch(_get_main_container_patch(run, container), strategy=strategy)
+
+
+def _get_targeted_containers(
+    run, patch, path: Tuple = ()
+) -> List[Tuple[Tuple, k8s_schemas.V1Container]]:
+    """Concrete main containers at the roles a native patch sets, by role path."""
+    if patch is None:
+        return []
+    if "container" in type(run).model_fields:
+        container = run.container
+        if getattr(patch, "container", None) is None or not isinstance(
+            container, k8s_schemas.V1Container
+        ):
+            return []
+        return [(path, container)]
+    results = []
+    for field in type(run).model_fields:
+        value = getattr(run, field)
+        patch_value = getattr(patch, field, None)
+        # Ray workers are a mapping of replicas; other runtimes use one field per role.
+        if isinstance(value, Mapping) and isinstance(patch_value, Mapping):
+            for key, replica in value.items():
+                if isinstance(replica, BaseSchemaModel):
+                    results += _get_targeted_containers(
+                        replica, patch_value.get(key), (*path, field, key)
+                    )
+        elif isinstance(value, BaseSchemaModel):
+            results += _get_targeted_containers(value, patch_value, (*path, field))
+    return results
+
+
+def _patch_and_merge_main_container(
+    run, container, strategy: PatchStrategy, field: str, merge: Callable
+):
+    """Patch natively, then set `field` per targeted role from its own snapshot.
+
+    Native merging is kept for validation, targeting, and container creation;
+    `merge(original, current)` decides the final value of each targeted role.
+    """
+    patch = _get_main_container_patch(run, container)
+    originals = {
+        path: deepcopy(getattr(target, field))
+        for path, target in _get_targeted_containers(run, patch)
+    }
+    run = run.patch(patch, strategy=strategy)
+    for path, target in _get_targeted_containers(run, patch):
+        setattr(target, field, merge(originals.get(path), getattr(target, field)))
+    return run
 
 
 def _get_main_containers(run) -> List[k8s_schemas.V1Container]:
@@ -280,29 +329,31 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             entries = [
                 {"name": name, "value": value} for name, value in self.env.items()
             ]
-            # Native list merging drops incoming entries equal to an existing one,
-            # which loses their position, so merges are computed from each original
-            # list. Deferred values such as "{{ env_vars }}" stay native.
-            originals = []
-            if run is not None and strategy in (
+            if run is None or strategy not in (
                 PatchStrategy.POST_MERGE,
                 PatchStrategy.PRE_MERGE,
             ):
-                originals = [
-                    (container, list(container.env))
-                    for container in _get_main_containers(run)
-                    if isinstance(container.env, list)
-                ]
-            run = _patch_main_container(run, {"env": entries}, strategy)
-            for container, original in originals:
-                incoming = [
-                    k8s_schemas.V1EnvVar(name=name, value=value)
-                    for name, value in self.env.items()
-                ]
-                container.env = _dedupe_env(
-                    original + incoming
-                    if strategy == PatchStrategy.POST_MERGE
-                    else incoming + original
+                run = _patch_main_container(run, {"env": entries}, strategy)
+            else:
+                # Native list merging drops incoming entries equal to an existing
+                # one, losing their position, so each merge starts from the original.
+                def merge_env(original, current):
+                    if original is not None and not isinstance(original, list):
+                        # Deferred values such as "{{ env_vars }}" stay native.
+                        return current
+                    incoming = [
+                        k8s_schemas.V1EnvVar(name=name, value=value)
+                        for name, value in self.env.items()
+                    ]
+                    original = original or []
+                    return _dedupe_env(
+                        original + incoming
+                        if strategy == PatchStrategy.POST_MERGE
+                        else incoming + original
+                    )
+
+                run = _patch_and_merge_main_container(
+                    run, {"env": entries}, strategy, "env", merge_env
                 )
         return run
 
