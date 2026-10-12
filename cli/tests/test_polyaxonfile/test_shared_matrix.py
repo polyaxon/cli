@@ -173,7 +173,8 @@ class TestSharedMatrix(BaseTestCase):
                     "queue": "old/queue",
                     "namespace": "old",
                     "strictParams": True,
-                    "run": {"kind": "job", "container": {"image": "source:v1"}},
+                    "run": {"kind": "service", "container": {"image": "source:v1"}},
+                    "ports": [8080],
                     "container": {"image": "root:v1"},
                     "cmd": "echo root",
                     "env": {"A": "root"},
@@ -221,6 +222,7 @@ class TestSharedMatrix(BaseTestCase):
                         "cmd",
                         "env",
                         "resources",
+                        "ports",
                         "run_patch",
                     ):
                         assert getattr(current, field) is None

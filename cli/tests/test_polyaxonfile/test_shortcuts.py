@@ -1,13 +1,16 @@
 from copy import deepcopy
 from itertools import product
+import os
 import pytest
 import re
 import subprocess
+import tempfile
 
 from kubernetes.utils import parse_quantity
 
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
+from clipped.utils.json import orjson_dumps
 from clipped.utils.units import to_cpu_value, to_memory_bytes
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile, _dedupe_env
 from polyaxon._k8s import k8s_schemas
@@ -15,11 +18,13 @@ from polyaxon._k8s.converter.common.accelerators import requests_gpu
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,
+    check_polyaxonfile,
     get_specification,
     patch_polyaxonfile,
     read_polyaxonfile,
 )
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon.exceptions import PolyaxonfileError
 
 
 SECRET = {"secretKeyRef": {"name": "secrets", "key": "token"}}
@@ -1234,3 +1239,149 @@ class TestShortcuts(BaseTestCase):
             "requests": {"cpu": "2"},
             "limits": {"cpu": "4"},
         }
+
+    def test_ports_compile_like_a_native_service(self):
+        container = {"image": "busybox:1.36", "command": ["httpd"]}
+        for ports, kind in (([8080, 9090], "service"), ([], "service"), (None, "job")):
+            with self.subTest(ports=ports):
+                authored = read_polyaxonfile({"container": container, "ports": ports})
+                before = authored.to_dict()
+                native = {"kind": kind, "container": container}
+                if ports is not None:
+                    native["ports"] = ports
+                expected = _compile({"run": native}).run
+
+                assert OperationSpecification.compile_operation(authored).run == (
+                    expected
+                )
+                assert authored.to_dict() == before
+                saved = read_polyaxonfile(authored.to_source_json())
+                assert saved.to_dict() == before
+                assert "run" not in saved.model_fields_set
+        # Duplicates are kept, like native run.ports.
+        compiled = _compile({"container": container, "ports": [8080, 8080]})
+        assert compiled.run.ports == [8080, 8080]
+
+    def test_ports_reject_non_integer_lists(self):
+        for ports in (8080, "8080", ["8080"], [True], [8080.0], {"http": 8080}):
+            with self.subTest(ports=ports), self.assertRaises(ValidationError):
+                V1Polyaxonfile.from_dict({"ports": ports})
+
+    def test_ports_keep_the_inherited_runtime_kind(self):
+        service = {
+            "run": {
+                "kind": "service",
+                "ports": [8080],
+                "container": {"image": "base:v1"},
+            }
+        }
+        compiled = _compile({"ports": [9090], "component": service})
+        assert compiled.run.kind == "service"
+        assert compiled.run.ports == [8080, 9090]
+        assert compiled.run.container.image == "base:v1"
+
+        job = {"kind": "job", "container": {"image": "base:v1"}}
+        replica = {"replicas": 1, "container": {"image": "base:v1"}}
+        sources = [
+            # A container-only inner layer already resolved to a job.
+            {"ports": [8080], "component": {"container": {"image": "base:v1"}}}
+        ]
+        for run in (
+            job,
+            {"kind": "pytorchjob", "master": replica, "worker": replica},
+            {
+                "kind": "dag",
+                "operations": [{"name": "first", "dagRef": "task"}],
+                "components": [{"name": "task", "run": job}],
+            },
+        ):
+            sources.append({"run": run, "ports": [8080]})
+            sources.append({"ports": [8080], "component": {"run": run}})
+        for source in sources:
+            with self.subTest(source=source), self.assertRaises(ValidationError):
+                _compile(source)
+
+    def test_ports_merge_natively_per_strategy(self):
+        for strategy, same_layer, with_patch in (
+            (PatchStrategy.POST_MERGE, [80, 8080, 9090], [80, 8080, 9090, 7070]),
+            (PatchStrategy.PRE_MERGE, [8080, 9090, 80], [7070, 8080, 9090, 80]),
+            (PatchStrategy.REPLACE, [8080, 9090], [7070]),
+            (PatchStrategy.ISNULL, [80, 8080], [80, 8080]),
+        ):
+            with self.subTest(strategy=strategy):
+                layer = {
+                    "patchStrategy": strategy,
+                    "run": {"kind": "service", "ports": [80, 8080]},
+                    "ports": [8080, 9090],
+                }
+                assert _compile(layer).run.ports == same_layer
+                inherited = {
+                    "patchStrategy": strategy,
+                    "ports": [8080, 9090],
+                    "component": {"run": {"kind": "service", "ports": [80, 8080]}},
+                }
+                assert _compile(inherited).run.ports == same_layer
+                # Explicit runPatch applies after the root shortcut.
+                patched = {**layer, "runPatch": {"ports": [7070]}}
+                assert _compile(patched).run.ports == with_patch
+
+    def test_ports_overlays_and_presets(self):
+        base = {"container": {"image": "busybox:1.36"}, "ports": [8080]}
+        for strategy, expected in (
+            (None, [8080, 9090]),
+            (PatchStrategy.PRE_MERGE, [9090, 8080]),
+            (PatchStrategy.REPLACE, [9090]),
+            (PatchStrategy.ISNULL, [8080]),
+        ):
+            with self.subTest(strategy=strategy):
+                overlay = {"ports": [9090]}
+                if strategy:
+                    overlay["patchStrategy"] = strategy
+                config = patch_polyaxonfile(deepcopy(base), [overlay])
+                assert config.ports == expected
+                replayed = read_polyaxonfile(config.to_source_json())
+                assert replayed.ports == expected
+                compiled = OperationSpecification.compile_operation(replayed)
+                assert compiled.run.kind == "service"
+                assert compiled.run.ports == expected
+
+        # Clearing ports on a shortcut-only source gives a job again.
+        nulled = patch_polyaxonfile(deepcopy(base), [{"ports": None}])
+        assert OperationSpecification.compile_operation(nulled).run.kind == "job"
+
+        service = _compile(base)
+        applied = CompiledOperationSpecification.apply_preset(
+            service, {"ports": [9090]}
+        )
+        assert applied.run.ports == [8080, 9090]
+        job = _compile({"container": {"image": "busybox:1.36"}})
+        with self.assertRaises(ValidationError):
+            CompiledOperationSpecification.apply_preset(job, {"ports": [9090]})
+
+    def test_ports_cli_overlays_depend_on_the_file_kind(self):
+        container = {"image": "busybox:1.36"}
+        with tempfile.TemporaryDirectory() as directory:
+
+            def write(name, content):
+                path = os.path.join(directory, name)
+                with open(path, "w") as f:
+                    f.write(orjson_dumps(content))
+                return path
+
+            overlay = write("ports.json", {"ports": [8080]})
+            kindless = write("kindless.json", {"container": container})
+            component = write(
+                "component.json", {"kind": "component", "container": container}
+            )
+
+            # A kindless file and its overlay form one layer.
+            config = check_polyaxonfile(polyaxonfile=[kindless, overlay], is_cli=False)
+            compiled = OperationSpecification.compile_operation(config)
+            assert compiled.run.kind == "service"
+            assert compiled.run.ports == [8080]
+
+            # A component is wrapped first: its job is inherited by the overlay.
+            with self.assertRaises(PolyaxonfileError) as error:
+                check_polyaxonfile(polyaxonfile=[component, overlay], is_cli=False)
+            assert isinstance(error.exception.__cause__, ValidationError)
+            assert "ports" in str(error.exception.__cause__)

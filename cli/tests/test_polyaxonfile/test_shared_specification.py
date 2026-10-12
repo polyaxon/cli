@@ -590,6 +590,7 @@ class TestSharedSpecification(BaseTestCase):
                 {"cmd": 1},
                 {"env": {"RETRIES": 3}},
                 {"resources": {"cpu": True}},
+                {"ports": [True]},
                 {"contexts": []},
             ):
                 with (

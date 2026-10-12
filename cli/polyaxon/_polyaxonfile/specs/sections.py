@@ -29,6 +29,7 @@ class Sections:
     CMD = "cmd"
     ENV = "env"
     RESOURCES = "resources"
+    PORTS = "ports"
     RUN_PATCH = "runPatch"
     MATRIX = "matrix"
     JOINS = "joins"
@@ -90,6 +91,7 @@ class Sections:
         CMD,
         ENV,
         RESOURCES,
+        PORTS,
         RUN_PATCH,
         MOUNT,
     )

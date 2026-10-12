@@ -236,6 +236,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     inputs: Optional[List[V1IO]] = None
     outputs: Optional[List[V1IO]] = None
     run: Optional[Union[V1Runtime, Dict]] = None
+    ports: Optional[List[StrictInt]] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
     cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
     env: Optional[Dict[StrictStr, StrictStr]] = None
@@ -390,11 +391,18 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         return orjson_dumps(self.to_component_state_dict())
 
     def apply_shortcuts(self, run, strategy: Optional[PatchStrategy] = None):
-        """Apply root shortcuts to the main container(s) in field-table order.
+        """Apply root shortcuts to the runtime in field-table order.
 
-        Without a runtime, the first shortcut creates a job.
+        Without a runtime, `ports` creates a service; otherwise the first
+        container shortcut creates a job.
         """
         strategy = strategy or PatchStrategy.POST_MERGE
+        if self.ports is not None:
+            # First: ports is the only shortcut that can choose the runtime.
+            patch = validate_run_patch(
+                {"ports": self.ports}, run.kind if run else V1RunKind.SERVICE
+            )
+            run = patch if run is None else run.patch(patch, strategy=strategy)
         if "container" in self.model_fields_set:
             run = _patch_main_container(run, self.container, strategy)
         if self.cmd:

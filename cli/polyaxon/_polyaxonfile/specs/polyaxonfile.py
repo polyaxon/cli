@@ -165,6 +165,7 @@ def compose_polyaxonfile(
         "cmd",
         "env",
         "resources",
+        "ports",
         "run_patch",
         "strict_params",
         "version",
