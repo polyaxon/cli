@@ -109,3 +109,19 @@ def parse_env(env: List[str], is_cli: bool = True) -> Dict[str, str]:
         parsed_env[name] = env_value
 
     return parsed_env
+
+
+def parse_ports(ports: List[str], is_cli: bool = True) -> List[int]:
+    parsed_ports = []
+    for value in ports:
+        for port in value.split(","):
+            port = port.strip()
+            if not (port.isascii() and port.isdigit()):
+                message = f"Invalid port '{port}' in '{value}'; use --ports 80,443."
+                if is_cli:
+                    Printer.error(message, sys_exit=True)
+                else:
+                    raise PolyaxonfileError(message)
+            parsed_ports.append(int(port))
+
+    return parsed_ports

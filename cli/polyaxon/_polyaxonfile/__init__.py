@@ -10,7 +10,12 @@ from polyaxon._polyaxonfile.manager import (
     get_ops_from_suggestions,
     patch_polyaxonfile,
 )
-from polyaxon._polyaxonfile.params import parse_env, parse_hparams, parse_params
+from polyaxon._polyaxonfile.params import (
+    parse_env,
+    parse_hparams,
+    parse_params,
+    parse_ports,
+)
 from polyaxon._polyaxonfile.shortcuts import get_shortcuts
 from polyaxon._polyaxonfile.specs import (
     BaseSpecification,

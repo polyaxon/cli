@@ -321,11 +321,13 @@ def _run(
 )
 @click.option(
     "--port",
+    "--ports",
     "ports",
     multiple=True,
-    type=int,
-    help="A port to expose, shortcut for `ports`; a run without a runtime "
-    "becomes a service. Can be specified multiple times.",
+    type=str,
+    help="Ports to expose, shortcut for `ports`; a run without a runtime "
+    "becomes a service. Comma-separated values, can be specified multiple times, "
+    "e.g. `--ports 80,443`.",
 )
 @click.option(
     "--sandbox",
@@ -671,7 +673,12 @@ def run(
     from clipped.utils.validation import validate_tags
     from polyaxon._cli.context import resolve_project
     from polyaxon._managers.git import GitConfigManager
-    from polyaxon._polyaxonfile import check_polyaxonfile, get_shortcuts, parse_env
+    from polyaxon._polyaxonfile import (
+        check_polyaxonfile,
+        get_shortcuts,
+        parse_env,
+        parse_ports,
+    )
 
     ctx.obj = ctx.obj or {}
 
@@ -704,7 +711,7 @@ def run(
         cpu=cpu,
         memory=memory,
         gpu=gpu,
-        ports=list(ports) or None,
+        ports=parse_ports(ports) if ports else None,
     )
 
     git_init = None

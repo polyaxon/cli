@@ -1003,6 +1003,19 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         assert compiled.run.ports == [81, 80]
         assert compiled.run.container.args == ["set -e\nb\na"]
 
+    def test_ports_accept_comma_separated_values(self):
+        op_spec = self.get_op_spec(
+            "--image", "nginx:1.27", "--port", "80", "--ports", "9999,8888"
+        )
+
+        assert op_spec.ports == [80, 9999, 8888]
+        assert _compile(op_spec).run.ports == [80, 9999, 8888]
+        for value in ("80,abc", "80,"):
+            with self.subTest(value=value):
+                self.assert_rejected(
+                    "invalid port", "--image", "nginx:1.27", "--ports", value
+                )
+
     def test_image_replaces_the_default_polyaxonfile(self):
         with self.runner.isolated_filesystem():
             # Unreadable on purpose: `--image` must not read it.
