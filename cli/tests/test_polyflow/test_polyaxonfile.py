@@ -2,6 +2,7 @@ from copy import deepcopy
 import pytest
 
 from clipped.compact.pydantic import ValidationError
+from clipped.config.patch_strategy import PatchStrategy
 from polyaxon import schemas
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.operation import V1Operation
@@ -212,6 +213,58 @@ class TestPolyaxonfile(BaseTestCase):
         assert isinstance(config.run, schemas.V1Service)
         assert config.run_patch == {"ports": [8080]}
         assert config.to_dict() == source
+
+    def test_run_patch_patches_existing_sidecar_and_volume_lists(self):
+        def names(items):
+            return None if items is None else [item.name for item in items]
+
+        sidecar = {"name": "a", "image": "busybox:1.36"}
+        volume = {"name": "a", "emptyDir": {}}
+        role = {
+            "container": {"image": "base:v1"},
+            "sidecars": [sidecar],
+            "volumes": [volume],
+        }
+        replica = {"replicas": 1, **role}
+        added = {
+            "sidecars": [{**sidecar, "name": "b"}],
+            "volumes": [{**volume, "name": "b"}],
+        }
+        cleared = {"sidecars": None, "volumes": None}
+        for strategy, with_added, with_cleared in (
+            (PatchStrategy.POST_MERGE, ["a", "b"], None),
+            (PatchStrategy.PRE_MERGE, ["b", "a"], ["a"]),
+            (PatchStrategy.REPLACE, ["b"], None),
+            (PatchStrategy.ISNULL, ["a"], ["a"]),
+        ):
+            for run in (
+                {"kind": "job", **role},
+                {"kind": "pytorchjob", "master": replica, "worker": replica},
+            ):
+                for run_patch, expected in (
+                    (added, with_added),
+                    (cleared, with_cleared),
+                ):
+                    with self.subTest(
+                        strategy=strategy, kind=run["kind"], run_patch=run_patch
+                    ):
+                        compiled = OperationSpecification.compile_operation(
+                            V1Polyaxonfile.from_dict(
+                                {
+                                    "patchStrategy": strategy,
+                                    "runPatch": deepcopy(run_patch),
+                                    "component": {"run": deepcopy(run)},
+                                }
+                            )
+                        )
+                        roles = (
+                            [compiled.run]
+                            if run["kind"] == "job"
+                            else [compiled.run.master, compiled.run.worker]
+                        )
+                        for compiled_role in roles:
+                            assert names(compiled_role.sidecars) == expected
+                            assert names(compiled_role.volumes) == expected
 
     def test_native_runtime_types_and_serialization(self):
         job = {
