@@ -9,7 +9,9 @@ from polyaxon._env_vars.getters.queue import get_queue_info
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.matrix.enums import V1MatrixKind
 from polyaxon._flow.matrix.matrix import V1Matrix
+from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.operations.operation import V1Operation
+from polyaxon._flow.plugins import V1Plugins
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._polyaxonfile.references import collect_dag_components
@@ -44,6 +46,29 @@ def patch_polyaxonfile(
     return config
 
 
+def _check_literal_plugins(config: V1Polyaxonfile):
+    # A sandbox override would replace a reference and drop the plugins it holds.
+    layer = config
+    while layer is not None:
+        if isinstance(layer.plugins, str):
+            raise PolyaxonfileError(
+                "Sandbox runs need literal plugins; `plugins` is a reference."
+            )
+        layer = layer.component
+
+
+def _check_sandbox(compiled: V1CompiledOperation):
+    # validate_sandbox_kind already rejects runtimes that are not services.
+    plugins = compiled.plugins
+    if not isinstance(plugins, V1Plugins) or plugins.sandbox is not True:
+        raise PolyaxonfileError(
+            "Sandbox was requested, but the composed specification "
+            "disables plugins.sandbox."
+        )
+    if compiled.matrix is not None:
+        raise PolyaxonfileError("Sandbox runs do not support matrix.")
+
+
 def get_op_specification(
     config: Optional[V1Polyaxonfile] = None,
     hub: Optional[str] = None,
@@ -63,6 +88,7 @@ def get_op_specification(
     preset_files: Optional[List[str]] = None,
     git_init: Optional[V1Init] = None,
     strict_params: Optional[bool] = None,
+    sandbox: bool = False,
 ) -> V1Operation:
     if cache and nocache:
         raise PolyaxonfileError("Received both 'cache' and 'nocache'")
@@ -134,13 +160,21 @@ def get_op_specification(
             run_patch={"init": [git_init.to_dict()]}, is_preset=True
         )
         config = config.patch(git_preset, strategy=PatchStrategy.PRE_MERGE)
+    if sandbox:
+        _check_literal_plugins(config)
+        # Like the git preset, the request applies after the files.
+        sandbox_preset = V1Operation(plugins=V1Plugins(sandbox=True), is_preset=True)
+        config = config.patch(sandbox_preset, strategy=PatchStrategy.POST_MERGE)
 
     # Sanity check if params were passed and we are not dealing with a hub component
-    if validate_params:
+    if validate_params or sandbox:
         run_config, params = OperationSpecification.compile_operation_with_params(
             config
         )
-        run_config.validate_params(params=params, is_template=False)
-        if run_config.is_dag_run:
-            CompiledOperationSpecification.apply_operation_contexts(run_config)
+        if validate_params:
+            run_config.validate_params(params=params, is_template=False)
+            if run_config.is_dag_run:
+                CompiledOperationSpecification.apply_operation_contexts(run_config)
+        if sandbox:
+            _check_sandbox(run_config)
     return config

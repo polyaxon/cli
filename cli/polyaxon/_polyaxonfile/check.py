@@ -42,6 +42,7 @@ def check_polyaxonfile(
     ignore_template: bool = False,
     strict_params: Optional[bool] = None,
     shortcuts: Optional[Dict] = None,
+    sandbox: bool = False,
 ):
     if sum([1 for i in [python_module, url, hub] if i]) > 1:
         message = (
@@ -56,6 +57,9 @@ def check_polyaxonfile(
         shortcuts or {}
     ):
         polyaxonfile = check_default_path(path=".")
+    # A sandbox without a source is a service; sourced kinds are never converted.
+    if sandbox and not any([polyaxonfile, python_module, url, hub]):
+        shortcuts = {"ports": [], **(shortcuts or {})}
     if not any([polyaxonfile, python_module, url, hub, shortcuts]):
         message = (
             "Something went wrong, `check_polyaxonfile` was called without a polyaxonfile, "
@@ -69,6 +73,12 @@ def check_polyaxonfile(
         message = "Something went wrong, calling hub component `{}` without operation.".format(
             hub
         )
+        if is_cli:
+            Printer.error(message, sys_exit=True)
+        else:
+            raise PolyaxonfileError(message)
+    if sandbox and not to_op:
+        message = "Something went wrong, requesting a sandbox without operation."
         if is_cli:
             Printer.error(message, sys_exit=True)
         else:
@@ -156,6 +166,7 @@ def check_polyaxonfile(
                 preset_files=polyaxonfile,
                 git_init=git_init,
                 strict_params=strict_params,
+                sandbox=sandbox,
             )
         if verbose and is_cli:
             Printer.success("Polyaxonfile valid")

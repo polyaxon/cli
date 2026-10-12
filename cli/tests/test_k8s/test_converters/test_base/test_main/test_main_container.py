@@ -412,6 +412,26 @@ class TestMainContainer(BaseConverterTest):
             SSH_PORT,
         ]
 
+    def test_get_main_container_with_sandbox_requires_main_container(self):
+        with self.assertRaises(PolyaxonConverterError) as ctx:
+            self.converter._get_main_container(
+                container_id="new-name",
+                main_container=None,
+                plugins=self.get_sandbox_plugins(),
+                artifacts_store=None,
+                init=None,
+                connection_by_names=None,
+                connections=None,
+                secrets=None,
+                config_maps=None,
+                kv_env_vars=None,
+                ports=None,
+                run_path=None,
+            )
+        assert "plugins.sandbox/plugins.ssh require a main container" in str(
+            ctx.exception
+        )
+
     def test_get_main_container_with_sandbox_args_only_raises(self):
         with self.assertRaises(PolyaxonConverterError) as ctx:
             self.converter._get_main_container(

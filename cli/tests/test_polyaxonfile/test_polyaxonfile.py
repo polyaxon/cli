@@ -84,6 +84,39 @@ class TestPolyaxonfiles(BaseTestCase):
                 hub="component:12", url="http://foo.bar", is_cli=False, to_op=False
             )
 
+    def test_sandbox_requires_an_operation(self):
+        with self.assertRaises(PolyaxonfileError):
+            check_polyaxonfile(
+                polyaxonfile=os.path.abspath("tests/fixtures/plain/simple_job.yml"),
+                sandbox=True,
+                is_cli=False,
+                to_op=False,
+            )
+
+    def test_sandbox_checks_do_not_depend_on_param_validation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            job = Path(directory) / "job.yaml"
+            job.write_text("run: {kind: job, container: {image: base:v1}}\n")
+            matrix = Path(directory) / "matrix.yaml"
+            matrix.write_text(
+                "inputs: [{name: lr, type: float, isOptional: true, value: 0.1}]\n"
+                "matrix: {kind: grid, params: {lr: {kind: choice, value: [0.1, 0.2]}}}\n"
+                "run: {kind: service, container: {image: base:v1}}\n"
+            )
+            for source, message in (
+                (job, "only supported on kind: service"),
+                (matrix, "do not support matrix"),
+            ):
+                with self.subTest(source=source.name):
+                    with self.assertRaises(PolyaxonfileError) as error:
+                        check_polyaxonfile(
+                            polyaxonfile=str(source),
+                            sandbox=True,
+                            validate_params=False,
+                            is_cli=False,
+                        )
+                    assert message in str(error.exception.__cause__)
+
     def test_wong_hub_call(self):
         with self.assertRaises(PolyaxonfileError):
             check_polyaxonfile(hub="component:12", is_cli=False, to_op=False)

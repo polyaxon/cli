@@ -330,6 +330,41 @@ class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
     @patch("polyaxon._cli.context.resolve_project")
     @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_sandbox_submits_the_authored_plugin(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="sandbox",
+            settings=V1RunSettings(),
+        )
+
+        result = self.runner.invoke(
+            run,
+            ["--project=owner/project", "--sandbox", "--image", "python:3.12"],
+        )
+
+        assert result.exit_code == 0, (result.output, result.exception)
+        create_run.assert_called_once()
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        # Authored intent only: the converter adds the sandbox port and bootstrap.
+        assert submitted == {
+            "container": {"image": "python:3.12"},
+            "ports": [],
+            "plugins": {"sandbox": True},
+        }
+        compiled = OperationSpecification.compile_operation(
+            OperationSpecification.read(submitted)
+        )
+        assert compiled.run.kind == "service"
+        assert compiled.run.ports == []
+        assert compiled.plugins.sandbox is True
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_run_kindless_path_patch_preserves_base_fields_and_param_metadata(
         self, create_run, resolve_project, dashboard, cache
     ):
@@ -1144,3 +1179,126 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
                     "invalid inline options", "--hub", "component:1", *options
                 )
                 read_from_custom_hub.assert_not_called()
+
+    def test_sandbox_inline_service(self):
+        op_spec = self.get_op_spec(
+            "--sandbox", "--image", "python:3.12", "--port", "8080"
+        )
+
+        assert op_spec.ports == [8080]
+        assert op_spec.plugins.sandbox is True
+        compiled = _compile(op_spec)
+        assert compiled.run.kind == "service"
+        assert compiled.run.ports == [8080]
+        assert compiled.plugins.sandbox is True
+
+    def test_sandbox_without_a_source_is_a_service(self):
+        with self.runner.isolated_filesystem():
+            op_spec = self.get_op_spec("--sandbox")
+
+        assert op_spec.ports == []
+        assert op_spec.container is None
+        compiled = _compile(op_spec)
+        assert compiled.run.kind == "service"
+        assert compiled.plugins.sandbox is True
+
+    def test_sandbox_keeps_the_source_and_its_plugins(self):
+        service = (
+            "run: {kind: service, container: {image: base:v1}}\nplugins: {tmux: true}\n"
+        )
+        with self.runner.isolated_filesystem():
+            Path("polyaxonfile.yaml").write_text(service)
+            Path("component.yaml").write_text("kind: component\n" + service)
+            # The discovered file, then a wrapped component.
+            for args in ([], ["-f", "component.yaml"]):
+                with self.subTest(args=args):
+                    op_spec = self.get_op_spec(*args, "--sandbox")
+
+                    # Sourced documents get no service intent.
+                    assert op_spec.ports is None
+                    compiled = _compile(op_spec)
+                    assert compiled.run.kind == "service"
+                    assert compiled.plugins.sandbox is True
+                    assert compiled.plugins.tmux is True
+
+    def test_sandbox_keeps_scheduled_services(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "service.yaml"
+            source.write_text(
+                "run: {kind: service, container: {image: base:v1}}\n"
+                "schedule: {kind: interval, frequency: 60}\n"
+            )
+
+            op_spec = self.get_op_spec("-f", str(source), "--sandbox")
+
+        compiled = _compile(op_spec)
+        assert compiled.schedule.kind == "interval"
+        assert compiled.plugins.sandbox is True
+
+    def test_sandbox_rejections_submit_nothing(self):
+        job = "run: {kind: job, container: {image: base:v1}}\n"
+        service = "run: {kind: service, container: {image: base:v1}}\n"
+        lr = "inputs: [{name: lr, type: float, isOptional: true, value: 0.1}]\n"
+        kind_error = "plugins.sandbox is only supported on kind: service"
+        cases = (
+            ("job", [job], [], kind_error),
+            ("job component", ["kind: component\n" + job], [], kind_error),
+            # The flag applies after the files: a later `sandbox: false` cannot
+            # turn a job into a normal run.
+            (
+                "later file disables",
+                [job, "plugins: {sandbox: false}\n"],
+                [],
+                kind_error,
+            ),
+            (
+                "pre_merge keeps a disabled component",
+                [
+                    "kind: operation\n"
+                    "patchStrategy: pre_merge\n"
+                    "component:\n"
+                    "  plugins: {sandbox: false}\n"
+                    "  run: {kind: service, container: {image: base:v1}}\n"
+                ],
+                [],
+                "disables plugins.sandbox",
+            ),
+            (
+                "plugins reference",
+                [service + "plugins: '{{ params.plugins }}'\n"],
+                [],
+                "need literal plugins",
+            ),
+            (
+                "authored matrix",
+                [
+                    service + lr + "matrix: {kind: grid, params: "
+                    "{lr: {kind: choice, value: [0.1, 0.2]}}}\n"
+                ],
+                [],
+                "do not support matrix",
+            ),
+            (
+                "hparams",
+                [service + lr],
+                ["-HP", "lr=choice:[0.1,0.2]"],
+                "do not support matrix",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for name, contents, options, message in cases:
+                with self.subTest(name):
+                    files = []
+                    for index, content in enumerate(contents):
+                        source = Path(directory) / "{}.yaml".format(index)
+                        source.write_text(content)
+                        files += ["-f", str(source)]
+
+                    self.assert_rejected(message, *files, *options, "--sandbox")
+
+    def test_sandbox_rejects_local_runs_before_reading_sources(self):
+        with self.runner.isolated_filesystem():
+            # Unreadable on purpose: the local check comes first.
+            Path("polyaxonfile.yaml").write_text("run: [unclosed\n")
+
+            self.assert_rejected("sandboxes run on the cluster", "--sandbox", "--local")

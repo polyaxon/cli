@@ -328,6 +328,15 @@ def _run(
     "becomes a service. Can be specified multiple times.",
 )
 @click.option(
+    "--sandbox",
+    is_flag=True,
+    default=False,
+    help="Enable `plugins.sandbox` (exec, filesystem and PTY API) on a service run. "
+    "Without -f/-pm/--url/--hub or a default polyaxonfile, the inline run is a "
+    "service; other kinds and matrix runs are rejected, never converted. "
+    "It does not change which polyaxonfile is read.",
+)
+@click.option(
     *OPTIONS_NAME["args"],
     type=str,
     help="Name to give to this run, must be unique within the project, could be none.",
@@ -550,6 +559,7 @@ def run(
     memory,
     gpu,
     ports,
+    sandbox,
     name,
     tags,
     description,
@@ -619,6 +629,12 @@ def run(
     \b
     $ polyaxon run -f file.yaml --cpu 2 --memory 4Gi
 
+    Start a sandbox service, or enable the sandbox on a service polyaxonfile
+
+    \b
+    $ polyaxon run --sandbox --image python:3.12
+    $ polyaxon run -f service.yaml --sandbox
+
     If a python file contains a component main, you can run that component
 
     \b
@@ -667,6 +683,11 @@ def run(
     if cache and nocache:
         Printer.error(
             "You can't use `--cache` and `--nocache` at the same.", sys_exit=True
+        )
+    if sandbox and local:
+        Printer.error(
+            "You can't use `--sandbox` with `--local`, sandboxes run on the cluster.",
+            sys_exit=True,
         )
     if nocache:
         Printer.error(
@@ -736,6 +757,7 @@ def run(
         git_init=git_init,
         ignore_template=ignore_template,
         shortcuts=shortcuts,
+        sandbox=sandbox,
     )
 
     if ignore_template:
