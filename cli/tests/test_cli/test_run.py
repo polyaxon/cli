@@ -21,6 +21,12 @@ from polyaxon.exceptions import ApiException
 from tests.test_cli.utils import BaseCommandTestCase
 
 
+def _compile(op_spec):
+    return OperationSpecification.compile_operation(
+        OperationSpecification.read(op_spec.to_dict())
+    )
+
+
 @pytest.mark.cli_mark
 class TestCliRun(BaseCommandTestCase):
     @patch("polyaxon._cli.context.resolve_project")
@@ -263,6 +269,62 @@ class TestCliRun(BaseCommandTestCase):
                         "message": {"value": "from-cli"},
                     }
                     assert submitted["presets"] == ["team-defaults"]
+
+    @patch("polyaxon._utils.cache.cache")
+    @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
+    @patch("polyaxon._cli.context.resolve_project")
+    @patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_run_inline_options_submit_the_shortcut_source(
+        self, create_run, resolve_project, dashboard, cache
+    ):
+        resolve_project.return_value = ("owner", None, "project")
+        create_run.return_value = V1Run(
+            uuid="8aac02e3a62a4f0aaa257c59da5eab80",
+            name="inline",
+            settings=V1RunSettings(),
+        )
+
+        result = self.runner.invoke(
+            run,
+            [
+                "--project=owner/project",
+                "--image",
+                "busybox:1.36",
+                "--cmd",
+                'echo "$MESSAGE"',
+                "--env",
+                "MESSAGE=hello",
+                "--cpu",
+                "500m..1",
+                "--memory",
+                "512Mi..1Gi",
+            ],
+        )
+
+        assert result.exit_code == 0, (result.output, result.exception)
+        create_run.assert_called_once()
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        assert submitted == {
+            "container": {"image": "busybox:1.36"},
+            "cmd": ['echo "$MESSAGE"'],
+            "env": {"MESSAGE": "hello"},
+            "resources": {"cpu": "500m..1", "memory": "512Mi..1Gi"},
+        }
+        compiled = OperationSpecification.compile_operation(
+            OperationSpecification.read(submitted)
+        )
+        assert compiled.run.kind == "job"
+        container = compiled.run.container
+        assert container.image == "busybox:1.36"
+        assert container.command == ["/bin/sh", "-c"]
+        assert container.args == ['set -e\necho "$MESSAGE"']
+        assert [(var.name, var.value) for var in container.env] == [
+            ("MESSAGE", "hello")
+        ]
+        assert container.resources == {
+            "requests": {"cpu": "500m", "memory": "512Mi"},
+            "limits": {"cpu": "1", "memory": "1Gi"},
+        }
 
     @patch("polyaxon._utils.cache.cache")
     @patch("polyaxon._cli.dashboard.get_dashboard_url", return_value="run-url")
@@ -832,3 +894,253 @@ class TestCliRun(BaseCommandTestCase):
                         kwargs = client.upload_artifacts_dir.call_args.kwargs
                         assert kwargs["symlink_mode"] == (mode or "skip")
                         assert kwargs["symlink_report_limit"] == 2
+
+
+@pytest.mark.cli_mark
+class TestCliRunInlineOptions(BaseCommandTestCase):
+    def setUp(self):
+        super().setUp()
+        patcher = patch(
+            "polyaxon._cli.context.resolve_project",
+            return_value=("owner", None, "project"),
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        patcher = patch("polyaxon._cli.run._run")
+        self.run_operation = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def invoke(self, *args):
+        self.run_operation.reset_mock()
+        return self.runner.invoke(run, ["--project=owner/project", *args])
+
+    def get_op_spec(self, *args):
+        result = self.invoke(*args)
+        assert result.exit_code == 0, (result.output, result.exception)
+        self.run_operation.assert_called_once()
+        return self.run_operation.call_args.kwargs["op_spec"]
+
+    def assert_rejected(self, message, *args):
+        result = self.invoke(*args)
+        assert result.exit_code == 1, (result.output, result.exception)
+        assert message in " ".join(result.output.lower().split())
+        self.run_operation.assert_not_called()
+
+    def test_without_inline_options_no_shortcuts_are_added(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yaml"
+            source.write_text("run: {kind: job, container: {image: base:v1}}\n")
+
+            op_spec = self.get_op_spec("-f", str(source))
+
+        for field in ("container", "cmd", "env", "resources", "ports"):
+            assert getattr(op_spec, field) is None, field
+        assert _compile(op_spec).run.kind == "job"
+
+    def test_image_only_keeps_the_image_command(self):
+        op_spec = self.get_op_spec("--image", "busybox:1.36")
+
+        assert op_spec.run is None
+        compiled = _compile(op_spec)
+        assert compiled.run.kind == "job"
+        assert compiled.run.container.image == "busybox:1.36"
+        assert compiled.run.container.command is None
+        assert compiled.run.container.args is None
+
+    def test_repeated_options_keep_their_order(self):
+        op_spec = self.get_op_spec(
+            "--image",
+            "nginx:1.27",
+            "--cmd",
+            "b",
+            "--cmd",
+            "a",
+            "--port",
+            "81",
+            "--port",
+            "80",
+        )
+
+        assert op_spec.cmd == ["b", "a"]
+        assert op_spec.ports == [81, 80]
+        compiled = _compile(op_spec)
+        assert compiled.run.kind == "service"
+        assert compiled.run.ports == [81, 80]
+        assert compiled.run.container.args == ["set -e\nb\na"]
+
+    def test_image_replaces_the_default_polyaxonfile(self):
+        with self.runner.isolated_filesystem():
+            # Unreadable on purpose: `--image` must not read it.
+            Path("polyaxonfile.yaml").write_text("run: [unclosed\n")
+
+            op_spec = self.get_op_spec("--image", "busybox:1.36")
+
+        assert op_spec.run is None
+        assert op_spec.container.image == "busybox:1.36"
+
+    def test_other_options_overlay_the_default_polyaxonfile(self):
+        with self.runner.isolated_filesystem():
+            Path("polyaxonfile.yaml").write_text(
+                "run: {kind: job, container: {image: base:v1}}\n"
+            )
+
+            op_spec = self.get_op_spec("--cpu", "2")
+            assert op_spec.run.container.image == "base:v1"
+            assert op_spec.resources == {"cpu": "2"}
+
+            op_spec = self.get_op_spec("-P", "extra=1")
+            assert op_spec.run.container.image == "base:v1"
+            assert op_spec.resources is None
+
+        with self.runner.isolated_filesystem():
+            op_spec = self.get_op_spec("--cmd", "echo hi")
+
+        assert op_spec.run is None
+        assert op_spec.cmd == ["echo hi"]
+
+    def test_options_apply_after_the_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory) / "base.yaml"
+            base.write_text(
+                "run: {kind: job, container: {image: base:v1}}\n"
+                "cmd: [train]\n"
+                "env: {A: base, B: base}\n"
+                "resources: {cpu: 1, memory: 1Gi}\n"
+            )
+            override = Path(directory) / "override.yaml"
+            override.write_text(
+                "cmd: [tune]\nenv: {B: override}\nresources: {cpu: 2}\n"
+            )
+
+            op_spec = self.get_op_spec(
+                "-f",
+                str(base),
+                "-f",
+                str(override),
+                "--image",
+                "flag:v1",
+                "--cmd",
+                "evaluate",
+                "--env",
+                "A=flag",
+                "--cpu",
+                "3",
+            )
+
+        assert op_spec.cmd == ["evaluate"]
+        assert op_spec.env == {"A": "flag", "B": "override"}
+        assert op_spec.resources == {"cpu": "3", "memory": "1Gi"}
+        container = _compile(op_spec).run.container
+        assert container.image == "flag:v1"
+        assert container.args == ["set -e\nevaluate"]
+
+    def test_partial_options_override_only_their_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yaml"
+            source.write_text(
+                "run: {kind: job, container: {image: base:v1, command: [train]}}\n"
+            )
+
+            op_spec = self.get_op_spec("-f", str(source), "--env", "A=1")
+
+        assert op_spec.env == {"A": "1"}
+        assert op_spec.container is None
+        container = _compile(op_spec).run.container
+        assert container.image == "base:v1"
+        assert container.command == ["train"]
+        assert [(var.name, var.value) for var in container.env] == [("A", "1")]
+
+    def test_options_follow_the_receiving_layer(self):
+        job = "run: {kind: job, container: {image: base:v1}}\n"
+        patch_image = "runPatch: {container: {image: patch:v1}}\n"
+        cases = (
+            # The layer's own runPatch applies after its shortcuts.
+            ("same-layer runPatch", [job + patch_image], "patch:v1"),
+            ("pre_merge layer", [job + "patchStrategy: pre_merge\n"], "base:v1"),
+            ("post_merge layer", [job + "patchStrategy: post_merge\n"], "flag:v1"),
+            ("wrapped component", ["kind: component\n" + job], "flag:v1"),
+            ("later runPatch", ["kind: component\n" + job, patch_image], "patch:v1"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for name, contents, image in cases:
+                with self.subTest(name):
+                    files = []
+                    for index, content in enumerate(contents):
+                        source = Path(directory) / "{}.yaml".format(index)
+                        source.write_text(content)
+                        files += ["-f", str(source)]
+
+                    op_spec = self.get_op_spec(*files, "--image", "flag:v1")
+
+                    assert _compile(op_spec).run.container.image == image
+
+    @patch("polyaxon._config.spec.ConfigSpec.read_from_url")
+    @patch("polyaxon._config.spec.ConfigSpec.read_from_custom_hub")
+    def test_options_overlay_hub_url_and_python_sources(
+        self, read_from_custom_hub, read_from_url
+    ):
+        read_from_custom_hub.return_value = {
+            "kind": "component",
+            "run": {"kind": "job", "container": {"image": "base:v1"}},
+        }
+        op_spec = self.get_op_spec("--hub", "component:1", "--image", "flag:v1")
+        assert op_spec.kind == "operation"
+        assert op_spec.component.run.container.image == "base:v1"
+        assert _compile(op_spec).run.container.image == "flag:v1"
+
+        # Not wrapped: the kindless document's own runPatch still applies last.
+        read_from_url.return_value = {
+            "run": {"kind": "job", "container": {"image": "base:v1"}},
+            "runPatch": {"container": {"image": "patch:v1"}},
+        }
+        op_spec = self.get_op_spec(
+            "--url", "https://example.com/job.yml", "--image", "flag:v1"
+        )
+        assert op_spec.kind is None
+        assert op_spec.container.image == "flag:v1"
+        assert _compile(op_spec).run.container.image == "patch:v1"
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "component.py"
+            source.write_text(
+                "from polyaxon.schemas import V1Component, V1Job\n"
+                "from polyaxon._k8s.k8s_schemas import V1Container\n"
+                "component = V1Component(\n"
+                "    run=V1Job(container=V1Container(image='base:v1')),\n"
+                ")\n"
+            )
+            op_spec = self.get_op_spec(
+                "-pm", "{}:component".format(source), "--image", "flag:v1"
+            )
+        assert op_spec.kind == "operation"
+        assert _compile(op_spec).run.container.image == "flag:v1"
+
+    def test_env_values_and_errors(self):
+        op_spec = self.get_op_spec(
+            "--image", "busybox:1.36", "--env", "TOKEN=a=b", "--env", "EMPTY="
+        )
+        assert op_spec.env == {"TOKEN": "a=b", "EMPTY": ""}
+
+        for value in ("A", "=x"):
+            with self.subTest(value=value):
+                self.assert_rejected(
+                    "invalid format for --env", "--image", "x", "--env", value
+                )
+        self.assert_rejected(
+            "repeated env variable: 'a'",
+            "--image",
+            "x",
+            "--env",
+            "A=1",
+            "--env",
+            "A=2",
+        )
+
+    @patch("polyaxon._config.spec.ConfigSpec.read_from_custom_hub")
+    def test_invalid_options_load_and_submit_nothing(self, read_from_custom_hub):
+        for options in (["--cpu", "2..1"], ["--gpu", "x"], ["--cmd", ""]):
+            with self.subTest(options=options):
+                self.assert_rejected(
+                    "invalid inline options", "--hub", "component:1", *options
+                )
+                read_from_custom_hub.assert_not_called()

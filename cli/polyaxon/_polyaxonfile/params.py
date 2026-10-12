@@ -88,3 +88,24 @@ def parse_hparams(hparams: Union[List[str], Dict], is_cli: bool = True):
         parsed_params[name] = {"kind": kind, "value": value}
 
     return parsed_params
+
+
+def parse_env(env: List[str], is_cli: bool = True) -> Dict[str, str]:
+    parsed_env = {}
+    for value in env:
+        name, separator, env_value = value.partition("=")
+        if not separator or not name:
+            message = "Invalid format for --env: '%s'. Use --env NAME=value." % value
+            if is_cli:
+                Printer.error(message, sys_exit=True)
+            else:
+                raise PolyaxonfileError(message)
+        if name in parsed_env:
+            message = "Repeated env variable: '%s'" % name
+            if is_cli:
+                Printer.error(message, sys_exit=True)
+            else:
+                raise PolyaxonfileError(message)
+        parsed_env[name] = env_value
+
+    return parsed_env

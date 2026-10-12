@@ -281,6 +281,53 @@ def _run(
     help="The Component Hub name containing the polyaxonfile to run.",
 )
 @click.option(
+    "--image",
+    type=str,
+    help="The image to run, shortcut for `container: {image: ...}`. "
+    "Without -f/-pm/--url/--hub, the run is defined inline and the default "
+    "polyaxonfile is not read; use `-f polyaxonfile.yaml --image ...` to change "
+    "its image. Inline options apply after the files.",
+)
+@click.option(
+    "--cmd",
+    multiple=True,
+    type=str,
+    help="A shell line to run, shortcut for `cmd`. Can be specified multiple times; "
+    "the lines run as one /bin/sh script with `set -e`.",
+)
+@click.option(
+    "--env",
+    metavar="NAME=VALUE",
+    multiple=True,
+    help="An environment variable of the main container, shortcut for `env`. "
+    "Can be specified multiple times.",
+)
+@click.option(
+    "--cpu",
+    type=str,
+    help="CPU request, or request..limit, shortcut for `resources.cpu`, "
+    "e.g. `500m..1`.",
+)
+@click.option(
+    "--memory",
+    type=str,
+    help="Memory request, or request..limit, shortcut for `resources.memory`, "
+    "e.g. `512Mi..1Gi`.",
+)
+@click.option(
+    "--gpu",
+    type=str,
+    help="GPU count, or request..limit, shortcut for `resources.gpu`, e.g. `1`.",
+)
+@click.option(
+    "--port",
+    "ports",
+    multiple=True,
+    type=int,
+    help="A port to expose, shortcut for `ports`; a run without a runtime "
+    "becomes a service. Can be specified multiple times.",
+)
+@click.option(
     *OPTIONS_NAME["args"],
     type=str,
     help="Name to give to this run, must be unique within the project, could be none.",
@@ -496,6 +543,13 @@ def run(
     python_module,
     url,
     hub,
+    image,
+    cmd,
+    env,
+    cpu,
+    memory,
+    gpu,
+    ports,
     name,
     tags,
     description,
@@ -555,6 +609,16 @@ def run(
     \b
     $ polyaxon run -p project1 -f file.yaml -P param1=234.2 -P param2=relu
 
+    Run an image without a polyaxonfile
+
+    \b
+    $ polyaxon run --image busybox:1.36 --cmd 'echo "$MESSAGE"' --env MESSAGE=hello --cpu 500m..1 --memory 512Mi..1Gi
+
+    Change the resources of a polyaxonfile, inline options apply after the files
+
+    \b
+    $ polyaxon run -f file.yaml --cpu 2 --memory 4Gi
+
     If a python file contains a component main, you can run that component
 
     \b
@@ -591,7 +655,7 @@ def run(
     from clipped.utils.validation import validate_tags
     from polyaxon._cli.context import resolve_project
     from polyaxon._managers.git import GitConfigManager
-    from polyaxon._polyaxonfile import check_polyaxonfile
+    from polyaxon._polyaxonfile import check_polyaxonfile, get_shortcuts, parse_env
 
     ctx.obj = ctx.obj or {}
 
@@ -611,6 +675,16 @@ def run(
         )
     if (upload_to or upload_from) and not upload:
         upload = True
+    # Click passes omitted repeatable options as empty tuples: not empty shortcuts.
+    shortcuts = get_shortcuts(
+        image=image,
+        cmd=list(cmd) or None,
+        env=parse_env(env) if env else None,
+        cpu=cpu,
+        memory=memory,
+        gpu=gpu,
+        ports=list(ports) or None,
+    )
 
     git_init = None
     if git_preset or git_revision:
@@ -661,6 +735,7 @@ def run(
         verbose=False,
         git_init=git_init,
         ignore_template=ignore_template,
+        shortcuts=shortcuts,
     )
 
     if ignore_template:

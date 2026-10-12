@@ -19,6 +19,7 @@ from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,
     check_polyaxonfile,
+    get_shortcuts,
     get_specification,
     patch_polyaxonfile,
     read_polyaxonfile,
@@ -1597,3 +1598,21 @@ class TestShortcuts(BaseTestCase):
             CompiledOperationSpecification.apply_preset(
                 dag, {"init": NEW_RUNTIME["init"]}
             )
+
+    def test_get_shortcuts_omits_only_none(self):
+        assert get_shortcuts() is None
+        # Empty and zero values are authored values; the model validates them.
+        assert get_shortcuts(image="", cmd=[], env={}, cpu=0, gpu=0, ports=[]) == {
+            "container": {"image": ""},
+            "cmd": [],
+            "env": {},
+            "resources": {"cpu": 0, "gpu": 0},
+            "ports": [],
+        }
+
+    def test_get_shortcuts_keeps_values_as_given(self):
+        assert get_shortcuts(cmd="echo hello") == {"cmd": "echo hello"}
+        assert get_shortcuts(cmd=["a", "b"], memory="512Mi..1Gi") == {
+            "cmd": ["a", "b"],
+            "resources": {"memory": "512Mi..1Gi"},
+        }

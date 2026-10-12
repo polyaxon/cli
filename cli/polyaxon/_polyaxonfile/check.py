@@ -13,7 +13,7 @@ from polyaxon._polyaxonfile.params import parse_hparams, parse_params
 from polyaxon._polyaxonfile.references import (
     collect_references,
 )
-from polyaxon._polyaxonfile.specs import get_specification
+from polyaxon._polyaxonfile.specs import get_specification, read_polyaxonfile
 from polyaxon.exceptions import PolyaxonfileError
 
 
@@ -41,6 +41,7 @@ def check_polyaxonfile(
     git_init: Optional[V1Init] = None,
     ignore_template: bool = False,
     strict_params: Optional[bool] = None,
+    shortcuts: Optional[Dict] = None,
 ):
     if sum([1 for i in [python_module, url, hub] if i]) > 1:
         message = (
@@ -50,9 +51,12 @@ def check_polyaxonfile(
             Printer.error(message, sys_exit=True)
         else:
             raise PolyaxonfileError(message)
-    if not any([polyaxonfile, python_module, url, hub]):
+    # An inline container defines the run, so the default polyaxonfile is not read.
+    if not any([polyaxonfile, python_module, url, hub]) and "container" not in (
+        shortcuts or {}
+    ):
         polyaxonfile = check_default_path(path=".")
-    if not any([polyaxonfile, python_module, url, hub]):
+    if not any([polyaxonfile, python_module, url, hub, shortcuts]):
         message = (
             "Something went wrong, `check_polyaxonfile` was called without a polyaxonfile, "
             "a hub component reference, a url or a python module."
@@ -69,6 +73,16 @@ def check_polyaxonfile(
             Printer.error(message, sys_exit=True)
         else:
             raise PolyaxonfileError(message)
+    if shortcuts:
+        # Validate inline shortcuts as an overlay before reading or fetching any source.
+        try:
+            read_polyaxonfile(shortcuts, is_preset=True)
+        except Exception as e:
+            message = "Invalid inline options."
+            if is_cli:
+                handle_cli_error(e, message=message, sys_exit=True)
+            else:
+                raise PolyaxonfileError(message) from e
 
     polyaxonfile = to_list(polyaxonfile, check_none=True)
 
@@ -79,14 +93,19 @@ def check_polyaxonfile(
     if hparams:
         parsed_hparams = parse_hparams(hparams, is_cli=is_cli)
 
-    if not any([os.path.isfile(f) for f in polyaxonfile]) and not any(
-        [python_module, url, hub]
+    if (
+        polyaxonfile
+        and not any([os.path.isfile(f) for f in polyaxonfile])
+        and not any([python_module, url, hub])
     ):
         message = "Please pass a valid polyaxonfile, a python module, a url, or a component name"
         if is_cli:
             Printer.error(message, sys_exit=True)
         else:
             raise PolyaxonfileError(message)
+    # Inline shortcuts are the last overlay, or the whole source.
+    if shortcuts:
+        polyaxonfile.append(shortcuts)
 
     try:
         path_context = None
@@ -103,8 +122,11 @@ def check_polyaxonfile(
         elif hub:
             plx_file = ConfigSpec.get_from(hub, "hub").read()
         else:
-            path_context = polyaxonfile.pop(0)
-            plx_file = ConfigSpec.read_from(path_context)
+            source = polyaxonfile.pop(0)
+            # Inline shortcuts have no path to resolve references from.
+            if isinstance(source, str):
+                path_context = source
+            plx_file = ConfigSpec.read_from(source)
 
         if is_cli and "version" in plx_file:
             Printer.warning(
