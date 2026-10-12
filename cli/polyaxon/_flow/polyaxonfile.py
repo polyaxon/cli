@@ -39,9 +39,9 @@ from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonValidationError
 
 
-def _get_main_container_patch(run, container):
+def _get_run_patch(run, values: Dict):
     return validate_run_patch(
-        {"container": container},
+        values,
         run.kind,
         replica_types=(
             run.get_replica_types() if hasattr(run, "get_replica_types") else None
@@ -49,10 +49,13 @@ def _get_main_container_patch(run, container):
     )
 
 
-def _patch_main_container(run, container, strategy: PatchStrategy):
+def _patch_run(
+    run, values: Dict, strategy: PatchStrategy, kind: V1RunKind = V1RunKind.JOB
+):
+    """Patch runtime-level `values` natively; without a runtime, create a `kind`."""
     if run is None:
-        return validate_run_patch({"container": container}, V1RunKind.JOB)
-    return run.patch(_get_main_container_patch(run, container), strategy=strategy)
+        return validate_run_patch(values, kind)
+    return run.patch(_get_run_patch(run, values), strategy=strategy)
 
 
 def _get_targeted_containers(
@@ -92,7 +95,7 @@ def _patch_and_merge_main_container(
     Native merging is kept for validation, targeting, and container creation;
     `merge(original, current)` decides the final value of each targeted role.
     """
-    patch = _get_main_container_patch(run, container)
+    patch = _get_run_patch(run, {"container": container})
     originals = {
         path: deepcopy(getattr(target, field))
         for path, target in _get_targeted_containers(run, patch)
@@ -399,12 +402,11 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         strategy = strategy or PatchStrategy.POST_MERGE
         if self.ports is not None:
             # First: ports is the only shortcut that can choose the runtime.
-            patch = validate_run_patch(
-                {"ports": self.ports}, run.kind if run else V1RunKind.SERVICE
+            run = _patch_run(
+                run, {"ports": self.ports}, strategy, kind=V1RunKind.SERVICE
             )
-            run = patch if run is None else run.patch(patch, strategy=strategy)
         if "container" in self.model_fields_set:
-            run = _patch_main_container(run, self.container, strategy)
+            run = _patch_run(run, {"container": self.container}, strategy)
         if self.cmd:
             lines = [self.cmd] if isinstance(self.cmd, str) else self.cmd
             pair = {
@@ -422,12 +424,12 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                     for container in _get_main_containers(run)
                     if container.command is not None or container.args is not None
                 ]
-                run = _patch_main_container(run, pair, PatchStrategy.ISNULL)
+                run = _patch_run(run, {"container": pair}, PatchStrategy.ISNULL)
                 for container, command, args in kept:
                     container.command, container.args = command, args
             else:
                 # Write the full pair so it never mixes with a base argv.
-                run = _patch_main_container(run, pair, PatchStrategy.REPLACE)
+                run = _patch_run(run, {"container": pair}, PatchStrategy.REPLACE)
         if self.env is not None:
             entries = [
                 {"name": name, "value": value} for name, value in self.env.items()
@@ -436,7 +438,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                 PatchStrategy.POST_MERGE,
                 PatchStrategy.PRE_MERGE,
             ):
-                run = _patch_main_container(run, {"env": entries}, strategy)
+                run = _patch_run(run, {"container": {"env": entries}}, strategy)
             else:
                 # Native list merging drops incoming entries equal to an existing
                 # one, losing their position, so each merge starts from the original.
@@ -460,7 +462,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                 )
         if self.resources is not None:
             resources = _lower_resources(self.resources)
-            run = _patch_main_container(run, {"resources": resources}, strategy)
+            run = _patch_run(run, {"container": {"resources": resources}}, strategy)
         return run
 
     def get_run_kind(self):
