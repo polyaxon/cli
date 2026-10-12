@@ -10,7 +10,7 @@ from kubernetes.utils import parse_quantity
 
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
-from clipped.utils.json import orjson_dumps
+from clipped.utils.json import orjson_dumps, orjson_loads
 from clipped.utils.units import to_cpu_value, to_memory_bytes
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile, _dedupe_env
 from polyaxon._k8s import k8s_schemas
@@ -28,6 +28,21 @@ from polyaxon.exceptions import PolyaxonfileError
 
 
 SECRET = {"secretKeyRef": {"name": "secrets", "key": "token"}}
+# Runtime-field shortcut values: an inherited one and an incoming one.
+BASE_RUNTIME = {
+    "environment": {"nodeSelector": {"pool": "base"}, "labels": {"team": "a"}},
+    "init": [{"container": {"name": "base", "image": "busybox:1.36"}}],
+    "connections": ["base"],
+    "sidecars": [{"name": "base", "image": "busybox:1.36"}],
+    "volumes": [{"name": "base", "emptyDir": {}}],
+}
+NEW_RUNTIME = {
+    "environment": {"nodeSelector": {"pool": "new"}},
+    "init": [{"container": {"name": "new", "image": "busybox:1.36"}}],
+    "connections": ["new"],
+    "sidecars": [{"name": "new", "image": "busybox:1.36"}],
+    "volumes": [{"name": "new", "emptyDir": {}}],
+}
 
 
 def _env(container):
@@ -1385,3 +1400,200 @@ class TestShortcuts(BaseTestCase):
                 check_polyaxonfile(polyaxonfile=[component, overlay], is_cli=False)
             assert isinstance(error.exception.__cause__, ValidationError)
             assert "ports" in str(error.exception.__cause__)
+
+    def test_runtime_fields_compile_like_native_run_fields(self):
+        container = {"image": "busybox:1.36"}
+        fields = {
+            "environment": {
+                "nodeSelector": {"pool": "workers"},
+                "securityContext": {"runAsUser": 1000},
+            },
+            "init": [
+                {
+                    "container": {
+                        "name": "setup",
+                        "image": "busybox:1.36",
+                        "volumeMounts": [{"name": "scratch", "mountPath": "/scratch"}],
+                    }
+                }
+            ],
+            "connections": ["artifacts"],
+            "sidecars": [{"name": "metrics", "image": "busybox:1.36"}],
+            "volumes": [{"name": "scratch", "emptyDir": {}}],
+        }
+        for kind in ("job", "service"):
+            with self.subTest(kind=kind):
+                native = {"kind": kind, "container": container, **deepcopy(fields)}
+                compiled = _compile(
+                    {"run": {"kind": kind}, "container": container, **fields}
+                )
+                assert compiled.run == _compile({"run": native}).run
+
+        for field, value in fields.items():
+            with self.subTest(field=field):
+                authored = read_polyaxonfile({field: deepcopy(value)})
+                before = authored.to_dict()
+                compiled = OperationSpecification.compile_operation(authored)
+                native = _compile({"run": {"kind": "job", field: deepcopy(value)}})
+                assert compiled.run.kind == "job"
+                assert compiled.run == native.run
+                assert authored.to_dict() == before
+                saved = authored.to_source_json()
+                assert orjson_loads(saved)[field] == value
+                assert read_polyaxonfile(saved).to_dict() == before
+
+    def test_runtime_fields_patch_exactly_like_run_patch(self):
+        role = {"container": {"image": "base:v1"}, **BASE_RUNTIME}
+        replica = {"replicas": 1, **role}
+        task = {"kind": "job", "container": {"image": "base:v1"}}
+        runtimes = (
+            {"kind": "job", **role},
+            {"kind": "service", **role},
+            {"kind": "pytorchjob", "master": replica, "worker": replica},
+            {
+                "kind": "dag",
+                "operations": [{"name": "first", "dagRef": "task"}],
+                "components": [{"name": "task", "run": task}],
+            },
+        )
+
+        def compile_with(run, strategy, layer):
+            return _compile(
+                {"patchStrategy": strategy, **layer, "component": {"run": run}}
+            )
+
+        for run, field, strategy in product(runtimes, NEW_RUNTIME, PatchStrategy):
+            with self.subTest(kind=run["kind"], field=field, strategy=strategy):
+                value = NEW_RUNTIME[field]
+                try:
+                    expected = compile_with(run, strategy, {"runPatch": {field: value}})
+                except ValidationError:
+                    # Fields a runtime does not declare fail in both spellings.
+                    with self.assertRaises(ValidationError):
+                        compile_with(run, strategy, {field: value})
+                    continue
+                assert compile_with(run, strategy, {field: value}).run == expected.run
+
+    def test_runtime_fields_merge_natively_per_strategy(self):
+        def names(field, values):
+            if field == "connections":
+                return values
+            if field == "init":
+                return [value.container.name for value in values]
+            return [value.name for value in values]
+
+        for strategy, expected, pool in (
+            (PatchStrategy.POST_MERGE, ["base", "new"], "new"),
+            (PatchStrategy.PRE_MERGE, ["new", "base"], "base"),
+            (PatchStrategy.REPLACE, ["new"], "new"),
+            (PatchStrategy.ISNULL, ["base"], "base"),
+        ):
+            with self.subTest(strategy=strategy):
+                run = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        **NEW_RUNTIME,
+                        "component": {"run": {"kind": "job", **BASE_RUNTIME}},
+                    }
+                ).run
+                for field in ("init", "connections", "sidecars", "volumes"):
+                    assert names(field, getattr(run, field)) == expected
+                # environment merges per field; unset fields are inherited.
+                assert run.environment.node_selector == {"pool": pool}
+                assert run.environment.labels == {"team": "a"}
+
+    def test_runtime_fields_take_literal_values(self):
+        for field in NEW_RUNTIME:
+            with self.subTest(field=field), self.assertRaises(ValidationError):
+                V1Polyaxonfile.from_dict({field: "{{ params.value }}"})
+        # Scalars and mappings fail validation instead of escaping as TypeError.
+        for field, value in product(("sidecars", "volumes"), (True, 1, {"name": "a"})):
+            with self.subTest(field=field, value=value):
+                with self.assertRaises(ValidationError):
+                    V1Polyaxonfile.from_dict({field: value})
+        with self.assertRaisesRegex(ValidationError, "environment"):
+            V1Polyaxonfile.from_dict({"environment": {"nodeSelector": ["pool"]}})
+
+        # Nested templates are kept and resolved like native values.
+        authored = read_polyaxonfile(
+            {
+                "inputs": [{"name": "pool", "type": "str"}],
+                "params": {"pool": {"value": "gpu"}},
+                "container": {"image": "busybox:1.36"},
+                "environment": {"nodeSelector": {"pool": "{{ pool }}"}},
+            }
+        )
+        compiled = OperationSpecification.compile_operation(authored)
+        assert compiled.run.environment.node_selector == {"pool": "{{ pool }}"}
+        compiled.apply_params(params=authored.params)
+        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
+        compiled = CompiledOperationSpecification.apply_runtime_contexts(compiled)
+        assert compiled.run.environment.node_selector == {"pool": "gpu"}
+
+    def test_env_shortcut_leaves_sidecar_env_untouched(self):
+        compiled = _compile(
+            {
+                "container": {"image": "busybox:1.36"},
+                "env": {"A": "1"},
+                "sidecars": [
+                    {
+                        "name": "metrics",
+                        "image": "busybox:1.36",
+                        "env": [{"name": "B", "value": "2"}],
+                    }
+                ],
+            }
+        )
+        assert _env(compiled.run.container) == [("A", "1", False)]
+        assert _env(compiled.run.sidecars[0]) == [("B", "2", False)]
+
+    def test_runtime_fields_overlays_and_presets(self):
+        base = {"container": {"image": "busybox:1.36"}, **BASE_RUNTIME}
+        for strategy, expected in (
+            (None, ["base", "new"]),
+            (PatchStrategy.PRE_MERGE, ["new", "base"]),
+            (PatchStrategy.REPLACE, ["new"]),
+            (PatchStrategy.ISNULL, ["base"]),
+        ):
+            with self.subTest(strategy=strategy):
+                overlay = deepcopy(NEW_RUNTIME)
+                if strategy:
+                    overlay["patchStrategy"] = strategy
+                config = patch_polyaxonfile(deepcopy(base), [overlay])
+                assert config.connections == expected
+                assert [sidecar.name for sidecar in config.sidecars] == expected
+                replayed = read_polyaxonfile(config.to_source_json())
+                compiled = OperationSpecification.compile_operation(replayed)
+                assert [volume.name for volume in compiled.run.volumes] == expected
+
+        # An explicit null clears an overlaid list under the default strategy.
+        nulled = patch_polyaxonfile(
+            deepcopy(base), [{"sidecars": None, "volumes": None}]
+        )
+        compiled = OperationSpecification.compile_operation(nulled)
+        assert compiled.run.sidecars is None
+        assert compiled.run.volumes is None
+
+        job = _compile(base)
+        applied = CompiledOperationSpecification.apply_preset(
+            job, {"sidecars": NEW_RUNTIME["sidecars"]}
+        )
+        assert [sidecar.name for sidecar in applied.run.sidecars] == ["base", "new"]
+        dag = _compile(
+            {
+                "run": {
+                    "kind": "dag",
+                    "operations": [{"name": "first", "dagRef": "task"}],
+                    "components": [
+                        {
+                            "name": "task",
+                            "run": {"kind": "job", "container": {"image": "b"}},
+                        }
+                    ],
+                }
+            }
+        )
+        with self.assertRaises(ValidationError):
+            CompiledOperationSpecification.apply_preset(
+                dag, {"init": NEW_RUNTIME["init"]}
+            )

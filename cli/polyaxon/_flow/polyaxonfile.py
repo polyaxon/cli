@@ -25,7 +25,9 @@ from clipped.utils.json import orjson_dumps
 from clipped.utils.units import is_cpu_value, is_memory_value
 from polyaxon._flow.base import BaseOp
 from polyaxon._flow.builds import V1Build
+from polyaxon._flow.environment import V1Environment
 from polyaxon._flow.hooks import V1Hook
+from polyaxon._flow.init import V1Init
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.params import V1Param, normalize_param_value
 from polyaxon._flow.references import RefMixin, V1DagRef, V1HubRef, V1PathRef, V1UrlRef
@@ -218,8 +220,8 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     Runtime-dependent validation, including runPatch, belongs after composition.
     """
 
-    _SWAGGER_FIELDS = ["container"]
-    _CUSTOM_DUMP_FIELDS = {"run", "component", "termination"}
+    _SWAGGER_FIELDS = ["container", "sidecars", "volumes"]
+    _CUSTOM_DUMP_FIELDS = {"run", "component", "termination", "environment", "init"}
     _FIELDS_MANUAL_PATCH = [
         "kind",
         "version",
@@ -246,6 +248,12 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     resources: Optional[Dict[StrictStr, Union[StrictInt, StrictFloat, StrictStr]]] = (
         None
     )
+    # Literal native runtime values; whole-field references stay under `run`.
+    environment: Optional[V1Environment] = None
+    init: Optional[List[V1Init]] = None
+    connections: Optional[List[StrictStr]] = None
+    sidecars: Optional[List[k8s_schemas.V1Container]] = None
+    volumes: Optional[List[k8s_schemas.V1Volume]] = None
     template: Optional[V1Template] = None
     params: Optional[Dict[StrictStr, V1Param]] = None
     hub_ref: Optional[StrictStr] = Field(alias="hubRef", default=None)
@@ -285,6 +293,19 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     @field_validator("container", **validation_always, **validation_before)
     def validate_container(cls, v):
         return k8s_validation.validate_k8s_container(v)
+
+    @field_validator("sidecars", **validation_always, **validation_before)
+    def validate_sidecars(cls, v):
+        # Non-lists are left to the List type, so scalars fail as ValidationError.
+        if not isinstance(v, list):
+            return v
+        return [k8s_validation.validate_k8s_container(vi) for vi in v]
+
+    @field_validator("volumes", **validation_always, **validation_before)
+    def validate_volumes(cls, v):
+        if not isinstance(v, list):
+            return v
+        return [k8s_validation.validate_k8s_volume(vi) for vi in v]
 
     @field_validator("cmd", **validation_after)
     @classmethod
@@ -463,6 +484,10 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         if self.resources is not None:
             resources = _lower_resources(self.resources)
             run = _patch_run(run, {"container": {"resources": resources}}, strategy)
+        for field in ("environment", "init", "connections", "sidecars", "volumes"):
+            value = getattr(self, field)
+            if value is not None:
+                run = _patch_run(run, {field: value}, strategy)
         return run
 
     def get_run_kind(self):

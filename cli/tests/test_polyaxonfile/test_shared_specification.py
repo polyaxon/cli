@@ -591,6 +591,7 @@ class TestSharedSpecification(BaseTestCase):
                 {"env": {"RETRIES": 3}},
                 {"resources": {"cpu": True}},
                 {"ports": [True]},
+                {"sidecars": "{{ params.sidecars }}"},
                 {"contexts": []},
             ):
                 with (

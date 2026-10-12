@@ -30,6 +30,10 @@ class Sections:
     ENV = "env"
     RESOURCES = "resources"
     PORTS = "ports"
+    ENVIRONMENT = "environment"
+    INIT = "init"
+    SIDECARS = "sidecars"
+    VOLUMES = "volumes"
     RUN_PATCH = "runPatch"
     MATRIX = "matrix"
     JOINS = "joins"
@@ -92,6 +96,10 @@ class Sections:
         ENV,
         RESOURCES,
         PORTS,
+        ENVIRONMENT,
+        INIT,
+        SIDECARS,
+        VOLUMES,
         RUN_PATCH,
         MOUNT,
     )

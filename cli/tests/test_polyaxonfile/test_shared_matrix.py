@@ -175,6 +175,11 @@ class TestSharedMatrix(BaseTestCase):
                     "strictParams": True,
                     "run": {"kind": "service", "container": {"image": "source:v1"}},
                     "ports": [8080],
+                    "environment": {"nodeSelector": {"pool": "root"}},
+                    "init": [{"container": {"name": "root", "image": "root:v1"}}],
+                    "connections": ["root"],
+                    "sidecars": [{"name": "root", "image": "root:v1"}],
+                    "volumes": [{"name": "root", "emptyDir": {}}],
                     "container": {"image": "root:v1"},
                     "cmd": "echo root",
                     "env": {"A": "root"},
@@ -223,6 +228,11 @@ class TestSharedMatrix(BaseTestCase):
                         "env",
                         "resources",
                         "ports",
+                        "environment",
+                        "init",
+                        "connections",
+                        "sidecars",
+                        "volumes",
                         "run_patch",
                     ):
                         assert getattr(current, field) is None
