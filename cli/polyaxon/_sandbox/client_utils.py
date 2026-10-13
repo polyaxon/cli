@@ -1,8 +1,9 @@
 from collections.abc import Mapping as MappingABC
 from dataclasses import dataclass
 import posixpath
-from typing import Dict, Iterable, List, Mapping, Optional
+from typing import Dict, Iterable, List, Mapping, Optional, Union
 
+from clipped.utils.encoding import BytesLike, b64_data
 from clipped.utils.json import orjson_loads
 from polyaxon.exceptions import PolyaxonClientException
 
@@ -82,6 +83,13 @@ def normalize_env(env: Optional[Mapping[str, Optional[str]]]) -> Optional[Dict]:
             )
         value[key] = item
     return value
+
+
+def encode_stdin(stdin: Optional[Union[str, BytesLike]]) -> Optional[str]:
+    """Base64-encode stdin, encoding text as UTF-8."""
+    if isinstance(stdin, str):
+        stdin = stdin.encode("utf-8")
+    return b64_data(stdin)
 
 
 def format_mode(mode: int) -> str:

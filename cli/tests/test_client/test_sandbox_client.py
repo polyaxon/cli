@@ -1,3 +1,4 @@
+import base64
 import inspect
 import os
 from pathlib import Path
@@ -23,6 +24,7 @@ from polyaxon._sandbox.client_utils import (
     FsWriteResult,
     SandboxBgOutput,
     SseFrameBuffer,
+    encode_stdin,
     normalize_command,
     normalize_env,
     validate_remote_path,
@@ -412,6 +414,16 @@ class TestSandboxClient(BaseTestCase):
         assert body.stdin == "eA=="
         assert body.timeout_ms == 1000
 
+    def test_process_exec_encodes_unicode_stdin(self):
+        sdk_client = SyncPolyaxonClientMock()
+        client = self.make_client(sdk_client=sdk_client)
+        stdin = "héllo 🌍\n"
+
+        client.process.exec(["cat"], stdin=stdin)
+
+        body = sdk_client.sandbox_v1.call_exec.call_args.kwargs["body"]
+        assert base64.b64decode(body.stdin) == stdin.encode("utf-8")
+
     def test_process_exec_rejects_invalid_command_and_env(self):
         client = self.make_client()
 
@@ -434,6 +446,20 @@ class TestSandboxClient(BaseTestCase):
             normalize_command("echo hi")
         with self.assertRaisesRegex(TypeError, "env must be a mapping"):
             normalize_env([("A", "B")])
+
+    def test_sandbox_client_utils_encode_stdin_preserves_empty_and_binary_inputs(self):
+        assert encode_stdin(None) is None
+        assert encode_stdin("") == ""
+        assert encode_stdin(b"") == ""
+
+        data = b"\x00\xff\x80"
+        for stdin in (data, bytearray(data), memoryview(data)):
+            assert base64.b64decode(encode_stdin(stdin)) == data
+
+    def test_sandbox_client_utils_encode_stdin_rejects_invalid_inputs(self):
+        for stdin in (["x"], 1):
+            with self.assertRaisesRegex(TypeError, "bytes-like"):
+                encode_stdin(stdin)
 
     def test_logs_does_not_expose_follow_kwarg(self):
         client = self.make_client()
@@ -510,6 +536,17 @@ class TestSandboxClient(BaseTestCase):
             RUN_UUID,
             id="exec-1",
         )
+
+    def test_process_exec_bg_encodes_unicode_stdin(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        client = self.make_client(sdk_client=sdk_client)
+        stdin = "héllo 🌍\n"
+
+        client.process.exec_bg(["cat"], stdin=stdin)
+
+        body = sdk_client.sandbox_v1.exec_bg.call_args.kwargs["body"]
+        assert base64.b64decode(body.stdin) == stdin.encode("utf-8")
 
     def test_process_exec_bg_handle_exposes_log_and_kill_sugar(self):
         sdk_client = SyncPolyaxonClientMock()
@@ -857,6 +894,18 @@ class TestSandboxClient(BaseTestCase):
 
         assert response.closed is True
         assert session.closed is True
+
+    def test_process_exec_stream_encodes_unicode_stdin(self):
+        session = FakeSession(FakeResponse())
+        client = self.make_client()
+        stdin = "héllo 🌍\n"
+
+        with patch("polyaxon._client.sandbox.requests.Session", return_value=session):
+            with client.process.exec_stream(["cat"], stdin=stdin):
+                pass
+
+        payload = orjson_loads(session.post_calls[0][1]["data"])
+        assert base64.b64decode(payload["stdin"]) == stdin.encode("utf-8")
 
     def test_process_exec_stream_raises_on_4xx_with_server_error_envelope(self):
         response = FakeResponse(

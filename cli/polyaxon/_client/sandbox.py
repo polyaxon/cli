@@ -12,7 +12,7 @@ from urllib.parse import urlencode
 import aiohttp
 
 from clipped.utils.bools import to_bool
-from clipped.utils.encoding import BytesLike, as_bytes, b64_data
+from clipped.utils.encoding import BytesLike, as_bytes
 from clipped.utils.http import absolute_uri, to_ws_url
 from clipped.utils.json import orjson_dumps, orjson_loads
 from clipped.utils.validation import validate_tags
@@ -39,6 +39,7 @@ from polyaxon._sandbox.client_utils import (
     FsWriteResult,
     SandboxBgOutput,
     SseFrameBuffer,
+    encode_stdin,
     format_mode,
     format_query_bool,
     normalize_command,
@@ -1324,7 +1325,7 @@ class _ProcessSubClient(_BaseSubClient):
         command,
         env=None,
         workdir: Optional[str] = None,
-        stdin: Optional[BytesLike] = None,
+        stdin: Optional[Union[str, BytesLike]] = None,
         timeout_ms: Optional[int] = None,
     ):
         """Runs a command to completion and returns the buffered result.
@@ -1350,7 +1351,9 @@ class _ProcessSubClient(_BaseSubClient):
                  Values must be strings. `POLYAXON_*` keys are rejected
                  by the server.
             workdir: str, optional, working directory for the command.
-            stdin: str or bytes, optional, data to pass to the command's stdin.
+            stdin: str or bytes-like, optional, data for the command's stdin.
+                 Strings are encoded as UTF-8. Bytes, bytearray and memoryview
+                 are passed without text conversion.
             timeout_ms: int, optional, server-side execution timeout
                  in milliseconds.
 
@@ -1368,7 +1371,7 @@ class _ProcessSubClient(_BaseSubClient):
                 command=normalize_command(command),
                 env=normalize_env(env),
                 workdir=workdir,
-                stdin=b64_data(stdin),
+                stdin=encode_stdin(stdin),
                 timeout_ms=timeout_ms,
             ),
         )
@@ -1379,7 +1382,7 @@ class _ProcessSubClient(_BaseSubClient):
         command,
         env=None,
         workdir: Optional[str] = None,
-        stdin: Optional[BytesLike] = None,
+        stdin: Optional[Union[str, BytesLike]] = None,
         timeout_ms: Optional[int] = None,
         timeout=None,
     ):
@@ -1405,7 +1408,9 @@ class _ProcessSubClient(_BaseSubClient):
             command: List[str], the command and its arguments.
             env: Dict[str, str], optional, environment variables to set.
             workdir: str, optional, working directory for the command.
-            stdin: str or bytes, optional, data to pass to the command's stdin.
+            stdin: str or bytes-like, optional, data for the command's stdin.
+                 Strings are encoded as UTF-8. Bytes, bytearray and memoryview
+                 are passed without text conversion.
             timeout_ms: int, optional, server-side execution timeout
                  in milliseconds.
             timeout: int, optional, client-side request timeout in seconds.
@@ -1420,7 +1425,7 @@ class _ProcessSubClient(_BaseSubClient):
             command=normalize_command(command),
             env=normalize_env(env),
             workdir=workdir,
-            stdin=b64_data(stdin),
+            stdin=encode_stdin(stdin),
             timeout_ms=timeout_ms,
         )
         session = requests.Session()
@@ -1460,7 +1465,7 @@ class _ProcessSubClient(_BaseSubClient):
         command,
         env=None,
         workdir: Optional[str] = None,
-        stdin: Optional[BytesLike] = None,
+        stdin: Optional[Union[str, BytesLike]] = None,
         timeout_ms: Optional[int] = None,
         tag: Optional[str] = None,
     ):
@@ -1483,7 +1488,9 @@ class _ProcessSubClient(_BaseSubClient):
             command: List[str], the command and its arguments.
             env: Dict[str, str], optional, environment variables to set.
             workdir: str, optional, working directory for the command.
-            stdin: str or bytes, optional, data to pass to the command's stdin.
+            stdin: str or bytes-like, optional, data for the command's stdin.
+                 Strings are encoded as UTF-8. Bytes, bytearray and memoryview
+                 are passed without text conversion.
             timeout_ms: int, optional, server-side execution timeout
                  in milliseconds.
             tag: str, optional, a label to filter execs in `list`.
@@ -1499,7 +1506,7 @@ class _ProcessSubClient(_BaseSubClient):
                 command=normalize_command(command),
                 env=normalize_env(env),
                 workdir=workdir,
-                stdin=b64_data(stdin),
+                stdin=encode_stdin(stdin),
                 timeout_ms=timeout_ms,
                 tag=tag,
             ),
@@ -1594,7 +1601,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
         command,
         env=None,
         workdir: Optional[str] = None,
-        stdin: Optional[BytesLike] = None,
+        stdin: Optional[Union[str, BytesLike]] = None,
         timeout_ms: Optional[int] = None,
     ):
         return await self._parent.client.sandbox_v1.call_exec(
@@ -1603,7 +1610,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
                 command=normalize_command(command),
                 env=normalize_env(env),
                 workdir=workdir,
-                stdin=b64_data(stdin),
+                stdin=encode_stdin(stdin),
                 timeout_ms=timeout_ms,
             ),
         )
@@ -1614,7 +1621,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
         command,
         env=None,
         workdir: Optional[str] = None,
-        stdin: Optional[BytesLike] = None,
+        stdin: Optional[Union[str, BytesLike]] = None,
         timeout_ms: Optional[int] = None,
         timeout=None,
     ):
@@ -1622,7 +1629,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
             command=normalize_command(command),
             env=normalize_env(env),
             workdir=workdir,
-            stdin=b64_data(stdin),
+            stdin=encode_stdin(stdin),
             timeout_ms=timeout_ms,
         )
         session = aiohttp.ClientSession(**self._session_kwargs(timeout=timeout))
@@ -1662,7 +1669,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
         command,
         env=None,
         workdir: Optional[str] = None,
-        stdin: Optional[BytesLike] = None,
+        stdin: Optional[Union[str, BytesLike]] = None,
         timeout_ms: Optional[int] = None,
         tag: Optional[str] = None,
     ):
@@ -1672,7 +1679,7 @@ class _AsyncProcessSubClient(_ProcessSubClient, _AsyncBaseSubClient):
                 command=normalize_command(command),
                 env=normalize_env(env),
                 workdir=workdir,
-                stdin=b64_data(stdin),
+                stdin=encode_stdin(stdin),
                 timeout_ms=timeout_ms,
                 tag=tag,
             ),

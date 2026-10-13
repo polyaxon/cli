@@ -453,6 +453,15 @@ class TestAsyncSandboxClient(BaseTestCase, IsolatedAsyncioTestCase):
         assert body.stdin == "eA=="
         assert body.timeout_ms == 1000
 
+    async def test_async_process_exec_encodes_unicode_stdin(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        client = self.make_client(sdk_client=sdk_client)
+
+        await client.process.exec(("cat",), stdin="café ☃\n")
+
+        body = sdk_client.sandbox_v1.call_exec.await_args.kwargs["body"]
+        assert body.stdin == "Y2Fmw6kg4piDCg=="
+
     async def test_async_logs_does_not_expose_follow_kwarg(self):
         client = self.make_client()
 
@@ -526,6 +535,16 @@ class TestAsyncSandboxClient(BaseTestCase, IsolatedAsyncioTestCase):
             RUN_UUID,
             id="exec-1",
         )
+
+    async def test_async_process_exec_bg_encodes_unicode_stdin(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        sdk_client.sandbox_v1.exec_bg.return_value = V1ExecBgStart(exec_id="exec-1")
+        client = self.make_client(sdk_client=sdk_client)
+
+        await client.process.exec_bg(("cat",), stdin="café ☃\n")
+
+        body = sdk_client.sandbox_v1.exec_bg.await_args.kwargs["body"]
+        assert body.stdin == "Y2Fmw6kg4piDCg=="
 
     async def test_async_process_exec_bg_handle_exposes_log_and_kill_sugar(self):
         sdk_client = AsyncPolyaxonClientMock()
@@ -905,6 +924,18 @@ class TestAsyncSandboxClient(BaseTestCase, IsolatedAsyncioTestCase):
 
         assert response.closed is True
         assert session.closed is True
+
+    async def test_async_process_exec_stream_encodes_unicode_stdin(self):
+        response = AsyncStreamResponse()
+        session = AsyncStreamSession(response)
+        client = self.make_client()
+
+        with self.patch_aiohttp_session(session):
+            stream = await client.process.exec_stream(("cat",), stdin="café ☃\n")
+
+        payload = orjson_loads(session.post_calls[0][1]["data"])
+        assert payload["stdin"] == "Y2Fmw6kg4piDCg=="
+        await stream.aclose()
 
     async def test_async_process_exec_stream_rejects_invalid_command_before_session(
         self,
