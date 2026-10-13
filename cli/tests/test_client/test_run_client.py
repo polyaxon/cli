@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 from mock import MagicMock, mock, patch
 from pathlib import Path
@@ -548,6 +549,73 @@ class TestRunClient(BaseTestCase):
                 body = request.call_args.kwargs["body"]
                 assert body.content is None
                 assert body.meta_info is None
+
+    def test_shortcut_content_keeps_authored_source_on_create_and_rerun(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.runs_v1.create_run.return_value = V1Run(uuid=self.run_uuid)
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            run_uuid=self.run_uuid,
+            client=sdk_client,
+            manual_exceptions_handling=True,
+        )
+        container = {"image": "busybox:1.36"}
+        for model, source in (
+            (
+                V1Polyaxonfile,
+                {
+                    "container": container,
+                    "cmd": ["cd /tmp", "echo ok"],
+                    "env": {"LEVEL": "debug", "EMPTY": ""},
+                    "resources": {"cpu": "1..2", "gpu": 1},
+                    "ports": None,
+                    "volumes": [],
+                },
+            ),
+            (
+                V1Operation,
+                {
+                    "kind": "operation",
+                    "container": {"image": "local:v1"},
+                    "env": {"LEVEL": "info"},
+                    "component": {
+                        "kind": "component",
+                        "container": container,
+                        "env": {},
+                        "sidecars": None,
+                    },
+                },
+            ),
+        ):
+            for content in (source, model.from_dict(source), json.dumps(source)):
+                for action, endpoint, options in (
+                    ("create", "create_run", {}),
+                    ("restart", "restart_run", {}),
+                    ("restart", "copy_run", {"copy": True}),
+                    ("resume", "resume_run", {}),
+                ):
+                    with self.subTest(
+                        model=model.__name__,
+                        content_type=type(content).__name__,
+                        endpoint=endpoint,
+                    ):
+                        request = getattr(sdk_client.runs_v1, endpoint)
+                        request.reset_mock()
+                        pristine = deepcopy(content)
+
+                        getattr(client, action)(content=content, **options)
+
+                        request.assert_called_once()
+                        body = request.call_args.kwargs["body"]
+                        assert json.loads(body.content) == source
+                        if isinstance(content, str):
+                            assert body.content == content
+                        assert content == pristine
+                        layer, before = content, pristine
+                        while isinstance(layer, V1Polyaxonfile):
+                            assert layer.model_fields_set == before.model_fields_set
+                            layer, before = layer.component, before.component
 
     @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_create_from_shared_file_submits_native_content(self, create_run):

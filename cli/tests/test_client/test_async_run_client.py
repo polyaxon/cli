@@ -1,3 +1,4 @@
+from copy import deepcopy
 import inspect
 import json
 from mock import mock
@@ -1132,6 +1133,67 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
                         if recompile:
                             metadata["recompile"] = True
                         assert body.meta_info == (metadata or None)
+
+    async def test_shortcut_content_keeps_authored_source_on_create_and_rerun(self):
+        sdk_client = AsyncPolyaxonClientMock()
+        client = self.make_client(sdk_client)
+        container = {"image": "busybox:1.36"}
+        for model, source in (
+            (
+                V1Polyaxonfile,
+                {
+                    "container": container,
+                    "cmd": ["cd /tmp", "echo ok"],
+                    "env": {"LEVEL": "debug", "EMPTY": ""},
+                    "resources": {"cpu": "1..2", "gpu": 1},
+                    "ports": None,
+                    "volumes": [],
+                },
+            ),
+            (
+                V1Operation,
+                {
+                    "kind": "operation",
+                    "container": {"image": "local:v1"},
+                    "env": {"LEVEL": "info"},
+                    "component": {
+                        "kind": "component",
+                        "container": container,
+                        "env": {},
+                        "sidecars": None,
+                    },
+                },
+            ),
+        ):
+            for content in (source, model.from_dict(source), json.dumps(source)):
+                for action, endpoint, options in (
+                    ("create", "create_run", {}),
+                    ("restart", "restart_run", {}),
+                    ("restart", "copy_run", {"copy": True}),
+                    ("resume", "resume_run", {}),
+                ):
+                    with self.subTest(
+                        model=model.__name__,
+                        content_type=type(content).__name__,
+                        endpoint=endpoint,
+                    ):
+                        request = AsyncMock(return_value=self.make_run())
+                        setattr(sdk_client.runs_v1, endpoint, request)
+                        pristine = deepcopy(content)
+
+                        await getattr(client, action)(content=content, **options)
+
+                        request.assert_called_once()
+                        assert "async_req" not in request.call_args.kwargs
+                        body = request.call_args.kwargs["body"]
+                        assert json.loads(body.content) == source
+                        if isinstance(content, str):
+                            assert body.content == content
+                        assert content == pristine
+                        layer, before = content, pristine
+                        while isinstance(layer, V1Polyaxonfile):
+                            assert layer.model_fields_set == before.model_fields_set
+                            layer, before = layer.component, before.component
 
     async def test_restart_routes_to_copy_when_copy_flag_set(self):
         sdk_client = AsyncPolyaxonClientMock()
