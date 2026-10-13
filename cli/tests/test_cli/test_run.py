@@ -1283,6 +1283,17 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
                 "need literal plugins",
             ),
             (
+                "nested plugins reference",
+                [
+                    "kind: operation\n"
+                    "component:\n"
+                    "  plugins: '{{ params.plugins }}'\n"
+                    "  run: {kind: service, container: {image: base:v1}}\n"
+                ],
+                [],
+                "need literal plugins",
+            ),
+            (
                 "authored matrix",
                 [
                     service + lr + "matrix: {kind: grid, params: "

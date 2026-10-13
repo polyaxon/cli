@@ -252,6 +252,56 @@ class TestSharedSchedule(BaseTestCase):
                 assert parent.is_approved is (not local_wins)
                 assert authored.to_dict() == before
 
+    def test_scheduled_shortcut_sandbox_service_keeps_native_runtime(self):
+        authored = read_polyaxonfile(
+            {
+                "kind": "operation",
+                "schedule": {"kind": "interval", "frequency": 60},
+                "plugins": {"sandbox": True},
+                "env": {"LEVEL": "outer"},
+                "component": {
+                    "kind": "component",
+                    "container": {"image": "busybox:1.36"},
+                    "cmd": ["cd /tmp", "serve"],
+                    "ports": [8080],
+                    "env": {"LEVEL": "inner", "TOKEN": "t"},
+                },
+            }
+        )
+        before = authored.to_dict()
+        parent = OperationSpecification.compile_operation(authored)
+        # A replayed container shortcut would restore busybox:1.36.
+        parent.run.container.image = "resolved:v2"
+        parent_before = parent.to_dict()
+
+        child = get_op_from_schedule(authored.to_source_json(), parent)
+
+        assert child.run is None
+        assert child.component.run == parent.run
+        assert child.plugins.sandbox is True
+        layer = child
+        while layer is not None:
+            for field in ("schedule", "container", "cmd", "env", "ports", "run_patch"):
+                assert getattr(layer, field) is None
+                assert field not in layer.model_fields_set
+            layer = layer.component
+
+        compiled = OperationSpecification.compile_operation(
+            read_polyaxonfile(child.to_source_json())
+        )
+        assert compiled.schedule is None
+        assert compiled.run == parent.run
+        assert compiled.run.kind == "service"
+        assert compiled.run.ports == [8080]
+        assert compiled.run.container.image == "resolved:v2"
+        assert compiled.run.container.command == ["/bin/sh", "-c"]
+        assert compiled.run.container.args == ["set -e\ncd /tmp\nserve"]
+        env = [(e["name"], e["value"]) for e in compiled.run.container.to_dict()["env"]]
+        assert sorted(env) == [("LEVEL", "outer"), ("TOKEN", "t")]
+        assert compiled.plugins.sandbox is True
+        assert parent.to_dict() == parent_before
+        assert authored.to_dict() == before
+
     def test_scheduled_matrix_keeps_approval_until_suggestions_create_jobs(self):
         authored = read_polyaxonfile(
             {
