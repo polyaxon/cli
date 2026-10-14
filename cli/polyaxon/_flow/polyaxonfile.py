@@ -20,6 +20,7 @@ from clipped.compact.pydantic import (
 )
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
+from clipped.types.ref_or_obj import RefField
 from clipped.utils.json import orjson_dumps
 from clipped.utils.units import is_cpu_value, is_memory_value
 from polyaxon._flow.base import BaseOp
@@ -241,7 +242,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     outputs: Optional[List[V1IO]] = None
     run: Optional[Union[V1Runtime, Dict]] = None
     ports: Optional[List[StrictInt]] = None
-    container: Optional[k8s_schemas.V1Container] = None
+    container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
     cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
     env: Optional[Dict[StrictStr, StrictStr]] = None
     resources: Optional[Dict[StrictStr, Union[StrictInt, StrictFloat, StrictStr]]] = (

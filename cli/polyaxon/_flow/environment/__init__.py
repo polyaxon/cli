@@ -437,14 +437,18 @@ class V1Environment(BaseSchemaModel):
 
     @field_validator("tolerations", **validation_always, **validation_before)
     def validate_tolerations(cls, v):
-        if not isinstance(v, list):
+        if not v:
             return v
+        if not isinstance(v, list):
+            raise ValueError("`tolerations` expects a list.")
         return [k8s_validation.validate_k8s_toleration(vi) for vi in v]
 
     @field_validator("host_aliases", **validation_always, **validation_before)
     def validate_host_aliases(cls, v):
-        if not isinstance(v, list):
+        if not v:
             return v
+        if not isinstance(v, list):
+            raise ValueError("`hostAliases` expects a list.")
         return [k8s_validation.validate_k8s_host_alias(vi) for vi in v]
 
     @field_validator("security_context", **validation_always, **validation_before)

@@ -336,8 +336,10 @@ class V1Dag(BaseRun):
 
     @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):
-        if not isinstance(v, list):
+        if not v:
             return v
+        if not isinstance(v, list):
+            raise ValueError("`volumes` expects a list.")
         return [k8s_validation.validate_k8s_volume(vi) for vi in v]
 
     def __init__(self, **data):
