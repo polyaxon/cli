@@ -112,6 +112,8 @@ class AsyncApiClient(ApiClient):
         if async_req:
             raise ApiValueError("async_req=True is not supported by AsyncApiClient.")
 
+        if response_types_map and "200" in response_types_map:
+            response_types_map["201"] = response_types_map["200"]
         return self.__call_api(
             resource_path,
             method,
