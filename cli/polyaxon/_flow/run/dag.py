@@ -238,8 +238,8 @@ class V1Dag(BaseRun):
     </blockquote>
 
     The connections definition will be passed to child operations, including each replica
-    of a distributed run, except MPI jobs. Use literal connection names; templates are not
-    resolved for DAG connections.
+    of a distributed run. Use literal connection names; templates are not resolved for
+    DAG connections.
     After checks, the connections will be resolved and inject any volumes, secrets, configMaps,
     environment variables for your main container to function correctly.
 
@@ -257,7 +257,7 @@ class V1Dag(BaseRun):
     This is an advanced use-case where configuring a connection is not an option.
 
     The volumes definition will be passed to child operations, including each replica
-    of a distributed run, except MPI jobs.
+    of a distributed run.
 
     When you add a volume you need to mount it manually to your container(s).
     A child volume with the same name but a different definition is kept alongside

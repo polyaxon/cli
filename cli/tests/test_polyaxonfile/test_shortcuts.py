@@ -692,15 +692,34 @@ class TestShortcuts(BaseTestCase):
                 )
                 assert compiled.run.container.env == "{{ env_vars }}"
 
-    def test_env_targets_only_native_patch_roles(self):
-        # MPI does not receive native runPatch container fields (#1431); env
-        # must not reach it under any strategy either.
-        replica = {
-            "replicas": 1,
-            "container": {"image": "base:v1", "env": [{"name": "A", "value": "1"}]},
+    def test_env_reaches_mpi_roles(self):
+        a, b = ("A", "1", False), ("B", "x", False)
+        expected = {
+            "existing": {
+                PatchStrategy.POST_MERGE: [a, b],
+                PatchStrategy.PRE_MERGE: [b, a],
+                PatchStrategy.REPLACE: [b],
+                PatchStrategy.ISNULL: [a],
+            },
+            "empty": {
+                PatchStrategy.POST_MERGE: [b],
+                PatchStrategy.PRE_MERGE: [b],
+                PatchStrategy.REPLACE: [b],
+                PatchStrategy.ISNULL: [],
+            },
+            "omitted": {strategy: [b] for strategy in PatchStrategy},
         }
-        for strategy in PatchStrategy:
-            with self.subTest(strategy=strategy):
+        env_by_case = {
+            "existing": [{"name": "A", "value": "1"}],
+            "empty": [],
+            "omitted": None,
+        }
+        for case, strategy in product(env_by_case, PatchStrategy):
+            with self.subTest(case=case, strategy=strategy):
+                container = {"image": "base:v1"}
+                if env_by_case[case] is not None:
+                    container["env"] = env_by_case[case]
+                replica = {"replicas": 1, "container": container}
                 compiled = _compile(
                     {
                         "patchStrategy": strategy,
@@ -715,7 +734,7 @@ class TestShortcuts(BaseTestCase):
                     }
                 )
                 for role in (compiled.run.launcher, compiled.run.worker):
-                    assert _env(role.container) == [("A", "1", False)]
+                    assert _env(role.container) == expected[case][strategy]
 
     def test_env_fills_a_role_created_by_the_patch(self):
         compiled = _compile(
@@ -1102,10 +1121,16 @@ class TestShortcuts(BaseTestCase):
                 compiled.run.worker.container.resources["requests"]["cpu"] = "9"
                 assert master == before
 
-    def test_resources_targets_only_native_patch_roles(self):
+    def test_resources_reach_mpi_roles(self):
         replica = {
             "replicas": 1,
             "container": {"image": "base:v1", "resources": {"requests": {"cpu": "1"}}},
+        }
+        expected = {
+            PatchStrategy.POST_MERGE: "4",
+            PatchStrategy.PRE_MERGE: "1",
+            PatchStrategy.REPLACE: "4",
+            PatchStrategy.ISNULL: "1",
         }
         for strategy in PatchStrategy:
             with self.subTest(strategy=strategy):
@@ -1123,7 +1148,9 @@ class TestShortcuts(BaseTestCase):
                     }
                 )
                 for role in (compiled.run.launcher, compiled.run.worker):
-                    assert role.container.resources == {"requests": {"cpu": "1"}}
+                    assert role.container.resources == {
+                        "requests": {"cpu": expected[strategy]}
+                    }
 
     def test_resources_alone_empty_null_created_later_and_dags(self):
         compiled = _compile({"resources": {"cpu": "1"}})

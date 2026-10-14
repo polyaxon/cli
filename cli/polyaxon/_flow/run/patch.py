@@ -101,7 +101,12 @@ def validate_run_patch(
         try:
             patch = V1MPIJob.from_dict(run_patch)
         except ValidationError:
-            patch = V1KFReplica.from_dict(run_patch)
+            if replica_types:
+                patch = V1MPIJob.from_dict(
+                    {k: deepcopy(run_patch) for k in replica_types}
+                )
+            else:
+                patch = V1KFReplica.from_dict(run_patch)
     elif kind == V1RunKind.PYTORCHJOB:
         try:
             patch = V1PytorchJob.from_dict(run_patch)

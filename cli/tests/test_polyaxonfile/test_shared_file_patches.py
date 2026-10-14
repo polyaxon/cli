@@ -805,3 +805,49 @@ class TestSharedFilePatches(BaseTestCase):
         assert effective.run.worker.replicas == 2
         assert effective.run.worker.container.image == "final:v3"
         assert effective.run.worker.container.command == ["train"]
+
+    def test_mpi_run_patches_reach_launcher_and_worker(self):
+        launcher = {"replicas": 1, "container": {"image": "base:v1"}}
+        compiled = OperationSpecification.compile_operation(
+            read_polyaxonfile(
+                {
+                    "run": {
+                        "kind": "mpijob",
+                        "slotsPerWorker": 2,
+                        "launcher": deepcopy(launcher),
+                        "worker": {"replicas": 2, "container": {"image": "base:v1"}},
+                    },
+                    "runPatch": {"container": {"image": "patched:v2"}},
+                }
+            )
+        )
+        assert compiled.run.slots_per_worker == 2
+        assert compiled.run.launcher.replicas == 1
+        assert compiled.run.worker.replicas == 2
+        assert compiled.run.launcher.container.image == "patched:v2"
+        assert compiled.run.worker.container.image == "patched:v2"
+
+        def compile_launcher_only(run_patch):
+            return OperationSpecification.compile_operation(
+                read_polyaxonfile(
+                    {
+                        "run": {"kind": "mpijob", "launcher": deepcopy(launcher)},
+                        "runPatch": run_patch,
+                    }
+                )
+            ).run
+
+        # Generic patches reach existing roles only; MPI-level and role-shaped
+        # patches keep their native behavior, including creating a named role.
+        run = compile_launcher_only({"container": {"image": "patched:v2"}})
+        assert run.launcher.container.image == "patched:v2"
+        assert run.worker is None
+        run = compile_launcher_only({"slotsPerWorker": 4})
+        assert run.slots_per_worker == 4
+        assert run.launcher.container.image == "base:v1"
+        run = compile_launcher_only(
+            {"worker": {"replicas": 3, "container": {"image": "worker:v2"}}}
+        )
+        assert run.launcher.container.image == "base:v1"
+        assert run.worker.replicas == 3
+        assert run.worker.container.image == "worker:v2"
