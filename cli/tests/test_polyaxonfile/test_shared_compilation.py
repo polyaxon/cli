@@ -93,6 +93,39 @@ class TestSharedCompilation(BaseTestCase):
                 assert compiled.run.container.args == ["echo 'count=3 message=hello'"]
                 assert authored.to_dict() == before
 
+    def test_ray_autoscaler_resources_resolve_runtime_params(self):
+        authored = read_polyaxonfile(
+            {
+                "inputs": [{"name": "cpu", "type": "str"}],
+                "params": {"cpu": "500m"},
+                "run": {
+                    "kind": "raycluster",
+                    "rayVersion": "2.9",
+                    "head": {"container": {"image": "rayproject/ray:2.9.0"}},
+                    "workers": {
+                        "worker": {"container": {"image": "rayproject/ray:2.9.0"}}
+                    },
+                    "autoscalerOptions": {
+                        "resources": {"requests": {"cpu": "{{ cpu }}"}}
+                    },
+                },
+            }
+        )
+        before = authored.to_dict()
+
+        compiled, params = OperationSpecification.compile_operation_with_params(
+            authored
+        )
+        compiled.apply_params(params)
+        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
+        compiled = CompiledOperationSpecification.apply_runtime_contexts(
+            compiled, contexts={"head": {}, "workers": {"worker": {}}}
+        )
+
+        assert compiled.run.autoscaler_options.resources.requests == {"cpu": "500m"}
+        assert compiled.run.ray_version == "2.9"
+        assert authored.to_dict() == before
+
     def test_invocation_fields_on_a_component_reach_the_compiled_operation(self):
         source = {
             "kind": "component",

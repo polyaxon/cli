@@ -256,6 +256,8 @@ class CompiledOperationSpecification(BaseSpecification):
                         contexts=contexts[k], is_requested=True, is_context=True
                     )
                 )
+            if config.is_ray_cluster_run:
+                param_spec["autoscaler_options"] = replica_param_spec
         parsed_data = PolyaxonfileParser.parse_distributed_runtime(
             config.to_dict(), param_spec
         )
