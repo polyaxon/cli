@@ -386,6 +386,19 @@ class CompiledOperationSpecification(BaseSpecification):
             init_connection_names = _get_resolve_connections(
                 compiled_operation.run.worker
             )
+        elif compiled_operation.is_ray_cluster_run:
+            init_connection_names = _get_resolve_connections(
+                compiled_operation.run.head
+            )
+            for replica in (compiled_operation.run.workers or {}).values():
+                init_connection_names = _get_resolve_connections(replica)
+        elif compiled_operation.is_dask_cluster_run:
+            init_connection_names = _get_resolve_connections(
+                compiled_operation.run.worker
+            )
+            init_connection_names = _get_resolve_connections(
+                compiled_operation.run.scheduler
+            )
 
         return init_connection_names
 
@@ -443,6 +456,15 @@ class CompiledOperationSpecification(BaseSpecification):
         elif compiled_operation.is_pytorch_job_run:
             connections_names = _get_resolve_connections(compiled_operation.run.master)
             connections_names = _get_resolve_connections(compiled_operation.run.worker)
+        elif compiled_operation.is_ray_cluster_run:
+            connections_names = _get_resolve_connections(compiled_operation.run.head)
+            for replica in (compiled_operation.run.workers or {}).values():
+                connections_names = _get_resolve_connections(replica)
+        elif compiled_operation.is_dask_cluster_run:
+            connections_names = _get_resolve_connections(compiled_operation.run.worker)
+            connections_names = _get_resolve_connections(
+                compiled_operation.run.scheduler
+            )
 
         return connections_names
 

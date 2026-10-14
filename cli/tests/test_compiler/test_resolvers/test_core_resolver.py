@@ -16,6 +16,7 @@ from polyaxon._connections import (
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._managers.agent import AgentConfigManager
+from polyaxon._polyaxonfile import CompiledOperationSpecification
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._schemas.agent import AgentConfig
 from polyaxon._utils.test_utils import BaseTestCase
@@ -253,3 +254,100 @@ class TestResolver(BaseTestCase):
         assert resolver.polyaxon_sidecar == get_default_sidecar_container()
         assert resolver.polyaxon_init == get_default_init_container()
         AgentConfigManager.CONFIG_PATH = None
+
+    def test_resolve_ray_and_dask_replica_connections(self):
+        secret = V1ConnectionResource(name="secret", is_requested=True)
+        store, *connections = [
+            V1Connection(
+                name=name,
+                kind=V1ConnectionKind.S3,
+                schema_=V1BucketConnection(bucket="s3//:{}".format(name)),
+                secret=secret,
+            )
+            for name in (
+                "store",
+                "head",
+                "worker",
+                "large",
+                "init",
+                "scheduler",
+                "unused",
+            )
+        ]
+        settings.AGENT_CONFIG = AgentConfig(
+            namespace="foo", artifacts_store=store, connections=connections
+        )
+
+        def replica(**kwargs):
+            return {"container": {"image": "test"}, **kwargs}
+
+        def resolve(run):
+            compiled_operation = V1CompiledOperation.read(
+                {
+                    "version": 1.1,
+                    "kind": kinds.COMPILED_OPERATION,
+                    "plugins": {
+                        "auth": False,
+                        "shm": False,
+                        "collectLogs": False,
+                        "collectArtifacts": False,
+                        "collectResources": False,
+                    },
+                    "run": run,
+                }
+            )
+            resolver = BaseResolver(
+                run=None,
+                compiled_operation=compiled_operation,
+                owner_name="user",
+                project_name="p1",
+                project_uuid=None,
+                run_name="j1",
+                run_uuid=None,
+                run_path="test",
+                params=None,
+            )
+            resolver.resolve_agent_environment()
+            return compiled_operation, resolver
+
+        init = [{"connection": "init", "git": {"revision": "dev"}}]
+        runs = (
+            (
+                {
+                    "kind": V1RunKind.RAYCLUSTER,
+                    "head": replica(connections=["head"]),
+                    "workers": {
+                        "small": replica(connections=["worker"], init=init),
+                        "large": replica(connections=["large"]),
+                    },
+                },
+                {"head", "worker", "large"},
+            ),
+            (
+                {
+                    "kind": V1RunKind.DASKCLUSTER,
+                    "worker": replica(connections=["worker"], init=init),
+                    "scheduler": replica(connections=["scheduler"]),
+                },
+                {"worker", "scheduler"},
+            ),
+        )
+        for run, names in runs:
+            with self.subTest(kind=run["kind"]):
+                compiled_operation, resolver = resolve(run)
+                assert set(resolver.connection_by_names) == {"store", "init", *names}
+                assert (
+                    CompiledOperationSpecification.get_connections(compiled_operation)
+                    == names
+                )
+                assert CompiledOperationSpecification.get_init_connections(
+                    compiled_operation
+                ) == {"init"}
+
+        with self.assertRaises(PolyaxonCompilerError):
+            resolve(
+                {
+                    "kind": V1RunKind.RAYCLUSTER,
+                    "workers": {"small": replica(connections=["missing"])},
+                }
+            )

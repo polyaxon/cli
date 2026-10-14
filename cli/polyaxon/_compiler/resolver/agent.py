@@ -143,3 +143,10 @@ class AgentResolver(BaseSchemaModel):
         elif compiled_operation.is_pytorch_job_run:
             _resolve_replica(compiled_operation.run.master)
             _resolve_replica(compiled_operation.run.worker)
+        elif compiled_operation.is_ray_cluster_run:
+            _resolve_replica(compiled_operation.run.head)
+            for replica in (compiled_operation.run.workers or {}).values():
+                _resolve_replica(replica)
+        elif compiled_operation.is_dask_cluster_run:
+            _resolve_replica(compiled_operation.run.worker)
+            _resolve_replica(compiled_operation.run.scheduler)
