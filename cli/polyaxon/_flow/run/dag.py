@@ -638,10 +638,15 @@ class V1Dag(BaseRun):
             )
         op_spec = self.dag[op_name]
         if op_spec.op.has_component_reference or (
-            op_spec.op.run is not None and op_spec.op.reference is None
+            op_spec.op.reference is None
+            and (op_spec.op.run is not None or op_name in self._effective_ops)
         ):
             return
 
+        if op_spec.op.definition is None:
+            raise PolyaxonSchemaError(
+                "Pipeline op has no definition field `{}`".format(op_name)
+            )
         if op_name not in self._op_component_mapping:
             raise PolyaxonSchemaError(
                 "Pipeline op with name `{}` requires a reference `{} ({})`, "

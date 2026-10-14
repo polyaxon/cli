@@ -52,6 +52,16 @@ class TestSharedDags(BaseTestCase):
                             "count": {"ref": "ops.direct", "value": "outputs.result"}
                         },
                     },
+                    {
+                        "name": "shortcut_job",
+                        "container": {"image": "busybox:1.36"},
+                        "cmd": "echo hello",
+                    },
+                    {
+                        "name": "shortcut_service",
+                        "container": {"image": "busybox:1.36"},
+                        "ports": [8080],
+                    },
                 ]
                 if kind:
                     for node in nodes:
@@ -68,7 +78,13 @@ class TestSharedDags(BaseTestCase):
 
                 dag = self._prepare(authored)
 
-                assert set(dag.dag) == {"direct", "embedded", "referenced"}
+                assert set(dag.dag) == {
+                    "direct",
+                    "embedded",
+                    "referenced",
+                    "shortcut_job",
+                    "shortcut_service",
+                }
                 assert dag.dag["direct"].downstream == {"embedded", "referenced"}
                 assert dag.dag["embedded"].upstream == {"direct"}
                 assert dag.dag["referenced"].upstream == {"direct"}
@@ -83,9 +99,33 @@ class TestSharedDags(BaseTestCase):
                     )
                     assert compiled.name == name
                     assert compiled.run.container.image == "busybox:1.36"
+                    if name in ("shortcut_job", "shortcut_service"):
+                        saved = child.to_source_json()
+                        child_source = orjson_loads(saved)
+                        assert "run" not in child_source
+                        assert child_source["container"] == {"image": "busybox:1.36"}
+                        replayed = OperationSpecification.compile_operation(
+                            read_polyaxonfile(saved), is_dag_node=True
+                        )
+                        assert replayed.to_dict() == compiled.to_dict()
+                        if name == "shortcut_job":
+                            assert child_source["cmd"] == "echo hello"
+                            assert compiled.run.kind == "job"
+                            assert compiled.run.container.command == ["/bin/sh", "-c"]
+                            assert compiled.run.container.args == ["set -e\necho hello"]
+                        else:
+                            assert child_source["ports"] == [8080]
+                            assert compiled.run.kind == "service"
+                            assert compiled.run.ports == [8080]
                 assert dag.get_op_spec_by_index(2).dag_ref == "template"
                 assert authored.to_dict() == before
                 assert read_polyaxonfile(authored.to_json()).to_dict() == before
+
+    def test_materialization_without_resolving_rejects_missing_definition(self):
+        dag = V1Dag(operations=[{"name": "train"}])
+        dag.process_dag()
+        with self.assertRaisesRegex(PolyaxonSchemaError, "no definition field `train`"):
+            dag.set_op_component("train")
 
     def test_compiled_dag_preserves_explicit_nulls_in_definitions(self):
         for nested in (False, True):
