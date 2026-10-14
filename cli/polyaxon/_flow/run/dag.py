@@ -237,7 +237,9 @@ class V1Dag(BaseRun):
      * If the user running the operation can have access to those connections
     </blockquote>
 
-    The connections definition will be passed to all operations.
+    The connections definition will be passed to child operations, including each replica
+    of a distributed run, except MPI jobs. Use literal connection names; templates are not
+    resolved for DAG connections.
     After checks, the connections will be resolved and inject any volumes, secrets, configMaps,
     environment variables for your main container to function correctly.
 
@@ -254,9 +256,12 @@ class V1Dag(BaseRun):
 
     This is an advanced use-case where configuring a connection is not an option.
 
-    the volumes definition will be passed to all operations.
+    The volumes definition will be passed to child operations, including each replica
+    of a distributed run, except MPI jobs.
 
     When you add a volume you need to mount it manually to your container(s).
+    A child volume with the same name but a different definition is kept alongside
+    the DAG volume, and Kubernetes rejects the duplicate name.
 
     ```yaml
     >>> run:
