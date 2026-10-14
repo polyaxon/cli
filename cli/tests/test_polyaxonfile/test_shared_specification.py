@@ -587,6 +587,7 @@ class TestSharedSpecification(BaseTestCase):
                 {"hubRef": ["train:v1"]},
                 {"component": {"unknown": True}},
                 {"run": {"kind": "unknown"}},
+                {"container": "{{ c }}"},
                 {"cmd": 1},
                 {"env": {"RETRIES": 3}},
                 {"resources": {"cpu": True}},

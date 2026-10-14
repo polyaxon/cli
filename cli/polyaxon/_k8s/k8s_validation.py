@@ -7,8 +7,8 @@ from polyaxon._k8s import k8s_schemas
 Swagger = TypeVar("Swagger")
 
 
-def _validate_schema(value: Optional[Union[Swagger, Dict]], cls: Type[Swagger]):
-    if value is None:
+def _validate_schema(value: Optional[Union[Swagger, Dict, str]], cls: Type[Swagger]):
+    if value is None or isinstance(value, str):
         return value
     if isinstance(value, dict):
         return cls(**{to_snake_case(k): value[k] for k in value})

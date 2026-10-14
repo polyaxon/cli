@@ -232,13 +232,13 @@ class V1RayReplica(BaseSchemaModel):
 
     @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):
-        if not v:
+        if not isinstance(v, list):
             return v
         return [k8s_validation.validate_k8s_volume(vi) for vi in v]
 
     @field_validator("sidecars", **validation_always, **validation_before)
     def validate_helper_containers(cls, v):
-        if not v:
+        if not isinstance(v, list):
             return v
         return [k8s_validation.validate_k8s_container(vi) for vi in v]
 
