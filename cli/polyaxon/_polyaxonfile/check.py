@@ -13,7 +13,8 @@ from polyaxon._polyaxonfile.params import parse_hparams, parse_params
 from polyaxon._polyaxonfile.references import (
     collect_references,
 )
-from polyaxon._polyaxonfile.specs import get_specification, read_polyaxonfile
+from polyaxon._polyaxonfile.shortcuts import get_sandbox_shortcuts, validate_shortcuts
+from polyaxon._polyaxonfile.specs import get_specification
 from polyaxon.exceptions import PolyaxonfileError
 
 
@@ -59,7 +60,7 @@ def check_polyaxonfile(
         polyaxonfile = check_default_path(path=".")
     # A sandbox without a source is a service; sourced kinds are never converted.
     if sandbox and not any([polyaxonfile, python_module, url, hub]):
-        shortcuts = {"ports": [], **(shortcuts or {})}
+        shortcuts = get_sandbox_shortcuts(shortcuts)
     if not any([polyaxonfile, python_module, url, hub, shortcuts]):
         message = (
             "Something went wrong, `check_polyaxonfile` was called without a polyaxonfile, "
@@ -86,7 +87,7 @@ def check_polyaxonfile(
     if shortcuts:
         # Validate inline shortcuts as an overlay before reading or fetching any source.
         try:
-            read_polyaxonfile(shortcuts, is_preset=True)
+            validate_shortcuts(shortcuts)
         except Exception as e:
             message = "Invalid inline options."
             if is_cli:

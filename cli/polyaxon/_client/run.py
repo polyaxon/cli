@@ -42,6 +42,7 @@ from polyaxon._client.decorators import (
 )
 from polyaxon._client.mixin import ClientMixin
 from polyaxon._client.store import AsyncPolyaxonStore, PolyaxonStore
+from polyaxon._config.spec import ConfigSpec
 from polyaxon._constants.metadata import META_COPY_ARTIFACTS, META_RECOMPILE, META_TMUX
 from polyaxon._containers.names import MAIN_CONTAINER_NAMES
 from polyaxon._contexts import paths as ctx_paths
@@ -55,6 +56,11 @@ from polyaxon._env_vars.getters.run import _get_run_context
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
 from polyaxon._managers.ignore import IgnoreConfigManager
+from polyaxon._polyaxonfile.shortcuts import (
+    get_shortcut_specification,
+    get_shortcuts,
+    validate_shortcuts,
+)
 from polyaxon._schemas.lifecycle import (
     LifeCycle,
     ManagedBy,
@@ -441,11 +447,25 @@ class RunClient(ClientMixin):
         self._artifacts_lineage = {}
 
     def _normalize_operation_content(
-        self, content: Optional[Union[str, Dict, "V1Polyaxonfile"]]
+        self,
+        content: Optional[Union[str, Dict, "V1Polyaxonfile"]],
+        shortcuts: Optional[Dict] = None,
     ) -> Optional[str]:
         from polyaxon._flow.polyaxonfile import V1Polyaxonfile
         from polyaxon._polyaxonfile.specs import read_polyaxonfile
 
+        if shortcuts:
+            validate_shortcuts(shortcuts)
+            # Content strings are documents, never paths or modules.
+            if isinstance(content, str):
+                content = ConfigSpec.read_from_stream(content)
+                if not isinstance(content, Mapping):
+                    raise PolyaxonClientException(
+                        "Received an invalid content, expected a mapping: {}".format(
+                            content
+                        )
+                    )
+            return get_shortcut_specification(content, shortcuts).to_source_json()
         if isinstance(content, Mapping):
             content = read_polyaxonfile(content)
         if isinstance(content, V1Polyaxonfile):
@@ -462,19 +482,21 @@ class RunClient(ClientMixin):
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
+        shortcuts: Optional[Dict] = None,
     ) -> V1OperationBody:
         from polyaxon._flow.polyaxonfile import V1Polyaxonfile
 
         if not managed_by and is_managed is not None:
             managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
-        if not content:
+        if not content and not shortcuts:
             managed_by = ManagedBy.USER
             is_managed = False
-        elif not isinstance(content, (str, Mapping, V1Polyaxonfile)):
+        elif content and not isinstance(content, (str, Mapping, V1Polyaxonfile)):
             raise PolyaxonClientException(
                 "Received an invalid content: {}".format(content)
             )
-        content = self._normalize_operation_content(content) if content else content
+        if content or shortcuts:
+            content = self._normalize_operation_content(content or None, shortcuts)
         return V1OperationBody.model_construct(
             name=name,
             description=description,
@@ -697,6 +719,14 @@ class RunClient(ClientMixin):
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
+        *,
+        image: Optional[str] = None,
+        cmd: Optional[Union[str, List[str]]] = None,
+        env: Optional[Dict[str, str]] = None,
+        cpu: Optional[Union[str, int, float]] = None,
+        memory: Optional[Union[str, int, float]] = None,
+        gpu: Optional[Union[str, int]] = None,
+        ports: Optional[List[int]] = None,
     ) -> V1Run:
         """Creates a new run based on the data passed.
 
@@ -708,7 +738,13 @@ class RunClient(ClientMixin):
           * from url: `create_from_url`
           * from hub: `create_from_hub`
 
-        > **Note**: If the `content` param is not passed, the run will be marked as non-managed.
+        > **Note**: If neither `content` nor a shortcut is passed,
+        > the run will be marked as non-managed.
+
+        Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`, `gpu`, `ports`) are the
+        `polyaxon run` inline options; only `None` omits a value. They are the final
+        overlay of `content`, or the whole source without it. With shortcuts,
+        a `content` string must be a YAML/JSON mapping, it is never read as a path.
 
         [Run API](/docs/references/api/#operation/CreateRun)
 
@@ -723,6 +759,18 @@ class RunClient(ClientMixin):
             managed_by: ManagedBy, optional, service that manages the operation.
             pending: str, to specify if the run is pending approval (requires human validation) or pending upload.  # noqa
             meta_info: dict, meta info to create the run with.
+            image: str, optional, shortcut for `container: {image: ...}`.
+            cmd: str or List[str], optional, shortcut for `cmd`,
+                 the lines run as one /bin/sh script with `set -e`.
+            env: Dict[str, str], optional, shortcut for `env`.
+            cpu: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.cpu`, e.g. `500m..1`.
+            memory: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
+            gpu: str or int, optional, count or `request..limit`,
+                 shortcut for `resources.gpu`.
+            ports: List[int], optional, shortcut for `ports`,
+                 a run without a runtime becomes a service.
 
         Returns:
             V1Run, run instance from the response.
@@ -747,6 +795,15 @@ class RunClient(ClientMixin):
             managed_by=managed_by,
             pending=pending,
             meta_info=meta_info,
+            shortcuts=get_shortcuts(
+                image=image,
+                cmd=cmd,
+                env=env,
+                cpu=cpu,
+                memory=memory,
+                gpu=gpu,
+                ports=ports,
+            ),
         )
         self._create(data=data, async_req=False)
         return self.run_data
@@ -766,11 +823,23 @@ class RunClient(ClientMixin):
         nocache: Optional[bool] = None,
         cache: Optional[Union[int, str, bool]] = None,
         approved: Optional[Union[int, str, bool]] = None,
+        *,
+        image: Optional[str] = None,
+        cmd: Optional[Union[str, List[str]]] = None,
+        env: Optional[Dict[str, str]] = None,
+        cpu: Optional[Union[str, int, float]] = None,
+        memory: Optional[Union[str, int, float]] = None,
+        gpu: Optional[Union[str, int]] = None,
+        ports: Optional[List[int]] = None,
     ) -> V1Run:
         """Creates a new run based on a polyaxonfile.
 
         N.B. Create methods are only useful if you want to create a run programmatically,
         if you run a component/operation from the CLI/UI an instance will be created automatically.
+
+        Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`, `gpu`, `ports`) are the
+        `polyaxon run` inline options, applied as the final overlay;
+        only `None` omits a value.
 
         [Run API](/docs/references/api/#operation/CreateRun)
 
@@ -809,6 +878,18 @@ class RunClient(ClientMixin):
                  [manual approval](/docs/scheduling/scheduling-strategies/manual-approval/).
                  Can be used with yes/no, y/n, false/true, f/t, 1/0. "
                  "e.g. `approved=1`, `approved='yes'`, `approved=False`, `approved='t'`, ..."
+            image: str, optional, shortcut for `container: {image: ...}`.
+            cmd: str or List[str], optional, shortcut for `cmd`,
+                 the lines run as one /bin/sh script with `set -e`.
+            env: Dict[str, str], optional, shortcut for `env`.
+            cpu: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.cpu`, e.g. `500m..1`.
+            memory: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
+            gpu: str or int, optional, count or `request..limit`,
+                 shortcut for `resources.gpu`.
+            ports: List[int], optional, shortcut for `ports`,
+                 a run without a runtime becomes a service.
 
         Returns:
             V1Run, run instance from the response.
@@ -825,6 +906,15 @@ class RunClient(ClientMixin):
             nocache=nocache,
             cache=cache,
             approved=approved,
+            shortcuts=get_shortcuts(
+                image=image,
+                cmd=cmd,
+                env=env,
+                cpu=cpu,
+                memory=memory,
+                gpu=gpu,
+                ports=ports,
+            ),
             verbose=False,
             is_cli=False,
         )
@@ -847,11 +937,23 @@ class RunClient(ClientMixin):
         nocache: Optional[bool] = None,
         cache: Optional[Union[int, str, bool]] = None,
         approved: Optional[Union[int, str, bool]] = None,
+        *,
+        image: Optional[str] = None,
+        cmd: Optional[Union[str, List[str]]] = None,
+        env: Optional[Dict[str, str]] = None,
+        cpu: Optional[Union[str, int, float]] = None,
+        memory: Optional[Union[str, int, float]] = None,
+        gpu: Optional[Union[str, int]] = None,
+        ports: Optional[List[int]] = None,
     ) -> V1Run:
         """Creates a new run from a url containing a Polyaxonfile specification.
 
         N.B. Create methods are only useful if you want to create a run programmatically,
         if you run a component/operation from the CLI/UI an instance will be created automatically.
+
+        Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`, `gpu`, `ports`) are the
+        `polyaxon run` inline options, applied as the final overlay;
+        only `None` omits a value.
 
         [Run API](/docs/references/api/#operation/CreateRun)
 
@@ -889,6 +991,18 @@ class RunClient(ClientMixin):
                  [manual approval](/docs/scheduling/scheduling-strategies/manual-approval/).
                  Can be used with yes/no, y/n, false/true, f/t, 1/0. "
                  "e.g. `approved=1`, `approved='yes'`, `approved=False`, `approved='t'`, ..."
+            image: str, optional, shortcut for `container: {image: ...}`.
+            cmd: str or List[str], optional, shortcut for `cmd`,
+                 the lines run as one /bin/sh script with `set -e`.
+            env: Dict[str, str], optional, shortcut for `env`.
+            cpu: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.cpu`, e.g. `500m..1`.
+            memory: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
+            gpu: str or int, optional, count or `request..limit`,
+                 shortcut for `resources.gpu`.
+            ports: List[int], optional, shortcut for `ports`,
+                 a run without a runtime becomes a service.
 
         Returns:
             V1Run, run instance from the response.
@@ -905,6 +1019,15 @@ class RunClient(ClientMixin):
             nocache=nocache,
             cache=cache,
             approved=approved,
+            shortcuts=get_shortcuts(
+                image=image,
+                cmd=cmd,
+                env=env,
+                cpu=cpu,
+                memory=memory,
+                gpu=gpu,
+                ports=ports,
+            ),
             verbose=False,
             is_cli=False,
         )
@@ -927,11 +1050,23 @@ class RunClient(ClientMixin):
         nocache: Optional[bool] = None,
         cache: Optional[Union[int, str, bool]] = None,
         approved: Optional[Union[int, str, bool]] = None,
+        *,
+        image: Optional[str] = None,
+        cmd: Optional[Union[str, List[str]]] = None,
+        env: Optional[Dict[str, str]] = None,
+        cpu: Optional[Union[str, int, float]] = None,
+        memory: Optional[Union[str, int, float]] = None,
+        gpu: Optional[Union[str, int]] = None,
+        ports: Optional[List[int]] = None,
     ) -> V1Run:
         """Creates a new run from the hub based on the component name.
 
         N.B. Create methods are only useful if you want to create a run programmatically,
         if you run a component/operation from the CLI/UI an instance will be created automatically.
+
+        Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`, `gpu`, `ports`) are the
+        `polyaxon run` inline options, applied as the final overlay;
+        only `None` omits a value.
 
         If the component has required inputs, you should pass the params.
 
@@ -968,6 +1103,18 @@ class RunClient(ClientMixin):
                  [manual approval](/docs/scheduling/scheduling-strategies/manual-approval/).
                  Can be used with yes/no, y/n, false/true, f/t, 1/0. "
                  "e.g. `approved=1`, `approved='yes'`, `approved=False`, `approved='t'`, ..."
+            image: str, optional, shortcut for `container: {image: ...}`.
+            cmd: str or List[str], optional, shortcut for `cmd`,
+                 the lines run as one /bin/sh script with `set -e`.
+            env: Dict[str, str], optional, shortcut for `env`.
+            cpu: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.cpu`, e.g. `500m..1`.
+            memory: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
+            gpu: str or int, optional, count or `request..limit`,
+                 shortcut for `resources.gpu`.
+            ports: List[int], optional, shortcut for `ports`,
+                 a run without a runtime becomes a service.
 
         Returns:
             V1Run, run instance from the response.
@@ -984,6 +1131,15 @@ class RunClient(ClientMixin):
             nocache=nocache,
             cache=cache,
             approved=approved,
+            shortcuts=get_shortcuts(
+                image=image,
+                cmd=cmd,
+                env=env,
+                cpu=cpu,
+                memory=memory,
+                gpu=gpu,
+                ports=ports,
+            ),
             verbose=False,
             is_cli=False,
         )
@@ -3462,6 +3618,14 @@ class AsyncRunClient(RunClient):
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
+        *,
+        image: Optional[str] = None,
+        cmd: Optional[Union[str, List[str]]] = None,
+        env: Optional[Dict[str, str]] = None,
+        cpu: Optional[Union[str, int, float]] = None,
+        memory: Optional[Union[str, int, float]] = None,
+        gpu: Optional[Union[str, int]] = None,
+        ports: Optional[List[int]] = None,
     ) -> V1Run:
         tags = validate_tags(tags, validate_yaml=True)
         if self._is_offline:
@@ -3483,6 +3647,15 @@ class AsyncRunClient(RunClient):
             managed_by=managed_by,
             pending=pending,
             meta_info=meta_info,
+            shortcuts=get_shortcuts(
+                image=image,
+                cmd=cmd,
+                env=env,
+                cpu=cpu,
+                memory=memory,
+                gpu=gpu,
+                ports=ports,
+            ),
         )
         await self._acreate(data=data)
         return self.run_data

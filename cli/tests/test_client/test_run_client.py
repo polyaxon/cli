@@ -7,11 +7,17 @@ import tempfile
 from types import SimpleNamespace
 import uuid
 
+from clipped.compact.pydantic import ValidationError
 from polyaxon import settings
 from polyaxon._client.run import UPLOAD_SKIPPED, RunClient, _serialize_event_names
 from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
+from polyaxon._polyaxonfile import (
+    OperationSpecification,
+    check_polyaxonfile,
+    read_polyaxonfile,
+)
 from polyaxon._schemas.lifecycle import (
     V1ProjectVersionKind,
     V1StatusCondition,
@@ -22,7 +28,7 @@ from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.test_utils import BaseTestCase, patch_settings
-from polyaxon.exceptions import PolyaxonClientException
+from polyaxon.exceptions import PolyaxonClientException, PolyaxonfileError
 from traceml.artifacts import V1RunArtifact
 
 
@@ -591,6 +597,7 @@ class TestRunClient(BaseTestCase):
             for content in (source, model.from_dict(source), json.dumps(source)):
                 for action, endpoint, options in (
                     ("create", "create_run", {}),
+                    ("create", "create_run", {"image": "busybox:1.37"}),
                     ("restart", "restart_run", {}),
                     ("restart", "copy_run", {"copy": True}),
                     ("resume", "resume_run", {}),
@@ -599,6 +606,7 @@ class TestRunClient(BaseTestCase):
                         model=model.__name__,
                         content_type=type(content).__name__,
                         endpoint=endpoint,
+                        options=options,
                     ):
                         request = getattr(sdk_client.runs_v1, endpoint)
                         request.reset_mock()
@@ -608,14 +616,182 @@ class TestRunClient(BaseTestCase):
 
                         request.assert_called_once()
                         body = request.call_args.kwargs["body"]
-                        assert json.loads(body.content) == source
-                        if isinstance(content, str):
+                        expected = source
+                        if "image" in options:
+                            # The shortcut argument is the final overlay.
+                            expected = {
+                                **source,
+                                "container": {"image": "busybox:1.37"},
+                            }
+                        assert json.loads(body.content) == expected
+                        if isinstance(content, str) and expected is source:
                             assert body.content == content
                         assert content == pristine
                         layer, before = content, pristine
                         while isinstance(layer, V1Polyaxonfile):
                             assert layer.model_fields_set == before.model_fields_set
                             layer, before = layer.component, before.component
+
+    def get_shortcut_client(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.runs_v1.create_run.return_value = V1Run(uuid=self.run_uuid)
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            client=sdk_client,
+            manual_exceptions_handling=True,
+        )
+        return client, sdk_client.runs_v1.create_run
+
+    def test_create_shortcuts_without_content_are_the_source(self):
+        client, create_run = self.get_shortcut_client()
+        for options, expected in (
+            # Empty and zero values are authored values.
+            (
+                {"env": {}, "ports": [], "gpu": 0},
+                {"env": {}, "ports": [], "resources": {"gpu": 0}},
+            ),
+            (
+                {
+                    "image": "busybox:1.36",
+                    "cmd": ['echo "$MESSAGE"'],
+                    "env": {"MESSAGE": "hello"},
+                    "cpu": "500m..1",
+                    "memory": "512Mi..1Gi",
+                },
+                {
+                    "container": {"image": "busybox:1.36"},
+                    "cmd": ['echo "$MESSAGE"'],
+                    "env": {"MESSAGE": "hello"},
+                    "resources": {"cpu": "500m..1", "memory": "512Mi..1Gi"},
+                },
+            ),
+        ):
+            with self.subTest(options=options):
+                create_run.reset_mock()
+
+                client.create(**options)
+
+                body = create_run.call_args.kwargs["body"]
+                assert json.loads(body.content) == expected
+                assert body.is_managed is None
+
+    def test_create_shortcuts_follow_the_cli_layering(self):
+        client, create_run = self.get_shortcut_client()
+        run = {"kind": "job", "container": {"image": "busybox:1.36"}}
+        run_patch = {"container": {"image": "busybox:1.35"}}
+        with tempfile.TemporaryDirectory() as directory:
+            # A component is wrapped first, so the outer shortcut beats its runPatch;
+            # otherwise the shortcut joins the content layer and its runPatch wins.
+            for source, image in (
+                ({"run": run, "runPatch": run_patch}, "busybox:1.35"),
+                (
+                    {"kind": "component", "run": run, "runPatch": run_patch},
+                    "busybox:1.37",
+                ),
+                (
+                    {
+                        "kind": "operation",
+                        "runPatch": run_patch,
+                        "component": {"run": run},
+                    },
+                    "busybox:1.35",
+                ),
+            ):
+                with self.subTest(kind=source.get("kind")):
+                    path = Path(directory) / "polyaxonfile.json"
+                    path.write_text(json.dumps(source))
+                    create_run.reset_mock()
+
+                    client.create(content=source, image="busybox:1.37")
+
+                    submitted = json.loads(create_run.call_args.kwargs["body"].content)
+                    cli = check_polyaxonfile(
+                        polyaxonfile=str(path),
+                        shortcuts={"container": {"image": "busybox:1.37"}},
+                        is_cli=False,
+                    )
+                    assert submitted == json.loads(cli.to_source_json())
+                    compiled = OperationSpecification.compile_operation(
+                        read_polyaxonfile(submitted)
+                    )
+                    assert compiled.run.container.image == image
+
+        # The inherited job of a component rejects ports at compilation.
+        create_run.reset_mock()
+        client.create(
+            content={"kind": "component", "container": {"image": "busybox:1.36"}},
+            ports=[8080],
+        )
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        with self.assertRaises(ValidationError):
+            OperationSpecification.compile_operation(read_polyaxonfile(submitted))
+
+    def test_create_shortcut_string_content_is_a_document(self):
+        client, create_run = self.get_shortcut_client()
+
+        client.create(content="cmd: python train.py\n", image="python:3.12")
+
+        assert json.loads(create_run.call_args.kwargs["body"].content) == {
+            "cmd": "python train.py",
+            "container": {"image": "python:3.12"},
+        }
+        create_run.reset_mock()
+        with tempfile.TemporaryDirectory() as directory:
+            marker = Path(directory) / "imported"
+            module = Path(directory) / "polyaxonfile.py"
+            module.write_text(
+                "from pathlib import Path\nPath({!r}).touch()\n".format(str(marker))
+            )
+            # Only mappings are content; a path is never read or imported.
+            for content in (str(module), "null", "[]", "1", "text"):
+                with self.subTest(content=content):
+                    with self.assertRaises(PolyaxonClientException):
+                        client.create(content=content, image="python:3.12")
+            # Shortcuts are validated before the content is parsed.
+            with self.assertRaises(ValidationError):
+                client.create(content=str(module), env={"COUNT": 1})
+            assert not marker.exists()
+        create_run.assert_not_called()
+
+    @mock.patch("polyaxon._config.spec.ConfigSpec.read_from_url")
+    def test_create_from_invalid_shortcuts_fail_before_reading(self, read_from_url):
+        client, create_run = self.get_shortcut_client()
+        for method, source in (
+            ("create_from_polyaxonfile", "missing.yaml"),
+            ("create_from_url", "https://example.com/polyaxonfile.yaml"),
+            ("create_from_hub", "component:v1"),
+        ):
+            with self.subTest(method=method):
+                with self.assertRaises(PolyaxonfileError) as error:
+                    getattr(client, method)(source, env={"COUNT": 1})
+                assert "Invalid inline options." in str(error.exception)
+        read_from_url.assert_not_called()
+        create_run.assert_not_called()
+
+    @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
+    def test_create_from_file_applies_shortcuts_after_the_file(self, create_run):
+        create_run.return_value = V1Run(uuid=self.run_uuid)
+        client = RunClient(
+            owner=self.owner,
+            project=self.project,
+            manual_exceptions_handling=True,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "job.yml"
+            source.write_text("container: {image: busybox:1.36}\n")
+
+            client.create_from_polyaxonfile(
+                str(source), image="nginx:1.27", ports=[8080]
+            )
+
+        submitted = json.loads(create_run.call_args.kwargs["body"].content)
+        assert submitted == {"container": {"image": "nginx:1.27"}, "ports": [8080]}
+        compiled = OperationSpecification.compile_operation(
+            read_polyaxonfile(submitted)
+        )
+        assert compiled.run.kind == "service"
+        assert compiled.run.container.image == "nginx:1.27"
 
     @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.create_run")
     def test_create_from_shared_file_submits_native_content(self, create_run):

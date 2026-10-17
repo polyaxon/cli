@@ -1168,6 +1168,7 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
             for content in (source, model.from_dict(source), json.dumps(source)):
                 for action, endpoint, options in (
                     ("create", "create_run", {}),
+                    ("create", "create_run", {"image": "busybox:1.37"}),
                     ("restart", "restart_run", {}),
                     ("restart", "copy_run", {"copy": True}),
                     ("resume", "resume_run", {}),
@@ -1176,6 +1177,7 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
                         model=model.__name__,
                         content_type=type(content).__name__,
                         endpoint=endpoint,
+                        options=options,
                     ):
                         request = AsyncMock(return_value=self.make_run())
                         setattr(sdk_client.runs_v1, endpoint, request)
@@ -1186,8 +1188,15 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
                         request.assert_called_once()
                         assert "async_req" not in request.call_args.kwargs
                         body = request.call_args.kwargs["body"]
-                        assert json.loads(body.content) == source
-                        if isinstance(content, str):
+                        expected = source
+                        if "image" in options:
+                            # The shortcut argument is the final overlay.
+                            expected = {
+                                **source,
+                                "container": {"image": "busybox:1.37"},
+                            }
+                        assert json.loads(body.content) == expected
+                        if isinstance(content, str) and expected is source:
                             assert body.content == content
                         assert content == pristine
                         layer, before = content, pristine

@@ -1,5 +1,6 @@
 from copy import deepcopy
 from itertools import product
+from mock import patch
 import os
 import pytest
 import re
@@ -24,6 +25,7 @@ from polyaxon._polyaxonfile import (
     patch_polyaxonfile,
     read_polyaxonfile,
 )
+from polyaxon._polyaxonfile.shortcuts import SHORTCUT_KEYS, validate_shortcuts
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonfileError
 
@@ -1643,3 +1645,20 @@ class TestShortcuts(BaseTestCase):
             "cmd": ["a", "b"],
             "resources": {"memory": "512Mi..1Gi"},
         }
+
+    def test_validate_shortcuts_rejects_other_keys(self):
+        validate_shortcuts({key: None for key in SHORTCUT_KEYS})
+        # Preset validation alone accepts these keys.
+        for key in ("name", "plugins", "runPatch"):
+            with self.subTest(key=key), self.assertRaises(PolyaxonfileError):
+                validate_shortcuts({key: None})
+
+        with patch("polyaxon._config.spec.ConfigSpec.read_from_url") as read_from_url:
+            with self.assertRaises(PolyaxonfileError) as error:
+                check_polyaxonfile(
+                    url="https://example.com/polyaxonfile.yaml",
+                    shortcuts={"name": "inline"},
+                    is_cli=False,
+                )
+        assert "name" in str(error.exception.__cause__)
+        read_from_url.assert_not_called()
