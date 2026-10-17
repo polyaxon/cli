@@ -1,4 +1,5 @@
 import base64
+from copy import deepcopy
 import inspect
 import os
 from pathlib import Path
@@ -433,11 +434,49 @@ class TestSandboxClient(BaseTestCase):
             "run": {"kind": "service", "container": {"image": "base:v1"}}
         }
 
+    def test_create_content_without_a_runtime_is_a_service(self):
+        client, create_run = self.make_create_client()
+        for content, expected in (
+            ({}, {"ports": [], "plugins": {"sandbox": True}}),
+            (
+                {"plugins": {"ssh": True}},
+                {"ports": [], "plugins": {"ssh": True, "sandbox": True}},
+            ),
+            # Authored and overlaid ports are kept.
+            (
+                {"container": {"image": "base:v1"}, "ports": [8080]},
+                {
+                    "container": {"image": "base:v1"},
+                    "ports": [8080],
+                    "plugins": {"sandbox": True},
+                },
+            ),
+        ):
+            with self.subTest(content=content):
+                create_run.reset_mock()
+                pristine = deepcopy(content)
+
+                client.create(content=content)
+
+                submitted = orjson_loads(create_run.call_args.kwargs["body"].content)
+                assert submitted == expected
+                compiled = OperationSpecification.compile_operation(
+                    read_polyaxonfile(submitted)
+                )
+                assert compiled.run.kind == V1RunKind.SERVICE
+                assert compiled.plugins.sandbox is True
+                assert content == pristine
+
+        client.create(content={"container": {"image": "base:v1"}}, ports=[9090])
+
+        submitted = orjson_loads(create_run.call_args.kwargs["body"].content)
+        assert submitted["ports"] == [9090]
+
     def test_create_validates_content_before_submitting(self):
         client, create_run = self.make_create_client()
         service = {"run": {"kind": "service", "container": {"image": "base:v1"}}}
-        # Only `None` means no content; an unresolved reference cannot compose.
-        for content in (False, 0, [], {}, {"hubRef": "acme/sandbox:v1"}):
+        # Content must be a mapping; an unresolved reference cannot compose.
+        for content in (False, 0, [], {"hubRef": "acme/sandbox:v1"}):
             with self.subTest(content=content):
                 with self.assertRaises(PolyaxonClientException):
                     client.create(content=content)

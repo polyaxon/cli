@@ -1215,6 +1215,29 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         assert compiled.run.kind == "service"
         assert compiled.plugins.sandbox is True
 
+    def test_sandbox_sources_without_a_runtime_are_services(self):
+        with tempfile.TemporaryDirectory() as directory:
+            plugins = Path(directory) / "plugins.yaml"
+            plugins.write_text("plugins: {ssh: true}\n")
+            image = Path(directory) / "image.yaml"
+            image.write_text("container: {image: base:v1}\n")
+            for args, ports in (
+                (["-f", str(plugins)], []),
+                (["-f", str(image)], []),
+                # Authored and inline ports are kept.
+                (["-f", str(image), "--port", "8080"], [8080]),
+            ):
+                with self.subTest(args=args):
+                    op_spec = self.get_op_spec(*args, "--sandbox")
+
+                    assert op_spec.ports == ports
+                    compiled = _compile(op_spec)
+                    assert compiled.run.kind == "service"
+                    assert compiled.run.ports == ports
+                    assert compiled.plugins.sandbox is True
+                    if args[1] == str(plugins):
+                        assert compiled.plugins.ssh is True
+
     def test_sandbox_keeps_the_source_and_its_plugins(self):
         service = (
             "run: {kind: service, container: {image: base:v1}}\nplugins: {tmux: true}\n"
@@ -1256,6 +1279,13 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         cases = (
             ("job", [job], [], kind_error),
             ("job component", ["kind: component\n" + job], [], kind_error),
+            # A component is wrapped first: its container shortcut is a job.
+            (
+                "component without a runtime",
+                ["kind: component\ncontainer: {image: base:v1}\n"],
+                [],
+                kind_error,
+            ),
             # The flag applies after the files: a later `sandbox: false` cannot
             # turn a job into a normal run.
             (

@@ -162,6 +162,19 @@ def get_op_specification(
         config = config.patch(git_preset, strategy=PatchStrategy.PRE_MERGE)
     if sandbox:
         _check_literal_plugins(config)
+        # A source without a runtime has no kind to keep, so it is a service.
+        if not any(
+            (
+                config.run,
+                config.component,
+                config.hub_ref,
+                config.url_ref,
+                config.path_ref,
+                config.dag_ref,
+            )
+        ):
+            service_preset = V1Operation(ports=[], is_preset=True)
+            config = config.patch(service_preset, strategy=PatchStrategy.ISNULL)
         # Like the git preset, the request applies after the files.
         sandbox_preset = V1Operation(plugins=V1Plugins(sandbox=True), is_preset=True)
         config = config.patch(sandbox_preset, strategy=PatchStrategy.POST_MERGE)

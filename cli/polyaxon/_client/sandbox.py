@@ -344,13 +344,15 @@ class SandboxClient(ClientMixin):
         this client to point at the returned run. After the run is approved,
         scheduled, and running, the same client can use `process`, `fs`, and `pty`.
 
-        Like `polyaxon run --sandbox`: without `content`, the source is a minimal
-        service (`ports: []`). Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`,
-        `gpu`, `ports`) are the `polyaxon run` inline options; only `None` omits a
-        value. They are the final overlay of `content`, or extend the minimal
-        service without it. `plugins.sandbox: true` is then set on the operation,
-        other literal plugins are kept, and the composed run must be a service.
-        Unset plugins stay unset, so presets can still enable `tmux` or `ssh`.
+        Like `polyaxon run --sandbox`. Shortcuts (`image`, `cmd`, `env`, `cpu`,
+        `memory`, `gpu`, `ports`) are the `polyaxon run` inline options; only
+        `None` omits a value. They are the final overlay of `content`, or the
+        whole source without it. A source without a runtime (no `run`, component
+        or reference), e.g. `{"plugins": {"ssh": True}}`, is a service
+        (`ports: []` unless set). `plugins.sandbox: true` is then set on the
+        operation, other literal plugins are kept, and the composed run must be
+        a service. Unset plugins stay unset, so presets can still enable `tmux`
+        or `ssh`.
 
         Example:
         ```python
@@ -553,13 +555,15 @@ class AsyncSandboxClient(SandboxClient):
         this client to point at the returned run. After the run is approved,
         scheduled, and running, the same client can use `process`, `fs`, and `pty`.
 
-        Like `polyaxon run --sandbox`: without `content`, the source is a minimal
-        service (`ports: []`). Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`,
-        `gpu`, `ports`) are the `polyaxon run` inline options; only `None` omits a
-        value. They are the final overlay of `content`, or extend the minimal
-        service without it. `plugins.sandbox: true` is then set on the operation,
-        other literal plugins are kept, and the composed run must be a service.
-        Unset plugins stay unset, so presets can still enable `tmux` or `ssh`.
+        Like `polyaxon run --sandbox`. Shortcuts (`image`, `cmd`, `env`, `cpu`,
+        `memory`, `gpu`, `ports`) are the `polyaxon run` inline options; only
+        `None` omits a value. They are the final overlay of `content`, or the
+        whole source without it. A source without a runtime (no `run`, component
+        or reference), e.g. `{"plugins": {"ssh": True}}`, is a service
+        (`ports: []` unless set). `plugins.sandbox: true` is then set on the
+        operation, other literal plugins are kept, and the composed run must be
+        a service. Unset plugins stay unset, so presets can still enable `tmux`
+        or `ssh`.
 
         Example:
         ```python
