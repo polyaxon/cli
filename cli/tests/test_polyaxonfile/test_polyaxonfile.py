@@ -834,6 +834,44 @@ class TestPolyaxonfiles(BaseTestCase):
             "requests": {"cpu": "200m"},
         }
 
+    def test_ray_start_params_keep_strings_after_runtime_contexts(self):
+        run_config = V1CompiledOperation.read(
+            {
+                "version": 1.1,
+                "kind": "compiled_operation",
+                "run": {
+                    "kind": "raycluster",
+                    "head": {
+                        "rayStartParams": {
+                            "num-cpus": "0",
+                            "dashboard-host": "0.0.0.0",
+                        },
+                        "container": {"image": "rayproject/ray:2.46.0"},
+                    },
+                    "workers": {
+                        "small": {
+                            "rayStartParams": {"num-cpus": "1"},
+                            "container": {"image": "rayproject/ray:2.46.0"},
+                        }
+                    },
+                },
+            }
+        )
+
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(
+            run_config,
+            contexts={
+                "head": {"globals": {"uuid": "uuid"}},
+                "workers": {"small": {"globals": {"uuid": "uuid"}}},
+            },
+        )
+        assert run_config.run.head.ray_start_params == {
+            "num-cpus": "0",
+            "dashboard-host": "0.0.0.0",
+        }
+        assert run_config.run.workers["small"].ray_start_params == {"num-cpus": "1"}
+
     def test_dask_passes(self):
         run_config = CompiledOperationSpecification.read(
             [

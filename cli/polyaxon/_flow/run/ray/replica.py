@@ -7,6 +7,7 @@ from clipped.compact.pydantic import (
     validation_always,
     validation_before,
 )
+from clipped.types import GenericStr
 from clipped.types.ref_or_obj import IntOrRef, RefField
 from polyaxon._flow.environment import V1Environment
 from polyaxon._flow.init import V1Init
@@ -220,7 +221,7 @@ class V1RayReplica(BaseSchemaModel):
     replicas: Optional[IntOrRef] = None
     min_replicas: Optional[IntOrRef] = Field(alias="minReplicas", default=None)
     max_replicas: Optional[IntOrRef] = Field(alias="maxReplicas", default=None)
-    ray_start_params: Optional[Dict[str, str]] = Field(
+    ray_start_params: Optional[Dict[StrictStr, GenericStr]] = Field(
         alias="rayStartParams", default=None
     )
     environment: Optional[Union[V1Environment, RefField]] = None
