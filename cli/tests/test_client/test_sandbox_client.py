@@ -18,6 +18,13 @@ from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.job import V1Job
 from polyaxon._flow.run.service import V1Service
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
+from polyaxon._polyaxonfile import (
+    CompiledOperationSpecification,
+    OperationSpecification,
+    check_polyaxonfile,
+    get_shortcuts,
+    read_polyaxonfile,
+)
 from polyaxon._sandbox.client_utils import (
     MAX_REMOTE_PATH_BYTES,
     FsReadResult,
@@ -291,9 +298,16 @@ class TestSandboxClient(BaseTestCase):
         assert body.name == "sandbox"
         assert body.tags == ["debug"]
 
-        operation = self.get_created_operation(sdk_client)
-        assert operation.component.run.kind == V1RunKind.SERVICE
-        assert operation.component.plugins.sandbox is True
+        # Same authored source as `polyaxon run --sandbox`.
+        assert orjson_loads(body.content) == {
+            "ports": [],
+            "plugins": {"sandbox": True},
+        }
+        compiled = OperationSpecification.compile_operation(
+            self.get_created_operation(sdk_client)
+        )
+        assert compiled.run.kind == V1RunKind.SERVICE
+        assert compiled.plugins.sandbox is True
         assert client.process._parent is client
         assert client.fs._parent is client
         assert client.pty._parent is client
@@ -321,9 +335,15 @@ class TestSandboxClient(BaseTestCase):
         client.create(content=content)
 
         operation = self.get_created_operation(sdk_client)
-        assert operation.component.run.kind == V1RunKind.SERVICE
+        # The sandbox plugin is the outer layer; authored plugins are kept.
+        assert operation.plugins.sandbox is True
         assert operation.component.plugins.tmux is True
-        assert operation.component.plugins.sandbox is True
+        assert operation.component.plugins.sandbox is None
+        compiled = OperationSpecification.compile_operation(operation)
+        assert compiled.run.kind == V1RunKind.SERVICE
+        assert compiled.plugins.tmux is True
+        assert compiled.plugins.sandbox is True
+        assert content.plugins is None
         assert content.component.plugins.sandbox is None
 
     def test_create_rejects_non_service_inline_content(self):
@@ -347,6 +367,115 @@ class TestSandboxClient(BaseTestCase):
             client.create(content=content)
 
         sdk_client.runs_v1.create_run.assert_not_called()
+
+    def make_create_client(self):
+        sdk_client = SyncPolyaxonClientMock()
+        sdk_client.runs_v1.create_run.return_value = V1Run.model_construct(
+            uuid=RUN_UUID
+        )
+        with patch(
+            "polyaxon._managers.run.RunConfigManager.get_config", return_value=None
+        ):
+            client = SandboxClient(owner=OWNER, project=PROJECT, client=sdk_client)
+        return client, sdk_client.runs_v1.create_run
+
+    def test_create_builds_the_cli_sandbox_source(self):
+        client, create_run = self.make_create_client()
+        cwd = os.getcwd()
+        with tempfile.TemporaryDirectory() as directory:
+            # Nothing to discover, so the CLI also starts from the default service.
+            os.chdir(directory)
+            try:
+                for options in (
+                    {},
+                    {"image": "python:3.12"},
+                    {"ports": [8080], "env": {}, "gpu": 0},
+                ):
+                    with self.subTest(options=options):
+                        create_run.reset_mock()
+
+                        client.create(**options)
+
+                        submitted = orjson_loads(
+                            create_run.call_args.kwargs["body"].content
+                        )
+                        cli = check_polyaxonfile(
+                            shortcuts=get_shortcuts(**options),
+                            sandbox=True,
+                            is_cli=False,
+                        )
+                        assert submitted == orjson_loads(cli.to_source_json())
+            finally:
+                os.chdir(cwd)
+        # Shortcut ports replace the default; empty and zero values are kept.
+        assert submitted == {
+            "ports": [8080],
+            "env": {},
+            "resources": {"gpu": 0},
+            "plugins": {"sandbox": True},
+        }
+
+    def test_create_overlays_shortcuts_on_content(self):
+        client, create_run = self.make_create_client()
+        content = {"run": {"kind": "service", "container": {"image": "base:v1"}}}
+
+        client.create(content=content, image="python:3.12")
+
+        submitted = orjson_loads(create_run.call_args.kwargs["body"].content)
+        # A sourced document gets no service intent.
+        assert "ports" not in submitted
+        compiled = OperationSpecification.compile_operation(
+            read_polyaxonfile(submitted)
+        )
+        assert compiled.run.container.image == "python:3.12"
+        assert compiled.plugins.sandbox is True
+        assert content == {
+            "run": {"kind": "service", "container": {"image": "base:v1"}}
+        }
+
+    def test_create_validates_content_before_submitting(self):
+        client, create_run = self.make_create_client()
+        service = {"run": {"kind": "service", "container": {"image": "base:v1"}}}
+        # Only `None` means no content; an unresolved reference cannot compose.
+        for content in (False, 0, [], {}, {"hubRef": "acme/sandbox:v1"}):
+            with self.subTest(content=content):
+                with self.assertRaises(PolyaxonClientException):
+                    client.create(content=content)
+        create_run.assert_not_called()
+
+        # A stored reference with its resolved component is valid.
+        client.create(
+            content={
+                "kind": "operation",
+                "hubRef": "acme/sandbox:v1",
+                "component": service,
+            }
+        )
+
+        submitted = orjson_loads(create_run.call_args.kwargs["body"].content)
+        assert submitted["hubRef"] == "acme/sandbox:v1"
+        compiled = OperationSpecification.compile_operation(
+            read_polyaxonfile(submitted)
+        )
+        assert compiled.run.kind == V1RunKind.SERVICE
+        assert compiled.plugins.sandbox is True
+
+    def test_create_default_leaves_unset_plugins_to_presets(self):
+        client, create_run = self.make_create_client()
+
+        client.create()
+
+        compiled = OperationSpecification.compile_operation(
+            read_polyaxonfile(orjson_loads(create_run.call_args.kwargs["body"].content))
+        )
+        # Unlike explicit `false` values, unset plugins accept merged presets.
+        applied = CompiledOperationSpecification.apply_preset(
+            compiled,
+            {"patchStrategy": "pre_merge", "plugins": {"tmux": True, "ssh": True}},
+        )
+        assert applied.plugins.sandbox is True
+        assert applied.plugins.tmux is True
+        assert applied.plugins.ssh is True
 
     def test_namespace_property_uses_run_settings_or_default_namespace(self):
         client = self.make_client(run_namespace=None)

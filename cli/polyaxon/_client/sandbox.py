@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import Mapping
-from copy import deepcopy
 import inspect
 import os
 from pathlib import Path
@@ -11,6 +10,7 @@ from urllib.parse import urlencode
 
 import aiohttp
 
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.bools import to_bool
 from clipped.utils.encoding import BytesLike, as_bytes
 from clipped.utils.http import absolute_uri, to_ws_url
@@ -25,15 +25,17 @@ from polyaxon._client.decorators import (
 )
 from polyaxon._client.mixin import ClientMixin
 from polyaxon._client.transport import async_sandbox_ws, sandbox_ws
+from polyaxon._config.spec import ConfigSpec
 from polyaxon._env_vars.getters import get_project_error_message
 from polyaxon._env_vars.getters.project import _get_project_context, _ProjectContext
 from polyaxon._env_vars.getters.run import _get_run_context
-from polyaxon._flow.component.component import V1Component
 from polyaxon._flow.operations.operation import V1Operation
-from polyaxon._flow.plugins import V1Plugins
-from polyaxon._flow.run.enums import V1RunKind
-from polyaxon._flow.run.service import V1Service
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
+from polyaxon._polyaxonfile.shortcuts import (
+    get_shortcut_specification,
+    get_shortcuts,
+    validate_shortcuts,
+)
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
     FsWriteResult,
@@ -60,7 +62,7 @@ from polyaxon._sdk.schemas.v1_signal_request import V1SignalRequest
 from polyaxon._utils.fqn_utils import get_entity_full_name, split_owner_team_space
 from polyaxon._utils.urls_utils import get_proxy_run_url
 from polyaxon.api import SANDBOX_V1_LOCATION
-from polyaxon.exceptions import PolyaxonClientException
+from polyaxon.exceptions import PolyaxonClientException, PolyaxonSchemaError
 
 
 _DEFAULT_FILE_CHUNK_SIZE = 64 * 1024
@@ -267,60 +269,28 @@ class SandboxClient(ClientMixin):
         self._run_data.status = V1Statuses.CREATED
         self._namespace = None
 
-    def _normalize_sandbox_operation_content(
-        self,
-        content: Optional[Union[str, Dict, V1Operation]],
-        tmux: bool = False,
-        ssh: bool = False,
-    ) -> V1Operation:
-        if content is None:
-            return V1Operation(
-                component=V1Component(
-                    run=V1Service(),
-                    plugins=V1Plugins(sandbox=True, tmux=tmux, ssh=ssh),
-                )
-            )
-        if isinstance(content, Mapping):
-            return V1Operation.from_dict(content)
-        if isinstance(content, V1Operation):
-            return deepcopy(content)
-        if isinstance(content, str):
-            return V1Operation.read(content)
-        raise PolyaxonClientException("Received an invalid content: {}".format(content))
-
     def _build_sandbox_operation_content(
         self,
         content: Optional[Union[str, Dict, V1Operation]],
-        tmux: bool = False,
-        ssh: bool = False,
+        shortcuts: Optional[Dict] = None,
     ) -> str:
-        operation = self._normalize_sandbox_operation_content(
-            content, tmux=tmux, ssh=ssh
-        )
-        if not operation.component:
+        if shortcuts:
+            validate_shortcuts(shortcuts)
+        if isinstance(content, str):
+            # A path, url or document, like `V1Operation.read`.
+            content = ConfigSpec.read_from(content)
+        if content is not None and not isinstance(content, (Mapping, V1Operation)):
             raise PolyaxonClientException(
-                "Sandbox creation requires inline component content."
+                "Received an invalid content: {}".format(content)
             )
-        component = operation.component
-        if not component.run or component.run.kind != V1RunKind.SERVICE:
-            kind = component.run.kind if component.run else None
+        # Same service checks and plugin preset as `polyaxon run --sandbox`.
+        try:
+            operation = get_shortcut_specification(content, shortcuts, sandbox=True)
+        except (PolyaxonSchemaError, ValidationError) as e:
             raise PolyaxonClientException(
-                "Sandbox creation requires a service component, received `{}`.".format(
-                    kind
-                )
-            )
-
-        plugins = component.plugins
-        if plugins and not isinstance(plugins, V1Plugins):
-            raise PolyaxonClientException(
-                "Sandbox creation cannot merge plugin references; "
-                "provide inline plugins."
-            )
-        if not plugins:
-            component.plugins = V1Plugins(sandbox=True, tmux=tmux, ssh=ssh)
-        else:
-            plugins.sandbox = True
-        return operation.to_json()
+                "Sandbox creation requires a service operation: {}".format(e)
+            ) from e
+        return operation.to_source_json()
 
     def _build_sandbox_create_body(
         self,
@@ -332,6 +302,7 @@ class SandboxClient(ClientMixin):
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
+        shortcuts: Optional[Dict] = None,
     ) -> V1OperationBody:
         if not managed_by and is_managed is not None:
             managed_by = ManagedBy.AGENT if is_managed else ManagedBy.USER
@@ -339,7 +310,7 @@ class SandboxClient(ClientMixin):
             name=name,
             description=description,
             tags=tags,
-            content=self._build_sandbox_operation_content(content),
+            content=self._build_sandbox_operation_content(content, shortcuts),
             is_managed=is_managed,
             managed_by=managed_by,
             pending=pending,
@@ -357,6 +328,14 @@ class SandboxClient(ClientMixin):
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
+        *,
+        image: Optional[str] = None,
+        cmd: Optional[Union[str, List[str]]] = None,
+        env: Optional[Dict[str, str]] = None,
+        cpu: Optional[Union[str, int, float]] = None,
+        memory: Optional[Union[str, int, float]] = None,
+        gpu: Optional[Union[str, int]] = None,
+        ports: Optional[List[int]] = None,
     ) -> V1Run:
         """Creates a new sandbox-enabled service run.
 
@@ -365,10 +344,13 @@ class SandboxClient(ClientMixin):
         this client to point at the returned run. After the run is approved,
         scheduled, and running, the same client can use `process`, `fs`, and `pty`.
 
-        If `content` is not provided, the method builds a minimal service
-        operation with `plugins.sandbox: true`. If `content` is provided, it
-        must be inline service operation content so the client can verify the
-        run kind and merge the sandbox plugin before submission.
+        Like `polyaxon run --sandbox`: without `content`, the source is a minimal
+        service (`ports: []`). Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`,
+        `gpu`, `ports`) are the `polyaxon run` inline options; only `None` omits a
+        value. They are the final overlay of `content`, or extend the minimal
+        service without it. `plugins.sandbox: true` is then set on the operation,
+        other literal plugins are kept, and the composed run must be a service.
+        Unset plugins stay unset, so presets can still enable `tmux` or `ssh`.
 
         Example:
         ```python
@@ -387,12 +369,23 @@ class SandboxClient(ClientMixin):
             name: str, optional, run name.
             description: str, optional, run description.
             tags: str or List[str], optional, list of tags.
-            content: str or Dict or V1Operation, optional, inline service operation
-                 content. When provided, it must define a service component.
+            content: str or Dict or V1Operation, optional, operation content,
+                 a string can also be a path or a url.
             is_managed: bool, flag to create a managed run.
             managed_by: ManagedBy, optional, service that manages the operation.
             pending: str, optional, pending state.
             meta_info: dict, optional, meta info to create the run with.
+            image: str, optional, shortcut for `container: {image: ...}`.
+            cmd: str or List[str], optional, shortcut for `cmd`,
+                 the lines run as one /bin/sh script with `set -e`.
+            env: Dict[str, str], optional, shortcut for `env`.
+            cpu: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.cpu`, e.g. `500m..1`.
+            memory: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
+            gpu: str or int, optional, count or `request..limit`,
+                 shortcut for `resources.gpu`.
+            ports: List[int], optional, shortcut for `ports`.
 
         Returns:
             V1Run, run instance from the response.
@@ -406,6 +399,15 @@ class SandboxClient(ClientMixin):
             managed_by=managed_by,
             pending=pending,
             meta_info=meta_info,
+            shortcuts=get_shortcuts(
+                image=image,
+                cmd=cmd,
+                env=env,
+                cpu=cpu,
+                memory=memory,
+                gpu=gpu,
+                ports=ports,
+            ),
         )
         response = self.client.runs_v1.create_run(
             owner=self.owner,
@@ -535,6 +537,14 @@ class AsyncSandboxClient(SandboxClient):
         is_managed: Optional[bool] = None,
         pending: Optional[str] = None,
         meta_info: Optional[Dict] = None,
+        *,
+        image: Optional[str] = None,
+        cmd: Optional[Union[str, List[str]]] = None,
+        env: Optional[Dict[str, str]] = None,
+        cpu: Optional[Union[str, int, float]] = None,
+        memory: Optional[Union[str, int, float]] = None,
+        gpu: Optional[Union[str, int]] = None,
+        ports: Optional[List[int]] = None,
     ) -> V1Run:
         """Creates a new sandbox-enabled service run asynchronously.
 
@@ -543,10 +553,13 @@ class AsyncSandboxClient(SandboxClient):
         this client to point at the returned run. After the run is approved,
         scheduled, and running, the same client can use `process`, `fs`, and `pty`.
 
-        If `content` is not provided, the method builds a minimal service
-        operation with `plugins.sandbox: true`. If `content` is provided, it
-        must be inline service operation content so the client can verify the
-        run kind and merge the sandbox plugin before submission.
+        Like `polyaxon run --sandbox`: without `content`, the source is a minimal
+        service (`ports: []`). Shortcuts (`image`, `cmd`, `env`, `cpu`, `memory`,
+        `gpu`, `ports`) are the `polyaxon run` inline options; only `None` omits a
+        value. They are the final overlay of `content`, or extend the minimal
+        service without it. `plugins.sandbox: true` is then set on the operation,
+        other literal plugins are kept, and the composed run must be a service.
+        Unset plugins stay unset, so presets can still enable `tmux` or `ssh`.
 
         Example:
         ```python
@@ -565,12 +578,23 @@ class AsyncSandboxClient(SandboxClient):
             name: str, optional, run name.
             description: str, optional, run description.
             tags: str or List[str], optional, list of tags.
-            content: str or Dict or V1Operation, optional, inline service operation
-                 content. When provided, it must define a service component.
+            content: str or Dict or V1Operation, optional, operation content,
+                 a string can also be a path or a url.
             is_managed: bool, flag to create a managed run.
             managed_by: ManagedBy, optional, service that manages the operation.
             pending: str, optional, pending state.
             meta_info: dict, optional, meta info to create the run with.
+            image: str, optional, shortcut for `container: {image: ...}`.
+            cmd: str or List[str], optional, shortcut for `cmd`,
+                 the lines run as one /bin/sh script with `set -e`.
+            env: Dict[str, str], optional, shortcut for `env`.
+            cpu: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.cpu`, e.g. `500m..1`.
+            memory: str or int or float, optional, request or `request..limit`,
+                 shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
+            gpu: str or int, optional, count or `request..limit`,
+                 shortcut for `resources.gpu`.
+            ports: List[int], optional, shortcut for `ports`.
 
         Returns:
             V1Run, run instance from the response.
@@ -584,6 +608,15 @@ class AsyncSandboxClient(SandboxClient):
             managed_by=managed_by,
             pending=pending,
             meta_info=meta_info,
+            shortcuts=get_shortcuts(
+                image=image,
+                cmd=cmd,
+                env=env,
+                cpu=cpu,
+                memory=memory,
+                gpu=gpu,
+                ports=ports,
+            ),
         )
         response = await self.client.runs_v1.create_run(
             owner=self.owner,

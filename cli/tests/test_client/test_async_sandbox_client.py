@@ -17,6 +17,7 @@ from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.job import V1Job
 from polyaxon._flow.run.service import V1Service
 from polyaxon._k8s.namespace import DEFAULT_NAMESPACE
+from polyaxon._polyaxonfile import OperationSpecification
 from polyaxon._sandbox.client_utils import (
     FsReadResult,
     FsWriteResult,
@@ -338,9 +339,16 @@ class TestAsyncSandboxClient(BaseTestCase, IsolatedAsyncioTestCase):
         assert body.name == "sandbox"
         assert body.tags == ["debug"]
 
-        operation = self.get_created_operation(sdk_client)
-        assert operation.component.run.kind == V1RunKind.SERVICE
-        assert operation.component.plugins.sandbox is True
+        # Same authored source as `polyaxon run --sandbox`.
+        assert orjson_loads(body.content) == {
+            "ports": [],
+            "plugins": {"sandbox": True},
+        }
+        compiled = OperationSpecification.compile_operation(
+            self.get_created_operation(sdk_client)
+        )
+        assert compiled.run.kind == V1RunKind.SERVICE
+        assert compiled.plugins.sandbox is True
         assert client.process._parent is client
         assert client.fs._parent is client
         assert client.pty._parent is client
@@ -367,12 +375,21 @@ class TestAsyncSandboxClient(BaseTestCase, IsolatedAsyncioTestCase):
                 client=sdk_client,
             )
 
-        await client.create(content=content)
+        await client.create(content=content, image="python:3.12")
 
         operation = self.get_created_operation(sdk_client)
-        assert operation.component.run.kind == V1RunKind.SERVICE
+        # The sandbox plugin and the shortcut are the outer layer.
+        assert operation.plugins.sandbox is True
+        assert operation.container.image == "python:3.12"
         assert operation.component.plugins.tmux is True
-        assert operation.component.plugins.sandbox is True
+        assert operation.component.plugins.sandbox is None
+        compiled = OperationSpecification.compile_operation(operation)
+        assert compiled.run.kind == V1RunKind.SERVICE
+        assert compiled.run.container.image == "python:3.12"
+        assert compiled.plugins.tmux is True
+        assert compiled.plugins.sandbox is True
+        assert content.plugins is None
+        assert content.container is None
         assert content.component.plugins.sandbox is None
 
     async def test_async_create_rejects_non_service_inline_content(self):
