@@ -2,6 +2,7 @@ from copy import deepcopy
 import pytest
 
 from clipped.config.patch_strategy import PatchStrategy
+from hypertune.search_managers.random_search.manager import RandomSearchManager
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -424,3 +425,25 @@ class TestSharedMatrix(BaseTestCase):
                 assert effective.run.to_dict() == runtime
                 compiled = OperationSpecification.compile_operation(child)
                 assert compiled.run == parent.run
+
+    def test_random_search_bool_values_stay_bool(self):
+        authored = read_polyaxonfile(
+            {
+                "inputs": [{"name": "flag", "type": "bool"}],
+                "matrix": {
+                    "kind": "random",
+                    "numRuns": 2,
+                    "seed": 1,
+                    "params": {"flag": {"kind": "choice", "value": [True, False]}},
+                },
+                "run": {"kind": "job", "container": {"image": "test"}},
+            }
+        )
+        parent = OperationSpecification.compile_operation(authored)
+        suggestions = RandomSearchManager(parent.matrix).get_suggestions()
+
+        children = get_ops_from_suggestions(authored, parent, suggestions)
+        values = [child.params["flag"].value for child in children]
+
+        assert [type(value) for value in values] == [bool, bool]
+        assert set(values) == {True, False}

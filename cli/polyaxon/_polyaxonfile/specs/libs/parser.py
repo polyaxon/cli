@@ -249,6 +249,8 @@ class PolyaxonfileParser:
             return int(expression)
         if np and isinstance(expression, np.floating):
             return float(expression)
+        if np and isinstance(expression, np.bool_):
+            return bool(expression)
         if isinstance(expression, Mapping):
             if len(expression) == 1:
                 old_key, value = list(expression.items())[0]
