@@ -1,3 +1,4 @@
+from datetime import timedelta
 from mock import MagicMock, patch
 import os
 from pathlib import Path
@@ -18,7 +19,8 @@ from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.plugins import V1Plugins
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.termination import V1Termination
-from polyaxon._polyaxonfile import check_polyaxonfile
+from polyaxon._polyaxonfile import check_polyaxonfile, get_op_specification
+from polyaxon._polyaxonfile.params import parse_params
 from polyaxon._polyaxonfile.specs import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -1052,6 +1054,244 @@ class TestPolyaxonfiles(BaseTestCase):
         run_config = CompiledOperationSpecification.apply_runtime_contexts(run_config)
 
         assert run_config.run is None
+
+    def _compile_input_values(self, inputs, params, contexts=None):
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "inputs": inputs,
+                "run": {"kind": "job", "container": {"image": "test"}},
+            }
+        )
+        run_config.apply_params(params=params)
+        run_config = CompiledOperationSpecification.apply_operation_contexts(
+            run_config, contexts=contexts
+        )
+        return {io.name: io.value for io in run_config.inputs}
+
+    def test_typed_str_input_values_keep_text(self):
+        values = {
+            "zero": "0",
+            "exp": "1e3",
+            "json": '{"lr": 0.1}',
+            "quoted": '"v1"',
+            "none": "None",
+            "escaped": "{% raw %}{{ ds }}{% endraw %}",
+        }
+        result = self._compile_input_values(
+            [{"name": name, "type": "str"} for name in values],
+            {name: {"value": value} for name, value in values.items()},
+        )
+
+        assert result == {**values, "escaped": "{{ ds }}"}
+
+    def test_typed_str_input_values_match_str_options(self):
+        raw = "{% raw %}{{ ds }}{% endraw %}"
+        for value, options, expected in (
+            ("0", ["0", "1"], "0"),
+            (raw, [raw], "{{ ds }}"),
+        ):
+            with self.subTest(value=value):
+                result = self._compile_input_values(
+                    [{"name": "x", "type": "str", "options": options}],
+                    {"x": {"value": value}},
+                )
+
+                assert result == {"x": expected}
+
+    def test_text_list_input_values_keep_item_text(self):
+        for io, value in (
+            ({"name": "x", "type": "List[str]"}, ["--a", "1", "--b", "0"]),
+            ({"name": "x", "type": "List[str]", "options": ["0", "1"]}, ["0", "1"]),
+            (
+                {"name": "x", "type": "str", "isList": True, "options": ["0", "1"]},
+                ["0", "1"],
+            ),
+        ):
+            with self.subTest(io=io):
+                result = self._compile_input_values([io], {"x": {"value": value}})
+
+                assert result == {"x": value}
+
+    def test_text_list_input_serialized_default_is_read_as_a_list(self):
+        result = self._compile_input_values(
+            [{"name": "x", "type": "List[str]", "value": '["0"]'}], {}
+        )
+
+        assert result == {"x": ["0"]}
+
+    def test_typed_str_input_values_render_contexts(self):
+        for value, uuid, expected in (
+            ("{{ globals.uuid }}", "abc123", "abc123"),
+            ("{{ globals.uuid }}", None, "None"),
+            ("{{ 'None' }}", "abc123", "None"),
+        ):
+            with self.subTest(value=value, uuid=uuid):
+                result = self._compile_input_values(
+                    [{"name": "x", "type": "str"}],
+                    {"x": {"value": value}},
+                    contexts={"globals": {"uuid": uuid}},
+                )
+
+                assert result == {"x": expected}
+
+    def test_typed_str_param_keeps_text_in_container_args(self):
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "inputs": [{"name": "n", "type": "str"}],
+                "run": {
+                    "kind": "job",
+                    "container": {"image": "test", "args": ["--n", "{{ n }}"]},
+                },
+            }
+        )
+        run_config.apply_params(params={"n": {"value": "1e3"}})
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(run_config)
+
+        assert run_config.run.container.args == ["--n", "1e3"]
+
+    def test_non_text_input_values_keep_literal_conversion(self):
+        result = self._compile_input_values(
+            [
+                {"name": "untyped"},
+                {"name": "flag", "type": "any"},
+                {"name": "lr", "type": "float", "value": "0.1"},
+                {"name": "ids", "type": "list", "value": ["0"]},
+            ],
+            {"untyped": {"value": "0"}, "flag": {"value": "{{ 1 == 2 }}"}},
+        )
+
+        assert result == {"untyped": 0, "flag": False, "lr": 0.1, "ids": [0]}
+
+    def test_non_text_output_templated_options_keep_literal_conversion(self):
+        templated = ["{{ globals.allowed }}"]
+        for io, allowed, expected in (
+            ({"type": "int", "options": templated}, 1, [1]),
+            ({"type": "int", "options": "{{ globals.allowed }}"}, [1, 2], [1, 2]),
+            ({"type": "int", "options": "{{ globals.allowed }}"}, None, None),
+            # isList with List[str] declares nested lists, not a text declaration
+            (
+                {"type": "List[str]", "isList": True, "options": templated},
+                ["0"],
+                [["0"]],
+            ),
+        ):
+            with self.subTest(io=io, allowed=allowed):
+                run_config = V1CompiledOperation.read(
+                    {
+                        "kind": "compiled_operation",
+                        "outputs": [{"name": "out", **io}],
+                        "run": {"kind": "job", "container": {"image": "test"}},
+                    }
+                )
+                run_config = CompiledOperationSpecification.apply_operation_contexts(
+                    run_config, contexts={"globals": {"allowed": allowed}}
+                )
+
+                assert run_config.outputs[0].validation.options == expected
+
+    def _check_sdk_params(self, content, params, preset=None):
+        with tempfile.TemporaryDirectory() as directory:
+            polyaxonfile = Path(directory) / "polyaxonfile.yaml"
+            polyaxonfile.write_text(content)
+            files = [str(polyaxonfile)]
+            if preset:
+                preset_file = Path(directory) / "preset.yaml"
+                preset_file.write_text(preset)
+                files.append(str(preset_file))
+            return check_polyaxonfile(polyaxonfile=files, params=params, is_cli=False)
+
+    @staticmethod
+    def _compile_op(op_config):
+        run_config = OperationSpecification.compile_operation(op_config)
+        run_config.apply_params(params=op_config.params)
+        return CompiledOperationSpecification.apply_operation_contexts(run_config)
+
+    def test_sdk_params_keep_typed_str_text(self):
+        job = "run: {kind: job, container: {image: base:v1}}\n"
+        for content, value in (
+            ("inputs: [{name: n, type: str}]\n" + job, '{"lr": 0.1}'),
+            (
+                "kind: operation\n"
+                "component:\n"
+                "  inputs: [{name: n, type: str}]\n"
+                "  run: {kind: job, container: {image: base:v1}}\n",
+                "1e3",
+            ),
+            ("outputs: [{name: n, type: str}]\n" + job, "0"),
+        ):
+            with self.subTest(content=content):
+                op_config = self._check_sdk_params(content, {"n": value})
+                run_config = self._compile_op(op_config)
+                ios = (run_config.inputs or []) + (run_config.outputs or [])
+
+                assert op_config.params["n"].value == value
+                assert ios[0].value == value
+
+    def test_sdk_params_are_sent_as_given(self):
+        params = {
+            "zero": "0",
+            "nested": {"k": "0"},
+            "pair": ("0", "1"),
+            "key": {"1": 2},
+            "duration": timedelta(seconds=5),
+            "enum": V1RunKind.JOB,
+        }
+        op_config = self._check_sdk_params(
+            "run: {kind: job, container: {image: base:v1}}\n", params
+        )
+        values = {name: param.value for name, param in op_config.params.items()}
+
+        assert values == {**params, "duration": 5.0, "enum": "job"}
+        assert type(values["pair"]) is tuple
+        assert type(values["enum"]) is str
+
+        op_config = get_op_specification(
+            hub="component:1.0",
+            params=parse_params({"n": "0"}, is_cli=False),
+            validate_params=False,
+        )
+
+        assert op_config.params["n"].value == "0"
+
+    def test_sdk_typed_params_convert_at_compile(self):
+        op_config = self._check_sdk_params(
+            "inputs: [{name: n, type: int}]\n"
+            "run: {kind: job, container: {image: base:v1}}\n",
+            {"n": "0"},
+        )
+        run_config = self._compile_op(op_config)
+
+        assert op_config.params["n"].value == "0"
+        assert run_config.inputs[0].value == 0
+
+    def test_sdk_params_merge_with_yaml_params(self):
+        content = (
+            "params: {cfg: {value: {yaml: '1'}}}\n"
+            "run: {kind: job, container: {image: base:v1}}\n"
+        )
+        for value, expected in (
+            ({"sdk": "0"}, {"yaml": "1", "sdk": "0"}),
+            ('{"sdk": "0"}', '{"sdk": "0"}'),
+        ):
+            with self.subTest(value=value):
+                op_config = self._check_sdk_params(content, {"cfg": value})
+
+                assert op_config.params["cfg"].value == expected
+
+    def test_sdk_params_keep_preset_precedence(self):
+        job = "run: {kind: job, container: {image: base:v1}}\n"
+        for preset_value in ("0", "5"):
+            with self.subTest(preset_value=preset_value):
+                op_config = self._check_sdk_params(
+                    job,
+                    {"n": "0"},
+                    preset=f"isPreset: true\nparams: {{n: {{value: '{preset_value}'}}}}\n",
+                )
+
+                assert op_config.params["n"].value == preset_value
 
     def test_dask_passes(self):
         run_config = CompiledOperationSpecification.read(

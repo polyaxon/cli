@@ -13,6 +13,7 @@ from polyaxon._polyaxonfile.specs.base import BaseSpecification
 from polyaxon._polyaxonfile.specs.libs.parser import (
     ContainerText,
     PolyaxonfileParser,
+    mark_text_items,
 )
 from polyaxon._polyaxonfile.specs.operation import OperationSpecification
 from polyaxon._polyaxonfile.specs.sections import Sections
@@ -276,10 +277,7 @@ class CompiledOperationSpecification(BaseSpecification):
             for field in ("command", "args"):
                 items = container.get(field)
                 if isinstance(items, list):
-                    container[field] = [
-                        ContainerText(item) if isinstance(item, str) else item
-                        for item in items
-                    ]
+                    container[field] = mark_text_items(items, ContainerText)
 
     @classmethod
     def _apply_runtime_contexts(

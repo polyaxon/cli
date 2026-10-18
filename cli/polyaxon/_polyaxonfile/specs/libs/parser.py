@@ -2,7 +2,7 @@ import ast
 from collections.abc import Mapping
 from datetime import date, datetime, timedelta
 from enum import Enum
-from typing import Dict
+from typing import Dict, List, Type
 from uuid import UUID
 
 from clipped.utils.serialization import (
@@ -22,8 +22,20 @@ except (ImportError, ModuleNotFoundError):
     np = None
 
 
-class ContainerText(str):
-    """A container command/args item, rendered once and kept as text."""
+class TextValue(str):
+    """A string rendered once and kept as text."""
+
+
+class ContainerText(TextValue):
+    """A container command/args item, a template rendering "None" is omitted."""
+
+
+# Scalar IO types whose values are text
+TEXT_TYPES = {"str", "path", "image", "uuid"}
+
+
+def mark_text_items(items: List, marker: Type[TextValue] = TextValue) -> List:
+    return [marker(item) if isinstance(item, str) else item for item in items]
 
 
 class PolyaxonfileParser:
@@ -189,10 +201,33 @@ class PolyaxonfileParser:
     ):
         # Arg format should not be converted
         arg_format = expression.pop("argFormat", None)
+        cls._mark_text_io(expression)
         value = cls.parse_expression(expression, params, check_operators)
         if arg_format:
             value["argFormat"] = arg_format
         return value
+
+    @staticmethod
+    def _mark_text_io(expression: Dict):
+        """Keep the strings of a text declaration's value and options as written."""
+        io_type, is_list = expression.get("type"), expression.get("isList")
+        is_text = io_type in TEXT_TYPES and not is_list
+        is_text_list = (io_type in TEXT_TYPES and is_list) or (
+            io_type == "List[str]" and not is_list
+        )
+        if not (is_text or is_text_list):
+            return
+
+        value = expression.get("value")
+        # A string for a list declaration is a serialized list, read as before
+        if is_text_list and isinstance(value, list):
+            expression["value"] = mark_text_items(value)
+        elif is_text and isinstance(value, str):
+            expression["value"] = TextValue(value)
+        options = (expression.get("validation") or {}).get("options")
+        # A whole-field options template is read as before
+        if isinstance(options, list):
+            expression["validation"]["options"] = mark_text_items(options)
 
     @classmethod
     def parse_expression(  # pylint:disable=too-many-branches
@@ -245,9 +280,13 @@ class PolyaxonfileParser:
     @classmethod
     def _evaluate_expression(cls, expression, params, check_operators):
         result = render_template(expression, params)
-        if isinstance(expression, ContainerText):
+        if isinstance(expression, TextValue):
             # Unset optional params render as "None" and were always omitted.
-            if result == "None" and result != expression:
+            if (
+                isinstance(expression, ContainerText)
+                and result == "None"
+                and result != expression
+            ):
                 return None
             return str(result)
         if result == expression:

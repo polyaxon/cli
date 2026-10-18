@@ -1,17 +1,28 @@
 from collections.abc import Mapping
-from typing import Dict, List, Union
+from enum import Enum
+from typing import Any, Dict, List, Union
 
 from clipped.formatting import Printer
 from polyaxon._polyaxonfile.specs.libs.parser import PolyaxonfileParser
 from polyaxon.exceptions import PolyaxonfileError
 
 
+def _parse_sdk_value(value: Any) -> Any:
+    # Strings are sent as given, like -P values, other values serialize as before
+    if isinstance(value, str) and not isinstance(value, Enum):
+        return value
+    if isinstance(value, list):
+        return [_parse_sdk_value(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(_parse_sdk_value(v) for v in value)
+    if isinstance(value, Mapping):
+        return {_parse_sdk_value(k): _parse_sdk_value(v) for k, v in value.items()}
+    return PolyaxonfileParser.parse_expression(value, {})
+
+
 def parse_params(params: Union[List[str], Dict], is_cli: bool = True):
     if isinstance(params, Mapping):
-        return {
-            k: {"value": PolyaxonfileParser.parse_expression(v, {})}
-            for k, v in params.items()
-        }
+        return {k: {"value": _parse_sdk_value(v)} for k, v in params.items()}
 
     parsed_params = {}
     for param in params:
