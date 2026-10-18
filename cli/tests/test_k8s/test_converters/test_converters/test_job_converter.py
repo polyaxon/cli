@@ -13,6 +13,10 @@ from polyaxon._env_vars.keys import ENV_KEYS_RUN_INSTANCE
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.plugins import V1Plugins
 from polyaxon._k8s import k8s_schemas
+from polyaxon._polyaxonfile.specs import (
+    CompiledOperationSpecification,
+    OperationSpecification,
+)
 from polyaxon._schemas.types import (
     V1ArtifactsType,
     V1DockerfileType,
@@ -602,6 +606,140 @@ class TestJobConverter(BaseConverterTest):
                 run_path=self.converter.run_path,
             )
         ]
+
+    def test_main_container_preserves_compiled_command_args(self):
+        operation = OperationSpecification.read(
+            {
+                "kind": "operation",
+                "params": {
+                    "seed": {"value": 0},
+                    "dropout": {"value": 0.0},
+                    "verbose": {"value": False},
+                    "ckpt": {"value": None},
+                    "empty": {"value": ""},
+                },
+                "component": {
+                    "inputs": [
+                        {"name": "seed", "type": "int"},
+                        {"name": "dropout", "type": "float"},
+                        {"name": "verbose", "type": "bool"},
+                    ],
+                    "run": {
+                        "kind": "job",
+                        "container": {
+                            "image": "test",
+                            "command": ["python", "script.py"],
+                            "args": [
+                                "--static",
+                                "0",
+                                "--seed",
+                                "{{ seed }}",
+                                "--dropout",
+                                "{{ dropout }}",
+                                "--verbose",
+                                "{{ verbose }}",
+                                "{{ ckpt }}",
+                                "{{ empty }}",
+                                "--cfg",
+                                '{"lr": 0.1}',
+                                "--n",
+                                "1e3",
+                                "+1",
+                                "0x10",
+                                '"v1"',
+                                "[]",
+                                "--end",
+                            ],
+                        },
+                    },
+                },
+            }
+        )
+        run_config = OperationSpecification.compile_operation(operation)
+        run_config.apply_params(params=operation.params)
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(run_config)
+
+        container = self.converter.get_main_container(
+            main_container=run_config.run.container,
+            plugins=None,
+            artifacts_store=None,
+            init_connections=[],
+            connections=[],
+            connection_by_names={},
+            secrets=[],
+            config_maps=[],
+            kv_env_vars=[],
+            ports=None,
+        )
+
+        assert container.command == ["python", "script.py"]
+        assert container.args == [
+            "--static",
+            "0",
+            "--seed",
+            "0",
+            "--dropout",
+            "0.0",
+            "--verbose",
+            "False",
+            "--cfg",
+            '{"lr": 0.1}',
+            "--n",
+            "1e3",
+            "+1",
+            "0x10",
+            '"v1"',
+            "[]",
+            "--end",
+        ]
+
+    def test_main_container_keeps_zero_from_whole_field_list_template(self):
+        for inputs in ([], [{"name": "extra", "type": "list"}]):
+            with self.subTest(inputs=inputs):
+                operation = OperationSpecification.read(
+                    {
+                        "kind": "operation",
+                        "params": {"extra": {"value": ["--a", "1", "--b", "0"]}},
+                        "component": {
+                            "inputs": inputs,
+                            "run": {
+                                "kind": "job",
+                                "container": {
+                                    "image": "test",
+                                    "command": ["echo"],
+                                    "args": "{{ extra }}",
+                                },
+                            },
+                        },
+                    }
+                )
+                run_config = OperationSpecification.compile_operation(operation)
+                run_config.apply_params(params=operation.params)
+                run_config = CompiledOperationSpecification.apply_operation_contexts(
+                    run_config
+                )
+                run_config = CompiledOperationSpecification.apply_runtime_contexts(
+                    run_config
+                )
+
+                assert run_config.run.container.args == ["--a", 1, "--b", 0]
+
+                container = self.converter.get_main_container(
+                    main_container=run_config.run.container,
+                    plugins=None,
+                    artifacts_store=None,
+                    init_connections=[],
+                    connections=[],
+                    connection_by_names={},
+                    secrets=[],
+                    config_maps=[],
+                    kv_env_vars=[],
+                    ports=None,
+                )
+
+                assert container.command == ["echo"]
+                assert container.args == ["--a", "1", "--b", "0"]
 
     def test_main_container(self):
         store = V1Connection(

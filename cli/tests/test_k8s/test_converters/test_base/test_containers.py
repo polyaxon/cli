@@ -2,6 +2,7 @@ import pytest
 
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.base.containers import ContainerMixin
+from polyaxon._runner.converter.common.containers import sanitize_container_command_args
 from polyaxon._utils.test_utils import BaseTestCase
 
 
@@ -42,6 +43,31 @@ class TestPatchContainer(BaseTestCase):
             http,
             k8s_schemas.V1ContainerPort(name="admin", container_port=8081),
         ]
+
+
+@pytest.mark.k8s_mark
+class TestSanitizeContainerCommandArgs(BaseTestCase):
+    def test_keeps_falsy_values(self):
+        container = k8s_schemas.V1Container(
+            command=[0, 0.0, False, []],
+            args=[0, 0.0, False, []],
+        )
+
+        container = sanitize_container_command_args(container)
+
+        assert container.command == ["0", "0.0", "False", "[]"]
+        assert container.args == ["0", "0.0", "False", "[]"]
+
+    def test_drops_none_and_empty_strings(self):
+        container = k8s_schemas.V1Container(
+            command=[None, "first", "", "last", None],
+            args=[None, "first", "", "last", None],
+        )
+
+        container = sanitize_container_command_args(container)
+
+        assert container.command == ["first", "last"]
+        assert container.args == ["first", "last"]
 
 
 @pytest.mark.k8s_mark

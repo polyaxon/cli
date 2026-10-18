@@ -22,6 +22,10 @@ except (ImportError, ModuleNotFoundError):
     np = None
 
 
+class ContainerText(str):
+    """A container command/args item, rendered once and kept as text."""
+
+
 class PolyaxonfileParser:
     """Parses the Polyaxonfile."""
 
@@ -241,6 +245,11 @@ class PolyaxonfileParser:
     @classmethod
     def _evaluate_expression(cls, expression, params, check_operators):
         result = render_template(expression, params)
+        if isinstance(expression, ContainerText):
+            # Unset optional params render as "None" and were always omitted.
+            if result == "None" and result != expression:
+                return None
+            return str(result)
         if result == expression:
             try:
                 return ast.literal_eval(result)

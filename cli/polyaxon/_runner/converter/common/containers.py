@@ -11,10 +11,16 @@ def sanitize_container_command_args(
     # Sanitize container command/args
     if container.command:
         container.command = [
-            str(c) for c in to_list(container.command, check_none=True) if c
+            str(c)
+            for c in to_list(container.command, check_none=True)
+            if c not in (None, "")
         ]
     if container.args:
-        container.args = [str(c) for c in to_list(container.args, check_none=True) if c]
+        container.args = [
+            str(c)
+            for c in to_list(container.args, check_none=True)
+            if c not in (None, "")
+        ]
 
     return container
 

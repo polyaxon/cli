@@ -1,5 +1,5 @@
 import copy
-from typing import Dict, List, Optional, Set, Type, Union
+from typing import Dict, List, Optional, Set, Tuple, Type, Union
 
 from polyaxon._flow.hooks import V1Hook
 from polyaxon._flow.init import V1Init
@@ -7,10 +7,15 @@ from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.params.params import ParamSpec, V1Param
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.patch import validate_run_patch
+from polyaxon._k8s import k8s_schemas
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
-from polyaxon._polyaxonfile.specs.libs.parser import PolyaxonfileParser
+from polyaxon._polyaxonfile.specs.libs.parser import (
+    ContainerText,
+    PolyaxonfileParser,
+)
 from polyaxon._polyaxonfile.specs.operation import OperationSpecification
+from polyaxon._polyaxonfile.specs.sections import Sections
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 
@@ -222,6 +227,60 @@ class CompiledOperationSpecification(BaseSpecification):
 
         return PolyaxonfileParser.parse_section(section, param_spec)
 
+    @staticmethod
+    def _get_container_paths(
+        config: V1CompiledOperation,
+    ) -> List[Tuple[Union[str, int], ...]]:
+        run = config.run
+        if config.is_ray_cluster_run:
+            replicas = [(("head",), run.head)]
+            replicas.extend(
+                (("workers", name), replica)
+                for name, replica in (run.workers or {}).items()
+            )
+        elif config.is_distributed_run:
+            replicas = [
+                ((name,), getattr(run, name)) for name in run.get_replica_types()
+            ]
+        else:
+            replicas = [((), run)]
+
+        paths = []
+        for path, replica in replicas:
+            if replica is None or isinstance(replica, str):
+                continue
+            if isinstance(getattr(replica, "container", None), k8s_schemas.V1Container):
+                paths.append((*path, "container"))
+            sidecars = getattr(replica, "sidecars", None)
+            if isinstance(sidecars, list):
+                paths.extend(
+                    (*path, "sidecars", index) for index in range(len(sidecars))
+                )
+            init = getattr(replica, "init", None)
+            if isinstance(init, list):
+                paths.extend(
+                    (*path, "init", index, "container")
+                    for index, initializer in enumerate(init)
+                    if isinstance(initializer.container, k8s_schemas.V1Container)
+                )
+        return paths
+
+    @staticmethod
+    def _mark_container_text(
+        run: Dict, paths: List[Tuple[Union[str, int], ...]]
+    ) -> None:
+        for path in paths:
+            container = run
+            for key in path:
+                container = container[key]
+            for field in ("command", "args"):
+                items = container.get(field)
+                if isinstance(items, list):
+                    container[field] = [
+                        ContainerText(item) if isinstance(item, str) else item
+                        for item in items
+                    ]
+
     @classmethod
     def _apply_runtime_contexts(
         cls,
@@ -233,7 +292,11 @@ class CompiledOperationSpecification(BaseSpecification):
             param_spec = cls.calculate_context_spec(
                 config=config, contexts=contexts, should_be_resolved=True
             )
-        parsed_data = PolyaxonfileParser.parse_runtime(config.to_dict(), param_spec)
+        data = config.to_dict()
+        paths = cls._get_container_paths(config)
+        if paths:
+            cls._mark_container_text(data[Sections.RUN], paths)
+        parsed_data = PolyaxonfileParser.parse_runtime(data, param_spec)
         return cls.CONFIG.read(parsed_data)
 
     @classmethod
@@ -258,9 +321,17 @@ class CompiledOperationSpecification(BaseSpecification):
                 )
             if config.is_ray_cluster_run:
                 param_spec["autoscaler_options"] = replica_param_spec
-        parsed_data = PolyaxonfileParser.parse_distributed_runtime(
-            config.to_dict(), param_spec
+        data = config.to_dict()
+        # Replicas without contexts are not parsed, so their items stay unmarked.
+        cls._mark_container_text(
+            data[Sections.RUN],
+            [
+                path
+                for path in cls._get_container_paths(config)
+                if path[0] in param_spec
+            ],
         )
+        parsed_data = PolyaxonfileParser.parse_distributed_runtime(data, param_spec)
         return cls.CONFIG.read(parsed_data)
 
     @classmethod

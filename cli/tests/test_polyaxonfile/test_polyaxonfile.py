@@ -872,6 +872,187 @@ class TestPolyaxonfiles(BaseTestCase):
         }
         assert run_config.run.workers["small"].ray_start_params == {"num-cpus": "1"}
 
+    def test_container_command_args_keep_literal_text_after_runtime_contexts(self):
+        values = [
+            "0",
+            "False",
+            "0.0",
+            "[]",
+            '{"lr": 0.1}',
+            "1e3",
+            "+1",
+            "0x10",
+            '"v1"',
+            "1",
+            "2.5",
+            "True",
+            "plain",
+        ]
+        container = {"image": "test", "command": values, "args": values}
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "run": {
+                    "kind": "job",
+                    "container": container,
+                    "sidecars": [container],
+                    "init": [{"container": container}],
+                },
+            }
+        )
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        parsed = CompiledOperationSpecification.apply_runtime_contexts(run_config)
+
+        for parsed_container in (
+            parsed.run.container,
+            parsed.run.sidecars[0],
+            parsed.run.init[0].container,
+        ):
+            assert parsed_container.command == values
+            assert parsed_container.args == values
+
+    def test_container_command_args_keep_falsy_template_text(self):
+        values = [
+            "{{ seed }}",
+            "{{ dropout }}",
+            "{{ verbose }}",
+            "{{ ckpt }}",
+            "{{ empty }}",
+            "None",
+            "{% raw %}{{ ds }}{% endraw %}",
+        ]
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "run": {
+                    "kind": "job",
+                    "container": {
+                        "image": "test",
+                        "command": values,
+                        "args": values,
+                    },
+                },
+            }
+        )
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(
+            run_config,
+            contexts={
+                "seed": 0,
+                "dropout": 0.0,
+                "verbose": False,
+                "ckpt": None,
+                "empty": "",
+            },
+        )
+
+        expected = ["0", "0.0", "False", None, "", "None", "{{ ds }}"]
+        assert run_config.run.container.command == expected
+        assert run_config.run.container.args == expected
+
+    def test_container_args_keep_non_string_expression_parsing(self):
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "run": {
+                    "kind": "job",
+                    "container": {
+                        "image": "test",
+                        "args": [0, 0.0, False],
+                    },
+                },
+            }
+        )
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(run_config)
+
+        assert run_config.run.container.args == [0, 0.0, False]
+        assert [type(value) for value in run_config.run.container.args] == [
+            int,
+            float,
+            bool,
+        ]
+
+    def test_ray_container_args_follow_worker_names_and_replica_contexts(self):
+        worker_names = ["container", "sidecars", "{{ group }}"]
+        replica = {"container": {"image": "test", "args": ["{{ value }}", "1e3"]}}
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "run": {
+                    "kind": "raycluster",
+                    "head": replica,
+                    "workers": {name: replica for name in worker_names},
+                },
+            }
+        )
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(
+            run_config,
+            contexts={
+                "head": {"value": 0},
+                "workers": {"value": False, "group": "gpu"},
+            },
+        )
+
+        assert run_config.run.head.container.args == ["0", "1e3"]
+        assert set(run_config.run.workers) == {"container", "sidecars", "gpu"}
+        for worker in run_config.run.workers.values():
+            assert worker.container.args == ["False", "1e3"]
+
+    def test_tf_container_args_skip_replicas_without_contexts(self):
+        replica = {"container": {"image": "test", "args": ["{{ value }}", "1e3"]}}
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "run": {
+                    "kind": "tfjob",
+                    "chief": replica,
+                    "worker": replica,
+                },
+            }
+        )
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(
+            run_config, contexts={"worker": {"value": 0}}
+        )
+
+        assert run_config.run.worker.container.args == ["0", "1e3"]
+        assert run_config.run.chief.container.args == ["{{ value }}", "1e3"]
+
+    def test_container_text_preservation_does_not_change_initializer_data(self):
+        run_config = V1CompiledOperation.read(
+            {
+                "kind": "compiled_operation",
+                "run": {
+                    "kind": "job",
+                    "container": {"image": "test", "args": ["{{ value }}"]},
+                    "init": [
+                        {
+                            "dockerfile": {
+                                "image": "test",
+                                "env": {"container": {"args": ["{{ value }}"]}},
+                            }
+                        }
+                    ],
+                },
+            }
+        )
+        run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(
+            run_config, contexts={"value": 0}
+        )
+
+        assert run_config.run.container.args == ["0"]
+        assert run_config.run.init[0].dockerfile.env == {"container": {"args": [0]}}
+
+    def test_runtime_contexts_without_run(self):
+        run_config = V1CompiledOperation.read({"kind": "compiled_operation"})
+
+        run_config = CompiledOperationSpecification.apply_runtime_contexts(run_config)
+
+        assert run_config.run is None
+
     def test_dask_passes(self):
         run_config = CompiledOperationSpecification.read(
             [
