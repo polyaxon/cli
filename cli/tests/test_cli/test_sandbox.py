@@ -3,6 +3,7 @@ import pytest
 from types import SimpleNamespace
 
 from polyaxon._cli.sandbox import sandbox
+from polyaxon.cli import cli
 from polyaxon.exceptions import PolyaxonClientException
 from tests.test_cli.utils import BaseCommandTestCase
 
@@ -65,9 +66,17 @@ class TestCliSandbox(BaseCommandTestCase):
         self.addCleanup(self.client_class.stop)
 
     def test_command_is_registered(self):
-        from polyaxon.cli import cli
+        assert cli.commands["sandbox"] is sandbox
+        assert cli.commands["sbx"] is sandbox
+        assert sandbox.name == "sandbox"
 
-        assert cli.commands["sandbox"].name == "sandbox"
+    def test_help_usage_uses_invoked_name(self):
+        for name in ["sandbox", "sbx"]:
+            with self.subTest(name=name), patch("polyaxon.settings.set_cli_config"):
+                result = self.runner.invoke(cli, [name, "--help"], prog_name="polyaxon")
+
+                assert result.exit_code == 0
+                assert "Usage: polyaxon {} [OPTIONS]".format(name) in result.output
 
     def test_ping(self):
         result = self.runner.invoke(

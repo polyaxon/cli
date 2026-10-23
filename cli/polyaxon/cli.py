@@ -145,6 +145,7 @@ def cli(context, verbose, show_context, offline):
         "upgrade",
         "port-forward",
         "sandbox",
+        "sbx",
         "ssh",
     ]
     if not (
@@ -177,6 +178,7 @@ cli.add_command(components)
 cli.add_command(models)
 cli.add_command(run)
 cli.add_command(sandbox)
+cli.add_command(sandbox, name="sbx")  # Alias for sandbox command
 cli.add_command(ssh)
 cli.add_command(dashboard)
 cli.add_command(admin)

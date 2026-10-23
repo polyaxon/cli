@@ -1,4 +1,4 @@
-from mock import patch
+from mock import MagicMock, patch
 import os
 import pytest
 import subprocess
@@ -6,6 +6,7 @@ import sys
 import tempfile
 from textwrap import dedent
 
+from polyaxon import settings
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon.cli import cli
 from tests.test_cli.utils import BaseCommandTestCase
@@ -76,10 +77,27 @@ class TestCliStartup(BaseCommandTestCase):
         assert result.exit_code == 0
         for command in ["artifacts", "components", "models", "ops", "project", "run"]:
             assert command in result.output
-        project_rows = [
-            line.strip()
-            for line in result.output.splitlines()
-            if line.strip().startswith("project")
-        ]
-        assert len(project_rows) == 1
-        assert project_rows[0].startswith("project (aliases: projects)")
+        rows = [line.strip() for line in result.output.splitlines()]
+        for command, alias in [("project", "projects"), ("sandbox", "sbx")]:
+            command_rows = [row for row in rows if row.startswith(command)]
+            assert len(command_rows) == 1
+            assert command_rows[0].startswith("{} (aliases: {})".format(command, alias))
+            assert not [row for row in rows if row.startswith(alias)]
+
+    def test_sandbox_commands_skip_version_check(self):
+        cli_config = MagicMock(installation=None)
+        cli_config.__bool__.return_value = False
+        cases = [("project", True), ("sandbox", False), ("sbx", False)]
+        for command, checks_version in cases:
+            with (
+                self.subTest(command=command),
+                patch.object(settings, "set_cli_config"),
+                patch.object(settings, "CLI_CONFIG", cli_config),
+                patch("polyaxon._cli.session.set_versions_config") as set_versions,
+                patch("polyaxon.cli.check_cli_version") as check_version,
+            ):
+                result = self.runner.invoke(cli, [command, "--help"])
+
+                assert result.exit_code == 0
+                assert set_versions.called is checks_version
+                assert check_version.called is checks_version
