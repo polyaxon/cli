@@ -92,68 +92,73 @@ def get_op_specification(
 ) -> V1Operation:
     if cache and nocache:
         raise PolyaxonfileError("Received both 'cache' and 'nocache'")
-    op_data = {"kind": kinds.OPERATION}
-    if config and config.version is not None:
-        op_data["version"] = config.version
+    flags = {}
     if params:
         if not isinstance(params, Mapping):
             raise PolyaxonfileError(
                 "Params: `{}` must be a valid mapping".format(params)
             )
-        op_data["params"] = params
+        flags["params"] = params
     if hparams:
         if not isinstance(hparams, Mapping):
             raise PolyaxonfileError(
                 "Hyper-Params: `{}` must be a valid mapping".format(hparams)
             )
-        op_data["matrix"] = {
+        flags["matrix"] = {
             "kind": matrix_kind or V1MatrixKind.GRID,
             "concurrency": matrix_concurrency or 1,
             "params": hparams,
         }
         if matrix_num_runs:
-            op_data["matrix"]["numRuns"] = matrix_num_runs
+            flags["matrix"]["numRuns"] = matrix_num_runs
     if matrix:
-        op_data["matrix"] = (
+        flags["matrix"] = (
             matrix if isinstance(matrix, Mapping) else matrix.to_light_dict()
         )
     if presets:
-        op_data["presets"] = presets
+        flags["presets"] = presets
     if queue:
         # Check only
         get_queue_info(queue)
-        op_data["queue"] = queue
+        flags["queue"] = queue
     if namespace:
-        op_data["namespace"] = namespace
+        flags["namespace"] = namespace
     if cache is not None:
-        op_data["cache"] = {"disable": not to_bool(cache)}
+        flags["cache"] = {"disable": not to_bool(cache)}
     if nocache:
-        op_data["cache"] = {"disable": True}
+        flags["cache"] = {"disable": True}
     # Handle approval logic
     if approved is not None:
-        op_data["isApproved"] = to_bool(approved)
+        flags["isApproved"] = to_bool(approved)
     if strict_params is not None:
-        op_data["strictParams"] = strict_params
+        flags["strictParams"] = strict_params
 
     if config and (hub or config.kind == kinds.COMPONENT):
-        op_data["component"] = config.to_dict(exclude_none=False)
+        op_data = {
+            "kind": kinds.OPERATION,
+            "component": config.to_dict(exclude_none=False),
+        }
+        if config.version is not None:
+            op_data["version"] = config.version
         config = get_specification(data=[op_data])
-    elif config and config.kind in (None, kinds.OPERATION):
-        if config.kind is None:
-            del op_data["kind"]
-        if op_data:
-            config = get_specification(
-                data=[config.to_dict(exclude_none=False), op_data]
-            )
     elif hub:
-        op_data["hubRef"] = hub
-        config = get_specification(data=[op_data])
+        config = get_specification(data=[{"kind": kinds.OPERATION, "hubRef": hub}])
 
     if hub and config.hub_ref is None:
         config.hub_ref = hub
 
     # Check if there's presets
     config = patch_polyaxonfile(config, preset_files or [])
+    # Flags beat every file and inline option; fields merge as dicts, so
+    # `-P` replaces only a param's value.
+    if flags:
+        data = config.to_dict(exclude_none=False)
+        file_matrix = data.get("matrix")
+        flag_kind = flags.get("matrix", {}).get("kind")
+        # Like file patches, a matrix of another kind replaces the file's matrix.
+        if file_matrix and flag_kind and file_matrix.get("kind") != flag_kind:
+            del data["matrix"]
+        config = get_specification(data=[data, flags])
     # Turn git_init to a pre_merge preset
     if git_init:
         git_preset = V1Operation(

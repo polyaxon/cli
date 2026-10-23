@@ -1301,8 +1301,8 @@ class V1Operation(V1Polyaxonfile):
     strict mode, undeclared params become context values by default.
 
     `polyaxon run` and `polyaxon check` accept `--strict-params` and
-    `--no-strict-params` to set this operation field. Additional `-f` preset files
-    retain their existing patch order. The compiled operation stores the effective
+    `--no-strict-params` to set this operation field.
+    The flags override `-f` preset files. The compiled operation stores the effective
     policy, which is preserved for scheduled runs and matrix children. Independently
     defined DAG operations use their own policies.
 

@@ -624,6 +624,11 @@ def run(
     \b
     $ polyaxon run -p project1 -f file.yaml -P param1=234.2 -P param2=relu
 
+    Flags such as -P and --queue apply after the files and inline options
+
+    \b
+    $ polyaxon run -f file.yaml -f override.yaml -P lr=0.1 --queue gpu-b
+
     Run an image without a polyaxonfile
 
     \b

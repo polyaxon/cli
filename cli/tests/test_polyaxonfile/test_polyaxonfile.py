@@ -286,8 +286,8 @@ class TestPolyaxonfiles(BaseTestCase):
         assert isinstance(error.exception.__cause__, PolyaxonValidationError)
         assert "undeclared param" in str(error.exception.__cause__)
 
-    def test_strict_params_preserves_preset_order(self):
-        for strict_params in (None, False):
+    def test_strict_params_flag_beats_preset(self):
+        for strict_params, expected in ((None, True), (False, False)):
             op_config = check_polyaxonfile(
                 polyaxonfile=[
                     os.path.abspath("tests/fixtures/plain/simple_job.yml"),
@@ -296,7 +296,7 @@ class TestPolyaxonfiles(BaseTestCase):
                 strict_params=strict_params,
                 is_cli=False,
             )
-            assert op_config.strict_params is True
+            assert op_config.strict_params is expected
 
         with self.assertRaises(PolyaxonfileError) as error:
             check_polyaxonfile(
@@ -1192,7 +1192,7 @@ class TestPolyaxonfiles(BaseTestCase):
 
                 assert run_config.outputs[0].validation.options == expected
 
-    def _check_sdk_params(self, content, params, preset=None):
+    def _check_sdk_params(self, content, params, preset=None, **kwargs):
         with tempfile.TemporaryDirectory() as directory:
             polyaxonfile = Path(directory) / "polyaxonfile.yaml"
             polyaxonfile.write_text(content)
@@ -1201,7 +1201,9 @@ class TestPolyaxonfiles(BaseTestCase):
                 preset_file = Path(directory) / "preset.yaml"
                 preset_file.write_text(preset)
                 files.append(str(preset_file))
-            return check_polyaxonfile(polyaxonfile=files, params=params, is_cli=False)
+            return check_polyaxonfile(
+                polyaxonfile=files, params=params, is_cli=False, **kwargs
+            )
 
     @staticmethod
     def _compile_op(op_config):
@@ -1281,17 +1283,77 @@ class TestPolyaxonfiles(BaseTestCase):
 
                 assert op_config.params["cfg"].value == expected
 
-    def test_sdk_params_keep_preset_precedence(self):
+    def test_sdk_params_beat_preset(self):
+        op_config = self._check_sdk_params(
+            "run: {kind: job, container: {image: base:v1}}\n",
+            {"n": "0"},
+            preset="isPreset: true\nparams: {n: {value: '5'}}\n",
+        )
+
+        assert op_config.params["n"].value == "0"
+
+    def test_flags_beat_file_overlays(self):
         job = "run: {kind: job, container: {image: base:v1}}\n"
-        for preset_value in ("0", "5"):
-            with self.subTest(preset_value=preset_value):
+        preset = (
+            "isPreset: true\n"
+            "queue: gpu-a\n"
+            "presets: [team]\n"
+            "params: {lr: {value: '0.01', contextOnly: true}}\n"
+        )
+        for kind in (None, "operation", "component"):
+            with self.subTest(kind=kind):
                 op_config = self._check_sdk_params(
-                    job,
-                    {"n": "0"},
-                    preset=f"isPreset: true\nparams: {{n: {{value: '{preset_value}'}}}}\n",
+                    f"kind: {kind}\n{job}" if kind else job,
+                    ["lr=0.1"],
+                    preset=preset,
+                    queue="gpu-b",
+                    presets=["cli"],
                 )
 
-                assert op_config.params["n"].value == preset_value
+                assert op_config.queue == "gpu-b"
+                assert op_config.presets == ["cli"]
+                assert op_config.params["lr"].value == "0.1"
+                assert op_config.params["lr"].context_only is True
+
+    def test_matrix_flag_of_other_kind_replaces_file_matrix(self):
+        job = (
+            "inputs: [{name: x, type: int, value: 0, isOptional: true}]\n"
+            "run: {kind: job, container: {image: base:v1}}\n"
+        )
+        matrix = "matrix: {kind: mapping, values: [{x: 1}]}\n"
+        for content, preset in (
+            (matrix + job, None),
+            (job, "isPreset: true\n" + matrix),
+        ):
+            with self.subTest(preset=preset):
+                op_config = self._check_sdk_params(
+                    content,
+                    None,
+                    preset=preset,
+                    hparams={"x": {"kind": "choice", "value": [1, 2]}},
+                )
+
+                assert op_config.matrix.kind == "grid"
+                assert "values" not in op_config.matrix.to_dict()
+
+    def test_partial_matrix_flag_merges_file_matrix(self):
+        job = (
+            "inputs: [{name: x, type: int, value: 0, isOptional: true}]\n"
+            "run: {kind: job, container: {image: base:v1}}\n"
+        )
+        matrix = "matrix: {kind: grid, params: {x: {kind: choice, value: [1, 2]}}}\n"
+        for content, preset in (
+            (matrix + job, None),
+            (job, "isPreset: true\n" + matrix),
+        ):
+            with self.subTest(preset=preset):
+                op_config = self._check_sdk_params(
+                    content, None, preset=preset, matrix={"concurrency": 4}
+                )
+
+                assert op_config.matrix.kind == "grid"
+                assert op_config.matrix.concurrency == 4
+                assert set(op_config.matrix.params) == {"x"}
 
     def test_dask_passes(self):
         run_config = CompiledOperationSpecification.read(
