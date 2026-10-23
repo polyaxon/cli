@@ -858,7 +858,7 @@ class RunClient(ClientMixin):
                  used to resolve the component's inputs/outputs.
             matrix: dict or V1Matrix, a matrix definition.
             presets: List[str], optional, the name of the
-                 [presets](/docs/scheduling/scheduling-presets/).
+                 [presets](/docs/scheduling/scheduling-presets/overview/).
             queue: str, optional, the name of the
                  [queue](/docs/scheduling/scheduling-strategies/queues/) to assign the run to.
             namespace: str, optional, the namespace to create the run under, by default it will
@@ -971,7 +971,7 @@ class RunClient(ClientMixin):
                  used to resolve the component's inputs/outputs.
             matrix: dict or V1Matrix, a matrix definition.
             presets: List[str], optional, the name of the
-                 [presets](/docs/scheduling/scheduling-presets/).
+                 [presets](/docs/scheduling/scheduling-presets/overview/).
             queue: str, optional, the name of the
                  [queue](/docs/scheduling/scheduling-strategies/queues/) to assign the run to.
             namespace: str, optional, the namespace to create the run under, by default it will
@@ -1083,7 +1083,7 @@ class RunClient(ClientMixin):
                  used to resolve the component's inputs/outputs.
             matrix: dict or V1Matrix, a matrix definition.
             presets: List[str], optional, the name of the
-                 [presets](/docs/scheduling/scheduling-presets/).
+                 [presets](/docs/scheduling/scheduling-presets/overview/).
             queue: str, optional, the name of the
                  [queue](/docs/scheduling/scheduling-strategies/queues/) to assign the run to.
             namespace: str, optional, the namespace to create the run under, by default it will

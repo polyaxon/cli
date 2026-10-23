@@ -664,7 +664,7 @@ class V1Component(V1Polyaxonfile):
     Polyaxon uses containers to execute that logic.
 
     Components are definitions that can be shared if they reach a
-    certain maturity and can be managed by the [Component Hub](/docs/registry/component-hub/).
+    certain maturity and can be managed by the [Component Hub](/docs/registry/component-hub/overview/).
     This allows you to create a library of frequently-used components and reuse them
     either by submitting them directly or by referencing them from your operations.
 
@@ -813,7 +813,7 @@ class V1Component(V1Polyaxonfile):
 
     ### presets
 
-    The default component [presets](/docs/scheduling/scheduling-presets/).
+    The default component [presets](/docs/scheduling/scheduling-presets/overview/).
 
     These presets will be passed as the default value to all operations using this component,
     unless the operations override the presets or `--presets`
@@ -1237,7 +1237,7 @@ class V1Operation(V1Polyaxonfile):
     ```
 
     > **Note**: Please check this
-    > [in-depth section about presets](/docs/scheduling/scheduling-presets/).
+    > [in-depth section about presets](/docs/scheduling/scheduling-presets/overview/).
 
     ### name
 
@@ -1496,7 +1496,7 @@ class V1Operation(V1Polyaxonfile):
 
     ### hubRef
 
-    Polyaxon provides a [Component Hub](/docs/registry/component-hub/)
+    Polyaxon provides a [Component Hub](/docs/registry/component-hub/overview/)
     for hosting versioned components with an access control system to improve
     the productivity of your team.
 

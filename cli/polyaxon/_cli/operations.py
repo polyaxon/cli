@@ -2109,6 +2109,9 @@ def upload(
 
     Uses /docs/references/cli/cache/#caching
 
+    \b
+    Symlink handling: /docs/iterative-process/iterate-with-cli-local-code/#directory-upload-symlinks
+
     Examples:
 
     \b

@@ -596,6 +596,9 @@ def run(
 ):
     """Run polyaxonfile specification.
 
+    \b
+    Symlink handling: /docs/iterative-process/iterate-with-cli-local-code/#directory-upload-symlinks
+
     Examples:
 
     \b

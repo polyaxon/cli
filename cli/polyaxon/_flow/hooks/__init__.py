@@ -78,7 +78,7 @@ class V1Hook(BaseSchemaModel):
 
     ### connection
 
-    The connection to notify, this [connection](/docs/setup/connections/)
+    The connection to notify, this [connection](/docs/setup/connections/overview/)
     must be configured at deployment time to be used here by referencing the name.
 
     ```yaml
@@ -99,7 +99,7 @@ class V1Hook(BaseSchemaModel):
 
     ### hubRef
 
-    Polyaxon provides a [Component Hub](/docs/registry/component-hub/)
+    Polyaxon provides a [Component Hub](/docs/registry/component-hub/overview/)
     for hosting versioned components with an access control system to improve
     the productivity of your team.
 

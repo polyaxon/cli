@@ -64,7 +64,7 @@ class V1Build(BaseSchemaModel):
 
     ### hubRef
 
-    Polyaxon provides a [Component Hub](/docs/registry/component-hub/)
+    Polyaxon provides a [Component Hub](/docs/registry/component-hub/overview/)
     for hosting versioned components with an access control system to improve
     the productivity of your team.
 
