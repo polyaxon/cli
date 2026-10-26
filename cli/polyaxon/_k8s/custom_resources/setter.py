@@ -3,6 +3,7 @@ from typing import Dict, List
 from polyaxon._flow.notifications import V1Notification
 from polyaxon._flow.run.kubeflow.scheduling_policy import V1SchedulingPolicy
 from polyaxon._flow.termination import V1Termination
+from polyaxon._vendor.k8s.serialization import sanitize_for_serialization
 
 
 def set_termination(custom_object: Dict, termination: V1Termination) -> Dict:
@@ -37,7 +38,9 @@ def set_termination(custom_object: Dict, termination: V1Termination) -> Dict:
             probe_spec["http"] = http_spec
         termination_spec["probe"] = probe_spec
     if termination.pod_failure_policy:
-        termination_spec["podFailurePolicy"] = termination.pod_failure_policy.to_dict()
+        termination_spec["podFailurePolicy"] = sanitize_for_serialization(
+            termination.pod_failure_policy
+        )
 
     custom_object["termination"] = termination_spec
     return custom_object
