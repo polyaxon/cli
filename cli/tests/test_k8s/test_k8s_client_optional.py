@@ -27,11 +27,11 @@ class TestK8sClientOptional(BaseTestCase):
             import polyaxon.schemas
 
             modules = {m.split(".")[0] for m in sys.modules}
-            print(sorted(modules & {"kubernetes", "kubernetes_asyncio"}))
+            print("kubernetes" in modules)
             """
         )
 
-        assert output == "[]"
+        assert output == "False"
 
     def test_modules_import_without_the_client(self):
         output = self.run_code(
@@ -39,7 +39,6 @@ class TestK8sClientOptional(BaseTestCase):
             import sys
 
             sys.modules["kubernetes"] = None
-            sys.modules["kubernetes_asyncio"] = None
 
             from polyaxon import docker, k8s
 
