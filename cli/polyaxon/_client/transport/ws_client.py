@@ -1,13 +1,13 @@
 import time
 
-from kubernetes.client.rest import ApiException
-from kubernetes.stream.ws_client import (
+from polyaxon._vendor.k8s.ws_client import (
     ERROR_CHANNEL,
     RESIZE_CHANNEL,
     WSClient as BaseWSClient,
     WSResponse,
     get_websocket_url,
 )
+from polyaxon.exceptions import PolyaxonClientException
 
 
 ERROR_CHANNEL = ERROR_CHANNEL
@@ -26,7 +26,7 @@ class WSClient(BaseWSClient):
 
     def update(self, timeout=0):
         """Add ping logic to the original update function."""
-        if time.time() - self.last_ping < 5:
+        if time.time() - self.last_ping >= 5:
             self.sock.ping("PING")
             self.last_ping = time.time()
         return super().update(timeout=timeout)
@@ -53,4 +53,4 @@ def websocket_call(configuration, url, **kwargs):
         client.run_forever(timeout=_request_timeout)
         return WSResponse("%s" % "".join(client.read_all()))
     except (Exception, KeyboardInterrupt, SystemExit) as e:
-        raise ApiException(status=0, reason=str(e))
+        raise PolyaxonClientException(str(e))
