@@ -1,8 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 
-from kubernetes_asyncio import client, config
-from kubernetes_asyncio.client import Configuration
-from kubernetes_asyncio.client.rest import ApiException
+from kubernetes.aio import client, config
+from kubernetes.aio.client import ApiException, Configuration
 
 from polyaxon._k8s.manager.base import BaseK8sManager
 from polyaxon._k8s.monitor import is_pod_running
@@ -30,9 +29,9 @@ class AsyncK8sManager(BaseK8sManager):
                 config.load_incluster_config()
             else:
                 await config.load_kube_config()
-            self.api_client = client.api_client.ApiClient()
+            self.api_client = client.ApiClient()
         else:
-            self.api_client = client.api_client.ApiClient(configuration=k8s_config)
+            self.api_client = client.ApiClient(configuration=k8s_config)
 
     async def close(self):
         if self.api_client:

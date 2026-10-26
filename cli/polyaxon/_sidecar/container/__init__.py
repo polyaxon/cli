@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from clipped.utils.tz import now
-from kubernetes_asyncio.client.rest import ApiException
+from kubernetes.aio.client import ApiException
 
 from polyaxon._contexts import paths as ctx_paths
 from polyaxon._env_vars.getters import get_run_info

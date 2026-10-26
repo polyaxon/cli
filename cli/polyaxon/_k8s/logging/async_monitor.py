@@ -2,8 +2,7 @@ import datetime
 import logging
 from typing import List, Optional, Tuple
 
-from kubernetes_asyncio.client.models import V1Pod
-from kubernetes_asyncio.client.rest import ApiException
+from kubernetes.aio.client import ApiException, V1Pod
 
 from clipped.utils.tz import now
 from polyaxon._flow.run.enums import V1RunKind

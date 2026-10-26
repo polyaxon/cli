@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 import aiofiles
-from kubernetes_asyncio.client.models import V1Pod
+from kubernetes.aio.client import V1Pod
 
 from clipped.utils.paths import check_or_create_path, set_permissions
 from polyaxon._contexts import paths as ctx_paths

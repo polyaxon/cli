@@ -23,7 +23,7 @@ class K8sManager(BaseK8sManager):
                 config.load_kube_config()
             self.api_client = None
         else:
-            self.api_client = client.api_client.ApiClient(configuration=k8s_config)
+            self.api_client = client.ApiClient(configuration=k8s_config)
 
     @staticmethod
     async def load_config(

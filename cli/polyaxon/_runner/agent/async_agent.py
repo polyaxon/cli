@@ -2,7 +2,7 @@ import asyncio
 import traceback
 from typing import Any, Optional, Tuple
 
-from kubernetes_asyncio.client.rest import ApiException
+from kubernetes.aio.client import ApiException
 from urllib3.exceptions import HTTPError
 
 from clipped.utils.tz import now
