@@ -1,7 +1,5 @@
 from typing import Dict, List, Optional
 
-from kubernetes import client
-
 from clipped.utils.lists import to_list
 from polyaxon._flow.notifications import V1Notification
 from polyaxon._flow.termination import V1Termination
@@ -31,8 +29,8 @@ def get_dask_replicas_template(
     args: Optional[List[str]] = None,
     additional_args: Optional[List[str]] = None,
     ports: Optional[List[k8s_schemas.V1ContainerPort]] = None,
-    readiness_probe: Optional[client.V1Probe] = None,
-    liveness_probe: Optional[client.V1Probe] = None,
+    readiness_probe: Optional[k8s_schemas.V1Probe] = None,
+    liveness_probe: Optional[k8s_schemas.V1Probe] = None,
 ):
     if not replica:
         return
@@ -132,18 +130,22 @@ def get_dask_cluster_custom_resource(
                 name="http-dashboard", container_port=8787, protocol="TCP"
             ),
         ],
-        readiness_probe=client.V1Probe(
-            http_get=client.V1HTTPGetAction(path=health_path, port="http-dashboard"),
+        readiness_probe=k8s_schemas.V1Probe(
+            http_get=k8s_schemas.V1HTTPGetAction(
+                path=health_path, port="http-dashboard"
+            ),
             initial_delay_seconds=5,
             period_seconds=5,
         ),
-        liveness_probe=client.V1Probe(
-            http_get=client.V1HTTPGetAction(path=health_path, port="http-dashboard"),
+        liveness_probe=k8s_schemas.V1Probe(
+            http_get=k8s_schemas.V1HTTPGetAction(
+                path=health_path, port="http-dashboard"
+            ),
             initial_delay_seconds=15,
             period_seconds=15,
         ),
     )
-    service = client.V1ServiceSpec(
+    service = k8s_schemas.V1ServiceSpec(
         type="ClusterIP",
         selector={
             **labels,
@@ -151,10 +153,10 @@ def get_dask_cluster_custom_resource(
             "dask.org/component": "scheduler",
         },
         ports=[
-            client.V1ServicePort(
+            k8s_schemas.V1ServicePort(
                 port=8786, target_port="tcp-comm", name="tcp-comm", protocol="TCP"
             ),
-            client.V1ServicePort(
+            k8s_schemas.V1ServicePort(
                 port=8787,
                 target_port="http-dashboard",
                 name="http-dashboard",

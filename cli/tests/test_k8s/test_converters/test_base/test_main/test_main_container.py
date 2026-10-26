@@ -1,6 +1,8 @@
 import pytest
 from unittest.mock import patch
 
+from kubernetes import client as k8s_client
+
 from polyaxon._connections import (
     V1BucketConnection,
     V1ClaimConnection,
@@ -16,6 +18,7 @@ from polyaxon._env_vars.keys import (
 )
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.plugins import V1Plugins
+from polyaxon._flow.run.job import V1Job
 from polyaxon._k8s import k8s_schemas
 from polyaxon._sandbox.auth import derive_sandbox_token
 from polyaxon._sandbox.constants import SANDBOX_BOOTSTRAP_PATH, SANDBOX_PORT
@@ -235,6 +238,39 @@ class TestMainContainer(BaseConverterTest):
         )
 
         assert [p.container_port for p in container.ports] == [8080]
+
+    def test_get_main_container_with_kubernetes_client_container(self):
+        job = V1Job(
+            container=k8s_client.V1Container(
+                name="main",
+                image="job_docker_image",
+                resources=k8s_client.V1ResourceRequirements(
+                    requests={"cpu": "1"}, limits={"memory": "256Mi"}
+                ),
+                ports=[k8s_client.V1ContainerPort(container_port=8080)],
+                env=[k8s_client.V1EnvVar(name="FOO", value="bar")],
+            )
+        )
+        container = self.converter._get_main_container(
+            container_id="new-name",
+            main_container=job.container,
+            plugins=None,
+            artifacts_store=None,
+            init=None,
+            connection_by_names=None,
+            connections=None,
+            secrets=None,
+            config_maps=None,
+            kv_env_vars=None,
+            ports=None,
+            run_path=None,
+        )
+
+        assert [p.container_port for p in container.ports] == [8080]
+        assert k8s_schemas.V1EnvVar(name="FOO", value="bar") in container.env
+        assert container.resources == k8s_schemas.V1ResourceRequirements(
+            requests={"cpu": "1"}, limits={"memory": "256Mi"}
+        )
 
     def test_get_main_container_with_sandbox_command(self):
         with patch.dict(

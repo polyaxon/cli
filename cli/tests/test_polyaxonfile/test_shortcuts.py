@@ -7,8 +7,6 @@ import re
 import subprocess
 import tempfile
 
-from kubernetes.utils import parse_quantity
-
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
 from clipped.utils.json import orjson_dumps, orjson_loads
@@ -27,6 +25,7 @@ from polyaxon._polyaxonfile import (
 )
 from polyaxon._polyaxonfile.shortcuts import SHORTCUT_KEYS, validate_shortcuts
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon._vendor.k8s.quantity import parse_quantity
 from polyaxon.exceptions import PolyaxonfileError
 
 

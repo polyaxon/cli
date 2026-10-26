@@ -4,8 +4,6 @@ import math
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 from typing_extensions import Literal
 
-from kubernetes.utils import parse_quantity
-
 from clipped.compact.pydantic import (
     Field,
     StrictFloat,
@@ -38,6 +36,7 @@ from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
+from polyaxon._vendor.k8s.quantity import parse_quantity
 from polyaxon.exceptions import PolyaxonValidationError
 
 

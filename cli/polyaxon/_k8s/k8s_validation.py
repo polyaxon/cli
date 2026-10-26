@@ -1,17 +1,66 @@
-from typing import Dict, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Optional, Type, TypeVar, Union
 
 from clipped.utils.strings import to_snake_case
 from polyaxon._k8s import k8s_schemas
+from polyaxon._vendor.k8s import models
 
 
 Swagger = TypeVar("Swagger")
+
+VENDORED_MODELS = {
+    name: cls for name, cls in vars(models).items() if isinstance(cls, type)
+}
+
+
+def _to_vendored(value: Any) -> Any:
+    """Converts `kubernetes` client models nested in `value` to the vendored models.
+
+    Returns `value` itself when it holds no client models.
+    """
+    if isinstance(value, list):
+        converted = [_to_vendored(v) for v in value]
+        return value if all(c is v for c, v in zip(converted, value)) else converted
+    if isinstance(value, dict):
+        converted = {k: _to_vendored(v) for k, v in value.items()}
+        return value if all(converted[k] is v for k, v in value.items()) else converted
+
+    cls = VENDORED_MODELS.get(type(value).__name__)
+    if cls is None:
+        return value
+    if isinstance(value, cls):
+        for attr in cls.openapi_types:
+            current = getattr(value, attr)
+            converted = _to_vendored(current)
+            if converted is not current:
+                setattr(value, attr, converted)
+        return value
+    if not type(value).__module__.startswith("kubernetes"):
+        return value
+
+    unsupported = [
+        attr
+        for attr in type(value).openapi_types
+        if attr not in cls.openapi_types and getattr(value, attr, None) is not None
+    ]
+    if unsupported:
+        raise ValueError(
+            "{} fields {} are not supported.".format(cls.__name__, unsupported)
+        )
+    kwargs = {
+        attr: _to_vendored(getattr(value, attr, None)) for attr in cls.openapi_types
+    }
+    configuration = getattr(value, "local_vars_configuration", None)
+    if configuration is not None:
+        kwargs["local_vars_configuration"] = configuration
+    return cls(**kwargs)
 
 
 def _validate_schema(value: Optional[Union[Swagger, Dict]], cls: Type[Swagger]):
     if value is None:
         return value
     if isinstance(value, dict):
-        return cls(**{to_snake_case(k): value[k] for k in value})
+        return cls(**{to_snake_case(k): _to_vendored(value[k]) for k in value})
+    value = _to_vendored(value)
     if isinstance(value, cls):
         return value
     raise ValueError(
