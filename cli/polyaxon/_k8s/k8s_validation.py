@@ -72,10 +72,10 @@ def validate_k8s_affinity(value: Optional[Union[k8s_schemas.V1Affinity, Dict]]):
     return _validate_schema(value, k8s_schemas.V1Affinity)
 
 
-def validate_k8s_security_context(
-    value: Optional[Union[k8s_schemas.V1SecurityContext, Dict]],
+def validate_k8s_pod_security_context(
+    value: Optional[Union[k8s_schemas.V1PodSecurityContext, Dict]],
 ):
-    return _validate_schema(value, k8s_schemas.V1SecurityContext)
+    return _validate_schema(value, k8s_schemas.V1PodSecurityContext)
 
 
 def validate_k8s_pod_dns_config(

@@ -4,6 +4,7 @@ from polyaxon._flow.environment import V1Environment
 from polyaxon._k8s import k8s_schemas
 from polyaxon._k8s.converter.pod.spec import get_pod_spec
 from polyaxon._utils.test_utils import BaseTestCase
+from polyaxon._vendor.k8s.serialization import sanitize_for_serialization
 from polyaxon.exceptions import PolyaxonConverterError
 
 
@@ -135,3 +136,28 @@ class TestPodSpec(BaseTestCase):
         assert pod_spec.containers == [main_container, sidecar_container]
         assert pod_spec.volumes == volumes
         assert metadata.annotations == {}
+
+    def test_get_pod_spec_with_pod_security_context(self):
+        security_context = {
+            "runAsUser": 1000,
+            "fsGroup": 2000,
+            "supplementalGroups": [3000],
+            "sysctls": [{"name": "net.core.somaxconn", "value": "1024"}],
+        }
+        environment = V1Environment(security_context=security_context)
+        _, pod_spec = get_pod_spec(
+            namespace="default",
+            resource_name="foo",
+            main_container=k8s_schemas.V1Container(name="main"),
+            sidecar_containers=None,
+            init_containers=None,
+            volumes=None,
+            environment=environment,
+            labels={},
+            annotations={},
+        )
+
+        assert isinstance(pod_spec.security_context, k8s_schemas.V1PodSecurityContext)
+        assert (
+            sanitize_for_serialization(pod_spec)["securityContext"] == security_context
+        )

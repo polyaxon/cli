@@ -17,6 +17,7 @@ from polyaxon._vendor.k8s.models.v1_object_meta import V1ObjectMeta
 from polyaxon._vendor.k8s.models.v1_persistent_volume_claim_volume_source import V1PersistentVolumeClaimVolumeSource
 from polyaxon._vendor.k8s.models.v1_pod_dns_config import V1PodDNSConfig
 from polyaxon._vendor.k8s.models.v1_pod_failure_policy import V1PodFailurePolicy
+from polyaxon._vendor.k8s.models.v1_pod_security_context import V1PodSecurityContext
 from polyaxon._vendor.k8s.models.v1_pod_spec import V1PodSpec
 from polyaxon._vendor.k8s.models.v1_pod_template_spec import V1PodTemplateSpec
 from polyaxon._vendor.k8s.models.v1_probe import V1Probe

@@ -30,7 +30,7 @@ class V1Environment(BaseSchemaModel):
         node_name: str, optional
         service_account_name: str, optional
         host_aliases: V1HostAlias, optional
-        security_context: V1SecurityContext, optional
+        security_context: V1PodSecurityContext, optional
         image_pull_secrets: List[str], optional
         host_network: bool, optional
         host_pid: bool, optional
@@ -87,7 +87,7 @@ class V1Environment(BaseSchemaModel):
     >>>     node_name="name",
     >>>     service_account_name="name",
     >>>     host_aliases=k8s_schemas.V1HostAlias(...),
-    >>>     security_context=k8s_schemas.V1SecurityContext(...),
+    >>>     security_context=k8s_schemas.V1PodSecurityContext(...),
     >>>     image_pull_secrets=["secret1", "secret2", ...],
     >>>     host_network=False,
     >>>     host_pid=False,
@@ -248,12 +248,18 @@ class V1Environment(BaseSchemaModel):
 
     > A security context defines privilege and access control settings for a Pod or Container.
 
+    This is the Pod security context, it applies to all containers of the Pod.
+    Container-only settings, such as `privileged`, `capabilities`,
+    `allowPrivilegeEscalation` and `readOnlyRootFilesystem`,
+    go in the container's `securityContext`.
+
     ```yaml
     >>> environment:
     >>>   securityContext:
     >>>     runAsUser: 1000
     >>>     runAsGroup: 3000
     >>>     runAsNonRoot: true
+    >>>     fsGroup: 2000
     ```
 
     ### imagePullSecrets
@@ -410,7 +416,7 @@ class V1Environment(BaseSchemaModel):
     host_aliases: Optional[List[k8s_schemas.V1HostAlias]] = Field(
         alias="hostAliases", default=None
     )
-    security_context: Optional[Union[k8s_schemas.V1SecurityContext, Dict]] = Field(
+    security_context: Optional[Union[k8s_schemas.V1PodSecurityContext, Dict]] = Field(
         alias="securityContext", default=None
     )
     image_pull_secrets: Optional[List[StrictStr]] = Field(
@@ -455,7 +461,7 @@ class V1Environment(BaseSchemaModel):
     def validate_security_context(cls, v):
         if not v:
             return v
-        return k8s_validation.validate_k8s_security_context(v)
+        return k8s_validation.validate_k8s_pod_security_context(v)
 
     @field_validator("dns_config", **validation_always, **validation_before)
     def validate_dns_config(cls, v):

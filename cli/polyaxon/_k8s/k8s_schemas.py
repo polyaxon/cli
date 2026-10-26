@@ -5,6 +5,7 @@ from polyaxon._vendor.k8s import models
 
 V1Affinity = models.V1Affinity
 V1SecurityContext = models.V1SecurityContext
+V1PodSecurityContext = models.V1PodSecurityContext
 V1PodDNSConfig = models.V1PodDNSConfig
 V1Toleration = models.V1Toleration
 V1HostAlias = models.V1HostAlias

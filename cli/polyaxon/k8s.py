@@ -15,6 +15,7 @@ from polyaxon._k8s.k8s_schemas import (
     V1ObjectMeta,
     V1PersistentVolumeClaimVolumeSource,
     V1PodDNSConfig,
+    V1PodSecurityContext,
     V1PodSpec,
     V1PodTemplateSpec,
     V1ResourceRequirements,
