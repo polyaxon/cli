@@ -1,6 +1,5 @@
 from typing import Dict, Optional
 
-from kubernetes import client as k8s_client
 from kubernetes.client import Configuration
 
 from polyaxon import settings
@@ -9,6 +8,7 @@ from polyaxon._k8s.converter.mixins import MIXIN_MAPPING
 from polyaxon._runner.executor import BaseExecutor as _BaseExecutor
 from polyaxon._runner.kinds import RunnerKind
 from polyaxon._utils.fqn_utils import get_resource_name
+from polyaxon._vendor.k8s.serialization import sanitize_for_serialization
 
 
 class BaseExecutor(_BaseExecutor):
@@ -53,8 +53,7 @@ class BaseExecutor(_BaseExecutor):
             default_auth=default_auth,
             agent_content=agent_content,
         )
-        api = k8s_client.ApiClient()
-        return api.sanitize_for_serialization(resource)
+        return sanitize_for_serialization(resource)
 
     def create(
         self, run_uuid: str, run_kind: str, resource: Dict, namespace: str = None
