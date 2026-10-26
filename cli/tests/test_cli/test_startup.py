@@ -14,6 +14,7 @@ from tests.test_cli.utils import BaseCommandTestCase
 
 HEAVY_STARTUP_MODULES = {
     "kubernetes",
+    "kubernetes_asyncio",
     "polyaxon._client.client",
     "polyaxon._cli.session",
     "polyaxon._flow",

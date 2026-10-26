@@ -3,7 +3,6 @@ import time
 import traceback
 from typing import Any, Optional, Tuple
 
-from kubernetes.client.rest import ApiException
 from urllib3.exceptions import HTTPError
 
 from clipped.utils.tz import now
@@ -21,6 +20,14 @@ from polyaxon.exceptions import (
     PolyaxonConverterError,
 )
 from polyaxon.logger import logger
+
+
+try:
+    from kubernetes.client.rest import ApiException
+except ImportError:
+    # Docker and local-process agents run without the Kubernetes client
+    class ApiException(Exception):
+        pass
 
 
 class BaseSyncAgent(BaseAgent):
