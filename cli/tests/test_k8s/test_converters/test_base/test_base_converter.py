@@ -67,3 +67,11 @@ class TestConverter(BaseTestCase):
         assert (
             self.converter.get_labels(version="v1", labels={"foo": "bar"}) == expected
         )
+
+        # User labels cannot override the labels that tie pods to their run
+        expected = self.converter.get_recommended_labels(version="v1")
+        labels = {
+            "app.kubernetes.io/instance": "other",
+            "app.kubernetes.io/managed-by": "other",
+        }
+        assert self.converter.get_labels(version="v1", labels=labels) == expected
