@@ -37,7 +37,7 @@ jobs:
     - name: Install master dependencies
       run: pip install -r cli/requirements/master.txt
     - name: Install dev libraries
-      run: export USE_LOCAL_PACKAGES="true" && pip install --upgrade --editable "cli[dev,k8s,fsspec,init,sidecar]"
+      run: export USE_LOCAL_PACKAGES="true" && pip install --upgrade --editable "cli[k8s,fsspec,init,sidecar]"
     - name: Test with pytest
       run: |
         cd cli
@@ -63,7 +63,7 @@ jobs:
     - name: Install master dependencies
       run: pip install -r cli/requirements/master.txt
     - name: Install dev libraries without the k8s extra
-      run: export USE_LOCAL_PACKAGES="true" && pip install --upgrade --editable "cli[dev,fsspec,init,sidecar]"
+      run: export USE_LOCAL_PACKAGES="true" && pip install --upgrade --editable "cli[fsspec,init,sidecar]"
     - name: Check the Kubernetes clients are not installed
       run: |
         if pip show kubernetes; then exit 1; fi

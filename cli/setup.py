@@ -48,12 +48,7 @@ with open("requirements/init.txt") as requirements_file:
 with open("requirements/k8s.txt") as requirements_file:
     k8s_requirements = requirements_file.read().splitlines()
 
-with open("requirements/dev.txt") as requirements_file:
-    dev_requirements = requirements_file.read().splitlines()
-
-
 extra = {
-    "dev": dev_requirements,
     "gcs": ["gcsfs"],
     "s3": ["s3fs"],
     "azure": ["adlfs"],
