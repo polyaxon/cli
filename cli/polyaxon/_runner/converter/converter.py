@@ -21,6 +21,7 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_ARTIFACTS_STORE_NAME,
     ENV_KEYS_COLLECT_ARTIFACTS,
     ENV_KEYS_COLLECT_RESOURCES,
+    ENV_KEYS_COLLECT_RESOURCES_DETAILED,
     ENV_KEYS_LOG_LEVEL,
     ENV_KEYS_NO_API,
     ENV_KEYS_RUN_INSTANCE,
@@ -434,6 +435,11 @@ class BaseConverter:
 
         if plugins and plugins.collect_resources:
             env.append(self._get_env_var(name=ENV_KEYS_COLLECT_RESOURCES, value=True))
+
+        if plugins and plugins.collect_resources_detailed:
+            env.append(
+                self._get_env_var(name=ENV_KEYS_COLLECT_RESOURCES_DETAILED, value=True)
+            )
 
         if artifacts_store_name:
             env.append(
