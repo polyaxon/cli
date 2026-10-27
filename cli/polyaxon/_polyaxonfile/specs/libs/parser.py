@@ -14,6 +14,7 @@ from clipped.utils.serialization import (
 from polyaxon._flow.params.params import ParamSpec
 from polyaxon._polyaxonfile.specs.libs.engine import render_template
 from polyaxon._polyaxonfile.specs.sections import Sections
+from polyaxon.exceptions import PolyaxonSchemaError
 
 
 try:
@@ -32,6 +33,7 @@ class ContainerText(TextValue):
 
 # Scalar IO types whose values are text
 TEXT_TYPES = {"str", "path", "image", "uuid"}
+MAX_RENDER_PASSES = 8
 
 
 def mark_text_items(items: List, marker: Type[TextValue] = TextValue) -> List:
@@ -281,8 +283,8 @@ class PolyaxonfileParser:
 
     @classmethod
     def _evaluate_expression(cls, expression, params, check_operators):
-        result = render_template(expression, params)
         if isinstance(expression, TextValue):
+            result = render_template(expression, params)
             # Unset optional params render as "None" and were always omitted.
             if (
                 isinstance(expression, ContainerText)
@@ -291,13 +293,16 @@ class PolyaxonfileParser:
             ):
                 return None
             return str(result)
-        if result == expression:
-            try:
-                return ast.literal_eval(result)
-            except (ValueError, SyntaxError):
-                pass
-            return result
-        return cls.parse_expression(result, params, check_operators)
+
+        for _ in range(MAX_RENDER_PASSES):
+            result = render_template(expression, params)
+            if result == expression or ("{{" not in result and "{%" not in result):
+                try:
+                    return ast.literal_eval(result)
+                except (ValueError, SyntaxError):
+                    return result
+            expression = result
+        raise PolyaxonSchemaError("Template exceeded the maximum rendering passes.")
 
     @classmethod
     def _parse_operator(cls, expression, params):
