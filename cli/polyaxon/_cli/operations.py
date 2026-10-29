@@ -1523,7 +1523,7 @@ def statuses(ctx, project, uid, watch, offline, path):
     "-nf",
     is_flag=True,
     default=False,
-    help="Stream logs after showing past logs.",
+    help="Show past logs and exit without streaming.",
 )
 @click.option(
     "--hide-time",
