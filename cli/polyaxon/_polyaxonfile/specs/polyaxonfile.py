@@ -165,7 +165,7 @@ def compose_polyaxonfile(
         "cmd",
         "env",
         "resources",
-        "ports",
+        "service",
         "environment",
         "init",
         "connections",

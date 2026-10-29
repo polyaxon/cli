@@ -33,6 +33,7 @@ from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
+from polyaxon._flow.run.service import V1ServiceShortcut
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
@@ -240,7 +241,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     inputs: Optional[List[V1IO]] = None
     outputs: Optional[List[V1IO]] = None
     run: Optional[Union[V1Runtime, Dict]] = None
-    ports: Optional[List[StrictInt]] = None
+    service: Optional[V1ServiceShortcut] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
     cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
     env: Optional[Dict[StrictStr, StrictStr]] = None
@@ -416,14 +417,20 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     def apply_shortcuts(self, run, strategy: Optional[PatchStrategy] = None):
         """Apply root shortcuts to the runtime in field-table order.
 
-        Without a runtime, `ports` creates a service; otherwise the first
-        container shortcut creates a job.
+        Without a runtime, `service` creates a service; otherwise the first
+        container shortcut creates a job. Other runtimes reject `service`.
         """
         strategy = strategy or PatchStrategy.POST_MERGE
-        if self.ports is not None:
-            # First: ports is the only shortcut that can choose the runtime.
+        if self.service is not None:
+            # First: service is the only shortcut that can choose the runtime.
+            if run is not None and run.kind != V1RunKind.SERVICE:
+                # Checked here: an empty section is a valid patch for any runtime.
+                raise PolyaxonValidationError(
+                    "The `service` shortcut requires a service runtime, "
+                    "received `{}`.".format(run.kind)
+                )
             run = _patch_run(
-                run, {"ports": self.ports}, strategy, kind=V1RunKind.SERVICE
+                run, self.service.to_dict(), strategy, kind=V1RunKind.SERVICE
             )
         if "container" in self.model_fields_set:
             run = _patch_run(run, {"container": self.container}, strategy)

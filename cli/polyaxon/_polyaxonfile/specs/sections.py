@@ -29,7 +29,7 @@ class Sections:
     CMD = "cmd"
     ENV = "env"
     RESOURCES = "resources"
-    PORTS = "ports"
+    SERVICE = "service"
     ENVIRONMENT = "environment"
     INIT = "init"
     SIDECARS = "sidecars"
@@ -95,7 +95,7 @@ class Sections:
         CMD,
         ENV,
         RESOURCES,
-        PORTS,
+        SERVICE,
         ENVIRONMENT,
         INIT,
         SIDECARS,

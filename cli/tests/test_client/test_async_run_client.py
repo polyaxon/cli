@@ -1146,7 +1146,7 @@ class TestAsyncRunClient(BaseTestCase, IsolatedAsyncioTestCase):
                     "cmd": ["cd /tmp", "echo ok"],
                     "env": {"LEVEL": "debug", "EMPTY": ""},
                     "resources": {"cpu": "1..2", "gpu": 1},
-                    "ports": None,
+                    "service": None,
                     "volumes": [],
                 },
             ),

@@ -28,7 +28,11 @@ from polyaxon._sdk.schemas.v1_project_version import V1ProjectVersion
 from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.test_utils import BaseTestCase, patch_settings
-from polyaxon.exceptions import PolyaxonClientException, PolyaxonfileError
+from polyaxon.exceptions import (
+    PolyaxonClientException,
+    PolyaxonfileError,
+    PolyaxonValidationError,
+)
 from traceml.artifacts import V1RunArtifact
 
 
@@ -575,7 +579,7 @@ class TestRunClient(BaseTestCase):
                     "cmd": ["cd /tmp", "echo ok"],
                     "env": {"LEVEL": "debug", "EMPTY": ""},
                     "resources": {"cpu": "1..2", "gpu": 1},
-                    "ports": None,
+                    "service": None,
                     "volumes": [],
                 },
             ),
@@ -649,7 +653,7 @@ class TestRunClient(BaseTestCase):
             # Empty and zero values are authored values.
             (
                 {"env": {}, "ports": [], "gpu": 0},
-                {"env": {}, "ports": [], "resources": {"gpu": 0}},
+                {"env": {}, "service": {"ports": []}, "resources": {"gpu": 0}},
             ),
             (
                 {
@@ -717,14 +721,14 @@ class TestRunClient(BaseTestCase):
                     )
                     assert compiled.run.container.image == image
 
-        # The inherited job of a component rejects ports at compilation.
+        # The inherited job of a component rejects the service shortcut at compilation.
         create_run.reset_mock()
         client.create(
             content={"kind": "component", "container": {"image": "busybox:1.36"}},
             ports=[8080],
         )
         submitted = json.loads(create_run.call_args.kwargs["body"].content)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(PolyaxonValidationError):
             OperationSpecification.compile_operation(read_polyaxonfile(submitted))
 
     def test_create_shortcut_string_content_is_a_document(self):
@@ -786,7 +790,10 @@ class TestRunClient(BaseTestCase):
             )
 
         submitted = json.loads(create_run.call_args.kwargs["body"].content)
-        assert submitted == {"container": {"image": "nginx:1.27"}, "ports": [8080]}
+        assert submitted == {
+            "container": {"image": "nginx:1.27"},
+            "service": {"ports": [8080]},
+        }
         compiled = OperationSpecification.compile_operation(
             read_polyaxonfile(submitted)
         )

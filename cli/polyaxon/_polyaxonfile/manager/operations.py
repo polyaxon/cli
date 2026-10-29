@@ -178,7 +178,7 @@ def get_op_specification(
                 config.dag_ref,
             )
         ):
-            service_preset = V1Operation(ports=[], is_preset=True)
+            service_preset = V1Operation(service={}, is_preset=True)
             config = config.patch(service_preset, strategy=PatchStrategy.ISNULL)
         # Like the git preset, the request applies after the files.
         sandbox_preset = V1Operation(plugins=V1Plugins(sandbox=True), is_preset=True)

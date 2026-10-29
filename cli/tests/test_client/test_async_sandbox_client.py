@@ -341,7 +341,7 @@ class TestAsyncSandboxClient(BaseTestCase, IsolatedAsyncioTestCase):
 
         # Same authored source as `polyaxon run --sandbox`.
         assert orjson_loads(body.content) == {
-            "ports": [],
+            "service": {},
             "plugins": {"sandbox": True},
         }
         compiled = OperationSpecification.compile_operation(

@@ -301,7 +301,7 @@ class TestSandboxClient(BaseTestCase):
 
         # Same authored source as `polyaxon run --sandbox`.
         assert orjson_loads(body.content) == {
-            "ports": [],
+            "service": {},
             "plugins": {"sandbox": True},
         }
         compiled = OperationSpecification.compile_operation(
@@ -410,7 +410,7 @@ class TestSandboxClient(BaseTestCase):
                 os.chdir(cwd)
         # Shortcut ports replace the default; empty and zero values are kept.
         assert submitted == {
-            "ports": [8080],
+            "service": {"ports": [8080]},
             "env": {},
             "resources": {"gpu": 0},
             "plugins": {"sandbox": True},
@@ -424,7 +424,7 @@ class TestSandboxClient(BaseTestCase):
 
         submitted = orjson_loads(create_run.call_args.kwargs["body"].content)
         # A sourced document gets no service intent.
-        assert "ports" not in submitted
+        assert "service" not in submitted
         compiled = OperationSpecification.compile_operation(
             read_polyaxonfile(submitted)
         )
@@ -437,17 +437,17 @@ class TestSandboxClient(BaseTestCase):
     def test_create_content_without_a_runtime_is_a_service(self):
         client, create_run = self.make_create_client()
         for content, expected in (
-            ({}, {"ports": [], "plugins": {"sandbox": True}}),
+            ({}, {"service": {}, "plugins": {"sandbox": True}}),
             (
                 {"plugins": {"ssh": True}},
-                {"ports": [], "plugins": {"ssh": True, "sandbox": True}},
+                {"service": {}, "plugins": {"ssh": True, "sandbox": True}},
             ),
             # Authored and overlaid ports are kept.
             (
-                {"container": {"image": "base:v1"}, "ports": [8080]},
+                {"container": {"image": "base:v1"}, "service": {"ports": [8080]}},
                 {
                     "container": {"image": "base:v1"},
-                    "ports": [8080],
+                    "service": {"ports": [8080]},
                     "plugins": {"sandbox": True},
                 },
             ),
@@ -470,7 +470,7 @@ class TestSandboxClient(BaseTestCase):
         client.create(content={"container": {"image": "base:v1"}}, ports=[9090])
 
         submitted = orjson_loads(create_run.call_args.kwargs["body"].content)
-        assert submitted["ports"] == [9090]
+        assert submitted["service"]["ports"] == [9090]
 
     def test_create_validates_content_before_submitting(self):
         client, create_run = self.make_create_client()

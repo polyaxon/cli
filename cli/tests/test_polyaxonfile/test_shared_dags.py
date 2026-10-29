@@ -60,7 +60,7 @@ class TestSharedDags(BaseTestCase):
                     {
                         "name": "shortcut_service",
                         "container": {"image": "busybox:1.36"},
-                        "ports": [8080],
+                        "service": {"ports": [8080]},
                     },
                 ]
                 if kind:
@@ -114,7 +114,7 @@ class TestSharedDags(BaseTestCase):
                             assert compiled.run.container.command == ["/bin/sh", "-c"]
                             assert compiled.run.container.args == ["set -e\necho hello"]
                         else:
-                            assert child_source["ports"] == [8080]
+                            assert child_source["service"] == {"ports": [8080]}
                             assert compiled.run.kind == "service"
                             assert compiled.run.ports == [8080]
                 assert dag.get_op_spec_by_index(2).dag_ref == "template"

@@ -351,14 +351,14 @@ class TestCliRun(BaseCommandTestCase):
         # Authored intent only: the converter adds the sandbox port and bootstrap.
         assert submitted == {
             "container": {"image": "python:3.12"},
-            "ports": [],
+            "service": {},
             "plugins": {"sandbox": True},
         }
         compiled = OperationSpecification.compile_operation(
             OperationSpecification.read(submitted)
         )
         assert compiled.run.kind == "service"
-        assert compiled.run.ports == []
+        assert compiled.run.ports is None
         assert compiled.plugins.sandbox is True
 
     @patch("polyaxon._utils.cache.cache")
@@ -968,7 +968,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
 
             op_spec = self.get_op_spec("-f", str(source))
 
-        for field in ("container", "cmd", "env", "resources", "ports"):
+        for field in ("container", "cmd", "env", "resources", "service"):
             assert getattr(op_spec, field) is None, field
         assert _compile(op_spec).run.kind == "job"
 
@@ -997,7 +997,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         )
 
         assert op_spec.cmd == ["b", "a"]
-        assert op_spec.ports == [81, 80]
+        assert op_spec.service.ports == [81, 80]
         compiled = _compile(op_spec)
         assert compiled.run.kind == "service"
         assert compiled.run.ports == [81, 80]
@@ -1008,7 +1008,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
             "--image", "nginx:1.27", "--port", "80", "--ports", "9999,8888"
         )
 
-        assert op_spec.ports == [80, 9999, 8888]
+        assert op_spec.service.ports == [80, 9999, 8888]
         assert _compile(op_spec).run.ports == [80, 9999, 8888]
         for value in ("80,abc", "80,"):
             with self.subTest(value=value):
@@ -1198,7 +1198,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
             "--sandbox", "--image", "python:3.12", "--port", "8080"
         )
 
-        assert op_spec.ports == [8080]
+        assert op_spec.service.ports == [8080]
         assert op_spec.plugins.sandbox is True
         compiled = _compile(op_spec)
         assert compiled.run.kind == "service"
@@ -1209,7 +1209,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         with self.runner.isolated_filesystem():
             op_spec = self.get_op_spec("--sandbox")
 
-        assert op_spec.ports == []
+        assert op_spec.service.to_dict() == {}
         assert op_spec.container is None
         compiled = _compile(op_spec)
         assert compiled.run.kind == "service"
@@ -1221,19 +1221,19 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
             plugins.write_text("plugins: {ssh: true}\n")
             image = Path(directory) / "image.yaml"
             image.write_text("container: {image: base:v1}\n")
-            for args, ports in (
-                (["-f", str(plugins)], []),
-                (["-f", str(image)], []),
+            for args, service in (
+                (["-f", str(plugins)], {}),
+                (["-f", str(image)], {}),
                 # Authored and inline ports are kept.
-                (["-f", str(image), "--port", "8080"], [8080]),
+                (["-f", str(image), "--port", "8080"], {"ports": [8080]}),
             ):
                 with self.subTest(args=args):
                     op_spec = self.get_op_spec(*args, "--sandbox")
 
-                    assert op_spec.ports == ports
+                    assert op_spec.service.to_dict() == service
                     compiled = _compile(op_spec)
                     assert compiled.run.kind == "service"
-                    assert compiled.run.ports == ports
+                    assert compiled.run.ports == service.get("ports")
                     assert compiled.plugins.sandbox is True
                     if args[1] == str(plugins):
                         assert compiled.plugins.ssh is True
@@ -1251,7 +1251,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
                     op_spec = self.get_op_spec(*args, "--sandbox")
 
                     # Sourced documents get no service intent.
-                    assert op_spec.ports is None
+                    assert op_spec.service is None
                     compiled = _compile(op_spec)
                     assert compiled.run.kind == "service"
                     assert compiled.plugins.sandbox is True

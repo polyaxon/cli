@@ -5,6 +5,7 @@ from clipped.compact.pydantic import Field, StrictInt
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.job import V1Job
+from polyaxon._schemas.base import BaseSchemaModel
 
 
 class V1Service(V1Job):
@@ -271,6 +272,17 @@ class V1Service(V1Job):
     _IDENTIFIER = V1RunKind.SERVICE
 
     kind: Literal[V1RunKind.SERVICE] = _IDENTIFIER
+    ports: Optional[Union[List[StrictInt], RefField]] = None
+    rewrite_path: Optional[BoolOrRef] = Field(alias="rewritePath", default=None)
+    is_external: Optional[BoolOrRef] = Field(alias="isExternal", default=None)
+    replicas: Optional[IntOrRef] = None
+
+
+class V1ServiceShortcut(BaseSchemaModel):
+    """Service-only fields of the root `service` shortcut, typed like `V1Service`."""
+
+    _IDENTIFIER = "service"
+
     ports: Optional[Union[List[StrictInt], RefField]] = None
     rewrite_path: Optional[BoolOrRef] = Field(alias="rewritePath", default=None)
     is_external: Optional[BoolOrRef] = Field(alias="isExternal", default=None)

@@ -9,7 +9,7 @@ from polyaxon.exceptions import PolyaxonfileError
 
 
 SHORTCUT_KEYS = {
-    Sections.PORTS,
+    Sections.SERVICE,
     Sections.CONTAINER,
     Sections.CMD,
     Sections.ENV,
@@ -50,7 +50,7 @@ def get_shortcuts(
     if resources:
         shortcuts["resources"] = resources
     if ports is not None:
-        shortcuts["ports"] = ports
+        shortcuts["service"] = {"ports": ports}
     return shortcuts or None
 
 
@@ -66,7 +66,7 @@ def validate_shortcuts(shortcuts: Dict):
 
 def get_sandbox_shortcuts(shortcuts: Optional[Dict]) -> Dict:
     """A sandbox without a source is a service."""
-    return {"ports": [], **(shortcuts or {})}
+    return {"service": {}, **(shortcuts or {})}
 
 
 def get_shortcut_specification(

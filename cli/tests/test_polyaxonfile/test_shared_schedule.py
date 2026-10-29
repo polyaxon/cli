@@ -263,7 +263,7 @@ class TestSharedSchedule(BaseTestCase):
                     "kind": "component",
                     "container": {"image": "busybox:1.36"},
                     "cmd": ["cd /tmp", "serve"],
-                    "ports": [8080],
+                    "service": {"ports": [8080]},
                     "env": {"LEVEL": "inner", "TOKEN": "t"},
                 },
             }
@@ -281,7 +281,14 @@ class TestSharedSchedule(BaseTestCase):
         assert child.plugins.sandbox is True
         layer = child
         while layer is not None:
-            for field in ("schedule", "container", "cmd", "env", "ports", "run_patch"):
+            for field in (
+                "schedule",
+                "container",
+                "cmd",
+                "env",
+                "service",
+                "run_patch",
+            ):
                 assert getattr(layer, field) is None
                 assert field not in layer.model_fields_set
             layer = layer.component
