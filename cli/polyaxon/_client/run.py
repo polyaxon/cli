@@ -769,7 +769,7 @@ class RunClient(ClientMixin):
                  shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
             gpu: str or int, optional, count or `request..limit`,
                  shortcut for `resources.gpu`.
-            ports: List[int], optional, shortcut for `ports`,
+            ports: List[int], optional, shortcut for `service.ports`,
                  a run without a runtime becomes a service.
 
         Returns:
@@ -888,7 +888,7 @@ class RunClient(ClientMixin):
                  shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
             gpu: str or int, optional, count or `request..limit`,
                  shortcut for `resources.gpu`.
-            ports: List[int], optional, shortcut for `ports`,
+            ports: List[int], optional, shortcut for `service.ports`,
                  a run without a runtime becomes a service.
 
         Returns:
@@ -1001,7 +1001,7 @@ class RunClient(ClientMixin):
                  shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
             gpu: str or int, optional, count or `request..limit`,
                  shortcut for `resources.gpu`.
-            ports: List[int], optional, shortcut for `ports`,
+            ports: List[int], optional, shortcut for `service.ports`,
                  a run without a runtime becomes a service.
 
         Returns:
@@ -1113,7 +1113,7 @@ class RunClient(ClientMixin):
                  shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
             gpu: str or int, optional, count or `request..limit`,
                  shortcut for `resources.gpu`.
-            ports: List[int], optional, shortcut for `ports`,
+            ports: List[int], optional, shortcut for `service.ports`,
                  a run without a runtime becomes a service.
 
         Returns:

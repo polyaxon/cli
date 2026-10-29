@@ -325,7 +325,7 @@ def _run(
     "ports",
     multiple=True,
     type=str,
-    help="Ports to expose, shortcut for `ports`; a run without a runtime "
+    help="Ports to expose, shortcut for `service.ports`; a run without a runtime "
     "becomes a service. Comma-separated values, can be specified multiple times, "
     "e.g. `--ports 80,443`.",
 )

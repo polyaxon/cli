@@ -349,7 +349,7 @@ class SandboxClient(ClientMixin):
         `None` omits a value. They are the final overlay of `content`, or the
         whole source without it. A source without a runtime (no `run`, component
         or reference), e.g. `{"plugins": {"ssh": True}}`, is a service
-        (`ports: []` unless set). `plugins.sandbox: true` is then set on the
+        (`service: {}` unless set). `plugins.sandbox: true` is then set on the
         operation, other literal plugins are kept, and the composed run must be
         a service. Unset plugins stay unset, so presets can still enable `tmux`
         or `ssh`.
@@ -387,7 +387,7 @@ class SandboxClient(ClientMixin):
                  shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
             gpu: str or int, optional, count or `request..limit`,
                  shortcut for `resources.gpu`.
-            ports: List[int], optional, shortcut for `ports`.
+            ports: List[int], optional, shortcut for `service.ports`.
 
         Returns:
             V1Run, run instance from the response.
@@ -560,7 +560,7 @@ class AsyncSandboxClient(SandboxClient):
         `None` omits a value. They are the final overlay of `content`, or the
         whole source without it. A source without a runtime (no `run`, component
         or reference), e.g. `{"plugins": {"ssh": True}}`, is a service
-        (`ports: []` unless set). `plugins.sandbox: true` is then set on the
+        (`service: {}` unless set). `plugins.sandbox: true` is then set on the
         operation, other literal plugins are kept, and the composed run must be
         a service. Unset plugins stay unset, so presets can still enable `tmux`
         or `ssh`.
@@ -598,7 +598,7 @@ class AsyncSandboxClient(SandboxClient):
                  shortcut for `resources.memory`, e.g. `512Mi..1Gi`.
             gpu: str or int, optional, count or `request..limit`,
                  shortcut for `resources.gpu`.
-            ports: List[int], optional, shortcut for `ports`.
+            ports: List[int], optional, shortcut for `service.ports`.
 
         Returns:
             V1Run, run instance from the response.
