@@ -32,6 +32,7 @@ def _prepare_child_source(
         "cmd",
         "env",
         "resources",
+        "dag",
         "service",
         "environment",
         "init",

@@ -29,7 +29,7 @@ from polyaxon._flow.init import V1Init
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.params import V1Param, normalize_param_value
 from polyaxon._flow.references import RefMixin, V1DagRef, V1HubRef, V1PathRef, V1UrlRef
-from polyaxon._flow.run.dag import V1Dag
+from polyaxon._flow.run.dag import V1Dag, V1DagShortcut
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
@@ -221,7 +221,14 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     """
 
     _SWAGGER_FIELDS = ["container", "sidecars", "volumes"]
-    _CUSTOM_DUMP_FIELDS = {"run", "component", "termination", "environment", "init"}
+    _CUSTOM_DUMP_FIELDS = {
+        "run",
+        "dag",
+        "component",
+        "termination",
+        "environment",
+        "init",
+    }
     _FIELDS_MANUAL_PATCH = [
         "kind",
         "version",
@@ -241,6 +248,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     inputs: Optional[List[V1IO]] = None
     outputs: Optional[List[V1IO]] = None
     run: Optional[Union[V1Runtime, Dict]] = None
+    dag: Optional[V1DagShortcut] = None
     service: Optional[V1ServiceShortcut] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
     cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
@@ -417,21 +425,24 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     def apply_shortcuts(self, run, strategy: Optional[PatchStrategy] = None):
         """Apply root shortcuts to the runtime in field-table order.
 
-        Without a runtime, `service` creates a service; otherwise the first
-        container shortcut creates a job. Other runtimes reject `service`.
+        Without a runtime, `dag` or `service` creates that runtime; otherwise the
+        first container shortcut creates a job. Other runtimes reject both.
         """
         strategy = strategy or PatchStrategy.POST_MERGE
-        if self.service is not None:
-            # First: service is the only shortcut that can choose the runtime.
-            if run is not None and run.kind != V1RunKind.SERVICE:
+        # First: these are the only shortcuts that can choose the runtime.
+        for field, kind in (("dag", V1RunKind.DAG), ("service", V1RunKind.SERVICE)):
+            section = getattr(self, field)
+            if section is None:
+                continue
+            if run is not None and run.kind != kind:
                 # Checked here: an empty section is a valid patch for any runtime.
                 raise PolyaxonValidationError(
-                    "The `service` shortcut requires a service runtime, "
-                    "received `{}`.".format(run.kind)
+                    "The `{0}` shortcut requires a {0} runtime, received `{1}`.".format(
+                        field, run.kind
+                    )
                 )
-            run = _patch_run(
-                run, self.service.to_dict(), strategy, kind=V1RunKind.SERVICE
-            )
+            values = {k: v for k, v in section.to_dict().items() if v is not None}
+            run = _patch_run(run, values, strategy, kind=kind)
         if "container" in self.model_fields_set:
             run = _patch_run(run, {"container": self.container}, strategy)
         if self.cmd:
@@ -1612,6 +1623,7 @@ PartialV1Operation = to_partial(V1Operation)
 # Resolve the single DAG runtime after all recursive authoring models exist.
 for model in (
     V1Dag,
+    V1DagShortcut,
     V1Polyaxonfile,
     V1Component,
     V1Operation,

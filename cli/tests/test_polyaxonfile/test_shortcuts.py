@@ -28,9 +28,11 @@ from polyaxon._polyaxonfile.shortcuts import (
     get_shortcut_specification,
     validate_shortcuts,
 )
+from polyaxon._polyaxonfile.specs import compose_polyaxonfile
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon._vendor.k8s.quantity import parse_quantity
 from polyaxon.exceptions import PolyaxonfileError, PolyaxonValidationError
+from polyaxon.schemas import V1DagShortcut, V1Operation
 
 
 SECRET = {"secretKeyRef": {"name": "secrets", "key": "token"}}
@@ -1536,6 +1538,277 @@ class TestShortcuts(BaseTestCase):
                 check_polyaxonfile(polyaxonfile=[component, overlay], is_cli=False)
             assert isinstance(error.exception.__cause__, PolyaxonValidationError)
             assert "requires a service runtime" in str(error.exception.__cause__)
+
+    def test_dag_compiles_like_a_native_dag(self):
+        container = {"image": "busybox:1.36"}
+        job = {"kind": "job", "container": container}
+        fields = {
+            "concurrency": 2,
+            "earlyStopping": [{"kind": "failure_early_stopping", "percent": 50}],
+            "components": [
+                {
+                    "name": "template",
+                    "matrix": {
+                        "kind": "grid",
+                        "params": {"count": {"kind": "choice", "value": [1, 2]}},
+                    },
+                    "schedule": {"kind": "cron", "cron": "0 * * * *"},
+                    "run": job,
+                },
+            ],
+            "operations": [
+                {"name": "prepare", "container": container, "cmd": "echo prepare"},
+                {
+                    "name": "once",
+                    "dagRef": "template",
+                    "dependencies": ["prepare"],
+                    "matrix": None,
+                    "schedule": None,
+                },
+                {"name": "inherited", "dagRef": "template"},
+                {"name": "nested", "dag": {"operations": [{"name": "a", "run": job}]}},
+            ],
+        }
+        shared = {
+            "environment": {"nodeSelector": {"pool": "workers"}},
+            "connections": ["artifacts"],
+            "volumes": [{"name": "scratch", "emptyDir": {}}],
+        }
+        for section, root in ((fields, shared), ({}, {}), ({"operations": []}, {})):
+            with self.subTest(section=section):
+                authored = read_polyaxonfile({"dag": deepcopy(section), **root})
+                before = authored.to_dict()
+                expected = _compile({"run": {"kind": "dag", **section, **root}}).run
+
+                assert OperationSpecification.compile_operation(authored).run == (
+                    expected
+                )
+                assert compose_polyaxonfile(authored).dag is None
+                assert authored.to_dict() == before
+                assert orjson_loads(authored.to_source_json())["dag"] == section
+                saved = read_polyaxonfile(authored.to_source_json())
+                assert saved.to_dict() == before
+                assert "run" not in saved.model_fields_set
+
+        # Null expresses no DAG intent.
+        compiled = _compile({"dag": None, "container": container})
+        assert compiled.run.kind == "job"
+
+        dag = CompiledOperationSpecification.apply_operation_contexts(
+            _compile({"dag": fields})
+        ).run
+        assert dag.dag["once"].upstream == {"prepare"}
+        assert dag.get_effective_op("prepare").run.kind == "job"
+        assert dag.get_effective_op("once").matrix is None
+        assert dag.get_effective_op("inherited").matrix.kind == "grid"
+        assert dag.get_effective_op("nested").run.kind == "dag"
+
+        typed = V1Operation(
+            dag=V1DagShortcut(
+                concurrency=2, operations=[{"name": "a", "container": container}]
+            )
+        )
+        assert OperationSpecification.compile_operation(typed).run == (
+            _compile({"run": {"kind": "dag", **typed.dag.to_dict()}}).run
+        )
+
+    def test_dag_validates_native_field_types(self):
+        for dag in (
+            [],
+            "{{ dag }}",
+            {"operations": {"name": "train"}},
+            {"operations": [1]},
+            {"components": "train"},
+            {"concurrency": 0},
+            {"concurrency": -1},
+            {"earlyStopping": {"kind": "failure_early_stopping", "percent": 50}},
+            # Only DAG fields: unknown and shared keys are rejected.
+            {"ops": []},
+            {"kind": "dag"},
+            {"environment": {}},
+            {"connections": []},
+            {"volumes": []},
+            {"container": {"image": "busybox:1.36"}},
+            {"cmd": "train"},
+            {"resources": {"cpu": 1}},
+        ):
+            with self.subTest(dag=dag), self.assertRaises(ValidationError):
+                V1Polyaxonfile.from_dict({"dag": dag})
+        refs = {
+            "operations": "{{ operations }}",
+            "components": "{{ components }}",
+            "concurrency": "{{ concurrency }}",
+            "earlyStopping": "{{ early_stopping }}",
+        }
+        assert V1Polyaxonfile.from_dict({"dag": refs}).dag.to_dict() == refs
+
+    def test_dag_rejects_other_runtimes(self):
+        job = {"kind": "job", "container": {"image": "base:v1"}}
+        replica = {"replicas": 1, "container": {"image": "base:v1"}}
+        runs = (
+            job,
+            {"kind": "service", "container": {"image": "base:v1"}},
+            {"kind": "pytorchjob", "master": replica, "worker": replica},
+        )
+        # Empty sections still express DAG intent, so they conflict too.
+        for section in ({"concurrency": 2}, {}):
+            sources = [
+                # A container-only inner layer already resolved to a job.
+                {"dag": section, "component": {"container": {"image": "base:v1"}}}
+            ]
+            for run in runs:
+                sources.append({"run": run, "dag": section})
+                sources.append({"dag": section, "component": {"run": run}})
+            for source in sources:
+                with self.subTest(source=source):
+                    with self.assertRaises(PolyaxonValidationError) as error:
+                        _compile(source)
+                    assert "requires a dag runtime" in str(error.exception)
+
+        # dag applies first, so a service section meets the DAG it created.
+        for source, expected in (
+            ({"dag": {}, "service": {}}, "requires a service runtime"),
+            ({"dag": {"concurrency": 2}, "service": {}}, "requires a service runtime"),
+            ({"service": {}, "component": {"dag": {}}}, "requires a service runtime"),
+            ({"dag": {}, "component": {"service": {}}}, "requires a dag runtime"),
+        ):
+            with self.subTest(source=source):
+                with self.assertRaises(PolyaxonValidationError) as error:
+                    _compile(source)
+                assert expected in str(error.exception)
+
+        # Parent fields never become implicit node defaults.
+        for shortcut in (
+            {"container": {"image": "busybox:1.36"}},
+            {"cmd": "train"},
+            {"env": {}},
+            {"resources": {"cpu": 1}},
+            {"init": [{"container": {"name": "a", "image": "busybox:1.36"}}]},
+            {"sidecars": [{"name": "a", "image": "busybox:1.36"}]},
+        ):
+            with self.subTest(shortcut=shortcut):
+                with self.assertRaises(ValidationError):
+                    _compile({"dag": {}, **shortcut})
+
+        with self.assertRaises(ValidationError) as error:
+            get_shortcut_specification({"dag": {}}, None, sandbox=True)
+        assert "plugins.sandbox is only supported" in str(error.exception)
+
+    def test_dag_merges_natively_per_strategy(self):
+        job = {"kind": "job", "container": {"image": "base:v1"}}
+        native = {
+            "kind": "dag",
+            "concurrency": 2,
+            "operations": [{"name": "first", "run": job}],
+        }
+        section = {"concurrency": 3, "operations": [{"name": "second", "run": job}]}
+        run_patch = {"concurrency": 4, "operations": [{"name": "third", "run": job}]}
+
+        def names(run):
+            return [op.name for op in run.operations]
+
+        for strategy, same_layer, with_patch in (
+            (
+                PatchStrategy.POST_MERGE,
+                (3, ["first", "second"]),
+                (4, ["first", "second", "third"]),
+            ),
+            (
+                PatchStrategy.PRE_MERGE,
+                (2, ["second", "first"]),
+                (2, ["third", "second", "first"]),
+            ),
+            (PatchStrategy.REPLACE, (3, ["second"]), (4, ["third"])),
+            (PatchStrategy.ISNULL, (2, ["first"]), (2, ["first"])),
+        ):
+            with self.subTest(strategy=strategy):
+                layer = {"patchStrategy": strategy, "run": native, "dag": section}
+                inherited = {
+                    "patchStrategy": strategy,
+                    "dag": section,
+                    "component": {"run": native},
+                }
+                for source in (layer, inherited):
+                    compiled = _compile(source).run
+                    assert (compiled.concurrency, names(compiled)) == same_layer
+                # Explicit runPatch applies after the root shortcut.
+                compiled = _compile({**layer, "runPatch": run_patch}).run
+                assert (compiled.concurrency, names(compiled)) == with_patch
+                # Null fields add no native patch.
+                compiled = _compile(
+                    {
+                        "patchStrategy": strategy,
+                        "dag": {"concurrency": None},
+                        "component": {"run": native},
+                    }
+                ).run
+                assert compiled.concurrency == 2
+
+        # Outer layers override inner ones regardless of spelling.
+        outer = {
+            "run": {"kind": "dag", "concurrency": 5},
+            "component": {"dag": {"concurrency": 3}},
+        }
+        assert _compile(outer).run.concurrency == 5
+
+    def test_dag_overlays_and_presets(self):
+        job = {"kind": "job", "container": {"image": "base:v1"}}
+        first, second = ({"name": name, "run": job} for name in ("first", "second"))
+        base = {"dag": {"concurrency": 2, "operations": [first]}}
+        for strategy, expected in (
+            (None, ["first", "second"]),
+            (PatchStrategy.PRE_MERGE, ["second", "first"]),
+            (PatchStrategy.REPLACE, ["second"]),
+            (PatchStrategy.ISNULL, ["first"]),
+        ):
+            with self.subTest(strategy=strategy):
+                overlay = {"dag": {"operations": [second]}}
+                if strategy:
+                    overlay["patchStrategy"] = strategy
+                config = patch_polyaxonfile(deepcopy(base), [overlay])
+                replayed = read_polyaxonfile(config.to_source_json())
+                compiled = OperationSpecification.compile_operation(replayed)
+                assert compiled.run.kind == "dag"
+                for section in (config.dag, replayed.dag, compiled.run):
+                    assert [op.name for op in section.operations] == expected
+                    assert section.concurrency == 2
+
+        # Nested-model patching: a null section keeps the existing one.
+        for strategy in PatchStrategy:
+            with self.subTest(strategy=strategy):
+                overlay = {"dag": None, "patchStrategy": strategy}
+                nulled = patch_polyaxonfile(deepcopy(base), [overlay])
+                assert nulled.dag.concurrency == 2
+                assert _compile(base).run == (
+                    OperationSpecification.compile_operation(nulled).run
+                )
+        # An explicit null field follows field patching.
+        for strategy, expected in (
+            (PatchStrategy.POST_MERGE, None),
+            (PatchStrategy.PRE_MERGE, 2),
+            (PatchStrategy.REPLACE, None),
+            (PatchStrategy.ISNULL, 2),
+        ):
+            with self.subTest(strategy=strategy):
+                overlay = {"dag": {"concurrency": None}, "patchStrategy": strategy}
+                config = patch_polyaxonfile(deepcopy(base), [overlay])
+                assert config.dag.concurrency == expected
+                assert [op.name for op in config.dag.operations] == ["first"]
+                compiled = OperationSpecification.compile_operation(config)
+                assert compiled.run.concurrency == expected
+
+        applied = CompiledOperationSpecification.apply_preset(
+            _compile(base), {"dag": {"concurrency": 4, "operations": [second]}}
+        )
+        assert applied.run.concurrency == 4
+        assert [op.name for op in applied.run.operations] == ["first", "second"]
+        job_run = _compile({"container": {"image": "busybox:1.36"}})
+        for section in ({"concurrency": 4}, {}):
+            with self.subTest(section=section):
+                with self.assertRaises(PolyaxonValidationError):
+                    CompiledOperationSpecification.apply_preset(
+                        job_run, {"dag": section}
+                    )
 
     def test_runtime_fields_compile_like_native_run_fields(self):
         container = {"image": "busybox:1.36"}

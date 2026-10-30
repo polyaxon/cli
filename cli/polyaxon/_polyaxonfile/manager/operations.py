@@ -42,6 +42,8 @@ def patch_polyaxonfile(
         preset = read_polyaxonfile(preset_file, is_preset=True)
         if isinstance(preset.run, (V1Dag, Mapping)):
             collect_dag_components(preset.run, path_context)
+        if preset.dag is not None:
+            collect_dag_components(preset.dag, path_context)
         config.patch(preset, strategy=preset.patch_strategy)
     return config
 
@@ -171,6 +173,7 @@ def get_op_specification(
         if not any(
             (
                 config.run,
+                config.dag,
                 config.component,
                 config.hub_ref,
                 config.url_ref,

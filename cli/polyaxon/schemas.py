@@ -106,7 +106,7 @@ from polyaxon._flow.references.path import V1PathRef
 from polyaxon._flow.references.url import V1UrlRef
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon._flow.run.cleaner import V1CleanerJob
-from polyaxon._flow.run.dag import V1Dag
+from polyaxon._flow.run.dag import V1Dag, V1DagShortcut
 from polyaxon._flow.run.dask.dask import V1DaskCluster
 from polyaxon._flow.run.dask.replica import V1DaskReplica
 from polyaxon._flow.run.enums import (
@@ -128,7 +128,7 @@ from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._flow.run.ray.ray import V1RayCluster
 from polyaxon._flow.run.ray.replica import V1RayReplica
 from polyaxon._flow.run.resources import V1RunResources
-from polyaxon._flow.run.service import V1Service
+from polyaxon._flow.run.service import V1Service, V1ServiceShortcut
 from polyaxon._flow.run.tuner import V1TunerJob
 from polyaxon._flow.schedules import ScheduleMixin
 from polyaxon._flow.schedules.cron import V1CronSchedule

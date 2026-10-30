@@ -2,6 +2,7 @@ from mock import call, patch
 from pathlib import Path
 import pytest
 from tempfile import TemporaryDirectory
+from textwrap import indent
 
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
@@ -233,33 +234,50 @@ class TestSharedReferences(BaseTestCase):
                     assert config.component.run.to_dict() == runtime
 
     def test_kindless_dag_patch_collects_local_node_file_references(self):
-        with TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / "base.yaml").write_text("run: {kind: dag}\n")
-            (root / "job.yaml").write_text(
-                "run: {kind: job, container: {image: busybox:1.36}}\n"
-            )
-            source = root / "pipeline.yaml"
-            source.write_text(
-                "pathRef: ./base.yaml\n"
-                "run:\n"
-                "  operations:\n"
-                "    - name: train\n"
-                "      pathRef: ./job.yaml\n"
-                "      run: {container: {image: busybox:1.37}}\n"
-            )
-            config = read_polyaxonfile(str(source))
+        for base in ("run: {kind: dag}\n", "dag: {}\n"):
+            with self.subTest(base=base), TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "base.yaml").write_text(base)
+                (root / "job.yaml").write_text(
+                    "run: {kind: job, container: {image: busybox:1.36}}\n"
+                )
+                source = root / "pipeline.yaml"
+                source.write_text(
+                    "pathRef: ./base.yaml\n"
+                    "run:\n"
+                    "  operations:\n"
+                    "    - name: train\n"
+                    "      pathRef: ./job.yaml\n"
+                    "      run: {container: {image: busybox:1.37}}\n"
+                )
+                config = read_polyaxonfile(str(source))
 
-            collect_references(config, str(source))
+                collect_references(config, str(source))
 
-            node = config.run.operations[0]
-            assert node.path_ref == "./job.yaml"
-            assert node.component.run.container.image == "busybox:1.36"
-            compiled = OperationSpecification.compile_operation(config)
-            CompiledOperationSpecification.apply_operation_contexts(compiled)
-            assert compiled.run.get_effective_op("train").run.container.image == (
-                "busybox:1.37"
-            )
+                node = config.run.operations[0]
+                assert node.path_ref == "./job.yaml"
+                assert node.component.run.container.image == "busybox:1.36"
+                # `polyaxon run` submits the collected source.
+                stored = read_polyaxonfile(config.to_source_json())
+                compiled = OperationSpecification.compile_operation(stored)
+                CompiledOperationSpecification.apply_operation_contexts(compiled)
+                assert compiled.run.get_effective_op("train").run.container.image == (
+                    "busybox:1.37"
+                )
+
+    def test_kindless_patch_follows_a_job_that_replaced_a_dag_section(self):
+        job = {"kind": "job", "container": {"image": "busybox:1.36"}}
+        patch_run = {"container": {"image": "busybox:1.37"}}
+        config = read_polyaxonfile(
+            {"component": {"component": {"dag": {}}, "run": job}, "run": patch_run}
+        )
+
+        collect_references(config)
+
+        assert config.run == patch_run
+        compiled = OperationSpecification.compile_operation(config)
+        assert compiled.run.kind == "job"
+        assert compiled.run.container.image == "busybox:1.37"
 
     @patch.object(ConfigSpec, "read_from_custom_hub")
     def test_dag_hub_patch_waits_for_the_existing_lookup_stage(self, read_hub):
@@ -294,61 +312,57 @@ class TestSharedReferences(BaseTestCase):
         assert compiled.run.get_effective_op("train").run.container.image == "local:v2"
 
     def test_dag_templates_and_nested_nodes_collect_relative_references(self):
-        with TemporaryDirectory() as directory:
-            root = Path(directory)
-            jobs = root / "templates" / "jobs"
-            jobs.mkdir(parents=True)
-            (jobs / "job.yaml").write_text(
-                "kind: operation\n"
-                "params: {count: 3}\n"
-                "run: {kind: job, container: {image: busybox:1.36}}\n"
-            )
-            (root / "templates" / "nested.yaml").write_text(
-                "kind: component\n"
-                "run:\n"
-                "  kind: dag\n"
-                "  operations:\n"
-                "    - name: inner\n"
-                "      component: {pathRef: ./jobs/job.yaml}\n"
-            )
-            source = root / "pipeline.yaml"
-            source.write_text(
-                "run:\n"
-                "  kind: dag\n"
-                "  components:\n"
-                "    - name: template\n"
-                "      pathRef: ./templates/nested.yaml\n"
-                "  operations:\n"
-                "    - name: from-template\n"
-                "      dagRef: template\n"
-                "    - name: from-file\n"
-                "      pathRef: ./templates/nested.yaml\n"
-                "    - name: direct\n"
-                "      run:\n"
-                "        kind: dag\n"
-                "        operations:\n"
-                "          - name: inner\n"
-                "            pathRef: ./templates/jobs/job.yaml\n"
-            )
-            config = collect_references(read_polyaxonfile(str(source)), str(source))
+        for field, section in (("run", "run:\n  kind: dag\n"), ("dag", "dag:\n")):
+            with self.subTest(field=field), TemporaryDirectory() as directory:
+                root = Path(directory)
+                jobs = root / "templates" / "jobs"
+                jobs.mkdir(parents=True)
+                (jobs / "job.yaml").write_text(
+                    "kind: operation\n"
+                    "params: {count: 3}\n"
+                    "run: {kind: job, container: {image: busybox:1.36}}\n"
+                )
+                (root / "templates" / "nested.yaml").write_text(
+                    "kind: component\n" + section + "  operations:\n"
+                    "    - name: inner\n"
+                    "      component: {pathRef: ./jobs/job.yaml}\n"
+                )
+                source = root / "pipeline.yaml"
+                source.write_text(
+                    section + "  components:\n"
+                    "    - name: template\n"
+                    "      pathRef: ./templates/nested.yaml\n"
+                    "  operations:\n"
+                    "    - name: from-template\n"
+                    "      dagRef: template\n"
+                    "    - name: from-file\n"
+                    "      pathRef: ./templates/nested.yaml\n"
+                    "    - name: direct\n"
+                    + indent(section, "      ")
+                    + "        operations:\n"
+                    "          - name: inner\n"
+                    "            pathRef: ./templates/jobs/job.yaml\n"
+                )
+                config = collect_references(read_polyaxonfile(str(source)), str(source))
+                dag = getattr(config, field)
 
-            template = config.run.components[0].component
-            referenced = config.run.operations[1].component
-            for nested in (template, referenced):
-                inner = nested.run.operations[0].component
-                assert inner.path_ref == "./jobs/job.yaml"
-                assert inner.component.kind == "operation"
-                assert inner.component.params["count"].value == 3
-                assert inner.component.run.container.image == "busybox:1.36"
-            direct = config.run.operations[2].run.operations[0]
-            assert direct.component.run.container.image == "busybox:1.36"
-            assert config.run.operations[0].component is None
-            assert template is not referenced
-            with patch.object(ConfigSpec, "read_from_file") as read_file:
-                collect_references(config, str(source))
-            read_file.assert_not_called()
+                template = dag.components[0].component
+                referenced = dag.operations[1].component
+                for nested in (template, referenced):
+                    inner = getattr(nested, field).operations[0].component
+                    assert inner.path_ref == "./jobs/job.yaml"
+                    assert inner.component.kind == "operation"
+                    assert inner.component.params["count"].value == 3
+                    assert inner.component.run.container.image == "busybox:1.36"
+                direct = getattr(dag.operations[2], field).operations[0]
+                assert direct.component.run.container.image == "busybox:1.36"
+                assert dag.operations[0].component is None
+                assert template is not referenced
+                with patch.object(ConfigSpec, "read_from_file") as read_file:
+                    collect_references(config, str(source))
+                read_file.assert_not_called()
 
-        assert read_polyaxonfile(config.to_json()).to_dict() == config.to_dict()
+            assert read_polyaxonfile(config.to_json()).to_dict() == config.to_dict()
 
     def test_dag_source_cycles_and_missing_files_include_the_entry_name(self):
         with TemporaryDirectory() as directory:
@@ -377,36 +391,44 @@ class TestSharedReferences(BaseTestCase):
     @patch.object(ConfigSpec, "read_from_custom_hub")
     @patch.object(ConfigSpec, "read_from_url")
     def test_dag_templates_collect_remote_sources(self, read_url, read_hub, registry):
-        read_url.return_value = {
-            "run": {
-                "kind": "dag",
-                "operations": [{"name": "train", "hubRef": "org/train:v1"}],
-            }
-        }
         read_hub.return_value = {
             "kind": "operation",
             "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
         }
-        config = read_polyaxonfile(
-            {
-                "run": {
-                    "kind": "dag",
-                    "components": [
-                        {"name": "template", "urlRef": "https://example.com/dag.yaml"}
-                    ],
-                    "operations": [{"name": "nested", "dagRef": "template"}],
+        for field, kind in (("run", {"kind": "dag"}), ("dag", {})):
+            with self.subTest(field=field):
+                read_url.reset_mock()
+                read_hub.reset_mock()
+                read_url.return_value = {
+                    field: {
+                        **kind,
+                        "operations": [{"name": "train", "hubRef": "org/train:v1"}],
+                    }
                 }
-            }
-        )
+                config = read_polyaxonfile(
+                    {
+                        field: {
+                            **kind,
+                            "components": [
+                                {
+                                    "name": "template",
+                                    "urlRef": "https://example.com/dag.yaml",
+                                }
+                            ],
+                            "operations": [{"name": "nested", "dagRef": "template"}],
+                        }
+                    }
+                )
 
-        collect_references(config)
+                collect_references(config)
 
-        train = config.run.components[0].component.run.operations[0]
-        assert train.component.kind == "operation"
-        assert train.component.run.container.image == "busybox:1.36"
-        read_url.assert_called_once_with("https://example.com/dag.yaml")
-        read_hub.assert_called_once_with("org/train:v1")
-        assert read_polyaxonfile(config.to_json()).to_dict() == config.to_dict()
+                template = getattr(config, field).components[0].component
+                train = getattr(template, field).operations[0]
+                assert train.component.kind == "operation"
+                assert train.component.run.container.image == "busybox:1.36"
+                read_url.assert_called_once_with("https://example.com/dag.yaml")
+                read_hub.assert_called_once_with("org/train:v1")
+                assert read_polyaxonfile(config.to_json()).to_dict() == config.to_dict()
 
     def test_dag_expressions_survive_collection_and_serialization(self):
         for run in (

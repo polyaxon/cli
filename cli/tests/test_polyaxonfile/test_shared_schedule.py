@@ -427,56 +427,63 @@ class TestSharedSchedule(BaseTestCase):
                 assert parent.contexts[0].value == "parent"
 
     def test_scheduled_dag_keeps_templates_and_node_fields(self):
-        authored = read_polyaxonfile(
-            {
-                "kind": "component",
-                "schedule": {"kind": "interval", "frequency": 60},
-                "run": {
-                    "kind": "dag",
-                    "components": [
-                        {
-                            "name": "template",
-                            "schedule": {"kind": "interval", "frequency": 120},
-                            "run": {
-                                "kind": "job",
-                                "container": {"image": "busybox:1.36"},
-                            },
-                        }
-                    ],
-                    "operations": [
-                        {"name": "first", "dagRef": "template"},
-                        {
-                            "name": "second",
-                            "dagRef": "template",
-                            "dependencies": ["first"],
-                            "conditions": "true",
-                            "trigger": "all_succeeded",
-                            "skipOnUpstreamSkip": False,
-                        },
-                    ],
+        dag = {
+            "components": [
+                {
+                    "name": "template",
+                    "schedule": {"kind": "interval", "frequency": 120},
+                    "run": {
+                        "kind": "job",
+                        "container": {"image": "busybox:1.36"},
+                    },
+                }
+            ],
+            "operations": [
+                {"name": "first", "dagRef": "template"},
+                {
+                    "name": "second",
+                    "dagRef": "template",
+                    "dependencies": ["first"],
+                    "conditions": "true",
+                    "trigger": "all_succeeded",
+                    "skipOnUpstreamSkip": False,
                 },
-            }
-        )
-        parent = OperationSpecification.compile_operation(authored)
-        before = authored.to_dict()
+            ],
+        }
+        for source in ({"run": {"kind": "dag", **dag}}, {"dag": dag}):
+            with self.subTest(section=list(source)[0]):
+                authored = read_polyaxonfile(
+                    {
+                        "kind": "component",
+                        "schedule": {"kind": "interval", "frequency": 60},
+                        **source,
+                    }
+                )
+                parent = OperationSpecification.compile_operation(authored)
+                before = authored.to_dict()
 
-        child = get_op_from_schedule(authored, parent)
+                child = get_op_from_schedule(authored, parent)
 
-        assert child.schedule is None
-        assert child.run.to_dict() == parent.run.to_dict()
-        assert child.run.components[0].schedule.frequency == timedelta(seconds=120)
-        compiled = OperationSpecification.compile_operation(
-            read_polyaxonfile(child.to_json())
-        )
-        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
-        assert compiled.run.dag["first"].downstream == {"second"}
-        assert compiled.run.dag["second"].upstream == {"first"}
-        for name in ("first", "second"):
-            compiled.run.set_op_component(name)
-            node = compiled.run.get_op_spec_by_name(name)
-            assert compose_polyaxonfile(node, is_dag_node=True).schedule is None
-        second = compiled.run.get_effective_op("second")
-        assert second.conditions == "true"
-        assert second.trigger == "all_succeeded"
-        assert second.skip_on_upstream_skip is False
-        assert authored.to_dict() == before
+                assert child.schedule is None
+                assert child.dag is None
+                assert child.run.to_dict() == parent.run.to_dict()
+                assert child.run.components[0].schedule.frequency == timedelta(
+                    seconds=120
+                )
+                compiled = OperationSpecification.compile_operation(
+                    read_polyaxonfile(child.to_json())
+                )
+                compiled = CompiledOperationSpecification.apply_operation_contexts(
+                    compiled
+                )
+                assert compiled.run.dag["first"].downstream == {"second"}
+                assert compiled.run.dag["second"].upstream == {"first"}
+                for name in ("first", "second"):
+                    compiled.run.set_op_component(name)
+                    node = compiled.run.get_op_spec_by_name(name)
+                    assert compose_polyaxonfile(node, is_dag_node=True).schedule is None
+                second = compiled.run.get_effective_op("second")
+                assert second.conditions == "true"
+                assert second.trigger == "all_succeeded"
+                assert second.skip_on_upstream_skip is False
+                assert authored.to_dict() == before

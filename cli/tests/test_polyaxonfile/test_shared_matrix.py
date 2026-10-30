@@ -412,13 +412,17 @@ class TestSharedMatrix(BaseTestCase):
                 ],
             },
         ]
-        for runtime in runtimes:
-            with self.subTest(kind=runtime["kind"]):
-                authored = read_polyaxonfile({"matrix": matrix, "run": runtime})
+        dag = runtimes[-1]
+        sources = [(runtime, {"run": runtime}) for runtime in runtimes]
+        sources.append((dag, {"dag": {"operations": dag["operations"]}}))
+        for runtime, source in sources:
+            with self.subTest(source=list(source)[0], kind=runtime["kind"]):
+                authored = read_polyaxonfile({"matrix": matrix, **source})
                 parent = OperationSpecification.compile_operation(authored)
 
                 child = next(get_ops_from_suggestions(authored, parent, [{"count": 1}]))
 
+                assert child.dag is None
                 effective = compose_polyaxonfile(read_polyaxonfile(child.to_json()))
                 assert effective.matrix is None
                 assert effective.run == parent.run

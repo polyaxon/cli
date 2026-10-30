@@ -332,18 +332,16 @@ class TestSharedFilePatches(BaseTestCase):
                     "run: {kind: job, container: {image: " + name + ":v1}}\n"
                 )
             base = root / "base" / "base.yaml"
-            base.write_text(
-                "run:\n"
-                "  kind: dag\n"
-                "  operations:\n"
-                "    - {name: base, pathRef: ./job.yaml}\n"
-            )
-            source = collect_references(read_polyaxonfile(str(base)), str(base))
-            before = deepcopy(source)
             files = [str(root / name / "overlay.yaml") for name in ("first", "second")]
-            for typed in (True, False):
+            for field, typed in (("run", True), ("run", False), ("dag", False)):
+                section = "run:\n  kind: dag\n" if field == "run" else "dag:\n"
+                base.write_text(
+                    section + "  operations:\n    - {name: base, pathRef: ./job.yaml}\n"
+                )
+                source = collect_references(read_polyaxonfile(str(base)), str(base))
+                before = deepcopy(source)
                 for strategy, names in expected.items():
-                    with self.subTest(typed=typed, strategy=strategy):
+                    with self.subTest(field=field, typed=typed, strategy=strategy):
                         for name, filename in zip(("first", "second"), files):
                             node = {"name": name, "pathRef": "./job.yaml"}
                             if name == "first":
@@ -363,21 +361,22 @@ class TestSharedFilePatches(BaseTestCase):
                                             if name == "first"
                                             else strategy
                                         ),
-                                        "run": runtime,
+                                        field: runtime,
                                     }
                                 )
                             )
 
                         merged = patch_polyaxonfile(source, files)
                         stored = read_polyaxonfile(merged.to_source_json())
+                        operations = getattr(stored, field).operations
 
-                        assert [op.name for op in stored.run.operations] == names
+                        assert [op.name for op in operations] == names
                         assert stored.component is None
                         assert stored.hub_ref is None
                         assert stored.url_ref is None
                         assert stored.path_ref is None
                         assert source == before
-                        for op in stored.run.operations:
+                        for op in operations:
                             assert op.path_ref == "./job.yaml"
                             assert op.component.run.container.image == op.name + ":v1"
                             assert op.schedule is None

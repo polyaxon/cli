@@ -29,6 +29,7 @@ class Sections:
     CMD = "cmd"
     ENV = "env"
     RESOURCES = "resources"
+    DAG = "dag"
     SERVICE = "service"
     ENVIRONMENT = "environment"
     INIT = "init"
@@ -95,6 +96,7 @@ class Sections:
         CMD,
         ENV,
         RESOURCES,
+        DAG,
         SERVICE,
         ENVIRONMENT,
         INIT,

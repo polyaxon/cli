@@ -5,7 +5,7 @@ from typing import Optional, Union
 from polyaxon._config.spec import ConfigSpec
 from polyaxon._flow.operations.operation import V1Operation
 from polyaxon._flow.polyaxonfile import V1Polyaxonfile
-from polyaxon._flow.run.dag import V1Dag
+from polyaxon._flow.run.dag import V1Dag, V1DagShortcut
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._polyaxonfile.specs import read_polyaxonfile
@@ -13,7 +13,9 @@ from polyaxon.exceptions import PolyaxonfileError, PolyaxonSchemaError
 
 
 def collect_dag_components(
-    dag: Union[V1Dag, Mapping], path_context: Optional[str] = None, sources=()
+    dag: Union[V1Dag, V1DagShortcut, Mapping],
+    path_context: Optional[str] = None,
+    sources=(),
 ):
     """Collect references in typed DAGs and partial runtime overlays."""
     if path_context and not sources:
@@ -45,6 +47,14 @@ def collect_references(
 ):
     sources = (("pathRef", os.path.realpath(path_context)),) if path_context else ()
     return _collect_shared_references(config, path_context, sources)
+
+
+def _has_dag_section(config) -> bool:
+    while config is not None:
+        if config.dag is not None:
+            return True
+        config = config.component
+    return False
 
 
 def _collect_shared_references(config, path_context, sources):
@@ -94,10 +104,17 @@ def _collect_shared_references(config, path_context, sources):
 
     if isinstance(config.run, Mapping) and config.component is not None:
         native_run = config.component.get_native_run()
-        if native_run is not None and native_run.kind == V1RunKind.DAG:
+        # A native run replaces an earlier section, so it decides the kind.
+        if (
+            native_run.kind == V1RunKind.DAG
+            if native_run is not None
+            else _has_dag_section(config.component)
+        ):
             # Parse local DAG entries so their file references can be collected.
-            config.run = validate_run_patch(config.run, native_run.kind)
+            config.run = validate_run_patch(config.run, V1RunKind.DAG)
 
     if config.is_dag_run:
         collect_dag_components(config.run, path_context, sources)
+    if config.dag is not None:
+        collect_dag_components(config.dag, path_context, sources)
     return config

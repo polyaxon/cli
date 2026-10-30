@@ -22,10 +22,24 @@ from polyaxon._flow.params import ops_params
 from polyaxon._flow.run.base import BaseRun
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s import k8s_schemas, k8s_validation
+from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
 V1Polyaxonfile = ForwardRef("V1Polyaxonfile")
+
+
+def _read_polyaxonfiles(value):
+    from polyaxon._flow.polyaxonfile import get_polyaxonfile_model
+
+    if not isinstance(value, list):
+        return value
+    return [
+        get_polyaxonfile_model(item.get("kind")).from_dict(item)
+        if isinstance(item, Mapping)
+        else item
+        for item in value
+    ]
 
 
 class V1Dag(BaseRun):
@@ -328,16 +342,7 @@ class V1Dag(BaseRun):
 
     @field_validator("operations", "components", **validation_before)
     def validate_polyaxonfiles(cls, value):
-        from polyaxon._flow.polyaxonfile import get_polyaxonfile_model
-
-        if not isinstance(value, list):
-            return value
-        return [
-            get_polyaxonfile_model(item.get("kind")).from_dict(item)
-            if isinstance(item, Mapping)
-            else item
-            for item in value
-        ]
+        return _read_polyaxonfiles(value)
 
     @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):
@@ -683,3 +688,23 @@ class V1Dag(BaseRun):
 
     def get_all_init(self):
         return []
+
+
+class V1DagShortcut(BaseSchemaModel):
+    """DAG-only fields of the root `dag` shortcut, typed like `V1Dag`."""
+
+    _IDENTIFIER = "dag"
+    _CUSTOM_DUMP_FIELDS = {"operations", "components"}
+    # Nodes are re-read later; explicit nulls are patch values.
+    _KEEP_NONE = True
+
+    operations: Optional[Union[List[V1Polyaxonfile], RefField]] = None
+    components: Optional[Union[List[V1Polyaxonfile], RefField]] = None
+    concurrency: Optional[Union[PositiveInt, RefField]] = None
+    early_stopping: Optional[Union[List[V1EarlyStopping], RefField]] = Field(
+        alias="earlyStopping", default=None
+    )
+
+    @field_validator("operations", "components", **validation_before)
+    def validate_polyaxonfiles(cls, value):
+        return _read_polyaxonfiles(value)

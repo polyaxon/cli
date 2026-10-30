@@ -329,13 +329,9 @@ class TestPolyaxonfile(BaseTestCase):
             with self.subTest(source=source), self.assertRaises(ValidationError):
                 V1Polyaxonfile.from_dict(source)
 
-    def test_rejects_unsupported_shortcuts_and_compiled_only_fields(self):
-        for field in (
-            "dag",
-            "contexts",
-        ):
-            with self.subTest(field=field), self.assertRaises(ValidationError):
-                V1Polyaxonfile.from_dict({field: {}})
+    def test_rejects_compiled_only_fields(self):
+        with self.assertRaises(ValidationError):
+            V1Polyaxonfile.from_dict({"contexts": {}})
 
     def test_legacy_readers_use_shared_models_and_keep_defaults(self):
         assert ComponentSpecification.CONFIG is V1Component
