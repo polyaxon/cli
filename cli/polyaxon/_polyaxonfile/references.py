@@ -20,14 +20,14 @@ def collect_dag_components(
     """Collect references in typed DAGs and partial runtime overlays."""
     if path_context and not sources:
         sources = (("pathRef", os.path.realpath(path_context)),)
+    is_mapping = isinstance(dag, Mapping)
     for field in ("components", "operations"):
-        entries = dag.get(field) if isinstance(dag, Mapping) else getattr(dag, field)
+        entries = dag.get(field) if is_mapping else getattr(dag, field)
         if not isinstance(entries, list):
             continue
         for index, op in enumerate(entries):
             if isinstance(op, Mapping):
                 op = read_polyaxonfile(op)
-                entries[index] = op
             elif not isinstance(op, V1Polyaxonfile):
                 # Leave malformed entries to runtime validation.
                 continue
@@ -40,6 +40,8 @@ def collect_dag_components(
                         op.name, op.hub_ref or op.url_ref or op.path_ref, e
                     )
                 ) from e
+            # Mappings stay plain data until composition knows their runtime.
+            entries[index] = op.to_dict(exclude_none=False) if is_mapping else op
 
 
 def collect_references(
@@ -47,14 +49,6 @@ def collect_references(
 ):
     sources = (("pathRef", os.path.realpath(path_context)),) if path_context else ()
     return _collect_shared_references(config, path_context, sources)
-
-
-def _has_dag_section(config) -> bool:
-    while config is not None:
-        if config.dag is not None:
-            return True
-        config = config.component
-    return False
 
 
 def _collect_shared_references(config, path_context, sources):
@@ -104,16 +98,11 @@ def _collect_shared_references(config, path_context, sources):
 
     if isinstance(config.run, Mapping) and config.component is not None:
         native_run = config.component.get_native_run()
-        # A native run replaces an earlier section, so it decides the kind.
-        if (
-            native_run.kind == V1RunKind.DAG
-            if native_run is not None
-            else _has_dag_section(config.component)
-        ):
+        if native_run is not None and native_run.kind == V1RunKind.DAG:
             # Parse local DAG entries so their file references can be collected.
-            config.run = validate_run_patch(config.run, V1RunKind.DAG)
+            config.run = validate_run_patch(config.run, native_run.kind)
 
-    if config.is_dag_run:
+    if config.is_dag_run or isinstance(config.run, Mapping):
         collect_dag_components(config.run, path_context, sources)
     if config.dag is not None:
         collect_dag_components(config.dag, path_context, sources)

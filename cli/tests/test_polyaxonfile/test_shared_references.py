@@ -254,30 +254,50 @@ class TestSharedReferences(BaseTestCase):
 
                 collect_references(config, str(source))
 
-                node = config.run.operations[0]
-                assert node.path_ref == "./job.yaml"
-                assert node.component.run.container.image == "busybox:1.36"
                 # `polyaxon run` submits the collected source.
                 stored = read_polyaxonfile(config.to_source_json())
                 compiled = OperationSpecification.compile_operation(stored)
+                node = compiled.run.operations[0]
+                assert node.path_ref == "./job.yaml"
+                assert node.component.run.container.image == "busybox:1.36"
                 CompiledOperationSpecification.apply_operation_contexts(compiled)
                 assert compiled.run.get_effective_op("train").run.container.image == (
                     "busybox:1.37"
                 )
 
-    def test_kindless_patch_follows_a_job_that_replaced_a_dag_section(self):
+    def test_kindless_patch_follows_the_effective_runtime(self):
         job = {"kind": "job", "container": {"image": "busybox:1.36"}}
         patch_run = {"container": {"image": "busybox:1.37"}}
+        # Both middle layers replace the inherited DAG.
+        for middle, kind in (
+            ({"run": job}, "job"),
+            ({"run": None, "service": {}}, "service"),
+        ):
+            with self.subTest(middle=middle):
+                config = read_polyaxonfile(
+                    {
+                        "component": {"component": {"dag": {}}, **middle},
+                        "run": patch_run,
+                    }
+                )
+
+                collect_references(config)
+
+                assert config.run == patch_run
+                compiled = OperationSpecification.compile_operation(config)
+                assert compiled.run.kind == kind
+                assert compiled.run.container.image == "busybox:1.37"
+
+        # Collection never picks a runtime: composition still rejects DAG fields.
         config = read_polyaxonfile(
-            {"component": {"component": {"dag": {}}, "run": job}, "run": patch_run}
+            {
+                "component": {"run": job},
+                "run": {"operations": [{"name": "train", "run": job}]},
+            }
         )
-
         collect_references(config)
-
-        assert config.run == patch_run
-        compiled = OperationSpecification.compile_operation(config)
-        assert compiled.run.kind == "job"
-        assert compiled.run.container.image == "busybox:1.37"
+        with self.assertRaises(ValidationError):
+            OperationSpecification.compile_operation(config)
 
     @patch.object(ConfigSpec, "read_from_custom_hub")
     def test_dag_hub_patch_waits_for_the_existing_lookup_stage(self, read_hub):

@@ -1614,7 +1614,7 @@ class TestShortcuts(BaseTestCase):
 
     def test_dag_validates_native_field_types(self):
         for dag in (
-            [],
+            [1],
             "{{ dag }}",
             {"operations": {"name": "train"}},
             {"operations": [1]},
