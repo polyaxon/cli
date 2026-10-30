@@ -1,4 +1,5 @@
 from copy import deepcopy
+from itertools import product
 from pathlib import Path
 import pytest
 from tempfile import TemporaryDirectory
@@ -6,6 +7,7 @@ import yaml
 
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
+from polyaxon._flow.init import V1Init
 from polyaxon._polyaxonfile import (
     CompiledOperationSpecification,
     OperationSpecification,
@@ -15,6 +17,7 @@ from polyaxon._polyaxonfile import (
     read_polyaxonfile,
 )
 from polyaxon._polyaxonfile.check import collect_references
+from polyaxon._schemas.types import V1GitType
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
 
@@ -687,6 +690,184 @@ class TestSharedFilePatches(BaseTestCase):
         assert "is_preset" not in merged.model_fields_set
         assert source == before_source
         assert overlay == before_overlay
+
+    def test_run_patch_overlays_merge_like_native_on_shortcut_runtimes(self):
+        container = {"image": "busybox:1.36"}
+        operations = [{"name": "train", "container": container}]
+        runtimes = (
+            ({"container": container}, {"kind": "job", "container": container}),
+            (
+                {"container": container, "service": {"ports": [8080]}},
+                {"kind": "service", "container": container, "ports": [8080]},
+            ),
+            (
+                {"dag": {"operations": operations}},
+                {"kind": "dag", "operations": operations},
+            ),
+        )
+        first = {"connections": ["base"], "environment": {"labels": {"from": "base"}}}
+        second = {
+            "connections": ["overlay"],
+            "environment": {"labels": {"from": "overlay"}, "annotations": {"new": "a"}},
+        }
+        for (shortcuts, native), strategy, wrapped in product(
+            runtimes, PatchStrategy, (False, True)
+        ):
+
+            def merge(layer):
+                source = {"component": layer} if wrapped else layer
+                return patch_polyaxonfile(
+                    read_polyaxonfile({**source, "runPatch": first}),
+                    [{"patchStrategy": strategy, "runPatch": second}],
+                )
+
+            with self.subTest(kind=native["kind"], strategy=strategy, wrapped=wrapped):
+                merged = merge(shortcuts)
+                expected = merge({"run": native})
+                assert merged.run_patch == expected.run_patch
+                assert OperationSpecification.compile_operation(merged).run == (
+                    OperationSpecification.compile_operation(expected).run
+                )
+
+    def test_run_patch_strategies_keep_new_fields_on_a_shortcut_runtime(self):
+        for strategy, concurrency in (
+            (PatchStrategy.POST_MERGE, 4),
+            (PatchStrategy.PRE_MERGE, 2),
+            (PatchStrategy.REPLACE, 4),
+            (PatchStrategy.ISNULL, 2),
+        ):
+            with self.subTest(strategy=strategy):
+                merged = patch_polyaxonfile(
+                    read_polyaxonfile({"dag": {}, "runPatch": {"concurrency": 2}}),
+                    [
+                        {
+                            "patchStrategy": strategy,
+                            "runPatch": {"concurrency": 4, "connections": ["a"]},
+                        }
+                    ],
+                )
+                run = OperationSpecification.compile_operation(merged).run
+                assert run.concurrency == concurrency
+                assert run.connections == ["a"]
+
+    def test_git_init_reaches_shortcut_runtimes_with_a_run_patch(self):
+        git_init = V1Init(git=V1GitType(url="https://example.com/repo"))
+        run_patch = {"connections": ["artifacts"]}
+        container = {"image": "busybox:1.36"}
+        for source in (
+            {"container": container},
+            {"container": container, "service": {}},
+        ):
+            with self.subTest(source=source):
+                config = get_op_specification(
+                    config=read_polyaxonfile({**source, "runPatch": run_patch}),
+                    git_init=git_init,
+                    validate_params=False,
+                )
+                run = OperationSpecification.compile_operation(config).run
+                assert run.connections == ["artifacts"]
+                assert run.init[0].git.url == "https://example.com/repo"
+        # A DAG has no init: the patch fails instead of disappearing.
+        with self.assertRaises(ValidationError):
+            get_op_specification(
+                config=read_polyaxonfile({"dag": {}, "runPatch": run_patch}),
+                git_init=git_init,
+                validate_params=False,
+            )
+
+    def test_kindless_run_overlay_merges_below_same_layer_shortcuts(self):
+        def compile_with(source, overlay):
+            merged = patch_polyaxonfile(read_polyaxonfile(source), [overlay])
+            stored = read_polyaxonfile(merged.to_source_json())
+            return OperationSpecification.compile_operation(stored).run
+
+        section = {"dag": {"concurrency": 2}}
+        for overlay, concurrency in (
+            ({"run": {"concurrency": 4}}, 2),
+            ({"run": {"kind": "dag", "concurrency": 4}}, 2),
+            ({"runPatch": {"concurrency": 4}}, 4),
+        ):
+            with self.subTest(overlay=overlay):
+                assert compile_with(section, overlay).concurrency == concurrency
+        # Fields the section leaves alone still apply, and an outer layer wins.
+        run = compile_with(section, {"run": {"connections": ["a"]}})
+        assert run.connections == ["a"]
+        run = compile_with({"component": section}, {"run": {"concurrency": 4}})
+        assert run.concurrency == 4
+        # One overlay can bring the section; a document cannot.
+        overlay = {"dag": {}, "run": {"concurrency": 4}}
+        assert compile_with({"queue": "default"}, overlay).concurrency == 4
+        with self.assertRaisesRegex(ValidationError, "run.kind must be provided"):
+            read_polyaxonfile(overlay)
+
+    def test_native_runs_decide_overlays_before_shortcuts(self):
+        job = {"kind": "job", "container": {"image": "busybox:1.36"}}
+        patch = {"container": {"image": "busybox:1.37"}}
+        dag_under_job = {"component": {"dag": {}}, "run": {"kind": "job"}}
+        for source, overlays, kind in (
+            # An overlay's section must not meet the runtime its `run` replaces.
+            (
+                {"component": {"run": job}, "run": patch},
+                [{"run": {"kind": "service", **patch}, "service": {"ports": [8080]}}],
+                "service",
+            ),
+            (
+                {"component": {"run": job}, "run": patch},
+                [{"run": None, "service": {"ports": [8080]}}],
+                "service",
+            ),
+            # Shortcuts cleared by an overlay never meet the native run.
+            (
+                {"run": {"kind": "dag"}, "env": {"A": "1"}},
+                [{"env": None, "run": {"concurrency": 4}}],
+                "dag",
+            ),
+            (
+                {
+                    "run": {"kind": "dag"},
+                    "env": {"A": "1"},
+                    "runPatch": {"concurrency": 2},
+                },
+                [{"runPatch": {"concurrency": 4}}, {"env": None}],
+                "dag",
+            ),
+            # These strategies keep the inherited DAG over the explicit job.
+            (
+                {"component": {**dag_under_job, "patchStrategy": "pre_merge"}},
+                [{"run": {"concurrency": 4}}],
+                "dag",
+            ),
+            (
+                {"component": {**dag_under_job, "patchStrategy": "isnull"}},
+                [{"run": {"concurrency": 4}}],
+                "dag",
+            ),
+            # A cleared run leaves the layer's own section to choose.
+            (
+                {"component": {"run": job}, "run": None, "service": {}},
+                [{"run": patch}],
+                "service",
+            ),
+        ):
+            with self.subTest(source=source):
+                merged = patch_polyaxonfile(read_polyaxonfile(source), overlays)
+                stored = read_polyaxonfile(merged.to_source_json())
+                compiled = OperationSpecification.compile_operation(stored)
+                assert compiled.run.kind == kind
+
+    def test_run_lookup_leaves_authored_shortcuts_alone(self):
+        config = read_polyaxonfile(
+            {
+                "container": {"image": "busybox:1.36"},
+                "cmd": "echo train",
+                "env": {"A": "1"},
+            }
+        )
+        before = config.to_dict()
+
+        assert config.get_native_run().kind == "job"
+
+        assert config.to_dict() == before
 
     def test_explicit_null_runtime_uses_file_strategy_and_can_be_replaced(self):
         source = read_polyaxonfile(

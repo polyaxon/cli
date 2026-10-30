@@ -566,11 +566,15 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         self.component = value
 
     def get_native_run(self):
+        """Native runtime of this layer: from `run`, else created by its shortcuts."""
         run = self.component.get_native_run() if self.component is not None else None
         if "run" in self.model_fields_set:
             if isinstance(self.run, Mapping) and run is None:
                 return None
             run = patch_run(run, deepcopy(self.run), self.patch_strategy)
+        if run is None:
+            # On a copy: shortcuts can alias authored values while they patch them.
+            run = deepcopy(self).apply_shortcuts(None)
         return run
 
     @classmethod
