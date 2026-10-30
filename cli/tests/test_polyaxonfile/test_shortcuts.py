@@ -1810,6 +1810,18 @@ class TestShortcuts(BaseTestCase):
                         job_run, {"dag": section}
                     )
 
+    def test_dag_overlays_match_typed_and_mapping_nodes(self):
+        node = {"name": "train", "dagRef": "template"}
+        config = V1Operation(
+            dag=V1DagShortcut(operations=[V1Operation.from_dict(node)])
+        )
+        # List overlays compare nodes, so both spellings must read to one class.
+        overlay = {"dag": {"operations": [{"kind": "operation", **node}]}}
+
+        merged = patch_polyaxonfile(config, [overlay])
+
+        assert [op.name for op in merged.dag.operations] == ["train"]
+
     def test_runtime_fields_compile_like_native_run_fields(self):
         container = {"image": "busybox:1.36"}
         fields = {
