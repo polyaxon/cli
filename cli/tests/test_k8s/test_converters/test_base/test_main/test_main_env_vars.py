@@ -11,6 +11,7 @@ from polyaxon._env_vars.keys import (
     ENV_KEYS_ARTIFACTS_STORE_NAME,
     ENV_KEYS_COLLECT_ARTIFACTS,
     ENV_KEYS_COLLECT_RESOURCES,
+    ENV_KEYS_COLLECT_RESOURCES_DETAILED,
 )
 from polyaxon._flow.plugins import V1Plugins
 from polyaxon._services.values import PolyaxonServices
@@ -119,6 +120,52 @@ class TestMainEnvVars(BaseConverterTest):
         ) == base_env + self.converter._get_kv_env_vars(
             [["key1", "val1"], ["key2", "val2"]]
         )
+
+    def test_get_env_vars_with_collect_resources_detailed(self):
+        base_env = self.converter._get_service_env_vars(
+            service_header=PolyaxonServices.RUNNER,
+            external_host=False,
+            log_level=None,
+        )
+        # Disabled by default
+        plugins = V1Plugins.get_or_create(
+            V1Plugins(
+                collect_logs=False, collect_artifacts=False, collect_resources=True
+            )
+        )
+        assert plugins.collect_resources_detailed is False
+        assert self.converter._get_main_env_vars(
+            plugins=plugins,
+            kv_env_vars=None,
+            artifacts_store_name=None,
+            connections=None,
+            secrets=None,
+            config_maps=None,
+        ) == base_env + [
+            self.converter._get_env_var(name=ENV_KEYS_COLLECT_RESOURCES, value=True),
+        ]
+
+        plugins = V1Plugins.get_or_create(
+            V1Plugins(
+                collect_logs=False,
+                collect_artifacts=False,
+                collect_resources=True,
+                collect_resources_detailed=True,
+            )
+        )
+        assert self.converter._get_main_env_vars(
+            plugins=plugins,
+            kv_env_vars=None,
+            artifacts_store_name=None,
+            connections=None,
+            secrets=None,
+            config_maps=None,
+        ) == base_env + [
+            self.converter._get_env_var(name=ENV_KEYS_COLLECT_RESOURCES, value=True),
+            self.converter._get_env_var(
+                name=ENV_KEYS_COLLECT_RESOURCES_DETAILED, value=True
+            ),
+        ]
 
     def test_get_env_vars_with_artifacts_store(self):
         base_env = self.converter._get_service_env_vars(
