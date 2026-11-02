@@ -28,7 +28,6 @@ async def sync_fs(
                 fct="rm_file",
                 is_async=fs.async_impl,
                 path=get_store_path(subpath),
-                recursive=False,
             )
             for (_, subpath) in rm_files
         ],
