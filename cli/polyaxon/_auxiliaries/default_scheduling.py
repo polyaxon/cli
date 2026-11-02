@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class V1DefaultScheduling(BaseSchemaModel):
     _IDENTIFIER = "default_scheduling"
-    _SWAGGER_FIELDS = ["affinity", "tolerations"]
+    _SWAGGER_FIELDS = ["affinity", "tolerations", "securityContext"]
 
     node_selector: Optional[Dict[StrictStr, StrictStr]] = Field(
         alias="nodeSelector", default=None
@@ -26,6 +26,9 @@ class V1DefaultScheduling(BaseSchemaModel):
     tolerations: Optional[List[Union[k8s_schemas.V1Toleration, Dict]]] = None
     image_pull_secrets: Optional[List[StrictStr]] = Field(
         alias="imagePullSecrets", default=None
+    )
+    security_context: Optional[Union[k8s_schemas.V1PodSecurityContext, Dict]] = Field(
+        alias="securityContext", default=None
     )
 
     @field_validator("affinity", **validation_always, **validation_before)
@@ -37,6 +40,12 @@ class V1DefaultScheduling(BaseSchemaModel):
         if not v:
             return v
         return [k8s_validation.validate_k8s_toleration(vi) for vi in v]
+
+    @field_validator("security_context", **validation_always, **validation_before)
+    def validate_security_context(cls, v):
+        if not v:
+            return v
+        return k8s_validation.validate_k8s_pod_security_context(v)
 
     @staticmethod
     def get_service_environment(
