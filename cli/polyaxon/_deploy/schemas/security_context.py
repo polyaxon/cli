@@ -13,6 +13,7 @@ from polyaxon._schemas.base import BaseSchemaModel
 
 class SecurityContextConfig(BaseSchemaModel):
     enabled: Optional[bool] = None
+    apply_to_runs: Optional[bool] = Field(alias="applyToRuns", default=None)
     run_as_user: Optional[StrictInt] = Field(alias="runAsUser", default=None)
     run_as_group: Optional[StrictInt] = Field(alias="runAsGroup", default=None)
     fs_group: Optional[StrictInt] = Field(alias="fsGroup", default=None)

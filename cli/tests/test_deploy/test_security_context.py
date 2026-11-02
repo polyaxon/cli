@@ -46,3 +46,13 @@ class TestSecurityContentConfig(BaseTestCase):
         config_dict = {"enabled": True, "runAsUser": 120, "runAsGroup": 120}
         config = SecurityContextConfig.from_dict(config_dict)
         assert config.to_light_dict() == config_dict
+
+        config_dict = {
+            "enabled": True,
+            "applyToRuns": True,
+            "runAsUser": 120,
+            "runAsGroup": 120,
+        }
+        config = SecurityContextConfig.from_dict(config_dict)
+        assert config.apply_to_runs is True
+        assert config.to_light_dict() == config_dict
