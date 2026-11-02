@@ -156,6 +156,13 @@ class BaseConverter(
             or default_sa
             or settings.AGENT_CONFIG.runs_sa
         )
+        if (
+            environment.security_context is None
+            and settings.AGENT_CONFIG.default_scheduling
+        ):
+            environment.security_context = (
+                settings.AGENT_CONFIG.default_scheduling.security_context
+            )
 
         init_connections = self.filter_connections_from_init(init=init)
 
