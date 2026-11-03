@@ -272,13 +272,44 @@ class DateTimeCondition(ComparisonCondition):
             if negation:
                 return cls._neq_operator
             return cls._eq_operator
-        _op = ComparisonCondition._get_operator(op, negation)
+        _op = super()._get_operator(op, negation)
         if _op:
             return _op
 
         if negation:
             return cls._nrange_operator
         return cls._range_operator
+
+    @staticmethod
+    def _extract_datetime(params: Any, timezone: str) -> Any:
+        try:
+            return DateTimeFormatter.extract(params, timezone)
+        except DateTimeFormatterException as e:
+            raise PQLException(e)
+
+    @staticmethod
+    def _lt_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
+        name = "{}__lt".format(name)
+        params = DateTimeCondition._extract_datetime(params, timezone)
+        return query_backend(**{name: params})
+
+    @staticmethod
+    def _gt_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
+        name = "{}__gt".format(name)
+        params = DateTimeCondition._extract_datetime(params, timezone)
+        return query_backend(**{name: params})
+
+    @staticmethod
+    def _lte_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
+        name = "{}__lte".format(name)
+        params = DateTimeCondition._extract_datetime(params, timezone)
+        return query_backend(**{name: params})
+
+    @staticmethod
+    def _gte_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
+        name = "{}__gte".format(name)
+        params = DateTimeCondition._extract_datetime(params, timezone)
+        return query_backend(**{name: params})
 
     @staticmethod
     def _eq_operator(name: str, params: Any, query_backend: Any, timezone: str) -> Any:
