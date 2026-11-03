@@ -85,17 +85,24 @@ def _prepare_client_call(
 
 
 def _get_client_error_message(f: Callable) -> str:
-    return (
+    message = (
         "\nAPI Client failed at the function `%(name)s` in file "
         "`%(filename)s` line number `%(line)s`."
-        "\nClient config:\n%(config)s\n"
+        "\nHost: `%(host)s`\n"
         % {
             "name": f.__name__,
             "filename": f.__code__.co_filename,
             "line": f.__code__.co_firstlineno + 1,
-            "config": settings.CLIENT_CONFIG.to_dict(),
+            "host": settings.CLIENT_CONFIG.host,
         }
     )
+    if settings.CLIENT_CONFIG.debug:
+        config = settings.CLIENT_CONFIG.to_dict()
+        token = config.get("token")
+        if token:
+            config["token"] = "****{}".format(token[-4:])
+        message += "Client config:\n%s\n" % config
+    return message
 
 
 def _handle_client_exception(
