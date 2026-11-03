@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Dict, Optional, Union
 
@@ -178,7 +179,9 @@ class ClientConfig(BaseSchemaModel):
 
         config = Configuration(timeout=self.timeout)
         config.retries = self.retries
-        config.debug = self.debug
+        if self.debug:
+            for sdk_logger in config.logger.values():
+                sdk_logger.setLevel(logging.DEBUG)
         config.host = clean_host(self.host)
         config.verify_ssl = self.verify_ssl
         if not config.verify_ssl:

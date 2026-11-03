@@ -1,3 +1,5 @@
+import http.client
+import logging
 import pytest
 
 from polyaxon._env_vars.keys import (
@@ -29,6 +31,13 @@ class TestClientConfig(BaseTestCase):
         assert config.host == "http://localhost:8000"
         assert config.base_url == "http://localhost:8000/api/v1"
         assert config.verify_ssl is True
+
+    def test_debug_sdk_config_does_not_trace_http(self):
+        config = ClientConfig(host=self.host, token="token", debug=True).sdk_config
+
+        assert config.debug is False
+        assert http.client.HTTPConnection.debuglevel == 0
+        assert logging.getLogger("urllib3").level == logging.DEBUG
 
     def test_tracking_flush_delay(self):
         assert self.config.tracking_flush_delay == 1

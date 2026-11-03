@@ -5,7 +5,9 @@ import pytest
 import aiohttp
 from urllib3.exceptions import HTTPError
 
+from polyaxon import settings
 from polyaxon._client.decorators import async_client_handler, client_handler
+from polyaxon._client.decorators.client_call_handler import _get_client_error_message
 from polyaxon._utils.test_utils import patch_settings
 from polyaxon.exceptions import ApiException
 
@@ -97,6 +99,38 @@ def test_client_handler_exceptions_call_error_handler(error):
     assert (
         "API Client failed at the function `call`" in handle.call_args.kwargs["message"]
     )
+
+
+@pytest.mark.client_mark
+def test_client_error_message_does_not_print_token():
+    setup_test_settings()
+    settings.CLIENT_CONFIG.token = "secret-token"
+
+    def call():
+        pass
+
+    message = _get_client_error_message(call)
+
+    assert "secret-token" not in message
+    assert "Client config" not in message
+    assert "1.2.3.4" in message
+
+
+@pytest.mark.client_mark
+def test_client_error_message_debug_prints_config_with_masked_token():
+    setup_test_settings()
+    settings.CLIENT_CONFIG.token = "abcdefghijklmnop1234"
+    settings.CLIENT_CONFIG.debug = True
+
+    def call():
+        pass
+
+    message = _get_client_error_message(call)
+
+    assert "abcdefghijklmnop1234" not in message
+    assert "Client config" in message
+    assert "POLYAXON_DEBUG" in message
+    assert "'token': '****1234'" in message
 
 
 @pytest.mark.client_mark
