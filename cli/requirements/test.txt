@@ -9,7 +9,6 @@ types-aiofiles
 types-certifi
 types-protobuf
 types-python-dateutil
-types-pytz
 types-PyYAML
 types-requests
 types-setuptools

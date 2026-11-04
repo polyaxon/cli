@@ -1,13 +1,13 @@
 aiofiles<=25.1.0
 aiohttp>=3.0.0
 click>=7.1.1,<9.0.0
-clipped==0.14.*
+clipped==0.15.*
 parsimonious>=0.10.0
-vents==0.10.*
+vents==0.11.*
 Jinja2>=3.1.6,<4.0.0
 websocket-client>=0.32.0,!=0.40.0,!=0.41.*,!=0.42.*
 python-dateutil>=2.7.3
-pytz>=2019.2
+tzdata
 PyYAML>=5.1
 orjson>=3.7
 psutil>=5.4.7
