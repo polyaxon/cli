@@ -353,11 +353,8 @@ class DateTimeCondition(ComparisonCondition):
         name: str, params: Any, query_backend: Any, timezone: str
     ) -> Any:
         assert len(params) == 2
-        try:
-            start_date = DateTimeFormatter.extract(params[0], timezone)
-            end_date = DateTimeFormatter.extract(params[1], timezone)
-        except DateTimeFormatterException as e:
-            raise PQLException(e)
+        start_date = DateTimeCondition._extract_datetime(params[0], timezone)
+        end_date = DateTimeCondition._extract_datetime(params[1], timezone)
 
         name = "{}__range".format(name)
         return query_backend(**{name: (start_date, end_date)})
