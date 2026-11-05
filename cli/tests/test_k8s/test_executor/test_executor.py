@@ -1,9 +1,14 @@
 import mock
 import pytest
 
+from polyaxon import settings
+from polyaxon._auxiliaries.default_scheduling import V1DefaultScheduling
+from polyaxon._connections import V1ClaimConnection, V1Connection, V1ConnectionKind
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._k8s.custom_resources import operation
 from polyaxon._k8s.executor.executor import Executor
+from polyaxon._operations import get_batch_cleaner_operation
+from polyaxon._schemas.agent import AgentConfig
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonAgentError
 
@@ -30,6 +35,55 @@ class TestExecutor(BaseTestCase):
 
         self.executor.get(run_uuid="", run_kind=V1RunKind.JOB)
         assert k8s_manager.get_custom_object.call_count == 1
+
+    def test_make_and_convert_serializes_with_api_keys(self):
+        store = V1Connection(
+            name="test-store",
+            kind=V1ConnectionKind.VOLUME_CLAIM,
+            schema_=V1ClaimConnection(volume_claim="test-claim", mount_path="/store"),
+        )
+        default_scheduling = V1DefaultScheduling(
+            security_context={"runAsUser": 2222, "runAsGroup": 2222, "fsGroup": 2222}
+        )
+        settings.AGENT_CONFIG = AgentConfig(
+            namespace="polyaxon",
+            artifacts_store=store,
+            default_scheduling=default_scheduling,
+        )
+        op = get_batch_cleaner_operation(
+            connection=store,
+            paths=["uuid1"],
+            environment=V1DefaultScheduling.get_service_environment(
+                None, default_scheduling
+            ),
+        )
+
+        resource = Executor.make_and_convert(
+            owner_name="owner",
+            project_name="agent",
+            run_uuid="a" * 32,
+            run_name="cleaner",
+            content=op.to_json(),
+        )
+
+        pod_spec = resource["batchJobSpec"]["template"]["spec"]
+        assert pod_spec["securityContext"] == {
+            "runAsUser": 2222,
+            "runAsGroup": 2222,
+            "fsGroup": 2222,
+        }
+        assert {
+            "name": "test-store",
+            "persistentVolumeClaim": {"claimName": "test-claim"},
+        } in pod_spec["volumes"]
+        container = pod_spec["containers"][0]
+        assert {"name": "test-store", "mountPath": "/store"} in container[
+            "volumeMounts"
+        ]
+        assert container["args"] == [
+            "polyaxon clean-artifacts volume-claim "
+            "--connection-name test-store -sp=/store/uuid1"
+        ]
 
     def test_list_ops_uses_current_polyaxon_crds(self):
         k8s_manager = mock.MagicMock()

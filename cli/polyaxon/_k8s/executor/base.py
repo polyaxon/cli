@@ -55,6 +55,30 @@ class BaseExecutor(_BaseExecutor):
         )
         return sanitize_for_serialization(resource)
 
+    @classmethod
+    def make_and_convert(
+        cls,
+        owner_name: str,
+        project_name: str,
+        run_uuid: str,
+        run_name: str,
+        content: str,
+        default_sa: Optional[str] = None,
+        internal_auth: bool = False,
+        default_auth: bool = False,
+    ) -> Dict:
+        resource = super(BaseExecutor, cls).make_and_convert(
+            owner_name=owner_name,
+            project_name=project_name,
+            run_uuid=run_uuid,
+            run_name=run_name,
+            content=content,
+            default_sa=default_sa,
+            internal_auth=internal_auth,
+            default_auth=default_auth,
+        )
+        return sanitize_for_serialization(resource)
+
     def create(
         self, run_uuid: str, run_kind: str, resource: Dict, namespace: str = None
     ) -> Dict:
