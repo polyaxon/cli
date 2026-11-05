@@ -454,3 +454,33 @@ class TestDeploymentConfig(BaseTestCase):
     def test_read_deploy_config_all_agent_values(self):
         config = reader.read("tests/fixtures/deployment/all_agent_values.yml")
         assert isinstance(config, DeploymentConfig)
+
+    def test_deploy_config_cache(self):
+        config = DeploymentConfig.from_dict(
+            {
+                "scheduler": {"enabled": True},
+                "redis": {"enabled": True},
+                "broker": "redis",
+                "cache": {"enabled": True},
+            }
+        )
+        assert config.cache.enabled is True
+
+    def test_deploy_config_cache_requires_scheduler(self):
+        with self.assertRaises(ValidationError):
+            DeploymentConfig.from_dict(
+                {
+                    "redis": {"enabled": True, "nonBroker": True},
+                    "cache": {"enabled": True},
+                }
+            )
+
+    def test_deploy_config_cache_not_allowed_for_agent(self):
+        with self.assertRaises(ValidationError):
+            DeploymentConfig.from_dict(
+                {
+                    "deploymentChart": "agent",
+                    "agent": {"enabled": True},
+                    "cache": {"enabled": False},
+                }
+            )
