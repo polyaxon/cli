@@ -21,7 +21,6 @@ from polyaxon._auxiliaries import (
 from polyaxon._auxiliaries.default_scheduling import V1DefaultScheduling
 from polyaxon._connections import V1Connection
 from polyaxon._deploy.schemas.auth import AuthConfig
-from polyaxon._deploy.schemas.cache import CacheConfig
 from polyaxon._deploy.schemas.deployment_types import DeploymentCharts, DeploymentTypes
 from polyaxon._deploy.schemas.email import EmailConfig
 from polyaxon._deploy.schemas.ingress import IngressConfig
@@ -101,13 +100,14 @@ def check_redis(redis, external_services, broker):
     return redis_used, not redis_non_broker
 
 
-def check_cache(cache, scheduler):
+def check_cache(gateway, scheduler):
     # The cache only needs redis, but the chart sets its URL with the other
     # redis settings inside the `scheduler.enabled` block to keep the chart
     # change small. Relax this to a redis check if the chart decouples them.
+    cache = gateway.cache if gateway else None
     if cache and cache.enabled and not (scheduler and scheduler.enabled):
         raise ValueError(
-            "`cache.enabled` requires `scheduler.enabled`, "
+            "`gateway.cache.enabled` requires `scheduler.enabled`, "
             "the cache uses the scheduler's Redis."
         )
 
@@ -141,7 +141,7 @@ def validate_platform_deployment(
     worker,
     beat,
     external_services,
-    cache,
+    gateway,
 ):
     check_postgres(postgresql, external_services)
     redis_used, redis_is_broker = check_redis(redis, external_services, broker)
@@ -151,7 +151,7 @@ def validate_platform_deployment(
         raise ValueError(
             "You enabled some services that require a broker, please set redis!"
         )
-    check_cache(cache, scheduler)
+    check_cache(gateway, scheduler)
 
 
 def validate_deployment_chart(
@@ -250,7 +250,6 @@ class DeploymentConfig(BaseSchemaModel):
     postgresql: Optional[PostgresqlConfig] = None
     redis: Optional[RedisConfig] = None
     broker: Optional[Literal["redis"]] = None
-    cache: Optional[CacheConfig] = None
     email: Optional[EmailConfig] = None
     ldap: Optional[Dict] = None
     metrics: Optional[Dict] = None
@@ -290,6 +289,7 @@ class DeploymentConfig(BaseSchemaModel):
 
     @model_validator(**validation_after)
     def validate_deployment(cls, values):
+        gateway = cls.get_value_for_key("gateway", values)
         validate_deployment_chart(
             deployment_chart=cls.get_value_for_key("deployment_chart", values),
             agent=cls.get_value_for_key("agent", values),
@@ -304,7 +304,7 @@ class DeploymentConfig(BaseSchemaModel):
             worker=cls.get_value_for_key("worker", values),
             beat=cls.get_value_for_key("beat", values),
             external_services=cls.get_value_for_key("external_services", values),
-            cache=cls.get_value_for_key("cache", values),
+            gateway=gateway,
         )
         if cls.get_value_for_key("deployment_chart", values) == DeploymentCharts.AGENT:
             wrong_agent_deployment_keys(
@@ -325,7 +325,8 @@ class DeploymentConfig(BaseSchemaModel):
                 postgresql=cls.get_value_for_key("postgresql", values),
                 redis=cls.get_value_for_key("redis", values),
                 broker=cls.get_value_for_key("broker", values),
-                cache=cls.get_value_for_key("cache", values),
+                gateway_cache=gateway.cache if gateway else None,
+                gateway_throttle=gateway.throttle if gateway else None,
                 email=cls.get_value_for_key("email", values),
                 ldap=cls.get_value_for_key("ldap", values),
                 intervals=cls.get_value_for_key("intervals", values),

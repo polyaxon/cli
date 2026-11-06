@@ -461,17 +461,17 @@ class TestDeploymentConfig(BaseTestCase):
                 "scheduler": {"enabled": True},
                 "redis": {"enabled": True},
                 "broker": "redis",
-                "cache": {"enabled": True},
+                "gateway": {"cache": {"enabled": True}},
             }
         )
-        assert config.cache.enabled is True
+        assert config.gateway.cache.enabled is True
 
     def test_deploy_config_cache_requires_scheduler(self):
         with self.assertRaises(ValidationError):
             DeploymentConfig.from_dict(
                 {
                     "redis": {"enabled": True, "nonBroker": True},
-                    "cache": {"enabled": True},
+                    "gateway": {"cache": {"enabled": True}},
                 }
             )
 
@@ -481,6 +481,22 @@ class TestDeploymentConfig(BaseTestCase):
                 {
                     "deploymentChart": "agent",
                     "agent": {"enabled": True},
-                    "cache": {"enabled": False},
+                    "gateway": {"cache": {"enabled": False}},
+                }
+            )
+
+    def test_deploy_config_throttle(self):
+        config = DeploymentConfig.from_dict(
+            {"gateway": {"throttle": {"rates": {"run": 600, "user": 480}}}}
+        )
+        assert config.gateway.throttle.rates == {"run": 600, "user": 480}
+
+    def test_deploy_config_throttle_not_allowed_for_agent(self):
+        with self.assertRaises(ValidationError):
+            DeploymentConfig.from_dict(
+                {
+                    "deploymentChart": "agent",
+                    "agent": {"enabled": True},
+                    "gateway": {"throttle": {"rates": {"run": 600}}},
                 }
             )

@@ -1,8 +1,10 @@
 from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import Field, StrictInt, StrictStr
+from polyaxon._deploy.schemas.cache import CacheConfig
 from polyaxon._deploy.schemas.celery import CeleryConfig
 from polyaxon._deploy.schemas.service_types import ServiceTypes
+from polyaxon._deploy.schemas.throttle import ThrottleConfig
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon._schemas.services import BaseServiceConfig
 
@@ -58,6 +60,8 @@ class BaseService(BaseSchemaModel):
 
 class ApiServiceConfig(DeploymentService):
     service: Optional[BaseService] = None
+    cache: Optional[CacheConfig] = None
+    throttle: Optional[ThrottleConfig] = None
 
 
 class HooksConfig(DeploymentService):
