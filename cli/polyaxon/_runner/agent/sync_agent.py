@@ -209,7 +209,7 @@ class BaseSyncAgent(BaseAgent):
         finally:
             self.end()
 
-    def process(self, pool: "ThreadPoolExecutor") -> V1AgentStateResponse:
+    def process(self, pool: "ThreadPoolExecutor") -> Optional[V1AgentStateResponse]:
         try:
             agent_state = self.client.get_state()
             if agent_state.compatible_updates:
@@ -219,7 +219,7 @@ class BaseSyncAgent(BaseAgent):
                 logger.info("Checking agent state.")
             else:
                 logger.info("No state was found.")
-                return V1AgentStateResponse.model_construct()
+                return None
 
             state = agent_state.state
             if not state:
@@ -245,7 +245,7 @@ class BaseSyncAgent(BaseAgent):
             return agent_state
         except Exception as exc:
             logger.error(exc)
-            return V1AgentStateResponse.model_construct()
+            return None
 
     def prepare_run_resource(
         self,

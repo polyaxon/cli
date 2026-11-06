@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 from mock import MagicMock, patch
 import os
 import pytest
@@ -9,6 +11,11 @@ from polyaxon._contexts import paths as ctx_paths
 from polyaxon._k8s.agent.async_agent import AsyncAgent
 from polyaxon._k8s.executor.async_executor import AsyncExecutor
 from polyaxon._runner.agent.client import AsyncAgentClient
+from polyaxon._schemas.lifecycle import LiveState, V1Statuses
+from polyaxon._sdk.schemas.v1_agent_state_response import V1AgentStateResponse
+from polyaxon._sdk.schemas.v1_agent_state_response_agent_state import (
+    V1AgentStateResponseAgentState,
+)
 from polyaxon._utils.test_utils import AsyncMock, BaseTestCase
 from polyaxon.exceptions import ApiException, PolyaxonAgentError
 
@@ -200,3 +207,41 @@ class TestAsyncAgent(BaseTestCase, IsolatedAsyncioTestCase):
         assert "Agent failed to collect agent data" in log_output
         assert "status=500" in log_output
         assert "reason=failure" in log_output
+
+    async def test_async_agent_keeps_running_after_failed_state_request(self):
+        agent = AsyncAgent(owner="foo", agent_uuid="uuid")
+        exit_event = asyncio.Event()
+        calls = []
+
+        async def get_state():
+            calls.append(1)
+            if len(calls) == 1:
+                raise ApiException(status=502, reason="Bad Gateway")
+            exit_event.set()
+            return V1AgentStateResponse(
+                status=V1Statuses.RUNNING,
+                live_state=LiveState.LIVE,
+                state=V1AgentStateResponseAgentState(full=False),
+            )
+
+        @asynccontextmanager
+        async def exit_context():
+            yield exit_event
+
+        agent.client = MagicMock()
+        agent.client.get_state = get_state
+        agent.refresh_executor = AsyncMock()
+        agent.cron = AsyncMock()
+        agent.reconcile = AsyncMock()
+        agent.ping = MagicMock()
+
+        # Before Python 3.12, a zero timeout cancels `exit_event.wait()` before it runs.
+        with patch(
+            "polyaxon._runner.agent.async_agent.async_exit_context", exit_context
+        ):
+            with patch(
+                "polyaxon._runner.agent.async_agent.get_wait", return_value=0.01
+            ):
+                await agent.start()
+
+        assert len(calls) == 2

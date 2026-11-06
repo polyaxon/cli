@@ -1,12 +1,19 @@
+from contextlib import contextmanager
 from mock import MagicMock, patch
 import pytest
+import threading
 
 from polyaxon import settings
 from polyaxon._constants.globals import DEFAULT
 from polyaxon._runner.agent.client import AgentClient, AsyncAgentClient
 from polyaxon._runner.agent.sync_agent import BaseSyncAgent
+from polyaxon._schemas.lifecycle import LiveState, V1Statuses
+from polyaxon._sdk.schemas.v1_agent_state_response import V1AgentStateResponse
+from polyaxon._sdk.schemas.v1_agent_state_response_agent_state import (
+    V1AgentStateResponseAgentState,
+)
 from polyaxon._utils.test_utils import BaseTestCase
-from polyaxon.exceptions import PolyaxonAgentError
+from polyaxon.exceptions import ApiException, PolyaxonAgentError
 
 
 class DummyAgent(BaseSyncAgent):
@@ -251,3 +258,36 @@ class TestBaseSyncAgent(BaseTestCase):
             agent.__exit__(None, None, None)
 
         agent.client.close.assert_called_once()
+
+    def test_sync_agent_keeps_running_after_failed_state_request(self):
+        agent = DummyAgent(owner="foo", agent_uuid="uuid")
+        exit_event = threading.Event()
+        calls = []
+
+        def get_state():
+            calls.append(1)
+            if len(calls) == 1:
+                raise ApiException(status=502, reason="Bad Gateway")
+            exit_event.set()
+            return V1AgentStateResponse(
+                status=V1Statuses.RUNNING,
+                live_state=LiveState.LIVE,
+                state=V1AgentStateResponseAgentState(full=False),
+            )
+
+        @contextmanager
+        def exit_context():
+            yield exit_event
+
+        agent.client = MagicMock()
+        agent.client.get_state.side_effect = get_state
+        agent.refresh_executor = MagicMock()
+        agent.cron = MagicMock()
+        agent.reconcile = MagicMock()
+        agent.ping = MagicMock()
+
+        with patch("polyaxon._runner.agent.sync_agent.sync_exit_context", exit_context):
+            with patch("polyaxon._runner.agent.sync_agent.get_wait", return_value=0):
+                agent.start()
+
+        assert len(calls) == 2
