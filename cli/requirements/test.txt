@@ -12,5 +12,4 @@ types-python-dateutil
 types-PyYAML
 types-requests
 types-setuptools
-types-six
 types-orjson
