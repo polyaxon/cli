@@ -3217,13 +3217,17 @@ class RunClient(ClientMixin):
                     continue
 
                 event_name = os.path.basename(f).split(".plx")[0]
-                event = V1Events.read(kind=events_kind, name=event_name, data=f)
-                if event.df.empty:
+                try:
+                    event = V1Events.read(kind=events_kind, name=event_name, data=f)
+                    if event.df.empty:
+                        continue
+                    summary = event.get_summary()
+                except Exception as e:
+                    logger.warning("Skipping events summary for %s: %r", f, e)
                     continue
 
                 # Get only the relpath from run uuid
                 event_rel_path = self._sanitize_filepath(filepath=f)
-                summary = event.get_summary()
                 run_artifact = V1RunArtifact.model_construct(
                     name=event_name,
                     kind=V1ArtifactKind.SYSTEM if is_system_resource else events_kind,

@@ -1215,6 +1215,36 @@ class TestRunClient(BaseTestCase):
         assert len(result.results) == 1
         assert result.results[0].name == "model.pkl"
 
+    @patch.object(RunClient, "log_outputs")
+    @patch.object(RunClient, "log_artifact_lineage")
+    def test_sync_events_summaries_skips_unreadable_files(
+        self, log_lineage, log_outputs
+    ):
+        """A metric file without a `metric` column does not block the others"""
+        client = RunClient(
+            owner=self.owner, project=self.project, run_uuid=self.run_uuid
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            events_path = Path(directory) / self.run_uuid / "events"
+            metric_path = events_path / "metric"
+            metric_path.mkdir(parents=True)
+            (metric_path / "loss.plx").write_text(
+                "step|timestamp|metric"
+                "\n1|2026-11-09T10:00:00+00:00|0.5"
+                "\n2|2026-11-09T10:00:01+00:00|0.3"
+            )
+            (metric_path / "bad.plx").write_text(
+                "step|timestamp|garbled\n1|2026-11-09T10:00:00+00:00|0.1"
+            )
+
+            client._sync_events_summaries(last_check=None, events_path=str(events_path))
+
+        (summaries,) = log_lineage.call_args.args
+        assert [(s.name, s.path) for s in summaries] == [
+            ("loss", "events/metric/loss.plx")
+        ]
+        log_outputs.assert_called_once_with(loss=0.3)
+
     # List Operations Tests
     @mock.patch("polyaxon._sdk.api.runs_v1_api.RunsV1Api.list_runs")
     def test_list_runs(self, mock_list):
