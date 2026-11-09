@@ -15,7 +15,6 @@ lib64
 parts
 sdist
 var
-*.pyc
 *.swp
 .DS_Store
 __pycache__/
@@ -23,13 +22,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 .mypy_cache/
+.ruff_cache/
 .vscode/
 .mr.developer.cfg
 .pydevproject
 .project
 .settings/
 .idea/
-.DS_Store
 # temp files
 *~
 # C extensions
@@ -50,6 +49,16 @@ pydist/
 .python-version
 .venv/
 .virtualenvs/
+venv/
+# Tests and coverage
+.tox/
+.nox/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+# Node
+node_modules/
 """
 
 INIT_FILE_PATH = "polyaxonfile.yaml"

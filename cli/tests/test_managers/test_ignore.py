@@ -457,6 +457,29 @@ class TestIgnoreConfigManager(BaseTestCase):
             ),
         )
 
+    def test_default_ignore_list_covers_tool_caches(self):
+        patterns = IgnoreConfigManager.get_patterns(
+            io.StringIO(cli_constants.DEFAULT_IGNORE_LIST)
+        )
+        dirs = [
+            ".ruff_cache",
+            ".tox",
+            ".nox",
+            ".hypothesis",
+            "htmlcov",
+            "venv",
+            "node_modules",
+            ".pytest_cache",
+            ".mypy_cache",
+        ]
+        for name in dirs:
+            ignored = IgnoreConfigManager.is_ignored("./" + name, patterns, is_dir=True)
+            assert ignored, name
+        for name in [".coverage", ".coverage.host.1234.567890"]:
+            assert IgnoreConfigManager.is_ignored("./" + name, patterns), name
+        for name in [".env", ".coveragerc"]:
+            assert not IgnoreConfigManager.is_ignored("./" + name, patterns), name
+
     @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_escaping_of_globs_that_start_with_reserved_chars(self, mock_file, _):
