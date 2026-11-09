@@ -480,6 +480,21 @@ class TestIgnoreConfigManager(BaseTestCase):
         for name in [".env", ".coveragerc"]:
             assert not IgnoreConfigManager.is_ignored("./" + name, patterns), name
 
+    def test_default_ignore_list_covers_bytecode_and_ds_store(self):
+        patterns = IgnoreConfigManager.get_patterns(
+            io.StringIO(cli_constants.DEFAULT_IGNORE_LIST)
+        )
+        for path in [
+            "./mod.pyc",
+            "./pkg/mod.pyo",
+            "./pkg/ext.pyd",
+            "./pkg/__pycache__/mod.cpython-312.pyc",
+            "./.DS_Store",
+            "./pkg/.DS_Store",
+        ]:
+            assert IgnoreConfigManager.is_ignored(path, patterns), path
+        assert not IgnoreConfigManager.is_ignored("./pkg/mod.py", patterns)
+
     @patch("polyaxon._managers.ignore.os.path.isfile", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_escaping_of_globs_that_start_with_reserved_chars(self, mock_file, _):
