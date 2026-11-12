@@ -27,6 +27,7 @@ class V1Plugins(BaseSchemaModel):
         collect_artifacts: bool, optional, default: True
         collect_logs: bool, optional, default: True
         collect_resources: bool, optional, default: True
+        collect_resources_detailed: bool, optional, default: False
         sync_statuses: bool, optional, default: True
         auto_resume: bool, optional, default: True
         external_host: bool, optional, default: False
@@ -47,6 +48,7 @@ class V1Plugins(BaseSchemaModel):
     >>>   collectArtifacts:
     >>>   collectLogs:
     >>>   collectResources:
+    >>>   collectResourcesDetailed:
     >>>   syncStatuses:
     >>>   autoResume:
     >>>   externalHost:
@@ -69,6 +71,7 @@ class V1Plugins(BaseSchemaModel):
     >>>     collect_artifacts=False,
     >>>     collect_logs=False,
     >>>     collect_resources=False,
+    >>>     collect_resources_detailed=False,
     >>>     sync_statuses=True,
     >>>     auto_resume=False,
     >>>     external_host=False,
@@ -275,6 +278,28 @@ class V1Plugins(BaseSchemaModel):
     >>>   collectResources: false
     ```
 
+    ### collectResourcesDetailed
+
+    <blockquote className="light">This plugin is disabled by default.</blockquote>
+
+    On Linux, the python client also logs a small set of container-aware resources
+    next to the Mem/CPU/GPU metrics: the cgroup memory percent and OOM kills,
+    the cgroup cpu throttling, the `/dev/shm` usage, and the number of child
+    processes stuck in disk sleep. This covers the usual reasons a run is
+    OOM-killed, throttled, or stalled inside a pod, which the host level
+    Mem/CPU metrics do not show.
+
+    Enable this plugin to also log the detailed breakdown: cgroup memory current/max/shmem,
+    cpu quota and throttled periods, `/dev/shm` total/used, the process rss split,
+    threads and file descriptors, and the children's rss.
+
+    To enable this plugin:
+
+    ```yaml
+    >>> plugins:
+    >>>   collectResourcesDetailed: true
+    ```
+
     ### autoResume
 
     <blockquote className="light">This plugin is enabled by default.</blockquote>
@@ -344,6 +369,9 @@ class V1Plugins(BaseSchemaModel):
     collect_resources: Optional[BoolOrRef] = Field(
         alias="collectResources", default=None
     )
+    collect_resources_detailed: Optional[BoolOrRef] = Field(
+        alias="collectResourcesDetailed", default=None
+    )
     sync_statuses: Optional[BoolOrRef] = Field(alias="syncStatuses", default=None)
     auto_resume: Optional[BoolOrRef] = Field(alias="autoResume", default=None)
     log_level: Optional[StrictStr] = Field(alias="logLevel", default=None)
@@ -366,6 +394,7 @@ class V1Plugins(BaseSchemaModel):
         config.set_collect_artifacts()
         config.set_collect_logs()
         config.set_collect_resources()
+        config.set_collect_resources_detailed()
         config.set_sync_statuses()
         config.set_auto_resume()
         config.set_external_host()
@@ -421,6 +450,12 @@ class V1Plugins(BaseSchemaModel):
             self.collect_resources = False
         elif self.collect_resources is None:
             self.collect_resources = default
+
+    def set_collect_resources_detailed(self, default: bool = False):
+        if self.no_api():
+            self.collect_resources_detailed = False
+        elif self.collect_resources_detailed is None:
+            self.collect_resources_detailed = default
 
     def set_sync_statuses(self, default: bool = True):
         if self.no_api():
