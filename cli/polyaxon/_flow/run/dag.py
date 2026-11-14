@@ -14,6 +14,7 @@ from clipped.compact.pydantic import (
 from clipped.types.ref_or_obj import RefField
 from polyaxon import types
 from polyaxon._contexts import sections as ctx_sections
+from polyaxon._contexts.params import is_template_ref
 import polyaxon._flow.dags as dags
 from polyaxon._flow.early_stopping import V1EarlyStopping
 from polyaxon._flow.environment import V1Environment
@@ -430,6 +431,12 @@ class V1Dag(BaseRun):
 
     def process_dag(self):
         for op in self.operations or []:
+            # Op names are node identities; runs are mapped back by name.
+            if is_template_ref(op.name):
+                raise PolyaxonSchemaError(
+                    "Pipeline op name `{}` uses a template; "
+                    "DAG op names must be literal.".format(op.name)
+                )
             self._process_op(op)
 
     def add_op(self, op):

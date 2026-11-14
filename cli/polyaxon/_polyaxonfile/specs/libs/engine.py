@@ -3,8 +3,9 @@ import jinja2
 from jinja2.runtime import Macro
 from jinja2.sandbox import ImmutableSandboxedEnvironment, safe_range
 from jinja2.utils import Namespace
+import re
 from types import BuiltinMethodType
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 from markupsafe import soft_str
 
@@ -13,6 +14,8 @@ from polyaxon.exceptions import PolyaxonSchemaError
 
 MAX_POWER_BITS = 4096
 MAX_REPEAT_ITEMS = 100000
+MAX_NAME_LENGTH = 128
+_UNSUPPORTED_NAME_CHARS = re.compile(r"[^A-Za-z0-9_-]+")
 
 _SAFE_GLOBALS = {"range": safe_range, "dict": dict, "namespace": Namespace}
 _READ_ONLY_METHODS = (
@@ -116,8 +119,8 @@ def map_format(value, pattern, variable_name: Optional[str] = None):
     return soft_str(pattern) % value
 
 
-def get_engine():
-    env = _TemplateEnvironment()
+def get_engine(undefined: Type[jinja2.Undefined] = jinja2.Undefined):
+    env = _TemplateEnvironment(undefined=undefined)
     env.globals.clear()
     env.globals.update(_SAFE_GLOBALS)
     env.filters["map_format"] = map_format
@@ -154,6 +157,42 @@ def render_template(template_str: str, context: Dict[str, Any]) -> str:
             f"please make sure your variables are resolvable. "
             f"Error: {repr(e)}"
         )
+
+
+def render_text_strict(template_str: str, context: Dict[str, Any], field: str) -> str:
+    """Render once as text; unknown variables are errors, not empty strings."""
+    try:
+        template = get_engine(undefined=jinja2.StrictUndefined).from_string(
+            template_str
+        )
+        return template.render(**context)
+    except jinja2.exceptions.UndefinedError as e:
+        raise PolyaxonSchemaError(f"`{field}` uses an unavailable variable: {e}.")
+    except (
+        jinja2.exceptions.TemplateError,
+        ValueError,
+        TypeError,
+        ArithmeticError,
+    ) as e:
+        raise PolyaxonSchemaError(f"Could not render `{field}`: {repr(e)}")
+
+
+def normalize_name(value: str) -> str:
+    return _UNSUPPORTED_NAME_CHARS.sub("_", value).strip("_-")
+
+
+def render_name_template(template_str: str, context: Dict[str, Any]) -> str:
+    name = normalize_name(render_text_strict(template_str, context, field="name"))
+    if not name:
+        raise PolyaxonSchemaError(
+            f"`name` template `{template_str}` rendered an empty run name."
+        )
+    if len(name) > MAX_NAME_LENGTH:
+        raise PolyaxonSchemaError(
+            f"`name` template `{template_str}` rendered a run name "
+            f"longer than {MAX_NAME_LENGTH} characters."
+        )
+    return name
 
 
 def render_config(config: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:

@@ -2,7 +2,11 @@ from datetime import date, datetime
 import pytest
 
 from polyaxon._flow.io.io import V1IO
-from polyaxon._polyaxonfile.specs.libs.engine import render_template
+from polyaxon._polyaxonfile.specs.libs.engine import (
+    render_name_template,
+    render_template,
+    render_text_strict,
+)
 from polyaxon._polyaxonfile.specs.libs.parser import TextValue
 from polyaxon.exceptions import PolyaxonSchemaError
 
@@ -138,3 +142,53 @@ def test_rejects_resource_guards(template, context):
 )
 def test_allows_bounded_operations(template, expected):
     assert render_template(template, {}) == expected
+
+
+@pytest.mark.parametrize(
+    "template,context,expected",
+    [
+        (
+            "train-{{ optimizer }}-{{ lr }}",
+            {"optimizer": "adam", "lr": 0.01},
+            "train-adam-0_01",
+        ),
+        (
+            "{{ optimizer }} / {{ batch }}",
+            {"optimizer": "adam", "batch": 32},
+            "adam_32",
+        ),
+        ("-{{ value }}-", {"value": "experiment-a"}, "experiment-a"),
+        # Param values are not rendered again
+        ("run-{{ value }}", {"value": "{{ secret }}", "secret": "leak"}, "run-_secret"),
+        ("{{ value }}", {"value": "a" * 128}, "a" * 128),
+    ],
+)
+def test_render_name_template(template, context, expected):
+    assert render_name_template(template, context) == expected
+
+
+def test_render_text_strict_keeps_text():
+    assert render_text_strict("{{ value }}", {"value": "1e3"}, field="name") == "1e3"
+
+
+@pytest.mark.parametrize(
+    "template,context,message",
+    [
+        (
+            "train-{{ lr }}",
+            {},
+            "`name` uses an unavailable variable: 'lr' is undefined",
+        ),
+        ("{{ cfg.missing }}", {"cfg": {"a": 1}}, "has no attribute 'missing'"),
+        ("train-{{ lr", {"lr": 1}, "Could not render `name`"),
+        ("{{ ''.__class__ }}", {}, "Could not render `name`"),
+        ("{{ 2 ** 10000 }}", {}, "Could not render `name`"),
+        ("{{ 1 / 0 }}", {}, "Could not render `name`"),
+        ("{{ value }}", {"value": ""}, "empty run name"),
+        ("{{ value }}", {"value": " / ..."}, "empty run name"),
+        ("{{ value }}", {"value": "a" * 129}, "longer than 128 characters"),
+    ],
+)
+def test_render_name_template_errors(template, context, message):
+    with pytest.raises(PolyaxonSchemaError, match=message):
+        render_name_template(template, context)

@@ -57,6 +57,28 @@ class TestWorkflowV1Dags(BaseTestCase):
         with self.assertRaisesRegex(PolyaxonValidationError, "undeclared param"):
             strict_config.process_components()
 
+    def test_dag_rejects_templated_op_names(self):
+        config = V1Dag.from_dict(
+            {
+                "kind": V1RunKind.DAG,
+                "operations": [
+                    {
+                        "name": "train-{{ lr }}",
+                        "component": {
+                            "run": {
+                                "kind": V1RunKind.JOB,
+                                "container": {"image": "test"},
+                            }
+                        },
+                    }
+                ],
+            }
+        )
+        with self.assertRaisesRegex(
+            PolyaxonSchemaError, "DAG op names must be literal"
+        ):
+            config.process_dag()
+
     def test_wrong_pipelines_ops(self):
         config_dict = {"operations": "foo"}
         with self.assertRaises(ValidationError):
