@@ -1,5 +1,6 @@
 from datetime import date, datetime
 import jinja2
+from jinja2 import meta
 from jinja2.runtime import Macro
 from jinja2.sandbox import ImmutableSandboxedEnvironment, safe_range
 from jinja2.utils import Namespace
@@ -161,11 +162,14 @@ def render_template(template_str: str, context: Dict[str, Any]) -> str:
 
 def render_text_strict(template_str: str, context: Dict[str, Any], field: str) -> str:
     """Render once as text; unknown variables are errors, not empty strings."""
+    engine = get_engine(undefined=jinja2.StrictUndefined)
     try:
-        template = get_engine(undefined=jinja2.StrictUndefined).from_string(
-            template_str
-        )
-        return template.render(**context)
+        parsed = engine.parse(template_str)
+        unavailable = meta.find_undeclared_variables(parsed) - set(context)
+        if unavailable:
+            names = ", ".join(sorted(unavailable))
+            raise PolyaxonSchemaError(f"`{field}` uses unavailable variables: {names}.")
+        return engine.from_string(template_str).render(**context)
     except jinja2.exceptions.UndefinedError as e:
         raise PolyaxonSchemaError(f"`{field}` uses an unavailable variable: {e}.")
     except (

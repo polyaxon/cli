@@ -161,6 +161,9 @@ def test_allows_bounded_operations(template, expected):
         # Param values are not rendered again
         ("run-{{ value }}", {"value": "{{ secret }}", "secret": "leak"}, "run-_secret"),
         ("{{ value }}", {"value": "a" * 128}, "a" * 128),
+        ("{{ range(3) | length }}", {}, "3"),
+        ("{% set v = 'a' %}run-{{ v }}", {}, "run-a"),
+        ("{{ cfg.missing | default('x') }}", {"cfg": {"a": 1}}, "x"),
     ],
 )
 def test_render_name_template(template, context, expected):
@@ -174,13 +177,17 @@ def test_render_text_strict_keeps_text():
 @pytest.mark.parametrize(
     "template,context,message",
     [
+        ("train-{{ lr }}", {}, "`name` uses unavailable variables: lr"),
+        ("{{ lr | default('x') }}", {}, "unavailable variables: lr"),
         (
-            "train-{{ lr }}",
+            "{% if lr is defined %}a{% else %}b{% endif %}",
             {},
-            "`name` uses an unavailable variable: 'lr' is undefined",
+            "unavailable variables: lr",
         ),
+        ("{{ b }}-{{ a }}", {}, "unavailable variables: a, b"),
         ("{{ cfg.missing }}", {"cfg": {"a": 1}}, "has no attribute 'missing'"),
         ("train-{{ lr", {"lr": 1}, "Could not render `name`"),
+        ("{{ lr | nope }}", {"lr": 1}, "Could not render `name`"),
         ("{{ ''.__class__ }}", {}, "Could not render `name`"),
         ("{{ 2 ** 10000 }}", {}, "Could not render `name`"),
         ("{{ 1 / 0 }}", {}, "Could not render `name`"),
