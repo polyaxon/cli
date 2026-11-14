@@ -129,6 +129,8 @@ class V1Dag(BaseRun):
     passed from one operation to another, the operations will be running in parallel following the
     concurrency and other queue priority definitions.
 
+    Operation names identify nodes in the DAG, so they cannot use templates.
+
     ```yaml
     >>> run:
     >>>   kind: dag
