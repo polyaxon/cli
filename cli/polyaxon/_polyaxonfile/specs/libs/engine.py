@@ -192,10 +192,7 @@ def render_name_template(template_str: str, context: Dict[str, Any]) -> str:
             f"`name` template `{template_str}` rendered an empty run name."
         )
     if len(name) > MAX_NAME_LENGTH:
-        raise PolyaxonSchemaError(
-            f"`name` template `{template_str}` rendered a run name "
-            f"longer than {MAX_NAME_LENGTH} characters."
-        )
+        name = name[: MAX_NAME_LENGTH - 2].rstrip("_-") + "--"
     return name
 
 

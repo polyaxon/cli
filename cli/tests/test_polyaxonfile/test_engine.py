@@ -161,6 +161,9 @@ def test_allows_bounded_operations(template, expected):
         # Param values are not rendered again
         ("run-{{ value }}", {"value": "{{ secret }}", "secret": "leak"}, "run-_secret"),
         ("{{ value }}", {"value": "a" * 128}, "a" * 128),
+        # Longer names are cut to fit and end in `--`
+        ("{{ value }}", {"value": "a" * 129}, "a" * 126 + "--"),
+        ("{{ value }}", {"value": "a" * 125 + "-" + "b" * 9}, "a" * 125 + "--"),
         ("{{ range(3) | length }}", {}, "3"),
         ("{% set v = 'a' %}run-{{ v }}", {}, "run-a"),
         ("{{ cfg.missing | default('x') }}", {"cfg": {"a": 1}}, "x"),
@@ -193,7 +196,6 @@ def test_render_text_strict_keeps_text():
         ("{{ 1 / 0 }}", {}, "Could not render `name`"),
         ("{{ value }}", {"value": ""}, "empty run name"),
         ("{{ value }}", {"value": " / ..."}, "empty run name"),
-        ("{{ value }}", {"value": "a" * 129}, "longer than 128 characters"),
     ],
 )
 def test_render_name_template_errors(template, context, message):
