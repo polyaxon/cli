@@ -69,6 +69,9 @@ class V1Dag(BaseRun):
      * They can take advantage of all scheduling strategies to route operations to nodes,
        namespaces, and clusters even within the same DAG.
 
+    The root [`dag` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#dag)
+    defines a DAG without a `run` section.
+
     Args:
         kind: str, should be equal `dag`
         operations: List[[V1Operation](/docs/references/polyaxonfile/specification/operation/)]

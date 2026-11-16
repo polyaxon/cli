@@ -13,6 +13,9 @@ class V1Service(V1Job):
     Streamlit/Voila/Bokeh apps, internal tools,
     and dashboards based on your models and data analysis.
 
+    The root [`service` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#service)
+    defines a service without a `run` section.
+
     Args:
         kind: str, should be equal `service`
         environment: [V1Environment](/docs/references/polyaxonfile/specification/environment/), optional

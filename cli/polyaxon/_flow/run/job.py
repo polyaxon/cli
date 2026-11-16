@@ -22,6 +22,10 @@ class V1Job(BaseRun, DestinationImageMixin):
     process a dataset, execute generic tasks and can be used to perform a variety of functions
     from compiling a model to running an ETL operation.
 
+    A file without `run` can also define a job with
+    [shortcuts](/docs/references/polyaxonfile/specification/shortcuts/#container)
+    such as `container` and `cmd`.
+
     Args:
         kind: str, should be equal `job`
         environment: [V1Environment](/docs/references/polyaxonfile/specification/environment/), optional
