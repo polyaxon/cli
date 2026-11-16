@@ -1009,9 +1009,14 @@ class V1Component(V1Polyaxonfile):
     Components can be used as well to extract as much information and be used as templates
     with default queues, container resources requirements, node scheduling, ...
 
+    Since Polyaxon 2.18.0, components, operations, and files without `kind` accept
+    the same fields. This page covers the fields a reusable component usually sets;
+    the [operation](/docs/references/polyaxonfile/specification/operation/) page covers
+    the rest, such as `params`, `matrix`, `schedule`, references, and `runPatch`.
+
     Args:
         version: float, optional
-        kind: str, should be equal to `component`
+        kind: str, optional, `component` marks a reusable component, see [kind](#kind)
         name: str, optional
         description: str, optional
         tags: List[str], optional
@@ -1128,11 +1133,10 @@ class V1Component(V1Polyaxonfile):
 
     ### kind
 
-    The kind signals to the CLI, client, and other tools that this is a component.
-
-    If you are using the component inline in an operation or a dag or
-    if you are using the python client to create a component,
-    this field is not required and is set by default.
+    Optional since Polyaxon 2.18.0. `kind: component` marks the file as a reusable
+    component. When you run it with the CLI or the Python client, Polyaxon wraps it in
+    an operation, so `-f` files and run options apply on top of it.
+    Older CLI and server versions require `kind`.
 
     ```yaml
     >>> component:
@@ -1449,9 +1453,14 @@ class V1Operation(V1Polyaxonfile):
 
     ![polyaxonfile operation](/images/references/specification/operation.png)
 
+    Since Polyaxon 2.18.0, operations, components, and files without `kind` accept
+    the same fields. This page covers the fields an operation usually sets; the
+    [component](/docs/references/polyaxonfile/specification/component/) page covers
+    `inputs`, `outputs`, and `run`.
+
     Args:
         version: float, optional
-        kind: str, should be equal to `operation`
+        kind: str, optional, `operation` marks the file as the operation to run, see [kind](#kind)
         patch_strategy: str, optional, defaults to post_merge
         is_preset: bool, optional
         is_approved: bool, optional
@@ -1591,14 +1600,13 @@ class V1Operation(V1Polyaxonfile):
 
     ### kind
 
-    The kind signals to the CLI, client, and other tools that this is an operation.
-
-    If you are using the python client to create an operation,
-    this field is not required and is set by default.
+    Optional since Polyaxon 2.18.0. With `kind: operation`, or without `kind`, the file
+    is the operation that runs, and `-f` files merge into it.
+    Older CLI and server versions require `kind`.
 
     ```yaml
     >>> operation:
-    >>>   kind: component
+    >>>   kind: operation
     ```
 
     ### patchStrategy
