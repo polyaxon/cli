@@ -802,7 +802,8 @@ class V1Component(V1Polyaxonfile):
     unless the operations override the name or a `--name`
     is passed as an argument to the cli/client.
 
-    When used as the run name, it can reference params, e.g. `train-{{ lr }}`. See
+    When used as the run name, it can reference params and some globals,
+    e.g. `train-{{ lr }}`. See
     [run names](/docs/references/cli/run-with-different-names/#names-from-params).
 
     ```yaml
@@ -1274,7 +1275,8 @@ class V1Operation(V1Polyaxonfile):
     >>>   name: test
     ```
 
-    The name can use params. Polyaxon renders it once, when the run is created:
+    The name can use params and some globals. Polyaxon renders it once,
+    when the run is created:
 
     ```yaml
     >>> operation:
