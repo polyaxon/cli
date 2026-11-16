@@ -7,10 +7,10 @@ from clipped.compact.pydantic import (
     field_validator,
     validation_before,
 )
-from clipped.config.constants import PARAM_REGEX
 from clipped.types.ref_or_obj import RefField
 from clipped.types.uuids import UUIDStr
 from clipped.utils.lists import to_list
+from clipped.utils.strings import is_template_ref
 from polyaxon._schemas.types.base import BaseTypeConfig
 
 
@@ -142,6 +142,6 @@ class V1TensorboardType(BaseTypeConfig):
 
     @field_validator("uuids", "plugins", **validation_before)
     def validate_str_list(cls, v):
-        if isinstance(v, str) and v is not None and not PARAM_REGEX.search(v):
+        if isinstance(v, str) and v is not None and not is_template_ref(v):
             return to_list(v, check_str=True)
         return v

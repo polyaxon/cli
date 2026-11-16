@@ -2,6 +2,8 @@ import pytest
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
+from clipped.utils.strings import is_template_ref
+from polyaxon._contexts.refs import parse_ref_value
 from polyaxon._flow.params import V1Param, is_short_form_param, normalize_param_value
 from polyaxon._utils.test_utils import BaseTestCase
 
@@ -257,3 +259,22 @@ class TestV1Params(BaseTestCase):
         assert_equal_dict(config.to_dict(), config_dict)
         assert config.is_literal is False
         assert config.is_ref is True
+
+    def test_template_refs(self):
+        for value in ["{{ value }}", "{{value}}", "a {{ b }} c"]:
+            assert is_template_ref(value) is True
+
+        for value in [
+            "{{}}",
+            "plain",
+            "value }}",
+            "{{" + " " * 100_000,
+            "{{" * 50_000,
+            1,
+            [{"a": "{{ b }}"}],
+        ]:
+            assert is_template_ref(value) is False
+
+        assert parse_ref_value("{{ outputs.loss }}") == "outputs.loss"
+        assert parse_ref_value("sdf-{{ outputs.loss }}-sdf") == "outputs.loss"
+        assert parse_ref_value("outputs.loss") == "outputs.loss"

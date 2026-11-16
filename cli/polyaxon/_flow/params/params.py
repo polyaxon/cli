@@ -8,7 +8,6 @@ from clipped.utils.lists import to_list
 from clipped.utils.strings import to_string
 from polyaxon import types
 from polyaxon._contexts import refs as ctx_refs, sections as ctx_sections
-from polyaxon._contexts.params import PARAM_REGEX
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonValidationError
 
@@ -176,13 +175,9 @@ class ParamValueMixin:
             self.is_join_ref and isinstance(self.value, Mapping)
         ):
             # value validation is the same for search and ref
-            value_parts = PARAM_REGEX.search(self.value)
-            if value_parts:
-                value_parts = value_parts.group(1).strip()
-            else:
-                value_parts = self.value
-
-            value_parts = [s.strip() for s in value_parts.split(".")]
+            value_parts = [
+                s.strip() for s in ctx_refs.parse_ref_value(self.value).split(".")
+            ]
             if len(value_parts) > 3:
                 raise PolyaxonValidationError(
                     "Could not parse value `{}` for param `{}`.".format(

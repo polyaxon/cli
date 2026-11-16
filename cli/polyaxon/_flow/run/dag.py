@@ -12,9 +12,9 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.types.ref_or_obj import RefField
+from clipped.utils.strings import is_template_ref
 from polyaxon import types
 from polyaxon._contexts import sections as ctx_sections
-from polyaxon._contexts.params import is_template_ref
 import polyaxon._flow.dags as dags
 from polyaxon._flow.early_stopping import V1EarlyStopping
 from polyaxon._flow.environment import V1Environment

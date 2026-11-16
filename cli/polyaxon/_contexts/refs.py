@@ -1,7 +1,7 @@
 from typing import Optional
 import uuid
 
-from polyaxon._contexts.params import PARAM_REGEX, is_template_ref
+from clipped.utils.strings import is_template_ref
 from polyaxon.exceptions import PolyaxonValidationError
 
 
@@ -35,23 +35,11 @@ def get_entity_ref(ref: str) -> Optional[str]:
 
 
 def get_entity_type(value: str) -> str:
-    value_parts = PARAM_REGEX.search(value)
-    if value_parts:
-        results = value_parts.group(1).strip()
-    else:
-        results = value
-
-    return results.split(".")[0]
+    return parse_ref_value(value).split(".")[0]
 
 
 def get_entity_value(value: str) -> Optional[str]:
-    value_parts = PARAM_REGEX.search(value)
-    if value_parts:
-        results = value_parts.group(1).strip()
-    else:
-        results = value
-
-    results = results.split(".")
+    results = parse_ref_value(value).split(".")
     if len(results) < 2:
         return None
     return results[-1]
@@ -59,9 +47,8 @@ def get_entity_value(value: str) -> Optional[str]:
 
 def parse_ref_value(value: str) -> str:
     """Returns value without {{ }}"""
-    value_parts = PARAM_REGEX.search(value)
-    if value_parts:
-        return value_parts.group(1).strip()
+    if is_template_ref(value):
+        return value[value.find("{{") + 2 : value.rfind("}}")].strip()
     return value
 
 
