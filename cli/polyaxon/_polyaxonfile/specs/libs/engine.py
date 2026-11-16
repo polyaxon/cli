@@ -196,6 +196,29 @@ def render_name_template(template_str: str, context: Dict[str, Any]) -> str:
     return name
 
 
+def render_name_suffix(
+    template_str: str, context: Dict[str, Any], base: Optional[str] = None
+) -> str:
+    """Render a matrix name suffix and join it to the base name."""
+    field = "matrix.nameSuffix"
+    suffix = template_str
+    if "{{" in template_str or "{%" in template_str:
+        suffix = render_text_strict(template_str, context, field=field)
+    suffix = normalize_name(suffix)
+    if not suffix:
+        raise PolyaxonSchemaError(
+            f"`{field}` template `{template_str}` rendered an empty name suffix."
+        )
+    name = f"{base}-{suffix}" if base else suffix
+    if base and len(name) > MAX_NAME_LENGTH:
+        # Cut the base: the suffix is what tells trials apart
+        base = base[: max(MAX_NAME_LENGTH - len(suffix) - 2, 0)].rstrip("_-")
+        name = f"{base}--{suffix}" if base else suffix
+    if len(name) > MAX_NAME_LENGTH:
+        name = name[: MAX_NAME_LENGTH - 2].rstrip("_-") + "--"
+    return name
+
+
 def render_config(config: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
     """
     Recursively render all string values in a config dict.

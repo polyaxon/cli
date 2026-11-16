@@ -1,6 +1,7 @@
 from copy import deepcopy
 import pytest
 
+from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
 from hypertune.search_managers.random_search.manager import RandomSearchManager
 from polyaxon._polyaxonfile import (
@@ -11,11 +12,90 @@ from polyaxon._polyaxonfile import (
     read_polyaxonfile,
 )
 from polyaxon._utils.test_utils import BaseTestCase
-from polyaxon.exceptions import PolyaxonValidationError
+from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
 
 
 @pytest.mark.polyaxonfile_mark
 class TestSharedMatrix(BaseTestCase):
+    def test_name_suffix_is_validated_for_all_matrix_kinds(self):
+        params = {"lr": {"kind": "choice", "value": [0.1, 0.9]}}
+        metric = {"name": "loss", "optimization": "minimize"}
+        for matrix in [
+            {"kind": "grid", "params": params},
+            {"kind": "random", "numRuns": 2, "params": params},
+            {"kind": "mapping", "values": [{"lr": 0.1}]},
+            {
+                "kind": "hyperband",
+                "maxIterations": 10,
+                "eta": 3,
+                "resource": {"name": "steps", "type": "int"},
+                "metric": metric,
+                "params": params,
+            },
+            {
+                "kind": "bayes",
+                "metric": metric,
+                "numInitialRuns": 2,
+                "maxIterations": 10,
+                "params": params,
+            },
+            {"kind": "tpe", "numRuns": 10, "metric": metric, "params": params},
+            {"kind": "iterative", "maxIterations": 10, "tuner": {"hubRef": "tuner"}},
+        ]:
+            with self.subTest(kind=matrix["kind"]):
+                source = {
+                    "kind": "component",
+                    "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
+                    "matrix": matrix,
+                }
+                assert read_polyaxonfile(source).matrix.name_suffix is None
+                for value in ("{{ lr }}", "trial", ""):
+                    matrix["nameSuffix"] = value
+                    authored = read_polyaxonfile(source)
+                    assert authored.matrix.name_suffix == value
+                    assert authored.matrix.to_dict()["nameSuffix"] == value
+                for value in (True, 1, ["a"]):
+                    matrix["nameSuffix"] = value
+                    with self.assertRaises((ValidationError, PolyaxonSchemaError)):
+                        read_polyaxonfile(source)
+
+    def test_name_suffix_is_kept_verbatim_by_the_parent(self):
+        name_suffix = "{{ lr }}-{{ batch_size }}-{{ globals.uuid[:4] }}"
+        source = {
+            "kind": "component",
+            "name": "train",
+            # A parent default must not be frozen in the suffix
+            "inputs": [
+                {"name": "lr", "type": "float", "value": 0.5, "isOptional": True},
+                {"name": "batch_size", "type": "int"},
+            ],
+            "run": {"kind": "job", "container": {"image": "busybox:1.36"}},
+            "matrix": {
+                "kind": "grid",
+                "nameSuffix": name_suffix,
+                "params": {
+                    "lr": {"kind": "choice", "value": [0.01, 0.1]},
+                    "batch_size": {"kind": "choice", "value": [32]},
+                },
+            },
+        }
+        authored = read_polyaxonfile(source)
+        parent, params = OperationSpecification.compile_operation_with_params(authored)
+        parent.apply_params(params)
+        for _ in range(2):
+            parent = CompiledOperationSpecification.apply_operation_contexts(parent)
+            assert parent.matrix.name_suffix == name_suffix
+        stored = CompiledOperationSpecification.read(parent.to_json())
+        assert stored.matrix.name_suffix == name_suffix
+
+        children = list(
+            get_ops_from_suggestions(
+                authored.to_json(), parent, [{"lr": 0.01, "batch_size": 32}]
+            )
+        )
+        assert children[0].matrix is None
+        assert children[0].name == "train"
+
     def test_direct_and_legacy_sources_create_independent_children(self):
         native = {
             "inputs": [

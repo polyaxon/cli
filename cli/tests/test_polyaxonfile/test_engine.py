@@ -3,6 +3,7 @@ import pytest
 
 from polyaxon._flow.io.io import V1IO
 from polyaxon._polyaxonfile.specs.libs.engine import (
+    render_name_suffix,
     render_name_template,
     render_template,
     render_text_strict,
@@ -201,3 +202,54 @@ def test_render_text_strict_keeps_text():
 def test_render_name_template_errors(template, context, message):
     with pytest.raises(PolyaxonSchemaError, match=message):
         render_name_template(template, context)
+
+
+@pytest.mark.parametrize(
+    "template,context,base,expected",
+    [
+        ("{{ lr }}-{{ batch }}", {"lr": 0.01, "batch": 32}, "train", "train-0_01-32"),
+        (
+            "{{ opt }} / batch {{ batch }}",
+            {"opt": "adam", "batch": 32},
+            "t",
+            "t-adam_batch_32",
+        ),
+        ("-experiment-a-", {}, "train", "train-experiment-a"),
+        ("a1b2c3d4", {}, "train", "train-a1b2c3d4"),
+        (
+            "{{ globals.uuid[:8] }}",
+            {"globals": {"uuid": "a1b2c3d4e5f6"}},
+            "t",
+            "t-a1b2c3d4",
+        ),
+        # No base
+        ("{{ lr }}", {"lr": 0.1}, None, "0_1"),
+        ("{{ lr }}", {"lr": 0.1}, "", "0_1"),
+        # Param values are not rendered again
+        ("{{ value }}", {"value": "{{ secret }}", "secret": "leak"}, "t", "t-secret"),
+        ("x", {}, "a" * 126, "a" * 126 + "-x"),
+        # Longer names cut the base, keep the suffix and join with `--`
+        ("x", {}, "a" * 127, "a" * 125 + "--x"),
+        ("x" * 10, {}, "a" * 120 + "-" + "b" * 10, "a" * 116 + "--" + "x" * 10),
+        ("x" * 130, {}, "train", "x" * 126 + "--"),
+    ],
+)
+def test_render_name_suffix(template, context, base, expected):
+    assert render_name_suffix(template, context, base) == expected
+
+
+@pytest.mark.parametrize(
+    "template,context,message",
+    [
+        ("{{ lr }}", {}, "`matrix.nameSuffix` uses unavailable variables: lr"),
+        ("{{ lr | default('x') }}", {}, "unavailable variables: lr"),
+        ("{{ lr", {"lr": 1}, "Could not render `matrix.nameSuffix`"),
+        ("{{ value }}", {"value": ""}, "`matrix.nameSuffix` .* empty name suffix"),
+        ("{{ value }}", {"value": " / ..."}, "empty name suffix"),
+        ("...", {}, "empty name suffix"),
+        (" ", {}, "empty name suffix"),
+    ],
+)
+def test_render_name_suffix_errors(template, context, message):
+    with pytest.raises(PolyaxonSchemaError, match=message):
+        render_name_suffix(template, context, "train")

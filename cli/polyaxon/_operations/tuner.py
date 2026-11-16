@@ -17,8 +17,11 @@ def get_tuner(
     iteration: int,
     bracket_iteration: Optional[int] = None,
 ) -> V1Operation:
+    matrix = matrix.to_light_dict()
+    # Trials are named by the scheduler, the tuner does not need the suffix
+    matrix.pop("nameSuffix", None)
     params = {
-        "matrix": V1Param(value=matrix.to_light_dict()),
+        "matrix": V1Param(value=matrix),
         "iteration": V1Param(value=iteration),
     }
     if bracket_iteration is not None:

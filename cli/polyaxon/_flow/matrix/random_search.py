@@ -28,6 +28,7 @@ class V1RandomSearch(BaseSearchConfig):
         concurrency: int, optional
         num_runs: int, optional
         seed: int, optional
+        name_suffix: str, optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
@@ -39,6 +40,7 @@ class V1RandomSearch(BaseSearchConfig):
     >>>   params:
     >>>   numRuns:
     >>>   seed:
+    >>>   nameSuffix:
     >>>   earlyStopping:
     ```
 
@@ -132,6 +134,20 @@ class V1RandomSearch(BaseSearchConfig):
     >>>   kind: random
     >>>   seed: 523
     ```
+
+    ### nameSuffix
+
+    An optional suffix for the names of the runs created by the matrix.
+    By default each run gets a short id from its uuid, e.g. `train-a1b2c3d4`.
+
+    ```yaml
+    >>> matrix:
+    >>>   kind: random
+    >>>   nameSuffix: "{{ lr }}-{{ batch_size }}"
+    ```
+
+    For more details, please check the
+    [run names section](/docs/references/polyaxonfile/orchestration/matrix/overview/#run-names).
 
     ### earlyStopping
 

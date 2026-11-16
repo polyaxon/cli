@@ -17,6 +17,7 @@ class V1Mapping(BaseSearchConfig):
         kind: str, should be equal `mapping`
         values: List[Dict]
         concurrency: int, optional
+        name_suffix: str, optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
@@ -26,6 +27,7 @@ class V1Mapping(BaseSearchConfig):
     >>>   kind: mapping
     >>>   values:
     >>>   concurrency:
+    >>>   nameSuffix:
     >>>   earlyStopping:
     ```
 
@@ -85,6 +87,20 @@ class V1Mapping(BaseSearchConfig):
 
     For more details about concurrency management,
     please check the [concurrency section](/docs/references/polyaxonfile/helpers/concurrency/).
+
+    ### nameSuffix
+
+    An optional suffix for the names of the runs created by the matrix.
+    By default each run gets a short id from its uuid, e.g. `train-a1b2c3d4`.
+
+    ```yaml
+    >>> matrix:
+    >>>   kind: mapping
+    >>>   nameSuffix: "{{ lr }}-{{ batch_size }}"
+    ```
+
+    For more details, please check the
+    [run names section](/docs/references/polyaxonfile/orchestration/matrix/overview/#run-names).
 
     ### earlyStopping
 

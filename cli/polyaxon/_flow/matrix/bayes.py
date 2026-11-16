@@ -114,6 +114,7 @@ class V1Bayes(BaseSearchConfig):
         seed: int, optional
         concurrency: int, optional
         tuner: [V1Tuner](/docs/references/polyaxonfile/orchestration/matrix/tuner/), optional
+        name_suffix: str, optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
 
@@ -130,6 +131,7 @@ class V1Bayes(BaseSearchConfig):
     >>>   seed:
     >>>   concurrency:
     >>>   tuner:
+    >>>   nameSuffix:
     >>>   earlyStopping:
     ```
 
@@ -311,6 +313,20 @@ class V1Bayes(BaseSearchConfig):
 
     For more details about concurrency management,
     please check the [concurrency section](/docs/references/polyaxonfile/helpers/concurrency/).
+
+    ### nameSuffix
+
+    An optional suffix for the names of the runs created by the matrix.
+    By default each run gets a short id from its uuid, e.g. `train-a1b2c3d4`.
+
+    ```yaml
+    >>> matrix:
+    >>>   kind: bayes
+    >>>   nameSuffix: "{{ lr }}-{{ batch_size }}"
+    ```
+
+    For more details, please check the
+    [run names section](/docs/references/polyaxonfile/orchestration/matrix/overview/#run-names).
 
     ### earlyStopping
 

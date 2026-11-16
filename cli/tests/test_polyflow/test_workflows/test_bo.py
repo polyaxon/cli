@@ -104,3 +104,14 @@ class TestWorkflowV1Bayes(BaseTestCase):
 
         assert operation.hub_ref == "bayes-tuner"
         assert_equal_dict(operation.params["matrix"].value, matrix.to_light_dict())
+
+        # The tuner does not receive the name suffix
+        expected = matrix.to_light_dict()
+        matrix.name_suffix = "{{ lr }}"
+        assert matrix.to_light_dict()["nameSuffix"] == "{{ lr }}"
+        operation = get_bo_tuner(
+            matrix=matrix,
+            join=V1Join(query="metrics.loss:<1"),
+            iteration=1,
+        )
+        assert_equal_dict(operation.params["matrix"].value, expected)

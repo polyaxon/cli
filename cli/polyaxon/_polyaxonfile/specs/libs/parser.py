@@ -110,9 +110,15 @@ class PolyaxonfileParser:
         for section in Sections.PARSING_SECTIONS:
             config_section = cls._get_section(config, section)
             if config_section is not None:
+                # Rendered per trial, once the matrix values are known
+                name_suffix = None
+                if section == Sections.MATRIX and isinstance(config_section, dict):
+                    name_suffix = config_section.pop("nameSuffix", None)
                 parsed_data[section] = cls.parse_expression(
                     config_section, parsed_params
                 )
+                if name_suffix is not None:
+                    parsed_data[section]["nameSuffix"] = name_suffix
 
         parsed_data = cls._parse_conditions(parsed_data)
 

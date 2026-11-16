@@ -46,6 +46,7 @@ class V1GridSearch(BaseSearchConfig):
         params: List[Dict[str, [params](/docs/references/polyaxonfile/orchestration/matrix/params/#discrete-values)]]  # noqa
         concurrency: int, optional
         num_runs: int, optional
+        name_suffix: str, optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
@@ -56,6 +57,7 @@ class V1GridSearch(BaseSearchConfig):
     >>>   concurrency:
     >>>   params:
     >>>   numRuns:
+    >>>   nameSuffix:
     >>>   earlyStopping:
     ```
 
@@ -138,6 +140,20 @@ class V1GridSearch(BaseSearchConfig):
     >>>   kind: grid
     >>>   numRuns: 5
     ```
+
+    ### nameSuffix
+
+    An optional suffix for the names of the runs created by the matrix.
+    By default each run gets a short id from its uuid, e.g. `train-a1b2c3d4`.
+
+    ```yaml
+    >>> matrix:
+    >>>   kind: grid
+    >>>   nameSuffix: "{{ lr }}-{{ batch_size }}"
+    ```
+
+    For more details, please check the
+    [run names section](/docs/references/polyaxonfile/orchestration/matrix/overview/#run-names).
 
     ### earlyStopping
 

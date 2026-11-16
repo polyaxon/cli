@@ -29,6 +29,7 @@ class V1Iterative(BaseSearchConfig):
         concurrency: int, optional
         seed: int, optional
         tuner: [V1Tuner](/docs/references/polyaxonfile/orchestration/matrix/tuner/), optional
+        name_suffix: str, optional
         early_stopping: List[[EarlyStopping](/docs/references/polyaxonfile/helpers/early-stopping)], optional
 
     ## YAML usage
@@ -41,6 +42,7 @@ class V1Iterative(BaseSearchConfig):
     >>>   maxIterations:
     >>>   seed:
     >>>   tuner:
+    >>>   nameSuffix:
     >>>   earlyStopping:
     ```
 
@@ -140,6 +142,20 @@ class V1Iterative(BaseSearchConfig):
     >>>   kind: iterative
     >>>   seed: 523
     ```
+
+    ### nameSuffix
+
+    An optional suffix for the names of the runs created by the matrix.
+    By default each run gets a short id from its uuid, e.g. `train-a1b2c3d4`.
+
+    ```yaml
+    >>> matrix:
+    >>>   kind: iterative
+    >>>   nameSuffix: "{{ lr }}-{{ batch_size }}"
+    ```
+
+    For more details, please check the
+    [run names section](/docs/references/polyaxonfile/orchestration/matrix/overview/#run-names).
 
     ### earlyStopping
 
