@@ -14,6 +14,7 @@ class V1SectionSpec(BaseAllowSchemaModel):
     smoothing: Optional[int] = None
     ignore_outliers: Optional[bool] = None
     sample_size: Optional[int] = None
+    trace_name: Optional[str] = None
     widgets: Optional[List[Dict[str, Any]]] = None
     page_index: Optional[int] = None
     page_size: Optional[int] = None

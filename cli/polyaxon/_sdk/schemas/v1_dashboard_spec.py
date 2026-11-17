@@ -9,4 +9,5 @@ class V1DashboardSpec(BaseAllowSchemaModel):
     smoothing: Optional[int] = None
     ignore_outliers: Optional[bool] = None
     sample_size: Optional[int] = None
+    trace_name: Optional[str] = None
     sections: Optional[List[V1SectionSpec]] = None
