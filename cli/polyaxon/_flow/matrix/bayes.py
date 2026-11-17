@@ -366,7 +366,7 @@ class V1Bayes(BaseSearchConfig):
     >>>   kind: bayes
     >>>   concurrency: 5
     >>>   maxIterations: 15
-    >>>   numInitialTrials: 30
+    >>>   numInitialRuns: 30
     >>>   metric:
     >>>     name: loss
     >>>     optimization: minimize
@@ -386,8 +386,8 @@ class V1Bayes(BaseSearchConfig):
     >>>       kind: choice
     >>>       value: [0.25, 0.3]
     >>>     activation:
-    >>>       kind: pchoice
-    >>>       value: [[relu, 0.1], [sigmoid, 0.8]]
+    >>>       kind: choice
+    >>>       value: [relu, sigmoid]
     >>> component:
     >>>   inputs:
     >>>     - name: batch_size
