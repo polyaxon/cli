@@ -341,7 +341,7 @@ class V1Dag(BaseRun):
         alias="earlyStopping", default=None
     )
 
-    _dag: Dict[str, "DagOpSpec"] = PrivateAttr()
+    _dag: Dict[str, dags.DagOpSpec] = PrivateAttr()
     _components_by_names: Dict[str, V1Polyaxonfile] = PrivateAttr()
     _op_component_mapping: Dict[str, str] = PrivateAttr()
     _effective_ops: Dict[str, V1Polyaxonfile] = PrivateAttr()
