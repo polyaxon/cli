@@ -398,14 +398,19 @@ class V1Bayes(BaseSearchConfig):
     >>>       type: float
     >>>     - name: dropout
     >>>       type: float
-    >>>   container:
-    >>>     image: image:latest
-    >>>     command: [python3, train.py]
-    >>>     args: [
-    >>>         "--batch-size={{ batch_size }}",
-    >>>         "--lr={{ lr }}",
-    >>>         "--dropout={{ dropout }}",
-    >>>         "--activation={{ activation }}"
+    >>>     - name: activation
+    >>>       type: str
+    >>>   run:
+    >>>     kind: job
+    >>>     container:
+    >>>       image: image:latest
+    >>>       command: [python3, train.py]
+    >>>       args: [
+    >>>           "--batch-size={{ batch_size }}",
+    >>>           "--lr={{ lr }}",
+    >>>           "--dropout={{ dropout }}",
+    >>>           "--activation={{ activation }}"
+    >>>       ]
     ```
     """
 

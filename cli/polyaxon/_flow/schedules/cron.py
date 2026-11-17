@@ -55,7 +55,7 @@ class V1CronSchedule(BaseSchemaModel):
     this field is not required and is set by default.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   kind: cron
     ```
 
@@ -65,7 +65,7 @@ class V1CronSchedule(BaseSchemaModel):
     all following executions will be relative to this time.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   startAt: "2019-06-24T21:20:07+00:00"
     ```
 
@@ -74,7 +74,7 @@ class V1CronSchedule(BaseSchemaModel):
     Optional field to set the end time for stopping this schedule.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   endAt: "2019-06-24T21:20:07+00:00"
     ```
 
@@ -84,7 +84,7 @@ class V1CronSchedule(BaseSchemaModel):
     If used with end date, the schedule will terminate if one of the conditions is met.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   maxRuns: 10
     ```
 
@@ -93,7 +93,7 @@ class V1CronSchedule(BaseSchemaModel):
     The cron expression to generate the component executions.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   cron: "0 0 * * *"
     ```
 
@@ -103,7 +103,7 @@ class V1CronSchedule(BaseSchemaModel):
     previous execution was done before scheduling a new one, by default this is set to `false`.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   dependsOnPast: true
     ```
     """

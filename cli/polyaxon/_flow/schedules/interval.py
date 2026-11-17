@@ -55,7 +55,7 @@ class V1IntervalSchedule(BaseSchemaModel):
     this field is not required and is set by default.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   kind: interval
     ```
 
@@ -65,7 +65,7 @@ class V1IntervalSchedule(BaseSchemaModel):
     all following executions will be relative to this time.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   startAt: "2019-06-24T21:20:07+00:00"
     ```
 
@@ -74,7 +74,7 @@ class V1IntervalSchedule(BaseSchemaModel):
     Optional field to set the end time for stopping this schedule.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   endAt: "2019-06-24T21:20:07+00:00"
     ```
 
@@ -84,7 +84,7 @@ class V1IntervalSchedule(BaseSchemaModel):
     If used with end date, the schedule will terminate if one of the conditions is met.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   maxRuns: 10
     ```
 
@@ -97,7 +97,7 @@ class V1IntervalSchedule(BaseSchemaModel):
     and in the yaml specification you can only pass seconds.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   frequency: 120
     ```
 
@@ -107,7 +107,7 @@ class V1IntervalSchedule(BaseSchemaModel):
     previous execution was done before scheduling a new one, by default this is set to `false`.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   dependsOnPast: true
     ```
     """

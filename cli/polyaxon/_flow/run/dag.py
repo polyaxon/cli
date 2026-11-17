@@ -233,15 +233,15 @@ class V1Dag(BaseRun):
     >>>   kind: dag
     >>>   environment:
     >>>     labels:
-    >>>        key1: "label1"
-    >>>        key2: "label2"
-    >>>      annotations:
-    >>>        key1: "value1"
-    >>>        key2: "value2"
-    >>>      nodeSelector:
-    >>>        node_label: node_value
-    >>>      ...
-    >>>  ...
+    >>>       key1: "label1"
+    >>>       key2: "label2"
+    >>>     annotations:
+    >>>       key1: "value1"
+    >>>       key2: "value2"
+    >>>     nodeSelector:
+    >>>       node_label: node_value
+    >>>     ...
+    >>>   ...
     ```
 
     ### connections
@@ -292,12 +292,13 @@ class V1Dag(BaseRun):
     >>>         claimName: pvc1
     >>>   ...
     ```
+
     ### concurrency
 
     An optional value to set the number of concurrent operations.
 
     ```yaml
-    >>> matrix:
+    >>> run:
     >>>   kind: dag
     >>>   concurrency: 2
     ```
@@ -313,7 +314,7 @@ class V1Dag(BaseRun):
     a signal will be sent to terminate all running and pending operations.
 
     ```yaml
-    >>> matrix:
+    >>> run:
     >>>   kind: dag
     >>>   earlyStopping: ...
     ```

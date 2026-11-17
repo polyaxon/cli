@@ -207,16 +207,18 @@ class V1Iterative(BaseSearchConfig):
     >>>     dropout:
     >>>       kind: choice
     >>>       value: [0.2, 0.5]
-    >>>    activation:
+    >>>     activation:
     >>>       kind: pchoice
     >>>       value: [[elu, 0.1], [relu, 0.2], [sigmoid, 0.7]]
-    >>>    early_stopping:
-    >>>      - metric: accuracy
-    >>>        value: 0.9
-    >>>        optimization: maximize
-    >>>      - metric: loss
-    >>>        value: 0.05
-    >>>        optimization: minimize
+    >>>   earlyStopping:
+    >>>     - kind: metric_early_stopping
+    >>>       metric: accuracy
+    >>>       value: 0.9
+    >>>       optimization: maximize
+    >>>     - kind: metric_early_stopping
+    >>>       metric: loss
+    >>>       value: 0.05
+    >>>       optimization: minimize
     >>> component:
     >>>   inputs:
     >>>     - name: batch_size
@@ -229,15 +231,17 @@ class V1Iterative(BaseSearchConfig):
     >>>       type: float
     >>>     - name: activation
     >>>       type: str
-    >>>   container:
-    >>>     image: image:latest
-    >>>     command: [python3, train.py]
-    >>>     args: [
-    >>>         "--batch-size={{ batch_size }}",
-    >>>         "--lr={{ lr }}",
-    >>>         "--dropout={{ dropout }}",
-    >>>         "--activation={{ activation }}"
-    >>>     ]
+    >>>   run:
+    >>>     kind: job
+    >>>     container:
+    >>>       image: image:latest
+    >>>       command: [python3, train.py]
+    >>>       args: [
+    >>>           "--batch-size={{ batch_size }}",
+    >>>           "--lr={{ lr }}",
+    >>>           "--dropout={{ dropout }}",
+    >>>           "--activation={{ activation }}"
+    >>>       ]
     ```
     """
 

@@ -42,7 +42,7 @@ class V1DateTimeSchedule(BaseSchemaModel):
     this field is not required and is set by default.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   kind: datetime
     ```
 
@@ -52,7 +52,7 @@ class V1DateTimeSchedule(BaseSchemaModel):
     all following executions will be relative to this time.
 
     ```yaml
-    >>> run:
+    >>> schedule:
     >>>   startAt: "2019-06-24T21:20:07+00:00"
     ```
     """
