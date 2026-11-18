@@ -13,7 +13,7 @@ from polyaxon._polyaxonfile.params import parse_hparams, parse_params
 from polyaxon._polyaxonfile.references import (
     collect_references,
 )
-from polyaxon._polyaxonfile.shortcuts import get_sandbox_shortcuts, validate_shortcuts
+from polyaxon._polyaxonfile.shortcuts import validate_shortcuts
 from polyaxon._polyaxonfile.specs import get_specification
 from polyaxon.exceptions import PolyaxonfileError
 
@@ -58,10 +58,7 @@ def check_polyaxonfile(
         shortcuts or {}
     ):
         polyaxonfile = check_default_path(path=".")
-    # A sandbox without a source is a service; sourced kinds are never converted.
-    if sandbox and not any([polyaxonfile, python_module, url, hub]):
-        shortcuts = get_sandbox_shortcuts(shortcuts)
-    if not any([polyaxonfile, python_module, url, hub, shortcuts]):
+    if not any([polyaxonfile, python_module, url, hub, shortcuts, sandbox]):
         message = (
             "Something went wrong, `check_polyaxonfile` was called without a polyaxonfile, "
             "a hub component reference, a url or a python module."
@@ -132,12 +129,15 @@ def check_polyaxonfile(
             plx_file = ConfigSpec.get_from(url, "url").read()
         elif hub:
             plx_file = ConfigSpec.get_from(hub, "hub").read()
-        else:
+        elif polyaxonfile:
             source = polyaxonfile.pop(0)
             # Inline shortcuts have no path to resolve references from.
             if isinstance(source, str):
                 path_context = source
             plx_file = ConfigSpec.read_from(source)
+        else:
+            # A sandbox without a source starts from an empty operation.
+            plx_file = {}
 
         if is_cli and "version" in plx_file:
             Printer.warning(

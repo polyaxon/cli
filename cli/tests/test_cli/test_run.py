@@ -351,7 +351,6 @@ class TestCliRun(BaseCommandTestCase):
         # Authored intent only: the converter adds the sandbox port and bootstrap.
         assert submitted == {
             "container": {"image": "python:3.12"},
-            "service": {},
             "plugins": {"sandbox": True},
         }
         compiled = OperationSpecification.compile_operation(
@@ -1209,7 +1208,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         with self.runner.isolated_filesystem():
             op_spec = self.get_op_spec("--sandbox")
 
-        assert op_spec.service.to_dict() == {}
+        assert op_spec.service is None
         assert op_spec.container is None
         compiled = _compile(op_spec)
         assert compiled.run.kind == "service"
@@ -1222,18 +1221,19 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
             image = Path(directory) / "image.yaml"
             image.write_text("container: {image: base:v1}\n")
             for args, service in (
-                (["-f", str(plugins)], {}),
-                (["-f", str(image)], {}),
+                (["-f", str(plugins)], None),
+                (["-f", str(image)], None),
                 # Authored and inline ports are kept.
                 (["-f", str(image), "--port", "8080"], {"ports": [8080]}),
             ):
                 with self.subTest(args=args):
                     op_spec = self.get_op_spec(*args, "--sandbox")
 
-                    assert op_spec.service.to_dict() == service
+                    source = json.loads(op_spec.to_source_json())
+                    assert source.get("service") == service
                     compiled = _compile(op_spec)
                     assert compiled.run.kind == "service"
-                    assert compiled.run.ports == service.get("ports")
+                    assert compiled.run.ports == (service or {}).get("ports")
                     assert compiled.plugins.sandbox is True
                     if args[1] == str(plugins):
                         assert compiled.plugins.ssh is True

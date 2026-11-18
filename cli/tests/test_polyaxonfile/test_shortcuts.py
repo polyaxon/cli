@@ -1560,8 +1560,9 @@ class TestShortcuts(BaseTestCase):
         assert compiled.plugins.sandbox is True
         assert _compile({**source, "service": {"ports": [8080]}}).run.ports == [8080]
 
-        # Whichever shortcut creates the runtime uses the same-layer plugins.
+        # Same-layer plugins select a service, alone or with any shortcut.
         for shortcuts, plugins in (
+            ({}, sandbox),
             ({"container": container}, {"ssh": True}),
             ({"container": container}, {"sandbox": "{{ sandbox }}"}),
             ({"cmd": "serve"}, sandbox),
@@ -1580,8 +1581,10 @@ class TestShortcuts(BaseTestCase):
                 assert compiled.run.kind == "job"
 
         # An explicit or inherited kind never changes.
+        dag = {"operations": [{"name": "first", "container": container}]}
         for failing in (
             {"run": {"kind": "job"}, **source},
+            {"dag": dag, "plugins": sandbox},
             {"plugins": sandbox, "component": {"container": container}},
         ):
             with self.subTest(source=failing):
@@ -2090,17 +2093,20 @@ class TestShortcuts(BaseTestCase):
     def test_sandbox_without_a_runtime_defaults_to_a_service(self):
         container = {"container": {"image": "python:3.12"}}
         with_ports = {**container, "service": {"ports": [8080]}}
+        # Only the plugin is added: authored sections are kept, none are created.
         for content, shortcuts, expected in (
-            (None, container, {}),
+            (None, None, None),
+            (None, container, None),
             (None, with_ports, {"ports": [8080]}),
-            (container, None, {}),
+            (container, None, None),
             (with_ports, None, {"ports": [8080]}),
         ):
             with self.subTest(content=content, shortcuts=shortcuts):
                 config = get_shortcut_specification(
                     deepcopy(content), deepcopy(shortcuts), sandbox=True
                 )
-                assert orjson_loads(config.to_source_json())["service"] == expected
+                source = orjson_loads(config.to_source_json())
+                assert source.get("service") == expected
                 compiled = OperationSpecification.compile_operation(config)
                 assert compiled.run.kind == "service"
                 assert compiled.plugins.sandbox is True

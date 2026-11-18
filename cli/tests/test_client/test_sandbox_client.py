@@ -300,10 +300,7 @@ class TestSandboxClient(BaseTestCase):
         assert body.tags == ["debug"]
 
         # Same authored source as `polyaxon run --sandbox`.
-        assert orjson_loads(body.content) == {
-            "service": {},
-            "plugins": {"sandbox": True},
-        }
+        assert orjson_loads(body.content) == {"plugins": {"sandbox": True}}
         compiled = OperationSpecification.compile_operation(
             self.get_created_operation(sdk_client)
         )
@@ -437,11 +434,8 @@ class TestSandboxClient(BaseTestCase):
     def test_create_content_without_a_runtime_is_a_service(self):
         client, create_run = self.make_create_client()
         for content, expected in (
-            ({}, {"service": {}, "plugins": {"sandbox": True}}),
-            (
-                {"plugins": {"ssh": True}},
-                {"service": {}, "plugins": {"ssh": True, "sandbox": True}},
-            ),
+            ({}, {"plugins": {"sandbox": True}}),
+            ({"plugins": {"ssh": True}}, {"plugins": {"ssh": True, "sandbox": True}}),
             # Authored and overlaid ports are kept.
             (
                 {"container": {"image": "base:v1"}, "service": {"ports": [8080]}},

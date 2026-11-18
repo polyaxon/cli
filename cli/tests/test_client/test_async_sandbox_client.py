@@ -340,10 +340,7 @@ class TestAsyncSandboxClient(BaseTestCase, IsolatedAsyncioTestCase):
         assert body.tags == ["debug"]
 
         # Same authored source as `polyaxon run --sandbox`.
-        assert orjson_loads(body.content) == {
-            "service": {},
-            "plugins": {"sandbox": True},
-        }
+        assert orjson_loads(body.content) == {"plugins": {"sandbox": True}}
         compiled = OperationSpecification.compile_operation(
             self.get_created_operation(sdk_client)
         )

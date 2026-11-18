@@ -483,11 +483,10 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     `runPatch.container.resources` would.
 
     If no runtime exists yet when a layer's shortcuts apply, `dag` selects a DAG, else
-    `service` selects a service, else the other shortcuts create a service when the
-    same layer enables `plugins.sandbox` or `plugins.ssh`, and a job otherwise. A
-    runtime inherited from an inner layer never changes kind: `service` on an inherited
-    job is an error, and so is a shortcut the runtime does not support, such as
-    `container` on a DAG.
+    `service` or an enabled `plugins.sandbox`/`plugins.ssh` on the same layer selects a
+    service, else the other shortcuts create a job. A runtime inherited from an inner
+    layer never changes kind: `service` on an inherited job is an error, and so is a
+    shortcut the runtime does not support, such as `container` on a DAG.
 
     ## Inline equivalents
 
@@ -744,16 +743,15 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     def apply_shortcuts(self, run, strategy: Optional[PatchStrategy] = None):
         """Apply root shortcuts to the runtime in field-table order.
 
-        Without a runtime, `dag` or `service` creates that runtime; otherwise the
-        first container shortcut creates a service if this layer enables the
-        sandbox or ssh plugin, else a job. Other runtimes reject `dag` and `service`.
+        Without a runtime, `dag` or `service` creates that runtime, else a service if
+        this layer enables the sandbox or ssh plugin; otherwise the first container
+        shortcut creates a job. Other runtimes reject `dag` and `service`.
         """
         strategy = strategy or PatchStrategy.POST_MERGE
         plugins = self.plugins if isinstance(self.plugins, V1Plugins) else None
         needs_service = plugins is not None and (
             is_plugin_enabled(plugins.sandbox) or is_plugin_enabled(plugins.ssh)
         )
-        default_kind = V1RunKind.SERVICE if needs_service else V1RunKind.JOB
         # First: these are the only shortcuts that can choose the runtime.
         for field, kind in (("dag", V1RunKind.DAG), ("service", V1RunKind.SERVICE)):
             section = getattr(self, field)
@@ -768,10 +766,10 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                 )
             values = {k: v for k, v in section.to_dict().items() if v is not None}
             run = _patch_run(run, values, strategy, kind=kind)
+        if run is None and needs_service:
+            run = _patch_run(run, {}, strategy, kind=V1RunKind.SERVICE)
         if "container" in self.model_fields_set:
-            run = _patch_run(
-                run, {"container": self.container}, strategy, kind=default_kind
-            )
+            run = _patch_run(run, {"container": self.container}, strategy)
         if self.cmd:
             lines = [self.cmd] if isinstance(self.cmd, str) else self.cmd
             pair = {
@@ -794,9 +792,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                     container.command, container.args = command, args
             else:
                 # Write the full pair so it never mixes with a base argv.
-                run = _patch_run(
-                    run, {"container": pair}, PatchStrategy.REPLACE, kind=default_kind
-                )
+                run = _patch_run(run, {"container": pair}, PatchStrategy.REPLACE)
         if self.env is not None:
             entries = [
                 {"name": name, "value": value} for name, value in self.env.items()
@@ -805,9 +801,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                 PatchStrategy.POST_MERGE,
                 PatchStrategy.PRE_MERGE,
             ):
-                run = _patch_run(
-                    run, {"container": {"env": entries}}, strategy, kind=default_kind
-                )
+                run = _patch_run(run, {"container": {"env": entries}}, strategy)
             else:
                 # Native list merging drops incoming entries equal to an existing
                 # one, losing their position, so each merge starts from the original.
@@ -831,16 +825,11 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
                 )
         if self.resources is not None:
             resources = _lower_resources(self.resources)
-            run = _patch_run(
-                run,
-                {"container": {"resources": resources}},
-                strategy,
-                kind=default_kind,
-            )
+            run = _patch_run(run, {"container": {"resources": resources}}, strategy)
         for field in ("environment", "init", "connections", "sidecars", "volumes"):
             value = getattr(self, field)
             if value is not None:
-                run = _patch_run(run, {field: value}, strategy, kind=default_kind)
+                run = _patch_run(run, {field: value}, strategy)
         return run
 
     def get_run_kind(self):

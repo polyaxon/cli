@@ -64,11 +64,6 @@ def validate_shortcuts(shortcuts: Dict):
     read_polyaxonfile(shortcuts, is_preset=True)
 
 
-def get_sandbox_shortcuts(shortcuts: Optional[Dict]) -> Dict:
-    """A sandbox without a source is a service."""
-    return {"service": {}, **(shortcuts or {})}
-
-
 def get_shortcut_specification(
     content: Optional[Union[Mapping, V1Polyaxonfile]],
     shortcuts: Optional[Dict],
@@ -80,7 +75,7 @@ def get_shortcut_specification(
     without it. No reads, fetches or reference collection.
     """
     if content is None:
-        content = get_sandbox_shortcuts(shortcuts) if sandbox else shortcuts
+        content = shortcuts or {}
         shortcuts = None
     return get_op_specification(
         config=read_polyaxonfile(content),
