@@ -6,6 +6,7 @@ import click
 
 from clipped.compact.pydantic import ValidationError
 from clipped.formatting import Printer
+from clipped.utils.json import orjson_loads
 from clipped.utils.lists import to_list
 from clipped.utils.paths import check_or_create_path, copy_file
 from polyaxon._config.spec import ConfigSpec
@@ -84,7 +85,10 @@ def git(url, repo_path, revision, connection, flags):
     from polyaxon._init.git import create_code_repo
 
     if flags:
-        flags = to_list(flags, check_str=True)
+        if flags.startswith("["):
+            flags = orjson_loads(flags)
+        else:
+            flags = to_list(flags, check_str=True)
 
     create_code_repo(
         repo_path=repo_path,
