@@ -131,6 +131,10 @@ class PolyaxonfileParser:
         config_section = cls._get_section(config, Sections.HOOKS)
         if config_section:
             parsed_data[Sections.HOOKS] = config_section
+        # Node names as written; templated names must not render here
+        config_section = cls._get_section(config, Sections.DEPENDENCIES)
+        if config_section:
+            parsed_data[Sections.DEPENDENCIES] = config_section
 
         return parsed_data
 

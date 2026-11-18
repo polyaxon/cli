@@ -118,7 +118,6 @@ class Sections:
         NAMESPACE,
         TERMINATION,
         SCHEDULE,
-        DEPENDENCIES,
         TRIGGER,
         CONDITIONS,
         MOUNT,

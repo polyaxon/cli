@@ -12,7 +12,6 @@ from clipped.compact.pydantic import (
     validation_before,
 )
 from clipped.types.ref_or_obj import RefField
-from clipped.utils.strings import is_template_ref
 from polyaxon import types
 from polyaxon._contexts import sections as ctx_sections
 import polyaxon._flow.dags as dags
@@ -132,7 +131,7 @@ class V1Dag(BaseRun):
     passed from one operation to another, the operations will be running in parallel following the
     concurrency and other queue priority definitions.
 
-    Operation names identify nodes in the DAG, so they cannot use templates.
+    Operation names identify nodes in the DAG and must be unique.
 
     ```yaml
     >>> run:
@@ -154,6 +153,47 @@ class V1Dag(BaseRun):
     >>>           value: outputs.outputName
     >>>
     ```
+
+    Operation names can use params. Polyaxon renders the name once, when the operation's run
+    is created, from the same values as
+    [run names](/docs/references/cli/run-with-different-names/#names-from-params),
+    including the values the operation gets from the DAG's inputs.
+    The node keeps the name as written, so `dependencies`, `ref: ops.<name>` and events
+    reference it with the name as written:
+
+    ```yaml
+    >>> inputs:
+    >>>   - {name: model, type: str, value: resnet, isOptional: true}
+    >>> run:
+    >>>   kind: dag
+    >>>   operations:
+    >>>     - name: "train-{{ model }}"
+    >>>       params:
+    >>>         model: {ref: dag, value: inputs.model}
+    >>>       component:
+    >>>         inputs: [{name: model, type: str}]
+    >>>         outputs: [{name: checkpoint, type: str}]
+    >>>         run:
+    >>>           kind: job
+    >>>           container:
+    >>>             image: python:3.12
+    >>>             command: [python, train.py, --model, "{{ model }}"]
+    >>>     - name: evaluate
+    >>>       dependencies: ["train-{{ model }}"]
+    >>>       params:
+    >>>         checkpoint: {ref: "ops.train-{{ model }}", value: outputs.checkpoint}
+    >>>       component:
+    >>>         inputs: [{name: checkpoint, type: str}]
+    >>>         run:
+    >>>           kind: job
+    >>>           container:
+    >>>             image: python:3.12
+    >>>             command: [python, evaluate.py, "{{ checkpoint }}"]
+    ```
+
+    The runs are named `train-resnet` and `evaluate`.
+    Names must be unique as written, but two names can render to the same run name.
+    A node referenced with `ref:` cannot have a `.` in its name.
 
     > **Note**: For more information about managing the execution graph
     > and creating dependencies between operations, please check the
@@ -437,12 +477,6 @@ class V1Dag(BaseRun):
 
     def process_dag(self):
         for op in self.operations or []:
-            # Op names are node identities; runs are mapped back by name.
-            if is_template_ref(op.name):
-                raise PolyaxonSchemaError(
-                    "Pipeline op name `{}` uses a template; "
-                    "DAG op names must be literal.".format(op.name)
-                )
             self._process_op(op)
 
     def add_op(self, op):

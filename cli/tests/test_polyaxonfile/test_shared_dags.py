@@ -555,6 +555,25 @@ class TestSharedDags(BaseTestCase):
                 assert compiled.contexts[0].name == "score"
                 assert authored.to_dict() == before
 
+    def test_node_dependencies_keep_templated_names_after_contexts(self):
+        dependencies = ["train-{{ model }}", "eval-{{ lr * 2 }}"]
+        compiled = OperationSpecification.compile_operation(
+            read_polyaxonfile(
+                {
+                    "name": "node",
+                    "dependencies": dependencies,
+                    "component": {
+                        "run": {"kind": "job", "container": {"image": "busybox:1.36"}}
+                    },
+                }
+            ),
+            is_dag_node=True,
+        )
+
+        compiled = CompiledOperationSpecification.apply_operation_contexts(compiled)
+
+        assert compiled.dependencies == dependencies
+
     def test_nested_templates_inherit_matrix_and_copy_each_invocation(self):
         source = {
             "run": {

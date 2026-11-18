@@ -11,7 +11,7 @@ from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonSchemaError, PolyaxonValidationError
-from polyaxon.schemas import V1Statuses
+from polyaxon.schemas import V1EventKind, V1Statuses
 
 
 @pytest.mark.workflow_mark
@@ -57,27 +57,53 @@ class TestWorkflowV1Dags(BaseTestCase):
         with self.assertRaisesRegex(PolyaxonValidationError, "undeclared param"):
             strict_config.process_components()
 
-    def test_dag_rejects_templated_op_names(self):
+    def test_dag_templated_op_names_are_node_identities(self):
+        run = {"kind": V1RunKind.JOB, "container": {"image": "test"}}
         config = V1Dag.from_dict(
             {
                 "kind": V1RunKind.DAG,
                 "operations": [
                     {
-                        "name": "train-{{ lr }}",
-                        "component": {
-                            "run": {
-                                "kind": V1RunKind.JOB,
-                                "container": {"image": "test"},
+                        "name": "evaluate",
+                        "dependencies": ["train-{{ model }}"],
+                        "params": {
+                            "checkpoint": {
+                                "ref": "ops.train-{{ model }}",
+                                "value": "outputs.checkpoint",
                             }
                         },
-                    }
+                        "events": [
+                            {
+                                "kinds": [V1EventKind.RUN_STATUS_RUNNING],
+                                "ref": "ops.train-{{ model }}",
+                            }
+                        ],
+                        "component": {
+                            "inputs": [{"name": "checkpoint", "type": "str"}],
+                            "run": run,
+                        },
+                    },
+                    {
+                        "name": "train-{{ model }}",
+                        "params": {"model": {"value": "resnet"}},
+                        "component": {
+                            "inputs": [{"name": "model", "type": "str"}],
+                            "outputs": [{"name": "checkpoint", "type": "str"}],
+                            "run": run,
+                        },
+                    },
                 ],
             }
         )
-        with self.assertRaisesRegex(
-            PolyaxonSchemaError, "DAG op names must be literal"
-        ):
-            config.process_dag()
+        config.resolve_operations()
+        config.process_dag()
+        config.validate_dag()
+        config.process_components()
+
+        assert set(config.dag) == {"train-{{ model }}", "evaluate"}
+        assert config.dag["evaluate"].upstream == {"train-{{ model }}"}
+        assert config.dag["train-{{ model }}"].downstream == {"evaluate"}
+        assert config.sort_topologically() == [["train-{{ model }}"], ["evaluate"]]
 
     def test_wrong_pipelines_ops(self):
         config_dict = {"operations": "foo"}
