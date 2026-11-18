@@ -7,6 +7,7 @@ from clipped.utils.bools import to_bool
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import ParamSpec, ops_params
+from polyaxon._flow.plugins import is_plugin_enabled
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon.exceptions import PolyaxonSchemaError
@@ -31,8 +32,8 @@ class V1CompiledOperation(BaseOp, RunMixin):
         plugins = cls.get_value_for_key("plugins", values)
         sandbox = cls.get_value_for_key("sandbox", plugins) if plugins else None
         ssh = cls.get_value_for_key("ssh", plugins) if plugins else None
-        sandbox_enabled = sandbox is not None and sandbox is not False
-        ssh_enabled = ssh is not None and ssh is not False
+        sandbox_enabled = is_plugin_enabled(sandbox)
+        ssh_enabled = is_plugin_enabled(ssh)
         if not sandbox_enabled and not ssh_enabled:
             return values
 

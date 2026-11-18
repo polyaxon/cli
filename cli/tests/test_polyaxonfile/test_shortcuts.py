@@ -1518,10 +1518,12 @@ class TestShortcuts(BaseTestCase):
                 return path
 
             overlay = write("service.json", {"service": {"ports": [8080]}})
+            sandbox = write("sandbox.json", {"plugins": {"sandbox": True}})
             kindless = write(
                 "kindless.json",
                 {"container": container, "service": {"rewritePath": True}},
             )
+            bare = write("bare.json", {"container": container})
             component = write(
                 "component.json", {"kind": "component", "container": container}
             )
@@ -1532,12 +1534,60 @@ class TestShortcuts(BaseTestCase):
             assert compiled.run.kind == "service"
             assert compiled.run.ports == [8080]
             assert compiled.run.rewrite_path is True
+            config = check_polyaxonfile(polyaxonfile=[bare, sandbox], is_cli=False)
+            compiled = OperationSpecification.compile_operation(config)
+            assert compiled.run.kind == "service"
+            assert compiled.plugins.sandbox is True
 
             # A component is wrapped first: its job is inherited by the overlay.
             with self.assertRaises(PolyaxonfileError) as error:
                 check_polyaxonfile(polyaxonfile=[component, overlay], is_cli=False)
             assert isinstance(error.exception.__cause__, PolyaxonValidationError)
             assert "requires a service runtime" in str(error.exception.__cause__)
+            with self.assertRaises(PolyaxonfileError) as error:
+                check_polyaxonfile(polyaxonfile=[component, sandbox], is_cli=False)
+            assert "only supported on kind: service" in str(error.exception.__cause__)
+
+    def test_service_plugins_select_a_service(self):
+        container = {"image": "python:3.12", "command": ["sleep", "infinity"]}
+        sandbox = {"sandbox": True}
+        source = {"container": container, "plugins": sandbox}
+        native = _compile(
+            {"run": {"kind": "service", "container": container}, "plugins": sandbox}
+        )
+        compiled = _compile(source)
+        assert compiled.run == native.run
+        assert compiled.plugins.sandbox is True
+        assert _compile({**source, "service": {"ports": [8080]}}).run.ports == [8080]
+
+        # Whichever shortcut creates the runtime uses the same-layer plugins.
+        for shortcuts, plugins in (
+            ({"container": container}, {"ssh": True}),
+            ({"container": container}, {"sandbox": "{{ sandbox }}"}),
+            ({"cmd": "serve"}, sandbox),
+            ({"env": {"LEVEL": "debug"}}, sandbox),
+            ({"resources": {"cpu": 1}}, sandbox),
+            ({"environment": NEW_RUNTIME["environment"]}, sandbox),
+        ):
+            with self.subTest(shortcuts=shortcuts, plugins=plugins):
+                compiled = _compile({**shortcuts, "plugins": plugins})
+                assert compiled.run.kind == "service"
+
+        # Disabled plugins, tmux and whole-field references keep a job.
+        for plugins in ({"sandbox": False}, {"tmux": True}, "{{ plugins }}"):
+            with self.subTest(plugins=plugins):
+                compiled = _compile({"container": container, "plugins": plugins})
+                assert compiled.run.kind == "job"
+
+        # An explicit or inherited kind never changes.
+        for failing in (
+            {"run": {"kind": "job"}, **source},
+            {"plugins": sandbox, "component": {"container": container}},
+        ):
+            with self.subTest(source=failing):
+                with self.assertRaises(ValidationError) as error:
+                    _compile(failing)
+                assert "only supported on kind: service" in str(error.exception)
 
     def test_dag_compiles_like_a_native_dag(self):
         container = {"image": "busybox:1.36"}

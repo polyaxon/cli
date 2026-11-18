@@ -8,6 +8,11 @@ from polyaxon._flow.notifications import V1Notification
 from polyaxon._schemas.base import BaseSchemaModel
 
 
+def is_plugin_enabled(value) -> bool:
+    """Unset and `false` disable a plugin; `true` and references enable it."""
+    return value is not None and value is not False
+
+
 class V1Plugins(BaseSchemaModel):
     """Plugins section provides a way to customize extra Polyaxon utilities.
 
