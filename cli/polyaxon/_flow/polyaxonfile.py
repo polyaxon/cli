@@ -767,7 +767,7 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             values = {k: v for k, v in section.to_dict().items() if v is not None}
             run = _patch_run(run, values, strategy, kind=kind)
         if run is None and needs_service:
-            run = _patch_run(run, {}, strategy, kind=V1RunKind.SERVICE)
+            run = validate_run_patch({}, V1RunKind.SERVICE)
         if "container" in self.model_fields_set:
             run = _patch_run(run, {"container": self.container}, strategy)
         if self.cmd:
