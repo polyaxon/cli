@@ -308,27 +308,6 @@ class TestShortcuts(BaseTestCase):
             },
         }
 
-    def test_dask_scheduler_rejects_cmd(self):
-        message = "`scheduler.cmd` is not supported"
-        roles = {"kind": "daskcluster", "scheduler": {}, "worker": {}}
-        cmd = {"cmd": "dask scheduler"}
-        for source in (
-            {"run": {"kind": "daskcluster", "scheduler": cmd}},
-            {"run": roles, "runPatch": {"scheduler": cmd}},
-            {"run": roles, "runPatch": cmd},
-        ):
-            with (
-                self.subTest(source=source),
-                self.assertRaisesRegex(PolyaxonValidationError, message),
-            ):
-                _compile(source)
-
-        compiled = _compile({"run": roles})
-        with self.assertRaisesRegex(PolyaxonValidationError, message):
-            CompiledOperationSpecification.apply_preset(
-                compiled, {"runPatch": {"scheduler": cmd}}
-            )
-
     def test_dask_named_preset_only_overrides_scheduler_env(self):
         compiled = _compile(
             {
@@ -362,6 +341,129 @@ class TestShortcuts(BaseTestCase):
                     "run": {"kind": "daskcluster", "scheduler": {"env": None}},
                 }
             )
+
+    def test_ray_presets_target_a_worker_named_head_independently(self):
+        compiled = _compile(
+            {
+                "run": {
+                    "kind": "raycluster",
+                    "head": {"cmd": "echo actual head"},
+                    "workers": {"head": {"resources": {"cpu": 4}}},
+                    "autoscalerOptions": {"resources": {"requests": {"cpu": "1"}}},
+                }
+            }
+        )
+        head = compiled.run.head.to_dict()
+        options = compiled.run.autoscaler_options.to_dict()
+        worker = compiled.run.workers["head"]
+        assert worker.container.resources == {"requests": {"cpu": 4}}
+        assert worker.container.command is None
+
+        preset = {"runPatch": {"workers": {"head": {"env": {"ROLE": "worker"}}}}}
+        result = CompiledOperationSpecification.apply_preset(compiled, preset)
+        assert result.run.head.to_dict() == head
+        assert result.run.autoscaler_options.to_dict() == options
+        assert _env(result.run.workers["head"].container) == [("ROLE", "worker", False)]
+        worker_payload = result.to_dict(exclude_none=False)["run"]["workers"]["head"]
+        assert {"cmd", "env", "resources"}.isdisjoint(worker_payload)
+
+    def test_ray_flat_shortcuts_reach_head_and_worker_named_head(self):
+        for has_head in (False, True):
+            with self.subTest(has_head=has_head):
+                worker = {
+                    "replicas": 2,
+                    "rayStartParams": {"num-cpus": "1"},
+                    "container": {"image": "ray:v1"},
+                }
+                run = {"kind": "raycluster", "workers": {"head": worker}}
+                if has_head:
+                    run["head"] = {"container": {"image": "ray-head:v1"}}
+                compiled = _compile(
+                    {
+                        "run": run,
+                        "cmd": "echo shared",
+                        "runPatch": {"env": {"MODE": "shared"}},
+                    }
+                )
+                result = compiled.run
+                worker = result.workers["head"]
+                assert worker.replicas == 2
+                assert worker.ray_start_params == {"num-cpus": "1"}
+                assert worker.container.image == "ray:v1"
+                assert worker.container.args == ["set -e\necho shared"]
+                assert _env(worker.container) == [("MODE", "shared", False)]
+                if has_head:
+                    assert result.head.container.args == ["set -e\necho shared"]
+                    assert _env(result.head.container) == [("MODE", "shared", False)]
+                else:
+                    assert result.head is None
+
+    def test_ray_preset_can_add_a_worker_beside_existing_workers(self):
+        compiled = _compile(
+            {
+                "run": {
+                    "kind": "raycluster",
+                    "workers": {
+                        "small": {"replicas": 2, "container": {"image": "ray:v1"}}
+                    },
+                }
+            }
+        )
+        before = compiled.run.workers["small"].to_dict()
+        preset = {"runPatch": {"workers": {"large": {"resources": {"gpu": 1}}}}}
+        result = CompiledOperationSpecification.apply_preset(compiled, preset)
+        assert list(result.run.workers) == ["small", "large"]
+        assert result.run.workers["small"].to_dict() == before
+        assert result.run.workers["large"].container.resources == {
+            "requests": {"nvidia.com/gpu": 1},
+            "limits": {"nvidia.com/gpu": 1},
+        }
+
+    def test_ray_worker_shortcuts_render_with_each_workers_runtime_context(self):
+        worker = {
+            "cmd": "echo {{ globals.uuid }}",
+            "env": {"WORKER_ID": "{{ globals.uuid }}"},
+        }
+        compiled = _compile(
+            {
+                "run": {
+                    "kind": "raycluster",
+                    "head": worker,
+                    "workers": {"small": worker, "large": worker, "pending": worker},
+                }
+            }
+        )
+        result = CompiledOperationSpecification.apply_runtime_contexts(
+            compiled,
+            contexts={
+                "head": {"globals": {"uuid": "head-id"}},
+                "workers": {
+                    "small": {"globals": {"uuid": "small-id"}},
+                    "large": {"globals": {"uuid": "large-id"}},
+                },
+            },
+        )
+
+        assert result.run.head.container.args == ["set -e\necho head-id"]
+        for name in ("small", "large"):
+            container = result.run.workers[name].container
+            assert container.args == [f"set -e\necho {name}-id"]
+            assert _env(container) == [("WORKER_ID", f"{name}-id", False)]
+        pending = result.run.workers["pending"].container
+        assert pending.args == ["set -e\necho {{ globals.uuid }}"]
+
+    def test_compiled_ray_replica_rejects_shortcuts(self):
+        for roles, path in (
+            ({"head": {"cmd": "echo head"}}, r"run\.head\.cmd"),
+            ({"workers": {"large": {"env": None}}}, r"run\.workers\.large\.env"),
+        ):
+            with self.subTest(path=path), self.assertRaisesRegex(ValidationError, path):
+                CompiledOperationSpecification.read(
+                    {
+                        "kind": "compiled_operation",
+                        "run": {"kind": "raycluster", **roles},
+                    }
+                )
 
     def test_root_container_requires_a_distributed_role(self):
         for kind in ("tfjob", "pytorchjob", "mpijob", "daskcluster", "raycluster"):

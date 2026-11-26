@@ -190,11 +190,8 @@ class V1DaskReplica(ContainerShortcutsMixin):
 
     > **Note**: Available in Polyaxon 2.21.0 and later.
 
-    A string or a list of shell lines for the worker's main container, lowered with the
+    A string or a list of shell lines for this role's main container, lowered with the
     rules of the root [`cmd` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#cmd).
-
-    The scheduler rejects `cmd`: Polyaxon appends `--dashboard-prefix` to the scheduler's
-    args, which a `cmd` script would ignore. Use `container.args` for the scheduler.
 
     ```yaml
     >>> worker:
