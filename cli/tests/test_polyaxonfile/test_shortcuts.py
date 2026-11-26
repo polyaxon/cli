@@ -274,6 +274,95 @@ class TestShortcuts(BaseTestCase):
                     }
                 )
 
+    def test_dask_shortcuts_target_scheduler_and_worker(self):
+        compiled = _compile(
+            {
+                "run": {
+                    "kind": "daskcluster",
+                    "scheduler": {
+                        "container": {"image": "dask:v1"},
+                        "resources": {"memory": "1Gi"},
+                    },
+                    "worker": {
+                        "replicas": 2,
+                        "cmd": "dask worker --nthreads 2",
+                        "resources": {"cpu": 4},
+                    },
+                }
+            }
+        )
+
+        run = compiled.to_dict(exclude_none=False)["run"]
+        assert run["scheduler"] == {
+            "container": {
+                "image": "dask:v1",
+                "resources": {"requests": {"memory": "1Gi"}},
+            }
+        }
+        assert run["worker"] == {
+            "replicas": 2,
+            "container": {
+                "command": ["/bin/sh", "-c"],
+                "args": ["set -e\ndask worker --nthreads 2"],
+                "resources": {"requests": {"cpu": 4}},
+            },
+        }
+
+    def test_dask_scheduler_rejects_cmd(self):
+        message = "`scheduler.cmd` is not supported"
+        roles = {"kind": "daskcluster", "scheduler": {}, "worker": {}}
+        cmd = {"cmd": "dask scheduler"}
+        for source in (
+            {"run": {"kind": "daskcluster", "scheduler": cmd}},
+            {"run": roles, "runPatch": {"scheduler": cmd}},
+            {"run": roles, "runPatch": cmd},
+        ):
+            with (
+                self.subTest(source=source),
+                self.assertRaisesRegex(PolyaxonValidationError, message),
+            ):
+                _compile(source)
+
+        compiled = _compile({"run": roles})
+        with self.assertRaisesRegex(PolyaxonValidationError, message):
+            CompiledOperationSpecification.apply_preset(
+                compiled, {"runPatch": {"scheduler": cmd}}
+            )
+
+    def test_dask_named_preset_only_overrides_scheduler_env(self):
+        compiled = _compile(
+            {
+                "run": {"kind": "daskcluster", "scheduler": {}, "worker": {}},
+                "env": {"MODE": "shared"},
+            }
+        )
+        assert _env(compiled.run.scheduler.container) == [("MODE", "shared", False)]
+        assert _env(compiled.run.worker.container) == [("MODE", "shared", False)]
+
+        preset = {"runPatch": {"scheduler": {"env": {"MODE": "scheduler"}}}}
+        result = CompiledOperationSpecification.apply_preset(compiled, preset)
+        assert _env(result.run.scheduler.container) == [("MODE", "scheduler", False)]
+        assert _env(result.run.worker.container) == [("MODE", "shared", False)]
+
+    def test_dask_run_patch_requires_or_names_a_role(self):
+        run = {"kind": "daskcluster"}
+        patch_env = {"env": {"MODE": "worker"}}
+        with self.assertRaisesRegex(PolyaxonValidationError, "defines no roles"):
+            _compile({"run": run, "runPatch": patch_env})
+
+        compiled = _compile({"run": run, "runPatch": {"worker": patch_env}})
+        assert _env(compiled.run.worker.container) == [("MODE", "worker", False)]
+        assert compiled.run.scheduler is None
+
+    def test_compiled_dask_scheduler_rejects_explicit_null_shortcut(self):
+        with self.assertRaisesRegex(ValidationError, r"run\.scheduler\.env"):
+            CompiledOperationSpecification.read(
+                {
+                    "kind": "compiled_operation",
+                    "run": {"kind": "daskcluster", "scheduler": {"env": None}},
+                }
+            )
+
     def test_root_container_requires_a_distributed_role(self):
         for kind in ("tfjob", "pytorchjob", "mpijob", "daskcluster", "raycluster"):
             with (

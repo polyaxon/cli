@@ -9,12 +9,17 @@ from clipped.compact.pydantic import (
 from clipped.types.ref_or_obj import IntOrRef, RefField
 from polyaxon._flow.environment import V1Environment
 from polyaxon._flow.init import V1Init
+from polyaxon._flow.run.container_shortcuts import (
+    CmdShortcut,
+    ContainerShortcutsMixin,
+    EnvShortcut,
+    ResourcesShortcut,
+)
 from polyaxon._flow.run.resources import V1RunResources
 from polyaxon._k8s import k8s_schemas, k8s_validation
-from polyaxon._schemas.base import BaseSchemaModel
 
 
-class V1DaskReplica(BaseSchemaModel):
+class V1DaskReplica(ContainerShortcutsMixin):
     """Dask replica is the specification for a Dask job, worker or scheduler.
 
     Args:
@@ -26,6 +31,9 @@ class V1DaskReplica(BaseSchemaModel):
         init: List[[V1Init](/docs/references/polyaxonfile/specification/init/)], optional
         sidecars: List[[sidecar containers](/docs/references/polyaxonfile/specification/sidecars/)], optional
         container: [Kubernetes Container](https://kubernetes.io/docs/concepts/containers/)
+        cmd: Union[str, List[str]], optional
+        env: Dict[str, str], optional
+        resources: Dict[str, Union[str, int, float]], optional
 
     ## YAML usage
 
@@ -38,6 +46,9 @@ class V1DaskReplica(BaseSchemaModel):
     >>>   init:
     >>>   sidecars:
     >>>   container:
+    >>>   cmd:
+    >>>   env:
+    >>>   resources:
     ```
 
     ## Python usage
@@ -174,6 +185,59 @@ class V1DaskReplica(BaseSchemaModel):
     >>>     name: tensorflow:2.1
     >>>     command: ["python", "/plx-context/artifacts/my-code-repo/model.py"]
     ```
+
+    ### cmd
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    A string or a list of shell lines for the worker's main container, lowered with the
+    rules of the root [`cmd` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#cmd).
+
+    The scheduler rejects `cmd`: Polyaxon appends `--dashboard-prefix` to the scheduler's
+    args, which a `cmd` script would ignore. Use `container.args` for the scheduler.
+
+    ```yaml
+    >>> worker:
+    >>>   container:
+    >>>     image: daskdev/dask:latest
+    >>>   cmd: dask worker --nthreads 2
+    ```
+
+    ### env
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    A mapping of names to string values for this role's main container, merged with the
+    rules of the root [`env` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#env).
+
+    ```yaml
+    >>> scheduler:
+    >>>   env:
+    >>>     DASK_LOGGING__DISTRIBUTED: debug
+    ```
+
+    ### resources
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    Requests and limits for this role's main container, with the rules of the root
+    [`resources` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#resources).
+    Templated quantities stay in `container.resources`.
+
+    ```yaml
+    >>> scheduler:
+    >>>   resources:
+    >>>     memory: 2Gi
+    >>> worker:
+    >>>   resources:
+    >>>     cpu: "2..4"
+    >>>     memory: 8Gi
+    ```
+
+    `cmd`, `env` and `resources` apply to this role only, with this `run`, before the root
+    shortcuts and the `runPatch` of the same file. Root shortcuts apply to every role;
+    a `runPatch` can target one role, for example `runPatch.scheduler.env`. Compiled
+    operations contain only the resulting container fields.
     """
 
     _IDENTIFIER = "replica"
@@ -187,6 +251,9 @@ class V1DaskReplica(BaseSchemaModel):
     init: Optional[Union[List[V1Init], RefField]] = None
     sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
+    cmd: Optional[CmdShortcut] = None
+    env: Optional[EnvShortcut] = None
+    resources: Optional[ResourcesShortcut] = None
 
     @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):

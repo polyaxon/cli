@@ -96,6 +96,29 @@ class TestSerializationPolicies(BaseTestCase):
             '{"kind":"component","run":' + expected_run + "}"
         )
 
+    def test_native_dask_run_and_component_state_keep_their_serialization(self):
+        authored = read_polyaxonfile(
+            {
+                "kind": "component",
+                "run": {
+                    "kind": "daskcluster",
+                    "minReplicas": 1,
+                    "maxReplicas": 4,
+                    "worker": {"replicas": 2, "container": {"image": "dask:v1"}},
+                },
+            }
+        )
+        expected_run = (
+            '{"kind":"daskcluster","minReplicas":1,"maxReplicas":4,'
+            '"worker":{"replicas":2,"container":{"image":"dask:v1"}}}'
+        )
+        compiled = OperationSpecification.compile_operation(authored)
+
+        assert compiled.run.to_json() == expected_run
+        assert authored.to_component_state_json() == (
+            '{"kind":"component","run":' + expected_run + "}"
+        )
+
     def test_component_state_pins_null_and_omitted_dag_states(self):
         for explicit_nulls, expected in (
             (False, "88eb9eca-d36f-5763-8d24-5a645a86b700"),

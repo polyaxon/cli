@@ -35,6 +35,7 @@ from polyaxon._flow.run.container_shortcuts import (
     lower_resources,
 )
 from polyaxon._flow.run.dag import V1Dag, V1DagShortcut
+from polyaxon._flow.run.dask.replica import V1DaskReplica
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.kubeflow.replica import V1KFReplica
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
@@ -47,7 +48,7 @@ from polyaxon.exceptions import PolyaxonValidationError
 
 
 def _get_run_patch(run, values: Dict):
-    if isinstance(run, V1KFReplica):
+    if isinstance(run, (V1KFReplica, V1DaskReplica)):
         return type(run).from_dict(values)
     return validate_run_patch(
         values,
@@ -217,10 +218,22 @@ def compose_run(current, value, strategy: Optional[PatchStrategy]):
     """Merge one run or runPatch contribution and consume its workload shortcuts."""
     run = patch_run(current, value, strategy)
     strategy = strategy or PatchStrategy.POST_MERGE
-    for _, workload in iter_shortcut_workloads(run):
+    for path, workload in iter_shortcut_workloads(run):
         fields = workload.model_fields_set.intersection(CONTAINER_SHORTCUT_FIELDS)
         if not fields:
             continue
+        # Checked after merging: a model validator error on a role-named runPatch
+        # would be caught by the flat-patch fallback and reported as extra fields.
+        if (
+            isinstance(workload, V1DaskReplica)
+            and path == "run.scheduler"
+            and workload.cmd is not None
+        ):
+            raise PolyaxonValidationError(
+                "Dask `scheduler.cmd` is not supported: Polyaxon appends "
+                "`--dashboard-prefix` to the scheduler's args, which a `cmd` "
+                "script would ignore. Use `container.args` instead."
+            )
         shortcuts = {
             field: getattr(workload, field) for field in CONTAINER_SHORTCUT_FIELDS
         }
