@@ -172,6 +172,31 @@ class TestShortcuts(BaseTestCase):
                             }
                         )
 
+    def test_root_container_requires_a_distributed_role(self):
+        for kind in ("tfjob", "pytorchjob", "mpijob", "daskcluster", "raycluster"):
+            with (
+                self.subTest(kind=kind),
+                self.assertRaisesRegex(
+                    PolyaxonValidationError, f"`{kind}` runtime defines no roles"
+                ),
+            ):
+                _compile({"run": {"kind": kind}, "container": {"image": "trainer:v1"}})
+
+    def test_distributed_run_patch_can_create_the_first_named_role(self):
+        source = {"run": {"kind": "pytorchjob"}}
+        container = {"image": "trainer:v1"}
+        flat = {"runPatch": {"container": container}}
+        with self.assertRaisesRegex(PolyaxonValidationError, "defines no roles"):
+            _compile({**source, **flat})
+        with self.assertRaisesRegex(PolyaxonValidationError, "defines no roles"):
+            CompiledOperationSpecification.apply_preset(_compile(source), flat)
+
+        compiled = _compile(
+            {**source, "runPatch": {"worker": {"container": container}}}
+        )
+        assert compiled.run.worker.container.image == "trainer:v1"
+        assert compiled.run.master is None
+
     def test_container_compiles_like_native_run_container(self):
         container = {
             "image": "busybox:1.36",

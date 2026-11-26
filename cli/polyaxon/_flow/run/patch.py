@@ -88,6 +88,16 @@ def patch_run_patch(
     return result
 
 
+def _validate_replica_patch(run_patch, kind, replica_types, replica_model):
+    patch = replica_model.from_dict(run_patch)
+    if replica_types is not None and not replica_types:
+        raise PolyaxonValidationError(
+            f"The replica patch has nothing to apply to: the `{kind}` runtime "
+            "defines no roles. Name a role in the patch, or add one under `run`."
+        ) from None
+    return patch
+
+
 def validate_run_patch(
     run_patch: Dict, kind: V1RunKind, replica_types: List[str] = None
 ):
@@ -106,7 +116,9 @@ def validate_run_patch(
                     {k: deepcopy(run_patch) for k in replica_types}
                 )
             else:
-                patch = V1KFReplica.from_dict(run_patch)
+                patch = _validate_replica_patch(
+                    run_patch, kind, replica_types, V1KFReplica
+                )
     elif kind == V1RunKind.PYTORCHJOB:
         try:
             patch = V1PytorchJob.from_dict(run_patch)
@@ -116,7 +128,9 @@ def validate_run_patch(
                     {k: deepcopy(run_patch) for k in replica_types}
                 )
             else:
-                patch = V1KFReplica.from_dict(run_patch)
+                patch = _validate_replica_patch(
+                    run_patch, kind, replica_types, V1KFReplica
+                )
     elif kind == V1RunKind.TFJOB:
         try:
             patch = V1TFJob.from_dict(run_patch)
@@ -126,7 +140,9 @@ def validate_run_patch(
                     {k: deepcopy(run_patch) for k in replica_types}
                 )
             else:
-                patch = V1KFReplica.from_dict(run_patch)
+                patch = _validate_replica_patch(
+                    run_patch, kind, replica_types, V1KFReplica
+                )
     elif kind == V1RunKind.RAYCLUSTER:
         try:
             patch = V1RayCluster.from_dict(run_patch)
@@ -141,7 +157,9 @@ def validate_run_patch(
                 }
                 patch = V1RayCluster.from_dict(replicas)
             else:
-                patch = V1RayReplica.from_dict(run_patch)
+                patch = _validate_replica_patch(
+                    run_patch, kind, replica_types, V1RayReplica
+                )
     elif kind == V1RunKind.DASKCLUSTER:
         try:
             patch = V1DaskCluster.from_dict(run_patch)
@@ -151,7 +169,9 @@ def validate_run_patch(
                     {k: deepcopy(run_patch) for k in replica_types}
                 )
             else:
-                patch = V1DaskReplica.from_dict(run_patch)
+                patch = _validate_replica_patch(
+                    run_patch, kind, replica_types, V1DaskReplica
+                )
     elif kind == V1RunKind.NOTIFIER:
         patch = V1NotifierJob.from_dict(run_patch)
     elif kind == V1RunKind.TUNER:
