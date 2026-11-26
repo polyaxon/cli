@@ -5,8 +5,8 @@ from polyaxon._flow.hooks import V1Hook
 from polyaxon._flow.init import V1Init
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
 from polyaxon._flow.params.params import ParamSpec, V1Param
+from polyaxon._flow.polyaxonfile import compose_run
 from polyaxon._flow.run.dag import V1Dag
-from polyaxon._flow.run.patch import validate_run_patch
 from polyaxon._k8s import k8s_schemas
 from polyaxon._polyaxonfile.specs import kinds
 from polyaxon._polyaxonfile.specs.base import BaseSpecification
@@ -380,13 +380,8 @@ class CompiledOperationSpecification(BaseSpecification):
         # Root shortcuts patch the main container before the preset's runPatch.
         config.run = preset.apply_shortcuts(config.run, preset.patch_strategy)
         if preset.run_patch:
-            config.run = config.run.patch(
-                validate_run_patch(
-                    preset.run_patch,
-                    config.run.kind,
-                    replica_types=config.get_replica_types(),
-                ),
-                strategy=preset.patch_strategy,
+            config.run = compose_run(
+                config.run, preset.run_patch, preset.patch_strategy
             )
         patch_keys = {
             "name",

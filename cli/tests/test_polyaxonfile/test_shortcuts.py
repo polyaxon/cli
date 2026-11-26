@@ -71,6 +71,107 @@ def _compile(source):
 
 @pytest.mark.polyaxonfile_mark
 class TestShortcuts(BaseTestCase):
+    def test_job_and_service_run_shortcuts_match_root_and_preserve_source(self):
+        shortcuts = {
+            "cmd": ["echo one", "echo two"],
+            "env": {"MODE": "local"},
+            "resources": {"cpu": 4, "gpu": 1},
+        }
+        for kind in ("job", "service", "notifier", "tuner", "cleaner"):
+            with self.subTest(kind=kind):
+                run = {
+                    "kind": kind,
+                    "container": {"image": "base:v1", "args": ["native"]},
+                }
+                if kind == "service":
+                    run["ports"] = [8000]
+                source = {"run": {**run, **shortcuts}}
+                authored = read_polyaxonfile(source)
+                compiled = OperationSpecification.compile_operation(authored)
+                root = _compile({"run": run, **shortcuts})
+                output = compiled.to_dict(exclude_none=False)
+                assert output == root.to_dict(exclude_none=False)
+                assert compiled.run.container.args == ["set -e\necho one\necho two"]
+                assert shortcuts.keys().isdisjoint(output["run"])
+                assert orjson_loads(authored.to_source_json()) == source
+
+    def test_workload_shortcuts_use_root_validation(self):
+        for field, value, message in (
+            ("cmd", " ", "cmd must not be blank"),
+            ("env", {"COUNT": 1}, "quote it"),
+            ("resources", {"gpu": "{{ gpus }}"}, "use container.resources"),
+        ):
+            with (
+                self.subTest(field=field),
+                self.assertRaisesRegex(ValidationError, message),
+            ):
+                read_polyaxonfile({"run": {"kind": "job", field: value}})
+
+    def test_workload_env_precedence_in_composition_and_named_presets(self):
+        source = {
+            "run": {"kind": "job", "env": {"MODE": "local"}},
+            "env": {"MODE": "shared"},
+        }
+        compiled = _compile(source)
+        assert _env(compiled.run.container) == [("MODE", "shared", False)]
+
+        preset = {"runPatch": {"env": {"MODE": "final"}}}
+        for result in (
+            _compile({**source, **preset}),
+            CompiledOperationSpecification.apply_preset(compiled, preset),
+        ):
+            assert _env(result.run.container) == [("MODE", "final", False)]
+            assert "env" not in result.to_dict(exclude_none=False)["run"]
+
+    def test_workload_cmd_uses_native_strategy_with_a_run_patch_override(self):
+        authored = read_polyaxonfile(
+            {
+                "component": {"run": {"kind": "job", "container": {"args": ["base"]}}},
+                "patchStrategy": "pre_merge",
+                "run": {"cmd": "echo nested", "env": {"MODE": "nested"}},
+                "env": {"MODE": "root"},
+            }
+        )
+        compiled = OperationSpecification.compile_operation(
+            authored,
+            override={"patchStrategy": "post_merge"},
+            use_override_patch_strategy=True,
+        )
+        assert compiled.run.container.command is None
+        assert compiled.run.container.args == ["base"]
+        assert _env(compiled.run.container) == [("MODE", "root", False)]
+
+    def test_workload_cmd_overlay_is_atomic_and_replays_after_null(self):
+        for section in ("run", "runPatch"):
+            base = {"run": {"kind": "job", "container": {"args": ["native"]}}}
+            base.setdefault(section, {})["cmd"] = ["first", "second"]
+            for strategy, cmd, args in (
+                ("post_merge", "last", ["set -e\nlast"]),
+                ("pre_merge", "last", ["set -e\nfirst\nsecond"]),
+                ("replace", None, ["native"]),
+            ):
+                with self.subTest(section=section, strategy=strategy):
+                    overlay = {"patchStrategy": strategy, section: {"cmd": cmd}}
+                    merged = patch_polyaxonfile(base, [overlay])
+                    replay = read_polyaxonfile(merged.to_source_json())
+                    compiled = OperationSpecification.compile_operation(replay)
+                    assert compiled.run.container.args == args
+
+    def test_compiled_run_rejects_workload_shortcuts_even_when_null(self):
+        for kind in ("job", "service"):
+            for field, value in (("cmd", "echo hi"), ("env", {}), ("resources", {})):
+                for supplied in (value, None):
+                    with (
+                        self.subTest(kind=kind, field=field, supplied=supplied),
+                        self.assertRaisesRegex(ValidationError, rf"run\.{field}"),
+                    ):
+                        CompiledOperationSpecification.read(
+                            {
+                                "kind": "compiled_operation",
+                                "run": {"kind": kind, field: supplied},
+                            }
+                        )
+
     def test_container_compiles_like_native_run_container(self):
         container = {
             "image": "busybox:1.36",

@@ -1,13 +1,10 @@
 from collections.abc import Mapping
 from copy import copy, deepcopy
-import math
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 from typing_extensions import Literal
 
 from clipped.compact.pydantic import (
     Field,
-    StrictFloat,
-    StrictInt,
     StrictStr,
     field_validator,
     model_rebuild,
@@ -20,7 +17,6 @@ from clipped.config.patch_strategy import PatchStrategy
 from clipped.config.schema import skip_partial, to_partial
 from clipped.types.ref_or_obj import RefField
 from clipped.utils.json import orjson_dumps
-from clipped.utils.units import is_cpu_value, is_memory_value
 from polyaxon._flow.base import BaseOp
 from polyaxon._flow.builds import V1Build
 from polyaxon._flow.environment import V1Environment
@@ -30,6 +26,14 @@ from polyaxon._flow.io import V1IO
 from polyaxon._flow.params import V1Param, normalize_param_value
 from polyaxon._flow.plugins import V1Plugins, is_plugin_enabled
 from polyaxon._flow.references import RefMixin, V1DagRef, V1HubRef, V1PathRef, V1UrlRef
+from polyaxon._flow.run.container_shortcuts import (
+    CONTAINER_SHORTCUT_FIELDS,
+    CmdShortcut,
+    ContainerShortcutsMixin,
+    EnvShortcut,
+    ResourcesShortcut,
+    lower_resources,
+)
 from polyaxon._flow.run.dag import V1Dag, V1DagShortcut
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
@@ -38,7 +42,6 @@ from polyaxon._flow.run.service import V1ServiceShortcut
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 from polyaxon._k8s import k8s_schemas, k8s_validation
 from polyaxon._schemas.base import BaseSchemaModel
-from polyaxon._vendor.k8s.quantity import parse_quantity
 from polyaxon.exceptions import PolyaxonValidationError
 
 
@@ -149,72 +152,85 @@ def _dedupe_env(env: List) -> List:
     return list(reversed(results))
 
 
-_GPU = "gpu"
-_NVIDIA_GPU = "nvidia.com/gpu"
-
-
-_MAX_INT = 2**63  # Kubernetes quantities and orjson stop at 64-bit integers.
-
-
-def _is_count(value: str) -> bool:
-    return value.isascii() and value.isdigit() and int(value) < _MAX_INT
-
-
-# Accepted quantity strings per resource; other keys are accelerator counts.
-_QUANTITIES = {"cpu": is_cpu_value, "memory": is_memory_value}
-
-
-def _parse_resource(key: str, value) -> Tuple:
-    """Return the (request, limit) pair of one resources shortcut entry."""
-    is_count = key not in _QUANTITIES
-    is_valid = _QUANTITIES.get(key, _is_count)
-    error = "resources.{} {}".format
-    if isinstance(value, bool) or not isinstance(value, (str, int, float)):
-        raise ValueError(error(key, "must be a number or a range such as 1..2."))
-    if not isinstance(value, str):
-        if (isinstance(value, float) and not math.isfinite(value)) or value < 0:
-            raise ValueError(error(key, "must be a finite non-negative number."))
-        if value >= _MAX_INT:
-            raise ValueError(error(key, "is too large."))
-        if is_count and not isinstance(value, int):
-            raise ValueError(error(key, "must be an integer count."))
-        return (value, value) if is_count else (value, None)
-
-    text = value.strip()
-    is_range = ".." in text
-    low, high = (p.strip() for p in text.split("..", 1)) if is_range else (text, "")
-    if not low and not high:
-        raise ValueError(error(key, "needs a request, a limit, or both."))
-    for part in (low, high):
-        if part and not is_valid(part):
-            raise ValueError(
-                error(
-                    key,
-                    "has an unsupported value `{}`; use container.resources for "
-                    "other quantities or templates.".format(part),
+def _apply_container_shortcuts(run, cmd, env, resources, strategy: PatchStrategy):
+    if cmd:
+        lines = [cmd] if isinstance(cmd, str) else cmd
+        pair = {
+            "command": ["/bin/sh", "-c"],
+            "args": ["\n".join(["set -e", *lines])],
+        }
+        if run is not None and strategy in (
+            PatchStrategy.PRE_MERGE,
+            PatchStrategy.ISNULL,
+        ):
+            # isnull fills missing keys in place and never replaces an existing
+            # container, so containers that already had either half get it back.
+            kept = [
+                (container, container.command, container.args)
+                for container in _get_main_containers(run)
+                if container.command is not None or container.args is not None
+            ]
+            run = _patch_run(run, {"container": pair}, PatchStrategy.ISNULL)
+            for container, command, args in kept:
+                container.command, container.args = command, args
+        else:
+            # Write the full pair so it never mixes with a base argv.
+            run = _patch_run(run, {"container": pair}, PatchStrategy.REPLACE)
+    if env is not None:
+        entries = [{"name": name, "value": value} for name, value in env.items()]
+        if run is None or strategy not in (
+            PatchStrategy.POST_MERGE,
+            PatchStrategy.PRE_MERGE,
+        ):
+            run = _patch_run(run, {"container": {"env": entries}}, strategy)
+        else:
+            # Native list merging drops incoming entries equal to an existing
+            # one, losing their position, so each merge starts from the original.
+            def merge_env(original, current):
+                if original is not None and not isinstance(original, list):
+                    # Deferred values such as "{{ env_vars }}" stay native.
+                    return current
+                incoming = [
+                    k8s_schemas.V1EnvVar(name=name, value=value)
+                    for name, value in env.items()
+                ]
+                original = original or []
+                return _dedupe_env(
+                    original + incoming
+                    if strategy == PatchStrategy.POST_MERGE
+                    else incoming + original
                 )
+
+            run = _patch_and_merge_main_container(
+                run, {"env": entries}, strategy, "env", merge_env
             )
-    # Exact decimals; the reporting converters round fractional values.
-    if low and high and parse_quantity(low) > parse_quantity(high):
-        raise ValueError(error(key, "has a request greater than its limit."))
-    low, high = ((int(p) if is_count else p) if p else None for p in (low, high))
-    if not is_range:
-        return (low, low) if is_count else (low, None)
-    return low, high
+    if resources is not None:
+        lowered = lower_resources(resources)
+        run = _patch_run(run, {"container": {"resources": lowered}}, strategy)
+    return run
 
 
-def _lower_resources(resources: Dict) -> Dict:
-    """Container `requests`/`limits` of the resources shortcut; empty sides omitted."""
-    lowered = {"requests": {}, "limits": {}}
-    for key, value in resources.items():
-        name = _NVIDIA_GPU if key == _GPU else key
-        for side, quantity in zip(lowered, _parse_resource(key, value)):
-            if quantity is not None:
-                lowered[side][name] = quantity
-    return {side: values for side, values in lowered.items() if values}
+def compose_run(current, value, strategy: Optional[PatchStrategy]):
+    """Merge one run or runPatch contribution and consume its workload shortcuts."""
+    run = patch_run(current, value, strategy)
+    if not isinstance(run, ContainerShortcutsMixin):
+        return run
+    fields = run.model_fields_set.intersection(CONTAINER_SHORTCUT_FIELDS)
+    if not fields:
+        return run
+    # Consume first, so the run never holds both the shortcuts and their lowering.
+    shortcuts = {field: getattr(run, field) for field in CONTAINER_SHORTCUT_FIELDS}
+    for field in fields:
+        setattr(run, field, None)
+        run.model_fields_set.discard(field)
+    return _apply_container_shortcuts(
+        run, **shortcuts, strategy=strategy or PatchStrategy.POST_MERGE
+    )
 
 
-class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
+class V1Polyaxonfile(
+    ContainerShortcutsMixin, BaseOp, TemplateMixinConfig, RunMixin, RefMixin
+):
     """Shortcuts are root fields that set the most common `run` fields
     without a nested `run` section.
 
@@ -557,7 +573,6 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         "path_ref",
         "component",
         "run",
-        "cmd",
         "run_patch",
         "patch_strategy",
     ]
@@ -569,11 +584,9 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     dag: Optional[V1DagShortcut] = None
     service: Optional[V1ServiceShortcut] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
-    cmd: Optional[Union[StrictStr, List[StrictStr]]] = None
-    env: Optional[Dict[StrictStr, StrictStr]] = None
-    resources: Optional[Dict[StrictStr, Union[StrictInt, StrictFloat, StrictStr]]] = (
-        None
-    )
+    cmd: Optional[CmdShortcut] = None
+    env: Optional[EnvShortcut] = None
+    resources: Optional[ResourcesShortcut] = None
     # Literal native runtime values; whole-field references stay under `run`.
     environment: Optional[V1Environment] = None
     init: Optional[List[V1Init]] = None
@@ -632,56 +645,6 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
         if not isinstance(v, list):
             return v
         return [k8s_validation.validate_k8s_volume(vi) for vi in v]
-
-    @field_validator("cmd", **validation_after)
-    @classmethod
-    def validate_cmd(cls, cmd):
-        if isinstance(cmd, str):
-            if not cmd.strip():
-                raise ValueError("cmd must not be blank.")
-        elif cmd is not None:
-            if not cmd:
-                raise ValueError("cmd must not be empty.")
-            for index, line in enumerate(cmd):
-                if not line.strip():
-                    raise ValueError("cmd[{}] must not be blank.".format(index))
-        return cmd
-
-    @field_validator("env", **validation_before)
-    @classmethod
-    def validate_env(cls, env):
-        if env is None:
-            return env
-        if not isinstance(env, Mapping):
-            raise ValueError("env must be a mapping of names to string values.")
-        for name, value in env.items():
-            if isinstance(value, (bool, int, float)):
-                literal = str(value).lower() if isinstance(value, bool) else value
-                raise ValueError(
-                    'env.{} must be a string; quote it: "{}".'.format(name, literal)
-                )
-        return env
-
-    @field_validator("resources", **validation_before)
-    @classmethod
-    def validate_resources(cls, resources):
-        if resources is None:
-            return resources
-        if not isinstance(resources, Mapping):
-            raise ValueError("resources must be a mapping of resource names to values.")
-        if _NVIDIA_GPU in resources:
-            raise ValueError("resources.nvidia.com/gpu is spelled gpu.")
-        for key, value in resources.items():
-            # Kubernetes validates extended-resource names such as google.com/tpu.
-            if key not in ("cpu", "memory", _GPU) and not (
-                isinstance(key, str) and "/" in key
-            ):
-                raise ValueError(
-                    "Unknown resource `{}`; use cpu, memory, gpu, or an extended "
-                    "resource such as google.com/tpu.".format(key)
-                )
-            _parse_resource(key, value)
-        return resources
 
     @field_validator("params", **validation_before)
     @classmethod
@@ -770,62 +733,9 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
             run = validate_run_patch({}, V1RunKind.SERVICE)
         if "container" in self.model_fields_set:
             run = _patch_run(run, {"container": self.container}, strategy)
-        if self.cmd:
-            lines = [self.cmd] if isinstance(self.cmd, str) else self.cmd
-            pair = {
-                "command": ["/bin/sh", "-c"],
-                "args": ["\n".join(["set -e", *lines])],
-            }
-            if run is not None and strategy in (
-                PatchStrategy.PRE_MERGE,
-                PatchStrategy.ISNULL,
-            ):
-                # isnull fills missing keys in place and never replaces an existing
-                # container, so containers that already had either half get it back.
-                kept = [
-                    (container, container.command, container.args)
-                    for container in _get_main_containers(run)
-                    if container.command is not None or container.args is not None
-                ]
-                run = _patch_run(run, {"container": pair}, PatchStrategy.ISNULL)
-                for container, command, args in kept:
-                    container.command, container.args = command, args
-            else:
-                # Write the full pair so it never mixes with a base argv.
-                run = _patch_run(run, {"container": pair}, PatchStrategy.REPLACE)
-        if self.env is not None:
-            entries = [
-                {"name": name, "value": value} for name, value in self.env.items()
-            ]
-            if run is None or strategy not in (
-                PatchStrategy.POST_MERGE,
-                PatchStrategy.PRE_MERGE,
-            ):
-                run = _patch_run(run, {"container": {"env": entries}}, strategy)
-            else:
-                # Native list merging drops incoming entries equal to an existing
-                # one, losing their position, so each merge starts from the original.
-                def merge_env(original, current):
-                    if original is not None and not isinstance(original, list):
-                        # Deferred values such as "{{ env_vars }}" stay native.
-                        return current
-                    incoming = [
-                        k8s_schemas.V1EnvVar(name=name, value=value)
-                        for name, value in self.env.items()
-                    ]
-                    original = original or []
-                    return _dedupe_env(
-                        original + incoming
-                        if strategy == PatchStrategy.POST_MERGE
-                        else incoming + original
-                    )
-
-                run = _patch_and_merge_main_container(
-                    run, {"env": entries}, strategy, "env", merge_env
-                )
-        if self.resources is not None:
-            resources = _lower_resources(self.resources)
-            run = _patch_run(run, {"container": {"resources": resources}}, strategy)
+        run = _apply_container_shortcuts(
+            run, self.cmd, self.env, self.resources, strategy
+        )
         for field in ("environment", "init", "connections", "sidecars", "volumes"):
             value = getattr(self, field)
             if value is not None:
@@ -906,12 +816,6 @@ class V1Polyaxonfile(BaseOp, TemplateMixinConfig, RunMixin, RefMixin):
     def patch_obj(cls, config, values, strategy: PatchStrategy = None):
         strategy = strategy or PatchStrategy.POST_MERGE
         result = super().patch_obj(config, values, strategy)
-        # cmd is one script: overlays replace or keep it, never merge its lines.
-        if "cmd" in getattr(values, "model_fields_set", set()) and (
-            config.cmd is None
-            or strategy in (PatchStrategy.POST_MERGE, PatchStrategy.REPLACE)
-        ):
-            result.cmd = deepcopy(values.cmd)
         if "run" in getattr(values, "model_fields_set", set()):
             base = config.get_native_run()
             if base is None and config.component is not None:

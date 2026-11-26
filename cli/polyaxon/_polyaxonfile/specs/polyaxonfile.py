@@ -9,9 +9,9 @@ from polyaxon._flow.base import BaseOp
 from polyaxon._flow.polyaxonfile import (
     PartialV1Polyaxonfile,
     V1Polyaxonfile,
+    compose_run,
     get_polyaxonfile_model,
 )
-from polyaxon._flow.run.patch import patch_run, validate_run_patch
 from polyaxon._schemas.base import BaseSchemaModel
 from polyaxon.exceptions import PolyaxonfileError
 
@@ -182,7 +182,7 @@ def compose_polyaxonfile(
         effective.version = local.version
 
     if "run" in local.model_fields_set:
-        effective.run = patch_run(effective.run, local.run, strategy)
+        effective.run = compose_run(effective.run, local.run, strategy)
 
     # Root shortcuts patch the main container before this layer's runPatch.
     effective.run = local.apply_shortcuts(effective.run, run_patch_strategy or strategy)
@@ -190,13 +190,8 @@ def compose_polyaxonfile(
     if local.run_patch:
         if effective.run is None:
             raise PolyaxonfileError("runPatch requires a resolved runtime.")
-        effective.run.patch(
-            validate_run_patch(
-                local.run_patch,
-                effective.run.kind,
-                replica_types=effective.get_replica_types(),
-            ),
-            strategy=run_patch_strategy or strategy,
+        effective.run = compose_run(
+            effective.run, local.run_patch, run_patch_strategy or strategy
         )
     if is_dag_node:
         for field in (

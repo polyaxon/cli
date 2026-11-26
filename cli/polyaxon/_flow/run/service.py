@@ -25,6 +25,9 @@ class V1Service(V1Job):
         init: List[[V1Init](/docs/references/polyaxonfile/specification/init/)], optional
         sidecars: List[[sidecar containers](/docs/references/polyaxonfile/specification/sidecars/)], optional
         container: [Kubernetes Container](https://kubernetes.io/docs/concepts/containers/)
+        cmd: Union[str, List[str]], optional
+        env: Dict[str, str], optional
+        resources: Dict[str, Union[str, int, float]], optional
         ports: List[int], optional
         rewrite_path: bool, optional
         is_external: bool, optional
@@ -41,6 +44,9 @@ class V1Service(V1Job):
     >>>   init:
     >>>   sidecars:
     >>>   container:
+    >>>   cmd:
+    >>>   env:
+    >>>   resources:
     >>>   ports:
     >>>   rewritePath:
     >>>   isExternal:
@@ -217,6 +223,56 @@ class V1Service(V1Job):
     >>>     name: tensorflow:2.1
     >>>     command: ["python", "/plx-context/artifacts/my-code-repo/service.py"]
     ```
+
+    ### cmd
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    A string or a list of shell lines for the main container, lowered with the rules of
+    the root [`cmd` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#cmd).
+
+    ```yaml
+    >>> run:
+    >>>   kind: service
+    >>>   ports: [8000]
+    >>>   container:
+    >>>     image: python:3.12-slim
+    >>>   cmd: python -m http.server 8000
+    ```
+
+    ### env
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    A mapping of names to string values for the main container, merged with the rules of
+    the root [`env` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#env).
+
+    ```yaml
+    >>> run:
+    >>>   kind: service
+    >>>   env:
+    >>>     LOG_LEVEL: debug
+    ```
+
+    ### resources
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    Requests and limits for the main container, with the rules of the root
+    [`resources` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#resources).
+    Templated quantities stay in `container.resources`.
+
+    ```yaml
+    >>> run:
+    >>>   kind: service
+    >>>   resources:
+    >>>     cpu: 1
+    >>>     memory: 2Gi
+    ```
+
+    `cmd`, `env` and `resources` apply with this `run`, before the root shortcuts and the
+    `runPatch` of the same file; a `runPatch` can set them too. Compiled operations
+    contain only the resulting container fields.
 
     ### ports
 

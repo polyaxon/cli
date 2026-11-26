@@ -1,13 +1,17 @@
 from typing import Dict, List, Optional
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import model_validator, validation_after
+from clipped.compact.pydantic import field_validator, model_validator, validation_after
 from clipped.config.schema import skip_partial
 from clipped.utils.bools import to_bool
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import ParamSpec, ops_params
 from polyaxon._flow.plugins import is_plugin_enabled
+from polyaxon._flow.run.container_shortcuts import (
+    CONTAINER_SHORTCUT_FIELDS,
+    ContainerShortcutsMixin,
+)
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime
 from polyaxon.exceptions import PolyaxonSchemaError
@@ -22,6 +26,18 @@ class V1CompiledOperation(BaseOp, RunMixin):
     outputs: Optional[List[V1IO]] = None
     contexts: Optional[List[V1IO]] = None
     run: Optional[V1Runtime] = None
+
+    @field_validator("run", **validation_after)
+    @classmethod
+    def validate_native_run(cls, run):
+        if isinstance(run, ContainerShortcutsMixin):
+            for field in CONTAINER_SHORTCUT_FIELDS:
+                if field in run.model_fields_set:
+                    raise ValueError(
+                        f"run.{field} is an authoring shortcut and cannot appear "
+                        "in a compiled operation."
+                    )
+        return run
 
     def get_run_kind(self):
         return self.run.kind if self.run else None
