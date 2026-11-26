@@ -38,7 +38,13 @@ from polyaxon._flow.run.dag import V1Dag, V1DagShortcut
 from polyaxon._flow.run.dask.replica import V1DaskReplica
 from polyaxon._flow.run.enums import V1RunKind
 from polyaxon._flow.run.kubeflow.replica import V1KFReplica
-from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
+from polyaxon._flow.run.patch import (
+    get_replica_paths,
+    patch_run,
+    patch_run_patch,
+    validate_run_patch,
+)
+from polyaxon._flow.run.ray.replica import V1RayReplica
 from polyaxon._flow.run.runtime import RunMixin, V1Runtime, iter_shortcut_workloads
 from polyaxon._flow.run.service import V1ServiceShortcut
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
@@ -48,14 +54,12 @@ from polyaxon.exceptions import PolyaxonValidationError
 
 
 def _get_run_patch(run, values: Dict):
-    if isinstance(run, (V1KFReplica, V1DaskReplica)):
+    if isinstance(run, (V1KFReplica, V1DaskReplica, V1RayReplica)):
         return type(run).from_dict(values)
     return validate_run_patch(
         values,
         run.kind,
-        replica_types=(
-            run.get_replica_types() if hasattr(run, "get_replica_types") else None
-        ),
+        replica_paths=get_replica_paths(run),
     )
 
 
@@ -218,22 +222,10 @@ def compose_run(current, value, strategy: Optional[PatchStrategy]):
     """Merge one run or runPatch contribution and consume its workload shortcuts."""
     run = patch_run(current, value, strategy)
     strategy = strategy or PatchStrategy.POST_MERGE
-    for path, workload in iter_shortcut_workloads(run):
+    for _, workload in iter_shortcut_workloads(run):
         fields = workload.model_fields_set.intersection(CONTAINER_SHORTCUT_FIELDS)
         if not fields:
             continue
-        # Checked after merging: a model validator error on a role-named runPatch
-        # would be caught by the flat-patch fallback and reported as extra fields.
-        if (
-            isinstance(workload, V1DaskReplica)
-            and path == "run.scheduler"
-            and workload.cmd is not None
-        ):
-            raise PolyaxonValidationError(
-                "Dask `scheduler.cmd` is not supported: Polyaxon appends "
-                "`--dashboard-prefix` to the scheduler's args, which a `cmd` "
-                "script would ignore. Use `container.args` instead."
-            )
         shortcuts = {
             field: getattr(workload, field) for field in CONTAINER_SHORTCUT_FIELDS
         }
@@ -850,11 +842,7 @@ class V1Polyaxonfile(
                 current=config.run_patch,
                 value=value,
                 kind=run.kind if run is not None else None,
-                replica_types=(
-                    run.get_replica_types()
-                    if run is not None and hasattr(run, "get_replica_types")
-                    else None
-                ),
+                replica_paths=get_replica_paths(run),
                 strategy=strategy,
             )
         return result

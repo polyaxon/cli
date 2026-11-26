@@ -39,6 +39,10 @@ def iter_shortcut_workloads(run):
     """Yield the paths and concrete workloads that accept container shortcuts."""
     if isinstance(run, ContainerShortcutsMixin):
         yield "run", run
+    elif isinstance(run, V1RayCluster):
+        for path, replica in run.get_replicas():
+            if isinstance(replica, ContainerShortcutsMixin):
+                yield ".".join(("run", *path)), replica
     elif isinstance(run, (V1MPIJob, V1PytorchJob, V1TFJob, V1DaskCluster)):
         for name in run.get_replica_types():
             replica = getattr(run, name)

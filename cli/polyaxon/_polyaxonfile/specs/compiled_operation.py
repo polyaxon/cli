@@ -1,4 +1,3 @@
-import copy
 from typing import Dict, List, Optional, Set, Tuple, Type, Union
 
 from polyaxon._flow.hooks import V1Hook
@@ -234,11 +233,7 @@ class CompiledOperationSpecification(BaseSpecification):
     ) -> List[Tuple[Union[str, int], ...]]:
         run = config.run
         if config.is_ray_cluster_run:
-            replicas = [(("head",), run.head)]
-            replicas.extend(
-                (("workers", name), replica)
-                for name, replica in (run.workers or {}).items()
-            )
+            replicas = run.get_replicas()
         elif config.is_distributed_run:
             replicas = [
                 ((name,), getattr(run, name)) for name in run.get_replica_types()
@@ -304,32 +299,47 @@ class CompiledOperationSpecification(BaseSpecification):
         contexts: Optional[Dict] = None,
         param_spec: Dict[str, ParamSpec] = None,
     ) -> V1CompiledOperation:
+        worker_param_specs = None
         if not param_spec:
             # Calculate the param_space once with empty contexts
             replica_param_spec = cls.calculate_context_spec(
                 config=config, contexts=None, should_be_resolved=True
             )
+
+            def params_with_context(context):
+                return {
+                    **replica_param_spec,
+                    **cls.dict_to_param_spec(
+                        contexts=context, is_requested=True, is_context=True
+                    ),
+                }
+
             param_spec = {}
-            for k in contexts:
-                param_spec[k] = copy.copy(replica_param_spec)
-                param_spec[k].update(
-                    cls.dict_to_param_spec(
-                        contexts=contexts[k], is_requested=True, is_context=True
-                    )
-                )
+            for role, context in (contexts or {}).items():
+                if config.is_ray_cluster_run and role == "workers":
+                    worker_param_specs = {
+                        name: params_with_context(worker_context)
+                        for name, worker_context in (context or {}).items()
+                    }
+                else:
+                    param_spec[role] = params_with_context(context)
             if config.is_ray_cluster_run:
                 param_spec["autoscaler_options"] = replica_param_spec
+
+        def has_context(path):
+            if worker_param_specs is not None and path[0] == "workers":
+                return path[1] in worker_param_specs
+            return path[0] in param_spec
+
         data = config.to_dict()
         # Replicas without contexts are not parsed, so their items stay unmarked.
         cls._mark_container_text(
             data[Sections.RUN],
-            [
-                path
-                for path in cls._get_container_paths(config)
-                if path[0] in param_spec
-            ],
+            [path for path in cls._get_container_paths(config) if has_context(path)],
         )
-        parsed_data = PolyaxonfileParser.parse_distributed_runtime(data, param_spec)
+        parsed_data = PolyaxonfileParser.parse_distributed_runtime(
+            data, param_spec, worker_param_specs=worker_param_specs
+        )
         return cls.CONFIG.read(parsed_data)
 
     @classmethod

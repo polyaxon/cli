@@ -11,12 +11,17 @@ from clipped.types import GenericStr
 from clipped.types.ref_or_obj import IntOrRef, RefField
 from polyaxon._flow.environment import V1Environment
 from polyaxon._flow.init import V1Init
+from polyaxon._flow.run.container_shortcuts import (
+    CmdShortcut,
+    ContainerShortcutsMixin,
+    EnvShortcut,
+    ResourcesShortcut,
+)
 from polyaxon._flow.run.resources import V1RunResources
 from polyaxon._k8s import k8s_schemas, k8s_validation
-from polyaxon._schemas.base import BaseSchemaModel
 
 
-class V1RayReplica(BaseSchemaModel):
+class V1RayReplica(ContainerShortcutsMixin):
     """Ray replica is the specification for a Ray head or worker.
 
     Args:
@@ -31,6 +36,9 @@ class V1RayReplica(BaseSchemaModel):
         init: List[[V1Init](/docs/references/polyaxonfile/specification/init/)], optional
         sidecars: List[[sidecar containers](/docs/references/polyaxonfile/specification/sidecars/)], optional
         container: [Kubernetes Container](https://kubernetes.io/docs/concepts/containers/)
+        cmd: Union[str, List[str]], optional
+        env: Dict[str, str], optional
+        resources: Dict[str, Union[str, int, float]], optional
 
     ## YAML usage
 
@@ -46,6 +54,9 @@ class V1RayReplica(BaseSchemaModel):
     >>>   init:
     >>>   sidecars:
     >>>   container:
+    >>>   cmd:
+    >>>   env:
+    >>>   resources:
     ```
 
     ## Python usage
@@ -212,6 +223,58 @@ class V1RayReplica(BaseSchemaModel):
     >>>     name: tensorflow:2.1
     >>>     command: ["python", "/plx-context/artifacts/my-code-repo/model.py"]
     ```
+
+    ### cmd
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    A string or a list of shell lines for this role's main container, lowered with the
+    rules of the root [`cmd` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#cmd).
+    KubeRay runs the container command before `ray start`.
+
+    ```yaml
+    >>> head:
+    >>>   cmd: pip install -r requirements.txt
+    ```
+
+    ### env
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    A mapping of names to string values for this role's main container, merged with the
+    rules of the root [`env` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#env).
+
+    ```yaml
+    >>> workers:
+    >>>   small:
+    >>>     env:
+    >>>       RAY_BACKEND_LOG_LEVEL: debug
+    ```
+
+    ### resources
+
+    > **Note**: Available in Polyaxon 2.21.0 and later.
+
+    Requests and limits for this role's main container, with the rules of the root
+    [`resources` shortcut](/docs/references/polyaxonfile/specification/shortcuts/#resources).
+    Templated quantities stay in `container.resources`.
+
+    ```yaml
+    >>> head:
+    >>>   resources:
+    >>>     cpu: 2
+    >>>     memory: 8Gi
+    >>> workers:
+    >>>   gpu-group:
+    >>>     resources:
+    >>>       cpu: "4..8"
+    >>>       gpu: 1
+    ```
+
+    `cmd`, `env` and `resources` apply to this role only, with this `run`, before the root
+    shortcuts and the `runPatch` of the same file. Root shortcuts apply to every role;
+    a `runPatch` can target one role, for example `runPatch.workers.small.env`. Compiled
+    operations contain only the resulting container fields.
     """
 
     _IDENTIFIER = "replica"
@@ -230,6 +293,9 @@ class V1RayReplica(BaseSchemaModel):
     init: Optional[Union[List[V1Init], RefField]] = None
     sidecars: Optional[Union[List[k8s_schemas.V1Container], RefField]] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
+    cmd: Optional[CmdShortcut] = None
+    env: Optional[EnvShortcut] = None
+    resources: Optional[ResourcesShortcut] = None
 
     @field_validator("volumes", **validation_always, **validation_before)
     def validate_volumes(cls, v):

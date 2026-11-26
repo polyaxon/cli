@@ -242,9 +242,10 @@ class V1RayCluster(BaseRun, DestinationImageMixin):
         return init
 
     def get_replica_types(self):
-        types = []
+        return [path[-1] for path, _ in self.get_replicas()]
+
+    def get_replicas(self):
         if self.head:
-            types.append("head")
-        if self.workers:
-            types += list(self.workers.keys())
-        return types
+            yield ("head",), self.head
+        for name, worker in (self.workers or {}).items():
+            yield ("workers", name), worker

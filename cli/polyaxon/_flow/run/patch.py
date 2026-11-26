@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from copy import deepcopy
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from clipped.compact.pydantic import ValidationError
 from clipped.config.patch_strategy import PatchStrategy
@@ -20,6 +20,24 @@ from polyaxon._flow.run.tuner import V1TunerJob
 from polyaxon.exceptions import PolyaxonValidationError
 
 
+def get_replica_paths(run) -> Optional[List[Tuple[str, ...]]]:
+    if isinstance(run, V1RayCluster):
+        return [path for path, _ in run.get_replicas()]
+    if hasattr(run, "get_replica_types"):
+        return [(name,) for name in run.get_replica_types()]
+    return None
+
+
+def _fan_out_replica_patch(run_patch: Dict, replica_paths: List[Tuple[str, ...]]):
+    patch = {}
+    for path in replica_paths:
+        target = patch
+        for key in path[:-1]:
+            target = target.setdefault(key, {})
+        target[path[-1]] = deepcopy(run_patch)
+    return patch
+
+
 def patch_run(current, value, strategy: Optional[PatchStrategy] = None, base=None):
     strategy = strategy or PatchStrategy.POST_MERGE
     if isinstance(current, Mapping):
@@ -32,11 +50,7 @@ def patch_run(current, value, strategy: Optional[PatchStrategy] = None, base=Non
             validate_run_patch(
                 current,
                 base.kind,
-                replica_types=(
-                    base.get_replica_types()
-                    if hasattr(base, "get_replica_types")
-                    else None
-                ),
+                replica_paths=get_replica_paths(base),
             )
         )
     if isinstance(value, Mapping):
@@ -50,11 +64,7 @@ def patch_run(current, value, strategy: Optional[PatchStrategy] = None, base=Non
         patch = validate_run_patch(
             value,
             runtime.kind,
-            replica_types=(
-                runtime.get_replica_types()
-                if hasattr(runtime, "get_replica_types")
-                else None
-            ),
+            replica_paths=get_replica_paths(runtime),
         )
         if current is None:
             return type(runtime)().patch(patch, strategy=strategy)
@@ -70,7 +80,7 @@ def patch_run_patch(
     current: Optional[Dict],
     value: Optional[Dict],
     kind: Optional[V1RunKind] = None,
-    replica_types: Optional[List[str]] = None,
+    replica_paths: Optional[List[Tuple[str, ...]]] = None,
     strategy: Optional[PatchStrategy] = None,
 ):
     """Merge runtime patches without applying them to the runtime."""
@@ -81,16 +91,16 @@ def patch_run_patch(
     if not kind:
         return value if PatchStrategy.is_replace(strategy) else current
 
-    value = validate_run_patch(value, kind, replica_types=replica_types)
-    current = validate_run_patch(current, kind, replica_types=replica_types)
+    value = validate_run_patch(value, kind, replica_paths=replica_paths)
+    current = validate_run_patch(current, kind, replica_paths=replica_paths)
     result = current.patch(value, strategy).to_dict()
     result.pop("kind")
     return result
 
 
-def _validate_replica_patch(run_patch, kind, replica_types, replica_model):
+def _validate_replica_patch(run_patch, kind, replica_paths, replica_model):
     patch = replica_model.from_dict(run_patch)
-    if replica_types is not None and not replica_types:
+    if replica_paths is not None and not replica_paths:
         raise PolyaxonValidationError(
             f"The replica patch has nothing to apply to: the `{kind}` runtime "
             "defines no roles. Name a role in the patch, or add one under `run`."
@@ -99,8 +109,20 @@ def _validate_replica_patch(run_patch, kind, replica_types, replica_model):
 
 
 def validate_run_patch(
-    run_patch: Dict, kind: V1RunKind, replica_types: List[str] = None
+    run_patch: Dict,
+    kind: V1RunKind,
+    replica_types: Optional[List[str]] = None,
+    *,
+    replica_paths: Optional[List[Tuple[str, ...]]] = None,
 ):
+    # The public helper still accepts flat names. Internal callers know the paths.
+    if replica_paths is None and replica_types is not None:
+        replica_paths = [
+            ("workers", name)
+            if kind == V1RunKind.RAYCLUSTER and name != "head"
+            else (name,)
+            for name in replica_types
+        ]
     if kind == V1RunKind.JOB:
         patch = V1Job.from_dict(run_patch)
     elif kind == V1RunKind.SERVICE:
@@ -111,66 +133,61 @@ def validate_run_patch(
         try:
             patch = V1MPIJob.from_dict(run_patch)
         except ValidationError:
-            if replica_types:
+            if replica_paths:
                 patch = V1MPIJob.from_dict(
-                    {k: deepcopy(run_patch) for k in replica_types}
+                    _fan_out_replica_patch(run_patch, replica_paths)
                 )
             else:
                 patch = _validate_replica_patch(
-                    run_patch, kind, replica_types, V1KFReplica
+                    run_patch, kind, replica_paths, V1KFReplica
                 )
     elif kind == V1RunKind.PYTORCHJOB:
         try:
             patch = V1PytorchJob.from_dict(run_patch)
         except ValidationError:
-            if replica_types:
+            if replica_paths:
                 patch = V1PytorchJob.from_dict(
-                    {k: deepcopy(run_patch) for k in replica_types}
+                    _fan_out_replica_patch(run_patch, replica_paths)
                 )
             else:
                 patch = _validate_replica_patch(
-                    run_patch, kind, replica_types, V1KFReplica
+                    run_patch, kind, replica_paths, V1KFReplica
                 )
     elif kind == V1RunKind.TFJOB:
         try:
             patch = V1TFJob.from_dict(run_patch)
         except ValidationError:
-            if replica_types:
+            if replica_paths:
                 patch = V1TFJob.from_dict(
-                    {k: deepcopy(run_patch) for k in replica_types}
+                    _fan_out_replica_patch(run_patch, replica_paths)
                 )
             else:
                 patch = _validate_replica_patch(
-                    run_patch, kind, replica_types, V1KFReplica
+                    run_patch, kind, replica_paths, V1KFReplica
                 )
     elif kind == V1RunKind.RAYCLUSTER:
         try:
             patch = V1RayCluster.from_dict(run_patch)
         except ValidationError:
-            if replica_types:
-                replicas = {}
-                if "head" in replica_types:
-                    replicas["head"] = deepcopy(run_patch)
-                replica_types = [r for r in replica_types if r != "head"]
-                replicas["workers"] = {
-                    replica: deepcopy(run_patch) for replica in replica_types
-                }
-                patch = V1RayCluster.from_dict(replicas)
+            if replica_paths:
+                patch = V1RayCluster.from_dict(
+                    _fan_out_replica_patch(run_patch, replica_paths)
+                )
             else:
                 patch = _validate_replica_patch(
-                    run_patch, kind, replica_types, V1RayReplica
+                    run_patch, kind, replica_paths, V1RayReplica
                 )
     elif kind == V1RunKind.DASKCLUSTER:
         try:
             patch = V1DaskCluster.from_dict(run_patch)
         except ValidationError:
-            if replica_types:
+            if replica_paths:
                 patch = V1DaskCluster.from_dict(
-                    {k: deepcopy(run_patch) for k in replica_types}
+                    _fan_out_replica_patch(run_patch, replica_paths)
                 )
             else:
                 patch = _validate_replica_patch(
-                    run_patch, kind, replica_types, V1DaskReplica
+                    run_patch, kind, replica_paths, V1DaskReplica
                 )
     elif kind == V1RunKind.NOTIFIER:
         patch = V1NotifierJob.from_dict(run_patch)

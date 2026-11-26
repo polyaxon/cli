@@ -2,7 +2,7 @@ import ast
 from collections.abc import Mapping
 from datetime import date, datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Type
+from typing import Dict, List, Optional, Type
 from uuid import UUID
 
 from clipped.utils.serialization import (
@@ -179,17 +179,33 @@ class PolyaxonfileParser:
 
     @classmethod
     def parse_distributed_runtime(
-        cls, parsed_data, param_spec: Dict[str, Dict[str, ParamSpec]]
+        cls,
+        parsed_data,
+        param_spec: Dict[str, Dict[str, ParamSpec]],
+        worker_param_specs: Optional[Dict[str, Dict[str, ParamSpec]]] = None,
     ):
         run_section = parsed_data.get(Sections.RUN)
         config_section = {}
-        for k in run_section:
-            if k in param_spec:
+        for k, value in run_section.items():
+            if (
+                k == "workers"
+                and worker_param_specs is not None
+                and isinstance(value, Mapping)
+            ):
+                config_section[k] = {
+                    name: cls.parse_section(
+                        replica, param_spec=worker_param_specs[name]
+                    )
+                    if name in worker_param_specs
+                    else replica
+                    for name, replica in value.items()
+                }
+            elif k in param_spec:
                 config_section[k] = cls.parse_section(
-                    run_section[k], param_spec=param_spec[k], parse_params=True
+                    value, param_spec=param_spec[k], parse_params=True
                 )
             else:
-                config_section[k] = run_section[k]
+                config_section[k] = value
         if config_section:
             parsed_data[Sections.RUN] = config_section
         return parsed_data

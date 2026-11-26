@@ -989,18 +989,21 @@ class TestPolyaxonfiles(BaseTestCase):
             }
         )
         run_config = CompiledOperationSpecification.apply_operation_contexts(run_config)
+        # Contexts are keyed by worker name, as RayClusterContextsManager returns them.
+        values = {"container": False, "sidecars": 1, "{{ group }}": "gpu"}
         run_config = CompiledOperationSpecification.apply_runtime_contexts(
             run_config,
             contexts={
                 "head": {"value": 0},
-                "workers": {"value": False, "group": "gpu"},
+                "workers": {name: {"value": value} for name, value in values.items()},
             },
         )
 
         assert run_config.run.head.container.args == ["0", "1e3"]
-        assert set(run_config.run.workers) == {"container", "sidecars", "gpu"}
-        for worker in run_config.run.workers.values():
-            assert worker.container.args == ["False", "1e3"]
+        assert list(run_config.run.workers) == worker_names
+        for name, value in values.items():
+            worker = run_config.run.workers[name]
+            assert worker.container.args == [str(value), "1e3"]
 
     def test_tf_container_args_skip_replicas_without_contexts(self):
         replica = {"container": {"image": "test", "args": ["{{ value }}", "1e3"]}}
