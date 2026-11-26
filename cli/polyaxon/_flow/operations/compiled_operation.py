@@ -8,12 +8,9 @@ from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
 from polyaxon._flow.params import ParamSpec, ops_params
 from polyaxon._flow.plugins import is_plugin_enabled
-from polyaxon._flow.run.container_shortcuts import (
-    CONTAINER_SHORTCUT_FIELDS,
-    ContainerShortcutsMixin,
-)
+from polyaxon._flow.run.container_shortcuts import CONTAINER_SHORTCUT_FIELDS
 from polyaxon._flow.run.enums import V1RunKind
-from polyaxon._flow.run.runtime import RunMixin, V1Runtime
+from polyaxon._flow.run.runtime import RunMixin, V1Runtime, iter_shortcut_workloads
 from polyaxon.exceptions import PolyaxonSchemaError
 
 
@@ -30,11 +27,11 @@ class V1CompiledOperation(BaseOp, RunMixin):
     @field_validator("run", **validation_after)
     @classmethod
     def validate_native_run(cls, run):
-        if isinstance(run, ContainerShortcutsMixin):
+        for path, workload in iter_shortcut_workloads(run):
             for field in CONTAINER_SHORTCUT_FIELDS:
-                if field in run.model_fields_set:
+                if field in workload.model_fields_set:
                     raise ValueError(
-                        f"run.{field} is an authoring shortcut and cannot appear "
+                        f"{path}.{field} is an authoring shortcut and cannot appear "
                         "in a compiled operation."
                     )
         return run

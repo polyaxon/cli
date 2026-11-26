@@ -172,6 +172,108 @@ class TestShortcuts(BaseTestCase):
                             }
                         )
 
+    def test_kubeflow_shortcuts_create_only_the_named_roles_container(self):
+        worker_container = {
+            "image": "trainer:v1",
+            "env": [{"name": "ROLE", "value": "worker"}],
+        }
+        source = {
+            "run": {
+                "kind": "tfjob",
+                "ps": {
+                    "replicas": 2,
+                    "env": {"ROLE": "ps"},
+                    "resources": {"cpu": 4},
+                },
+                "worker": {"container": worker_container},
+            }
+        }
+        authored = read_polyaxonfile(source)
+        replay = read_polyaxonfile(authored.to_source_json())
+        compiled = OperationSpecification.compile_operation(replay)
+
+        run = compiled.to_dict(exclude_none=False)["run"]
+        assert run["ps"].keys() == {"replicas", "container"}
+        assert run["ps"]["replicas"] == 2
+        assert _env(compiled.run.ps.container) == [("ROLE", "ps", False)]
+        assert run["ps"]["container"]["resources"] == {"requests": {"cpu": 4}}
+        assert run["worker"] == {"container": worker_container}
+        assert orjson_loads(replay.to_source_json()) == source
+
+    def test_kubeflow_role_env_precedence_with_named_preset(self):
+        compiled = _compile(
+            {
+                "run": {
+                    "kind": "tfjob",
+                    "ps": {"env": {"MODE": "local"}},
+                    "worker": {"replicas": 2},
+                },
+                "env": {"MODE": "shared"},
+            }
+        )
+        assert _env(compiled.run.ps.container) == [("MODE", "shared", False)]
+        assert _env(compiled.run.worker.container) == [("MODE", "shared", False)]
+
+        preset = {"runPatch": {"ps": {"env": {"MODE": "final"}}}}
+        result = CompiledOperationSpecification.apply_preset(compiled, preset)
+        assert _env(result.run.ps.container) == [("MODE", "final", False)]
+        assert _env(result.run.worker.container) == [("MODE", "shared", False)]
+        assert "env" not in result.to_dict(exclude_none=False)["run"]["ps"]
+
+    def test_kubeflow_role_cmd_overlays_replace_the_whole_script(self):
+        for kind, role in (("pytorchjob", "master"), ("mpijob", "launcher")):
+            with self.subTest(kind=kind):
+                source = {
+                    "run": {
+                        "kind": kind,
+                        role: {"cmd": ["first", "second"]},
+                        "worker": "{{ params.replica }}",
+                    }
+                }
+                overlay = {"run": {role: {"cmd": "last"}}}
+                merged = patch_polyaxonfile(source, [overlay])
+                compiled = OperationSpecification.compile_operation(merged)
+                container = getattr(compiled.run, role).container
+                assert container.command == ["/bin/sh", "-c"]
+                assert container.args == ["set -e\nlast"]
+                assert compiled.run.worker == "{{ params.replica }}"
+
+    def test_kubeflow_flat_shorthand_patches_target_existing_roles(self):
+        flat = {"env": {"MODE": "shared"}}
+        with self.assertRaisesRegex(PolyaxonValidationError, "defines no roles"):
+            _compile({"run": {"kind": "tfjob"}, "runPatch": flat})
+
+        component = {"run": {"kind": "tfjob", "ps": {}, "worker": {}}}
+        for section in ("run", "runPatch"):
+            with self.subTest(section=section):
+                compiled = _compile({"component": component, section: flat})
+                assert _env(compiled.run.ps.container) == [("MODE", "shared", False)]
+                assert _env(compiled.run.worker.container) == [
+                    ("MODE", "shared", False)
+                ]
+                assert compiled.run.chief is None
+
+        compiled = _compile(
+            {
+                "run": {"kind": "tfjob"},
+                "runPatch": {"ps": {"env": {"MODE": "first"}}},
+            }
+        )
+        assert _env(compiled.run.ps.container) == [("MODE", "first", False)]
+
+    def test_compiled_kubeflow_role_rejects_shortcuts(self):
+        for field, value in (("cmd", "echo hi"), ("env", None), ("resources", {})):
+            with (
+                self.subTest(field=field),
+                self.assertRaisesRegex(ValidationError, rf"run\.ps\.{field}"),
+            ):
+                CompiledOperationSpecification.read(
+                    {
+                        "kind": "compiled_operation",
+                        "run": {"kind": "tfjob", "ps": {field: value}},
+                    }
+                )
+
     def test_root_container_requires_a_distributed_role(self):
         for kind in ("tfjob", "pytorchjob", "mpijob", "daskcluster", "raycluster"):
             with (

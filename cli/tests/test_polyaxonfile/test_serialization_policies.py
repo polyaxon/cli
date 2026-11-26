@@ -11,7 +11,7 @@ import uuid
 
 from polyaxon._flow.polyaxonfile import V1Component, V1Operation
 from polyaxon._flow.run.dag import V1Dag
-from polyaxon._polyaxonfile import read_polyaxonfile
+from polyaxon._polyaxonfile import OperationSpecification, read_polyaxonfile
 from polyaxon._utils.test_utils import BaseTestCase
 
 
@@ -75,6 +75,26 @@ class TestSerializationPolicies(BaseTestCase):
                     assert json.loads(spec.to_source_json()) == source
                     assert spec.model_fields_set == before_fields
                     assert spec.kind == kind
+
+    def test_native_kubeflow_run_and_component_state_keep_their_serialization(self):
+        authored = read_polyaxonfile(
+            {
+                "kind": "component",
+                "run": {
+                    "kind": "tfjob",
+                    "ps": {"replicas": 2, "container": {"image": "trainer:v1"}},
+                },
+            }
+        )
+        expected_run = (
+            '{"kind":"tfjob","ps":{"replicas":2,"container":{"image":"trainer:v1"}}}'
+        )
+        compiled = OperationSpecification.compile_operation(authored)
+
+        assert compiled.run.to_json() == expected_run
+        assert authored.to_component_state_json() == (
+            '{"kind":"component","run":' + expected_run + "}"
+        )
 
     def test_component_state_pins_null_and_omitted_dag_states(self):
         for explicit_nulls, expected in (

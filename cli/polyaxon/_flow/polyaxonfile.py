@@ -36,8 +36,9 @@ from polyaxon._flow.run.container_shortcuts import (
 )
 from polyaxon._flow.run.dag import V1Dag, V1DagShortcut
 from polyaxon._flow.run.enums import V1RunKind
+from polyaxon._flow.run.kubeflow.replica import V1KFReplica
 from polyaxon._flow.run.patch import patch_run, patch_run_patch, validate_run_patch
-from polyaxon._flow.run.runtime import RunMixin, V1Runtime
+from polyaxon._flow.run.runtime import RunMixin, V1Runtime, iter_shortcut_workloads
 from polyaxon._flow.run.service import V1ServiceShortcut
 from polyaxon._flow.templates import TemplateMixinConfig, V1Template
 from polyaxon._k8s import k8s_schemas, k8s_validation
@@ -46,6 +47,8 @@ from polyaxon.exceptions import PolyaxonValidationError
 
 
 def _get_run_patch(run, values: Dict):
+    if isinstance(run, V1KFReplica):
+        return type(run).from_dict(values)
     return validate_run_patch(
         values,
         run.kind,
@@ -213,19 +216,19 @@ def _apply_container_shortcuts(run, cmd, env, resources, strategy: PatchStrategy
 def compose_run(current, value, strategy: Optional[PatchStrategy]):
     """Merge one run or runPatch contribution and consume its workload shortcuts."""
     run = patch_run(current, value, strategy)
-    if not isinstance(run, ContainerShortcutsMixin):
-        return run
-    fields = run.model_fields_set.intersection(CONTAINER_SHORTCUT_FIELDS)
-    if not fields:
-        return run
-    # Consume first, so the run never holds both the shortcuts and their lowering.
-    shortcuts = {field: getattr(run, field) for field in CONTAINER_SHORTCUT_FIELDS}
-    for field in fields:
-        setattr(run, field, None)
-        run.model_fields_set.discard(field)
-    return _apply_container_shortcuts(
-        run, **shortcuts, strategy=strategy or PatchStrategy.POST_MERGE
-    )
+    strategy = strategy or PatchStrategy.POST_MERGE
+    for _, workload in iter_shortcut_workloads(run):
+        fields = workload.model_fields_set.intersection(CONTAINER_SHORTCUT_FIELDS)
+        if not fields:
+            continue
+        shortcuts = {
+            field: getattr(workload, field) for field in CONTAINER_SHORTCUT_FIELDS
+        }
+        for field in fields:
+            setattr(workload, field, None)
+            workload.model_fields_set.discard(field)
+        _apply_container_shortcuts(workload, **shortcuts, strategy=strategy)
+    return run
 
 
 class V1Polyaxonfile(

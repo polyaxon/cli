@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 
 from clipped.compact.pydantic import Field
 from polyaxon._flow.run.cleaner import V1CleanerJob
+from polyaxon._flow.run.container_shortcuts import ContainerShortcutsMixin
 from polyaxon._flow.run.dag import V1Dag
 from polyaxon._flow.run.dask.dask import V1DaskCluster
 from polyaxon._flow.run.enums import V1RunKind
@@ -32,6 +33,17 @@ V1Runtime = Annotated[
     ],
     Field(discriminator="kind"),
 ]
+
+
+def iter_shortcut_workloads(run):
+    """Yield the paths and concrete workloads that accept container shortcuts."""
+    if isinstance(run, ContainerShortcutsMixin):
+        yield "run", run
+    elif isinstance(run, (V1MPIJob, V1PytorchJob, V1TFJob)):
+        for name in run.get_replica_types():
+            replica = getattr(run, name)
+            if isinstance(replica, ContainerShortcutsMixin):
+                yield f"run.{name}", replica
 
 
 class RunMixin:
