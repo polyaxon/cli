@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 from typing import Dict, List, Optional, Set, Tuple
 
+from clipped.compact.pydantic import ConfigDict
 from clipped.utils.dates import path_last_modified
 from clipped.utils.paths import get_files_and_dirs_in_path
 from polyaxon._contexts import paths as ctx_paths
@@ -11,8 +12,7 @@ from polyaxon._schemas.base import BaseSchemaModel, RootModel
 class PathData(RootModel):
     root: Tuple[str, datetime, str]
 
-    class Config:
-        validate_assignment = False
+    model_config = ConfigDict(validate_assignment=False)
 
     @property
     def base(self) -> str:
@@ -54,8 +54,7 @@ class FSWatcher(BaseSchemaModel):
     def files_mp(self) -> Dict[str, PathData]:
         return self.file_mapping or {}
 
-    class Config(BaseSchemaModel.Config):
-        validate_assignment = False
+    model_config = ConfigDict(validate_assignment=False)
 
     @staticmethod
     def delete(path: str):

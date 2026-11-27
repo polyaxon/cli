@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from clipped.compact.pydantic import Field, StrictStr
+from clipped.compact.pydantic import ConfigDict, Field, StrictStr
 from polyaxon._schemas.base import BaseSchemaModel
 
 
@@ -11,5 +11,4 @@ class IngressConfig(BaseSchemaModel):
     tls: Optional[List[Dict]] = None
     annotations: Optional[Dict] = None
 
-    class Config:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")

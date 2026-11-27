@@ -2,6 +2,7 @@ import os
 from typing import Dict, List, Optional
 
 from clipped.compact.pydantic import (
+    ConfigDict,
     Field,
     StrictStr,
     field_validator,
@@ -81,8 +82,7 @@ class BaseAgentConfig(ConnectionCatalog, BaseSchemaModel):
     )
     namespace: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_K8S_NAMESPACE)
 
-    class Config:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")
 
     @model_validator(**validation_before)
     def handle_camel_case_artifacts_store(cls, values):

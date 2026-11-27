@@ -1,6 +1,6 @@
 from typing import Optional
 
-from clipped.compact.pydantic import Field, StrictStr
+from clipped.compact.pydantic import ConfigDict, Field, StrictStr
 from polyaxon._env_vars.keys import ENV_KEYS_HOME
 from polyaxon._schemas.base import BaseSchemaModel
 
@@ -18,5 +18,4 @@ class HomeConfig(BaseSchemaModel):
 
     path: Optional[StrictStr] = Field(alias=ENV_KEYS_HOME, default=None)
 
-    class Config:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")

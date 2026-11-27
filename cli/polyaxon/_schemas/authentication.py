@@ -1,6 +1,6 @@
 from typing import Optional
 
-from clipped.compact.pydantic import Field, StrictStr
+from clipped.compact.pydantic import ConfigDict, Field, StrictStr
 from polyaxon._env_vars.keys import ENV_KEYS_AUTH_TOKEN, ENV_KEYS_AUTH_USERNAME
 from polyaxon._schemas.base import BaseSchemaModel
 
@@ -20,8 +20,7 @@ class AccessTokenConfig(BaseSchemaModel):
     username: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_AUTH_USERNAME)
     token: Optional[StrictStr] = Field(default=None, alias=ENV_KEYS_AUTH_TOKEN)
 
-    class Config:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")
 
 
 class V1Credentials(BaseSchemaModel):

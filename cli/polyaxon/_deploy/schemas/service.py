@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from clipped.compact.pydantic import Field, StrictInt, StrictStr
+from clipped.compact.pydantic import ConfigDict, Field, StrictInt, StrictStr
 from polyaxon._deploy.schemas.cache import CacheConfig
 from polyaxon._deploy.schemas.celery import CeleryConfig
 from polyaxon._deploy.schemas.service_types import ServiceTypes
@@ -54,8 +54,7 @@ class BaseService(BaseSchemaModel):
     node_port: Optional[StrictInt] = Field(alias="nodePort", default=None)
     annotations: Optional[Dict] = None
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 class ApiServiceConfig(DeploymentService):
@@ -75,8 +74,7 @@ class HooksConfig(DeploymentService):
 class ThirdPartyService(DeploymentService):
     persistence: Optional[Dict] = None
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 class PostgresqlConfig(ThirdPartyService):
