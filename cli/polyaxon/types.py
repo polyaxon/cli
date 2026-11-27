@@ -55,4 +55,11 @@ NAMESPACE = {
     "V1GitType": V1GitType,
     "V1EventType": V1EventType,
     "V1ArtifactsType": V1ArtifactsType,
+    # Short names from the pydantic 1 forwarding table, kept for saved specs.
+    "FileType": V1FileType,
+    "DockerfileType": V1DockerfileType,
+    "TensorboardType": V1TensorboardType,
+    "GitType": V1GitType,
+    "EventType": V1EventType,
+    "ArtifactsType": V1ArtifactsType,
 }

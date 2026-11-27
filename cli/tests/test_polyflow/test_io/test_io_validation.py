@@ -1,7 +1,16 @@
 import pytest
 import sys
 
+from polyaxon._config.parser import ConfigParser
 from polyaxon._flow.io import V1IO, V1Validation
+from polyaxon._schemas.types import (
+    V1ArtifactsType,
+    V1DockerfileType,
+    V1EventType,
+    V1FileType,
+    V1GitType,
+    V1TensorboardType,
+)
 from polyaxon._utils.test_utils import BaseTestCase
 from polyaxon.exceptions import PolyaxonValidationError
 
@@ -750,6 +759,21 @@ class TestV1IOTypeExpressions(BaseTestCase):
                 with self.assertRaises(PolyaxonValidationError):
                     V1IO(name="input1", type=type_).validate_value(value)
                 assert probe not in sys.modules
+
+    def test_short_type_aliases(self):
+        config = V1IO(name="input1", type="List[GitType]")
+        result = config.validate_value([{"url": "https://github.com/a/b"}])
+        assert result[0].url == "https://github.com/a/b"
+        for alias, cls in (
+            ("FileType", V1FileType),
+            ("DockerfileType", V1DockerfileType),
+            ("TensorboardType", V1TensorboardType),
+            ("GitType", V1GitType),
+            ("EventType", V1EventType),
+            ("ArtifactsType", V1ArtifactsType),
+        ):
+            with self.subTest(alias=alias):
+                assert ConfigParser.resolve_type(alias) is cls
 
     def test_missing_value_does_not_resolve_type(self):
         type_ = "Literal['a']"
