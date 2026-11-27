@@ -783,6 +783,8 @@ class TestV1IOTypeExpressions(BaseTestCase):
             ("...", {}, 1),
             ("...", {"is_list": True}, [1]),
             ("Optional", {"is_list": True}, [1]),
+            ("List[[int]]", {}, [1]),
+            ("Optional[[int]]", {}, 1),
         ):
             with self.subTest(type=type_, **kwargs):
                 with self.assertRaisesRegex(PolyaxonValidationError, "input1"):
