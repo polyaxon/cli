@@ -18,16 +18,12 @@ class RootModel(_RootModel):
     _SCHEMA_EXCEPTION = PolyaxonSchemaError
     _CONFIG_SPEC = ConfigSpec
 
-    @property
-    def _root(self):
-        return self.root
-
     def set_root(self, value):
         self.root = value
         return self
 
     def get_root(self):
-        return self._root
+        return self.root
 
     @classmethod
     def make(cls, value):

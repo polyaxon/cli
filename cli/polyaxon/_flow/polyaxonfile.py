@@ -7,7 +7,6 @@ from clipped.compact.pydantic import (
     Field,
     StrictStr,
     field_validator,
-    model_rebuild,
     model_validator,
     validation_after,
     validation_always,
@@ -1956,9 +1955,4 @@ for model in (
     PartialV1Polyaxonfile,
     PartialV1Operation,
 ):
-    model_rebuild(
-        model,
-        V1Polyaxonfile=V1Polyaxonfile,
-        V1Component=V1Component,
-        V1Operation=V1Operation,
-    )
+    model.model_rebuild(force=True)

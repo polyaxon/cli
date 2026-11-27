@@ -4,8 +4,8 @@ from clipped.compact.pydantic import (
     NAME_REGEX,
     Field,
     StrictStr,
+    constr,
     field_validator,
-    patter_constr,
     validation_before,
 )
 from clipped.types.ref_or_obj import BoolOrRef, FloatOrRef, RefField
@@ -29,7 +29,7 @@ from polyaxon._schemas.types.mounts import V1Mount
 class BaseComponent(BaseSchemaModel):
     version: Optional[float] = None
     kind: Optional[StrictStr] = None
-    name: Optional[Union[patter_constr(pattern=NAME_REGEX), RefField]] = None
+    name: Optional[Union[constr(pattern=NAME_REGEX), RefField]] = None
     description: Optional[StrictStr] = None
     tags: Optional[List[StrictStr]] = None
     presets: Optional[List[StrictStr]] = None

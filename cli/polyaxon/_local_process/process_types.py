@@ -8,10 +8,10 @@ class V1EnvVar(RootModel):
     root: Union[Tuple[str, str], Dict[str, str]]
 
     def to_cmd(self):
-        if isinstance(self._root, tuple):
-            value = self._root
+        if isinstance(self.root, tuple):
+            value = self.root
         else:
-            value = self._root.items()
+            value = self.root.items()
         return [f"{value[0]}={value[1]}"]
 
 
