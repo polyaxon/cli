@@ -728,6 +728,8 @@ class TestV1IOTypeExpressions(BaseTestCase):
             ("Dict[str, object]", {"a": 1, "b": [2]}, {"a": 1, "b": [2]}),
             ("List[object]", [1, "x"], [1, "x"]),
             ("Type[int]", int, int),
+            ("List['int']", [1], [1]),
+            ("Dict['str', 'int']", {"a": 1}, {"a": 1}),
         ):
             with self.subTest(type=type_):
                 config = V1IO(name="input1", type=type_, is_optional=True)
@@ -741,10 +743,13 @@ class TestV1IOTypeExpressions(BaseTestCase):
     def test_type_expression_does_not_run_code(self):
         probe = "_plx_type_probe"
         self.addCleanup(sys.modules.pop, probe, None)
-        type_ = f"(__import__('sys').modules.__setitem__('{probe}', 1) or int)"
-        with self.assertRaises(PolyaxonValidationError):
-            V1IO(name="input1", type=type_).validate_value(3)
-        assert probe not in sys.modules
+        call = f"__import__('sys').modules.__setitem__('{probe}', 1) or int"
+        quoted_call = call.replace("'", '"')
+        for type_, value in ((f"({call})", 3), (f"List['{quoted_call}']", [1])):
+            with self.subTest(type=type_):
+                with self.assertRaises(PolyaxonValidationError):
+                    V1IO(name="input1", type=type_).validate_value(value)
+                assert probe not in sys.modules
 
     def test_type_expression_rejects_non_type_syntax(self):
         for type_, value in (("int.__class__", int), ("(lambda: int)()", 3)):
