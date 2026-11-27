@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional
 from typing_extensions import Literal
 
-from clipped.compact.pydantic import field_validator, model_validator, validation_after
-from clipped.config.schema import skip_partial
+from clipped.compact.pydantic import field_validator, validation_after
+from clipped.config.schema import skip_partial_after
 from clipped.utils.bools import to_bool
 from polyaxon._flow.io import V1IO
 from polyaxon._flow.operations.base import BaseOp
@@ -39,20 +39,20 @@ class V1CompiledOperation(BaseOp, RunMixin):
     def get_run_kind(self):
         return self.run.kind if self.run else None
 
-    @model_validator(**validation_after)
-    @skip_partial
-    def validate_sandbox_kind(cls, values):
-        plugins = cls.get_value_for_key("plugins", values)
-        sandbox = cls.get_value_for_key("sandbox", plugins) if plugins else None
-        ssh = cls.get_value_for_key("ssh", plugins) if plugins else None
+    @skip_partial_after
+    def validate_sandbox_kind(self):
+        plugins = self.plugins
+        # `plugins` can also be a template reference string.
+        sandbox = getattr(plugins, "sandbox", None)
+        ssh = getattr(plugins, "ssh", None)
         sandbox_enabled = is_plugin_enabled(sandbox)
         ssh_enabled = is_plugin_enabled(ssh)
         if not sandbox_enabled and not ssh_enabled:
-            return values
+            return self
 
-        run = cls.get_value_for_key("run", values)
+        run = self.run
         if run and run.kind == V1RunKind.SERVICE:
-            return values
+            return self
 
         got = run.kind if run else "unset"
         if sandbox_enabled:

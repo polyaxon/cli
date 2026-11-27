@@ -500,3 +500,16 @@ class TestDeploymentConfig(BaseTestCase):
                     "gateway": {"throttle": {"rates": {"run": 600}}},
                 }
             )
+
+    def test_deploy_config_clean_hooks_not_allowed_for_agent(self):
+        clean_hooks = {"image": "polyaxon/polyaxon-cli", "imageTag": "latest"}
+        config = DeploymentConfig.from_dict({"cleanHooks": clean_hooks})
+        assert config.clean_hooks.image == "polyaxon/polyaxon-cli"
+        with self.assertRaisesRegex(ValidationError, "keys that are not required"):
+            DeploymentConfig.from_dict(
+                {
+                    "deploymentChart": "agent",
+                    "agent": {"enabled": True},
+                    "cleanHooks": clean_hooks,
+                }
+            )

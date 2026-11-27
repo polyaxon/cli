@@ -6,11 +6,9 @@ from clipped.compact.pydantic import (
     PositiveInt,
     StrictInt,
     field_validator,
-    model_validator,
-    validation_after,
     validation_always,
 )
-from clipped.config.schema import skip_partial
+from clipped.config.schema import skip_partial, skip_partial_after
 from clipped.types.ref_or_obj import RefField
 from polyaxon._flow.early_stopping import V1EarlyStopping
 from polyaxon._flow.matrix.base import BaseSearchConfig
@@ -69,15 +67,14 @@ class UtilityFunctionConfig(BaseSchemaModel):  # TODO: Rename to V1UtilityFuncti
     num_warmup: Optional[int] = Field(alias="numWarmup", default=None)
     num_iterations: Optional[int] = Field(alias="numIterations", default=None)
 
-    @model_validator(**validation_after)
-    @skip_partial
-    def validate_utility_function(cls, values):
+    @skip_partial_after
+    def validate_utility_function(self):
         validate_utility_function(
-            acquisition_function=cls.get_value_for_key("acquisition_function", values),
-            kappa=cls.get_value_for_key("kappa", values),
-            eps=cls.get_value_for_key("eps", values),
+            acquisition_function=self.acquisition_function,
+            kappa=self.kappa,
+            eps=self.eps,
         )
-        return values
+        return self
 
 
 def validate_matrix(matrix):

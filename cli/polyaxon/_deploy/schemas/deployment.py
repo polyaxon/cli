@@ -288,53 +288,53 @@ class DeploymentConfig(BaseSchemaModel):
     dns: Optional[Dict] = None
 
     @model_validator(**validation_after)
-    def validate_deployment(cls, values):
-        gateway = cls.get_value_for_key("gateway", values)
+    def validate_deployment(self):
+        gateway = self.gateway
         validate_deployment_chart(
-            deployment_chart=cls.get_value_for_key("deployment_chart", values),
-            agent=cls.get_value_for_key("agent", values),
-            environment=cls.get_value_for_key("environment", values),
+            deployment_chart=self.deployment_chart,
+            agent=self.agent,
+            environment=self.environment,
         )
         validate_platform_deployment(
-            postgresql=cls.get_value_for_key("postgresql", values),
-            redis=cls.get_value_for_key("redis", values),
-            broker=cls.get_value_for_key("broker", values),
-            scheduler=cls.get_value_for_key("scheduler", values),
-            compiler=cls.get_value_for_key("compiler", values),
-            worker=cls.get_value_for_key("worker", values),
-            beat=cls.get_value_for_key("beat", values),
-            external_services=cls.get_value_for_key("external_services", values),
+            postgresql=self.postgresql,
+            redis=self.redis,
+            broker=self.broker,
+            scheduler=self.scheduler,
+            compiler=self.compiler,
+            worker=self.worker,
+            beat=self.beat,
+            external_services=self.external_services,
             gateway=gateway,
         )
-        if cls.get_value_for_key("deployment_chart", values) == DeploymentCharts.AGENT:
+        if self.deployment_chart == DeploymentCharts.AGENT:
             wrong_agent_deployment_keys(
-                password_length=cls.get_value_for_key("password_length", values),
-                password_auth=cls.get_value_for_key("password_auth", values),
-                platform_secret=cls.get_value_for_key("platform_secret", values),
-                encryption_secret=cls.get_value_for_key("encryption_secret", values),
-                user=cls.get_value_for_key("user", values),
-                global_replicas=cls.get_value_for_key("global_replicas", values),
-                global_concurrency=cls.get_value_for_key("global_concurrency", values),
-                scheduler=cls.get_value_for_key("scheduler", values),
-                compiler=cls.get_value_for_key("compiler", values),
-                worker=cls.get_value_for_key("worker", values),
-                beat=cls.get_value_for_key("beat", values),
-                clean_hook=cls.get_value_for_key("clean_hook", values),
-                api_hooks=cls.get_value_for_key("api_hooks", values),
-                flower=cls.get_value_for_key("flower", values),
-                postgresql=cls.get_value_for_key("postgresql", values),
-                redis=cls.get_value_for_key("redis", values),
-                broker=cls.get_value_for_key("broker", values),
+                password_length=self.password_length,
+                password_auth=self.password_auth,
+                platform_secret=self.platform_secret,
+                encryption_secret=self.encryption_secret,
+                user=self.user,
+                global_replicas=self.global_replicas,
+                global_concurrency=self.global_concurrency,
+                scheduler=self.scheduler,
+                compiler=self.compiler,
+                worker=self.worker,
+                beat=self.beat,
+                clean_hooks=self.clean_hooks,
+                api_hooks=self.api_hooks,
+                flower=self.flower,
+                postgresql=self.postgresql,
+                redis=self.redis,
+                broker=self.broker,
                 gateway_cache=gateway.cache if gateway else None,
                 gateway_throttle=gateway.throttle if gateway else None,
-                email=cls.get_value_for_key("email", values),
-                ldap=cls.get_value_for_key("ldap", values),
-                intervals=cls.get_value_for_key("intervals", values),
-                metrics=cls.get_value_for_key("metrics", values),
-                organization_key=cls.get_value_for_key("organization_key", values),
+                email=self.email,
+                ldap=self.ldap,
+                intervals=self.intervals,
+                metrics=self.metrics,
+                organization_key=self.organization_key,
             )
 
-        return values
+        return self
 
     @field_validator(
         "affinity", "celery_affinity", **validation_always, **validation_before

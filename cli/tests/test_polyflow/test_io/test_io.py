@@ -23,8 +23,8 @@ class TestV1IO(BaseTestCase):
                         "is_optional": is_optional,
                         "is_flag": is_flag,
                     }
-                    for config in (values, V1IO.model_construct(**values)):
-                        assert V1IO.validate_io(config) is config
+                    config = V1IO.model_construct(**values)
+                    assert V1IO.model_validate(config) is config
             validate.assert_not_called()
 
     def test_falsy_defaults_still_validate_on_model_revalidation(self):
@@ -42,17 +42,17 @@ class TestV1IO(BaseTestCase):
                 "is_list": is_list,
                 "is_optional": False,
             }
-            for config in (values, V1IO.model_construct(**values)):
-                with self.subTest(io_type=io_type, value=value):
-                    with self.assertRaises(ValueError):
-                        V1IO.validate_io(config)
+            config = V1IO.model_construct(**values)
+            with self.subTest(io_type=io_type, value=value):
+                with self.assertRaises(ValueError):
+                    V1IO.model_validate(config)
 
     def test_unvalued_flags_still_validate_on_model_revalidation(self):
         for io_type in (None, "int", "str"):
             values = {"name": "input1", "type": io_type, "is_flag": True}
-            for config in (values, V1IO.model_construct(**values)):
-                with self.assertRaisesRegex(ValueError, "cannot be a flag"):
-                    V1IO.validate_io(config)
+            config = V1IO.model_construct(**values)
+            with self.assertRaisesRegex(ValueError, "cannot be a flag"):
+                V1IO.model_validate(config)
 
     def test_wrong_io_config(self):
         # No name

@@ -606,7 +606,7 @@ class V1Param(BaseSchemaModel, ctx_refs.RefMixin, ParamValueMixin):
     @skip_partial
     def check_ref(cls, ref, values):
         values = cls.get_data_from_values(values)
-        validate_param_value(value=cls.get_value_for_key("value", values), ref=ref)
+        validate_param_value(value=values.get("value"), ref=ref)
         return ref
 
     @classmethod

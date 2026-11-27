@@ -9,7 +9,7 @@ from clipped.compact.pydantic import (
     validation_always,
     validation_before,
 )
-from clipped.config.schema import skip_partial
+from clipped.config.schema import skip_partial, skip_partial_after
 from clipped.types.ref_or_obj import RefField
 
 from polyaxon._k8s import k8s_schemas, k8s_validation
@@ -231,19 +231,18 @@ class V1Init(BaseSchemaModel):
     path: Optional[StrictStr] = None
     container: Optional[Union[k8s_schemas.V1Container, RefField]] = None
 
-    @model_validator(**validation_after)
-    @skip_partial
-    def validate_init(cls, values):
-        artifacts = cls.get_value_for_key("artifacts", values)
-        paths = cls.get_value_for_key("paths", values)
-        git = cls.get_value_for_key("git", values)
-        dockerfile = cls.get_value_for_key("dockerfile", values)
-        file = cls.get_value_for_key("file", values)
-        tensorboard = cls.get_value_for_key("tensorboard", values)
-        lineage_ref = cls.get_value_for_key("lineage_ref", values)
-        model_ref = cls.get_value_for_key("model_ref", values)
-        artifact_ref = cls.get_value_for_key("artifact_ref", values)
-        connection = cls.get_value_for_key("connection", values)
+    @skip_partial_after
+    def validate_init(self):
+        artifacts = self.artifacts
+        paths = self.paths
+        git = self.git
+        dockerfile = self.dockerfile
+        file = self.file
+        tensorboard = self.tensorboard
+        lineage_ref = self.lineage_ref
+        model_ref = self.model_ref
+        artifact_ref = self.artifact_ref
+        connection = self.connection
         schemas = 0
         if artifacts:
             schemas += 1
@@ -272,7 +271,7 @@ class V1Init(BaseSchemaModel):
             raise ValueError(
                 "git field without a valid url requires a connection to be passed."
             )
-        return values
+        return self
 
     @field_validator("container", **validation_always, **validation_before)
     def validate_container(cls, v):

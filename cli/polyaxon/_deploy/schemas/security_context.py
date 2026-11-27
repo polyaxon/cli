@@ -1,13 +1,7 @@
 from typing import Optional
 
-from clipped.compact.pydantic import (
-    Field,
-    StrictInt,
-    StrictStr,
-    model_validator,
-    validation_after,
-)
-from clipped.config.schema import skip_partial
+from clipped.compact.pydantic import Field, StrictInt, StrictStr
+from clipped.config.schema import skip_partial_after
 from polyaxon._schemas.base import BaseSchemaModel
 
 
@@ -25,13 +19,12 @@ class SecurityContextConfig(BaseSchemaModel):
     )
     run_as_non_root: Optional[bool] = Field(alias="runAsNonRoot", default=None)
 
-    @model_validator(**validation_after)
-    @skip_partial
-    def validate_security_context(cls, values):
-        user = cls.get_value_for_key("run_as_user", values)
-        group = cls.get_value_for_key("run_as_group", values)
+    @skip_partial_after
+    def validate_security_context(self):
+        user = self.run_as_user
+        group = self.run_as_group
         if any([user, group]) and not all([user, group]):
             raise ValueError(
                 "Security context requires both `user` and `group` or none."
             )
-        return values
+        return self

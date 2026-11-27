@@ -6,11 +6,10 @@ from clipped.compact.pydantic import (
     StrictStr,
     field_validator,
     model_validator,
-    validation_after,
     validation_always,
     validation_before,
 )
-from clipped.config.schema import skip_partial
+from clipped.config.schema import skip_partial_after
 from clipped.types.numbers import StrictIntOrFloat
 from clipped.types.ref_or_obj import BoolOrRef, IntOrRef, RefField
 from polyaxon._config.parser import ConfigParser
@@ -949,23 +948,22 @@ class V1IO(BaseSchemaModel):
             values["validation"] = validation.to_dict()
         return values
 
-    @model_validator(**validation_after)
-    @skip_partial
-    def validate_io(cls, values):
-        value = cls.get_value_for_key("value", values)
-        is_flag = cls.get_value_for_key("is_flag", values)
+    @skip_partial_after
+    def validate_io(self):
+        value = self.value
+        is_flag = self.is_flag
         if value is None and not is_flag:
-            return values
+            return self
         validate_io(
-            name=cls.get_value_for_key("name", values),
-            type=cls.get_value_for_key("type", values),
+            name=self.name,
+            type=self.type,
             value=value,
-            is_list=cls.get_value_for_key("is_list", values),
-            is_optional=cls.get_value_for_key("is_optional", values),
+            is_list=self.is_list,
+            is_optional=self.is_optional,
             is_flag=is_flag,
-            validation=cls.get_value_for_key("validation", values),
+            validation=self.validation,
         )
-        return values
+        return self
 
     def validate_value(self, value: Any, parse: bool = True):
         if self.type is None:

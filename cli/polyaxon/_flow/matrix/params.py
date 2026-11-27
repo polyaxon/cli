@@ -84,18 +84,14 @@ class BaseRange(BaseSchemaModel):
     _CHECK_ORDER: ClassVar[bool] = True
 
     @model_validator(**validation_after)
-    def validate_range(cls, values):
-        if hasattr(values, "to_dict"):
-            value = list(values.to_dict().values())
-        else:
-            value = list(values.values())
+    def validate_range(self):
         _validate_range(
-            value,
-            cls._REQUIRED_KEYS,
-            cls._REQUIRED_KEYS + cls._OPTIONAL_KEYS,
-            check_order=cls._CHECK_ORDER,
+            list(self.to_dict().values()),
+            self._REQUIRED_KEYS,
+            self._REQUIRED_KEYS + self._OPTIONAL_KEYS,
+            check_order=self._CHECK_ORDER,
         )
-        return values
+        return self
 
 
 class Range(BaseRange):

@@ -8,12 +8,11 @@ from clipped.compact.pydantic import (
     StrictStr,
     field_validator,
     model_validator,
-    validation_after,
     validation_always,
     validation_before,
 )
 from clipped.config.patch_strategy import PatchStrategy
-from clipped.config.schema import skip_partial, to_partial
+from clipped.config.schema import skip_partial_after, to_partial
 from clipped.types.ref_or_obj import RefField
 from clipped.utils.json import orjson_dumps
 from polyaxon._flow.base import BaseOp
@@ -660,28 +659,23 @@ class V1Polyaxonfile(
             return params
         return {k: normalize_param_value(v) for k, v in params.items()}
 
-    @model_validator(**validation_after)
-    @skip_partial
-    def validate_reference(cls, values):
-        if not values or cls.get_value_for_key("is_preset", values):
-            return values
+    @skip_partial_after
+    def validate_reference(self):
+        if self.is_preset:
+            return self
         references = ("hub_ref", "dag_ref", "url_ref", "path_ref")
-        count = sum(bool(cls.get_value_for_key(ref, values)) for ref in references)
+        count = sum(bool(getattr(self, ref)) for ref in references)
         if count > 1:
             raise ValueError(
                 "At most one reference may be specified: "
                 "hub_ref, dag_ref, url_ref, path_ref."
             )
-        if (
-            isinstance(cls.get_value_for_key("run", values), Mapping)
-            and not count
-            and cls.get_value_for_key("component", values) is None
-        ):
+        if isinstance(self.run, Mapping) and not count and self.component is None:
             raise ValueError(
                 "run.kind must be provided locally or by a referenced base."
             )
         # Stored files can retain both a reference and its resolved component.
-        return values
+        return self
 
     def to_source_json(self) -> str:
         """Serialize authored fields as JSON, preserving nulls and omissions."""
