@@ -751,6 +751,15 @@ class TestV1IOTypeExpressions(BaseTestCase):
                     V1IO(name="input1", type=type_).validate_value(value)
                 assert probe not in sys.modules
 
+    def test_missing_value_does_not_resolve_type(self):
+        type_ = "Literal['a']"
+        for kwargs in ({}, {"is_list": True}):
+            with self.subTest(**kwargs):
+                config = V1IO(name="input1", type=type_, is_optional=True, **kwargs)
+                assert config.validate_value(None) is None
+        with self.assertRaisesRegex(PolyaxonValidationError, "No value was provided"):
+            V1IO(name="input1", type=type_).validate_value(None)
+
     def test_type_expression_rejects_non_type_syntax(self):
         for type_, value in (("int.__class__", int), ("(lambda: int)()", 3)):
             with self.subTest(type=type_):
