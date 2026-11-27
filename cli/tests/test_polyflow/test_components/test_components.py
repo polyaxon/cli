@@ -1,6 +1,6 @@
 import pytest
 
-from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.tz import now
 from polyaxon import schemas, types
 from polyaxon._flow.component.component import V1Component
@@ -527,15 +527,7 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        if PYDANTIC_VERSION.startswith("2."):
-            with self.assertRaises(PolyaxonValidationError):
-                ops_params.validate_params(
-                    params={"param1": {"value": 12.1}},
-                    inputs=config.inputs,
-                    outputs=config.outputs,
-                    is_template=False,
-                )
-        else:
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
                 inputs=config.inputs,
@@ -550,15 +542,7 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        if PYDANTIC_VERSION.startswith("2."):
-            with self.assertRaises(PolyaxonValidationError):
-                ops_params.validate_params(
-                    params={"param1": {"value": "12.1"}},
-                    inputs=config.inputs,
-                    outputs=config.outputs,
-                    is_template=False,
-                )
-        else:
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": "12.1"}},
                 inputs=config.inputs,
@@ -739,28 +723,14 @@ class TestComponentsConfigs(BaseTestCase):
                 is_template=False,
             )
 
-        if PYDANTIC_VERSION.startswith("2."):
-            with self.assertRaises(PolyaxonValidationError):
-                ops_params.validate_params(
-                    params={"param1": {"value": 12.1}},
-                    inputs=config.inputs,
-                    outputs=config.outputs,
-                    is_template=False,
-                )
-            with self.assertRaises(PolyaxonValidationError):
-                ops_params.validate_params(
-                    params={"param1": 12.1},
-                    inputs=config.inputs,
-                    outputs=config.outputs,
-                    is_template=False,
-                )
-        else:
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": {"value": 12.1}},
                 inputs=config.inputs,
                 outputs=config.outputs,
                 is_template=False,
             )
+        with self.assertRaises(PolyaxonValidationError):
             ops_params.validate_params(
                 params={"param1": 12.1},
                 inputs=config.inputs,

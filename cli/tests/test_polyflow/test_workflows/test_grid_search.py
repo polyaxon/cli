@@ -1,6 +1,6 @@
 import pytest
 
-from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.assertions import assert_equal_dict
 from polyaxon._flow.matrix.grid_search import V1GridSearch
 from polyaxon._flow.operations.compiled_operation import V1CompiledOperation
@@ -174,27 +174,21 @@ class TestWorkflowV1GridSearchBackfill(BaseTestCase):
                 }
             },
         }
-        if PYDANTIC_VERSION.startswith("2."):
-            config = V1GridSearch.from_dict(config_dict).to_dict()
-            params = config.pop("params")
-            expected_params = config_dict.pop("params")
-            assert config == config_dict
-            assert params["dates"]["kind"] == expected_params["dates"]["kind"]
-            assert (
-                str(params["dates"]["value"]["start"])
-                == expected_params["dates"]["value"][0]
-            )
-            # the 00:00
-            assert (
-                str(params["dates"]["value"]["stop"])
-                != expected_params["dates"]["value"][1]
-            )
-            assert (
-                params["dates"]["value"]["step"] == expected_params["dates"]["value"][2]
-            )
-        else:
-            with self.assertRaises(ValidationError):
-                V1GridSearch.from_dict(config_dict)
+        config = V1GridSearch.from_dict(config_dict).to_dict()
+        params = config.pop("params")
+        expected_params = config_dict.pop("params")
+        assert config == config_dict
+        assert params["dates"]["kind"] == expected_params["dates"]["kind"]
+        assert (
+            str(params["dates"]["value"]["start"])
+            == expected_params["dates"]["value"][0]
+        )
+        # the 00:00
+        assert (
+            str(params["dates"]["value"]["stop"])
+            != expected_params["dates"]["value"][1]
+        )
+        assert params["dates"]["value"]["step"] == expected_params["dates"]["value"][2]
 
     def test_wrong_datetime_backfill_config(self):
         config_dict = {
@@ -222,25 +216,21 @@ class TestWorkflowV1GridSearchBackfill(BaseTestCase):
                 }
             },
         }
-        if PYDANTIC_VERSION.startswith("2."):
-            config = V1GridSearch.from_dict(config_dict).to_dict()
-            params = config.pop("params")
-            expected_params = config_dict.pop("params")
-            assert config == config_dict
-            assert params["dates"]["kind"] == expected_params["dates"]["kind"]
-            # the date is not datetime
-            assert (
-                str(params["dates"]["value"]["start"])
-                != expected_params["dates"]["value"][0]
-            )
-            assert (
-                str(params["dates"]["value"]["stop"])
-                == expected_params["dates"]["value"][1]
-            )
-            assert (
-                params["dates"]["value"]["step"].total_seconds()
-                == expected_params["dates"]["value"][2]
-            )
-        else:
-            with self.assertRaises(ValidationError):
-                V1GridSearch.from_dict(config_dict)
+        config = V1GridSearch.from_dict(config_dict).to_dict()
+        params = config.pop("params")
+        expected_params = config_dict.pop("params")
+        assert config == config_dict
+        assert params["dates"]["kind"] == expected_params["dates"]["kind"]
+        # the date is not datetime
+        assert (
+            str(params["dates"]["value"]["start"])
+            != expected_params["dates"]["value"][0]
+        )
+        assert (
+            str(params["dates"]["value"]["stop"])
+            == expected_params["dates"]["value"][1]
+        )
+        assert (
+            params["dates"]["value"]["step"].total_seconds()
+            == expected_params["dates"]["value"][2]
+        )

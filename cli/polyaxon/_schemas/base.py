@@ -1,4 +1,3 @@
-from clipped.compact.pydantic import PYDANTIC_VERSION
 from clipped.config.schema import (
     BaseSchemaModel as _BaseSchemaModel,
     RootModel as _RootModel,
@@ -21,13 +20,10 @@ class RootModel(_RootModel):
 
     @property
     def _root(self):
-        return self.__root__ if hasattr(self, "__root__") else self.root
+        return self.root
 
     def set_root(self, value):
-        if hasattr(self, "__root__"):
-            self.__root__ = value
-        else:
-            self.root = value
+        self.root = value
         return self
 
     def get_root(self):
@@ -35,6 +31,4 @@ class RootModel(_RootModel):
 
     @classmethod
     def make(cls, value):
-        if PYDANTIC_VERSION.startswith("2."):
-            return cls(root=value)
-        return cls(__root__=value)
+        return cls(root=value)

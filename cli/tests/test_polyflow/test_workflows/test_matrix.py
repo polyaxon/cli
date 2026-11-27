@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta
 import numpy as np
 import pytest
 
-from clipped.compact.pydantic import PYDANTIC_VERSION, ValidationError
+from clipped.compact.pydantic import ValidationError
 from clipped.utils.json import orjson_dumps
 from hypertune.matrix.utils import get_length, get_max, get_min, sample, to_numpy
 from polyaxon._flow.matrix.params import (
@@ -358,15 +358,10 @@ class TestMatrixConfigs(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1HpLinSpace.from_dict(config_dict)
 
-        # as dict num as float breaks in v2
+        # A fractional sample count is invalid.
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
-        if PYDANTIC_VERSION.startswith("2."):
-            with self.assertRaises(ValidationError):
-                V1HpLinSpace.from_dict(config_dict)
-        else:
-            config = V1HpLinSpace.from_dict(config_dict)
-            assert_equal(config, *config_dict["value"].values())
-            assert config.to_json() != orjson_dumps(config_dict)
+        with self.assertRaises(ValidationError):
+            V1HpLinSpace.from_dict(config_dict)
 
         # as dict num as int
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}
@@ -479,15 +474,10 @@ class TestMatrixConfigs(BaseTestCase):
         with self.assertRaises(ValidationError):
             V1HpLogSpace.from_dict(config_dict)
 
-        # as dict num as float breaks in v2
+        # A fractional sample count is invalid.
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1.2}
-        if PYDANTIC_VERSION.startswith("2."):
-            with self.assertRaises(ValidationError):
-                V1HpLogSpace.from_dict(config_dict)
-        else:
-            config = V1HpLogSpace.from_dict(config_dict)
-            assert_equal(config, *config_dict["value"].values())
-            assert config.to_json() != orjson_dumps(config_dict)
+        with self.assertRaises(ValidationError):
+            V1HpLogSpace.from_dict(config_dict)
 
         # with base
         config_dict["value"] = {"start": 1.2, "stop": 1.8, "num": 1}

@@ -2,7 +2,6 @@ from datetime import datetime
 import os
 from typing import Dict, List, Optional, Set, Tuple
 
-from clipped.compact.pydantic import PYDANTIC_VERSION
 from clipped.utils.dates import path_last_modified
 from clipped.utils.paths import get_files_and_dirs_in_path
 from polyaxon._contexts import paths as ctx_paths
@@ -10,10 +9,7 @@ from polyaxon._schemas.base import BaseSchemaModel, RootModel
 
 
 class PathData(RootModel):
-    if PYDANTIC_VERSION.startswith("2."):
-        root: Tuple[str, datetime, str]
-    else:
-        __root__: Tuple[str, datetime, str]
+    root: Tuple[str, datetime, str]
 
     class Config:
         validate_assignment = False

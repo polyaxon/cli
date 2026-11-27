@@ -1,20 +1,12 @@
 from typing import Dict, List, Optional, Tuple, Union
 
-from clipped.compact.pydantic import (
-    PYDANTIC_VERSION,
-    Field,
-    field_validator,
-    validation_always,
-)
+from clipped.compact.pydantic import Field, field_validator, validation_always
 from clipped.utils.units import to_cpu_value, to_memory_bytes, to_unit_memory
 from polyaxon._schemas.base import BaseSchemaModel, RootModel
 
 
 class V1EnvVar(RootModel):
-    if PYDANTIC_VERSION.startswith("2."):
-        root: Union[Tuple[str, str], Dict[str, str]]
-    else:
-        __root__: Union[Tuple[str, str], Dict[str, str]]
+    root: Union[Tuple[str, str], Dict[str, str]]
 
     def to_cmd(self):
         value = self.get_root()
@@ -22,10 +14,7 @@ class V1EnvVar(RootModel):
 
 
 class V1VolumeMount(RootModel):
-    if PYDANTIC_VERSION.startswith("2."):
-        root: Tuple[str, str]
-    else:
-        __root__: Tuple[str, str]
+    root: Tuple[str, str]
 
     def to_cmd(self):
         return list(self.get_root())
@@ -41,10 +30,7 @@ ROOT_TYPE = Union[
 
 
 class V1ContainerPort(RootModel):
-    if PYDANTIC_VERSION.startswith("2."):
-        root: ROOT_TYPE
-    else:
-        __root__: ROOT_TYPE
+    root: ROOT_TYPE
 
     def to_cmd(self):
         root = self.get_root()

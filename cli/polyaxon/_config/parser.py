@@ -9,10 +9,3 @@ class ConfigParser(_ConfigParser):
         from polyaxon import types
 
         return types.MAPPING
-
-    @staticmethod
-    @memoize
-    def type_forwarding():
-        from polyaxon import types
-
-        return types.FORWARDING

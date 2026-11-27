@@ -1,9 +1,11 @@
 from datetime import date, datetime, timedelta
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Union
+from typing import Any, ClassVar, List, Optional, Union
 from typing_extensions import Annotated, Literal
 
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import core_schema
+
 from clipped.compact.pydantic import (
-    PYDANTIC_VERSION,
     Field,
     StrictStr,
     field_validator,
@@ -17,9 +19,6 @@ from polyaxon import types
 from polyaxon._flow.matrix.enums import V1HPKind
 from polyaxon._schemas.base import BaseSchemaModel
 
-
-if TYPE_CHECKING:
-    from clipped.compact.pydantic import CallableGenerator
 
 try:
     import numpy as np
@@ -37,25 +36,12 @@ def validate_pchoice(values):
 
 
 class PChoice(tuple):
-    if PYDANTIC_VERSION.startswith("2."):
-        from pydantic_core import core_schema
-
-        @classmethod
-        def __get_pydantic_core_schema__(
-            cls, *args, **kwargs
-        ) -> core_schema.CoreSchema:
-            from pydantic_core import core_schema
-
-            return core_schema.no_info_after_validator_function(
-                cls.validate,
-                core_schema.any_schema(),
-            )
-
-    else:
-
-        @classmethod
-        def __get_validators__(cls) -> "CallableGenerator":
-            yield cls.validate
+    @classmethod
+    def __get_pydantic_core_schema__(cls, *args, **kwargs) -> core_schema.CoreSchema:
+        return core_schema.no_info_after_validator_function(
+            cls.validate,
+            core_schema.any_schema(),
+        )
 
     @classmethod
     def validate(cls, value):
@@ -122,25 +108,12 @@ class Range(BaseRange):
 class RangeStr(StrictStr):
     _CLASS = Range
 
-    if PYDANTIC_VERSION.startswith("2."):
-        from pydantic_core import core_schema
-
-        @classmethod
-        def __get_pydantic_core_schema__(
-            cls, *args, **kwargs
-        ) -> core_schema.CoreSchema:
-            from pydantic_core import core_schema
-
-            return core_schema.no_info_after_validator_function(
-                cls.validate,
-                core_schema.str_schema(strict=True),
-            )
-
-    else:
-
-        @classmethod
-        def __get_validators__(cls) -> "CallableGenerator":
-            yield cls.validate
+    @classmethod
+    def __get_pydantic_core_schema__(cls, *args, **kwargs) -> core_schema.CoreSchema:
+        return core_schema.no_info_after_validator_function(
+            cls.validate,
+            core_schema.str_schema(strict=True),
+        )
 
     @classmethod
     def validate(cls, value: str):
@@ -163,26 +136,14 @@ class RangeStr(StrictStr):
 class RangeList(list):
     _CLASS: ClassVar = Range
 
-    if PYDANTIC_VERSION.startswith("2."):
-        from pydantic import GetCoreSchemaHandler
-        from pydantic_core import core_schema
-
-        @classmethod
-        def __get_pydantic_core_schema__(
-            cls, source_type: Any, handler: GetCoreSchemaHandler
-        ) -> core_schema.CoreSchema:
-            from pydantic_core import core_schema
-
-            return core_schema.no_info_after_validator_function(
-                cls.validate,
-                core_schema.list_schema(),
-            )
-
-    else:
-
-        @classmethod
-        def __get_validators__(cls) -> "CallableGenerator":
-            yield cls.validate
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        return core_schema.no_info_after_validator_function(
+            cls.validate,
+            core_schema.list_schema(),
+        )
 
     @classmethod
     def validate(cls, value: List):

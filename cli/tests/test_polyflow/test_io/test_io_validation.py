@@ -122,6 +122,15 @@ class TestV1Validation(BaseTestCase):
             config.validate_value([1, 50])
         assert config.validate_value(None) == [3, 4]
 
+    def test_validate_nested_type_expressions(self):
+        for type_, value in (
+            ("List[Dict[str, Optional[StrictInt]]]", [{"count": 3}, {"count": None}]),
+            ("List[Optional[Callable[[str], int]]]", [len, None]),
+        ):
+            with self.subTest(type=type_):
+                config = V1IO(name="input1", type=type_)
+                assert config.validate_value(value) == value
+
     def test_validate_gt_dict(self):
         config_dict = {
             "name": "input1",
