@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 import numpy as np
 import pytest
+from unittest import mock
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.json import orjson_dumps
@@ -28,6 +29,28 @@ from polyaxon._utils.test_utils import BaseTestCase
 
 @pytest.mark.workflow_mark
 class TestMatrixConfigs(BaseTestCase):
+    def test_matrix_util_error_locations(self):
+        normal = V1HpNormal.from_dict(
+            {"kind": "normal", "value": {"loc": 0, "scale": 1}}
+        )
+        pchoice = V1HpPChoice.from_dict(
+            {"kind": "pchoice", "value": [(1, 0.1), (2, 0.9)]}
+        )
+        for fct, matrix, loc in (
+            (get_length, normal, ("get_length",)),
+            (to_numpy, normal, ("to_numpy",)),
+            (to_numpy, pchoice, ("to_numpy",)),
+        ):
+            with self.subTest(fct=fct.__name__, kind=matrix._IDENTIFIER):
+                with self.assertRaises(ValidationError) as ctx:
+                    fct(matrix)
+                assert ctx.exception.errors()[0]["loc"] == loc
+
+        with mock.patch("hypertune.matrix.utils._sample", side_effect=RuntimeError):
+            with self.assertRaises(ValidationError) as ctx:
+                sample(normal)
+        assert ctx.exception.errors()[0]["loc"] == ("sample",)
+
     def test_matrix_values_option(self):
         config_dict = {"kind": "choice", "value": [1, 2, 3]}
         config = V1HpChoice.from_dict(config_dict)
