@@ -724,6 +724,10 @@ class TestV1IOTypeExpressions(BaseTestCase):
             ("Union[int, str]", 3, 3),
             ("Tuple[int, int]", [1, 2], (1, 2)),
             ("int | None", 3, 3),
+            ("object", {"a": 1}, {"a": 1}),
+            ("Dict[str, object]", {"a": 1, "b": [2]}, {"a": 1, "b": [2]}),
+            ("List[object]", [1, "x"], [1, "x"]),
+            ("Type[int]", int, int),
         ):
             with self.subTest(type=type_):
                 config = V1IO(name="input1", type=type_, is_optional=True)
