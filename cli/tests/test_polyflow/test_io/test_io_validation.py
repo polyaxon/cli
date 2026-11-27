@@ -1,4 +1,5 @@
 import pytest
+import sys
 
 from polyaxon._flow.io import V1IO, V1Validation
 from polyaxon._utils.test_utils import BaseTestCase
@@ -698,3 +699,51 @@ class TestV1Validation(BaseTestCase):
         }
         assert config.validate_value({"foo": "bar"}) == {"foo": "bar"}
         assert config.validate_value(None) == {"foo": "bar"}
+
+
+@pytest.mark.polyflow_mark
+class TestV1IOTypeExpressions(BaseTestCase):
+    def test_supported_type_expressions(self):
+        for type_, value, expected in (
+            ("int", 12, 12),
+            ("str", "foo", "foo"),
+            ("float", 1.5, 1.5),
+            ("bool", True, True),
+            ("dict", {"a": 1}, {"a": 1}),
+            ("list", [1, 2], [1, 2]),
+            ("Any", {"a": [1]}, {"a": [1]}),
+            ("any", "foo", "foo"),
+            ("StrictInt", 3, 3),
+            # Loadable types JSON-decode string values first.
+            ("StrictStr", '"foo"', "foo"),
+            ("List[str]", ["a"], ["a"]),
+            ("List[int]", [1, 2], [1, 2]),
+            ("Dict[str, int]", {"a": 1}, {"a": 1}),
+            ("Dict[str, Any]", {"a": [1]}, {"a": [1]}),
+            ("Optional[int]", 3, 3),
+            ("Union[int, str]", 3, 3),
+            ("Tuple[int, int]", [1, 2], (1, 2)),
+            ("int | None", 3, 3),
+        ):
+            with self.subTest(type=type_):
+                config = V1IO(name="input1", type=type_, is_optional=True)
+                assert config.validate_value(value) == expected
+
+    def test_polyaxon_types_in_type_expressions(self):
+        config = V1IO(name="input1", type="List[V1GitType]")
+        result = config.validate_value([{"url": "https://github.com/a/b"}])
+        assert result[0].url == "https://github.com/a/b"
+
+    def test_type_expression_does_not_run_code(self):
+        probe = "_plx_type_probe"
+        self.addCleanup(sys.modules.pop, probe, None)
+        type_ = f"(__import__('sys').modules.__setitem__('{probe}', 1) or int)"
+        with self.assertRaises(PolyaxonValidationError):
+            V1IO(name="input1", type=type_).validate_value(3)
+        assert probe not in sys.modules
+
+    def test_type_expression_rejects_non_type_syntax(self):
+        for type_, value in (("int.__class__", int), ("(lambda: int)()", 3)):
+            with self.subTest(type=type_):
+                with self.assertRaises(PolyaxonValidationError):
+                    V1IO(name="input1", type=type_).validate_value(value)

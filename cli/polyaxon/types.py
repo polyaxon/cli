@@ -1,4 +1,5 @@
 from clipped.types import MAPPING as CLIPPED_MAPPING
+from clipped.types import NAMESPACE as CLIPPED_NAMESPACE
 from clipped.types import *
 
 from polyaxon._schemas.types import (
@@ -44,4 +45,14 @@ MAPPING = {
     IMAGE: ImageStr,
     EVENT: V1EventType,
     ARTIFACTS: V1ArtifactsType,
+}
+
+NAMESPACE = {
+    **CLIPPED_NAMESPACE,
+    "V1FileType": V1FileType,
+    "V1DockerfileType": V1DockerfileType,
+    "V1TensorboardType": V1TensorboardType,
+    "V1GitType": V1GitType,
+    "V1EventType": V1EventType,
+    "V1ArtifactsType": V1ArtifactsType,
 }

@@ -483,7 +483,7 @@ class V1IO(BaseSchemaModel):
     Args:
         name: str
         description: str, optional
-        type: str, any python type hint, pydantic built-in types, and gcs, s3, wasb, dockerfile, git, image, event, artifacts, path, metric, metadata, date, datetime.
+        type: str, one of gcs, s3, wasb, dockerfile, git, image, event, artifacts, path, metric, metadata, date, datetime, or a type expression such as `int`, `List[str]`, or `Dict[str, Any]` built from builtin, typing, pydantic, and Polyaxon types.
         value: any, optional
         is_optional: bool, optional (**Deprecated**)
         is_list: bool, optional
@@ -582,7 +582,8 @@ class V1IO(BaseSchemaModel):
 
     for more details about composite type validation and schema,
     please check the [types section](/docs/references/polyaxonfile/specification/types/),
-    possible types include any python type hint, pydantic built-in types, and:
+    possible types include type expressions built from builtin, typing, pydantic, and Polyaxon types
+    (for example `int`, `List[str]`, `Optional[Dict[str, Any]]`, or `List[V1GitType]`), and:
         * URI: "uri"
         * LIST: "list"
         * GCS: "gcs"
