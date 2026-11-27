@@ -775,6 +775,19 @@ class TestV1IOTypeExpressions(BaseTestCase):
             with self.subTest(alias=alias):
                 assert ConfigParser.resolve_type(alias) is cls
 
+    def test_malformed_type_expressions(self):
+        for type_, kwargs, value in (
+            ("(int, str)", {"is_list": True}, [1]),
+            ("(int, str)", {}, 1),
+            ("[int]", {}, [1]),
+            ("...", {}, 1),
+            ("...", {"is_list": True}, [1]),
+            ("Optional", {"is_list": True}, [1]),
+        ):
+            with self.subTest(type=type_, **kwargs):
+                with self.assertRaisesRegex(PolyaxonValidationError, "input1"):
+                    V1IO(name="input1", type=type_, **kwargs).validate_value(value)
+
     def test_missing_value_does_not_resolve_type(self):
         type_ = "Literal['a']"
         for kwargs in ({}, {"is_list": True}):
