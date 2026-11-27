@@ -13,6 +13,7 @@ from polyaxon._env_vars.getters.project import _get_project_context, _ProjectCon
 from polyaxon._env_vars.keys import (
     ENV_KEYS_COLLECT_ARTIFACTS,
     ENV_KEYS_COLLECT_RESOURCES,
+    ENV_KEYS_COLLECT_RESOURCES_DETAILED,
     ENV_KEYS_RUN_INSTANCE,
 )
 from polyaxon._utils.fqn_utils import get_owner_team_space, split_owner_team_space
@@ -132,6 +133,19 @@ def get_collect_resources(arg: Optional[bool] = None, default: Optional[bool] = 
         arg
         if arg is not None
         else to_bool(os.getenv(ENV_KEYS_COLLECT_RESOURCES, default), handle_none=True)
+    )
+
+
+def get_collect_resources_detailed(
+    arg: Optional[bool] = None, default: Optional[bool] = None
+):
+    """If set, Polyaxon will collect the detailed process and cgroup resources"""
+    return (
+        arg
+        if arg is not None
+        else to_bool(
+            os.getenv(ENV_KEYS_COLLECT_RESOURCES_DETAILED, default), handle_none=True
+        )
     )
 
 
