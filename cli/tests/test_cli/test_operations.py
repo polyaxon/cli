@@ -26,7 +26,7 @@ from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_user import V1User
 from polyaxon._utils.cli_constants import SYMLINK_MODES
 from polyaxon.exceptions import ApiException, PolyaxonClientException
-from tests.test_cli.utils import BaseCommandTestCase
+from tests.test_cli.utils import BaseCommandTestCase, temp_cwd
 
 
 RUN_UUID = "8aac02e3a62a4f0aaa257c59da5eab80"
@@ -867,7 +867,7 @@ class TestCliRuns(BaseCommandTestCase):
         list_runs.return_value = self.list_runs_response()
 
         for options in ([], ["--io"]):
-            with self.subTest(options=options), self.runner.isolated_filesystem():
+            with self.subTest(options=options), temp_cwd():
                 self.invoke_list_runs(["--to-csv", *options], width=20)
                 with Path("results.csv").open(encoding="utf8", newline="") as stream:
                     rows = list(csv.DictReader(stream))

@@ -22,9 +22,7 @@ def write_stream(data, err: bool = False):
         return
     if isinstance(data, bytes):
         data = data.decode("utf-8", "replace")
-    stream = click.get_text_stream("stderr" if err else "stdout")
-    stream.write(data)
-    stream.flush()
+    click.echo(data, err=err, nl=False, color=True)
 
 
 def get_entity_details(entity: any, entity_name: str):

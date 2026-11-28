@@ -18,7 +18,7 @@ from polyaxon._sdk.schemas.v1_run import V1Run
 from polyaxon._sdk.schemas.v1_run_settings import V1RunSettings
 from polyaxon._utils.cli_constants import SYMLINK_MODES
 from polyaxon.exceptions import ApiException
-from tests.test_cli.utils import BaseCommandTestCase
+from tests.test_cli.utils import BaseCommandTestCase, temp_cwd
 
 
 def _compile(op_spec):
@@ -1016,7 +1016,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
                 )
 
     def test_image_replaces_the_default_polyaxonfile(self):
-        with self.runner.isolated_filesystem():
+        with temp_cwd():
             # Unreadable on purpose: `--image` must not read it.
             Path("polyaxonfile.yaml").write_text("run: [unclosed\n")
 
@@ -1026,7 +1026,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         assert op_spec.container.image == "busybox:1.36"
 
     def test_other_options_overlay_the_default_polyaxonfile(self):
-        with self.runner.isolated_filesystem():
+        with temp_cwd():
             Path("polyaxonfile.yaml").write_text(
                 "run: {kind: job, container: {image: base:v1}}\n"
             )
@@ -1039,7 +1039,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
             assert op_spec.run.container.image == "base:v1"
             assert op_spec.resources is None
 
-        with self.runner.isolated_filesystem():
+        with temp_cwd():
             op_spec = self.get_op_spec("--cmd", "echo hi")
 
         assert op_spec.run is None
@@ -1205,7 +1205,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         assert compiled.plugins.sandbox is True
 
     def test_sandbox_without_a_source_is_a_service(self):
-        with self.runner.isolated_filesystem():
+        with temp_cwd():
             op_spec = self.get_op_spec("--sandbox")
 
         assert op_spec.service is None
@@ -1242,7 +1242,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
         service = (
             "run: {kind: service, container: {image: base:v1}}\nplugins: {tmux: true}\n"
         )
-        with self.runner.isolated_filesystem():
+        with temp_cwd():
             Path("polyaxonfile.yaml").write_text(service)
             Path("component.yaml").write_text("kind: component\n" + service)
             # The discovered file, then a wrapped component.
@@ -1351,7 +1351,7 @@ class TestCliRunInlineOptions(BaseCommandTestCase):
                     self.assert_rejected(message, *files, *options, "--sandbox")
 
     def test_sandbox_rejects_local_runs_before_reading_sources(self):
-        with self.runner.isolated_filesystem():
+        with temp_cwd():
             # Unreadable on purpose: the local check comes first.
             Path("polyaxonfile.yaml").write_text("run: [unclosed\n")
 
