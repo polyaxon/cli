@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 import numpy as np
 import pytest
 from unittest import mock
+import warnings
 
 from clipped.compact.pydantic import ValidationError
 from clipped.utils.json import orjson_dumps
@@ -50,6 +51,20 @@ class TestMatrixConfigs(BaseTestCase):
             with self.assertRaises(ValidationError) as ctx:
                 sample(normal)
         assert ctx.exception.errors()[0]["loc"] == ("sample",)
+
+    def test_date_range_does_not_use_generic_timedelta(self):
+        config = V1HpDateRange.from_dict(
+            {
+                "kind": "daterange",
+                "value": {"start": "2019-06-24", "stop": "2019-06-28", "step": 1},
+            }
+        )
+        expected = [date(2019, 6, day) for day in range(24, 28)]
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            assert get_length(config) == 4
+            assert list(to_numpy(config)) == expected
+            assert sample(config) in expected
 
     def test_matrix_values_option(self):
         config_dict = {"kind": "choice", "value": [1, 2, 3]}
@@ -216,13 +231,13 @@ class TestMatrixConfigs(BaseTestCase):
             v1 = deserialize_date(_v1)
             v2 = deserialize_date(_v2)
             v3 = int(_v3)
-            result = {"start": v1, "stop": v2, "step": v3}
+            expected = [v1 + timedelta(days=d) for d in range(0, (v2 - v1).days, v3)]
             assert config.value.start == v1
             assert config.value.stop == v2
             assert config.value.step == v3
-            np.testing.assert_array_equal(to_numpy(config), np.arange(**result))
-            assert get_length(config) == len(np.arange(**result))
-            assert sample(config) in np.arange(**result)
+            np.testing.assert_array_equal(to_numpy(config), expected)
+            assert get_length(config) == len(expected)
+            assert sample(config) in expected
             assert config.is_categorical is False
             assert config.is_distribution is False
             assert config.is_range is True
